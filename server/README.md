@@ -36,3 +36,11 @@ store entries in ModelDB.
 
 Here are the [schemas](https://github.com/mitdbg/modeldb/blob/master/codegen/sqlite/createDb.sql)
 for the tables created by ModelDB.
+
+# Configuration
+Edit the [configuration file](https://github.com/mitdbg/modeldb/blob/master/server/src/main/resources/reference.conf) to your liking.
+
+Currently, only SQLite is supported, so you cannot change the database type.
+
+If you have your SQLite datbase stored at `/path/to/dbFile.db`, then adjust
+the `jdbcUrl` field to be: `"jdbc:sqlite:/path/to/dbFile.db"`
