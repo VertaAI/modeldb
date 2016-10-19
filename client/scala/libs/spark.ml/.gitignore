@@ -1,0 +1,12 @@
+# Ignore Mac OS X .DS_Store (it stores directory attributes).
+.DS_Store
+
+# Ignore build results.
+target/*
+
+# Ignore IntelliJ config files.
+*.iml
+.idea/
+
+# Ignore SBT build results
+project/*/

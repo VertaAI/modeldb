@@ -1,0 +1,25 @@
+# git information
+VERSION_CODE: yes # whether to version code
+GIT_USERNAME: # git username
+GIT_REPO: # name of github repo
+ACCESS_TOKEN: # insert access toekn
+
+# experiment code location that will be the git repo
+EXPT_DIR: # directory where the real code lives
+GIT_REPO_DIR: # directory where the new git repo for experiments will be created
+
+# modeldb server information
+MDB_SERVER_HOST: localhost
+MDB_SERVER_PORT: 6543
+
+# project information
+PROJECT:
+    NAME: test
+    DESCRIPTION: test project
+
+# default experiment
+DEFAULT_EXPT:
+    NAME: default_expt
+    DESCRIPTION: default experiment
+
+# add other experiment definitions here
