@@ -8,36 +8,37 @@ import org.apache.commons.cli.*;
 import java.io.File;
 
 public class ModelDbConfig {
+  public enum DatabaseType {
+    SQLITE
+  }
+
   private static final String CONF_OPT = "c";
   private static ModelDbConfig instance;
 
   public final String dbUser;
   public final String dbPassword;
-  public final String dbName;
-  public final String dbType;
-  public final String dbHost;
-  public final int dbPort;
   public final String thriftHost;
+  public final DatabaseType dbType;
+  public final String jbdcUrl;
   public final int thriftPort;
   public final String fsPrefix;
 
   private ModelDbConfig(
     String dbUser,
     String dbPassword,
-    String dbName,
-    String dbType,
-    String dbHost,
-    String dbPort,
+    String jdbcUrl,
+    String databaseType,
     String thriftHost,
     String thriftPort,
     String fsPrefix
   ) {
     this.dbUser = dbUser;
     this.dbPassword = dbPassword;
-    this.dbName = dbName;
-    this.dbType = dbType;
-    this.dbHost = dbHost;
-    this.dbPort = Integer.parseInt(dbPort);
+    this.jbdcUrl = jdbcUrl;
+    switch (databaseType) {
+      case "sqlite": this.dbType = DatabaseType.SQLITE; break;
+      default: throw new IllegalArgumentException("Not a value databaseType");
+    }
     this.thriftHost = thriftHost;
     this.thriftPort = Integer.parseInt(thriftPort);
     this.fsPrefix = fsPrefix;
@@ -62,10 +63,8 @@ public class ModelDbConfig {
     instance = new ModelDbConfig(
       getProp(config, "db.user"),
       getProp(config, "db.password"),
-      getProp(config, "db.name"),
-      getProp(config, "db.type"),
-      getProp(config, "db.host"),
-      getProp(config, "db.port"),
+      getProp(config, "db.jdbcUrl"),
+      getProp(config, "db.databaseType"),
       getProp(config, "thrift.host"),
       getProp(config, "thrift.port"),
       getProp(config, "fs.prefix")

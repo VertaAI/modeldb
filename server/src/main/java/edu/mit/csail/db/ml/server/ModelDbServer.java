@@ -1,5 +1,6 @@
 package edu.mit.csail.db.ml.server;
 
+import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.algorithm.*;
 import edu.mit.csail.db.ml.server.algorithm.similarity.SimilarModels;
 import edu.mit.csail.db.ml.server.storage.*;
@@ -18,16 +19,12 @@ import java.util.Map;
 public class ModelDbServer implements ModelDBService.Iface {
   private DSLContext ctx;
 
-  public ModelDbServer() {
-    String userName = "";
-    String password = "";
-    String url = "jdbc:sqlite:modeldb.db";
-
-    // Connection is the only JDBC resource that we need
-    // PreparedStatement and ResultSet are handled by jOOQ, internally
+  public ModelDbServer(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType) {
     try {
-      Connection conn = DriverManager.getConnection(url, userName, password);
-      ctx = DSL.using(conn, SQLDialect.SQLITE);
+      Connection conn = DriverManager.getConnection(jdbcUrl, username, password);
+      switch (dbType) {
+        case SQLITE: ctx = DSL.using(conn, SQLDialect.SQLITE); break;
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }

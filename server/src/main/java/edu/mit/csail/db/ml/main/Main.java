@@ -19,7 +19,12 @@ public class Main {
       TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
       TTransportFactory transportFactory = new TFramedTransport.Factory();
       TThreadPoolServer.Args serverArgs = new TThreadPoolServer.Args(transport)
-        .processor(new ModelDBService.Processor<ModelDbServer>(new ModelDbServer()))
+        .processor(new ModelDBService.Processor<ModelDbServer>(new ModelDbServer(
+          config.dbUser,
+          config.dbPassword,
+          config.jbdcUrl,
+          config.dbType
+        )))
         .protocolFactory(protocolFactory)
         .transportFactory(transportFactory)
         .minWorkerThreads(1)
