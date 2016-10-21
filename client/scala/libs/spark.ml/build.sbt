@@ -10,7 +10,7 @@ assemblyJarName in assembly := "ml.jar"
 libraryDependencies += "org.apache.spark" %% "spark-core" % "2.0.0" % "provided"
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "2.0.0" % "provided"
 libraryDependencies += "org.apache.spark" %% "spark-mllib" % "2.0.0" % "provided"
-
+libraryDependencies += "org.apache.spark" %% "spark-hive" % "2.0.0" % "provided"
 
 libraryDependencies += "org.apache.thrift" % "libthrift" % "0.8.0"
 libraryDependencies += "com.twitter" %% "scrooge-core" % "4.8.0"
