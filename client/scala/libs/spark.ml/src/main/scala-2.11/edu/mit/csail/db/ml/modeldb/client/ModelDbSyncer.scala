@@ -170,7 +170,6 @@ class ModelDbSyncer(host: String = "localhost",
       this.buffer(ProjectEvent(project))
       this.sync() // this will also 
   }
-  println("project:" + project.id)
 
   var experiment = experimentConfig match {
     case ExistingExperiment(id) => modeldb.Experiment(id, -1, "", "")
@@ -178,15 +177,12 @@ class ModelDbSyncer(host: String = "localhost",
     case ne: NewOrExistingExperiment => modeldb.Experiment(ne.id, project.id, ne.name, ne.description)
   }
 
-  println("experiment:" + experiment)
-
   experimentConfig match {
     case ne: NewOrExistingExperiment =>
     case de: DefaultExperiment =>
       this.buffer(ExperimentEvent(experiment))
       this.sync()
   }
-  println("server here2");
 
   var experimentRun = experimentRunConfig match {
     case ExistingExperimentRun(id) => modeldb.ExperimentRun(id, experiment.id, "")
@@ -205,7 +201,6 @@ class ModelDbSyncer(host: String = "localhost",
       this.buffer(ExperimentRunEvent(experimentRun))
       this.sync()
   }
-  println("server here3");
 
   // Model functions.
   def getCommonAncestor(df1Id: Int, df2Id: Int): CommonAncestor = Await.result(client.getCommonAncestor(df1Id, df2Id))
