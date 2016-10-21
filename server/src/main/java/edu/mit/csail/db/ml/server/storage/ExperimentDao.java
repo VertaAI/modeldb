@@ -14,7 +14,9 @@ public class ExperimentDao {
   public static ExperimentEventResponse store(ExperimentEvent expt, DSLContext ctx) {
     Experiment e = expt.experiment;
     if (e.isDefault) {
-      return new ExperimentEventResponse(ProjectDao.getDefaultExperiment(e.projectId, ctx));
+      int defaultExperiment = ProjectDao.getDefaultExperiment(e.projectId, ctx);
+      System.out.println("defaultExpt:" + defaultExperiment);
+      return new ExperimentEventResponse(defaultExperiment);
     }
 
     ExperimentRecord eRec = ctx.selectFrom(Tables.EXPERIMENT).where(

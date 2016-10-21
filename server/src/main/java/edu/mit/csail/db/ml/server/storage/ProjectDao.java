@@ -33,6 +33,7 @@ public class ProjectDao {
 
     // create a default experiment
     ExperimentRecord eRec = ctx.newRecord(Tables.EXPERIMENT);
+    eRec.setId(null);
     eRec.setProject(pRec.getId());
     eRec.setName("Default_Experiment");
     eRec.setDescription("Default Experiment");
@@ -42,7 +43,6 @@ public class ProjectDao {
     return new ProjectEventResponse(pRec.getId());
   }
 
-  // TODO: add call to return the default experiment for a project
   public static int getDefaultExperiment(int projId, DSLContext ctx) {
     Record1<Integer> rec = ctx.select(Tables.EXPERIMENT.ID.min())
     .from(Tables.EXPERIMENT)
