@@ -153,11 +153,11 @@ CREATE TABLE FitEvent (
 
 DROP TABLE IF EXISTS Feature;
 CREATE TABLE Feature (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   featureIndex INTEGER NOT NULL,
   importance DOUBLE NOT NULL,
-  transformer INTEGER REFERENCES TRANSFORMER,
-  PRIMARY KEY (name, featureIndex, transformer)
+  transformer INTEGER REFERENCES TRANSFORMER
 );
 
 DROP TABLE IF EXISTS TransformEvent;
