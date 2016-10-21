@@ -66,7 +66,13 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public ProjectEventResponse storeProjectEvent(ProjectEvent pr) throws TException {
-    return ProjectDao.store(pr, ctx);
+    ProjectEventResponse per = ProjectDao.store(pr, ctx);
+    System.out.println(per);
+    return per;
+  }
+
+  public ExperimentEventResponse storeExperimentEvent(ExperimentEvent e) throws TException {
+    return ExperimentDao.store(e, ctx);
   }
 
   public ExperimentRunEventResponse storeExperimentRunEvent(ExperimentRunEvent er) throws TException {

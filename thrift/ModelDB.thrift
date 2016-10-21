@@ -1,4 +1,4 @@
-namespace scala modeldb
+// namespace scala modeldb
 namespace java modeldb
 namespace py modeldb
 
@@ -9,9 +9,19 @@ struct Project {
   4: string description
 }
 
-struct ExperimentRun {
+struct Experiment {
   1: i32 id = -1,
   2: i32 projectId,
+  3: string name,
+  4: string description,
+  5: bool isDefault = 0
+}
+
+// Each experiment belongs to an experiment,
+// even if it is just the default experiment
+struct ExperimentRun {
+  1: i32 id = -1,
+  2: i32 experimentId,
   3: string description
 }
 
@@ -43,8 +53,16 @@ struct ProjectEventResponse {
   1: i32 projectId
 }
 
+struct ExperimentEvent {
+  1: Experiment experiment
+}
+
+struct ExperimentEventResponse {
+  1: i32 experimentId
+}
+
 struct ExperimentRunEvent {
-  1: ExperimentRun experimentrun
+  1: ExperimentRun experimentRun
 }
 
 struct ExperimentRunEventResponse {
@@ -88,9 +106,8 @@ struct FitEvent {
   4: list<string> featureColumns,
   5: list<string> predictionColumns,
   6: list<string> labelColumns,
-  7: i32 projectId,
-  8: i32 experimentRunId,
-  9: optional ProblemType problemType = ProblemType.UNDEFINED
+  7: i32 experimentRunId,
+  8: optional ProblemType problemType = ProblemType.UNDEFINED
 }
 
 struct LinearModelTerm {
@@ -125,8 +142,7 @@ struct MetricEvent {
   4: double metricValue,
   5: string labelCol,
   6: string predictionCol,
-  7: i32 projectId,
-  8: i32 experimentRunId
+  7: i32 experimentRunId
 }
 
 struct MetricEventResponse {
@@ -142,8 +158,7 @@ struct TransformEvent {
   3: Transformer transformer
   4: list<string> inputColumns,
   5: list<string> outputColumns,
-  6: i32 projectId,
-  7: i32 experimentRunId
+  6: i32 experimentRunId
 }
 
 struct TransformEventResponse {
@@ -159,8 +174,7 @@ struct RandomSplitEvent {
   2: list<double> weights,
   3: i64 seed,
   4: list<DataFrame> splitDataFrames,
-  5: i32 projectId,
-  6: i32 experimentRunId
+  5: i32 experimentRunId
 }
 
 struct RandomSplitEventResponse {
@@ -192,9 +206,8 @@ struct CrossValidationEvent {
   7: list<string> featureColumns,
   // Note that we don't need to store numFolds, because we can infer that from from the length of this list.
   8: list<CrossValidationFold> folds,
-  9: i32 projectId,
-  10: i32 experimentRunId,
-  11: optional ProblemType problemType = ProblemType.UNDEFINED
+  9: i32 experimentRunId,
+  10: optional ProblemType problemType = ProblemType.UNDEFINED
 }
 
 struct CrossValidationEventResponse {
@@ -209,9 +222,8 @@ struct GridSearchCrossValidationEvent {
   1: i32 numFolds,
   2: FitEvent bestFit,
   3: list<CrossValidationEvent> crossValidations,
-  4: i32 projectId,
-  5: i32 experimentRunId
-  6: optional ProblemType problemType = ProblemType.UNDEFINED
+  4: i32 experimentRunId
+  5: optional ProblemType problemType = ProblemType.UNDEFINED
 }
 
 struct GridSearchCrossValidationEventResponse {
@@ -235,8 +247,7 @@ struct PipelineEvent {
   1: FitEvent pipelineFit,
   2: list<PipelineTransformStage> transformStages,
   3: list<PipelineFitStage> fitStages,
-  4: i32 projectId,
-  5: i32 experimentRunId
+  4: i32 experimentRunId
 }
 
 struct PipelineEventResponse {
@@ -260,8 +271,7 @@ struct AnnotationFragmentResponse {
 
 struct AnnotationEvent {
   1: list<AnnotationFragment> fragments,
-  2: i32 projectId,
-  3: i32 experimentRunId
+  2: i32 experimentRunId
 }
 
 struct AnnotationEventResponse {
@@ -354,6 +364,8 @@ service ModelDBService {
 
   ProjectEventResponse storeProjectEvent(1: ProjectEvent pr),
 
+  ExperimentEventResponse storeExperimentEvent(1: ExperimentEvent er),
+
   ExperimentRunEventResponse storeExperimentRunEvent(1: ExperimentRunEvent er),
 
   // Associate LinearModel metadata with an already stored model
@@ -397,7 +409,7 @@ service ModelDBService {
   // took to converge (convergence specified via tolerance). 
   // If any model does not exist or does not have an objective history, 
   // we give it -1 iterations.
-  list<i32> iterationsUntilConvergence(1: list<i32> modelIds, double tolerance),
+  list<i32> iterationsUntilConvergence(1: list<i32> modelIds, 2: double tolerance),
 
   // Rank the given models by some metric. The returned list will contain
   // the models ordered by highest metric to lowest metric. If we cannot

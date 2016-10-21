@@ -11,8 +11,8 @@ import java.util.stream.IntStream;
 
 public class CrossValidationEventDao {
   public static CrossValidationEventResponse store(CrossValidationEvent cve, DSLContext ctx) {
-    DataframeRecord df = DataFrameDao.store(cve.df, cve.projectId, cve.experimentRunId, ctx);
-    TransformerspecRecord spec = TransformerSpecDao.store(cve.spec, cve.projectId, cve.experimentRunId, ctx);
+    DataframeRecord df = DataFrameDao.store(cve.df, cve.experimentRunId, ctx);
+    TransformerspecRecord spec = TransformerSpecDao.store(cve.spec, cve.experimentRunId, ctx);
 
     CrossvalidationeventRecord cveRec = ctx.newRecord(Tables.CROSSVALIDATIONEVENT);
     cveRec.setId(null);
@@ -21,11 +21,10 @@ public class CrossValidationEventDao {
     cveRec.setNumfolds(cve.folds.size());
     cveRec.setRandomseed(cve.seed);
     cveRec.setEvaluator(cve.evaluator);
-    cveRec.setProject(cve.projectId);
     cveRec.setExperimentrun(cve.experimentRunId);
     cveRec.store();
 
-    EventRecord ev = EventDao.store(cveRec.getId(), "cross validation", cve.projectId, cve.experimentRunId, ctx);
+    EventRecord ev = EventDao.store(cveRec.getId(), "cross validation", cve.experimentRunId, ctx);
 
     List<FitEventResponse> fers = cve
       .folds
@@ -37,7 +36,6 @@ public class CrossValidationEventDao {
         cve.featureColumns,
         cve.predictionColumns,
         cve.labelColumns,
-        cve.projectId,
         cve.experimentRunId
       ).setProblemType(cve.problemType))
       .map(fe -> FitEventDao.store(fe, ctx))
@@ -52,7 +50,6 @@ public class CrossValidationEventDao {
         cve.folds.get(ind).score,
         cve.labelColumns.get(0), // TODO: Are these reasonable settings?
         cve.predictionColumns.get(0),
-        cve.projectId,
         cve.experimentRunId
       ))
       .map(me -> MetricEventDao.store(me, ctx))
@@ -73,7 +70,6 @@ public class CrossValidationEventDao {
       rec.setId(null);
       rec.setMetric(me.getMetricEventId());
       rec.setEvent(cveRec.getId());
-      rec.setProject(cve.projectId);
       rec.setExperimentrun(cve.experimentRunId);
       rec.store();
       rec.getId();

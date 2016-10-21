@@ -27,7 +27,6 @@ case class RandomSplitEvent(dataframe: DataFrame,
       weights,
       seed,
       result.map(df => SyncableDataFrame(df)),
-      projectId = mdbs.get.project.id,
       experimentRunId = mdbs.get.experimentRun.id
     )
     val res = Await.result(client.storeRandomSplitEvent(event))

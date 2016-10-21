@@ -24,7 +24,7 @@ public class TransformerDao {
     return Paths.get(ModelDbConfig.getInstance().fsPrefix, uuid).toString();
   }
 
-  public static TransformerRecord store(Transformer t, int projId, int experimentId, DSLContext ctx, boolean generateFilepath) {
+  public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx, boolean generateFilepath) {
     TransformerRecord rec = ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(t.id)).fetchOne();
     if (rec != null) {
       if (generateFilepath && rec.getFilepath().length() == 0) {
@@ -39,7 +39,6 @@ public class TransformerDao {
     tRec.setTransformertype(t.transformerType);
     tRec.setWeights(t.weights.stream().map(String::valueOf).collect(Collectors.joining(",")));
     tRec.setTag(t.tag);
-    tRec.setProject(projId);
     tRec.setExperimentrun(experimentId);
 
 
@@ -52,7 +51,7 @@ public class TransformerDao {
     return tRec;
   }
 
-  public static TransformerRecord store(Transformer t, int projId, int experimentId, DSLContext ctx) {
-    return store(t, projId, experimentId, ctx, false);
+  public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx) {
+    return store(t, experimentId, ctx, false);
   }
 }

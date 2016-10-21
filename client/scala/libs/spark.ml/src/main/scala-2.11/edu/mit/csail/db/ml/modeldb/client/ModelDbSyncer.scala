@@ -5,7 +5,7 @@ import java.util.UUID
 import com.twitter.finagle.Thrift
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client.SyncingStrategy.SyncingStrategy
-import edu.mit.csail.db.ml.modeldb.client.event.{ExperimentRunEvent, ModelDbEvent, ProjectEvent}
+import edu.mit.csail.db.ml.modeldb.client.event.{ExperimentRunEvent, ModelDbEvent, ProjectEvent, ExperimentEvent}
 import modeldb._
 import org.apache.spark.ml.classification.LogisticRegressionModel
 import org.apache.spark.ml.regression.LinearRegressionModel
@@ -29,20 +29,27 @@ object SyncingStrategy extends Enumeration {
 
 abstract class ProjectConfig(val id: Int)
 case class ExistingProject(override val id: Int) extends ProjectConfig(id)
-case class NewProject(name: String, author: String, description: String) extends ProjectConfig(-1)
+case class NewOrExistingProject(name: String, author: String, description: String) extends ProjectConfig(-1)
+
+abstract class ExperimentConfig(val id: Int)
+case class ExistingExperiment(override val id: Int) extends ExperimentConfig(-1)
+case class DefaultExperiment() extends ExperimentConfig(-1)
+case class NewOrExistingExperiment(name: String, description: String) extends ExperimentConfig(-1)
 
 abstract class ExperimentRunConfig(val id: Int)
 case class ExistingExperimentRun(override val id: Int) extends ExperimentRunConfig(id)
-case class NewExperimentRun(description: String) extends ExperimentRunConfig(-1)
+case class NewExperimentRun(description: String="") extends ExperimentRunConfig(-1)
 
 /**
   * This is the Syncer that is responsible for storing events in the ModelDB.
   */
+  // TODO: [MV] see how things has to change
 class ModelDbSyncer(host: String = "localhost",
                     port: Int = 6543,
                     syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
                     projectConfig: ProjectConfig,
-                    experimentRunConfig: ExperimentRunConfig = NewExperimentRun("")) {
+                    experimentConfig: ExperimentConfig = new DefaultExperiment,
+                    experimentRunConfig: ExperimentRunConfig) {
 
   /**
     * This is a helper class that will constitute the entries in the buffer.
@@ -60,7 +67,6 @@ class ModelDbSyncer(host: String = "localhost",
     * This is the Thrift client that is responsible for talking to the ModelDB server.
     */
   val client = Thrift.client.newIface[ModelDBService.FutureIface](s"$host:$port")
-
   /**
     * We keep a mapping between objects and their IDs.
     */
@@ -153,24 +159,40 @@ class ModelDbSyncer(host: String = "localhost",
       sync()
   }
 
-  // Create the project.
   var project = projectConfig match {
     case ExistingProject(id) => modeldb.Project(id, "", "", "")
-    case np: NewProject => modeldb.Project(np.id, np.name, np.author, np.description)
+    case np: NewOrExistingProject => modeldb.Project(np.id, np.name, np.author, np.description)
   }
 
+  // TODO: should we add an experiment event anyway?
   projectConfig match {
-    case np: NewProject =>
+    case np: NewOrExistingProject =>
       this.buffer(ProjectEvent(project))
+      this.sync() // this will also 
+  }
+  println("project:" + project.id)
+
+  var experiment = experimentConfig match {
+    case ExistingExperiment(id) => modeldb.Experiment(id, -1, "", "")
+    case de: DefaultExperiment => modeldb.Experiment(-1, project.id, "", "", true)
+    case ne: NewOrExistingExperiment => modeldb.Experiment(ne.id, project.id, ne.name, ne.description)
+  }
+
+  println("experiment:" + experiment)
+
+  experimentConfig match {
+    case ne: NewOrExistingExperiment =>
+    case de: DefaultExperiment =>
+      this.buffer(ExperimentEvent(experiment))
       this.sync()
   }
+  println("server here2");
 
-  // Create the experiment run.
   var experimentRun = experimentRunConfig match {
-    case ExistingExperimentRun(id) => modeldb.ExperimentRun(id, -1, "")
+    case ExistingExperimentRun(id) => modeldb.ExperimentRun(id, experiment.id, "")
     case ner: NewExperimentRun =>
       modeldb.ExperimentRun(ner.id,
-        project.id,
+        experiment.id,
         if (ner.description == "")
           "Experiment " + UUID.randomUUID()
         else
@@ -183,12 +205,7 @@ class ModelDbSyncer(host: String = "localhost",
       this.buffer(ExperimentRunEvent(experimentRun))
       this.sync()
   }
-
-  def startExperimentRun(description: String): Unit = {
-    experimentRun = modeldb.ExperimentRun(-1, project.id, description)
-    this.buffer(ExperimentRunEvent(experimentRun))
-    this.sync()
-  }
+  println("server here3");
 
   // Model functions.
   def getCommonAncestor(df1Id: Int, df2Id: Int): CommonAncestor = Await.result(client.getCommonAncestor(df1Id, df2Id))

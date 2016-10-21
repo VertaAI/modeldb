@@ -12,11 +12,19 @@ CREATE TABLE Project (
   created TIMESTAMP NOT NULL
 );
 
+DROP TABLE IF EXISTS Experiment;
+CREATE TABLE Experiment (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project INTEGER REFERENCES Project NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT, -- Can be empty.
+  created TIMESTAMP NOT NULL
+);
+
 DROP TABLE IF EXISTS ExperimentRun;
 CREATE TABLE ExperimentRun (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  project INTEGER REFERENCES Project NOT NULL,
-  description TEXT, -- Can be empty.
+  experiment INTEGER REFERENCES Experiment NOT NULL,
   created TIMESTAMP NOT NULL
 );
 
@@ -25,7 +33,6 @@ CREATE TABLE DataFrame (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   tag TEXT, -- Can be empty.
   numRows INTEGER NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -42,7 +49,6 @@ CREATE TABLE RandomSplitEvent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   inputDataFrameId INTEGER REFERENCES DataFrame NOT NULL,
   randomSeed BIGINT NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -52,7 +58,6 @@ CREATE TABLE DataFrameSplit (
   splitEventId INTEGER REFERENCES RandomSplitEvent NOT NULL,
   weight FLOAT NOT NULL,
   dataFrameId INTEGER REFERENCES DataFrame NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -61,7 +66,6 @@ CREATE TABLE TransformerSpec (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   transformerType TEXT NOT NULL,
   tag TEXT, -- Can be empty.
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -75,7 +79,6 @@ CREATE TABLE HyperParameter (
   paramValue TEXT NOT NULL,
   paramMinValue FLOAT, -- Can be empty.
   paramMaxValue FLOAT, -- Can be empty.
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -86,7 +89,6 @@ CREATE TABLE Transformer (
   transformerType TEXT NOT NULL,
   weights TEXT NOT NULL,
   tag TEXT, -- Can be empty.
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
   filepath TEXT
 );
@@ -145,7 +147,6 @@ CREATE TABLE FitEvent (
   df INTEGER REFERENCES DataFrame NOT NULL,
   predictionColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
   labelColumn TEXT NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
   problemType TEXT NOT NULL
 );
@@ -167,7 +168,6 @@ CREATE TABLE TransformEvent (
   transformer INTEGER REFERENCES Transformer NOT NULL,
   inputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
   outputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -214,7 +214,6 @@ CREATE TABLE MetricEvent (
   df INTEGER REFERENCES DataFrame NOT NULL,
   metricType TEXT NOT NULL,
   metricValue REAL NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -223,7 +222,6 @@ CREATE TABLE Event (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   eventType TEXT NOT NULL,
   eventId INTEGER NOT NULL, -- references the actual event in the table
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -235,7 +233,6 @@ CREATE TABLE PipelineStage (
   pipelineFitEvent INTEGER REFERENCES FitEvent NOT NULL,
   transformOrFitEvent INTEGER REFERENCES Event NOT NULL,
   stageNumber INTEGER NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -247,7 +244,6 @@ CREATE TABLE CrossValidationEvent (
   numFolds INTEGER NOT NULL,
   randomSeed BIGINT NOT NULL,
   evaluator TEXT NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -256,7 +252,6 @@ CREATE TABLE CrossValidationFold (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   metric INTEGER REFERENCES MetricEvent NOT NULL,
   event INTEGER REFERENCES CrossValidationEvent NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -265,7 +260,6 @@ CREATE TABLE GridSearchCrossValidationEvent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   numFolds INTEGER NOT NULL,
   best INTEGER REFERENCES FitEvent NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -274,7 +268,6 @@ CREATE TABLE GridCellCrossValidation (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   gridSearch INTEGER REFERENCES GridSearchCrossValidationEvent NOT NULL,
   crossValidation INTEGER REFERENCES CrossValidationEvent NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -284,7 +277,6 @@ DROP TABLE IF EXISTS Annotation;
 CREATE TABLE Annotation (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   posted TIMESTAMP NOT NULL,
-  project INTEGER REFERENCES Project NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
@@ -308,7 +300,6 @@ CREATE TABLE AnnotationFragment (
   dataframe INTEGER REFERENCES DataFrame,
   spec INTEGER REFERENCES TransformerSpec,
   message TEXT,
-  project INTEGER REFERENCES Project,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 

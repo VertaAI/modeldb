@@ -25,7 +25,6 @@ public class AnnotationEventDao {
     AnnotationRecord aRec = ctx.newRecord(Tables.ANNOTATION);
     aRec.setId(null);
     aRec.setPosted(new Timestamp((new Date()).getTime()));
-    aRec.setProject(ae.projectId);
     aRec.setExperimentrun(ae.experimentRunId);
     aRec.store();
 
@@ -35,11 +34,11 @@ public class AnnotationEventDao {
       .map(frag -> {
         switch (frag.type) {
           case DATAFRAME_TYPE:
-            return DataFrameDao.store(frag.df, ae.projectId, ae.experimentRunId, ctx).getId();
+            return DataFrameDao.store(frag.df, ae.experimentRunId, ctx).getId();
           case SPEC_TYPE:
-            return TransformerSpecDao.store(frag.spec, ae.projectId, ae.experimentRunId, ctx).getId();
+            return TransformerSpecDao.store(frag.spec, ae.experimentRunId, ctx).getId();
           case TRANSFORMER_TYPE:
-            return TransformerDao.store(frag.transformer, ae.projectId, ae.experimentRunId, ctx).getId();
+            return TransformerDao.store(frag.transformer, ae.experimentRunId, ctx).getId();
           default:
             return -1;
         }
@@ -55,7 +54,6 @@ public class AnnotationEventDao {
         afRec.setAnnotation(aRec.getId());
         afRec.setFragmentindex(ind);
         afRec.setType(frag.type);
-        afRec.setProject(ae.projectId);
         afRec.setExperimentrun(ae.experimentRunId);
         afRec.setTransformer(frag.type.equals(TRANSFORMER_TYPE) ? fragmentIds.get(ind) : null);
         afRec.setDataframe(frag.type.equals(DATAFRAME_TYPE) ? fragmentIds.get(ind) : null);

@@ -26,6 +26,16 @@ public class DummyFactory {
     );
   }
 
+  public static Experiment makeExperiment() {
+    return new Experiment(
+      EMPTY_PRIMARY_KEY,
+      1,
+      "test experiment",
+      "this is a test experiment",
+      false
+    );
+  }
+
   public static ExperimentRun makeExperimentRun() {
     return new ExperimentRun(
       EMPTY_PRIMARY_KEY,
@@ -70,7 +80,6 @@ public class DummyFactory {
       makeTransformer(),
       Arrays.asList("inCol1", "inCol2"),
       Arrays.asList("outCol1", "outCol2", "outCol3"),
-      1,
       1
     );
   }
@@ -133,7 +142,6 @@ public class DummyFactory {
   public static AnnotationEvent makeAnnotationEvent() {
     return new AnnotationEvent(
       IntStream.range(0, 3).mapToObj(s -> makeAnnotationFragment()).collect(Collectors.toList()),
-      1,
       1
     );
   }
@@ -154,7 +162,6 @@ public class DummyFactory {
       Arrays.asList("featCol1", "featCol2", "feat" + generator.nextInt()),
       Arrays.asList("predCol1", "predCol2"),
       Arrays.asList("labCol1", "labCol2"),
-      1,
       1
     ).setProblemType(ptypes[generator.nextInt(ptypes.length)]);
   }
@@ -165,7 +172,6 @@ public class DummyFactory {
       Arrays.asList(0.4, 0.5),
       0,
       Arrays.asList(makeDataFrame(), makeDataFrame()),
-      1,
       1
     );
   }
@@ -178,13 +184,16 @@ public class DummyFactory {
       0.9,
       "labelCol",
       "predictionCol",
-      1,
       1
     );
   }
 
   public static ProjectEvent makeProjectEvent() {
     return new ProjectEvent(makeProject());
+  }
+
+  public static ExperimentEvent makeExperimentEvent() {
+    return new ExperimentEvent(makeExperiment());
   }
 
   public static ExperimentRunEvent makeExperimentRunEvent() {
@@ -202,7 +211,6 @@ public class DummyFactory {
       .range(4, 8)
       .mapToObj(ind -> new PipelineFitStage(ind, makeFitEvent()))
       .collect(Collectors.toList()),
-      1,
       1
     );
   }
@@ -226,7 +234,6 @@ public class DummyFactory {
       Arrays.asList("prediction col1", "prediction col 2"),
       Arrays.asList("feature col1", "feature col 2"),
       Arrays.asList(makeCrossValidationFold(), makeCrossValidationFold()),
-      1,
       1
     );
   }
@@ -265,7 +272,6 @@ public class DummyFactory {
       3,
       makeFitEvent(),
       Arrays.asList(makeCrossValidationEvent(), makeCrossValidationEvent()),
-      1,
       1
     );
   }

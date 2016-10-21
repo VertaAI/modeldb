@@ -86,7 +86,6 @@ case class PipelineEvent(pipeline: Pipeline,
       ),
       transformStages.map(pair => modeldb.PipelineTransformStage(pair._1, pair._2.makeEvent(mdbs.get))),
       fitStages.map(pair => modeldb.PipelineFitStage(pair._1, pair._2.makeEvent(mdbs.get))),
-      projectId = mdbs.get.project.id,
       experimentRunId = mdbs.get.experimentRun.id
     )
     val res = Await.result(client.storePipelineEvent(pipelineEvent))

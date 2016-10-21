@@ -7,7 +7,7 @@ import modeldb.TransformerSpec;
 import org.jooq.DSLContext;
 
 public class TransformerSpecDao {
-  public static TransformerspecRecord store(TransformerSpec s, int projId, int experimentId, DSLContext ctx) {
+  public static TransformerspecRecord store(TransformerSpec s, int experimentId, DSLContext ctx) {
     TransformerspecRecord rec = ctx
       .selectFrom(Tables.TRANSFORMERSPEC)
       .where(Tables.TRANSFORMERSPEC.ID.eq(s.id))
@@ -19,7 +19,6 @@ public class TransformerSpecDao {
 
     TransformerspecRecord sRec = ctx.newRecord(Tables.TRANSFORMERSPEC);
     sRec.setId(null);
-    sRec.setProject(projId);
     sRec.setExperimentrun(experimentId);
     sRec.setTag(s.tag);
     sRec.setTransformertype(s.transformerType);
@@ -34,7 +33,6 @@ public class TransformerSpecDao {
       hpRec.setParamvalue(hp.value);
       hpRec.setParamminvalue(Double.valueOf(hp.min).floatValue());
       hpRec.setParammaxvalue(Double.valueOf(hp.max).floatValue());
-      hpRec.setProject(projId);
       hpRec.setExperimentrun(experimentId);
       hpRec.store();
       hpRec.getId();

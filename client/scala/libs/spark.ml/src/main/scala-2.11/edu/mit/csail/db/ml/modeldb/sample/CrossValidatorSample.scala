@@ -1,6 +1,6 @@
 package edu.mit.csail.db.ml.modeldb.sample
 
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewProject}
+import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, SyncableMetrics, NewOrExistingExperiment, DefaultExperiment, NewExperimentRun}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.LogisticRegression
@@ -27,11 +27,14 @@ import ModelDbSyncer._
 object CrossValidatorSample {
   def main(args: Array[String]) {
     ModelDbSyncer.setSyncer(
-      new ModelDbSyncer(projectConfig = NewProject("cross validation",
+      new ModelDbSyncer(projectConfig = NewOrExistingProject("cross validation",
         "harihar",
         "this example creates a cross validation"
-      ))
+      ),
+      experimentConfig = new NewOrExistingExperiment(name="blah", description="blah2"),
+      experimentRunConfig = new NewExperimentRun)
     )
+    println("here1")
 
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))
     val spark = SparkSession
