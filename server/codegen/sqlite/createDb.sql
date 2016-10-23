@@ -323,3 +323,11 @@ CREATE VIEW pipeline_view AS
   SELECT pipelinefitevent, stagenumber, e.id as event_id, e.eventtype, e.eventid
   FROM pipelinestage ps, event e
   WHERE ps.transformorfitevent = e.id order by stagenumber, eventtype;
+
+-- Create a view that shows experimentrun, experiment, and projectid in one table.
+DROP VIEW IF EXISTS experiment_run_view;
+CREATE VIEW experiment_run_view AS
+    SELECT er.id AS experimentRunId, e.id AS experimentId, p.id AS projectId
+    FROM ExperimentRun er, Experiment e, Project p
+    WHERE er.experiment = e.id
+    AND e.project = p.id;
