@@ -24,29 +24,13 @@ public class ExperimentRunDao {
   }
 
   public static int getProjectId(int eRunId, DSLContext ctx) {
-    // TODO: rewrite as a join
-    // find experiment from the experiment run
-    Record1<Integer> rec = ctx.select(Tables.EXPERIMENTRUN.EXPERIMENT)
-        .from(Tables.EXPERIMENTRUN)
-        .where(Tables.EXPERIMENTRUN.ID.eq(eRunId))
-        .fetchOne();
-
+    Record1<Integer> rec = ctx.select(Tables.EXPERIMENT_RUN_VIEW.PROJECTID)
+      .from(Tables.EXPERIMENT_RUN_VIEW)
+      .where(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID.eq(eRunId))
+      .fetchOne();
     if (rec == null) {
       return -1;
     }
-    int exptId = rec.value1();
-
-
-    // find project from experiment
-    rec = ctx.select(Tables.EXPERIMENT.PROJECT)
-        .from(Tables.EXPERIMENT)
-        .where(Tables.EXPERIMENT.ID.eq(exptId))
-        .fetchOne();
-    if (rec == null) {
-      return -1;
-    }
-    int projId = rec.value1();
-
-    return projId;
+    return rec.value1();
   }
 }

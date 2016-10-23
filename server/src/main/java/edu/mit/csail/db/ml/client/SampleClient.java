@@ -320,41 +320,41 @@ public class SampleClient {
     //            DF1
     //     DF2            DF3
     // DF4      DF5
-    // int df1 = client.storeTransformEvent(DummyFactory.makeTransformEvent()).newDataFrameId;
+     int df1 = client.storeTransformEvent(DummyFactory.makeTransformEvent()).newDataFrameId;
 
-    // TransformEvent te = DummyFactory.makeTransformEvent();
-    // te.setOldDataFrame(te.oldDataFrame.setId(df1));
-    // int df2 = client.storeTransformEvent(te).newDataFrameId;
+     TransformEvent te = DummyFactory.makeTransformEvent();
+     te.setOldDataFrame(te.oldDataFrame.setId(df1));
+     int df2 = client.storeTransformEvent(te).newDataFrameId;
 
-    // te = DummyFactory.makeTransformEvent();
-    // te.setOldDataFrame(te.oldDataFrame.setId(df1));
-    // client.storeTransformEvent(te);
+     te = DummyFactory.makeTransformEvent();
+     te.setOldDataFrame(te.oldDataFrame.setId(df1));
+     client.storeTransformEvent(te);
 
-    // te = DummyFactory.makeTransformEvent();
-    // te.setOldDataFrame(te.oldDataFrame.setId(df2));
-    // int df4 = client.storeTransformEvent(te).newDataFrameId;
+     te = DummyFactory.makeTransformEvent();
+     te.setOldDataFrame(te.oldDataFrame.setId(df2));
+     int df4 = client.storeTransformEvent(te).newDataFrameId;
 
-    // te = DummyFactory.makeTransformEvent();
-    // te.setOldDataFrame(te.oldDataFrame.setId(df2));
-    // int df5 = client.storeTransformEvent(te).newDataFrameId;
+     te = DummyFactory.makeTransformEvent();
+     te.setOldDataFrame(te.oldDataFrame.setId(df2));
+     int df5 = client.storeTransformEvent(te).newDataFrameId;
 
-    // // Now train models on DF4 and DF5.
-    // FitEvent fe = DummyFactory.makeFitEvent();
-    // fe.setDf(fe.df.setId(df4));
-    // int mid1 = client.storeFitEvent(fe).modelId;
+     // Now train models on DF4 and DF5.
+     FitEvent fe = DummyFactory.makeFitEvent();
+     fe.setDf(fe.df.setId(df4));
+     int mid1 = client.storeFitEvent(fe).modelId;
 
-    // fe = DummyFactory.makeFitEvent();
-    // fe.setDf(fe.df.setId(df5));
-    // int mid2 = client.storeFitEvent(fe).modelId;
+     fe = DummyFactory.makeFitEvent();
+     fe.setDf(fe.df.setId(df5));
+     int mid2 = client.storeFitEvent(fe).modelId;
 
-    // // Now find the descendent models of DF1.
-    // System.out.println(client
-    //   .modelsDerivedFromDataFrame(df1)
-    //   .stream()
-    //   .map(s -> s.toString())
-    //   .collect(Collectors.joining(", ", "Descendents ", ""))
-    // );
-    // System.out.println("Expected descendents " + mid1 + " and " + mid2);
+     // Now find the descendent models of DF1.
+     System.out.println(client
+       .modelsDerivedFromDataFrame(df1)
+       .stream()
+       .map(s -> s.toString())
+       .collect(Collectors.joining(", ", "Descendents ", ""))
+     );
+     System.out.println("Expected descendents " + mid1 + " and " + mid2);
   }
 
   /**
