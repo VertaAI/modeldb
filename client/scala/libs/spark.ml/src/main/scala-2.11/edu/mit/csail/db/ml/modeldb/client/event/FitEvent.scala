@@ -27,7 +27,6 @@ case class FitEvent(estimator: PipelineStage,
     mdbs.getFeaturesForDf(dataframe).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
     ml.SyncableEstimator.getPredictionCols(estimator),
     ml.SyncableEstimator.getLabelColumns(estimator),
-    mdbs.project.id,
     experimentRunId = mdbs.experimentRun.id,
     problemType = SyncableProblemType(model)
   )

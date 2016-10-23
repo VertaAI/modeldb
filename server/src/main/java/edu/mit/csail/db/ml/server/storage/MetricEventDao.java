@@ -11,8 +11,8 @@ import org.jooq.DSLContext;
 
 public class MetricEventDao {
   public static MetricEventResponse store(MetricEvent me, DSLContext ctx) {
-    DataframeRecord df = DataFrameDao.store(me.df, me.projectId, me.experimentRunId, ctx);
-    TransformerRecord t = TransformerDao.store(me.model, me.projectId, me.experimentRunId, ctx);
+    DataframeRecord df = DataFrameDao.store(me.df, me.experimentRunId, ctx);
+    TransformerRecord t = TransformerDao.store(me.model, me.experimentRunId, ctx);
 
 
     MetriceventRecord meRec = ctx.newRecord(Tables.METRICEVENT);
@@ -21,11 +21,10 @@ public class MetricEventDao {
     meRec.setDf(df.getId());
     meRec.setMetrictype(me.metricType);
     meRec.setMetricvalue(Double.valueOf(me.metricValue).floatValue());
-    meRec.setProject(me.projectId);
     meRec.setExperimentrun(me.experimentRunId);
     meRec.store();
 
-    EventRecord ev = EventDao.store(meRec.getId(), "metric", me.projectId, me.experimentRunId, ctx);
+    EventRecord ev = EventDao.store(meRec.getId(), "metric", me.experimentRunId, ctx);
 
     return new MetricEventResponse(t.getId(), df.getId(), ev.getId(), meRec.getId());
   }

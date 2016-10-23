@@ -1,6 +1,6 @@
 package edu.mit.csail.db.ml.modeldb.sample
 
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewProject}
+import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, SyncableMetrics, NewOrExistingExperiment, DefaultExperiment, NewExperimentRun}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.LogisticRegression
@@ -10,6 +10,7 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.sql.{Row, SparkSession}
 import ModelDbSyncer._
+import org.apache.log4j.{Level, Logger}
 
 /**
   * This Spark program demonstrates the use of Syncables, which are a mechanism for intercepting events and objects of
@@ -27,13 +28,18 @@ import ModelDbSyncer._
 object CrossValidatorSample {
   def main(args: Array[String]) {
     ModelDbSyncer.setSyncer(
-      new ModelDbSyncer(projectConfig = NewProject("cross validation",
+      new ModelDbSyncer(projectConfig = NewOrExistingProject("cross validation",
         "harihar",
         "this example creates a cross validation"
-      ))
+      ),
+      experimentConfig = new DefaultExperiment,
+      experimentRunConfig = new NewExperimentRun)
     )
+    println("here1")
 
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))
+    Logger.getLogger("org").setLevel(Level.OFF);
+    
     val spark = SparkSession
       .builder()
       .appName("Cross Validator Sample")
@@ -73,8 +79,8 @@ object CrossValidatorSample {
     // With 3 values for hashingTF.numFeatures and 2 values for lr.regParam,
     // this grid will have 3 x 2 = 6 parameter settings for CrossValidator to choose from.
     val paramGrid = new ParamGridBuilder()
-      .addGrid(hashingTF.numFeatures, Array(10, 100, 1000))
-      .addGrid(lr.regParam, Array(0.1, 0.01))
+      .addGrid(hashingTF.numFeatures, Array(10))//, 100, 1000))
+      .addGrid(lr.regParam, Array(0.1))//, 0.01))
       .build()
 
     // We now treat the Pipeline as an Estimator, wrapping it in a CrossValidator instance.
@@ -99,7 +105,7 @@ object CrossValidatorSample {
       (7L, "apache hadoop")
     )).toDF("id", "text")
 
-    // Make predictions on test documents. cvModel uses the best model found (lrModel).
+    // // Make predictions on test documents. cvModel uses the best model found (lrModel).
     cvModel.transformSync(test)
       .select("id", "text", "prediction")
       .rdd
@@ -110,5 +116,7 @@ object CrossValidatorSample {
         println(s"($id, $text) --> prediction=$prediction")
       }
     ModelDbSyncer.syncer.get.sync()
+    System.out.println("Finished.")
   }
+
 }

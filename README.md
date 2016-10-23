@@ -5,6 +5,13 @@ ModelDB is an end-to-end system to manage machine learning models.
 ## Setup
 
 ### Configuration
+A Project must be defined in the config. It contains a name and description.
+
+Multiple experiments can de defined in the config and the right one can be selected at the command line using its name.
+If no experiment is specified, a default experiment is used automatically.
+
+EXPT_DIR: the dir that has the experiment code you'd like to version
+GIT_REPO_DIR: the dir where the experiment code will be copied. This is the git repo dir
 
 ## Running ModelDB
 

@@ -66,7 +66,6 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
         ml.SyncableEstimator.getPredictionCols(estimator),
         mdbs.get.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
         folds,
-        mdbs.get.project.id,
         experimentRunId = mdbs.get.experimentRun.id,
         problemType = SyncableProblemType(bestModel)
       )
@@ -83,12 +82,10 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
         predictionColumns = ml.SyncableEstimator.getPredictionCols(bestEstimator),
         featureColumns =
           mdbs.get.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(bestEstimator)),
-        projectId = mdbs.get.project.id,
         experimentRunId = mdbs.get.experimentRun.id,
         problemType = SyncableProblemType(bestModel)
       ),
       crossValidationEvents,
-      projectId = mdbs.get.project.id,
       experimentRunId = mdbs.get.experimentRun.id,
       problemType = SyncableProblemType(bestModel)
     )

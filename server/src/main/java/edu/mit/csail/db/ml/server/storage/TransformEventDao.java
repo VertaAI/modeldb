@@ -16,14 +16,13 @@ public class TransformEventDao {
   public static TransformEventResponse store(TransformEvent te, DSLContext ctx,boolean generateFilepath) {
     // Store the DataFrames and Transformer.
 
-    DataframeRecord oldDf = DataFrameDao.store(te.oldDataFrame, te.projectId, te.experimentRunId, ctx);
-    DataframeRecord newDf = DataFrameDao.store(te.newDataFrame, te.projectId, te.experimentRunId, ctx);
-    TransformerRecord t = TransformerDao.store(te.transformer, te.projectId, te.experimentRunId, ctx, generateFilepath);
+    DataframeRecord oldDf = DataFrameDao.store(te.oldDataFrame, te.experimentRunId, ctx);
+    DataframeRecord newDf = DataFrameDao.store(te.newDataFrame, te.experimentRunId, ctx);
+    TransformerRecord t = TransformerDao.store(te.transformer, te.experimentRunId, ctx, generateFilepath);
 
     // Store the TransformEvent.
     TransformeventRecord teRec = ctx.newRecord(TRANSFORMEVENT);
     teRec.setId(null);
-    teRec.setProject(te.projectId);
     teRec.setExperimentrun(te.experimentRunId);
     teRec.setNewdf(newDf.getId());
     teRec.setOlddf(oldDf.getId());
@@ -51,7 +50,7 @@ public class TransformEventDao {
     teRec.store();
 
     // Store the Event.
-    EventRecord ev = EventDao.store(teRec.getId(), "transform", te.projectId, te.experimentRunId, ctx);
+    EventRecord ev = EventDao.store(teRec.getId(), "transform", te.experimentRunId, ctx);
 
     // Return the TransformEventResponse.
     return new TransformEventResponse(oldDf.getId(), newDf.getId(), t.getId(), ev.getId(), t.getFilepath());
