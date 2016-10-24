@@ -9,8 +9,11 @@ import client.SyncableRandomSplit as SyncableRandomSplit
 import client.SyncableMetrics as SyncableMetrics
 import client.ModelDbSyncer as ModelDbSyncer
 
-
-SyncerObj = ModelDbSyncer.Syncer()
+name = "logistic regression - one hot encoding"
+author = "srinidhi"
+description = "predicting income"
+SyncerObj = ModelDbSyncer.Syncer([name, author, description])
+SyncerObj.startExperiment("logistic regression")
 
 def oneHotEncoding(lb, feature, df):
     if lb == None:
@@ -47,5 +50,5 @@ test = test.drop(["workclass", "sex"], axis=1)
 test_pred = logreg.predictSync(test[features])
 test_proba = logreg.predict_proba(test[features])
 accuracy = metrics.accuracy_score(test.income, test_pred)
-
+SyncerObj.endExperiment()
 ModelDbSyncer.Syncer.instance.sync()

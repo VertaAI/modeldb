@@ -52,7 +52,7 @@ class SyncGridCVEvent:
     #Creates a GridSearchCrossValidationEvent
     def makeGridSearchCVEvent(self, crossValidationEvents):
         syncer = ModelDbSyncer.Syncer.instance
-        fitEvent = SyncableFitEvent.SyncFitEvent(self.bestModel, self.bestEstimator, self.inputDataFrame, syncer.instance.experimentRun.id)
+        fitEvent = SyncableFitEvent.SyncFitEvent(self.bestModel, self.bestEstimator, self.inputDataFrame, self.experimentRunId)
         gscve = GridSearchCrossValidationEvent(self.numFolds, fitEvent.makeFitEvent(), crossValidationEvents, syncer.project.id, self.experimentRunId)
         return gscve
 

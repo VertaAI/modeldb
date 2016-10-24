@@ -15,8 +15,11 @@ import client.SyncableMetrics as SyncableMetrics
 from sklearn.svm import SVC
 
 #This is a sample usage of GridSearch in scikit, adapted from http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_digits.html
-
-SyncerObj = ModelDbSyncer.Syncer()
+name = "grid search"
+author = "srinidhi"
+description = "digits dataset"
+SyncerObj = ModelDbSyncer.Syncer([name, author, description])
+SyncerObj.startExperiment("no pipeline, just grid search")
 
 # Loading the Digits dataset
 digits = datasets.load_digits()
@@ -44,4 +47,5 @@ print("The scores are computed on the full evaluation set.")
 
 SyncableMetrics.computeMetrics(clf, "precision", X_test, "", "",y_test)
 
+SyncerObj.endExperiment()
 ModelDbSyncer.Syncer.instance.sync()

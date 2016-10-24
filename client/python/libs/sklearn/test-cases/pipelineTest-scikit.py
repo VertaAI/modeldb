@@ -19,7 +19,11 @@ from sklearn.pipeline import Pipeline
 
 #This is an extension of a common usage of Pipeline in scikit - adapted from http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline
 
-SyncerObj = ModelDbSyncer.Syncer()
+name = "pipeline scikit example"
+author = "srinidhi"
+description = "anova filter pipeline"
+SyncerObj = ModelDbSyncer.Syncer([name, author, description])
+SyncerObj.startExperiment("basic pipeline")
 
 #import some data to play with
 X, y = samples_generator.make_classification(
@@ -42,4 +46,5 @@ anova_svm.fitSync(X_train,y_train)
 #Compute metrics for the model on the testing set
 SyncableMetrics.computeMetrics(anova_svm, "f1", X_test, "predictionCol", "label_col",y_test)
 SyncableMetrics.computeMetrics(anova_svm, "precision", X_test, "predictionCol", "label_col",y_test)
+SyncerObj.endExperiment()
 ModelDbSyncer.Syncer.instance.sync()

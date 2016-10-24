@@ -20,6 +20,7 @@ class SyncPipelineEvent:
 
     #Creates a pipeline event, using the captured transform and fit stages
     def makePipelineEvent(self):
+        syncer = ModelDbSyncer.Syncer.instance
         pipelineFirstFitEvent = self.firstPipelineEvent.makeFitEvent()
         transformEventStages = []
         fitEventStages = []

@@ -15,8 +15,11 @@ from sklearn.pipeline import Pipeline
 from sklearn import datasets, linear_model, cross_validation, grid_search
 
 #Uses GridSearch and Pipeline objects in scikit, adapted from http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_text_feature_extraction.html
-
-SyncerObj = ModelDbSyncer.Syncer()
+name = "grid search cross validation"
+author = "srinidhi"
+description = "digits dataset"
+SyncerObj = ModelDbSyncer.Syncer([name, author, description])
+SyncerObj.startExperiment("two stage pipeline")
 
 digits = datasets.load_digits()
 x = digits.data[:1000]
@@ -38,4 +41,5 @@ clf = GridSearchCV(pipeline, parameters, cv=None,
                        scoring='%s_weighted' % 'precision')
 
 clf.fitSync(x,y)
+SyncerObj.endExperiment()
 ModelDbSyncer.Syncer.instance.sync()
