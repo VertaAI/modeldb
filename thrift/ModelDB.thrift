@@ -365,8 +365,8 @@ exception IllegalOperationException {
 }
 
 service ModelDBService {
-  // This is just a test method to test connection to the server
-  i32 testConnection(), // 0 if success, -1 failure
+  // This is just a method to test connection to the server. It returns 200.
+  i32 testConnection(), 
 
   string pathForTransformer(1: i32 transformerId) throws (1: ResourceNotFoundException rnfEx, 2: EmptyFieldException efEx),
 
