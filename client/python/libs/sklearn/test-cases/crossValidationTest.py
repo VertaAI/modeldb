@@ -5,7 +5,9 @@ sys.path.append('../')
 sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing
 from sklearn import linear_model
-import client.ModelDbSyncer as ModelDbSyncer
+
+from client.ModelDbSyncer import *
+
 import client.SyncableGridSearchCV as SyncableGridSearchCV
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -18,8 +20,10 @@ from sklearn import datasets, linear_model, cross_validation, grid_search
 name = "grid search cross validation"
 author = "srinidhi"
 description = "digits dataset"
-SyncerObj = ModelDbSyncer.Syncer([name, author, description])
-SyncerObj.startExperiment("two stage pipeline")
+SyncerObj = Syncer(
+    NewOrExistingProject(name, author, description),
+    DefaultExperiment(),
+    NewExperimentRun("Abc"))
 
 digits = datasets.load_digits()
 x = digits.data[:1000]
@@ -41,5 +45,4 @@ clf = GridSearchCV(pipeline, parameters, cv=None,
                        scoring='%s_weighted' % 'precision')
 
 clf.fitSync(x,y)
-SyncerObj.endExperiment()
-ModelDbSyncer.Syncer.instance.sync()
+Syncer.instance.sync()

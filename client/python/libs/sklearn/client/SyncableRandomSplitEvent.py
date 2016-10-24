@@ -22,7 +22,7 @@ class SyncRandomSplitEvent:
         allSyncableFrames = []
         for dataFrame in self.result:
             allSyncableFrames.append(syncer.convertDftoThrift(dataFrame))
-        re = RandomSplitEvent(self.syncableDataFrame, self.weights, self.seed, allSyncableFrames, syncer.project.id, self.experimentRunId)
+        re = RandomSplitEvent(self.syncableDataFrame, self.weights, self.seed, allSyncableFrames, self.experimentRunId)
         return re
 
     def associate(self,res):

@@ -6,7 +6,10 @@ sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing
 from sklearn import linear_model
 
-import client.ModelDbSyncer as ModelDbSyncer
+from client.ModelDbSyncer import NewOrExistingProject
+from client.ModelDbSyncer import DefaultExperiment
+from client.ModelDbSyncer import NewExperimentRun
+from client.ModelDbSyncer import Syncer
 import client.SyncablePipelineEvent as SyncablePipelineEvent
 import client.SyncableMetrics as SyncableMetrics
 import client.SyncableRandomSplit as SyncableRandomSplit
@@ -22,8 +25,11 @@ from sklearn.pipeline import Pipeline
 name = "pipeline scikit example"
 author = "srinidhi"
 description = "anova filter pipeline"
-SyncerObj = ModelDbSyncer.Syncer([name, author, description])
-SyncerObj.startExperiment("basic pipeline")
+# SyncerObj.startExperiment("basic pipeline")
+SyncerObj = Syncer(
+    NewOrExistingProject(name, author, description),
+    DefaultExperiment(),
+    NewExperimentRun("Abc"))
 
 #import some data to play with
 X, y = samples_generator.make_classification(
@@ -46,5 +52,4 @@ anova_svm.fitSync(X_train,y_train)
 #Compute metrics for the model on the testing set
 SyncableMetrics.computeMetrics(anova_svm, "f1", X_test, "predictionCol", "label_col",y_test)
 SyncableMetrics.computeMetrics(anova_svm, "precision", X_test, "predictionCol", "label_col",y_test)
-SyncerObj.endExperiment()
-ModelDbSyncer.Syncer.instance.sync()
+Syncer.instance.sync()

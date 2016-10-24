@@ -7,19 +7,15 @@ sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
 from modeldb.ttypes import *
 
-class SyncProjectEvent:
-    def __init__(self, project):
-        self.project = project
+class SyncExperimentEvent:
+    def __init__(self, experiment):
+        self.experiment = experiment
 
     def sync(self):
         syncer = ModelDbSyncer.Syncer.instance
-        print "syncer"
-        print ModelDbSyncer.Syncer.instance
 
         #Invoking thrift client
         thriftClient = syncer.client
-        res = thriftClient.storeProjectEvent(ProjectEvent(self.project))
+        res = thriftClient.storeExperimentEvent(ExperimentEvent(self.experiment))
         print(res)
-        syncer.project.id = res.projectId
-        print(syncer.project)
-        
+        syncer.experiment.id = res.experimentId

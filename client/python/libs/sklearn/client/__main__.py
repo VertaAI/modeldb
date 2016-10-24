@@ -5,7 +5,13 @@ import statsmodels.api as sm
 from sklearn import linear_model
 from sklearn import preprocessing
 
-import client.ModelDbSyncer as ModelDbSyncer
+# import client.NewOrExistingProject as NewOrExistingProject
+# import client.DefaultExperiment as DefaultExperiment
+# import client.NewExperimentRun as NewExperimentRun
+
+from client.ModelDbSyncer import *
+
+# import client.ModelDbSyncer as ModelDbSyncer
 import client.SyncableMetrics as SyncableMetrics
 import client.SyncableRandomSplit as SyncableRandomSplit
 
@@ -33,8 +39,11 @@ def loadPandasDataset():
 name = "test1"
 author = "srinidhi"
 description = "pandas-logistic-regression"
-SyncerObj = ModelDbSyncer.Syncer([name, author, description])
-SyncerObj.startExperiment("First experiment - Logistic Regression")
+SyncerObj = Syncer(
+    NewOrExistingProject(name, author, description),
+    DefaultExperiment(),
+    NewExperimentRun("Abc"))
+
 #Create a sample logistic regression model, and test fit/predict
 model = linear_model.LogisticRegression()
 X,y = loadPandasDataset()
@@ -43,9 +52,6 @@ X.tag("occupation dataset")
 model.fitSync(X,y)
 model.predictSync(X)
 model.tag("Logistic Regression model")
-SyncerObj.endExperiment()
-
-SyncerObj.startExperiment("Second experiment - preprocessing")
 
 #Test OneHotEncoder with transform method
 model2 = preprocessing.OneHotEncoder()
@@ -58,7 +64,6 @@ SyncableMetrics.computeMetrics(model, 'recall', X, 'children', 'religious', X['r
 
 #Test Random-Split Event
 SyncableRandomSplit.randomSplit(X, [1,2,3], 1234)
-SyncerObj.endExperiment()
 
 #Sync all the events to database
-ModelDbSyncer.Syncer.instance.sync()
+Syncer.instance.sync()

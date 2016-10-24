@@ -37,7 +37,7 @@ class SyncGridCVEvent:
         syncableEstimator = syncer.convertSpectoThrift(estimator,self.inputDataFrame)
         # TODO: Need to add meaningful label/feature/prediction column names
         return CrossValidationEvent(syncableDataFrame, syncableEstimator, self.seed, self.evaluator,
-                                            [""], [""], [""], crossValidationFolds, syncer.project.id, self.experimentRunId)
+                                            [""], [""], [""], crossValidationFolds, self.experimentRunId)
 
     #Returns a list of CrossValidationEvents, used for creating GridSearchCrossValidationEvent.
     def makeCrossValidationEvents(self):

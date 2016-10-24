@@ -3,12 +3,11 @@ import numpy as np
 import pandas as pd
 import ModelDbSyncer
 import sys
-import SyncableFitEvent
-import SyncableTransformEvent
-import ModelDbSyncer
 sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
 from modeldb.ttypes import *
+import SyncableFitEvent
+import SyncableTransformEvent
 
 #This class creates and stores a pipeline event in the database.
 class SyncPipelineEvent:
@@ -20,7 +19,6 @@ class SyncPipelineEvent:
 
     #Creates a pipeline event, using the captured transform and fit stages
     def makePipelineEvent(self):
-        syncer = ModelDbSyncer.Syncer.instance
         pipelineFirstFitEvent = self.firstPipelineEvent.makeFitEvent()
         transformEventStages = []
         fitEventStages = []
@@ -28,7 +26,7 @@ class SyncPipelineEvent:
             transformEventStages.append(PipelineTransformStage(index, transformEvent.makeTransformEvent()))
         for index, fitEvent in self.fitStages:
             fitEventStages.append(PipelineFitStage(index, fitEvent.makeFitEvent()))
-        pe = PipelineEvent(pipelineFirstFitEvent, transformEventStages, fitEventStages, syncer.project.id, self.experimentRunId)
+        pe = PipelineEvent(pipelineFirstFitEvent, transformEventStages, fitEventStages, self.experimentRunId)
         return pe
 
     #Stores each of the individual fit/transform events

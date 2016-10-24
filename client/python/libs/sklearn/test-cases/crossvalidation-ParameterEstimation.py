@@ -5,7 +5,9 @@ sys.path.append('../')
 sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing
 from sklearn import linear_model
-import client.ModelDbSyncer as ModelDbSyncer
+
+from client.ModelDbSyncer import *
+
 import client.SyncableGridSearchCV as SyncableGridSearchCV
 from sklearn import datasets
 from sklearn.cross_validation import train_test_split
@@ -18,8 +20,10 @@ from sklearn.svm import SVC
 name = "grid search"
 author = "srinidhi"
 description = "digits dataset"
-SyncerObj = ModelDbSyncer.Syncer([name, author, description])
-SyncerObj.startExperiment("no pipeline, just grid search")
+SyncerObj = Syncer(
+    NewOrExistingProject(name, author, description),
+    DefaultExperiment(),
+    NewExperimentRun("Abc"))
 
 # Loading the Digits dataset
 digits = datasets.load_digits()
@@ -47,5 +51,4 @@ print("The scores are computed on the full evaluation set.")
 
 SyncableMetrics.computeMetrics(clf, "precision", X_test, "", "",y_test)
 
-SyncerObj.endExperiment()
-ModelDbSyncer.Syncer.instance.sync()
+Syncer.instance.sync()
