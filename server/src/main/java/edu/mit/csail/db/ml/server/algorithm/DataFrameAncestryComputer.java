@@ -10,7 +10,6 @@ import org.jooq.DSLContext;
 import org.jooq.Record1;
 
 import java.util.*;
-import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -142,55 +141,66 @@ public class DataFrameAncestryComputer {
   }
 
   public static List<Integer> descendentModels(int dfId, DSLContext ctx) {
-    // First find the given DF and its project ID.
-    Record1<Integer> rec = ctx.select(Tables.DATAFRAME.PROJECT)
-      .from(Tables.DATAFRAME)
-      .where(Tables.DATAFRAME.ID.eq(dfId))
-      .fetchOne();
-    if (rec == null) {
-      return Collections.emptyList();
-    }
-    int projId = rec.value1();
+     // First find the given DF and its project ID.
+     Record1<Integer> rec = ctx.select(Tables.EXPERIMENT_RUN_VIEW.PROJECTID)
+       .from(
+         Tables.DATAFRAME.join(Tables.EXPERIMENT_RUN_VIEW)
+           .on(Tables.DATAFRAME.EXPERIMENTRUN.eq(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID))
+       )
+       .where(Tables.DATAFRAME.ID.eq(dfId))
+       .fetchOne();
+     if (rec == null) {
+       return Collections.emptyList();
+     }
+     int projId = rec.value1();
 
-    // We will create a map from DataFrame ID to a set of IDs of descendent DataFrames.
-    // We do this by examining all the TransformEvents in the project.
-    Map<Integer, Set<Integer>> childrenForDfId = new HashMap<>();
-    ctx
-      .select(Tables.TRANSFORMEVENT.OLDDF, Tables.TRANSFORMEVENT.NEWDF)
-      .from(Tables.TRANSFORMEVENT)
-      .where(Tables.TRANSFORMEVENT.PROJECT.eq(projId))
-      .forEach(record -> {
-        if (!childrenForDfId.containsKey(record.value1())) {
-          childrenForDfId.put(record.value1(), new HashSet<>());
-        }
-        if (!childrenForDfId.containsKey(record.value2())) {
-          childrenForDfId.put(record.value2(), new HashSet<>());
-        }
-        childrenForDfId.get(record.value1()).add(record.value2());
-      });
+     // We will create a map from DataFrame ID to a set of IDs of descendent DataFrames.
+     // We do this by examining all the TransformEvents in the project.
+     Map<Integer, Set<Integer>> childrenForDfId = new HashMap<>();
+     ctx
+       .select(Tables.TRANSFORMEVENT.OLDDF, Tables.TRANSFORMEVENT.NEWDF)
+       .from(
+         Tables.TRANSFORMEVENT.join(Tables.EXPERIMENT_RUN_VIEW)
+         .on(Tables.TRANSFORMEVENT.EXPERIMENTRUN.eq(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID))
+       )
+       .where(
+         Tables.EXPERIMENT_RUN_VIEW.PROJECTID.eq(projId)
+       )
+       .forEach(record -> {
+         if (!childrenForDfId.containsKey(record.value1())) {
+           childrenForDfId.put(record.value1(), new HashSet<>());
+         }
+         if (!childrenForDfId.containsKey(record.value2())) {
+           childrenForDfId.put(record.value2(), new HashSet<>());
+         }
+         childrenForDfId.get(record.value1()).add(record.value2());
+       });
 
-    // Now we'll create a set of DataFrames descended from dfId.
-    Set<Integer> descendentIds = new HashSet<>();
-    Queue<Integer> toProcess = new LinkedList<>();
-    toProcess.add(dfId);
+     // Now we'll create a set of DataFrames descended from dfId.
+     Set<Integer> descendentIds = new HashSet<>();
+     Queue<Integer> toProcess = new LinkedList<>();
+     toProcess.add(dfId);
 
-    Integer processMe;
-    while (!toProcess.isEmpty()) {
-      processMe = toProcess.remove();
-      if (childrenForDfId.containsKey(processMe)) {
-        descendentIds.add(processMe);
-        toProcess.addAll(childrenForDfId.get(processMe).stream().collect(Collectors.toList()));
-      }
-    }
+     Integer processMe;
+     while (!toProcess.isEmpty()) {
+       processMe = toProcess.remove();
+       if (childrenForDfId.containsKey(processMe)) {
+         descendentIds.add(processMe);
+         toProcess.addAll(childrenForDfId.get(processMe).stream().collect(Collectors.toList()));
+       }
+     }
 
-    // Now we scan the FitEvents in the project and get all the model IDs for models that
-    // were trained on one of the descendents of dfId.
-    return ctx
-      .select(Tables.FITEVENT.TRANSFORMER)
-      .from(Tables.FITEVENT)
-      .where(Tables.FITEVENT.PROJECT.eq(projId).and(Tables.FITEVENT.DF.in(descendentIds)))
-      .stream()
-      .map(Record1::value1)
-      .collect(Collectors.toList());
+     // Now we scan the FitEvents in the project and get all the model IDs for models that
+     // were trained on one of the descendents of dfId.
+     return ctx
+       .select(Tables.FITEVENT.TRANSFORMER)
+       .from(
+         Tables.FITEVENT.join(Tables.EXPERIMENT_RUN_VIEW)
+         .on(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID.eq(Tables.FITEVENT.EXPERIMENTRUN))
+       )
+       .where(Tables.EXPERIMENT_RUN_VIEW.PROJECTID.eq(projId).and(Tables.FITEVENT.DF.in(descendentIds)))
+       .stream()
+       .map(Record1::value1)
+       .collect(Collectors.toList());
   }
 }

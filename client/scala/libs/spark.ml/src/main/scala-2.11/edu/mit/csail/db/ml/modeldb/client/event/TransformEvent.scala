@@ -24,7 +24,6 @@ case class TransformEvent(transformer: Transformer,
     SyncableTransformer(transformer),
     ml.SyncableEstimator.getInputCols(transformer),
     ml.SyncableEstimator.getOutputCols(transformer),
-    projectId = mdbs.project.id,
     experimentRunId = mdbs.experimentRun.id
   )
 

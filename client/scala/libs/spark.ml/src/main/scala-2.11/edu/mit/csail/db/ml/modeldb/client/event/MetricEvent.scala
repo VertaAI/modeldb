@@ -31,7 +31,6 @@ case class MetricEvent(dataframe: DataFrame,
         metricValue,
         labelCol,
         predictionCol,
-        mdbs.get.project.id,
         experimentRunId = mdbs.get.experimentRun.id
       )
     ))

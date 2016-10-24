@@ -1,6 +1,6 @@
 package edu.mit.csail.db.ml.modeldb.sample
 
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewProject}
+import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, SyncableMetrics, DefaultExperiment, NewExperimentRun}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.feature.Tokenizer
 import org.apache.spark.sql.SparkSession
@@ -20,10 +20,12 @@ import ModelDbSyncer._
 object RWTransformerSample {
   def main(args: Array[String]): Unit = {
     ModelDbSyncer.setSyncer(
-      new ModelDbSyncer(projectConfig = NewProject("read/write transformer",
+      new ModelDbSyncer(projectConfig = NewOrExistingProject("read/write transformer",
         "harihar",
         "this example writes a transformer and reads it from modeldb"
-      ))
+      ),
+      experimentConfig = new DefaultExperiment,
+      experimentRunConfig = new NewExperimentRun)
     )
 
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))

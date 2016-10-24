@@ -19,14 +19,13 @@ public class FitEventDao {
 
   public static FitEventResponse store(FitEvent fe, DSLContext ctx, boolean isPipeline) {
     // Store DataFrame, Transformer, and TransformerSpec.
-    DataframeRecord df = DataFrameDao.store(fe.df, fe.projectId, fe.experimentRunId, ctx);
-    TransformerRecord t = TransformerDao.store(fe.model, fe.projectId, fe.experimentRunId, ctx);
-    TransformerspecRecord s = TransformerSpecDao.store(fe.spec, fe.projectId, fe.experimentRunId, ctx);
+    DataframeRecord df = DataFrameDao.store(fe.df, fe.experimentRunId, ctx);
+    TransformerRecord t = TransformerDao.store(fe.model, fe.experimentRunId, ctx);
+    TransformerspecRecord s = TransformerSpecDao.store(fe.spec, fe.experimentRunId, ctx);
 
     // Store the FitEvent.
     FiteventRecord feRec = ctx.newRecord(Tables.FITEVENT);
     feRec.setId(null);
-    feRec.setProject(fe.projectId);
     feRec.setExperimentrun(fe.experimentRunId);
     feRec.setDf(df.getId());
     feRec.setTransformer(t.getId());
@@ -63,7 +62,7 @@ public class FitEventDao {
     feRec.store();
 
     // Store Event.
-    EventRecord ev = EventDao.store(feRec.getId(), isPipeline ? "pipeline fit " : "fit", fe.projectId, fe.experimentRunId, ctx);
+    EventRecord ev = EventDao.store(feRec.getId(), isPipeline ? "pipeline fit " : "fit", fe.experimentRunId, ctx);
 
     // Store features.
     IntStream.range(0, fe.featureColumns.size()).forEach(i -> {

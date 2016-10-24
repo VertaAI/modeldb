@@ -2,7 +2,7 @@ package edu.mit.csail.db.ml.modeldb.sample
 
 // Import the implicit classes for ModelDb.
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewProject, SyncableMetrics}
+import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, SyncableMetrics, DefaultExperiment, NewExperimentRun}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.{DecisionTreeClassifier, LogisticRegression, RandomForestClassifier}
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
@@ -35,12 +35,15 @@ case class  Person(age: Integer, workclass: String, fnlwgt: Integer, education: 
 object CompareModelsSample {
   def main(args: Array[String]): Unit = {
     ModelDbSyncer.setSyncer(
-      new ModelDbSyncer(projectConfig = NewProject(
+      new ModelDbSyncer(projectConfig = NewOrExistingProject(
         "compare models",
         "harihar",
         "we use the UCI Adult Census dataset to compare random forests, "
           + "decision trees, and logistic regression"
-      ))
+      ),
+      experimentConfig = new DefaultExperiment,
+      experimentRunConfig = new NewExperimentRun
+      )
     )
 
     // Read the positional argument (i.e. the path to the data file).

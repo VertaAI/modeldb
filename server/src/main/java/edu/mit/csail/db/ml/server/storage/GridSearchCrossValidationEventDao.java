@@ -18,17 +18,16 @@ import java.util.stream.IntStream;
 public class GridSearchCrossValidationEventDao {
   public static GridSearchCrossValidationEventResponse store(GridSearchCrossValidationEvent gscve, DSLContext ctx) {
     gscve.bestFit.setExperimentRunId(gscve.experimentRunId);
-    FitEventResponse fer = FitEventDao.store(gscve.bestFit.setProjectId(gscve.projectId).setProblemType(gscve.problemType), ctx);
+    FitEventResponse fer = FitEventDao.store(gscve.bestFit.setProblemType(gscve.problemType), ctx);
 
     GridsearchcrossvalidationeventRecord gscveRec = ctx.newRecord(Tables.GRIDSEARCHCROSSVALIDATIONEVENT);
     gscveRec.setId(null);
     gscveRec.setNumfolds(gscve.numFolds);
     gscveRec.setBest(fer.fitEventId);
-    gscveRec.setProject(gscve.projectId);
     gscveRec.setExperimentrun(gscve.experimentRunId);
     gscveRec.store();
 
-    EventRecord ev = EventDao.store(gscveRec.getId(), "cross validation grid search", gscve.projectId, gscve.experimentRunId, ctx);
+    EventRecord ev = EventDao.store(gscveRec.getId(), "cross validation grid search", gscve.experimentRunId, ctx);
 
     gscve.crossValidations.forEach(cve -> cve.setDf(cve.df.setId(fer.dfId)));
 
@@ -37,7 +36,7 @@ public class GridSearchCrossValidationEventDao {
       .get(0)
       .folds
       .stream()
-      .map(fold -> DataFrameDao.store(fold.validationDf, gscve.projectId, gscve.experimentRunId, ctx))
+      .map(fold -> DataFrameDao.store(fold.validationDf, gscve.experimentRunId, ctx))
       .collect(Collectors.toList());
 
     List<DataframeRecord> trainingDfs = gscve
@@ -45,7 +44,7 @@ public class GridSearchCrossValidationEventDao {
       .get(0)
       .folds
       .stream()
-      .map(fold -> DataFrameDao.store(fold.trainingDf, gscve.projectId, gscve.experimentRunId, ctx))
+      .map(fold -> DataFrameDao.store(fold.trainingDf, gscve.experimentRunId, ctx))
       .collect(Collectors.toList());
 
     List<CrossValidationEventResponse> cveResponses = gscve
@@ -69,7 +68,6 @@ public class GridSearchCrossValidationEventDao {
         rec.setId(null);
         rec.setGridsearch(gscveRec.getId());
         rec.setCrossvalidation(cver.getCrossValidationEventId());
-        rec.setProject(gscve.projectId);
         rec.setExperimentrun(gscve.experimentRunId);
         rec.store();
         rec.getId();

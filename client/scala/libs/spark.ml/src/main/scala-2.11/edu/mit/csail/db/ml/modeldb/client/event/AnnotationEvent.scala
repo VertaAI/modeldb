@@ -46,7 +46,6 @@ case class AnnotationEvent(items: Any*) extends ModelDbEvent {
 
     val res = Await.result(client.storeAnnotationEvent(modeldb.AnnotationEvent(
       fragments,
-      mdbs.get.project.id,
       experimentRunId = mdbs.get.experimentRun.id
     )))
 

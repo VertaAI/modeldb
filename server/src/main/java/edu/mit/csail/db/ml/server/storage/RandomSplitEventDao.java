@@ -15,23 +15,22 @@ import java.util.stream.IntStream;
 
 public class RandomSplitEventDao {
   public static RandomSplitEventResponse store(RandomSplitEvent rse, DSLContext ctx) {
-    DataframeRecord oldDf = DataFrameDao.store(rse.oldDataFrame, rse.projectId, rse.experimentRunId, ctx);
+    DataframeRecord oldDf = DataFrameDao.store(rse.oldDataFrame, rse.experimentRunId, ctx);
 
 
     RandomspliteventRecord rseRec = ctx.newRecord(Tables.RANDOMSPLITEVENT);
     rseRec.setId(null);
     rseRec.setInputdataframeid(oldDf.getId());
     rseRec.setRandomseed(rse.seed);
-    rseRec.setProject(rse.projectId);
     rseRec.setExperimentrun(rse.experimentRunId);
     rseRec.store();
 
-    EventRecord ev = EventDao.store(rseRec.getId(), "random split", rse.projectId, rse.experimentRunId, ctx);
+    EventRecord ev = EventDao.store(rseRec.getId(), "random split", rse.experimentRunId, ctx);
 
     List<DataframeRecord> splitDfs = rse
       .splitDataFrames
       .stream()
-      .map(df -> DataFrameDao.store(df, rse.projectId, rse.experimentRunId, ctx))
+      .map(df -> DataFrameDao.store(df, rse.experimentRunId, ctx))
       .collect(Collectors.toList());
 
     List<Integer> splitIds = IntStream
@@ -42,7 +41,6 @@ public class RandomSplitEventDao {
         splRec.setSpliteventid(rseRec.getId());
         splRec.setWeight(rse.weights.get(ind).floatValue());
         splRec.setDataframeid(splitDfs.get(ind).getId());
-        splRec.setProject(rse.projectId);
         splRec.setExperimentrun(rse.experimentRunId);
         splRec.store();
         return splRec.getId();

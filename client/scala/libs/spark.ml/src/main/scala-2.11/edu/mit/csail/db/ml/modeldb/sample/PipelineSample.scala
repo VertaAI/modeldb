@@ -14,7 +14,7 @@ package edu.mit.csail.db.ml.modeldb.sample
   *   <path_to_spark_installation>/data/mllib/sample_libsvm_data.txt
   */
 
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewProject, SyncableMetrics}
+import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, SyncableMetrics, DefaultExperiment, NewExperimentRun}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
@@ -26,10 +26,12 @@ object PipelineSample {
   def main(args: Array[String]): Unit = {
     // Set up the syncer.
     ModelDbSyncer.setSyncer(
-      new ModelDbSyncer(projectConfig = NewProject("pipeline",
+      new ModelDbSyncer(projectConfig = NewOrExistingProject("pipeline",
         "harihar",
         "this example creates and runs a pipeline"
-      ))
+      ),
+      experimentConfig = new DefaultExperiment,
+      experimentRunConfig = new NewExperimentRun)
     )
 
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))

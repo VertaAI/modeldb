@@ -13,7 +13,6 @@ public class PipelineEventDao {
   private static int storePipelineStage(int pipelineFitEventId,
                                          int stageId,
                                          int stageNumber,
-                                         int projId,
                                          int experimentId,
                                          DSLContext ctx) {
     PipelinestageRecord rec = ctx.newRecord(Tables.PIPELINESTAGE);
@@ -21,14 +20,13 @@ public class PipelineEventDao {
     rec.setPipelinefitevent(pipelineFitEventId);
     rec.setTransformorfitevent(stageId);
     rec.setStagenumber(stageNumber);
-    rec.setProject(projId);
     rec.setExperimentrun(experimentId);
     rec.store();
     return rec.getId();
   }
   public static PipelineEventResponse store(PipelineEvent pe, DSLContext ctx) {
     pe.pipelineFit.setExperimentRunId(pe.experimentRunId);
-    FitEventResponse fe = FitEventDao.store(pe.pipelineFit.setProjectId(pe.projectId), ctx, true);
+    FitEventResponse fe = FitEventDao.store(pe.pipelineFit, ctx, true);
 
     for (PipelineTransformStage pipelineTransform : pe.transformStages) {
       pipelineTransform.te.setExperimentRunId(pe.experimentRunId);
@@ -40,12 +38,12 @@ public class PipelineEventDao {
     List<TransformEventResponse> tes = pe
       .transformStages
       .stream()
-      .map(ts -> TransformEventDao.store(ts.te.setProjectId(pe.projectId), ctx))
+      .map(ts -> TransformEventDao.store(ts.te.setExperimentRunId(pe.experimentRunId), ctx))
       .collect(Collectors.toList());
     List<FitEventResponse> fes = pe
       .fitStages
       .stream()
-      .map(fs -> FitEventDao.store(fs.fe.setProjectId(pe.projectId), ctx))
+      .map(fs -> FitEventDao.store(fs.fe.setExperimentRunId(pe.experimentRunId), ctx))
       .collect(Collectors.toList());
 
     IntStream.range(0, pe.transformStages.size())
@@ -53,7 +51,6 @@ public class PipelineEventDao {
         fe.getFitEventId(),
         tes.get(ind).getEventId(),
         pe.transformStages.get(ind).stageNumber,
-        pe.projectId,
         pe.experimentRunId,
         ctx
       ));
@@ -63,7 +60,6 @@ public class PipelineEventDao {
           fe.getFitEventId(),
           fes.get(ind).getEventId(),
           pe.fitStages.get(ind).stageNumber,
-          pe.projectId,
           pe.experimentRunId,
           ctx
         );

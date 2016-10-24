@@ -10,7 +10,7 @@ import static jooq.sqlite.gen.Tables.DATAFRAME;
 import static jooq.sqlite.gen.Tables.DATAFRAMECOLUMN;
 
 public class DataFrameDao {
-  public static DataframeRecord store(DataFrame df, int projId, int experimentId, DSLContext ctx) {
+  public static DataframeRecord store(DataFrame df, int experimentId, DSLContext ctx) {
     DataframeRecord rec = ctx.selectFrom(Tables.DATAFRAME).where(Tables.DATAFRAME.ID.eq(df.id)).fetchOne();
     if (rec != null) {
       return rec;
@@ -19,7 +19,6 @@ public class DataFrameDao {
     final DataframeRecord dfRec = ctx.newRecord(DATAFRAME);
     dfRec.setId(null);
     dfRec.setNumrows(df.numRows);
-    dfRec.setProject(projId);
     dfRec.setExperimentrun(experimentId);
     dfRec.setTag(df.tag);
     dfRec.store();
