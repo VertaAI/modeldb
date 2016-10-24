@@ -3,6 +3,8 @@ package edu.mit.csail.db.ml.server.storage;
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.TransformerRecord;
+import modeldb.EmptyFieldException;
+import modeldb.ResourceNotFoundException;
 import modeldb.Transformer;
 import org.jooq.DSLContext;
 
@@ -14,9 +16,19 @@ import static jooq.sqlite.gen.Tables.TRANSFORMER;
 
 public class TransformerDao {
 
-  public static String path(int id, DSLContext ctx) {
+  public static String path(int id, DSLContext ctx) throws ResourceNotFoundException, EmptyFieldException {
     TransformerRecord rec = ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(id)).fetchOne();
-    return (rec == null) ? "" : rec.getFilepath();
+    if (rec == null) {
+      throw new ResourceNotFoundException(
+        String.format("Could not find path to model file of Transformer with id %d", id)
+      );
+    }
+    if (rec.getFilepath() == null || rec.getFilepath().equals(""))  {
+      throw new EmptyFieldException(
+        String.format("The Transformer with id %d does not have a model file", id)
+      );
+    }
+    return rec.getFilepath();
   }
 
   private static String generateFilepath() {

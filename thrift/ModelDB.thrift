@@ -339,12 +339,19 @@ struct ConfidenceInterval {
   3: double high
 }
 
+exception ResourceNotFoundException {
+  1: string message
+}
+
+exception EmptyFieldException {
+  1: string message
+}
 
 service ModelDBService {
   // This is just a test method to test connection to the server
   i32 testConnection(), // 0 if success, -1 failure
 
-  string pathForTransformer(1: i32 transformerId),
+  string pathForTransformer(1: i32 transformerId) throws (1: ResourceNotFoundException rnfEx, 2: EmptyFieldException efEx),
 
   FitEventResponse storeFitEvent(1:FitEvent fe),
 

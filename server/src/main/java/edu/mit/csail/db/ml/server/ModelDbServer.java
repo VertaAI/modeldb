@@ -152,12 +152,12 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public String pathForTransformer(int transformerId) throws TException {
+  public String pathForTransformer(int transformerId) throws ResourceNotFoundException, EmptyFieldException {
     try {
       return TransformerDao.path(transformerId, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null; 
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      throw ex;
     }
   }
 
