@@ -345,7 +345,7 @@ exception ResourceNotFoundException {
 // Thrown when field of a structure is empty or incorrect.
 // For example, if you try to get the path for a Transformer, but the server
 // finds that the path is empty, then this exception gets thrown.
-exception EmptyFieldException {
+exception InvalidFieldException {
   1: string message
 }
 
@@ -368,7 +368,7 @@ service ModelDBService {
   // This is just a method to test connection to the server. It returns 200.
   i32 testConnection(), 
 
-  string pathForTransformer(1: i32 transformerId) throws (1: ResourceNotFoundException rnfEx, 2: EmptyFieldException efEx),
+  string pathForTransformer(1: i32 transformerId) throws (1: ResourceNotFoundException rnfEx, 2: InvalidFieldException efEx),
 
   FitEventResponse storeFitEvent(1:FitEvent fe),
 
