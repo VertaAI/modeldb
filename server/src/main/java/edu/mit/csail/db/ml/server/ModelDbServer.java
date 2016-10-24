@@ -197,7 +197,7 @@ public class ModelDbServer implements ModelDBService.Iface {
       return FitEventDao.getNumRowsForModels(modelIds, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<Integer>();
+      return new ArrayList<>();
     }
   }
 
@@ -224,7 +224,7 @@ public class ModelDbServer implements ModelDBService.Iface {
       return ProblemTypeGrouper.groupByProblemType(modelIds, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new HashMap<ProblemType, List<Integer>>();
+      return new HashMap<>();
     }
   }
 
@@ -254,7 +254,7 @@ public class ModelDbServer implements ModelDBService.Iface {
       return LinearModelAlgorithms.featureImportances(model1Id, model2Id, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<FeatureImportanceComparison>();
+      return new ArrayList<>();
     }
   }
 
@@ -263,7 +263,7 @@ public class ModelDbServer implements ModelDBService.Iface {
       return LinearModelAlgorithms.iterationsUntilConvergence(modelIds, tolerance, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<Integer>();
+      return new ArrayList<>();
     }
   }
 
@@ -272,7 +272,7 @@ public class ModelDbServer implements ModelDBService.Iface {
       return LinearModelAlgorithms.rankModels(modelIds, metric, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<Integer>();
+      return new ArrayList<>();
     }
   }
 
@@ -281,7 +281,7 @@ public class ModelDbServer implements ModelDBService.Iface {
       return LinearModelAlgorithms.confidenceIntervals(modelId, significanceLevel, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<ConfidenceInterval>();
+      return new ArrayList<>();
     }
   }
 
@@ -290,7 +290,7 @@ public class ModelDbServer implements ModelDBService.Iface {
       return Feature.modelsWithFeatures(featureNames, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<Integer>();
+      return new ArrayList<>();
     }
   }
 
@@ -299,7 +299,7 @@ public class ModelDbServer implements ModelDBService.Iface {
       return DataFrameAncestryComputer.descendentModels(dfId, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<Integer>();
+      return new ArrayList<>();
     }
   }
 }
