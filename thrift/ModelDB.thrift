@@ -378,7 +378,7 @@ service ModelDBService {
   // Associate LinearModel metadata with an already stored model
   // (i.e. Transformer) with the given id. Returns a boolean indicating
   // whether the metadata was correctly stored.
-  bool storeLinearModel(1: i32 modelId, 2: LinearModel model),
+  bool storeLinearModel(1: i32 modelId, 2: LinearModel model) throws (1: ResourceNotFoundException rnfEx),
 
   DataFrameAncestry getDataFrameAncestry(1: i32 dataFrameId),
 

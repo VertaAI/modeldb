@@ -7,6 +7,7 @@ import jooq.sqlite.gen.tables.records.LinearmodeltermRecord;
 import jooq.sqlite.gen.tables.records.ModelobjectivehistoryRecord;
 import modeldb.LinearModel;
 import modeldb.LinearModelTerm;
+import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
 
 import java.util.List;
@@ -34,14 +35,16 @@ public class LinearModelDao {
     return termRec;
   }
 
-  public static boolean store(int modelId, LinearModel model, DSLContext ctx) {
+  public static boolean store(int modelId, LinearModel model, DSLContext ctx) throws ResourceNotFoundException {
     // Check if the modelId exists, and if it doesn't, return false.
     if (ctx
       .select(Tables.TRANSFORMER.ID)
       .from(Tables.TRANSFORMER)
       .where(Tables.TRANSFORMER.ID.eq(modelId))
       .fetchOne() == null) {
-      return false;
+      throw new ResourceNotFoundException(
+        String.format("Cannot store linear model for Transformer %d because it doesn't exist", modelId)
+      );
     }
 
     // Store the LinearModel.

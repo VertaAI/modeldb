@@ -134,12 +134,12 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public boolean storeLinearModel(int modelId, LinearModel model) throws TException {
+  public boolean storeLinearModel(int modelId, LinearModel model) throws ResourceNotFoundException {
     try {
       return LinearModelDao.store(modelId, model, ctx);
     } catch (Exception ex) {
       ex.printStackTrace();
-      return false;
+      throw ex;
     }
   }
 
