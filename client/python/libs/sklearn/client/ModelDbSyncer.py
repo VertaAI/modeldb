@@ -16,7 +16,9 @@ import SyncablePipelineEvent
 import GridCrossValidation
 import SyncableGridSearchCV
 import SyncableProjectEvent
+import SyncableExperimentEvent
 import SyncableExperimentRunEvent
+
 from modeldb import ModelDBService
 from modeldb.ttypes import *
 from sklearn.linear_model import *
@@ -68,32 +70,94 @@ def transformFn(self, X):
 def addTagObject(self, tagName):
     Syncer.instance.storeTagObject(id(self), tagName)
 
+class NewOrExistingProject:
+    def __init__(self, name, author, description):
+        self.name = name
+        self.author = author
+        self.description = description
+
+    def toThrift(self):
+        return Project(-1, self.name, self.author, self.description)
+
+class ExistingProject:
+    def __init__(self, id):
+        self.id = id
+
+    def toThrift(self):
+        return Project(self.id, "", "", "")
+
+class ExistingExperiment:
+    def __init__(self, id):
+        self.id = id
+
+    def toThrift(self):
+        return Experiment(self.id, -1, "", "", False)
+
+class DefaultExperiment:
+    def toThrift(self):
+        return Experiment(-1, -1, "", "", True)
+
+class NewOrExistingExperiment:
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+    def toThrift(self):
+        return Experiment(-1, -1, self.name, self.description, False)
+
+class NewExperimentRun:
+    def __init__(self, description=""):
+        self.description = description
+
+    def toThrift(self):
+        return ExperimentRun(-1, -1, self.description)
+
+class ExistingExperimentRun:
+    def __init__(id):
+        self.id = id
+
+    def toThrift():
+        return ExperimentRun(self.id, -1, "")
+
 class Syncer(object):
     class __Syncer:
-        def __init__(self, projectConfig):
+        def __init__(self):
             self.idForObject = {}
             self.objectForId = {}
             self.tagForObject = {}
             self.objectForTag = {}
             self.bufferList = []
-            self.client = self.initializeThriftClient()
+            self.initializeThriftClient()
             self.enableSyncFunctions()
-            self.project = self.createProject(projectConfig)
-            self.experimentRun = None
-            self.experimentRunEvent = None
             self.addTags()
 
+        def setup(self, projectConfig, experimentConfig, experimentRunConfig):
+            self.setProject(projectConfig)
+            self.setExperiment(experimentConfig)
+            self.setExperimentRun(experimentRunConfig)
+
         def __str__(self):
-            return `self` + self.val
+            return "Syncer"
 
-        def startExperiment(self, description):
-            self.experimentRun = ExperimentRun(-1, self.project.id, str(description))
-            self.experimentRunEvent = SyncableExperimentRunEvent.SyncExperimentRunEvent(self.experimentRun)
-            self.experimentRunEvent.sync()
-
-        def endExperiment(self):
-            self.experimentRun = None
-            self.experimentRunEvent = None
+        def setProject(self, projectConfig):
+            self.project = projectConfig.toThrift()
+            # TODO: can we clean up this construct: SyncableBlah.syncblah
+            projectEvent = SyncableProjectEvent.SyncProjectEvent(self.project)
+            projectEvent.sync()
+            
+        def setExperiment(self, experimentConfig):
+            self.experiment = experimentConfig.toThrift()
+            self.experiment.projectId = self.project.id
+            experimentEvent = SyncableExperimentEvent.SyncExperimentEvent(
+                self.experiment)
+            experimentEvent.sync()
+        
+        def setExperimentRun(self, experimentRunConfig):
+            self.experimentRun = experimentRunConfig.toThrift()
+            self.experimentRun.experimentId = self.experiment.id
+            experimentRunEvent = \
+              SyncableExperimentRunEvent.SyncExperimentRunEvent(self.experimentRun)
+            experimentRunEvent.sync()
 
         def storeObject(self, obj, Id):
             self.idForObject[obj] = Id
@@ -103,14 +167,14 @@ class Syncer(object):
             self.tagForObject[obj] = tag
             self.objectForTag[tag] = obj
 
-        def addToBuffer(self, fitEvent):
-            self.bufferList.append(fitEvent)
+        def addToBuffer(self, event):
+            self.bufferList.append(event)
 
         def sync(self):
             for b in self.bufferList:
                 b.sync()
 
-        def setColumns(self,df):
+        def setColumns(self, df):
             if type(df) is pd.DataFrame:
                 columns = df.columns.values
                 if type(columns) is np.ndarray:
@@ -169,18 +233,6 @@ class Syncer(object):
             ts = TransformerSpec(tid, spec.__class__.__name__, columns, hyperparams, tag)
             return ts
 
-        def createProject(self, projectConfig):
-            if type(projectConfig[0]) is int:
-                # There is an existing project
-                self.project = Project(projectConfig[0], "", "", "")
-            else:
-                # Create new project
-                [name, author, description] = projectConfig
-                self.project = Project(-1, name, author, description)
-                projectEvent = SyncableProjectEvent.SyncProjectEvent(self.project)
-                self.addToBuffer(projectEvent)
-            return self.project
-
         def initializeThriftClient(self, host="localhost", port=6543):
             # Make socket
             transport = TSocket.TSocket(host, port)
@@ -192,10 +244,8 @@ class Syncer(object):
             protocol = TBinaryProtocol.TBinaryProtocol(transport)
 
             # Create a client to use the protocol encoder
-            client = ModelDBService.Client(protocol)
+            self.client = ModelDBService.Client(protocol)
             transport.open()
-            result = client.testConnection()
-            return client
 
         # Adds tag as a method to objects, allowing users to tag objects with their own description
         def addTags(self):
@@ -227,12 +277,10 @@ class Syncer(object):
                 setattr(class_name, "fitSync",  SyncableGridSearchCV.fitFnGridSearch)
 
     instance = None
-    def __new__(cls, projectConfig): # __new__ always a classmethod
-        if not type(projectConfig) is list:
-                raise ValueError("Project parameters must be defined as "
-                                    " a list [name, author, description] or as [id]")
+    def __new__(cls, projectConfig, experimentConfig, experimentRunConfig): # __new__ always a classmethod
         if not Syncer.instance:
-            Syncer.instance = Syncer.__Syncer(projectConfig)
+            Syncer.instance = Syncer.__Syncer()
+            Syncer.instance.setup(projectConfig, experimentConfig, experimentRunConfig)
         return Syncer.instance
 
     def __getattr__(self, name):

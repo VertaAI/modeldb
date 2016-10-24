@@ -1,2 +1,2 @@
 *.pyc
-gen-py/*
+thrift/*

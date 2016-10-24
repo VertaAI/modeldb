@@ -20,7 +20,8 @@ class SyncTransformEvent:
         self.syncableDataFrameOld = syncer.convertDftoThrift(self.oldDf)
         self.syncableDataFrameNew = syncer.convertDftoThrift(self.newDf)
         te = TransformEvent(self.syncableDataFrameOld, self.syncableDataFrameNew, 
-                                    self.syncableTransformer, [], [], syncer.project.id, self.experimentRunId)
+                                    self.syncableTransformer, [], [], 
+                                    self.experimentRunId)
         return te
 
     def associate(self, res):

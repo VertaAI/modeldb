@@ -20,7 +20,7 @@ class SyncFitEvent:
         self.modelSpec = syncer.convertSpectoThrift(self.spec,self.df)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
         fe = FitEvent(self.syncableDataFrame, self.modelSpec, self.syncableTransformer, 
-                            [], [], [], syncer.project.id, self.experimentRunId)
+                            [], [], [], self.experimentRunId)
         return fe
 
     def associate(self, res):

@@ -6,7 +6,7 @@ sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing
 from sklearn import linear_model
 
-import client.ModelDbSyncer as ModelDbSyncer
+from client.ModelDbSyncer import *
 import client.SyncableMetrics as SyncableMetrics
 import client.SyncableRandomSplit as SyncableRandomSplit
 import client.SyncablePipelineEvent as SyncablePipelineEvent
@@ -16,12 +16,13 @@ from sklearn import decomposition
 
 #Pipelining: This chains a PCA and logistic regression, and uses the UCI Census Adult dataset.
 
-
 name = "pipeline census"
 author = "srinidhi"
 description = "census data"
-SyncerObj = ModelDbSyncer.Syncer([name, author, description])
-SyncerObj.startExperiment("logistic regression + pipeline")
+SyncerObj = Syncer(
+    NewOrExistingProject(name, author, description),
+    DefaultExperiment(),
+    NewExperimentRun("Abc"))
 
 df = pd.read_csv("adult.data.csv")
 newDf = pd.DataFrame()
@@ -66,5 +67,4 @@ pipe.fitSync(partialTraining, y_train)
 SyncableMetrics.computeMetrics(pipe, "f1", partialTesting, "predictionCol", "income_level", y_test)
 SyncableMetrics.computeMetrics(pipe, "precision", partialTesting, "predictionCol", "income_level", y_test)
 
-SyncerObj.endExperiment()
-ModelDbSyncer.Syncer.instance.sync()
+Syncer.instance.sync()

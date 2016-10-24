@@ -22,7 +22,7 @@ class SyncMetricEvent:
         self.syncableTransformer = syncer.convertModeltoThrift(self.model)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
         me = MetricEvent(self.syncableDataFrame, self.syncableTransformer, self.metricType,
-                                self.metricValue, self.labelCol, self.predictionCol, syncer.project.id, self.experimentRunId)
+                                self.metricValue, self.labelCol, self.predictionCol, self.experimentRunId)
         return me
 
     def associate(self, res):

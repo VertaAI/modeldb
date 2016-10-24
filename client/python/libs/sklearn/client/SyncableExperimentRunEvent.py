@@ -13,6 +13,7 @@ class SyncExperimentRunEvent:
 
     def sync(self):
         syncer = ModelDbSyncer.Syncer.instance
+        print "syncer", syncer
 
         #Invoking thrift client
         thriftClient = syncer.client

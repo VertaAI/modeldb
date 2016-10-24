@@ -7,13 +7,15 @@ from sklearn import preprocessing
 from sklearn import linear_model
 import client.SyncableRandomSplit as SyncableRandomSplit
 import client.SyncableMetrics as SyncableMetrics
-import client.ModelDbSyncer as ModelDbSyncer
+from client.ModelDbSyncer import *
 
 name = "logistic-test"
 author = "srinidhi"
 description = "income-level logistic regression"
-SyncerObj = ModelDbSyncer.Syncer([name, author, description])
-SyncerObj.startExperiment("convert income level to 0 or 1")
+SyncerObj = Syncer(
+    NewOrExistingProject(name, author, description),
+    DefaultExperiment(),
+    NewExperimentRun("Abc"))
 
 df = pd.read_csv("adult.data.csv")
 newDf = pd.DataFrame()
@@ -51,5 +53,4 @@ lr.fitSync(partialTraining, y_train)
 
 SyncableMetrics.computeMetrics(lr, "precision", partialTesting, "predictionCol", "income_level",y_test)
 SyncableMetrics.computeMetrics(lr, "recall", partialTesting, "predictionCol", "income_level",y_test)
-SyncerObj.endExperiment()
-ModelDbSyncer.Syncer.instance.sync()
+Syncer.instance.sync()
