@@ -15,7 +15,6 @@ public class ExperimentDao {
     Experiment e = expt.experiment;
     if (e.isDefault) {
       int defaultExperiment = ProjectDao.getDefaultExperiment(e.projectId, ctx);
-      System.out.println("defaultExpt:" + defaultExperiment);
       return new ExperimentEventResponse(defaultExperiment);
     }
 
