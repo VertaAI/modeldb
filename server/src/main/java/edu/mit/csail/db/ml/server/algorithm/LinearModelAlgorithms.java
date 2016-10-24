@@ -1,11 +1,10 @@
 package edu.mit.csail.db.ml.server.algorithm;
 
+import edu.mit.csail.db.ml.server.storage.TransformerDao;
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.LinearmodelRecord;
-import modeldb.ConfidenceInterval;
-import modeldb.FeatureImportanceComparison;
-import modeldb.ModelRankMetric;
+import modeldb.*;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.TDistributionImpl;
 import org.jooq.*;
@@ -64,10 +63,29 @@ public class LinearModelAlgorithms {
     return objectiveHistory.size();
   }
 
-  public static List<ConfidenceInterval> confidenceIntervals(int modelId, double significanceLevel, DSLContext ctx) {
+  public static List<ConfidenceInterval> confidenceIntervals(int modelId, double significanceLevel, DSLContext ctx)
+    throws BadRequestException, IllegalOperationException, ResourceNotFoundException {
+    if (!(significanceLevel > 0 && significanceLevel < 1)) {
+      throw new BadRequestException(String.format(
+        "Can't make linear model confidence intervals for Transformer %d because significance level %.4f " +
+          "must be between 0 and 1 (exclusive both sides)",
+        modelId,
+        significanceLevel
+      ));
+    }
+    if (!TransformerDao.exists(modelId, ctx)) {
+      throw new ResourceNotFoundException(String.format(
+        "Can't make linear model confidence intervals for Transformer %d because it doesn't exist",
+        modelId
+      ));
+    }
+
     // If the model isn't linear, return an error.
     if (!isLinearModel(modelId, ctx)) {
-      return Collections.emptyList();
+      throw new IllegalOperationException(String.format(
+        "Can't make linear model confidence intervals for Transformer %d because it's not a linear model",
+        modelId
+      ));
     }
 
     // Get the number of rows.
@@ -77,7 +95,10 @@ public class LinearModelAlgorithms {
       .where(Tables.FITEVENT.TRANSFORMER.eq(modelId))
       .fetchOne();
     if (rec == null) {
-      return Collections.emptyList();
+      throw new ResourceNotFoundException(String.format(
+        "Can't make linear model confidence intervals for Transformer %d - it doesn't have an associated DataFrame",
+        modelId
+      ));
     }
     int numRows = rec.value1();
 
@@ -167,11 +188,34 @@ public class LinearModelAlgorithms {
       .collect(Collectors.toList());
   }
 
-  public static List<String> featureImportances(int modelId, DSLContext ctx) {
-    // Ensure the model is linear and standardized.
-    if (!isLinearModel(modelId, ctx) || !isStandardized(modelId, ctx)) {
-      return Collections.emptyList();
+  private static void checkIsStandardizeLinearModel(int modelId, DSLContext ctx)
+    throws ResourceNotFoundException, IllegalOperationException {
+    if (!TransformerDao.exists(modelId, ctx)) {
+      throw new ResourceNotFoundException(String.format(
+        "We can't find linear model feature importances for Transformer %d because it doesn't exist",
+        modelId
+      ));
     }
+
+    if (!isLinearModel(modelId, ctx)) {
+      throw new IllegalOperationException(String.format(
+        "We can't find linear model feature importances for Transformer %d because it's not a linear model",
+        modelId
+      ));
+    }
+
+    if (!isStandardized(modelId, ctx)) {
+      throw new IllegalOperationException(String.format(
+        "Transformer %d is a linear model, but it's not standardized, so we can't find feature importances",
+        modelId
+      ));
+    }
+  }
+
+  public static List<String> featureImportances(int modelId, DSLContext ctx)
+    throws ResourceNotFoundException, IllegalOperationException {
+    // Ensure the model is a standardized linear model.
+    checkIsStandardizeLinearModel(modelId, ctx);
 
     // Now get the features, ordered by importance.
     List<Integer> featureImportances = orderedFeatures(modelId, ctx);
@@ -186,14 +230,11 @@ public class LinearModelAlgorithms {
       .collect(Collectors.toList());
   }
 
-  public static List<FeatureImportanceComparison> featureImportances(int model1Id, int model2Id, DSLContext ctx) {
-    // Ensure both models are linear and standardized.
-    if (!isLinearModel(model1Id, ctx)
-      || !isLinearModel(model2Id, ctx)
-      || !isStandardized(model1Id, ctx)
-      || !isStandardized(model2Id, ctx)) {
-      return Collections.emptyList();
-    }
+  public static List<FeatureImportanceComparison> featureImportances(int model1Id, int model2Id, DSLContext ctx)
+    throws ResourceNotFoundException, IllegalOperationException {
+    // Ensure the models are standardized linear models.
+    checkIsStandardizeLinearModel(model1Id, ctx);
+    checkIsStandardizeLinearModel(model2Id, ctx);
 
     // Get the features, ordered by importance, for both models.
     List<Integer> m1FeatureImportances = orderedFeatures(model1Id, ctx);

@@ -335,15 +335,32 @@ struct ConfidenceInterval {
   3: double high
 }
 
+// Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
+// For example, if you try to read Transformer with ID 1, then we throw this
+// exception if that Transformer does not exist.
 exception ResourceNotFoundException {
   1: string message
 }
 
+// Thrown when field of a structure is empty or incorrect.
+// For example, if you try to get the path for a Transformer, but the server
+// finds that the path is empty, then this exception gets thrown.
 exception EmptyFieldException {
   1: string message
 }
 
+// Thrown when the request is not properly constructed.
+// For example, if you say that you want to find -3 similar models, then this
+// exception gets thrown.
 exception BadRequestException {
+  1: string message
+}
+
+// Thrown when the server is told to perform an operation that it cannot do.
+// For example, if you try to compute feature importances for a linear model
+// that isn't standardized, then it is not possible to compute feature 
+// importance, so this exception gets thrown.
+exception IllegalOperationException {
   1: string message
 }
 
@@ -406,15 +423,10 @@ service ModelDBService {
   // The returned list will be empty if the model does not exist, is not 
   // linear, or if its features are not standardized (i.e. it must have been
   // trained with a hyperparameter called "standardization" set to "true").
-  list<string> linearModelFeatureImportances(1: i32 modelId),
+  list<string> linearModelFeatureImportances(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx),
 
   // Compares the feature importances of the two models.
-  // The returned list will be empty if:
-  // 1: Either modelId does not have an associated Transformer and FitEvent.
-  // 2: Either model is not linear
-  // 3: Either model does not have the hyperparameter "standardization" set 
-  //  to "true".
-  list<FeatureImportanceComparison> compareLinearModelFeatureImportances(1: i32 model1Id, 2: i32 model2Id),
+  list<FeatureImportanceComparison> compareLinearModelFeatureImportances(1: i32 model1Id, 2: i32 model2Id) throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx),
 
   // Given the a list model IDs, return the number of iterations that each
   // took to converge (convergence specified via tolerance). 
@@ -428,7 +440,7 @@ service ModelDBService {
   // omitted from the returned list.
   list<i32> rankModels(1: list<i32> modelIds, 2: ModelRankMetric metric),
 
-  list<ConfidenceInterval> confidenceIntervals(1: i32 modelId, 2: double sigLevel),
+  list<ConfidenceInterval> confidenceIntervals(1: i32 modelId, 2: double sigLevel) throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx, 3: BadRequestException brEx),
 
   // Get the IDs of the models that use the given set of features.
   list<i32> modelsWithFeatures(1: list<string> featureNames),
@@ -436,5 +448,5 @@ service ModelDBService {
   // Get the IDs of the models that are derived from the DataFrame with the 
   // given ID, or one of its descendent DataFrames. This will only consider
   // models and DataFrames in the same project as the given dfId.
-  list<i32> modelsDerivedFromDataFrame(1: i32 dfId)
+  list<i32> modelsDerivedFromDataFrame(1: i32 dfId) throws (1: ResourceNotFoundException rnfEx)
 }

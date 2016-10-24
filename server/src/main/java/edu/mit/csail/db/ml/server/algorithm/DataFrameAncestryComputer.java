@@ -1,5 +1,6 @@
 package edu.mit.csail.db.ml.server.algorithm;
 
+import edu.mit.csail.db.ml.server.storage.DataFrameDao;
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.DataframeRecord;
@@ -132,7 +133,13 @@ public class DataFrameAncestryComputer {
     return response;
   }
 
-  public static List<Integer> descendentModels(int dfId, DSLContext ctx) {
+  public static List<Integer> descendentModels(int dfId, DSLContext ctx) throws ResourceNotFoundException {
+    if (!DataFrameDao.exists(dfId, ctx)) {
+      throw new ResourceNotFoundException(String.format(
+        "Can't find descendent models for DataFrame %d because that DataFrame doesn't exist",
+        dfId
+      ));
+    }
      // First find the given DF and its project ID.
      Record1<Integer> rec = ctx.select(Tables.EXPERIMENT_RUN_VIEW.PROJECTID)
        .from(

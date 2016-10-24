@@ -244,24 +244,25 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public List<String> linearModelFeatureImportances(int modelId) throws TException {
+  public List<String> linearModelFeatureImportances(int modelId)
+    throws ResourceNotFoundException, IllegalOperationException {
     try {
       return LinearModelAlgorithms.featureImportances(modelId, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<String>();
+      throw e;
     }
   }
 
   public List<FeatureImportanceComparison> compareLinearModelFeatureImportances(
     int model1Id,
     int model2Id
-  ) throws TException {
+  ) throws ResourceNotFoundException, IllegalOperationException {
     try {
       return LinearModelAlgorithms.featureImportances(model1Id, model2Id, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<>();
+      throw e;
     }
   }
 
@@ -283,12 +284,13 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public List<ConfidenceInterval> confidenceIntervals(int modelId, double significanceLevel) throws TException {
+  public List<ConfidenceInterval> confidenceIntervals(int modelId, double significanceLevel)
+    throws BadRequestException, IllegalOperationException, ResourceNotFoundException {
     try {
       return LinearModelAlgorithms.confidenceIntervals(modelId, significanceLevel, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<>();
+      throw e;
     }
   }
 
@@ -301,12 +303,12 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public List<Integer> modelsDerivedFromDataFrame(int dfId) throws TException {
+  public List<Integer> modelsDerivedFromDataFrame(int dfId) throws ResourceNotFoundException {
     try {
       return DataFrameAncestryComputer.descendentModels(dfId, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ArrayList<>();
+      throw e;
     }
   }
 }
