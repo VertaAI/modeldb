@@ -245,7 +245,7 @@ class ModelDbSyncer(host: String = "localhost",
   def compareFeatures(m1: Transformer, m2: Transformer): CompareFeaturesResponse = {
     val (m1Id, m2Id) = (id(m1), id(m2))
     if (m1Id.isEmpty || m2Id.isEmpty)
-      CompareFeaturesResponse(false)
+      CompareFeaturesResponse()
     else
       compareFeatures(m1Id.get, m2Id.get)
   }
@@ -256,7 +256,7 @@ class ModelDbSyncer(host: String = "localhost",
   def compareHyperparameters(m1: Transformer, m2: Transformer): CompareHyperParametersResponse = {
     val (m1Id, m2Id) = (id(m1), id(m2))
     if (m1Id.isEmpty || m2Id.isEmpty)
-      CompareHyperParametersResponse(false)
+      CompareHyperParametersResponse()
     else
       compareHyperparameters(m1Id.get, m2Id.get)
   }

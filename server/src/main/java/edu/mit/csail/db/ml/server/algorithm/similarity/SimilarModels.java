@@ -1,9 +1,12 @@
 package edu.mit.csail.db.ml.server.algorithm.similarity;
 
 import edu.mit.csail.db.ml.server.algorithm.similarity.comparators.*;
+import edu.mit.csail.db.ml.server.storage.TransformerDao;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.LinearmodelRecord;
+import modeldb.BadRequestException;
 import modeldb.ModelCompMetric;
+import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
 import org.jooq.TableField;
 
@@ -48,7 +51,19 @@ public class SimilarModels {
     List<ModelCompMetric> compMetrics,
     int numModels,
     DSLContext ctx
-  ) {
+  ) throws ResourceNotFoundException, BadRequestException {
+    if (!TransformerDao.exists(modelId, ctx)) {
+      throw new ResourceNotFoundException(String.format(
+        "Cannot find models similar to Transformer %d because that Transformer does not exist",
+        modelId
+      ));
+    }
+    if (numModels <= 0) {
+      throw new BadRequestException(String.format(
+        "You can't ask for %d similar models, you must request a positive number of models",
+        numModels
+      ));
+    }
     List<Integer> resultingModels = compMetrics
       .stream()
       .map(SimilarModels::comparatorForCompMetric)

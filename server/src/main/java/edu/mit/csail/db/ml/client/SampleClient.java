@@ -161,8 +161,6 @@ public class SampleClient {
     int model2Id = client.storeFitEvent(DummyFactory.makeFitEvent()).modelId;
 
     // Compare the model's hyperparameters.
-    // The first call should indicate computedComparison = false because we probably haven't stored that many models.
-    System.out.println(client.compareHyperparameters(model1Id, 999999));
     System.out.println(client.compareHyperparameters(model1Id, model2Id));
   }
 
@@ -172,8 +170,6 @@ public class SampleClient {
     int model2Id = client.storeFitEvent(DummyFactory.makeFitEvent()).modelId;
 
     // Compare the model's features.
-    // The first call should indicate computedComparison = false because we probably haven't stored that many models.
-    System.out.println(client.compareFeatures(model1Id, 999999));
     System.out.println(client.compareFeatures(model1Id, model2Id));
   }
 

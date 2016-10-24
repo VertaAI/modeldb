@@ -69,12 +69,13 @@ public class FitEventDao {
     IntStream.range(0, fe.featureColumns.size()).forEach(i -> {
       String name = fe.featureColumns.get(i);
       FeatureRecord featureRecord = ctx.newRecord(Tables.FEATURE);
+      featureRecord.setId(null);
       featureRecord.setName(name);
       featureRecord.setFeatureindex(i);
       featureRecord.setTransformer(t.getId());
       featureRecord.setImportance(0.0); // By default we say that all features have importance 0.
       featureRecord.store();
-      featureRecord.getTransformer();
+      featureRecord.getId();
     });
     // Return the response.
     return new FitEventResponse(df.getId(), s.getId(), t.getId(), ev.getId(), feRec.getId());

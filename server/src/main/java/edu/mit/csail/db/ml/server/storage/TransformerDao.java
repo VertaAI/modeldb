@@ -31,6 +31,10 @@ public class TransformerDao {
     return rec.getFilepath();
   }
 
+  public static boolean exists(int id, DSLContext ctx) {
+    return ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(id)).fetchOne() != null;
+  }
+
   private static String generateFilepath() {
     String uuid = UUID.randomUUID().toString();
     return Paths.get(ModelDbConfig.getInstance().fsPrefix, uuid).toString();

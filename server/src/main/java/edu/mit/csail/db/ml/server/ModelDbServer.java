@@ -234,12 +234,13 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public List<Integer> similarModels(int modelId, List<ModelCompMetric> compMetrics, int numModels) throws TException {
+  public List<Integer> similarModels(int modelId, List<ModelCompMetric> compMetrics, int numModels)
+    throws ResourceNotFoundException, BadRequestException {
     try {
       return SimilarModels.similarModels(modelId, compMetrics, numModels, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ArrayList<Integer>();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      throw ex;
     }
   }
 

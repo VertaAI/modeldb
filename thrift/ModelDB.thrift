@@ -343,6 +343,10 @@ exception EmptyFieldException {
   1: string message
 }
 
+exception BadRequestException {
+  1: string message
+}
+
 service ModelDBService {
   // This is just a test method to test connection to the server
   i32 testConnection(), // 0 if success, -1 failure
@@ -392,9 +396,11 @@ service ModelDBService {
 
   CompareFeaturesResponse compareFeatures(1: i32 modelId1, 2: i32 modelId2) throws (1: ResourceNotFoundException rnfEx),
 
+  // Maps from ProblemType to the list of models with that problem type.
+  // If any of the model IDs cannot be found, it will be left out of the map.
   map<ProblemType, list<i32>> groupByProblemType(1: list<i32> modelIds),
 
-  list<i32> similarModels(1: i32 modelId, 2: list<ModelCompMetric> compMetrics, 3: i32 numModels),
+  list<i32> similarModels(1: i32 modelId, 2: list<ModelCompMetric> compMetrics, 3: i32 numModels) throws (1: ResourceNotFoundException rnfEx, 2: BadRequestException brEx),
 
   // Return the features, ordered by importance, for a linear model.
   // The returned list will be empty if the model does not exist, is not 
