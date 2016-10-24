@@ -148,7 +148,6 @@ class Syncer(object):
         def setExperiment(self, experimentConfig):
             self.experiment = experimentConfig.toThrift()
             self.experiment.projectId = self.project.id
-            print(self.experiment)
             experimentEvent = SyncableExperimentEvent.SyncExperimentEvent(
                 self.experiment)
             experimentEvent.sync()
@@ -156,7 +155,6 @@ class Syncer(object):
         def setExperimentRun(self, experimentRunConfig):
             self.experimentRun = experimentRunConfig.toThrift()
             self.experimentRun.experimentId = self.experiment.id
-            print(self.experimentRun)
             experimentRunEvent = \
               SyncableExperimentRunEvent.SyncExperimentRunEvent(self.experimentRun)
             experimentRunEvent.sync()

@@ -19,7 +19,5 @@ class SyncProjectEvent:
         #Invoking thrift client
         thriftClient = syncer.client
         res = thriftClient.storeProjectEvent(ProjectEvent(self.project))
-        print(res)
         syncer.project.id = res.projectId
-        print(syncer.project)
         

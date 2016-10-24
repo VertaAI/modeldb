@@ -17,5 +17,4 @@ class SyncExperimentEvent:
         #Invoking thrift client
         thriftClient = syncer.client
         res = thriftClient.storeExperimentEvent(ExperimentEvent(self.experiment))
-        print(res)
         syncer.experiment.id = res.experimentId
