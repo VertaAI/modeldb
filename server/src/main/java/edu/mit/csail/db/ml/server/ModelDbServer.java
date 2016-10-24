@@ -143,12 +143,12 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public modeldb.DataFrameAncestry getDataFrameAncestry(int dataFrameId) throws TException {
+  public modeldb.DataFrameAncestry getDataFrameAncestry(int dataFrameId) throws ResourceNotFoundException {
     try {
       return DataFrameAncestryComputer.compute(dataFrameId, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new modeldb.DataFrameAncestry();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      throw ex;
     }
   }
 
@@ -161,34 +161,39 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public CommonAncestor getCommonAncestor(int dfId1, int dfId2) throws TException {
+  public CommonAncestor getCommonAncestor(int dfId1, int dfId2) throws ResourceNotFoundException {
     try {
       return DataFrameAncestryComputer.computeCommonAncestor(dfId1, dfId2, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new CommonAncestor();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      throw ex;
     }
   }
 
-  public CommonAncestor getCommonAncestorForModels(int modelId1, int modelid2) throws TException {
-    int dfId1 = FitEventDao.getParentDfId(modelId1, ctx);
-    int dfId2 = FitEventDao.getParentDfId(modelid2, ctx);
+  public CommonAncestor getCommonAncestorForModels(int modelId1, int modelid2) throws ResourceNotFoundException {
     try {
-      return (dfId1 < 0 || dfId2 < 0)
-        ? DataFrameAncestryComputer.getFailedAncestorLookup()
-        : getCommonAncestor(dfId1, dfId2);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new CommonAncestor();
+      int dfId1 = FitEventDao.getParentDfId(modelId1, ctx);
+      int dfId2 = FitEventDao.getParentDfId(modelid2, ctx);
+      return getCommonAncestor(dfId1, dfId2);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      throw ex;
     }
   }
 
-  public int getTrainingRowsCount(int modelId) throws TException {
+  public int getTrainingRowsCount(int modelId) throws ResourceNotFoundException {
     try {
-      return FitEventDao.getNumRowsForModels(Collections.singletonList(modelId), ctx).get(0);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return -1;
+      int numRows = FitEventDao.getNumRowsForModels(Collections.singletonList(modelId), ctx).get(0);
+      if (numRows < 0) {
+        throw new ResourceNotFoundException(String.format(
+          "Could not find number of rows used to train Transformer %d because the Transformer doesn't exist",
+          modelId
+        ));
+      }
+      return numRows;
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      throw ex;
     }
   }
 
@@ -201,21 +206,22 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
-  public CompareHyperParametersResponse compareHyperparameters(int modelId1, int modelId2) throws TException {  
+  public CompareHyperParametersResponse compareHyperparameters(int modelId1, int modelId2)
+    throws ResourceNotFoundException {
     try {
       return HyperparameterComparison.compareHyperParameters(modelId1, modelId2, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new CompareHyperParametersResponse();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      throw ex;
     }
   }
 
-  public CompareFeaturesResponse compareFeatures(int modelId1, int modelId2) throws TException {
+  public CompareFeaturesResponse compareFeatures(int modelId1, int modelId2) throws ResourceNotFoundException {
     try {
       return Feature.compareFeatures(modelId1, modelId2, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new CompareFeaturesResponse();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      throw ex;
     }
   }
 

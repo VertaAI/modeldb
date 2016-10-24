@@ -2,6 +2,7 @@ package edu.mit.csail.db.ml.server.algorithm;
 
 import jooq.sqlite.gen.Tables;
 import modeldb.CompareFeaturesResponse;
+import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 
@@ -9,9 +10,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Feature {
-  private static CompareFeaturesResponse failedComparison =
-    new CompareFeaturesResponse(false, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-
   public static List<Integer> modelsWithFeatures(List<String> featureNames, DSLContext ctx) {
     // De-duplicate by making a set.
     Set<String> featureSet = new HashSet<>(featureNames);
@@ -29,7 +27,10 @@ public class Feature {
       .collect(Collectors.toList());
   }
 
-  public static CompareFeaturesResponse compareFeatures(int modelId1, int modelId2, DSLContext ctx) {
+  public static CompareFeaturesResponse compareFeatures(int modelId1, int modelId2, DSLContext ctx)
+    throws ResourceNotFoundException {
+    String ERROR_FORMAT = "Could not find features for Transformer %d - the Transformer may not exist or it may " +
+      "not have any features.";
     // Fetch the features associated with the models.
     Set<String> features1 = ctx
       .select(Tables.FEATURE.NAME)
@@ -41,7 +42,7 @@ public class Feature {
       .stream()
       .collect(Collectors.toSet());
     if (features1.isEmpty()) {
-      return failedComparison;
+      throw new ResourceNotFoundException(String.format(ERROR_FORMAT, modelId1));
     }
 
     Set<String> features2 = ctx
@@ -55,7 +56,7 @@ public class Feature {
       .collect(Collectors.toSet());
 
     if (features2.isEmpty()) {
-      return failedComparison;
+      throw new ResourceNotFoundException(String.format(ERROR_FORMAT, modelId2));
     }
 
     // Compute the common features.
@@ -66,7 +67,6 @@ public class Feature {
     features2.removeAll(commonFeatures);
 
     return new CompareFeaturesResponse(
-      true,
       new ArrayList<>(features1),
       new ArrayList<>(features2),
       new ArrayList<>(commonFeatures)

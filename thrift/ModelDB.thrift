@@ -281,15 +281,13 @@ struct AnnotationEventResponse {
 
 
 struct DataFrameAncestry {
-  1: bool dataframeExists,
-  2: list<DataFrame> ancestors
+  1: list<DataFrame> ancestors
 }
 
 struct CommonAncestor {
-  1: bool foundAncestor,
-  2: DataFrame ancestor,
-  3: i32 chainIndexModel1,
-  4: i32 chainIndexModel2
+  1: optional DataFrame ancestor,
+  2: i32 chainIndexModel1,
+  3: i32 chainIndexModel2
 }
 
 struct StringPair {
@@ -298,17 +296,15 @@ struct StringPair {
 }
 
 struct CompareHyperParametersResponse {
-  1: bool computedComparison,
-  2: map<string, string> model1OnlyHyperparams,
-  3: map<string, string> model2OnlyHyperparams,
-  4: map<string, StringPair> sharedHyperparams
+  1: map<string, string> model1OnlyHyperparams,
+  2: map<string, string> model2OnlyHyperparams,
+  3: map<string, StringPair> sharedHyperparams
 }
 
 struct CompareFeaturesResponse {
-  1: bool computedComparison,
-  2: list<string> model1OnlyFeatures,
-  3: list<string> model2OnlyFeatures,
-  4: list<string> commonFeatures
+  1: list<string> model1OnlyFeatures,
+  2: list<string> model2OnlyFeatures,
+  3: list<string> commonFeatures
 }
 
 enum ModelCompMetric {
@@ -380,19 +376,21 @@ service ModelDBService {
   // whether the metadata was correctly stored.
   bool storeLinearModel(1: i32 modelId, 2: LinearModel model) throws (1: ResourceNotFoundException rnfEx),
 
-  DataFrameAncestry getDataFrameAncestry(1: i32 dataFrameId),
+  DataFrameAncestry getDataFrameAncestry(1: i32 dataFrameId) throws (1: ResourceNotFoundException rnfEx),
 
-  CommonAncestor getCommonAncestor(1: i32 dfId1, 2: i32 dfId2),
+  CommonAncestor getCommonAncestor(1: i32 dfId1, 2: i32 dfId2) throws (1: ResourceNotFoundException rnfEx),
 
-  CommonAncestor getCommonAncestorForModels(1: i32 modelId1, 2: i32 modelId2),
+  CommonAncestor getCommonAncestorForModels(1: i32 modelId1, 2: i32 modelId2) throws (1: ResourceNotFoundException rnfEx),
 
-  i32 getTrainingRowsCount(1: i32 modelId),
+  i32 getTrainingRowsCount(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx),
 
+  // Returns the number of training rows in each model. If a model cannot be found,
+  // we mark that it has -1 training rows.
   list<i32> getTrainingRowsCounts(1: list<i32> modelIds),
 
-  CompareHyperParametersResponse compareHyperparameters(1: i32 modelId1, 2: i32 modelId2),
+  CompareHyperParametersResponse compareHyperparameters(1: i32 modelId1, 2: i32 modelId2) throws (1: ResourceNotFoundException rnfEx),
 
-  CompareFeaturesResponse compareFeatures(1: i32 modelId1, 2: i32 modelId2),
+  CompareFeaturesResponse compareFeatures(1: i32 modelId1, 2: i32 modelId2) throws (1: ResourceNotFoundException rnfEx),
 
   map<ProblemType, list<i32>> groupByProblemType(1: list<i32> modelIds),
 

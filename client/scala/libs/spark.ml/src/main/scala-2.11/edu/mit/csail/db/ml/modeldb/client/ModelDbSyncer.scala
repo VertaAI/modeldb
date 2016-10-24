@@ -216,7 +216,7 @@ class ModelDbSyncer(host: String = "localhost",
   def getCommonAncestor(df1: DataFrame, df2: DataFrame): CommonAncestor = {
     val (df1Id, df2Id) = (id(df1), id(df2))
     if (df1Id.isEmpty || df2Id.isEmpty)
-      CommonAncestor(false, null, -1, -1)
+      CommonAncestor(None, -1, -1)
     else
       getCommonAncestor(df1Id.get, df2Id.get)
   }
@@ -227,7 +227,7 @@ class ModelDbSyncer(host: String = "localhost",
   def getCommonAncestorDf(m1: Transformer, m2: Transformer): CommonAncestor = {
     val (m1Id, m2Id) = (id(m1), id(m2))
     if (m1Id.isEmpty || m2Id.isEmpty)
-      CommonAncestor(false, null, -1, -1)
+      CommonAncestor(None, -1, -1)
     else
       getCommonAncestorDf(m1Id.get, m2Id.get)
   }

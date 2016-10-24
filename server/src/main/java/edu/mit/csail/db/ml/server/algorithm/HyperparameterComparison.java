@@ -3,6 +3,7 @@ package edu.mit.csail.db.ml.server.algorithm;
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import modeldb.CompareHyperParametersResponse;
+import modeldb.ResourceNotFoundException;
 import modeldb.StringPair;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
@@ -14,11 +15,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class HyperparameterComparison {
-
-  private static CompareHyperParametersResponse failedComparison =
-    new CompareHyperParametersResponse(false, new HashMap<>(), new HashMap<>(), new HashMap<>());
-
-  public static CompareHyperParametersResponse compareHyperParameters(int modelId1, int modelId2, DSLContext ctx) {
+  public static CompareHyperParametersResponse compareHyperParameters(int modelId1, int modelId2, DSLContext ctx)
+    throws ResourceNotFoundException {
+    String ERROR_FORMAT = "Could not find TransformerSpec for Transformer %d because it doesn't exist";
     // Fetch the specs associated with the models.
     Record1<Integer> rec1 = ctx
       .select(Tables.FITEVENT.TRANSFORMERSPEC)
@@ -26,7 +25,7 @@ public class HyperparameterComparison {
       .where(Tables.FITEVENT.TRANSFORMER.eq(modelId1))
       .fetchOne();
     if (rec1 == null) {
-      return failedComparison;
+      throw new ResourceNotFoundException(String.format(ERROR_FORMAT, modelId1));
     }
     int spec1 = rec1.value1();
 
@@ -36,7 +35,7 @@ public class HyperparameterComparison {
       .where(Tables.FITEVENT.TRANSFORMER.eq(modelId2))
       .fetchOne();
     if (rec2 == null) {
-      return failedComparison;
+      throw new ResourceNotFoundException(String.format(ERROR_FORMAT, modelId2));
     }
     int spec2  = rec2.value1();
 
@@ -82,7 +81,6 @@ public class HyperparameterComparison {
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     return new CompareHyperParametersResponse(
-      true,
       model1Hyperparameters,
       model2Hyperparameters,
       commonHyperparameterMap

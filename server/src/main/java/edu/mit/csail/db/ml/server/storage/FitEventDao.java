@@ -5,6 +5,7 @@ import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.*;
 import modeldb.FitEvent;
 import modeldb.FitEventResponse;
+import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
 
 import java.util.List;
@@ -85,6 +86,7 @@ public class FitEventDao {
       .mapToObj(i -> new Pair<>(modelIds.get(i), i))
       .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
+    // Rather than making the call fail if we can't find one of the models, we instead say it has -1 rows.
     List<Integer> numRows = modelIds.stream().map(mid -> -1).collect(Collectors.toList());
 
     ctx
@@ -105,11 +107,17 @@ public class FitEventDao {
    * @param ctx - Jooq context.
    * @return The ID (or -1 if this model was not created by a FitEvent).
    */
-  public static int getParentDfId(int modelId, DSLContext ctx) {
+  public static int getParentDfId(int modelId, DSLContext ctx) throws ResourceNotFoundException {
     FiteventRecord rec = ctx
       .selectFrom(Tables.FITEVENT)
       .where(Tables.FITEVENT.TRANSFORMER.eq(modelId))
       .fetchOne();
-    return (rec == null) ? -1 : rec.getDf();
+    if (rec == null) {
+      throw new ResourceNotFoundException(String.format(
+        "Could not find the DataFrame that produced Transformer %d because that Transformer doesn't exist",
+        modelId
+      ));
+    }
+    return rec.getDf();
   }
 }

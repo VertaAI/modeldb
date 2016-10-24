@@ -6,6 +6,7 @@ import jooq.sqlite.gen.tables.records.DataframeRecord;
 import jooq.sqlite.gen.tables.records.TransformeventRecord;
 import modeldb.CommonAncestor;
 import modeldb.DataFrame;
+import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 
@@ -15,20 +16,15 @@ import java.util.stream.IntStream;
 
 public class DataFrameAncestryComputer {
 
-  private static modeldb.CommonAncestor failedAncestorLookup =
-    new modeldb.CommonAncestor(false, new modeldb.DataFrame(), 0, 0);
-
-  public static modeldb.CommonAncestor getFailedAncestorLookup() {
-    return failedAncestorLookup.deepCopy();
-  }
-
-  public static modeldb.DataFrameAncestry compute(int dfId, DSLContext ctx) {
+  public static modeldb.DataFrameAncestry compute(int dfId, DSLContext ctx) throws ResourceNotFoundException {
     // Fetch the DataFrame wth the given ID.
     DataframeRecord rec = ctx.selectFrom(Tables.DATAFRAME).where(Tables.DATAFRAME.ID.eq(dfId)).fetchOne();
 
     // If we can't find one, indicate a failed lookup.
     if (rec == null) {
-      return new modeldb.DataFrameAncestry(false, Collections.emptyList());
+      throw new ResourceNotFoundException(
+        String.format("Tried finding ancestry for DataFrame %d, but the DataFrame does not exist", dfId)
+      );
     }
 
     // Otherwise, fetch all the TransformEvents and create a map from child DataFrame to parent DataFrame.
@@ -72,7 +68,7 @@ public class DataFrameAncestryComputer {
     // Sort so that the youngest DataFrame comes first.
     dfs.sort((a, b) -> indexForId.get(a.id).compareTo(indexForId.get(b.id)));
 
-    return new modeldb.DataFrameAncestry(true, dfs);
+    return new modeldb.DataFrameAncestry(dfs);
   }
 
   /**
@@ -91,27 +87,23 @@ public class DataFrameAncestryComputer {
                                                   int index,
                                                   int chainNum) {
     if (dfForId.containsKey(df.id)) {
-      return new modeldb.CommonAncestor(
-        true,
-        df,
+      CommonAncestor resp = new modeldb.CommonAncestor(
         (chainNum == 1) ? index : dfForId.get(df.id).getKey(),
         (chainNum == 2) ? index : dfForId.get(df.id).getKey()
       );
+      resp.setAncestor(df);
+      return resp;
     } else {
       dfForId.put(df.id, new Pair<>(index, df));
       return null;
     }
   }
 
-  public static modeldb.CommonAncestor computeCommonAncestor(int dfId1, int dfId2, DSLContext ctx) {
+  public static modeldb.CommonAncestor computeCommonAncestor(int dfId1, int dfId2, DSLContext ctx)
+    throws ResourceNotFoundException {
     // Compute the ancestries of each DataFrame.
     modeldb.DataFrameAncestry ancestry1 = compute(dfId1, ctx);
     modeldb.DataFrameAncestry ancestry2 = compute(dfId2, ctx);
-
-    // If one of the IDs does not exist, return a failure.
-    if (!ancestry1.dataframeExists || ! ancestry2.dataframeExists) {
-      return failedAncestorLookup;
-    }
 
     // Get the chain of ancesters and figure out which one is longer.
     List<DataFrame> a1Chain = ancestry1.ancestors;
@@ -122,7 +114,7 @@ public class DataFrameAncestryComputer {
     Map<Integer, Pair<Integer, DataFrame>> dfForId = new HashMap<>();
 
     // This will store the response.
-    CommonAncestor response;
+    CommonAncestor response = new CommonAncestor(-1, -1);
 
     // Iterate through all the indices.
     for (int i = 0; i < n; i++) {
@@ -137,7 +129,7 @@ public class DataFrameAncestryComputer {
       }
     }
 
-    return failedAncestorLookup;
+    return response;
   }
 
   public static List<Integer> descendentModels(int dfId, DSLContext ctx) {
