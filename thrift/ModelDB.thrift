@@ -364,17 +364,22 @@ exception IllegalOperationException {
   1: string message
 }
 
+// Thrown when an Experiment Run ID is not defined.
+exception InvalidExperimentRunException {
+  1: string message
+}
+
 service ModelDBService {
   // This is just a method to test connection to the server. It returns 200.
   i32 testConnection(), 
 
   string pathForTransformer(1: i32 transformerId) throws (1: ResourceNotFoundException rnfEx, 2: InvalidFieldException efEx),
 
-  FitEventResponse storeFitEvent(1:FitEvent fe),
+  FitEventResponse storeFitEvent(1:FitEvent fe) throws (1: InvalidExperimentRunException ierEx),
 
-  MetricEventResponse storeMetricEvent(1:MetricEvent me),
+  MetricEventResponse storeMetricEvent(1:MetricEvent me) throws (1: InvalidExperimentRunException ierEx),
 
-  TransformEventResponse storeTransformEvent(1:TransformEvent te),
+  TransformEventResponse storeTransformEvent(1:TransformEvent te) throws (1: InvalidExperimentRunException ierEx),
 
   RandomSplitEventResponse storeRandomSplitEvent(1:RandomSplitEvent rse),
 

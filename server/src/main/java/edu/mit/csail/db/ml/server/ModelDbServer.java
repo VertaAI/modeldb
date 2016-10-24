@@ -35,84 +35,94 @@ public class ModelDbServer implements ModelDBService.Iface {
     return 200;
   }
 
-  public FitEventResponse storeFitEvent(FitEvent fe) throws TException {
+  public FitEventResponse storeFitEvent(FitEvent fe) throws InvalidExperimentRunException {
     try {
+      ExperimentRunDao.validateExperimentRunId(fe.experimentRunId, ctx);
       return FitEventDao.store(fe, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new FitEventResponse();
+      throw e;
     }
   }
 
-  public MetricEventResponse storeMetricEvent(MetricEvent me) throws TException {
+  public MetricEventResponse storeMetricEvent(MetricEvent me) throws InvalidExperimentRunException {
     try {
+      ExperimentRunDao.validateExperimentRunId(me.experimentRunId, ctx);
       return MetricEventDao.store(me, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new MetricEventResponse();
+      throw e;
     }
   }
 
-  public TransformEventResponse storeTransformEvent(TransformEvent te) throws TException {
+  public TransformEventResponse storeTransformEvent(TransformEvent te) throws InvalidExperimentRunException {
     try {
+      ExperimentRunDao.validateExperimentRunId(te.experimentRunId, ctx);
       return TransformEventDao.store(te, ctx, true);
     } catch (Exception e) {
       e.printStackTrace();
-      return new TransformEventResponse();
+      throw e;
     }
   }
 
-  public RandomSplitEventResponse storeRandomSplitEvent(RandomSplitEvent rse) throws TException {
+  public RandomSplitEventResponse storeRandomSplitEvent(RandomSplitEvent rse) throws InvalidExperimentRunException {
     try {
+      ExperimentRunDao.validateExperimentRunId(rse.experimentRunId, ctx);
       return RandomSplitEventDao.store(rse, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new RandomSplitEventResponse();
+      throw e;
     } 
   }
 
-  public PipelineEventResponse storePipelineEvent(PipelineEvent pipelineEvent) throws TException {
+  public PipelineEventResponse storePipelineEvent(PipelineEvent pipelineEvent) throws InvalidExperimentRunException {
     try {
+      ExperimentRunDao.validateExperimentRunId(pipelineEvent.experimentRunId, ctx);
       return PipelineEventDao.store(pipelineEvent, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new PipelineEventResponse();
+      throw e;
     } 
   }
 
-  public CrossValidationEventResponse storeCrossValidationEvent(CrossValidationEvent cve) throws TException {
+  public CrossValidationEventResponse storeCrossValidationEvent(CrossValidationEvent cve)
+    throws InvalidExperimentRunException {
     try {
+      ExperimentRunDao.validateExperimentRunId(cve.experimentRunId, ctx);
       return CrossValidationEventDao.store(cve, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new CrossValidationEventResponse();
+      throw e;
     }
   }
 
-  public GridSearchCrossValidationEventResponse storeGridSearchCrossValidationEvent(GridSearchCrossValidationEvent gscve) throws TException {
+  public GridSearchCrossValidationEventResponse storeGridSearchCrossValidationEvent(GridSearchCrossValidationEvent gscve)
+    throws InvalidExperimentRunException {
     try {
+      ExperimentRunDao.validateExperimentRunId(gscve.experimentRunId, ctx);
       return GridSearchCrossValidationEventDao.store(gscve, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new GridSearchCrossValidationEventResponse();
+      throw e;
     }
   }
 
-  public AnnotationEventResponse storeAnnotationEvent(AnnotationEvent ae) throws TException {
+  public AnnotationEventResponse storeAnnotationEvent(AnnotationEvent ae) throws InvalidExperimentRunException {
     try {
+      ExperimentRunDao.validateExperimentRunId(ae.experimentRunId, ctx);
       return AnnotationEventDao.store(ae, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new AnnotationEventResponse();
+      throw e;
     }
   }
 
-  public ProjectEventResponse storeProjectEvent(ProjectEvent pr) throws TException {
+  public ProjectEventResponse storeProjectEvent(ProjectEvent pr) {
     try {
       return ProjectDao.store(pr, ctx);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ProjectEventResponse();
+      throw e;
     }
   }
 

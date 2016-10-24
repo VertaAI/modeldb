@@ -5,6 +5,7 @@ import jooq.sqlite.gen.tables.records.ExperimentrunRecord;
 import modeldb.ExperimentRun;
 import modeldb.ExperimentRunEvent;
 import modeldb.ExperimentRunEventResponse;
+import modeldb.InvalidExperimentRunException;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 
@@ -32,5 +33,14 @@ public class ExperimentRunDao {
       return -1;
     }
     return rec.value1();
+  }
+
+  public static void validateExperimentRunId(int id, DSLContext ctx) throws InvalidExperimentRunException {
+    if (ctx.selectFrom(Tables.EXPERIMENTRUN).where(Tables.EXPERIMENTRUN.ID.eq(id)).fetchOne() == null) {
+      throw new InvalidExperimentRunException(String.format(
+        "Can't find experiment run ID %d",
+        id
+      ));
+    }
   }
 }

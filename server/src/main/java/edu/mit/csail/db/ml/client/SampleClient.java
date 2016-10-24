@@ -21,15 +21,14 @@ public class SampleClient {
    */
   private static void runAllTests(ModelDBService.Client client) throws Exception {
     testConnection(client);
+    testProjectEvent(client);
+    testExperimentEvent(client);
+    testExperimentRunEvent(client);
     testTransformEvent(client);
     testAnnotationEvent(client);
     testFitEvent(client);
     testRandomSplitEvent(client);
     testMetricEvent(client);
-    testProjectEvent(client);
-    testExperimentEvent(client);
-    testDefaultExperimentEvent(client);
-    testExperimentRunEvent(client);
     testPipelineEvent(client);
     testCrossValidationEvent(client);
     testGridSearchCrossValidationEvent(client);
@@ -75,10 +74,6 @@ public class SampleClient {
   }
 
   private static void testExperimentEvent(ModelDBService.Client client) throws Exception {
-    System.out.println(client.storeExperimentEvent(DummyFactory.makeExperimentEvent()));
-  }
-
-  private static void testDefaultExperimentEvent(ModelDBService.Client client) throws Exception {
     System.out.println(client.storeExperimentEvent(DummyFactory.makeExperimentEvent()));
   }
 
