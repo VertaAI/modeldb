@@ -126,7 +126,6 @@ class Syncer(object):
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(cls, projectConfig, experimentConfig, experimentRunConfig)
-            print("cls instance, ", cls.instance)
         return cls.instance
 
     def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
@@ -177,8 +176,6 @@ class Syncer(object):
         self.objectForTag[tag] = obj
 
     def addToBuffer(self, event):
-        print("event being added: ", event)
-        #print("Buffer looks like: ", self.bufferList)
         self.bufferList.append(event)
 
     def sync(self):

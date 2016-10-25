@@ -59,7 +59,6 @@ class SyncGridCVEvent:
     #Stores each of the associated events.
     def associate(self, res):
         syncer = ModelDbSyncer.Syncer.instance
-        print("RES, ", res)
         #First store the fit event
         dfImm = id(self.inputDataFrame)
         syncer.storeObject(self,res.eventId)
@@ -86,7 +85,6 @@ class SyncGridCVEvent:
     def sync(self):
         syncer = ModelDbSyncer.Syncer.instance
         crossValidationEvents = self.makeCrossValidationEvents()
-        print("cross validation events", crossValidationEvents)
         gscve = self.makeGridSearchCVEvent(crossValidationEvents)
 
         #Invoking thrift client
