@@ -27,6 +27,7 @@ public class ModelDbServer implements ModelDBService.Iface {
     try {
       return fn.get();
     } catch (Exception ex) {
+      ex.printStackTrace();
       if (ex instanceof TException) {
         throw (TException) ex;
       } else {
