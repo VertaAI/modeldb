@@ -49,6 +49,7 @@ public class SampleClient {
     testModelsWithFeatures(client);
     testDescendentModels(client);
     testReadInfo(client);
+    testReadRunsInExperiment(client);
   }
 
   private static void testTransformEvent(ModelDBService.Client client) throws Exception {
@@ -401,6 +402,10 @@ public class SampleClient {
 
     // Get all the info for the model.
     System.out.println(client.getModel(model.getId()));
+  }
+
+  private static void testReadRunsInExperiment(ModelDBService.Client client) throws Exception {
+    System.out.println(client.getRunsInExperiment(1));
   }
 
   /**

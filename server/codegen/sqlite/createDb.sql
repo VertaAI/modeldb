@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS ExperimentRun;
 CREATE TABLE ExperimentRun (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   experiment INTEGER REFERENCES Experiment NOT NULL,
+  description TEXT, -- Can be empty.
   created TIMESTAMP NOT NULL
 );
 

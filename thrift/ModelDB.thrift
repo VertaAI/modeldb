@@ -510,4 +510,6 @@ service ModelDBService {
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 
   ModelResponse getModel(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
+  list<ExperimentRun> getRunsInExperiment(1: i32 experimentId) throws (1: ServerLogicException svEx)
 }
