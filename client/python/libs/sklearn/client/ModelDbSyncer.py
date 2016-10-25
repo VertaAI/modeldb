@@ -28,6 +28,7 @@ from sklearn.grid_search import GridSearchCV
 import sklearn.metrics
 
 #Overrides the fit function for all models except for Pipeline and GridSearch Cross Validation, which have their own functions.
+
 def fitFn(self,X,y=None):
     df = X
     #Certain fit functions only accept one argument
@@ -41,7 +42,7 @@ def fitFn(self,X,y=None):
         else:
             #if X does not have column-names, we cannot perform a join, and must instead add a new column.
             df = pd.DataFrame(X)
-            df[outputColumn] = y
+            df['outputColumn'] = y
     #Calls SyncFitEvent in other class and adds to buffer 
     fitEvent = SyncableFitEvent.SyncFitEvent(models, self, df, Syncer.instance.experimentRun.id)
     Syncer.instance.addToBuffer(fitEvent)
@@ -122,10 +123,12 @@ class ExistingExperimentRun:
 class Syncer(object):
     instance = None
     def __new__(cls, projectConfig, experimentConfig, experimentRunConfig): # __new__ always a classmethod
-        if cls != type(cls.instance):
+        # This will break if cls is some random class.
+        if not cls.instance:
             cls.instance = object.__new__(cls, projectConfig, experimentConfig, experimentRunConfig)
+            print("cls instance, ", cls.instance)
         return cls.instance
-    
+
     def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
         self.idForObject = {}
         self.objectForId = {}
@@ -150,14 +153,14 @@ class Syncer(object):
         # TODO: can we clean up this construct: SyncableBlah.syncblah
         projectEvent = SyncableProjectEvent.SyncProjectEvent(self.project)
         projectEvent.sync()
-        
+
     def setExperiment(self, experimentConfig):
         self.experiment = experimentConfig.toThrift()
         self.experiment.projectId = self.project.id
         experimentEvent = SyncableExperimentEvent.SyncExperimentEvent(
             self.experiment)
         experimentEvent.sync()
-    
+
     def setExperimentRun(self, experimentRunConfig):
         self.experimentRun = experimentRunConfig.toThrift()
         self.experimentRun.experimentId = self.experiment.id
@@ -174,6 +177,8 @@ class Syncer(object):
         self.objectForTag[tag] = obj
 
     def addToBuffer(self, event):
+        print("event being added: ", event)
+        #print("Buffer looks like: ", self.bufferList)
         self.bufferList.append(event)
 
     def sync(self):

@@ -35,3 +35,14 @@ class SyncerTest(ModelDbSyncer.Syncer):
         # TODO: can we clean up this construct: SyncableBlah.syncblah
         projectEvent = SyncableProjectEvent.SyncProjectEvent(self.project)
         #projectEvent.sync()
+
+    def makeFitEvent(self):
+        self.syncableTransformer = self.convertModeltoThrift(self.model)
+        self.modelSpec = self.convertSpectoThrift(self.spec,self.df)
+        self.syncableDataFrame = self.convertDftoThrift(self.df)
+        fe = FitEvent(self.syncableDataFrame, self.modelSpec, self.syncableTransformer, 
+                            [], [], [], self.experiment.id)
+        return fe
+
+    def sync():
+        print("SYNC DO NOT DO ANYTHING")
