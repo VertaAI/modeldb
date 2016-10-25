@@ -192,4 +192,8 @@ public class ModelDbServer implements ModelDBService.Iface {
   public ModelResponse getModel(int modelId) throws TException {
     return run(() -> TransformerDao.readInfo(modelId, ctx));
   }
+
+  public List<ExperimentRun> getRunsInExperiment(int experimentId) throws TException {
+    return run(() -> ExperimentRunDao.readExperimentRunsInExperiment(experimentId, ctx));
+  }
 }

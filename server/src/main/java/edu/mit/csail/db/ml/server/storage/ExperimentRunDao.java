@@ -13,6 +13,7 @@ import org.jooq.Record2;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 public class ExperimentRunDao {
     // TODO: should we do a check here if experiment run exists?
@@ -21,6 +22,7 @@ public class ExperimentRunDao {
     ExperimentrunRecord erRec = ctx.newRecord(Tables.EXPERIMENTRUN);
     erRec.setId(er.id < 0 ? null : er.id);
     erRec.setExperiment(er.experimentId);
+    erRec.setDescription(er.description);
     erRec.setCreated(new Timestamp((new Date()).getTime()));
     erRec.store();
     return new ExperimentRunEventResponse(erRec.getId());
@@ -48,5 +50,20 @@ public class ExperimentRunDao {
         id
       ));
     }
+  }
+
+  public static List<ExperimentRun> readExperimentRunsInExperiment(int experimentId, DSLContext ctx) {
+    List<Integer> experimentRunIds = ctx
+      .select(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID)
+      .from(Tables.EXPERIMENT_RUN_VIEW)
+      .where(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTID.eq(experimentId))
+      .fetch()
+      .map(Record1::value1);
+
+    return ctx
+      .selectFrom(Tables.EXPERIMENTRUN)
+      .where(Tables.EXPERIMENTRUN.EXPERIMENT.in(experimentRunIds))
+      .fetch()
+      .map(r -> new ExperimentRun(r.getId(), r.getExperiment(), r.getDescription()));
   }
 }
