@@ -59,7 +59,6 @@ class SyncGridCVEvent:
     #Stores each of the associated events.
     def associate(self, res):
         syncer = ModelDbSyncer.Syncer.instance
-
         #First store the fit event
         dfImm = id(self.inputDataFrame)
         syncer.storeObject(self,res.eventId)
