@@ -45,9 +45,7 @@ def loadPandasDataset():
 
 model = linear_model.LogisticRegression()
 X,y = loadPandasDataset()
-model.fitSync(X,y)
-print("finished fitting!")
-
+#model.fitSync(X,y)
 
 class TestEvents(unittest.TestCase):
     def setUp(self):

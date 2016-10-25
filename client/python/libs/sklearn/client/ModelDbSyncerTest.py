@@ -45,4 +45,4 @@ class SyncerTest(ModelDbSyncer.Syncer):
         return fe
 
     def sync():
-        print("SYNC DO NOT DO ANYTHING")
+        print("Empty sync")
