@@ -3,10 +3,7 @@ package edu.mit.csail.db.ml.server.storage;
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.ExperimentrunRecord;
-import modeldb.ExperimentRun;
-import modeldb.ExperimentRunEvent;
-import modeldb.ExperimentRunEventResponse;
-import modeldb.InvalidExperimentRunException;
+import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Record2;
@@ -14,6 +11,8 @@ import org.jooq.Record2;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ExperimentRunDao {
     // TODO: should we do a check here if experiment run exists?
@@ -50,6 +49,37 @@ public class ExperimentRunDao {
         id
       ));
     }
+  }
+
+  public static ProjectExperimentsAndRuns readExperimentsAndRunsInProject(int projId, DSLContext ctx) {
+    // Get all the (experiment run ID, experiment ID) pairs in the project.
+    List<Pair<Integer, Integer>> runExpPairs = ctx
+      .select(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID, Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTID)
+      .from(Tables.EXPERIMENT_RUN_VIEW)
+      .where(Tables.EXPERIMENT_RUN_VIEW.PROJECTID.eq(projId))
+      .fetch()
+      .map(r -> new Pair<>(r.value1(), r.value2()));
+
+    // Fetch all the experiments in the project.
+    List<Integer> experimentIds = runExpPairs.stream().map(Pair::getValue).collect(Collectors.toList());
+    int defaultExp = experimentIds.stream().mapToInt(s -> s.intValue()).min().orElse(0);
+    List<Experiment> experiments = ctx
+      .selectFrom(Tables.EXPERIMENT)
+      .where(Tables.EXPERIMENT.ID.in(experimentIds))
+      .orderBy(Tables.EXPERIMENT.ID.asc())
+      .fetch()
+      .map(rec -> new Experiment(rec.getId(), projId, rec.getName(), rec.getDescription(), rec.getId() == defaultExp));
+
+    // Fetch all the experiment runs in the project.
+    List<Integer> experimentRunIds = runExpPairs.stream().map(Pair::getKey).collect(Collectors.toList());
+    List<ExperimentRun> experimentRuns = ctx
+      .selectFrom(Tables.EXPERIMENTRUN)
+      .where(Tables.EXPERIMENTRUN.ID.in(experimentRunIds))
+      .orderBy(Tables.EXPERIMENTRUN.ID.asc())
+      .fetch()
+      .map(rec -> new ExperimentRun(rec.getId(), rec.getExperiment(), rec.getDescription()));
+
+    return new ProjectExperimentsAndRuns(projId, experiments, experimentRuns);
   }
 
   public static List<ExperimentRun> readExperimentRunsInExperiment(int experimentId, DSLContext ctx) {

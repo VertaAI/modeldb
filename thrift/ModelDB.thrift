@@ -355,6 +355,12 @@ struct ConfidenceInterval {
   3: double high
 }
 
+struct ProjectExperimentsAndRuns {
+  1: i32 projId,
+  2: list<Experiment> experiments,
+  3: list<ExperimentRun> experimentRuns
+}
+
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
 // For example, if you try to read Transformer with ID 1, then we throw this
 // exception if that Transformer does not exist.
@@ -511,5 +517,7 @@ service ModelDBService {
 
   ModelResponse getModel(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
-  list<ExperimentRun> getRunsInExperiment(1: i32 experimentId) throws (1: ServerLogicException svEx)
+  list<ExperimentRun> getRunsInExperiment(1: i32 experimentId) throws (1: ServerLogicException svEx),
+
+  ProjectExperimentsAndRuns getRunsAndExperimentsInProject(1: i32 projId) throws (1: ServerLogicException svEx)
 }

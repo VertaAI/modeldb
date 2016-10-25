@@ -50,6 +50,7 @@ public class SampleClient {
     testDescendentModels(client);
     testReadInfo(client);
     testReadRunsInExperiment(client);
+    testReadRunsAndExperimentsInProject(client);
   }
 
   private static void testTransformEvent(ModelDBService.Client client) throws Exception {
@@ -406,6 +407,10 @@ public class SampleClient {
 
   private static void testReadRunsInExperiment(ModelDBService.Client client) throws Exception {
     System.out.println(client.getRunsInExperiment(1));
+  }
+
+  private static void testReadRunsAndExperimentsInProject(ModelDBService.Client client) throws Exception {
+    System.out.println(client.getRunsAndExperimentsInProject(1));
   }
 
   /**
