@@ -4,7 +4,11 @@ import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.DataframeRecord;
 import jooq.sqlite.gen.tables.records.DataframecolumnRecord;
 import modeldb.DataFrame;
+import modeldb.DataFrameColumn;
+import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
+
+import java.util.List;
 
 import static jooq.sqlite.gen.Tables.DATAFRAME;
 import static jooq.sqlite.gen.Tables.DATAFRAMECOLUMN;
@@ -34,6 +38,31 @@ public class DataFrameDao {
     });
 
     return dfRec;
+  }
+
+  public static DataframeRecord read(int dfId, DSLContext ctx) throws ResourceNotFoundException {
+    DataframeRecord rec = ctx.selectFrom(Tables.DATAFRAME).where(Tables.DATAFRAME.ID.eq(dfId)).fetchOne();
+    if (rec == null) {
+      throw new ResourceNotFoundException(String.format(
+        "Could not read DataFrame %d, it doesn't exist",
+        dfId
+      ));
+    }
+    return rec;
+  }
+
+  public static List<DataFrameColumn> readSchema(int dfId, DSLContext ctx) {
+    return ctx
+      .select(Tables.DATAFRAMECOLUMN.NAME, Tables.DATAFRAMECOLUMN.TYPE)
+      .from(Tables.DATAFRAMECOLUMN)
+      .where(Tables.DATAFRAMECOLUMN.DFID.eq(dfId))
+      .fetch()
+      .map(r -> new DataFrameColumn(r.value1(), r.value2()));
+  }
+
+  public static DataFrame readDataFrame(int dfId, DSLContext ctx) throws ResourceNotFoundException {
+    DataframeRecord rec = read(dfId, ctx);
+    return new DataFrame(rec.getId(), readSchema(dfId, ctx), rec.getNumrows(), rec.getTag());
   }
 
   public static boolean exists(int id, DSLContext ctx) {
