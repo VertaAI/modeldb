@@ -15,11 +15,32 @@ import java.sql.DriverManager;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class ModelDbServer implements ModelDBService.Iface {
   private DSLContext ctx;
+
+  private interface CheckedSupplier<T> {
+    T get() throws Exception;
+  }
+
+  private<T> T run(CheckedSupplier<T> fn) throws TException {
+    try {
+      return fn.get();
+    } catch (Exception ex) {
+      if (ex instanceof TException) {
+        throw (TException) ex;
+      } else {
+        throw new ServerLogicException(ex.getClass().getSimpleName() + ": " + ex.getMessage());
+      }
+    }
+  }
+
+  private<T> T run(int expRunId, CheckedSupplier<T> fn) throws TException {
+    return run(() -> {
+      ExperimentRunDao.validateExperimentRunId(expRunId, ctx);
+      return fn.get();
+    });
+  }
 
   public ModelDbServer(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType) {
     try {
@@ -31,168 +52,82 @@ public class ModelDbServer implements ModelDBService.Iface {
       e.printStackTrace();
     }
   }
+
   public int testConnection() throws TException {
     return 200;
   }
 
-  public FitEventResponse storeFitEvent(FitEvent fe) throws InvalidExperimentRunException {
-    try {
-      ExperimentRunDao.validateExperimentRunId(fe.experimentRunId, ctx);
-      return FitEventDao.store(fe, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public FitEventResponse storeFitEvent(FitEvent fe) throws TException {
+    return run(fe.experimentRunId, () -> FitEventDao.store(fe, ctx));
   }
 
-  public MetricEventResponse storeMetricEvent(MetricEvent me) throws InvalidExperimentRunException {
-    try {
-      ExperimentRunDao.validateExperimentRunId(me.experimentRunId, ctx);
-      return MetricEventDao.store(me, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public MetricEventResponse storeMetricEvent(MetricEvent me) throws TException {
+    return run(me.experimentRunId, () -> MetricEventDao.store(me, ctx));
   }
 
-  public TransformEventResponse storeTransformEvent(TransformEvent te) throws InvalidExperimentRunException {
-    try {
-      ExperimentRunDao.validateExperimentRunId(te.experimentRunId, ctx);
-      return TransformEventDao.store(te, ctx, true);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public TransformEventResponse storeTransformEvent(TransformEvent te) throws TException {
+    return run(te.experimentRunId, () -> TransformEventDao.store(te, ctx, true));
   }
 
-  public RandomSplitEventResponse storeRandomSplitEvent(RandomSplitEvent rse) throws InvalidExperimentRunException {
-    try {
-      ExperimentRunDao.validateExperimentRunId(rse.experimentRunId, ctx);
-      return RandomSplitEventDao.store(rse, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    } 
+  public RandomSplitEventResponse storeRandomSplitEvent(RandomSplitEvent rse) throws TException {
+    return run(rse.experimentRunId, () -> RandomSplitEventDao.store(rse, ctx));
   }
 
-  public PipelineEventResponse storePipelineEvent(PipelineEvent pipelineEvent) throws InvalidExperimentRunException {
-    try {
-      ExperimentRunDao.validateExperimentRunId(pipelineEvent.experimentRunId, ctx);
-      return PipelineEventDao.store(pipelineEvent, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    } 
+  public PipelineEventResponse storePipelineEvent(PipelineEvent pipelineEvent) throws TException {
+    return run(pipelineEvent.experimentRunId, () -> PipelineEventDao.store(pipelineEvent, ctx));
   }
 
-  public CrossValidationEventResponse storeCrossValidationEvent(CrossValidationEvent cve)
-    throws InvalidExperimentRunException {
-    try {
-      ExperimentRunDao.validateExperimentRunId(cve.experimentRunId, ctx);
-      return CrossValidationEventDao.store(cve, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public CrossValidationEventResponse storeCrossValidationEvent(CrossValidationEvent cve) throws TException {
+    return run(cve.experimentRunId, () -> CrossValidationEventDao.store(cve, ctx));
   }
 
   public GridSearchCrossValidationEventResponse storeGridSearchCrossValidationEvent(GridSearchCrossValidationEvent gscve)
-    throws InvalidExperimentRunException {
-    try {
-      ExperimentRunDao.validateExperimentRunId(gscve.experimentRunId, ctx);
-      return GridSearchCrossValidationEventDao.store(gscve, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+    throws TException {
+    return run(gscve.experimentRunId, () -> GridSearchCrossValidationEventDao.store(gscve, ctx));
   }
 
-  public AnnotationEventResponse storeAnnotationEvent(AnnotationEvent ae) throws InvalidExperimentRunException {
-    try {
-      ExperimentRunDao.validateExperimentRunId(ae.experimentRunId, ctx);
-      return AnnotationEventDao.store(ae, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public AnnotationEventResponse storeAnnotationEvent(AnnotationEvent ae) throws TException {
+    return run(ae.experimentRunId, () -> AnnotationEventDao.store(ae, ctx));
   }
 
-  public ProjectEventResponse storeProjectEvent(ProjectEvent pr) {
-    try {
-      return ProjectDao.store(pr, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public ProjectEventResponse storeProjectEvent(ProjectEvent pr) throws TException {
+    return run(() -> ProjectDao.store(pr, ctx));
   }
 
   public ExperimentEventResponse storeExperimentEvent(ExperimentEvent ee) throws TException {
-    try {
-      return ExperimentDao.store(ee, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ExperimentEventResponse();
-    }
+    return run(() -> ExperimentDao.store(ee, ctx));
   }
 
   public ExperimentRunEventResponse storeExperimentRunEvent(ExperimentRunEvent er) throws TException {
-    try {
-      return ExperimentRunDao.store(er, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ExperimentRunEventResponse();
-    }
+    return run(() -> ExperimentRunDao.store(er, ctx));
   }
 
-  public boolean storeLinearModel(int modelId, LinearModel model) throws ResourceNotFoundException {
-    try {
-      return LinearModelDao.store(modelId, model, ctx);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+  public boolean storeLinearModel(int modelId, LinearModel model) throws TException {
+    return run(() -> LinearModelDao.store(modelId, model, ctx));
   }
 
-  public modeldb.DataFrameAncestry getDataFrameAncestry(int dataFrameId) throws ResourceNotFoundException {
-    try {
-      return DataFrameAncestryComputer.compute(dataFrameId, ctx);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+  public modeldb.DataFrameAncestry getDataFrameAncestry(int dataFrameId) throws TException {
+    return run(() -> DataFrameAncestryComputer.compute(dataFrameId, ctx));
   }
 
-  public String pathForTransformer(int transformerId) throws ResourceNotFoundException, InvalidFieldException {
-    try {
-      return TransformerDao.path(transformerId, ctx);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+  public String pathForTransformer(int transformerId) throws TException {
+    return run(() -> TransformerDao.path(transformerId, ctx));
   }
 
-  public CommonAncestor getCommonAncestor(int dfId1, int dfId2) throws ResourceNotFoundException {
-    try {
-      return DataFrameAncestryComputer.computeCommonAncestor(dfId1, dfId2, ctx);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+  public CommonAncestor getCommonAncestor(int dfId1, int dfId2) throws TException {
+    return run(() -> DataFrameAncestryComputer.computeCommonAncestor(dfId1, dfId2, ctx));
   }
 
-  public CommonAncestor getCommonAncestorForModels(int modelId1, int modelid2) throws ResourceNotFoundException {
-    try {
+  public CommonAncestor getCommonAncestorForModels(int modelId1, int modelid2) throws TException {
+    return run(() -> {
       int dfId1 = FitEventDao.getParentDfId(modelId1, ctx);
       int dfId2 = FitEventDao.getParentDfId(modelid2, ctx);
       return getCommonAncestor(dfId1, dfId2);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+    });
   }
 
-  public int getTrainingRowsCount(int modelId) throws ResourceNotFoundException {
-    try {
+  public int getTrainingRowsCount(int modelId) throws TException {
+    return run(() -> {
       int numRows = FitEventDao.getNumRowsForModels(Collections.singletonList(modelId), ctx).get(0);
       if (numRows < 0) {
         throw new ResourceNotFoundException(String.format(
@@ -201,124 +136,55 @@ public class ModelDbServer implements ModelDBService.Iface {
         ));
       }
       return numRows;
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+    });
   }
 
   public List<Integer> getTrainingRowsCounts(List<Integer> modelIds) throws TException {
-    try {
-      return FitEventDao.getNumRowsForModels(modelIds, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ArrayList<>();
-    }
+    return run(() -> FitEventDao.getNumRowsForModels(modelIds, ctx));
   }
 
-  public CompareHyperParametersResponse compareHyperparameters(int modelId1, int modelId2)
-    throws ResourceNotFoundException {
-    try {
-      return HyperparameterComparison.compareHyperParameters(modelId1, modelId2, ctx);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+  public CompareHyperParametersResponse compareHyperparameters(int modelId1, int modelId2) throws TException {
+    return run(() -> HyperparameterComparison.compareHyperParameters(modelId1, modelId2, ctx));
   }
 
-  public CompareFeaturesResponse compareFeatures(int modelId1, int modelId2) throws ResourceNotFoundException {
-    try {
-      return Feature.compareFeatures(modelId1, modelId2, ctx);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+  public CompareFeaturesResponse compareFeatures(int modelId1, int modelId2) throws TException {
+    return run(() -> Feature.compareFeatures(modelId1, modelId2, ctx));
   }
 
-  public Map<ProblemType, List<Integer>> groupByProblemType(List<Integer> modelIds) {
-    try {
-      return ProblemTypeGrouper.groupByProblemType(modelIds, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new HashMap<>();
-    }
+  public Map<ProblemType, List<Integer>> groupByProblemType(List<Integer> modelIds) throws TException {
+    return run(() -> ProblemTypeGrouper.groupByProblemType(modelIds, ctx));
   }
 
-  public List<Integer> similarModels(int modelId, List<ModelCompMetric> compMetrics, int numModels)
-    throws ResourceNotFoundException, BadRequestException {
-    try {
-      return SimilarModels.similarModels(modelId, compMetrics, numModels, ctx);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
-    }
+  public List<Integer> similarModels(int modelId, List<ModelCompMetric> compMetrics, int numModels) throws TException {
+    return run(() -> SimilarModels.similarModels(modelId, compMetrics, numModels, ctx));
   }
 
-  public List<String> linearModelFeatureImportances(int modelId)
-    throws ResourceNotFoundException, IllegalOperationException {
-    try {
-      return LinearModelAlgorithms.featureImportances(modelId, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public List<String> linearModelFeatureImportances(int modelId) throws TException {
+    return run(() -> LinearModelAlgorithms.featureImportances(modelId, ctx));
   }
 
-  public List<FeatureImportanceComparison> compareLinearModelFeatureImportances(
-    int model1Id,
-    int model2Id
-  ) throws ResourceNotFoundException, IllegalOperationException {
-    try {
-      return LinearModelAlgorithms.featureImportances(model1Id, model2Id, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public List<FeatureImportanceComparison> compareLinearModelFeatureImportances(int model1Id, int model2Id)
+    throws TException {
+    return run(() -> LinearModelAlgorithms.featureImportances(model1Id, model2Id, ctx));
   }
 
   public List<Integer> iterationsUntilConvergence(List<Integer> modelIds, double tolerance) throws TException {
-    try {
-      return LinearModelAlgorithms.iterationsUntilConvergence(modelIds, tolerance, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ArrayList<>();
-    }
+    return run(() -> LinearModelAlgorithms.iterationsUntilConvergence(modelIds, tolerance, ctx));
   }
 
   public List<Integer> rankModels(List<Integer> modelIds, ModelRankMetric metric) throws TException {
-    try {
-      return LinearModelAlgorithms.rankModels(modelIds, metric, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ArrayList<>();
-    }
+    return run(() -> LinearModelAlgorithms.rankModels(modelIds, metric, ctx));
   }
 
-  public List<ConfidenceInterval> confidenceIntervals(int modelId, double significanceLevel)
-    throws BadRequestException, IllegalOperationException, ResourceNotFoundException {
-    try {
-      return LinearModelAlgorithms.confidenceIntervals(modelId, significanceLevel, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public List<ConfidenceInterval> confidenceIntervals(int modelId, double significanceLevel) throws TException {
+    return run(() -> LinearModelAlgorithms.confidenceIntervals(modelId, significanceLevel, ctx));
   }
 
   public List<Integer> modelsWithFeatures(List<String> featureNames) throws TException {
-    try {
-      return Feature.modelsWithFeatures(featureNames, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ArrayList<>();
-    }
+    return run(() -> Feature.modelsWithFeatures(featureNames, ctx));
   }
 
-  public List<Integer> modelsDerivedFromDataFrame(int dfId) throws ResourceNotFoundException {
-    try {
-      return DataFrameAncestryComputer.descendentModels(dfId, ctx);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-    }
+  public List<Integer> modelsDerivedFromDataFrame(int dfId) throws TException {
+    return run(() -> DataFrameAncestryComputer.descendentModels(dfId, ctx));
   }
 }
