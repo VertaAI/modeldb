@@ -363,11 +363,6 @@ exception IllegalOperationException {
   1: string message
 }
 
-// Thrown when the server has thrown an exception that we did not think of.
-exception ServerLogicException {
-  1: string message
-}
-
 // Thrown when an Experiment Run ID is not defined.
 exception InvalidExperimentRunException {
   1: string message
@@ -377,114 +372,85 @@ service ModelDBService {
   // This is just a method to test connection to the server. It returns 200.
   i32 testConnection(), 
 
-  string pathForTransformer(1: i32 transformerId) 
-    throws (1: ResourceNotFoundException rnfEx, 2: InvalidFieldException efEx, 3: ServerLogicException svEx),
+  string pathForTransformer(1: i32 transformerId) throws (1: ResourceNotFoundException rnfEx, 2: InvalidFieldException efEx),
 
-  FitEventResponse storeFitEvent(1:FitEvent fe) 
-   throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
+  FitEventResponse storeFitEvent(1:FitEvent fe) throws (1: InvalidExperimentRunException ierEx),
 
-  MetricEventResponse storeMetricEvent(1:MetricEvent me) 
-    throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
+  MetricEventResponse storeMetricEvent(1:MetricEvent me) throws (1: InvalidExperimentRunException ierEx),
 
-  TransformEventResponse storeTransformEvent(1:TransformEvent te) 
-    throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
+  TransformEventResponse storeTransformEvent(1:TransformEvent te) throws (1: InvalidExperimentRunException ierEx),
 
-  RandomSplitEventResponse storeRandomSplitEvent(1:RandomSplitEvent rse)
-    throws (1: ServerLogicException svEx),
+  RandomSplitEventResponse storeRandomSplitEvent(1:RandomSplitEvent rse),
 
-  PipelineEventResponse storePipelineEvent(1: PipelineEvent pipelineEvent)
-    throws (1: ServerLogicException svEx),
+  PipelineEventResponse storePipelineEvent(1: PipelineEvent pipelineEvent),
 
-  CrossValidationEventResponse storeCrossValidationEvent(1: CrossValidationEvent cve)
-    throws (1: ServerLogicException svEx),
+  CrossValidationEventResponse storeCrossValidationEvent(1: CrossValidationEvent cve),
 
-  GridSearchCrossValidationEventResponse storeGridSearchCrossValidationEvent(1: GridSearchCrossValidationEvent gscve)
-    throws (1: ServerLogicException svEx),
+  GridSearchCrossValidationEventResponse storeGridSearchCrossValidationEvent(1: GridSearchCrossValidationEvent gscve),
 
-  AnnotationEventResponse storeAnnotationEvent(1: AnnotationEvent ae)
-    throws (1: ServerLogicException svEx),
+  AnnotationEventResponse storeAnnotationEvent(1: AnnotationEvent ae),
 
-  ProjectEventResponse storeProjectEvent(1: ProjectEvent pr)
-    throws (1: ServerLogicException svEx),
+  ProjectEventResponse storeProjectEvent(1: ProjectEvent pr),
 
-  ExperimentEventResponse storeExperimentEvent(1: ExperimentEvent er)
-    throws (1: ServerLogicException svEx),
+  ExperimentEventResponse storeExperimentEvent(1: ExperimentEvent er),
 
-  ExperimentRunEventResponse storeExperimentRunEvent(1: ExperimentRunEvent er)
-    throws (1: ServerLogicException svEx),
+  ExperimentRunEventResponse storeExperimentRunEvent(1: ExperimentRunEvent er),
 
   // Associate LinearModel metadata with an already stored model
   // (i.e. Transformer) with the given id. Returns a boolean indicating
   // whether the metadata was correctly stored.
-  bool storeLinearModel(1: i32 modelId, 2: LinearModel model) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+  bool storeLinearModel(1: i32 modelId, 2: LinearModel model) throws (1: ResourceNotFoundException rnfEx),
 
-  DataFrameAncestry getDataFrameAncestry(1: i32 dataFrameId) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+  DataFrameAncestry getDataFrameAncestry(1: i32 dataFrameId) throws (1: ResourceNotFoundException rnfEx),
 
-  CommonAncestor getCommonAncestor(1: i32 dfId1, 2: i32 dfId2) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+  CommonAncestor getCommonAncestor(1: i32 dfId1, 2: i32 dfId2) throws (1: ResourceNotFoundException rnfEx),
 
-  CommonAncestor getCommonAncestorForModels(1: i32 modelId1, 2: i32 modelId2) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+  CommonAncestor getCommonAncestorForModels(1: i32 modelId1, 2: i32 modelId2) throws (1: ResourceNotFoundException rnfEx),
 
-  i32 getTrainingRowsCount(1: i32 modelId) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+  i32 getTrainingRowsCount(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx),
 
   // Returns the number of training rows in each model. If a model cannot be found,
   // we mark that it has -1 training rows.
-  list<i32> getTrainingRowsCounts(1: list<i32> modelIds) 
-    throws (1: ServerLogicException svEx),
+  list<i32> getTrainingRowsCounts(1: list<i32> modelIds),
 
-  CompareHyperParametersResponse compareHyperparameters(1: i32 modelId1, 2: i32 modelId2) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+  CompareHyperParametersResponse compareHyperparameters(1: i32 modelId1, 2: i32 modelId2) throws (1: ResourceNotFoundException rnfEx),
 
-  CompareFeaturesResponse compareFeatures(1: i32 modelId1, 2: i32 modelId2) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+  CompareFeaturesResponse compareFeatures(1: i32 modelId1, 2: i32 modelId2) throws (1: ResourceNotFoundException rnfEx),
 
   // Maps from ProblemType to the list of models with that problem type.
   // If any of the model IDs cannot be found, it will be left out of the map.
-  map<ProblemType, list<i32>> groupByProblemType(1: list<i32> modelIds)
-    throws (1: ServerLogicException svEx),
+  map<ProblemType, list<i32>> groupByProblemType(1: list<i32> modelIds),
 
-  list<i32> similarModels(1: i32 modelId, 2: list<ModelCompMetric> compMetrics, 3: i32 numModels) 
-    throws (1: ResourceNotFoundException rnfEx, 2: BadRequestException brEx, 3: ServerLogicException svEx),
+  list<i32> similarModels(1: i32 modelId, 2: list<ModelCompMetric> compMetrics, 3: i32 numModels) throws (1: ResourceNotFoundException rnfEx, 2: BadRequestException brEx),
 
   // Return the features, ordered by importance, for a linear model.
   // The returned list will be empty if the model does not exist, is not 
   // linear, or if its features are not standardized (i.e. it must have been
   // trained with a hyperparameter called "standardization" set to "true").
-  list<string> linearModelFeatureImportances(1: i32 modelId) 
-    throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx, 3: ServerLogicException svEx),
+  list<string> linearModelFeatureImportances(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx),
 
   // Compares the feature importances of the two models.
-  list<FeatureImportanceComparison> compareLinearModelFeatureImportances(1: i32 model1Id, 2: i32 model2Id) 
-    throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx, 3: ServerLogicException svEx),
+  list<FeatureImportanceComparison> compareLinearModelFeatureImportances(1: i32 model1Id, 2: i32 model2Id) throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx),
 
   // Given the a list model IDs, return the number of iterations that each
   // took to converge (convergence specified via tolerance). 
   // If any model does not exist or does not have an objective history, 
   // we give it -1 iterations.
-  list<i32> iterationsUntilConvergence(1: list<i32> modelIds, 2: double tolerance)
-    throws (1: ServerLogicException svEx),
+  list<i32> iterationsUntilConvergence(1: list<i32> modelIds, 2: double tolerance),
 
   // Rank the given models by some metric. The returned list will contain
   // the models ordered by highest metric to lowest metric. If we cannot
   // find the corresponding metric value for a given model, its id will be
   // omitted from the returned list.
-  list<i32> rankModels(1: list<i32> modelIds, 2: ModelRankMetric metric)
-    throws (1: ServerLogicException svEx),
+  list<i32> rankModels(1: list<i32> modelIds, 2: ModelRankMetric metric),
 
-  list<ConfidenceInterval> confidenceIntervals(1: i32 modelId, 2: double sigLevel) 
-    throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx, 3: BadRequestException brEx, 4: ServerLogicException svEx),
+  list<ConfidenceInterval> confidenceIntervals(1: i32 modelId, 2: double sigLevel) throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx, 3: BadRequestException brEx),
 
   // Get the IDs of the models that use the given set of features.
-  list<i32> modelsWithFeatures(1: list<string> featureNames)
-    throws (1: ServerLogicException svEx),
+  list<i32> modelsWithFeatures(1: list<string> featureNames),
 
   // Get the IDs of the models that are derived from the DataFrame with the 
   // given ID, or one of its descendent DataFrames. This will only consider
   // models and DataFrames in the same project as the given dfId.
-  list<i32> modelsDerivedFromDataFrame(1: i32 dfId) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
+  list<i32> modelsDerivedFromDataFrame(1: i32 dfId) throws (1: ResourceNotFoundException rnfEx)
 }

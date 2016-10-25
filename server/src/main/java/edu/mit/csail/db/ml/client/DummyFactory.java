@@ -36,16 +36,6 @@ public class DummyFactory {
     );
   }
 
-  public static Experiment makeDefaultExperiment() {
-    return new Experiment(
-      EMPTY_PRIMARY_KEY,
-      1,
-      "test experiment",
-      "this is a test experiment",
-      false
-    );
-  }
-
   public static ExperimentRun makeExperimentRun() {
     return new ExperimentRun(
       EMPTY_PRIMARY_KEY,

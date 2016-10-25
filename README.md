@@ -4,6 +4,8 @@ ModelDB is an end-to-end system to manage machine learning models.
 
 ## Setup
 
+ModelDB has various dependencies. See [Required Software](docs/RequiredSoftware.md)
+
 ### Configuration
 A Project must be defined in the config. It contains a name and description.
 

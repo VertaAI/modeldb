@@ -35,4 +35,8 @@ public class DataFrameDao {
 
     return dfRec;
   }
+
+  public static boolean exists(int id, DSLContext ctx) {
+    return ctx.selectFrom(Tables.DATAFRAME).where(Tables.DATAFRAME.ID.eq(id)).fetchOne() != null;
+  }
 }
