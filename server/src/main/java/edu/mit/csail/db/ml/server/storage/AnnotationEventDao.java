@@ -10,6 +10,8 @@ import modeldb.AnnotationFragmentResponse;
 import org.jooq.DSLContext;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,5 +68,38 @@ public class AnnotationEventDao {
       .collect(Collectors.toList());
 
     return new AnnotationEventResponse(aRec.getId(), fragResp);
+  }
+
+  private static String fragmentToString(AnnotationfragmentRecord rec) {
+    switch (rec.getType()) {
+      case TRANSFORMER_TYPE: return String.format("Transformer(%d)", rec.getTransformer());
+      case DATAFRAME_TYPE: return String.format("DataFrame(%d)", rec.getDataframe());
+      case SPEC_TYPE: return String.format("TransformerSpec(%d)", rec.getSpec());
+      default: return rec.getMessage();
+    }
+  }
+
+  // Read the given annotation Ids as an list of string. If any of them does not exist,
+  // we will put an empty string in their place.
+  public static List<String> readStrings(List<Integer> annotationIds, DSLContext ctx) {
+    List<String> result = new ArrayList<>();
+    annotationIds.forEach(aId -> result.add(""));
+
+    ctx.selectFrom(Tables.ANNOTATIONFRAGMENT)
+      .where(Tables.ANNOTATIONFRAGMENT.ANNOTATION.in(annotationIds))
+      .orderBy(Tables.ANNOTATIONFRAGMENT.FRAGMENTINDEX.asc())
+      .fetch()
+      .forEach(rec -> {
+        int index = annotationIds.indexOf(rec.getAnnotation());
+        String str = fragmentToString(rec);
+        result.set(index, result.get(index) + " " + str);
+      });
+
+    return result.stream().map(String::trim).collect(Collectors.toList());
+  }
+
+  // Like the above, but for one ID.
+  public static String readString(int annotationId, DSLContext ctx) {
+    return readStrings(Collections.singletonList(annotationId), ctx).get(0);
   }
 }

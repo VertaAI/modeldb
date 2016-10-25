@@ -48,6 +48,7 @@ public class SampleClient {
     testConfidenceIntervals(client);
     testModelsWithFeatures(client);
     testDescendentModels(client);
+    testReadInfo(client);
   }
 
   private static void testTransformEvent(ModelDBService.Client client) throws Exception {
@@ -365,6 +366,41 @@ public class SampleClient {
        .collect(Collectors.joining(", ", "Descendents ", ""))
      );
      System.out.println("Expected descendents " + mid1 + " and " + mid2);
+  }
+
+  public static void testReadInfo(ModelDBService.Client client) throws Exception {
+    // First create the model.
+    FitEvent fe = DummyFactory.makeFitEvent();
+    FitEventResponse fer = client.storeFitEvent(fe);
+
+    Transformer model = fe.model.setId(fer.modelId);
+
+    // Store some metrics for the model.
+    MetricEvent me1 = DummyFactory.makeMetricEvent();
+    MetricEvent me2 = DummyFactory.makeMetricEvent();
+    MetricEvent me3 = DummyFactory.makeMetricEvent();
+    me1.setModel(model);
+    me2.setModel(model);
+    me3.setModel(model);
+    MetricEventResponse mer1 = client.storeMetricEvent(me1);
+    me2.setDf(me1.df.setId(mer1.dfId));
+    me2.setMetricType("recall");
+    client.storeMetricEvent(me2);
+    client.storeMetricEvent(me3);
+
+    // Store some annotations for the model.
+    AnnotationEvent ae = new AnnotationEvent(
+      Arrays.asList(
+        new AnnotationFragment("transformer", null, null, fe.model, "none"),
+        new AnnotationFragment("message", null, null, fe.model, "was stored")
+      ),
+      fe.experimentRunId
+    );
+    client.storeAnnotationEvent(ae);
+
+
+    // Get all the info for the model.
+    System.out.println(client.getModel(model.getId()));
   }
 
   /**

@@ -1,5 +1,6 @@
 package edu.mit.csail.db.ml.server.storage;
 
+import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.ExperimentrunRecord;
 import modeldb.ExperimentRun;
@@ -8,6 +9,7 @@ import modeldb.ExperimentRunEventResponse;
 import modeldb.InvalidExperimentRunException;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
+import org.jooq.Record2;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -25,14 +27,18 @@ public class ExperimentRunDao {
   }
 
   public static int getProjectId(int eRunId, DSLContext ctx) {
-    Record1<Integer> rec = ctx.select(Tables.EXPERIMENT_RUN_VIEW.PROJECTID)
+    return getExperimentAndProjectIds(eRunId, ctx).getValue();
+  }
+
+  public static Pair<Integer, Integer> getExperimentAndProjectIds(int eRunId, DSLContext ctx) {
+    Record2<Integer, Integer> rec = ctx.select(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTID, Tables.EXPERIMENT_RUN_VIEW.PROJECTID)
       .from(Tables.EXPERIMENT_RUN_VIEW)
       .where(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID.eq(eRunId))
       .fetchOne();
     if (rec == null) {
-      return -1;
+      return new Pair<>(-1, -1);
     }
-    return rec.value1();
+    return new Pair<>(rec.value1(), rec.value2());
   }
 
   public static void validateExperimentRunId(int id, DSLContext ctx) throws InvalidExperimentRunException {

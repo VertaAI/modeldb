@@ -87,6 +87,27 @@ struct Transformer {
   4: string tag =""
 }
 
+struct ModelResponse {
+  1: i32 id,
+  2: i32 experimentRunId,
+  3: i32 experimentId,
+  4: i32 projectId,
+  5: DataFrame trainingDataFrame,
+  6: TransformerSpec specification,
+  7: ProblemType problemType,
+  8: list<string> featureColumns,
+  9: list<string> labelColumns,
+  10: list<string> predictionColumns,
+  // Map from metric name to evaluation DataFrame ID to metric value.
+  // We need the evaluation DataFrame ID because we could compute the same
+  // metric on multiple DataFrames.
+  11: map<string, map<i32, double>> metrics,
+  // Turn each annotation into a string.
+  12: list<string> annotations,
+  13: string sha,
+  14: optional LinearModel linearModelData
+}
+
 enum ProblemType {
   UNDEFINED,
   BINARY_CLASSIFICATION,
@@ -487,4 +508,6 @@ service ModelDBService {
   // models and DataFrames in the same project as the given dfId.
   list<i32> modelsDerivedFromDataFrame(1: i32 dfId) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
+
+  ModelResponse getModel(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 }

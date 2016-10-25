@@ -188,4 +188,8 @@ public class ModelDbServer implements ModelDBService.Iface {
   public List<Integer> modelsDerivedFromDataFrame(int dfId) throws TException {
     return run(() -> DataFrameAncestryComputer.descendentModels(dfId, ctx));
   }
+
+  public ModelResponse getModel(int modelId) throws TException {
+    return run(() -> TransformerDao.readInfo(modelId, ctx));
+  }
 }
