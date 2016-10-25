@@ -41,6 +41,7 @@ public class SampleClient {
     testSimilarModels(client);
     testLinearModel(client);
     testLinearModelFeatureImportances(client);
+    testException(client);
     testLinearModelFeatureImportancesTwoModels(client);
     testIterationsUntilConvergence(client);
     testRankModels(client);
@@ -226,6 +227,24 @@ public class SampleClient {
 
     // Fetch the feature importances of the linear model.
     System.out.println(client.linearModelFeatureImportances(modelId));
+  }
+
+  private static void testException(ModelDBService.Client client) throws Exception {
+    // Store a FitEvent so that we have Transformer with ID = 1 in the database.
+    int modelId = client.storeFitEvent(DummyFactory.makeFitEvent()).modelId;
+
+    // Store a LinearModel.
+    client.storeLinearModel(modelId, DummyFactory.makeLinearModel());
+
+    // Access a model ID that does not exist. This should thrown a ResourceNotFoundException.
+    try {
+      client.linearModelFeatureImportances(999999);
+      System.out.println("ERROR: Did not throw an exception!");
+    } catch (ResourceNotFoundException ex) {
+      System.out.println("CORRECT: Properly through exception: " + ex.getMessage());
+    } catch (Exception ex) {
+      System.out.println("ERROR: Wrong exception type! " + ex.getClass().getSimpleName());
+    }
   }
 
   private static void testLinearModelFeatureImportancesTwoModels(ModelDBService.Client client) throws Exception {
