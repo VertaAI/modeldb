@@ -5,7 +5,7 @@ import ModelDbSyncer
 import sys
 sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
-from modeldb.ttypes import *
+import modeldb.ttypes as modeldb_types
 
 class SyncTransformEvent:
     def __init__(self, oldDf, newDf, transformer, experimentRunId):
@@ -19,7 +19,7 @@ class SyncTransformEvent:
         self.syncableTransformer = syncer.convertModeltoThrift(self.transformer)
         self.syncableDataFrameOld = syncer.convertDftoThrift(self.oldDf)
         self.syncableDataFrameNew = syncer.convertDftoThrift(self.newDf)
-        te = TransformEvent(self.syncableDataFrameOld, self.syncableDataFrameNew, 
+        te = modeldb_types.TransformEvent(self.syncableDataFrameOld, self.syncableDataFrameNew, 
                                     self.syncableTransformer, [], [], 
                                     self.experimentRunId)
         return te

@@ -5,20 +5,16 @@ sys.path.append('../')
 sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing
 from sklearn import linear_model
-
-from client.ModelDbSyncer import NewOrExistingProject
-from client.ModelDbSyncer import DefaultExperiment
-from client.ModelDbSyncer import NewExperimentRun
-from client.ModelDbSyncer import Syncer
-import client.SyncablePipelineEvent as SyncablePipelineEvent
-import client.SyncableMetrics as SyncableMetrics
-import client.SyncableRandomSplit as SyncableRandomSplit
-
 from sklearn import svm
 from sklearn.datasets import samples_generator
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
 from sklearn.pipeline import Pipeline
+
+from ModelDbSyncer import *
+import SyncableMetrics
+import SyncableRandomSplit
+
 
 #This is an extension of a common usage of Pipeline in scikit - adapted from http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline
 

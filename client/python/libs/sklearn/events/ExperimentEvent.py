@@ -5,7 +5,7 @@ import ModelDbSyncer
 import sys
 sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
-from modeldb.ttypes import *
+import modeldb.ttypes as modeldb_types
 
 class SyncExperimentEvent:
     def __init__(self, experiment):
@@ -16,5 +16,5 @@ class SyncExperimentEvent:
 
         #Invoking thrift client
         thriftClient = syncer.client
-        res = thriftClient.storeExperimentEvent(ExperimentEvent(self.experiment))
+        res = thriftClient.storeExperimentEvent(modeldb_types.ExperimentEvent(self.experiment))
         syncer.experiment.id = res.experimentId

@@ -5,16 +5,15 @@ sys.path.append('../')
 sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing
 from sklearn import linear_model
-
-from client.ModelDbSyncer import *
-
-import client.SyncableGridSearchCV as SyncableGridSearchCV
+from sklearn.grid_search import GridSearchCV
 from sklearn import datasets
 from sklearn.cross_validation import train_test_split
-from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import classification_report
-import client.SyncableMetrics as SyncableMetrics
 from sklearn.svm import SVC
+
+from ModelDbSyncer import *
+import SyncableGridSearchCV
+import SyncableMetrics
 
 #This is a sample usage of GridSearch in scikit, adapted from http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_digits.html
 name = "grid search"

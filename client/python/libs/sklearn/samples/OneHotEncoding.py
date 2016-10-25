@@ -5,11 +5,10 @@ sys.path.append('../')
 sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing, linear_model, cross_validation, metrics
 from sklearn.preprocessing import LabelBinarizer
-import client.SyncableRandomSplit as SyncableRandomSplit
-import client.SyncableMetrics as SyncableMetrics
-from client.ModelDbSyncer import *
 
-import client.ModelDbSyncer as ModelDbSyncer
+from ModelDbSyncer import *
+import SyncableRandomSplit 
+import SyncableMetrics 
 
 name = "logistic regression - one hot encoding"
 author = "srinidhi"

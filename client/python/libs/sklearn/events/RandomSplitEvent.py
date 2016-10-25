@@ -5,7 +5,7 @@ import ModelDbSyncer
 import sys
 sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
-from modeldb.ttypes import *
+import modeldb.ttypes as modeldb_types
 
 class SyncRandomSplitEvent:
     def __init__(self, df, weights, seed, result, experimentRunId):
@@ -22,7 +22,7 @@ class SyncRandomSplitEvent:
         allSyncableFrames = []
         for dataFrame in self.result:
             allSyncableFrames.append(syncer.convertDftoThrift(dataFrame))
-        re = RandomSplitEvent(self.syncableDataFrame, self.weights, self.seed, allSyncableFrames, self.experimentRunId)
+        re = modeldb_types.RandomSplitEvent(self.syncableDataFrame, self.weights, self.seed, allSyncableFrames, self.experimentRunId)
         return re
 
     def associate(self,res):
