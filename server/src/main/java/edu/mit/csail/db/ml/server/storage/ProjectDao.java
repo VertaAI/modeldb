@@ -1,16 +1,23 @@
 package edu.mit.csail.db.ml.server.storage;
 
+import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.ProjectRecord;
 import jooq.sqlite.gen.tables.records.ExperimentRecord;
 import modeldb.Project;
 import modeldb.ProjectEvent;
 import modeldb.ProjectEventResponse;
+import modeldb.ProjectOverviewResponse;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
+import org.jooq.Record2;
+import org.jooq.Record3;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ProjectDao {
   public static ProjectEventResponse store(ProjectEvent pr, DSLContext ctx) {
@@ -53,5 +60,41 @@ public class ProjectDao {
     } else {
         return -1;
     }
+  }
+
+  public static List<ProjectOverviewResponse> getProjectOverviews(DSLContext ctx) {
+    Map<Integer, Project> projectForId = ctx
+      .selectFrom(Tables.PROJECT)
+      .fetch()
+      .map(rec -> new Project(rec.getId(), rec.getName(), rec.getAuthor(), rec.getDescription()))
+      .stream()
+      .collect(Collectors.toMap(Project::getId, p -> p));
+
+    Map<Integer, Integer> numExperimentsForProjId = ctx
+      .select(Tables.EXPERIMENT.PROJECT, Tables.EXPERIMENT.ID.count())
+      .from(Tables.EXPERIMENT)
+      .groupBy(Tables.EXPERIMENT.PROJECT)
+      .fetch()
+      .stream()
+      .collect(Collectors.toMap(Record2::value1, Record2::value2));
+
+
+    Map<Integer, Integer> numExperimentRunsForProjId  = ctx
+      .select(Tables.EXPERIMENT_RUN_VIEW.PROJECTID, Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTID.count())
+      .from(Tables.EXPERIMENT_RUN_VIEW)
+      .groupBy(Tables.EXPERIMENT_RUN_VIEW.PROJECTID)
+      .fetch()
+      .stream()
+      .collect(Collectors.toMap(Record2::value1, Record2::value2));
+
+    return projectForId
+      .keySet()
+      .stream()
+      .map(id -> new ProjectOverviewResponse(
+        projectForId.get(id),
+        numExperimentsForProjId.get(id),
+        numExperimentRunsForProjId.get(id)
+      ))
+      .collect(Collectors.toList());
   }
 }
