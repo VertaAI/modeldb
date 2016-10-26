@@ -1,0 +1,107 @@
+body {
+	margin: 20px;
+	font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.filters-container {
+	width: 19%;
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+}
+
+.filters-info {
+	background-color: #eee;
+	padding: 10px;
+}
+
+.filters-info h2 {
+	margin: 0 0 5px 0;
+}
+
+.filters {
+	height: 300px;
+	background-color: #eee;
+	overflow-y: auto;
+}
+
+.filter {
+	margin: 10px;
+	padding: 5px;
+	background-color: #62e8e9;
+	border-radius: 2px;
+}
+
+.filter-key, .filter-val {
+	display: inline-block;
+	vertical-align: top;
+	margin-left: 5px;
+}
+
+.filter-close {
+	float: right;
+	color: #1BC4C4;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.filter-close:hover {
+	color: #000;
+}
+
+.filter-button {
+	background-color: #92F992;
+	transition: all 0.3s ease;
+	border: none;
+	position: absolute;
+	bottom: 10px;
+	left: 5%;
+	width: 90%;
+	padding: 5px 0;
+	font-size: 12pt;
+	cursor: pointer;
+}
+
+.filter-button:focus {
+	outline: 0;
+}
+
+.filter-button:hover {
+	background-color: #67F467;
+}
+
+.inline-block {
+	display: inline-block;
+	vertical-align: top;
+	margin: 0 10px;
+}
+
+.model {
+	margin: 0 20px 20px 6px;
+	background-color: #eee;
+	padding: 20px;
+}
+
+.model-config, .model-metric {
+	padding: 4px 7px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	border-radius: 2px;
+}
+
+.ui-draggable-dragging{
+	pointer-events:none;
+}
+
+.model-config:hover, .model-metric:hover {
+	background-color: #62e8e9;
+}
+
+.model-config.ui-draggable-dragging, 
+.model-metric.ui-draggable-dragging {
+	background-color: #62e8e9;
+}

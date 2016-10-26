@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/css/projects.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <div class="projects">
+      <% for(var i=0; i<projects.length; i++) { %>
+        <a href="projects/<%= projects[i]._id %>/models">
+          <div class="project">
+            <div class="project-name"><%= projects[i].name %></div>
+            <div class="project-time"><%= projects[i].updated_at %></div>
+            <div class="project-models">
+              Models: [
+              <% for(var j=0; j<projects[i].models.length; j++) { %>
+                <div class="project-model"><%= projects[i].models[j].model_id %></div>
+              <% } %>
+              ]
+            </div>
+          </div>
+        </a>
+      <% } %>
+    </div>
+  </body>
+</html>

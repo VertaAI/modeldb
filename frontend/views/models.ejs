@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/css/models.css' />
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>    
+    <script src='/js/script.js'></script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <div class="filters-container">
+        <div class="filters-info">
+            <h2>Filter</h2>
+            Drag configs or metrics into this section to filter models based on key - value pairs.
+        </div>
+        <div class="filters"></div>
+    </div>
+    <div class="models inline-block">
+    	<% for(var i=0; i<models.length; i++) { %>
+    		<div class="model">
+    			<div class="inline-block model-info">
+	    			ID: <%= models[i].model_id %><br>
+    				Type: <%= models[i].type %><br>
+    				Date: <%= models[i].created_at %>
+    			</div>
+    			<div class="inline-block model-configs">
+    				<% for (var j=0; j<models[i].configs.length; j++) { %>
+    					<div class="model-config" 
+    						data-key="<%=models[i].configs[j].key %>"
+    						data-val="<%=models[i].configs[j].value %>"
+    					>
+	    					<%= models[i].configs[j].key %>: <%= models[i].configs[j].value %>
+	    				</div>
+    				<% } %>
+    			</div>
+    			<div class="inline-block model-metrics">
+    				<% for (var j=0; j<models[i].metrics.length; j++) { %>
+    					<div class="model-metric"
+    						data-key="<%=models[i].metrics[j].key %>"
+    						data-val="<%=models[i].metrics[j].value %>"
+    					>
+	    					<%= models[i].metrics[j].key %>: <%= models[i].metrics[j].value %>
+    					</div>
+    				<% } %>
+    			</div>
+    			<div class="inline-block model-annotation">
+    				<%= models[i].annotation %>
+    			</div>
+    		</div>
+    	<% } %>
+    </div>
+  </body>
+</html>

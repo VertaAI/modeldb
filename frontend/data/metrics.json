@@ -1,0 +1,41 @@
+{
+	"_id": ObjectId("5805d582b02cb07f9634c5db"),
+	"model_id": ObjectId("5805d4ddb02cb07f9634c5d8"),
+	"key": "metric 1",
+	"value": "value 1"
+}
+
+{
+	"_id": ObjectId("5805d582b02cb07f9634c5dc"),
+	"model_id": ObjectId("5805d4ddb02cb07f9634c5d8"),
+	"key": "metric 2",
+	"value": "value 2"
+}
+
+{
+	"_id": ObjectId("5805d582b02cb07f9634c5dd"),
+	"model_id": ObjectId("5805d4ddb02cb07f9634c5d8"),
+	"key": "metric 3",
+	"value": "value 3"
+}
+
+{
+	"_id": ObjectId("5805d582b02cb07f9634c5de"),
+	"model_id": ObjectId("5805d549b02cb07f9634c5d9"),
+	"key": "metric 1",
+	"value": "value 1"
+}
+
+{
+	"_id": ObjectId("5805d582b02cb07f9634c5df"),
+	"model_id": ObjectId("5805d569b02cb07f9634c5da"),
+	"key": "metric 1",
+	"value": "value 1"
+}
+
+{
+	"_id": ObjectId("5805d582b02cb07f9634c5e0"),
+	"model_id": ObjectId("5805d569b02cb07f9634c5da"),
+	"key": "metric 2",
+	"value": "value 2"
+}

@@ -1,0 +1,41 @@
+{
+	"_id": ObjectId("5805d5e2b02cb07f9634c5e1"),
+	"model_id": ObjectId("5805d4ddb02cb07f9634c5d8"),
+	"key": "config 1",
+	"value": "value a"
+}
+
+{
+	"_id": ObjectId("5805d5e2b02cb07f9634c5e2"),
+	"model_id": ObjectId("5805d4ddb02cb07f9634c5d8"),
+	"key": "config 2",
+	"value": "value b"
+}
+
+{
+	"_id": ObjectId("5805d5e2b02cb07f9634c5e3"),
+	"model_id": ObjectId("5805d549b02cb07f9634c5d9"),
+	"key": "config 1",
+	"value": "value a"
+}
+
+{
+	"_id": ObjectId("5805d5e2b02cb07f9634c5e4"),
+	"model_id": ObjectId("5805d549b02cb07f9634c5d9"),
+	"key": "config 2",
+	"value": "value c"
+}
+
+{
+	"_id": ObjectId("5805d5e2b02cb07f9634c5e5"),
+	"model_id": ObjectId("5805d549b02cb07f9634c5d9"),
+	"key": "config 3",
+	"value": "value e"
+}
+
+{
+	"_id": ObjectId("5805d5e2b02cb07f9634c5e6"),
+	"model_id": ObjectId("5805d569b02cb07f9634c5da"),
+	"key": "config 1",
+	"value": "value d"
+}
