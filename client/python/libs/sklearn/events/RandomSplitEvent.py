@@ -1,13 +1,6 @@
-#!/usr/bin/python
-import numpy as np
-import pandas as pd
-import ModelDbSyncer
-import sys
-sys.path.append('./thrift/gen-py')
-from modeldb import ModelDBService
-import modeldb.ttypes as modeldb_types
+from Event import *
 
-class SyncRandomSplitEvent:
+class RandomSplitEvent(Event):
     def __init__(self, df, weights, seed, result, experimentRunId):
         self.df = df
         self.weights = weights
