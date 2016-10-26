@@ -204,4 +204,8 @@ public class ModelDbServer implements ModelDBService.Iface {
   public List<ProjectOverviewResponse> getProjectOverviews() throws TException {
     return run(() -> ProjectDao.getProjectOverviews(ctx));
   }
+
+  public ExperimentRunDetailsResponse getExperimentRunDetails(int experimentRunId) throws TException {
+    return run(() -> ExperimentRunDao.readExperimentRunDetails(experimentRunId, ctx));
+  }
 }

@@ -9,6 +9,7 @@ import org.jooq.Record1;
 import org.jooq.Record2;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,20 @@ public class ExperimentRunDao {
         id
       ));
     }
+  }
+
+  public static ExperimentRun read(int experimentRunId, DSLContext ctx) throws ResourceNotFoundException {
+    ExperimentrunRecord rec = ctx
+      .selectFrom(Tables.EXPERIMENTRUN)
+      .where(Tables.EXPERIMENTRUN.ID.eq(experimentRunId))
+      .fetchOne();
+    if (rec == null) {
+      throw new ResourceNotFoundException(String.format(
+        "Can't find ExperimentRun with ID %d",
+        experimentRunId
+      ));
+    }
+    return new ExperimentRun(rec.getId(), rec.getExperiment(), rec.getDescription());
   }
 
   public static ProjectExperimentsAndRuns readExperimentsAndRunsInProject(int projId, DSLContext ctx) {
@@ -95,5 +110,36 @@ public class ExperimentRunDao {
       .where(Tables.EXPERIMENTRUN.EXPERIMENT.in(experimentRunIds))
       .fetch()
       .map(r -> new ExperimentRun(r.getId(), r.getExperiment(), r.getDescription()));
+  }
+
+  public static ExperimentRunDetailsResponse readExperimentRunDetails(int experimentRunId, DSLContext ctx)
+    throws ResourceNotFoundException {
+    // Read the experiment run, experiment, and project.
+    ExperimentRun expRun = read(experimentRunId, ctx);
+    Experiment exp = ExperimentDao.read(expRun.getExperimentId(), ctx);
+    Project proj = ProjectDao.read(exp.getProjectId(), ctx);
+
+    // Find the IDs of the models in this ExperimentRun. Remember that a model is a Transformer that was created with
+    // a FitEvent. We focus on the models because we don't want to clutter the response with every single StringIndexer,
+    // Scaler, and other uninteresting Transformer.
+    List<Integer> modelIds = ctx
+      .select(Tables.TRANSFORMER.ID)
+      .from(Tables.TRANSFORMER.join(Tables.FITEVENT).on(Tables.TRANSFORMER.ID.eq(Tables.FITEVENT.TRANSFORMER)))
+      .where(Tables.TRANSFORMER.EXPERIMENTRUN.eq(experimentRunId))
+      .fetch()
+      .map(Record1::value1);
+
+    // Now get the ModelResponse object for each model ID.
+    // The number of queries issued varies linearly with the number of models in
+    // the experiment run. However, if this proves to be a performance bottleneck, we can
+    // redesign it so that the number of queries is constant.
+    // Also, the reason I'm using a for-loop instead of using a map() is because the readInfo
+    // method can throw an exception, which isn't allowed in a map().
+    List<ModelResponse> responses = new ArrayList<>();
+    for (int modelId : modelIds) {
+      responses.add(TransformerDao.readInfo(modelId, ctx));
+    }
+
+    return new ExperimentRunDetailsResponse(proj, exp, expRun, responses);
   }
 }
