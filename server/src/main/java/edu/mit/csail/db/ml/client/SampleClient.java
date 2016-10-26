@@ -51,6 +51,7 @@ public class SampleClient {
     testReadInfo(client);
     testReadRunsInExperiment(client);
     testReadRunsAndExperimentsInProject(client);
+    testProjectOverviews(client);
   }
 
   private static void testTransformEvent(ModelDBService.Client client) throws Exception {
@@ -411,6 +412,10 @@ public class SampleClient {
 
   private static void testReadRunsAndExperimentsInProject(ModelDBService.Client client) throws Exception {
     System.out.println(client.getRunsAndExperimentsInProject(1));
+  }
+
+  private static void testProjectOverviews(ModelDBService.Client client) throws Exception {
+    System.out.println(client.getProjectOverviews());
   }
 
   /**
