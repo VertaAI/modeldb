@@ -5,6 +5,7 @@ import jooq.sqlite.gen.tables.records.ExperimentRecord;
 import modeldb.Experiment;
 import modeldb.ExperimentEvent;
 import modeldb.ExperimentEventResponse;
+import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
 
 import java.sql.Timestamp;
@@ -34,5 +35,23 @@ public class ExperimentDao {
     eRec.setCreated(new Timestamp((new Date()).getTime()));
     eRec.store();
     return new ExperimentEventResponse(eRec.getId());
+  }
+
+  public static Experiment read(int experimentId, DSLContext ctx) throws ResourceNotFoundException {
+    ExperimentRecord rec = ctx
+      .selectFrom(Tables.EXPERIMENT)
+      .where(Tables.EXPERIMENT.ID.eq(experimentId))
+      .fetchOne();
+
+    if (rec == null) {
+      throw new ResourceNotFoundException(String.format(
+        "Can't find Experiment with ID %d",
+        experimentId
+      ));
+    }
+
+    int defExpId = ProjectDao.getDefaultExperiment(rec.getProject(), ctx);
+
+    return new Experiment(rec.getId(), rec.getProject(), rec.getName(), rec.getDescription(), rec.getId() == defExpId);
   }
 }

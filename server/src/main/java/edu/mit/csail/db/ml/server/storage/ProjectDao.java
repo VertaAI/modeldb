@@ -4,10 +4,7 @@ import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.ProjectRecord;
 import jooq.sqlite.gen.tables.records.ExperimentRecord;
-import modeldb.Project;
-import modeldb.ProjectEvent;
-import modeldb.ProjectEventResponse;
-import modeldb.ProjectOverviewResponse;
+import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Record2;
@@ -60,6 +57,22 @@ public class ProjectDao {
     } else {
         return -1;
     }
+  }
+
+  public static Project read(int projId, DSLContext ctx) throws ResourceNotFoundException {
+    ProjectRecord rec = ctx
+      .selectFrom(Tables.PROJECT)
+      .where(Tables.PROJECT.ID.eq(projId))
+      .fetchOne();
+
+    if (rec == null) {
+      throw new ResourceNotFoundException(String.format(
+        "Can't find Project with ID %d",
+        projId
+      ));
+    }
+
+    return new Project(rec.getId(), rec.getName(), rec.getAuthor(), rec.getDescription());
   }
 
   public static List<ProjectOverviewResponse> getProjectOverviews(DSLContext ctx) {
