@@ -199,7 +199,8 @@ public class TransformerDao {
       Arrays.asList(feRec.getPredictioncolumns().split(",")),
       metricMap,
       annotations,
-      SHA
+      SHA,
+      rec.getFilepath()
     );
   }
 }

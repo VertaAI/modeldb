@@ -105,7 +105,8 @@ struct ModelResponse {
   // Turn each annotation into a string.
   12: list<string> annotations,
   13: string sha,
-  14: optional LinearModel linearModelData
+  14: string filepath,
+  15: optional LinearModel linearModelData
 }
 
 enum ProblemType {
