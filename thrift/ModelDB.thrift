@@ -368,6 +368,13 @@ struct ProjectOverviewResponse {
   3: i32 numExperimentRuns
 }
 
+struct ExperimentRunDetailsResponse {
+  1: Project project,
+  2: Experiment experiment,
+  3: ExperimentRun experimentRun,
+  4: list<ModelResponse> modelResponses,
+}
+
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
 // For example, if you try to read Transformer with ID 1, then we throw this
 // exception if that Transformer does not exist.
@@ -528,5 +535,7 @@ service ModelDBService {
 
   ProjectExperimentsAndRuns getRunsAndExperimentsInProject(1: i32 projId) throws (1: ServerLogicException svEx),
 
-  list<ProjectOverviewResponse> getProjectOverviews() throws (1: ServerLogicException svEx)
+  list<ProjectOverviewResponse> getProjectOverviews() throws (1: ServerLogicException svEx),
+
+  ExperimentRunDetailsResponse getExperimentRunDetails(1: i32 experimentRunId) throws (1: ServerLogicException svEx, 2: ResourceNotFoundException rnfEx)
 }

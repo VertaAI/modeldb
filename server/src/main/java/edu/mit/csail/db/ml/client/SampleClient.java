@@ -52,6 +52,7 @@ public class SampleClient {
     testReadRunsInExperiment(client);
     testReadRunsAndExperimentsInProject(client);
     testProjectOverviews(client);
+    testExperimentRunDetails(client);
   }
 
   private static void testTransformEvent(ModelDBService.Client client) throws Exception {
@@ -416,6 +417,22 @@ public class SampleClient {
 
   private static void testProjectOverviews(ModelDBService.Client client) throws Exception {
     System.out.println(client.getProjectOverviews());
+  }
+
+  private static void testExperimentRunDetails(ModelDBService.Client client) throws Exception {
+    ExperimentRunDetailsResponse resp = client.getExperimentRunDetails(1);
+    // Printing the full ModelResponses will clutter the console, so let's just get the IDs of the models.
+    String modelids = resp
+      .modelResponses
+      .stream()
+      .map(ModelResponse::getId)
+      .map(r -> r.toString())
+      .collect(Collectors.joining(","));
+
+    System.out.println(modelids);
+    System.out.println(resp.project);
+    System.out.println(resp.experiment);
+    System.out.println(resp.experimentRun);
   }
 
   /**
