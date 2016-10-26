@@ -3,24 +3,25 @@ import numpy as np
 import pandas as pd
 import sys
 sys.path.append('./thrift/gen-py')
+sys.path.append('./events')
 from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
-import SyncableFitEvent
-import SyncableTransformEvent
-import SyncableMetricEvent
-import SyncableRandomSplitEvent
-import SyncablePipelineEvent
-import GridCrossValidation
+import events.FitEvent as FitEvent
+import events.TransformEvent as TransformEvent
+import events.MetricEvent as MetricEvent
+import events.RandomSplitEvent as RandomSplitEvent
+import events.PipelineEvent as PipelineEvent
+import GridCrossValidation 
 import SyncableGridSearchCV
-import SyncableProjectEvent
-import SyncableExperimentEvent
-import SyncableExperimentRunEvent
+import events.ProjectEvent as ProjectEvent
+import events.ExperimentEvent as ExperimentEvent
+import events.ExperimentRunEvent as ExperimentRunEvent
 
 from modeldb import ModelDBService
-from modeldb.ttypes import *
+import modeldb.ttypes as modeldb_types
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
 from sklearn.pipeline import Pipeline
@@ -43,7 +44,7 @@ def fitFn(self,X,y=None):
             df = pd.DataFrame(X)
             df['outputColumn'] = y
     #Calls SyncFitEvent in other class and adds to buffer 
-    fitEvent = SyncableFitEvent.SyncFitEvent(models, self, df, Syncer.instance.experimentRun.id)
+    fitEvent = FitEvent.SyncFitEvent(models, self, df, Syncer.instance.experimentRun.id)
     Syncer.instance.addToBuffer(fitEvent)
 
 #Overrides the predict function for models, provided that the predict function takes in one argument
@@ -51,7 +52,7 @@ def predictFn(self, X):
     predictArray = self.predict(X)
     predictDf = pd.DataFrame(predictArray)
     newDf = X.join(predictDf)
-    predictEvent = SyncableTransformEvent.SyncTransformEvent(X, newDf, self, Syncer.instance.experimentRun.id)
+    predictEvent = TransformEvent.SyncTransformEvent(X, newDf, self, Syncer.instance.experimentRun.id)
     Syncer.instance.addToBuffer(predictEvent)
     return predictArray
 
@@ -62,7 +63,7 @@ def transformFn(self, X):
         newDf = pd.DataFrame(transformedOutput)
     else:
         newDf = pd.DataFrame(transformedOutput.toarray())
-    transformEvent = SyncableTransformEvent.SyncTransformEvent(X, newDf, self, Syncer.instance.experimentRun.id)
+    transformEvent = TransformEvent.SyncTransformEvent(X, newDf, self, Syncer.instance.experimentRun.id)
     Syncer.instance.addToBuffer(transformEvent)
     return transformedOutput
 
@@ -77,25 +78,25 @@ class NewOrExistingProject:
         self.description = description
 
     def toThrift(self):
-        return Project(-1, self.name, self.author, self.description)
+        return modeldb_types.Project(-1, self.name, self.author, self.description)
 
 class ExistingProject:
     def __init__(self, id):
         self.id = id
 
     def toThrift(self):
-        return Project(self.id, "", "", "")
+        return modeldb_types.Project(self.id, "", "", "")
 
 class ExistingExperiment:
     def __init__(self, id):
         self.id = id
 
     def toThrift(self):
-        return Experiment(self.id, -1, "", "", False)
+        return modeldb_types.Experiment(self.id, -1, "", "", False)
 
 class DefaultExperiment:
     def toThrift(self):
-        return Experiment(-1, -1, "", "", True)
+        return modeldb_types.Experiment(-1, -1, "", "", True)
 
 class NewOrExistingExperiment:
     def __init__(self, name, description):
@@ -103,21 +104,21 @@ class NewOrExistingExperiment:
         self.description = description
 
     def toThrift(self):
-        return Experiment(-1, -1, self.name, self.description, False)
+        return modeldb_types.Experiment(-1, -1, self.name, self.description, False)
 
 class NewExperimentRun:
     def __init__(self, description=""):
         self.description = description
 
     def toThrift(self):
-        return ExperimentRun(-1, -1, self.description)
+        return modeldb_types.ExperimentRun(-1, -1, self.description)
 
 class ExistingExperimentRun:
     def __init__(id):
         self.id = id
 
     def toThrift():
-        return ExperimentRun(self.id, -1, "")
+        return modeldb_types.ExperimentRun(self.id, -1, "")
 
 class Syncer(object):
     instance = None
@@ -149,13 +150,13 @@ class Syncer(object):
     def setProject(self, projectConfig):
         self.project = projectConfig.toThrift()
         # TODO: can we clean up this construct: SyncableBlah.syncblah
-        projectEvent = SyncableProjectEvent.SyncProjectEvent(self.project)
+        projectEvent = ProjectEvent.SyncProjectEvent(self.project)
         projectEvent.sync()
 
     def setExperiment(self, experimentConfig):
         self.experiment = experimentConfig.toThrift()
         self.experiment.projectId = self.project.id
-        experimentEvent = SyncableExperimentEvent.SyncExperimentEvent(
+        experimentEvent = ExperimentEvent.SyncExperimentEvent(
             self.experiment)
         experimentEvent.sync()
 
@@ -163,7 +164,7 @@ class Syncer(object):
         self.experimentRun = experimentRunConfig.toThrift()
         self.experimentRun.experimentId = self.experiment.id
         experimentRunEvent = \
-          SyncableExperimentRunEvent.SyncExperimentRunEvent(self.experimentRun)
+          ExperimentRunEvent.SyncExperimentRunEvent(self.experimentRun)
         experimentRunEvent.sync()
 
     def storeObject(self, obj, Id):
@@ -197,7 +198,7 @@ class Syncer(object):
         columns = self.setColumns(df)
         for i in range(0, len(columns)):
             columnName = str(columns[i])
-            dfc = DataFrameColumn(columnName, str(df.dtypes[i]))
+            dfc = modeldb_types.DataFrameColumn(columnName, str(df.dtypes[i]))
             dataFrameCols.append(dfc)
         return dataFrameCols
 
@@ -209,7 +210,7 @@ class Syncer(object):
         if id(model) in self.tagForObject:
             tag = self.tagForObject[id(model)]
         transformerType = model.__class__.__name__
-        t = Transformer(tid, [0.0], transformerType, tag)
+        t = modeldb_types.Transformer(tid, [0.0], transformerType, tag)
         return t
 
     def convertDftoThrift(self, df):
@@ -221,7 +222,7 @@ class Syncer(object):
         if dfImm in self.tagForObject:
             tag = self.tagForObject[dfImm]
         dataFrameColumns = self.setDataFrameSchema(df)
-        modeldbDf = DataFrame(tid, dataFrameColumns, df.shape[0], tag)
+        modeldbDf = modeldb_types.DataFrame(tid, dataFrameColumns, df.shape[0], tag)
         return modeldbDf
 
     def convertSpectoThrift(self, spec, df):
@@ -235,9 +236,9 @@ class Syncer(object):
         hyperparams = []
         params = spec.get_params()
         for param in params:
-            hp = HyperParameter(param, str(params[param]), type(params[param]).__name__, sys.float_info.min, sys.float_info.max)
+            hp = modeldb_types.HyperParameter(param, str(params[param]), type(params[param]).__name__, sys.float_info.min, sys.float_info.max)
             hyperparams.append(hp)
-        ts = TransformerSpec(tid, spec.__class__.__name__, columns, hyperparams, tag)
+        ts = modeldb_types.TransformerSpec(tid, spec.__class__.__name__, columns, hyperparams, tag)
         return ts
 
     def initializeThriftClient(self, host="localhost", port=6543):
@@ -277,7 +278,7 @@ class Syncer(object):
 
         #Pipeline model
         for class_name in [Pipeline]:
-            setattr(class_name, "fitSync", SyncablePipelineEvent.fitFnPipeline)
+            setattr(class_name, "fitSync", PipelineEvent.fitFnPipeline)
 
         #Grid-Search Cross Validation model
         for class_name in [GridSearchCV]:

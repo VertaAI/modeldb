@@ -5,14 +5,12 @@ sys.path.append('../')
 sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing
 from sklearn import linear_model
-
-from client.ModelDbSyncer import *
-import client.SyncableMetrics as SyncableMetrics
-import client.SyncableRandomSplit as SyncableRandomSplit
-import client.SyncablePipelineEvent as SyncablePipelineEvent
-
 from sklearn.pipeline import Pipeline
 from sklearn import decomposition
+
+from ModelDbSyncer import *
+import SyncableMetrics
+import SyncableRandomSplit
 
 #Pipelining: This chains a PCA and logistic regression, and uses the UCI Census Adult dataset.
 

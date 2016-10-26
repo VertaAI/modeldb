@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 import ModelDbSyncer
-import SyncableRandomSplitEvent
+import events.RandomSplitEvent as RandomSplitEvent
 
 #Splits X according to the weights provided. If the optional y dataframe is provided, it will also be split accordingly.
 def randomSplit(X, weights, seed, y=None):
@@ -27,6 +27,6 @@ def randomSplit(X, weights, seed, y=None):
             y = y[~msk]
     result.append(df)
     yresult.append(y)
-    randomEvent = SyncableRandomSplitEvent.SyncRandomSplitEvent(X, weights, seed, result, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    randomEvent = RandomSplitEvent.SyncRandomSplitEvent(X, weights, seed, result, ModelDbSyncer.Syncer.instance.experimentRun.id)
     ModelDbSyncer.Syncer.instance.addToBuffer(randomEvent)
     return result, yresult

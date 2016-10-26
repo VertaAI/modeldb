@@ -1,15 +1,12 @@
-#!/usr/bin/python
 import numpy as np
 import pandas as pd
 import ModelDbSyncer
-import SyncableFitEvent
-import GridCrossValidation
+import FitEvent
 import sys
 sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
-from modeldb.ttypes import *
+import modeldb.ttypes as modeldb_types
 
-#This class creates and stores a Grid-Search Cross Validation event in the database.
 class SyncGridCVEvent:
     def __init__(self, inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds, experimentRunId):
         self.inputDataFrame = inputDataFrame
@@ -28,7 +25,7 @@ class SyncGridCVEvent:
         syncableDataFrameValidSet = syncer.convertDftoThrift(validationSet)
         syncableDataFrameTrainSet = syncer.convertDftoThrift(trainingSet)
         syncableTransformer = syncer.convertModeltoThrift(transformer)
-        return CrossValidationFold(syncableTransformer, syncableDataFrameValidSet, syncableDataFrameTrainSet, score)
+        return modeldb_types.CrossValidationFold(syncableTransformer, syncableDataFrameValidSet, syncableDataFrameTrainSet, score)
 
     #Helper function to create CrossValidationEvent.
     def makeCrossValidation(self, estimator, crossValidationFolds):
@@ -36,7 +33,7 @@ class SyncGridCVEvent:
         syncableDataFrame = syncer.convertDftoThrift(self.inputDataFrame)
         syncableEstimator = syncer.convertSpectoThrift(estimator,self.inputDataFrame)
         # TODO: Need to add meaningful label/feature/prediction column names
-        return CrossValidationEvent(syncableDataFrame, syncableEstimator, self.seed, self.evaluator,
+        return modeldb_types.CrossValidationEvent(syncableDataFrame, syncableEstimator, self.seed, self.evaluator,
                                             [""], [""], [""], crossValidationFolds, self.experimentRunId)
 
     #Returns a list of CrossValidationEvents, used for creating GridSearchCrossValidationEvent.
@@ -52,8 +49,8 @@ class SyncGridCVEvent:
     #Creates a GridSearchCrossValidationEvent
     def makeGridSearchCVEvent(self, crossValidationEvents):
         syncer = ModelDbSyncer.Syncer.instance
-        fitEvent = SyncableFitEvent.SyncFitEvent(self.bestModel, self.bestEstimator, self.inputDataFrame, self.experimentRunId)
-        gscve = GridSearchCrossValidationEvent(self.numFolds, fitEvent.makeFitEvent(), crossValidationEvents, self.experimentRunId)
+        fitEvent = FitEvent.SyncFitEvent(self.bestModel, self.bestEstimator, self.inputDataFrame, self.experimentRunId)
+        gscve = modeldb_types.GridSearchCrossValidationEvent(self.numFolds, fitEvent.makeFitEvent(), crossValidationEvents, self.experimentRunId)
         return gscve
 
     #Stores each of the associated events.
@@ -92,12 +89,3 @@ class SyncGridCVEvent:
         thriftClient = syncer.client
         res = thriftClient.storeGridSearchCrossValidationEvent(gscve)
         self.associate(res)
-
-#Overrides GridSearchCV's fit function.
-def fitFnGridSearch(self, X,y):
-    GridCrossValidation.fit(self,X,y)
-    [inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds] = self.gridCVevent
-
-    #Calls SyncGridCVEvent and adds to buffer.
-    gridEvent = SyncGridCVEvent(inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds, ModelDbSyncer.Syncer.instance.experimentRun.id)
-    ModelDbSyncer.Syncer.instance.addToBuffer(gridEvent)

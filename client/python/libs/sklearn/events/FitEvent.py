@@ -5,7 +5,7 @@ import ModelDbSyncer
 import sys
 sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
-from modeldb.ttypes import *
+import modeldb.ttypes as modeldb_types
 
 class SyncFitEvent:
     def __init__(self, model, spec, df, experimentRunId):
@@ -19,7 +19,7 @@ class SyncFitEvent:
         self.syncableTransformer = syncer.convertModeltoThrift(self.model)
         self.modelSpec = syncer.convertSpectoThrift(self.spec,self.df)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
-        fe = FitEvent(self.syncableDataFrame, self.modelSpec, self.syncableTransformer, 
+        fe = modeldb_types.FitEvent(self.syncableDataFrame, self.modelSpec, self.syncableTransformer, 
                             [], [], [], self.experimentRunId)
         return fe
 

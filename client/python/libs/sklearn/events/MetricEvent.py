@@ -5,7 +5,7 @@ import ModelDbSyncer
 import sys
 sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
-from modeldb.ttypes import *
+import modeldb.ttypes as modeldb_types
 
 class SyncMetricEvent:
     def __init__(self, df, model,labelCol, predictionCol, metricType, metricValue, experimentRunId):
@@ -21,7 +21,7 @@ class SyncMetricEvent:
         syncer = ModelDbSyncer.Syncer.instance
         self.syncableTransformer = syncer.convertModeltoThrift(self.model)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
-        me = MetricEvent(self.syncableDataFrame, self.syncableTransformer, self.metricType,
+        me = modeldb_types.MetricEvent(self.syncableDataFrame, self.syncableTransformer, self.metricType,
                                 self.metricValue, self.labelCol, self.predictionCol, self.experimentRunId)
         return me
 

@@ -1,13 +1,15 @@
 import numpy as np
 import pandas as pd
 import sys
-sys.path.append('../')
+
 sys.path.append('../thrift/gen-py')
+sys.path.append('..')
 from sklearn import preprocessing
 from sklearn import linear_model
-import client.SyncableRandomSplit as SyncableRandomSplit
-import client.SyncableMetrics as SyncableMetrics
-from client.ModelDbSyncer import *
+
+from ModelDbSyncer import *
+import SyncableRandomSplit
+import SyncableMetrics
 
 name = "logistic-test"
 author = "srinidhi"

@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 import ModelDbSyncer
 import sys
-sys.path.append('./thrift/gen-py')
+sys.path.append('../thrift/gen-py')
 from modeldb import ModelDBService
-from modeldb.ttypes import *
+import modeldb.ttypes as modeldb_types
 
 class SyncProjectEvent:
     def __init__(self, project):
@@ -18,6 +18,6 @@ class SyncProjectEvent:
 
         #Invoking thrift client
         thriftClient = syncer.client
-        res = thriftClient.storeProjectEvent(ProjectEvent(self.project))
+        res = thriftClient.storeProjectEvent(modeldb_types.ProjectEvent(self.project))
         syncer.project.id = res.projectId
         

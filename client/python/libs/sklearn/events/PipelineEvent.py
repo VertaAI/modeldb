@@ -5,9 +5,9 @@ import ModelDbSyncer
 import sys
 sys.path.append('./thrift/gen-py')
 from modeldb import ModelDBService
-from modeldb.ttypes import *
-import SyncableFitEvent
-import SyncableTransformEvent
+import modeldb.ttypes as modeldb_types
+import FitEvent
+import TransformEvent
 
 #This class creates and stores a pipeline event in the database.
 class SyncPipelineEvent:
@@ -23,10 +23,10 @@ class SyncPipelineEvent:
         transformEventStages = []
         fitEventStages = []
         for index, transformEvent in self.transformStages:
-            transformEventStages.append(PipelineTransformStage(index, transformEvent.makeTransformEvent()))
+            transformEventStages.append(modeldb_types.PipelineTransformStage(index, transformEvent.makeTransformEvent()))
         for index, fitEvent in self.fitStages:
-            fitEventStages.append(PipelineFitStage(index, fitEvent.makeFitEvent()))
-        pe = PipelineEvent(pipelineFirstFitEvent, transformEventStages, fitEventStages, self.experimentRunId)
+            fitEventStages.append(modeldb_types.PipelineFitStage(index, fitEvent.makeFitEvent()))
+        pe = modeldb_types.PipelineEvent(pipelineFirstFitEvent, transformEventStages, fitEventStages, self.experimentRunId)
         return pe
 
     #Stores each of the individual fit/transform events
@@ -53,7 +53,7 @@ def fitFnPipeline(self,X,y):
 
     #Make Fit Event for overall pipeline
     pipelineModel = self.fit(X,y)
-    pipelineFit = SyncableFitEvent.SyncFitEvent(pipelineModel, self, X, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    pipelineFit = FitEvent.SyncFitEvent(pipelineModel, self, X, ModelDbSyncer.Syncer.instance.experimentRun.id)
 
     #Extract all the estimators from pipeline
     #All estimators call 'fit' and 'transform' except the last estimator (which only calls 'fit')
@@ -79,15 +79,15 @@ def fitFnPipeline(self,X,y):
         curDataset = transformedOutput
 
         #populate the stages
-        transformEvent = SyncableTransformEvent.SyncTransformEvent(oldDf, newDf, model, ModelDbSyncer.Syncer.instance.experimentRun.id)
+        transformEvent = TransformEvent.SyncTransformEvent(oldDf, newDf, model, ModelDbSyncer.Syncer.instance.experimentRun.id)
         transformStages.append((index, transformEvent))
-        fitEvent = SyncableFitEvent.SyncFitEvent(model, estimator, oldDf, ModelDbSyncer.Syncer.instance.experimentRun.id)
+        fitEvent = FitEvent.SyncFitEvent(model, estimator, oldDf, ModelDbSyncer.Syncer.instance.experimentRun.id)
         fitStages.append((index, fitEvent))
 
     #Handle last estimator, which has a fit method (and may not have transform)
     oldDf = curDataset
     model = lastEstimator.fit(oldDf, y)
-    fitEvent = SyncableFitEvent.SyncFitEvent(model, estimator, oldDf, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    fitEvent = FitEvent.SyncFitEvent(model, estimator, oldDf, ModelDbSyncer.Syncer.instance.experimentRun.id)
     fitStages.append((index+1, fitEvent))
 
     #Create the pipeline event with all components

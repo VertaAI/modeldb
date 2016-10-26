@@ -1,8 +1,8 @@
 #!/usr/bin/python
 import numpy as np
 import pandas as pd
-import client.ModelDbSyncer as ModelDbSyncer
-import SyncableMetricEvent
+import ModelDbSyncer
+import events.MetricEvent as MetricEvent
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
 from sklearn.pipeline import Pipeline
@@ -15,5 +15,5 @@ def computeMetrics(model, metric, X, predictionCol, labelCol, actual):
     computeMetric = metric + "_score"
     metricFunc = getattr(sklearn.metrics, computeMetric)
     score = metricFunc(actual, predicted, average='weighted')
-    metricEvent = SyncableMetricEvent.SyncMetricEvent(X, model, labelCol, predictionCol, metric, score, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    metricEvent = MetricEvent.SyncMetricEvent(X, model, labelCol, predictionCol, metric, score, ModelDbSyncer.Syncer.instance.experimentRun.id)
     ModelDbSyncer.Syncer.instance.addToBuffer(metricEvent)

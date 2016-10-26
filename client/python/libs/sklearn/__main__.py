@@ -9,11 +9,9 @@ from sklearn import preprocessing
 # import client.DefaultExperiment as DefaultExperiment
 # import client.NewExperimentRun as NewExperimentRun
 
-from client.ModelDbSyncer import *
-
-# import client.ModelDbSyncer as ModelDbSyncer
-import client.SyncableMetrics as SyncableMetrics
-import client.SyncableRandomSplit as SyncableRandomSplit
+from ModelDbSyncer import *
+import SyncableMetrics
+import SyncableRandomSplit
 
 #Sample sequence of operations
 

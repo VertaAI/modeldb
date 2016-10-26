@@ -3,18 +3,18 @@ import pandas as pd
 import sys
 sys.path.append('../')
 sys.path.append('../thrift/gen-py')
+
 from sklearn import preprocessing
 from sklearn import linear_model
-
-from client.ModelDbSyncer import *
-
-import client.SyncableGridSearchCV as SyncableGridSearchCV
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.linear_model import SGDClassifier
 from sklearn.grid_search import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn import datasets, linear_model, cross_validation, grid_search
+
+from ModelDbSyncer import *
+import SyncableGridSearchCV
 
 #Uses GridSearch and Pipeline objects in scikit, adapted from http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_text_feature_extraction.html
 name = "grid search cross validation"
