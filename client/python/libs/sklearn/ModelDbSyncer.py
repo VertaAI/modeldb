@@ -38,7 +38,6 @@ def fitFn(self,X,y=None):
             df['outputColumn'] = y
     #Calls FitEvent in other class and adds to buffer 
     fitEvent = FitEvent(models, self, df)
-    # bagoo.do()
     Syncer.instance.addToBuffer(fitEvent)
 
 #Overrides the predict function for models, provided that the predict function takes in one argument
