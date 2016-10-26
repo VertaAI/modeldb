@@ -11,10 +11,7 @@ class SyncExperimentRunEvent:
     def __init__(self, experimentRun):
         self.experimentRun = experimentRun
 
-    def sync(self):
-        syncer = ModelDbSyncer.Syncer.instance
-        print "syncer", syncer
-
+    def sync(self, syncer):
         #Invoking thrift client
         thriftClient = syncer.client
         res = thriftClient.storeExperimentRunEvent(modeldb_types.ExperimentRunEvent(self.experimentRun))

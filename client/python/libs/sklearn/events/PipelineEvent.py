@@ -11,40 +11,39 @@ import TransformEvent
 
 #This class creates and stores a pipeline event in the database.
 class SyncPipelineEvent:
-    def __init__(self, firstPipelineEvent, transformStages, fitStages, experimentRunId):
+    def __init__(self, firstPipelineEvent, transformStages, fitStages):
         self.firstPipelineEvent = firstPipelineEvent
         self.transformStages = transformStages
         self.fitStages = fitStages
-        self.experimentRunId = experimentRunId
 
     #Creates a pipeline event, using the captured transform and fit stages
-    def makePipelineEvent(self):
-        pipelineFirstFitEvent = self.firstPipelineEvent.makeFitEvent()
+    def makeEvent(self, syncer):
+        pipelineFirstFitEvent = self.firstPipelineEvent.makeEvent(syncer)
         transformEventStages = []
         fitEventStages = []
+        self.experimentRunId = syncer.experimentRun.id
         for index, transformEvent in self.transformStages:
-            transformEventStages.append(modeldb_types.PipelineTransformStage(index, transformEvent.makeTransformEvent()))
+            transformEventStages.append(modeldb_types.PipelineTransformStage(index, transformEvent.makeEvent(syncer)))
         for index, fitEvent in self.fitStages:
-            fitEventStages.append(modeldb_types.PipelineFitStage(index, fitEvent.makeFitEvent()))
+            fitEventStages.append(modeldb_types.PipelineFitStage(index, fitEvent.makeEvent(syncer)))
         pe = modeldb_types.PipelineEvent(pipelineFirstFitEvent, transformEventStages, fitEventStages, self.experimentRunId)
         return pe
 
     #Stores each of the individual fit/transform events
-    def associate(self, res):
-        self.firstPipelineEvent.associate(res.pipelineFitResponse)
+    def associate(self, res, syncer):
+        self.firstPipelineEvent.associate(res.pipelineFitResponse, syncer)
         for (transformRes, (index, te)) in zip(res.transformStagesResponses, self.transformStages):
-            te.associate(transformRes)
+            te.associate(transformRes, syncer)
         for (fitRes, (index, fe)) in zip(res.fitStagesResponses, self.fitStages):
-            fe.associate(fitRes)
+            fe.associate(fitRes, syncer)
 
-    def sync(self):
-        syncer = ModelDbSyncer.Syncer.instance
-        pe = self.makePipelineEvent()
+    def sync(self, syncer):
+        pe = self.makeEvent(syncer)
 
         #Invoking thrift client
         thriftClient = syncer.client
         res = thriftClient.storePipelineEvent(pe)
-        self.associate(res)
+        self.associate(res, syncer)
 
 #Overrides the Pipeline model's fit function
 def fitFnPipeline(self,X,y):
@@ -53,7 +52,7 @@ def fitFnPipeline(self,X,y):
 
     #Make Fit Event for overall pipeline
     pipelineModel = self.fit(X,y)
-    pipelineFit = FitEvent.SyncFitEvent(pipelineModel, self, X, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    pipelineFit = FitEvent.SyncFitEvent(pipelineModel, self, X)
 
     #Extract all the estimators from pipeline
     #All estimators call 'fit' and 'transform' except the last estimator (which only calls 'fit')
@@ -79,19 +78,19 @@ def fitFnPipeline(self,X,y):
         curDataset = transformedOutput
 
         #populate the stages
-        transformEvent = TransformEvent.SyncTransformEvent(oldDf, newDf, model, ModelDbSyncer.Syncer.instance.experimentRun.id)
+        transformEvent = TransformEvent.SyncTransformEvent(oldDf, newDf, model)
         transformStages.append((index, transformEvent))
-        fitEvent = FitEvent.SyncFitEvent(model, estimator, oldDf, ModelDbSyncer.Syncer.instance.experimentRun.id)
+        fitEvent = FitEvent.SyncFitEvent(model, estimator, oldDf)
         fitStages.append((index, fitEvent))
 
     #Handle last estimator, which has a fit method (and may not have transform)
     oldDf = curDataset
     model = lastEstimator.fit(oldDf, y)
-    fitEvent = FitEvent.SyncFitEvent(model, estimator, oldDf, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    fitEvent = FitEvent.SyncFitEvent(model, estimator, oldDf)
     fitStages.append((index+1, fitEvent))
 
     #Create the pipeline event with all components
-    pipelineEvent = SyncPipelineEvent(pipelineFit, transformStages, fitStages, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    pipelineEvent = SyncPipelineEvent(pipelineFit, transformStages, fitStages)
 
     ModelDbSyncer.Syncer.instance.addToBuffer(pipelineEvent)
 

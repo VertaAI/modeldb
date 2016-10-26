@@ -44,7 +44,7 @@ def fitFn(self,X,y=None):
             df = pd.DataFrame(X)
             df['outputColumn'] = y
     #Calls SyncFitEvent in other class and adds to buffer 
-    fitEvent = FitEvent.SyncFitEvent(models, self, df, Syncer.instance.experimentRun.id)
+    fitEvent = FitEvent.SyncFitEvent(models, self, df)
     Syncer.instance.addToBuffer(fitEvent)
 
 #Overrides the predict function for models, provided that the predict function takes in one argument
@@ -52,7 +52,7 @@ def predictFn(self, X):
     predictArray = self.predict(X)
     predictDf = pd.DataFrame(predictArray)
     newDf = X.join(predictDf)
-    predictEvent = TransformEvent.SyncTransformEvent(X, newDf, self, Syncer.instance.experimentRun.id)
+    predictEvent = TransformEvent.SyncTransformEvent(X, newDf, self)
     Syncer.instance.addToBuffer(predictEvent)
     return predictArray
 
@@ -63,7 +63,7 @@ def transformFn(self, X):
         newDf = pd.DataFrame(transformedOutput)
     else:
         newDf = pd.DataFrame(transformedOutput.toarray())
-    transformEvent = TransformEvent.SyncTransformEvent(X, newDf, self, Syncer.instance.experimentRun.id)
+    transformEvent = TransformEvent.SyncTransformEvent(X, newDf, self)
     Syncer.instance.addToBuffer(transformEvent)
     return transformedOutput
 
@@ -151,21 +151,21 @@ class Syncer(object):
         self.project = projectConfig.toThrift()
         # TODO: can we clean up this construct: SyncableBlah.syncblah
         projectEvent = ProjectEvent.SyncProjectEvent(self.project)
-        projectEvent.sync()
+        projectEvent.sync(self)
 
     def setExperiment(self, experimentConfig):
         self.experiment = experimentConfig.toThrift()
         self.experiment.projectId = self.project.id
         experimentEvent = ExperimentEvent.SyncExperimentEvent(
             self.experiment)
-        experimentEvent.sync()
+        experimentEvent.sync(self)
 
     def setExperimentRun(self, experimentRunConfig):
         self.experimentRun = experimentRunConfig.toThrift()
         self.experimentRun.experimentId = self.experiment.id
         experimentRunEvent = \
           ExperimentRunEvent.SyncExperimentRunEvent(self.experimentRun)
-        experimentRunEvent.sync()
+        experimentRunEvent.sync(self)
 
     def storeObject(self, obj, Id):
         self.idForObject[obj] = Id
@@ -180,7 +180,7 @@ class Syncer(object):
 
     def sync(self):
         for b in self.bufferList:
-            b.sync()
+            b.sync(self)
 
     def setColumns(self, df):
         if type(df) is pd.DataFrame:
