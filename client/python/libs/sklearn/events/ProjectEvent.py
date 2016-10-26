@@ -11,11 +11,7 @@ class SyncProjectEvent:
     def __init__(self, project):
         self.project = project
 
-    def sync(self):
-        syncer = ModelDbSyncer.Syncer.instance
-        print "syncer"
-        print ModelDbSyncer.Syncer.instance
-
+    def sync(self, syncer):
         #Invoking thrift client
         thriftClient = syncer.client
         res = thriftClient.storeProjectEvent(modeldb_types.ProjectEvent(self.project))

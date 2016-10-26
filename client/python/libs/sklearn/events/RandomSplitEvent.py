@@ -15,8 +15,7 @@ class SyncRandomSplitEvent:
         self.result = result
         self.experimentRunId = experimentRunId
 
-    def makeRandomSplitEvent(self):
-        syncer = ModelDbSyncer.Syncer.instance
+    def makeEvent(self, syncer):
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
 
         allSyncableFrames = []
@@ -25,9 +24,7 @@ class SyncRandomSplitEvent:
         re = modeldb_types.RandomSplitEvent(self.syncableDataFrame, self.weights, self.seed, allSyncableFrames, self.experimentRunId)
         return re
 
-    def associate(self,res):
-        syncer = ModelDbSyncer.Syncer.instance
-
+    def associate(self, res, syncer):
          #generate identity for storing in dictionary
         dfImmOld = id(self.df)
 
@@ -36,11 +33,10 @@ class SyncRandomSplitEvent:
             syncer.storeObject(id(self.result[i]), res.splitIds[i])
         syncer.storeObject(self, res.splitEventId)
 
-    def sync(self):
-        syncer = ModelDbSyncer.Syncer.instance
-        re = self.makeRandomSplitEvent()
+    def sync(self, syncer):
+        re = self.makeEvent(syncer)
 
         #Invoking thrift client
         thriftClient = syncer.client
         res = thriftClient.storeRandomSplitEvent(re)
-        self.associate(res)
+        self.associate(res, syncer)

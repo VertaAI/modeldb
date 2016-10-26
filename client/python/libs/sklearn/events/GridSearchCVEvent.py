@@ -19,8 +19,7 @@ class SyncGridCVEvent:
         self.experimentRunId = experimentRunId
 
     #Helper function to create a CrossValidationFold object, later used in making CrossValidationEvents.
-    def makeCrossValidationFold(self, fold):
-        syncer = ModelDbSyncer.Syncer.instance
+    def makeCrossValidationFold(self, fold, syncer):
         [(transformer, validationSet, trainingSet, score)] = fold
         syncableDataFrameValidSet = syncer.convertDftoThrift(validationSet)
         syncableDataFrameTrainSet = syncer.convertDftoThrift(trainingSet)
@@ -28,8 +27,7 @@ class SyncGridCVEvent:
         return modeldb_types.CrossValidationFold(syncableTransformer, syncableDataFrameValidSet, syncableDataFrameTrainSet, score)
 
     #Helper function to create CrossValidationEvent.
-    def makeCrossValidation(self, estimator, crossValidationFolds):
-        syncer = ModelDbSyncer.Syncer.instance
+    def makeCrossValidation(self, estimator, crossValidationFolds, syncer):
         syncableDataFrame = syncer.convertDftoThrift(self.inputDataFrame)
         syncableEstimator = syncer.convertSpectoThrift(estimator,self.inputDataFrame)
         # TODO: Need to add meaningful label/feature/prediction column names
@@ -37,25 +35,23 @@ class SyncGridCVEvent:
                                             [""], [""], [""], crossValidationFolds, self.experimentRunId)
 
     #Returns a list of CrossValidationEvents, used for creating GridSearchCrossValidationEvent.
-    def makeCrossValidationEvents(self):
+    def makeCrossValidationEvents(self, syncer):
         crossValidationEvents = []
         for estimator in self.crossValidations:
             crossValidationFolds = []
             for fold in self.crossValidations[estimator]:
-                crossValidationFolds.append(self.makeCrossValidationFold(fold))
-            crossValidationEvents.append(self.makeCrossValidation(estimator, crossValidationFolds))
+                crossValidationFolds.append(self.makeCrossValidationFold(fold, syncer))
+            crossValidationEvents.append(self.makeCrossValidation(estimator, crossValidationFolds, syncer))
         return crossValidationEvents
 
     #Creates a GridSearchCrossValidationEvent
-    def makeGridSearchCVEvent(self, crossValidationEvents):
-        syncer = ModelDbSyncer.Syncer.instance
-        fitEvent = FitEvent.SyncFitEvent(self.bestModel, self.bestEstimator, self.inputDataFrame, self.experimentRunId)
-        gscve = modeldb_types.GridSearchCrossValidationEvent(self.numFolds, fitEvent.makeFitEvent(), crossValidationEvents, self.experimentRunId)
+    def makeGridSearchCVEvent(self, crossValidationEvents, syncer):
+        fitEvent = FitEvent.SyncFitEvent(self.bestModel, self.bestEstimator, self.inputDataFrame)
+        gscve = modeldb_types.GridSearchCrossValidationEvent(self.numFolds, fitEvent.makeEvent(syncer), crossValidationEvents, self.experimentRunId)
         return gscve
 
     #Stores each of the associated events.
-    def associate(self, res):
-        syncer = ModelDbSyncer.Syncer.instance
+    def associate(self, res, syncer):
 
         #First store the fit event
         dfImm = id(self.inputDataFrame)
@@ -80,12 +76,11 @@ class SyncGridCVEvent:
                 syncer.storeObject(dfImmValid, foldr.validationId)
                 syncer.storeObject(dfImmTrain, foldr.trainingId)
 
-    def sync(self):
-        syncer = ModelDbSyncer.Syncer.instance
-        crossValidationEvents = self.makeCrossValidationEvents()
-        gscve = self.makeGridSearchCVEvent(crossValidationEvents)
+    def sync(self, syncer):
+        crossValidationEvents = self.makeCrossValidationEvents(syncer)
+        gscve = self.makeGridSearchCVEvent(crossValidationEvents, syncer)
 
         #Invoking thrift client
         thriftClient = syncer.client
         res = thriftClient.storeGridSearchCrossValidationEvent(gscve)
-        self.associate(res)
+        self.associate(res, syncer)
