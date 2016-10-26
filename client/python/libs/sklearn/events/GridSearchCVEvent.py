@@ -1,14 +1,8 @@
-import numpy as np
-import pandas as pd
-import ModelDbSyncer
-import FitEvent
-import sys
-sys.path.append('./thrift/gen-py')
-from modeldb import ModelDBService
-import modeldb.ttypes as modeldb_types
+from Event import *
+from events import FitEvent
 
-class SyncGridCVEvent:
-    def __init__(self, inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds, experimentRunId):
+class GridSearchCVEvent(Event):
+    def __init__(self, inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds):
         self.inputDataFrame = inputDataFrame
         self.crossValidations = crossValidations
         self.seed = seed
@@ -16,7 +10,6 @@ class SyncGridCVEvent:
         self.bestModel = bestModel
         self.bestEstimator = bestEstimator
         self.numFolds = numFolds
-        self.experimentRunId = experimentRunId
 
     #Helper function to create a CrossValidationFold object, later used in making CrossValidationEvents.
     def makeCrossValidationFold(self, fold, syncer):
@@ -46,7 +39,7 @@ class SyncGridCVEvent:
 
     #Creates a GridSearchCrossValidationEvent
     def makeGridSearchCVEvent(self, crossValidationEvents, syncer):
-        fitEvent = FitEvent.SyncFitEvent(self.bestModel, self.bestEstimator, self.inputDataFrame)
+        fitEvent = FitEvent(self.bestModel, self.bestEstimator, self.inputDataFrame)
         gscve = modeldb_types.GridSearchCrossValidationEvent(self.numFolds, fitEvent.makeEvent(syncer), crossValidationEvents, self.experimentRunId)
         return gscve
 
@@ -77,6 +70,7 @@ class SyncGridCVEvent:
                 syncer.storeObject(dfImmTrain, foldr.trainingId)
 
     def sync(self, syncer):
+        self.experimentRunId = syncer.experimentRun.id
         crossValidationEvents = self.makeCrossValidationEvents(syncer)
         gscve = self.makeGridSearchCVEvent(crossValidationEvents, syncer)
 

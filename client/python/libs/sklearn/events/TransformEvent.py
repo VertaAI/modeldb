@@ -1,13 +1,6 @@
-#!/usr/bin/python
-import numpy as np
-import pandas as pd
-import ModelDbSyncer
-import sys
-sys.path.append('./thrift/gen-py')
-from modeldb import ModelDBService
-import modeldb.ttypes as modeldb_types
+from Event import *
 
-class SyncTransformEvent:
+class TransformEvent(Event):
     def __init__(self, oldDf, newDf, transformer):
         self.oldDf = oldDf
         self.newDf = newDf

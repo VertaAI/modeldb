@@ -1,6 +1,3 @@
-#!/usr/bin/python
-import numpy as np
-import pandas as pd
 import sys
 sys.path.append('./thrift/gen-py')
 sys.path.append('./events')
@@ -9,19 +6,15 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
-import events.FitEvent as FitEvent
-import events.TransformEvent as TransformEvent
-import events.MetricEvent as MetricEvent
-import events.RandomSplitEvent as RandomSplitEvent
-import events.PipelineEvent as PipelineEvent
+# modeldb imports
+from events import *
 import GridCrossValidation 
-import SyncableGridSearchCV
-import events.ProjectEvent as ProjectEvent
-import events.ExperimentEvent as ExperimentEvent
-import events.ExperimentRunEvent as ExperimentRunEvent
-
 from modeldb import ModelDBService
 import modeldb.ttypes as modeldb_types
+
+# sklearn imports
+import numpy as np
+import pandas as pd
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
 from sklearn.pipeline import Pipeline
@@ -43,8 +36,8 @@ def fitFn(self,X,y=None):
             #if X does not have column-names, we cannot perform a join, and must instead add a new column.
             df = pd.DataFrame(X)
             df['outputColumn'] = y
-    #Calls SyncFitEvent in other class and adds to buffer 
-    fitEvent = FitEvent.SyncFitEvent(models, self, df)
+    #Calls FitEvent in other class and adds to buffer 
+    fitEvent = FitEvent(models, self, df)
     Syncer.instance.addToBuffer(fitEvent)
 
 #Overrides the predict function for models, provided that the predict function takes in one argument
@@ -52,7 +45,7 @@ def predictFn(self, X):
     predictArray = self.predict(X)
     predictDf = pd.DataFrame(predictArray)
     newDf = X.join(predictDf)
-    predictEvent = TransformEvent.SyncTransformEvent(X, newDf, self)
+    predictEvent = TransformEvent(X, newDf, self)
     Syncer.instance.addToBuffer(predictEvent)
     return predictArray
 
@@ -63,9 +56,84 @@ def transformFn(self, X):
         newDf = pd.DataFrame(transformedOutput)
     else:
         newDf = pd.DataFrame(transformedOutput.toarray())
-    transformEvent = TransformEvent.SyncTransformEvent(X, newDf, self)
+    transformEvent = TransformEvent(X, newDf, self)
     Syncer.instance.addToBuffer(transformEvent)
     return transformedOutput
+
+#Overrides the Pipeline model's fit function
+def fitFnPipeline(self,X,y):
+    #Check if pipeline contains valid estimators and transformers
+    checkValidPipeline(self.steps)
+
+    #Make Fit Event for overall pipeline
+    pipelineModel = self.fit(X,y)
+    pipelineFit = FitEvent(pipelineModel, self, X)
+
+    #Extract all the estimators from pipeline
+    #All estimators call 'fit' and 'transform' except the last estimator (which only calls 'fit')
+    names, sk_estimators = zip(*self.steps)
+    estimators = sk_estimators[:-1]
+    lastEstimator = sk_estimators[-1]
+
+    transformStages = []
+    fitStages = []
+    curDataset = X
+
+    for index, estimator in enumerate(estimators):
+        oldDf = curDataset
+        model = estimator.fit(oldDf, y)
+        transformedOutput = model.transform(oldDf)
+
+        #Convert transformed output into a proper pandas DataFrame object
+        if type(transformedOutput) is np.ndarray:
+            newDf = pd.DataFrame(transformedOutput)
+        else:
+            newDf = pd.DataFrame(transformedOutput.toarray())
+
+        curDataset = transformedOutput
+
+        #populate the stages
+        transformEvent = TransformEvent(oldDf, newDf, model)
+        transformStages.append((index, transformEvent))
+        fitEvent = FitEvent(model, estimator, oldDf)
+        fitStages.append((index, fitEvent))
+
+    #Handle last estimator, which has a fit method (and may not have transform)
+    oldDf = curDataset
+    model = lastEstimator.fit(oldDf, y)
+    fitEvent = FitEvent(model, estimator, oldDf)
+    fitStages.append((index+1, fitEvent))
+
+    #Create the pipeline event with all components
+    pipelineEvent = PipelineEvent(pipelineFit, transformStages, fitStages)
+
+    Syncer.instance.addToBuffer(pipelineEvent)
+
+#Helper function to check whether a pipeline is constructed properly. Taken from original sklearn pipeline source code with minor modifications, which are commented below.
+def checkValidPipeline(steps):
+    names, estimators = zip(*steps)
+    transforms = estimators[:-1]
+    estimator = estimators[-1]
+
+    for t in transforms:
+        #Change from original scikit: checking for "fit" and "transform" methods, rather than "fit_transform" as each event is logged separately to database
+        if (not (hasattr(t, "fit")) and hasattr(t, "transform")):
+            raise TypeError("All intermediate steps of the chain should "
+                            "be transforms and implement fit and transform"
+                            " '%s' (type %s) doesn't)" % (t, type(t)))
+
+    if not hasattr(estimator, "fit"):
+        raise TypeError("Last step of chain should implement fit "
+                        "'%s' (type %s) doesn't)"
+                        % (estimator, type(estimator)))
+
+def fitFnGridSearch(self, X,y):
+    GridCrossValidation.fit(self,X,y)
+    [inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds] = self.gridCVevent
+
+    #Calls SyncGridCVEvent and adds to buffer.
+    gridEvent = GridSearchCVEvent(inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds)
+    Syncer.instance.addToBuffer(gridEvent)
 
 # Stores object with associated tagName
 def addTagObject(self, tagName):
@@ -150,13 +218,13 @@ class Syncer(object):
     def setProject(self, projectConfig):
         self.project = projectConfig.toThrift()
         # TODO: can we clean up this construct: SyncableBlah.syncblah
-        projectEvent = ProjectEvent.SyncProjectEvent(self.project)
+        projectEvent = ProjectEvent(self.project)
         projectEvent.sync(self)
 
     def setExperiment(self, experimentConfig):
         self.experiment = experimentConfig.toThrift()
         self.experiment.projectId = self.project.id
-        experimentEvent = ExperimentEvent.SyncExperimentEvent(
+        experimentEvent = ExperimentEvent(
             self.experiment)
         experimentEvent.sync(self)
 
@@ -164,7 +232,7 @@ class Syncer(object):
         self.experimentRun = experimentRunConfig.toThrift()
         self.experimentRun.experimentId = self.experiment.id
         experimentRunEvent = \
-          ExperimentRunEvent.SyncExperimentRunEvent(self.experimentRun)
+          ExperimentRunEvent(self.experimentRun)
         experimentRunEvent.sync(self)
 
     def storeObject(self, obj, Id):
@@ -278,8 +346,8 @@ class Syncer(object):
 
         #Pipeline model
         for class_name in [Pipeline]:
-            setattr(class_name, "fitSync", PipelineEvent.fitFnPipeline)
+            setattr(class_name, "fitSync", fitFnPipeline)
 
         #Grid-Search Cross Validation model
         for class_name in [GridSearchCV]:
-            setattr(class_name, "fitSync",  SyncableGridSearchCV.fitFnGridSearch)
+            setattr(class_name, "fitSync",  fitFnGridSearch)

@@ -5,10 +5,6 @@ import statsmodels.api as sm
 from sklearn import linear_model
 from sklearn import preprocessing
 
-# import client.NewOrExistingProject as NewOrExistingProject
-# import client.DefaultExperiment as DefaultExperiment
-# import client.NewExperimentRun as NewExperimentRun
-
 from ModelDbSyncer import *
 import SyncableMetrics
 import SyncableRandomSplit
