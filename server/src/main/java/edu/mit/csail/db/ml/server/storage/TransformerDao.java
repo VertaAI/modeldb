@@ -8,7 +8,6 @@ import jooq.sqlite.gen.tables.records.TransformerRecord;
 import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
-import org.jooq.Record3;
 
 import java.nio.file.Paths;
 import java.util.*;
@@ -151,7 +150,7 @@ public class TransformerDao {
       .map(Record1::value1);
 
     // Now create a string out of each of the Annotations.
-    return AnnotationEventDao.readStrings(annotationIds, ctx);
+    return AnnotationDao.readStrings(annotationIds, ctx);
   }
 
   public static ModelResponse readInfo(int modelId, DSLContext ctx)

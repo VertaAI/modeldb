@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class AnnotationEventDao {
+public class AnnotationDao {
   private static final String DATAFRAME_TYPE = "dataframe";
   private static final String SPEC_TYPE = "spec";
   private static final String TRANSFORMER_TYPE = "transformer";
@@ -70,7 +70,7 @@ public class AnnotationEventDao {
     return new AnnotationEventResponse(aRec.getId(), fragResp);
   }
 
-  private static String fragmentToString(AnnotationfragmentRecord rec) {
+  public static String fragmentToString(AnnotationfragmentRecord rec) {
     switch (rec.getType()) {
       case TRANSFORMER_TYPE: return String.format("Transformer(%d)", rec.getTransformer());
       case DATAFRAME_TYPE: return String.format("DataFrame(%d)", rec.getDataframe());
