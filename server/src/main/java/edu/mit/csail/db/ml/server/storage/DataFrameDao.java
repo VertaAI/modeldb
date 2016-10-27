@@ -40,17 +40,6 @@ public class DataFrameDao {
     return dfRec;
   }
 
-  public static DataframeRecord read(int dfId, DSLContext ctx) throws ResourceNotFoundException {
-    DataframeRecord rec = ctx.selectFrom(Tables.DATAFRAME).where(Tables.DATAFRAME.ID.eq(dfId)).fetchOne();
-    if (rec == null) {
-      throw new ResourceNotFoundException(String.format(
-        "Could not read DataFrame %d, it doesn't exist",
-        dfId
-      ));
-    }
-    return rec;
-  }
-
   public static List<DataFrameColumn> readSchema(int dfId, DSLContext ctx) {
     return ctx
       .select(Tables.DATAFRAMECOLUMN.NAME, Tables.DATAFRAMECOLUMN.TYPE)
@@ -60,8 +49,14 @@ public class DataFrameDao {
       .map(r -> new DataFrameColumn(r.value1(), r.value2()));
   }
 
-  public static DataFrame readDataFrame(int dfId, DSLContext ctx) throws ResourceNotFoundException {
-    DataframeRecord rec = read(dfId, ctx);
+  public static DataFrame read(int dfId, DSLContext ctx) throws ResourceNotFoundException {
+    DataframeRecord rec = ctx.selectFrom(Tables.DATAFRAME).where(Tables.DATAFRAME.ID.eq(dfId)).fetchOne();
+    if (rec == null) {
+      throw new ResourceNotFoundException(String.format(
+        "Could not read DataFrame %d, it doesn't exist",
+        dfId
+      ));
+    }
     return new DataFrame(rec.getId(), readSchema(dfId, ctx), rec.getNumrows(), rec.getTag());
   }
 
