@@ -10,6 +10,7 @@ import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -81,6 +82,19 @@ public class FitEventDao {
     });
     // Return the response.
     return new FitEventResponse(df.getId(), s.getId(), t.getId(), ev.getId(), feRec.getId());
+  }
+
+
+  public static int getNumRowsForModel(int modelId, DSLContext ctx)
+    throws ResourceNotFoundException {
+    int numRows = getNumRowsForModels(Collections.singletonList(modelId), ctx).get(0);
+    if (numRows < 0) {
+      throw new ResourceNotFoundException(String.format(
+        "Could not find number of rows used to train Transformer %d because the Transformer doesn't exist",
+        modelId
+      ));
+    }
+    return numRows;
   }
 
   public static List<Integer> getNumRowsForModels(List<Integer> modelIds, DSLContext ctx) {

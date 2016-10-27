@@ -1,6 +1,7 @@
 package edu.mit.csail.db.ml.server.algorithm;
 
 import edu.mit.csail.db.ml.server.storage.DataFrameDao;
+import edu.mit.csail.db.ml.server.storage.FitEventDao;
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.DataframeRecord;
@@ -98,6 +99,13 @@ public class DataFrameAncestryComputer {
       dfForId.put(df.id, new Pair<>(index, df));
       return null;
     }
+  }
+
+  public static modeldb.CommonAncestor computeCommonAncestorForModels(int modelId1, int modelId2, DSLContext ctx)
+    throws ResourceNotFoundException {
+    int dfId1 = FitEventDao.getParentDfId(modelId1, ctx);
+    int dfId2 = FitEventDao.getParentDfId(modelId2, ctx);
+    return computeCommonAncestor(dfId1, dfId2, ctx);
   }
 
   public static modeldb.CommonAncestor computeCommonAncestor(int dfId1, int dfId2, DSLContext ctx)
