@@ -61,7 +61,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public AnnotationEventResponse storeAnnotationEvent(AnnotationEvent ae) throws TException {
-    return ExceptionWrapper.run(ae.experimentRunId, ctx, () -> AnnotationEventDao.store(ae, ctx));
+    return ExceptionWrapper.run(ae.experimentRunId, ctx, () -> AnnotationDao.store(ae, ctx));
   }
 
   public ProjectEventResponse storeProjectEvent(ProjectEvent pr) throws TException {

@@ -3,9 +3,7 @@ package edu.mit.csail.db.ml;
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.ModelDbServer;
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.records.ExperimentRecord;
-import jooq.sqlite.gen.tables.records.ExperimentrunRecord;
-import jooq.sqlite.gen.tables.records.ProjectRecord;
+import jooq.sqlite.gen.tables.records.*;
 import org.apache.commons.cli.ParseException;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
@@ -85,6 +83,38 @@ public class TestBase {
     return expRunRec.getId();
   }
 
+  public static int createDataFrame(int expRunId, int numRows) throws Exception {
+    DataframeRecord rec = ctx().newRecord(Tables.DATAFRAME);
+    rec.setId(null);
+    rec.setTag("");
+    rec.setNumrows(numRows);
+    rec.setExperimentrun(expRunId);
+    rec.store();
+    return rec.getId();
+  }
+
+  public static int createTransformer(int expRunId, String transformerType) throws Exception {
+    TransformerRecord rec = ctx().newRecord(Tables.TRANSFORMER);
+    rec.setId(null);
+    rec.setTransformertype(transformerType);
+    rec.setWeights("");
+    rec.setTag("");
+    rec.setExperimentrun(expRunId);
+    rec.setFilepath("filepath");
+    rec.store();
+    return rec.getId();
+  }
+
+  public static int createTransformerSpec(int expRunId, String transformerType) throws Exception {
+    TransformerspecRecord rec = ctx().newRecord(Tables.TRANSFORMERSPEC);
+    rec.setId(null);
+    rec.setTransformertype(transformerType);
+    rec.setTag("");
+    rec.setExperimentrun(expRunId);
+    rec.store();
+    return rec.getId();
+  }
+
   // This method is included here just in case, but try to avoid creating a ModelDbServer in the unit tests.
   // Instead test the *Dao classes (e.g. ProjectDao, FitEventDao).
   public static ModelDbServer server() throws SQLException, IOException, ParseException, TException {
@@ -95,6 +125,10 @@ public class TestBase {
     server = new ModelDbServer(ctx());
 
     return server;
+  }
+
+  public static int tableSize(Table t) throws Exception {
+    return ctx().selectFrom(t).fetch().size();
   }
   
   public static void clearTables() throws SQLException, IOException, ParseException {
