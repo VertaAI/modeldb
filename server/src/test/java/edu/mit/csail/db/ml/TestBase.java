@@ -85,6 +85,8 @@ public class TestBase {
     return expRunRec.getId();
   }
 
+  // This method is included here just in case, but try to avoid creating a ModelDbServer in the unit tests.
+  // Instead test the *Dao classes (e.g. ProjectDao, FitEventDao).
   public static ModelDbServer server() throws SQLException, IOException, ParseException, TException {
     if (server != null) {
       return server;

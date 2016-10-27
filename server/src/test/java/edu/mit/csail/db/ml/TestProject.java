@@ -30,7 +30,7 @@ public class TestProject {
   public void testCreateProject() throws Exception {
     // Store a project and ensure its ID exceeds 1.
     ProjectEvent pe = StructFactory.makeProjectEvent();
-    ProjectEventResponse per = TestBase.server().storeProjectEvent(pe);
+    ProjectEventResponse per = ProjectDao.store(pe, TestBase.ctx());;
     Assert.assertTrue(per.projectId > 0);
 
     // Make sure we've stored an element.
@@ -53,7 +53,7 @@ public class TestProject {
     // Try storing another project with the same ID.
     ProjectEvent pe = StructFactory.makeProjectEvent();
     pe.setProject(pe.project.setId(1));
-    TestBase.server().storeProjectEvent(pe);
+    ProjectDao.store(pe, TestBase.ctx());
 
     // Ensure that we still only have one project.
     Assert.assertEquals(1, TestBase.ctx().selectFrom(Tables.PROJECT).fetch().size());
