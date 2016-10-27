@@ -166,7 +166,7 @@ public class TransformerDao {
     FiteventRecord feRec = readFitEvent(modelId, ctx);
 
     // Find the DataFrame mentioned in the FitEvent.
-    DataFrame trainingDf = DataFrameDao.readDataFrame(feRec.getDf(), ctx);
+    DataFrame trainingDf = DataFrameDao.read(feRec.getDf(), ctx);
 
     // Read the TransformerSpec mentioned in the FitEvent.
     TransformerSpec spec = TransformerSpecDao.readTransformerSpec(feRec.getTransformerspec(), ctx);

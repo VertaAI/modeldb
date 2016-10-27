@@ -86,10 +86,26 @@ public class TestBase {
   public static int createDataFrame(int expRunId, int numRows) throws Exception {
     DataframeRecord rec = ctx().newRecord(Tables.DATAFRAME);
     rec.setId(null);
-    rec.setTag("");
+    rec.setTag("tag");
     rec.setNumrows(numRows);
     rec.setExperimentrun(expRunId);
     rec.store();
+
+    DataframecolumnRecord col1 = ctx().newRecord(Tables.DATAFRAMECOLUMN);
+    col1.setId(null);
+    col1.setDfid(rec.getId());
+    col1.setName("first");
+    col1.setType("string");
+    col1.store();
+    col1.getId();
+
+    DataframecolumnRecord col2 = ctx().newRecord(Tables.DATAFRAMECOLUMN);
+    col2.setId(null);
+    col2.setDfid(rec.getId());
+    col2.setName("second");
+    col2.setType("int");
+    col2.store();
+    col2.getId();
     return rec.getId();
   }
 
