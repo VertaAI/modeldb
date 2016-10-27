@@ -19,6 +19,36 @@ import unittest
 
 class BaseTestCases:
     class BaseClass(unittest.TestCase):
+
+        # Checks if experiment, project, and experimentRun are populated properly.
+        def test_session_creation(self):
+            project = SyncerTest.instance.project
+            experiment = SyncerTest.instance.experiment
+            experimentRun = SyncerTest.instance.experimentRun
+
+            # Check project attributes
+            self.assertTrue(hasattr(project, 'id'))
+            self.assertTrue(hasattr(project, 'name'))
+            self.assertTrue(hasattr(project, 'author'))
+            self.assertTrue(hasattr(project, 'description'))
+            self.assertNotEqual(project.id, -1)
+
+            # Check experiment attributes
+            self.assertTrue(hasattr(experiment, 'projectId'))
+            self.assertTrue(hasattr(experiment, 'description'))
+            self.assertTrue(hasattr(experiment, 'id'))
+            self.assertTrue(hasattr(experiment, 'isDefault'))
+            self.assertTrue(hasattr(experiment, 'name'))
+
+            # Check experimentRun attributes
+            self.assertTrue(hasattr(experimentRun, 'id'))
+            self.assertTrue(hasattr(experimentRun, 'experimentId'))
+            self.assertTrue(hasattr(experimentRun, 'description'))
+
+            #Check id dependencies
+            self.assertEqual(project.id, experiment.projectId)
+            self.assertEqual(experimentRun.experimentId, experiment.id)
+
         # Tests if all attributes present in FitEvent object.
         def test_fit_event_attributes(self):
             if (hasattr(self,  'fitEvent')):
