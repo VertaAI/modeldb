@@ -207,7 +207,7 @@ public class TestAnnotations {
   @Test
   public void testReadStrings() throws Exception {
     int dfId = TestBase.createDataFrame(expRunId, 1);
-    int trId = TestBase.createTransformer(expRunId, "tr");
+    int trId = TestBase.createTransformer(expRunId, "tr", "path");
     int sId = TestBase.createTransformerSpec(expRunId, "s");
     int aeId1 = createAnnotation("hello", 0, trId, 1, sId, 2, dfId, 3);
     int aeId2 = createAnnotation("hi", 2, trId, 3, sId, 0, dfId, 1);
@@ -227,7 +227,7 @@ public class TestAnnotations {
   @Test
   public void testReadString() throws Exception {
     int dfId = TestBase.createDataFrame(expRunId, 1);
-    int trId = TestBase.createTransformer(expRunId, "tr");
+    int trId = TestBase.createTransformer(expRunId, "tr", "path");
     int sId = TestBase.createTransformerSpec(expRunId, "s");
     int aeId1 = createAnnotation("hello", 0, trId, 1, sId, 2, dfId, 3);
 

@@ -109,14 +109,14 @@ public class TestBase {
     return rec.getId();
   }
 
-  public static int createTransformer(int expRunId, String transformerType) throws Exception {
+  public static int createTransformer(int expRunId, String transformerType, String filepath) throws Exception {
     TransformerRecord rec = ctx().newRecord(Tables.TRANSFORMER);
     rec.setId(null);
     rec.setTransformertype(transformerType);
     rec.setWeights("");
     rec.setTag("");
     rec.setExperimentrun(expRunId);
-    rec.setFilepath("filepath");
+    rec.setFilepath(filepath);
     rec.store();
     return rec.getId();
   }
