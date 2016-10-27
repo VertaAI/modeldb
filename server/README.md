@@ -15,12 +15,6 @@ Create the SQLite database and tables for ModelDB using:
 cd codegen && ./gen_sqlite.sh && cd ..
 ```
 
-Now make sure to fetch the latest thrift file.
-
-```
-./update_thrift_file.py
-```
-
 To launch the server, make sure you have installed Maven 3.
 
 ```
