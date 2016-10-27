@@ -16,12 +16,19 @@
 
 $(function() {
 	var filters = {};
+	var ranges = {};
 	var newKey = null;
 	var newVal = null;
+	var rangeId = 0;
+	var supportsRange = false;
 
 	$('.filters').on('mouseup', function() {
 		if (newKey && newVal) {
-			addFilter(newKey, newVal);			
+			if (supportsRange) {
+				addRange(newKey);
+			} else {
+				addFilter(newKey, newVal);				
+			}
 		}
 		newKey = null;
 		newVal = null;
@@ -32,6 +39,22 @@ $(function() {
 		var key = filter.data('key');
 		removeFilter(key);
 		filter.remove();
+	});
+
+	$(document).on('click', '.range-close', function(event) {
+		var range = $(event.target).parent('.range');
+		var id = range.data('id');
+		removeRange(id);
+		range.remove();
+	});
+
+	$(document).on('change', '.range-options select, .range-options input', function(event) {
+		var range = $(this).closest('.range');
+		var id = range.data('id');
+		var key = range.data('key');
+		var val = range.find('input').val();
+		var type = range.find('select').val();
+		updateRange(id, key, val, type);
 	});
 
 	$('.model-config').draggable({
@@ -49,6 +72,7 @@ $(function() {
 	function dragStart(event, ui) {
 		newKey = ui.helper.data('key');
 		newVal = ui.helper.data('val');
+		supportsRange = ui.helper.data('num');
 	}
 
 	function addFilter(key, val) {
@@ -75,6 +99,29 @@ $(function() {
 		filter();
 	}
 
+	function addRange(key) {
+		var rangeDiv = getRangeDiv(key);
+		rangeDiv.data('key', key);
+		rangeDiv.data('id', rangeId);
+		rangeId += 1;
+		$('.filters').append(rangeDiv);
+	}
+
+	function updateRange(id, key, val, type) {
+		ranges[id] = {
+			"key": key,
+			"val": val,
+			"type": type
+		};
+		filter();
+	}
+
+	function removeRange(id) {
+		delete ranges[id];
+
+		filter();
+	}
+
 
 	function getFilterDiv(key, val) {
 		var div = $(
@@ -90,6 +137,20 @@ $(function() {
 		return div;
 	}
 
+	function getRangeDiv(key) {
+		var div = $(
+			'<div class="range">' + 
+			'<div class="range-key">' + key + '</div>' +
+			'<div class="range-close">X</div>' +
+			'<div class="range-options">' + 
+			'<select><option value="<"><</option><option value=">">></option></select>' +
+			'<input class="range-input" type="text"></input>' + 
+			'</div>' + 
+			'</div>'
+		);
+		return div;
+	}
+
 	function filter() {
 		var models = $('.model');
 		var show = Array(models.length).fill(true);
@@ -98,6 +159,15 @@ $(function() {
 		  if (filters.hasOwnProperty(key)) {
 		  	filterByKey(key, filters[key], show);
 		  }
+		}
+
+		for (var id in ranges) {
+			if (ranges.hasOwnProperty(id)) {
+				var key = ranges[id].key;
+				var val = ranges[id].val;
+				var type = ranges[id].type;
+				filterByRange(key, val, type, show);
+			}
 		}
 
 		for (var i=0; i<show.length; i++) {
@@ -109,7 +179,7 @@ $(function() {
 				$(models[i]).slideUp()
 			}
 		}
-	}
+	};
 
 	function filterByKey(key, val, show) {
 		let models = $('.model');
@@ -123,4 +193,25 @@ $(function() {
 			}
 		}
 	};
+
+	function filterByRange(key, val, type, show) {
+		if (isNaN(parseFloat(val))) {
+			return;
+		} else {
+			let models = $('.model');
+			for (var i=0; i<models.length; i++) {
+				let fields = $(models[i]).find('.model-config, .model-metric');
+				let field = fields.findByData('key', key)[0];
+				if (field) {
+					if (type === "<") {
+						show[i] = show[i] && ($(field).data('val') < parseFloat(val));
+					} else if (type === ">") {
+						show[i] = show[i] && ($(field).data('val') > parseFloat(val));
+					}
+				} else {
+					show[i] = false;
+				}
+			}
+		}
+	}
 });

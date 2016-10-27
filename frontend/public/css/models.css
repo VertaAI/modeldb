@@ -29,49 +29,38 @@ a {
 	overflow-y: auto;
 }
 
-.filter {
+.filter, .range {
 	margin: 10px;
 	padding: 5px;
 	background-color: #62e8e9;
 	border-radius: 2px;
 }
 
-.filter-key, .filter-val {
+.filter-key, .filter-val, .range-key {
 	display: inline-block;
 	vertical-align: top;
 	margin-left: 5px;
 }
 
-.filter-close {
+.filter-close, .range-close {
 	float: right;
 	color: #1BC4C4;
 	cursor: pointer;
 	transition: all 0.3s ease;
 }
 
-.filter-close:hover {
+.filter-close:hover, .range-close:hover {
 	color: #000;
 }
 
-.filter-button {
-	background-color: #92F992;
-	transition: all 0.3s ease;
-	border: none;
-	position: absolute;
-	bottom: 10px;
-	left: 5%;
-	width: 90%;
-	padding: 5px 0;
-	font-size: 12pt;
-	cursor: pointer;
+.range-options {
+	margin: 5px;
 }
 
-.filter-button:focus {
-	outline: 0;
-}
-
-.filter-button:hover {
-	background-color: #67F467;
+.range-input {
+	text-align: right;
+	margin-left: 5px;
+	width: calc(100% - 50px);
 }
 
 .inline-block {

@@ -3,6 +3,10 @@ var Project = require('../schemas/project.js');
 
 module.exports = {
 
+  getModel: function(modelId, callback) {
+    Model.getModel(modelId, callback);
+  },
+
   getModels: function(callback) {
     Model.getAll(callback);
   },

@@ -3,9 +3,19 @@
   <head>
     <title><%= title %></title>
     <link rel='stylesheet' href='/css/models.css' />
+    
+    <!-- JQuery -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>    
-    <script src='/js/script.js'></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- d3 and vega -->
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//vega.github.io/vega/vega.js"></script>
+    <script src="//vega.github.io/vega-lite/vega-lite.js"></script>
+    <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
+
+    <script src='/js/models.js'></script>
+    <script src='/js/charts.js'></script>
   </head>
   <body>
     <h1><%= title %></h1>
@@ -20,13 +30,30 @@
     	<% for(var i=0; i<models.length; i++) { %>
     		<div class="model">
     			<div class="inline-block model-info">
-	    			ID: <%= models[i].model_id %><br>
-    				Type: <%= models[i].type %><br>
-    				Date: <%= models[i].created_at %>
+            <a href="/models/<%= models[i]._id %>">
+              <div class="kv"
+                data-key="id"
+                data-val="<%= models[i].model_id %>"
+              >
+                ID: <%= models[i].model_id %>
+              </div>
+            </a>
+            <div class="kv"
+	    			  data-key="type"
+              data-val="<%= models[i].type %>"
+            >
+  				    Type: <%= models[i].type %>
+            </div>
+            <div class="kv"
+              data-key="date"
+              data-val="<%= models[i].created_at %>"
+            >
+  				    Date: <%= models[i].created_at %>
+            </div>
     			</div>
     			<div class="inline-block model-configs">
     				<% for (var j=0; j<models[i].configs.length; j++) { %>
-    					<div class="model-config" 
+    					<div class="model-config kv" 
     						data-key="<%=models[i].configs[j].key %>"
     						data-val="<%=models[i].configs[j].value %>"
     					>
@@ -36,9 +63,10 @@
     			</div>
     			<div class="inline-block model-metrics">
     				<% for (var j=0; j<models[i].metrics.length; j++) { %>
-    					<div class="model-metric"
+    					<div class="model-metric kv"
     						data-key="<%=models[i].metrics[j].key %>"
     						data-val="<%=models[i].metrics[j].value %>"
+                            data-num="true"
     					>
 	    					<%= models[i].metrics[j].key %>: <%= models[i].metrics[j].value %>
     					</div>
@@ -47,8 +75,22 @@
     			<div class="inline-block model-annotation">
     				<%= models[i].annotation %>
     			</div>
+                <div class="inline-block model-code">
+                    <%= models[i].code %>
+                </div>
     		</div>
     	<% } %>
     </div>
+
+    <div class="charts-container">
+        <div class="select-container">
+            x-axis: <select class="x-axis"></select>
+        </div>
+        <div class="select-container">
+            y-axis: <select class="y-axis"></select>
+        </div>
+    </div>
+    <button class="compare-button">Compare</button>
+    <div class="model-chart"></div>
   </body>
 </html>

@@ -5,12 +5,13 @@ var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 
 var modelSchema = new Schema({
-    project: [{type: ObjectId, ref: 'Project'}],
     model_id: String,
     annotation: String,
+    code: String,
     configs: [{type: ObjectId, ref: 'Config'}],
     created_at: {type: Date, default: Date.now},
     metrics: [{type: ObjectId, ref: 'Metric'}],
+    project: [{type: ObjectId, ref: 'Project'}],
     type: String,
     updated_at: {type: Date, default: Date.now}
 });
@@ -20,6 +21,17 @@ modelSchema.statics.getAll = function(callback) {
     Model.find({}).populate('configs metrics').exec(function(err, models) {
         if (err) {
             callback({code: 500, err: 'Failed to fetch all models'});
+        } else {
+            callback({code: 200, data: models});
+        }
+    });
+};
+
+// get specific model
+modelSchema.statics.getModel = function(modelId, callback) {
+    Model.findOne({_id: modelId}).populate('configs metrics').exec(function(err, models) {
+        if (err) {
+            callback({code: 500, err: 'Failed to fetch model'});
         } else {
             callback({code: 200, data: models});
         }

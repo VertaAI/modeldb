@@ -3,6 +3,7 @@
 	"project": ObjectId("580f14752e76271b301e15c4"),
 	"model_id": "1",
 	"type": "Random Forest",
+	"code": "link_to_git",
 	"configs": [ObjectId("5805d5e2b02cb07f9634c5e1"), ObjectId("5805d5e2b02cb07f9634c5e2")],
 	"metrics": [ObjectId("5805d582b02cb07f9634c5db"), ObjectId("5805d582b02cb07f9634c5dc"), ObjectId("5805d582b02cb07f9634c5dd")],
 	"annotation": "model 1"
@@ -13,6 +14,7 @@
 	"project": ObjectId("580f14752e76271b301e15c4"),
 	"model_id": "2",
 	"type": "Linear Regression",
+	"code": "link_to_git",
 	"configs": [ObjectId("5805d5e2b02cb07f9634c5e3"), ObjectId("5805d5e2b02cb07f9634c5e4"), ObjectId("5805d5e2b02cb07f9634c5e5")],
 	"metrics": [ObjectId("5805d582b02cb07f9634c5de")],
 	"annotation": "model 2"
@@ -23,6 +25,7 @@
 	"project": ObjectId("580f14752e76271b301e15c4"),
 	"model_id": "3",
 	"type": "Linear Regression",
+	"code": "link_to_git",
 	"configs": [ObjectId("5805d5e2b02cb07f9634c5e6")],
 	"metrics": [ObjectId("5805d582b02cb07f9634c5df"), ObjectId("5805d582b02cb07f9634c5e0")],
 	"annotation": "model 3"

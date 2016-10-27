@@ -19,8 +19,8 @@ router.get('/:id/models', function(req, res, next) {
     res.render('models', {
       title: 'Models',
       models: response.data
-    })
-  })
+    });
+  });
 });
 
 module.exports = router;
