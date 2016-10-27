@@ -1,18 +1,19 @@
 #!/usr/bin/python
-import numpy as np
-import pandas as pd
-
-import ModelDbSyncer
 import sys
 sys.path.append('./thrift/gen-py')
+import ModelDbSyncer
+
+# modeldb imports
+from events import *
 from modeldb import ModelDBService
 import modeldb.ttypes as modeldb_types
-import events.ProjectEvent as ProjectEvent
-import events.ExperimentEvent as ExperimentEvent
-import events.ExperimentRunEvent as ExperimentRunEvent
-import events.FitEvent as FitEvent
+
+# sklearn imports
+import numpy as np
+import pandas as pd
 from sklearn.preprocessing import *
 from sklearn.linear_model import *
+
 
 class SyncerTest(ModelDbSyncer.Syncer):
     instance = None
