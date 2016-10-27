@@ -16,6 +16,7 @@ import SyncableMetrics
 from ModelDbSyncerTest import *
 
 import unittest
+
 class BaseTestCases:
     class BaseClass(unittest.TestCase):
         # Tests if all attributes present in FitEvent object.
@@ -39,18 +40,10 @@ class BaseTestCases:
                 self.assertTrue(hasattr(spec, 'tag'))
 
                 #Check Transformer within FitEvent
-                transformer = self.fitEvent.model
-                self.assertTrue(hasattr(transformer, 'id'))
-                self.assertTrue(hasattr(transformer, 'weights')) 
-                self.assertTrue(hasattr(transformer, 'transformerType'))
-                self.assertTrue(hasattr(transformer, 'tag'))
+                self.test_transformer_struct()
 
                 #Check DataFrame within FitEvent
-                df = self.fitEvent.df
-                self.assertTrue(hasattr(df, 'numRows'))
-                self.assertTrue(hasattr(df, 'tag')) 
-                self.assertTrue(hasattr(df, 'id'))
-                self.assertTrue(hasattr(df, 'schema'))
+                self.test_data_frame_struct()
 
                 #Check types of columns
                 self.assertTrue(type(self.fitEvent.featureColumns), 'list')
@@ -69,17 +62,32 @@ class BaseTestCases:
                 self.assertTrue(type(self.transformEvent.experimentRunId), 'int')
 
                 #Check Transformer within TransformEvent
-                transformer = self.transformEvent.transformer
+                self.test_transformer_struct()
+
+                #Check DataFrames within TransformEvent
+                self.test_data_frame_struct()
+
+        # Helper method to validate DataFrame struct
+        def test_data_frame_struct(self):
+            def check_df(df):
+                self.assertTrue(hasattr(df, 'numRows'))
+                self.assertTrue(hasattr(df, 'tag'))
+                self.assertTrue(hasattr(df, 'id'))
+                self.assertTrue(hasattr(df, 'schema'))
+            if hasattr(self, 'transformEvent'):
+                check_df(self.transformEvent.oldDataFrame)
+                check_df(self.transformEvent.newDataFrame)
+            if hasattr(self, 'fitEvent'):
+                check_df(self.fitEvent.df)
+
+        # Helper method to validate Transformer struct
+        def test_transformer_struct(self):
+            def check_struct(transformer):
                 self.assertTrue(hasattr(transformer, 'id'))
                 self.assertTrue(hasattr(transformer, 'weights')) 
                 self.assertTrue(hasattr(transformer, 'transformerType'))
                 self.assertTrue(hasattr(transformer, 'tag'))
-
-                #Check dataFrames within TransformEvent
-                old_df = self.transformEvent.oldDataFrame
-                new_df = self.transformEvent.newDataFrame
-                for df in [old_df, new_df]:
-                    self.assertTrue(hasattr(df, 'numRows'))
-                    self.assertTrue(hasattr(df, 'tag')) 
-                    self.assertTrue(hasattr(df, 'id'))
-                    self.assertTrue(hasattr(df, 'schema'))
+            if hasattr(self, 'transformEvent'):
+                check_struct(self.transformEvent.transformer)
+            if hasattr(self, 'fitEvent'):
+                check_struct(self.fitEvent.model)
