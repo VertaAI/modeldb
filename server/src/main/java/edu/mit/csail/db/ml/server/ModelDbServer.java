@@ -4,51 +4,20 @@ import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.algorithm.*;
 import edu.mit.csail.db.ml.server.algorithm.similarity.SimilarModels;
 import edu.mit.csail.db.ml.server.storage.*;
+import edu.mit.csail.db.ml.util.ContextFactory;
+import edu.mit.csail.db.ml.util.ExceptionWrapper;
 import modeldb.*;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class ModelDbServer implements ModelDBService.Iface {
   private DSLContext ctx;
 
-  private interface CheckedSupplier<T> {
-    T get() throws Exception;
-  }
-
-  private<T> T run(CheckedSupplier<T> fn) throws TException {
-    try {
-      return fn.get();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      if (ex instanceof TException) {
-        throw (TException) ex;
-      } else {
-        throw new ServerLogicException(ex.getClass().getSimpleName() + ": " + ex.getMessage());
-      }
-    }
-  }
-
-  private<T> T run(int expRunId, CheckedSupplier<T> fn) throws TException {
-    return run(() -> {
-      ExperimentRunDao.validateExperimentRunId(expRunId, ctx);
-      return fn.get();
-    });
-  }
-
   public ModelDbServer(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType) {
     try {
-      Connection conn = DriverManager.getConnection(jdbcUrl, username, password);
-      switch (dbType) {
-        case SQLITE: ctx = DSL.using(conn, SQLDialect.SQLITE); break;
-      }
+      ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -63,153 +32,142 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public FitEventResponse storeFitEvent(FitEvent fe) throws TException {
-    return run(fe.experimentRunId, () -> FitEventDao.store(fe, ctx));
+    return ExceptionWrapper.run(fe.experimentRunId, ctx, () -> FitEventDao.store(fe, ctx));
   }
 
   public MetricEventResponse storeMetricEvent(MetricEvent me) throws TException {
-    return run(me.experimentRunId, () -> MetricEventDao.store(me, ctx));
+    return ExceptionWrapper.run(me.experimentRunId, ctx, () -> MetricEventDao.store(me, ctx));
   }
 
   public TransformEventResponse storeTransformEvent(TransformEvent te) throws TException {
-    return run(te.experimentRunId, () -> TransformEventDao.store(te, ctx, true));
+    return ExceptionWrapper.run(te.experimentRunId, ctx, () -> TransformEventDao.store(te, ctx, true));
   }
 
   public RandomSplitEventResponse storeRandomSplitEvent(RandomSplitEvent rse) throws TException {
-    return run(rse.experimentRunId, () -> RandomSplitEventDao.store(rse, ctx));
+    return ExceptionWrapper.run(rse.experimentRunId, ctx, () -> RandomSplitEventDao.store(rse, ctx));
   }
 
   public PipelineEventResponse storePipelineEvent(PipelineEvent pipelineEvent) throws TException {
-    return run(pipelineEvent.experimentRunId, () -> PipelineEventDao.store(pipelineEvent, ctx));
+    return ExceptionWrapper.run(pipelineEvent.experimentRunId, ctx, () -> PipelineEventDao.store(pipelineEvent, ctx));
   }
 
   public CrossValidationEventResponse storeCrossValidationEvent(CrossValidationEvent cve) throws TException {
-    return run(cve.experimentRunId, () -> CrossValidationEventDao.store(cve, ctx));
+    return ExceptionWrapper.run(cve.experimentRunId, ctx, () -> CrossValidationEventDao.store(cve, ctx));
   }
 
   public GridSearchCrossValidationEventResponse storeGridSearchCrossValidationEvent(GridSearchCrossValidationEvent gscve)
     throws TException {
-    return run(gscve.experimentRunId, () -> GridSearchCrossValidationEventDao.store(gscve, ctx));
+    return ExceptionWrapper.run(gscve.experimentRunId, ctx, () -> GridSearchCrossValidationEventDao.store(gscve, ctx));
   }
 
   public AnnotationEventResponse storeAnnotationEvent(AnnotationEvent ae) throws TException {
-    return run(ae.experimentRunId, () -> AnnotationEventDao.store(ae, ctx));
+    return ExceptionWrapper.run(ae.experimentRunId, ctx, () -> AnnotationEventDao.store(ae, ctx));
   }
 
   public ProjectEventResponse storeProjectEvent(ProjectEvent pr) throws TException {
-    return run(() -> ProjectDao.store(pr, ctx));
+    return ExceptionWrapper.run(() -> ProjectDao.store(pr, ctx));
   }
 
   public ExperimentEventResponse storeExperimentEvent(ExperimentEvent ee) throws TException {
-    return run(() -> ExperimentDao.store(ee, ctx));
+    return ExceptionWrapper.run(() -> ExperimentDao.store(ee, ctx));
   }
 
   public ExperimentRunEventResponse storeExperimentRunEvent(ExperimentRunEvent er) throws TException {
-    return run(() -> ExperimentRunDao.store(er, ctx));
+    return ExceptionWrapper.run(() -> ExperimentRunDao.store(er, ctx));
   }
 
   public boolean storeLinearModel(int modelId, LinearModel model) throws TException {
-    return run(() -> LinearModelDao.store(modelId, model, ctx));
+    return ExceptionWrapper.run(() -> LinearModelDao.store(modelId, model, ctx));
   }
 
   public modeldb.DataFrameAncestry getDataFrameAncestry(int dataFrameId) throws TException {
-    return run(() -> DataFrameAncestryComputer.compute(dataFrameId, ctx));
+    return ExceptionWrapper.run(() -> DataFrameAncestryComputer.compute(dataFrameId, ctx));
   }
 
   public String pathForTransformer(int transformerId) throws TException {
-    return run(() -> TransformerDao.path(transformerId, ctx));
+    return ExceptionWrapper.run(() -> TransformerDao.path(transformerId, ctx));
   }
 
   public CommonAncestor getCommonAncestor(int dfId1, int dfId2) throws TException {
-    return run(() -> DataFrameAncestryComputer.computeCommonAncestor(dfId1, dfId2, ctx));
+    return ExceptionWrapper.run(() -> DataFrameAncestryComputer.computeCommonAncestor(dfId1, dfId2, ctx));
   }
 
-  public CommonAncestor getCommonAncestorForModels(int modelId1, int modelid2) throws TException {
-    return run(() -> {
-      int dfId1 = FitEventDao.getParentDfId(modelId1, ctx);
-      int dfId2 = FitEventDao.getParentDfId(modelid2, ctx);
-      return getCommonAncestor(dfId1, dfId2);
-    });
+  public CommonAncestor getCommonAncestorForModels(int modelId1, int modelId2) throws TException {
+    return ExceptionWrapper.run(() ->
+      DataFrameAncestryComputer.computeCommonAncestorForModels(modelId1, modelId2, ctx)
+    );
   }
 
   public int getTrainingRowsCount(int modelId) throws TException {
-    return run(() -> {
-      int numRows = FitEventDao.getNumRowsForModels(Collections.singletonList(modelId), ctx).get(0);
-      if (numRows < 0) {
-        throw new ResourceNotFoundException(String.format(
-          "Could not find number of rows used to train Transformer %d because the Transformer doesn't exist",
-          modelId
-        ));
-      }
-      return numRows;
-    });
+    return ExceptionWrapper.run(() -> FitEventDao.getNumRowsForModel(modelId, ctx));
   }
 
   public List<Integer> getTrainingRowsCounts(List<Integer> modelIds) throws TException {
-    return run(() -> FitEventDao.getNumRowsForModels(modelIds, ctx));
+    return ExceptionWrapper.run(() -> FitEventDao.getNumRowsForModels(modelIds, ctx));
   }
 
   public CompareHyperParametersResponse compareHyperparameters(int modelId1, int modelId2) throws TException {
-    return run(() -> HyperparameterComparison.compareHyperParameters(modelId1, modelId2, ctx));
+    return ExceptionWrapper.run(() -> HyperparameterComparison.compareHyperParameters(modelId1, modelId2, ctx));
   }
 
   public CompareFeaturesResponse compareFeatures(int modelId1, int modelId2) throws TException {
-    return run(() -> Feature.compareFeatures(modelId1, modelId2, ctx));
+    return ExceptionWrapper.run(() -> Feature.compareFeatures(modelId1, modelId2, ctx));
   }
 
   public Map<ProblemType, List<Integer>> groupByProblemType(List<Integer> modelIds) throws TException {
-    return run(() -> ProblemTypeGrouper.groupByProblemType(modelIds, ctx));
+    return ExceptionWrapper.run(() -> ProblemTypeGrouper.groupByProblemType(modelIds, ctx));
   }
 
   public List<Integer> similarModels(int modelId, List<ModelCompMetric> compMetrics, int numModels) throws TException {
-    return run(() -> SimilarModels.similarModels(modelId, compMetrics, numModels, ctx));
+    return ExceptionWrapper.run(() -> SimilarModels.similarModels(modelId, compMetrics, numModels, ctx));
   }
 
   public List<String> linearModelFeatureImportances(int modelId) throws TException {
-    return run(() -> LinearModelAlgorithms.featureImportances(modelId, ctx));
+    return ExceptionWrapper.run(() -> LinearModelAlgorithms.featureImportances(modelId, ctx));
   }
 
   public List<FeatureImportanceComparison> compareLinearModelFeatureImportances(int model1Id, int model2Id)
     throws TException {
-    return run(() -> LinearModelAlgorithms.featureImportances(model1Id, model2Id, ctx));
+    return ExceptionWrapper.run(() -> LinearModelAlgorithms.featureImportances(model1Id, model2Id, ctx));
   }
 
   public List<Integer> iterationsUntilConvergence(List<Integer> modelIds, double tolerance) throws TException {
-    return run(() -> LinearModelAlgorithms.iterationsUntilConvergence(modelIds, tolerance, ctx));
+    return ExceptionWrapper.run(() -> LinearModelAlgorithms.iterationsUntilConvergence(modelIds, tolerance, ctx));
   }
 
   public List<Integer> rankModels(List<Integer> modelIds, ModelRankMetric metric) throws TException {
-    return run(() -> LinearModelAlgorithms.rankModels(modelIds, metric, ctx));
+    return ExceptionWrapper.run(() -> LinearModelAlgorithms.rankModels(modelIds, metric, ctx));
   }
 
   public List<ConfidenceInterval> confidenceIntervals(int modelId, double significanceLevel) throws TException {
-    return run(() -> LinearModelAlgorithms.confidenceIntervals(modelId, significanceLevel, ctx));
+    return ExceptionWrapper.run(() -> LinearModelAlgorithms.confidenceIntervals(modelId, significanceLevel, ctx));
   }
 
   public List<Integer> modelsWithFeatures(List<String> featureNames) throws TException {
-    return run(() -> Feature.modelsWithFeatures(featureNames, ctx));
+    return ExceptionWrapper.run(() -> Feature.modelsWithFeatures(featureNames, ctx));
   }
 
   public List<Integer> modelsDerivedFromDataFrame(int dfId) throws TException {
-    return run(() -> DataFrameAncestryComputer.descendentModels(dfId, ctx));
+    return ExceptionWrapper.run(() -> DataFrameAncestryComputer.descendentModels(dfId, ctx));
   }
 
   public ModelResponse getModel(int modelId) throws TException {
-    return run(() -> TransformerDao.readInfo(modelId, ctx));
+    return ExceptionWrapper.run(() -> TransformerDao.readInfo(modelId, ctx));
   }
 
   public List<ExperimentRun> getRunsInExperiment(int experimentId) throws TException {
-    return run(() -> ExperimentRunDao.readExperimentRunsInExperiment(experimentId, ctx));
+    return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentRunsInExperiment(experimentId, ctx));
   }
 
   public ProjectExperimentsAndRuns getRunsAndExperimentsInProject(int projId) throws TException {
-    return run(() -> ExperimentRunDao.readExperimentsAndRunsInProject(projId, ctx));
+    return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentsAndRunsInProject(projId, ctx));
   }
 
   public List<ProjectOverviewResponse> getProjectOverviews() throws TException {
-    return run(() -> ProjectDao.getProjectOverviews(ctx));
+    return ExceptionWrapper.run(() -> ProjectDao.getProjectOverviews(ctx));
   }
 
   public ExperimentRunDetailsResponse getExperimentRunDetails(int experimentRunId) throws TException {
-    return run(() -> ExperimentRunDao.readExperimentRunDetails(experimentRunId, ctx));
+    return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentRunDetails(experimentRunId, ctx));
   }
 }
