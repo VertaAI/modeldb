@@ -36,7 +36,7 @@ public class TransformerDao {
     return ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(id)).fetchOne() != null;
   }
 
-  private static String generateFilepath() {
+  public static String generateFilepath() {
     String uuid = UUID.randomUUID().toString();
     return Paths.get(ModelDbConfig.getInstance().fsPrefix, uuid).toString();
   }
