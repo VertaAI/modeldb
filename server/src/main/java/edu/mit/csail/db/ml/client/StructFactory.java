@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 /**
  * This generates dummy objects for use by the SampleClient.
  */
-public class DummyFactory {
+public class StructFactory {
   // Random number generator.
   private static final Random generator = new Random();
 

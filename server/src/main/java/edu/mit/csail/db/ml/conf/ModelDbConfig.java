@@ -20,6 +20,7 @@ public class ModelDbConfig {
   public final String thriftHost;
   public final DatabaseType dbType;
   public final String jbdcUrl;
+  public final String jbdcTestUrl;
   public final int thriftPort;
   public final String fsPrefix;
 
@@ -27,6 +28,7 @@ public class ModelDbConfig {
     String dbUser,
     String dbPassword,
     String jdbcUrl,
+    String jdbcTestUrl,
     String databaseType,
     String thriftHost,
     String thriftPort,
@@ -35,6 +37,7 @@ public class ModelDbConfig {
     this.dbUser = dbUser;
     this.dbPassword = dbPassword;
     this.jbdcUrl = jdbcUrl;
+    this.jbdcTestUrl = jdbcTestUrl;
     switch (databaseType) {
       case "sqlite": this.dbType = DatabaseType.SQLITE; break;
       default: throw new IllegalArgumentException("Not a value databaseType");
@@ -64,6 +67,7 @@ public class ModelDbConfig {
       getProp(config, "db.user"),
       getProp(config, "db.password"),
       getProp(config, "db.jdbcUrl"),
+      getProp(config, "db.jdbcTestUrl"),
       getProp(config, "db.databaseType"),
       getProp(config, "thrift.host"),
       getProp(config, "thrift.port"),
