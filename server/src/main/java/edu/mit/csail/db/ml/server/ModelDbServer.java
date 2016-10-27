@@ -54,6 +54,10 @@ public class ModelDbServer implements ModelDBService.Iface {
     }
   }
 
+  public ModelDbServer(DSLContext ctx) {
+    this.ctx = ctx;
+  }
+
   public int testConnection() throws TException {
     return 200;
   }
