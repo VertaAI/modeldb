@@ -52,7 +52,7 @@ public class ProjectDao {
     .from(Tables.EXPERIMENT)
     .where(Tables.EXPERIMENT.PROJECT.eq(projId))
     .fetchOne();
-    if (rec != null) {
+    if (rec != null && rec.value1() != null) {
         return rec.value1();
     } else {
         return -1;

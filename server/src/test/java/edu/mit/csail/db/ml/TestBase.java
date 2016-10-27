@@ -53,8 +53,12 @@ public class TestBase {
     return createTestExperimentRun();
   }
 
+  public static Timestamp now() {
+    return new Timestamp((new Date()).getTime());
+  }
+
   public static int createTestExperimentRun() throws SQLException, IOException, ParseException {
-    Timestamp now = new Timestamp((new Date()).getTime());
+    Timestamp now = now();
     ProjectRecord projRec = ctx().newRecord(Tables.PROJECT);
     projRec.setId(null);
     projRec.setName("Test project");
