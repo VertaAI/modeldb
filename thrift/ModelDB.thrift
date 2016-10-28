@@ -87,28 +87,6 @@ struct Transformer {
   4: string tag =""
 }
 
-struct ModelResponse {
-  1: i32 id,
-  2: i32 experimentRunId,
-  3: i32 experimentId,
-  4: i32 projectId,
-  5: DataFrame trainingDataFrame,
-  6: TransformerSpec specification,
-  7: ProblemType problemType,
-  8: list<string> featureColumns,
-  9: list<string> labelColumns,
-  10: list<string> predictionColumns,
-  // Map from metric name to evaluation DataFrame ID to metric value.
-  // We need the evaluation DataFrame ID because we could compute the same
-  // metric on multiple DataFrames.
-  11: map<string, map<i32, double>> metrics,
-  // Turn each annotation into a string.
-  12: list<string> annotations,
-  13: string sha,
-  14: string filepath,
-  15: optional LinearModel linearModelData
-}
-
 enum ProblemType {
   UNDEFINED,
   BINARY_CLASSIFICATION,
@@ -116,19 +94,6 @@ enum ProblemType {
   REGRESSION,
   CLUSTERING,
   RECOMMENDATION
-}
-
-// this needs to be updated to resemble
-// type, params, features
-struct FitEvent {
-  1: DataFrame df,
-  2: TransformerSpec spec,
-  3: Transformer model,
-  4: list<string> featureColumns,
-  5: list<string> predictionColumns,
-  6: list<string> labelColumns,
-  7: i32 experimentRunId,
-  8: optional ProblemType problemType = ProblemType.UNDEFINED
 }
 
 struct LinearModelTerm {
@@ -146,6 +111,19 @@ struct LinearModel {
   4: optional double rmse,
   5: optional double explainedVariance,
   6: optional double r2
+}
+
+// this needs to be updated to resemble
+// type, params, features
+struct FitEvent {
+  1: DataFrame df,
+  2: TransformerSpec spec,
+  3: Transformer model,
+  4: list<string> featureColumns,
+  5: list<string> predictionColumns,
+  6: list<string> labelColumns,
+  7: i32 experimentRunId,
+  8: optional ProblemType problemType = ProblemType.UNDEFINED
 }
 
 struct FitEventResponse {
@@ -202,56 +180,6 @@ struct RandomSplitEventResponse {
   1: i32 oldDataFrameId,
   2: list<i32> splitIds,
   3: i32 splitEventId
-}
-
-struct CrossValidationFold {
-  1: Transformer model,
-  2: DataFrame validationDf,
-  3: DataFrame trainingDf,
-  4: double score
-}
-
-struct CrossValidationFoldResponse {
-  1: i32 modelId,
-  2: i32 validationId,
-  3: i32 trainingId
-}
-
-struct CrossValidationEvent {
-  1: DataFrame df,
-  2: TransformerSpec spec,
-  3: i64 seed,
-  4: string evaluator,
-  5: list<string> labelColumns,
-  6: list<string> predictionColumns,
-  7: list<string> featureColumns,
-  // Note that we don't need to store numFolds, because we can infer that from from the length of this list.
-  8: list<CrossValidationFold> folds,
-  9: i32 experimentRunId,
-  10: optional ProblemType problemType = ProblemType.UNDEFINED
-}
-
-struct CrossValidationEventResponse {
-  1: i32 dfId,
-  2: i32 specId,
-  3: i32 eventId,
-  4: list<CrossValidationFoldResponse> foldResponses,
-  5: i32 crossValidationEventId
-}
-
-struct GridSearchCrossValidationEvent {
-  1: i32 numFolds,
-  2: FitEvent bestFit,
-  3: list<CrossValidationEvent> crossValidations,
-  4: i32 experimentRunId
-  5: optional ProblemType problemType = ProblemType.UNDEFINED
-}
-
-struct GridSearchCrossValidationEventResponse {
-  1: i32 gscveId,
-  2: i32 eventId,
-  3: FitEventResponse fitEventResponse,
-  4: list<CrossValidationEventResponse> crossValidationEventResponses,
 }
 
 struct PipelineTransformStage {
@@ -368,12 +296,88 @@ struct ProjectOverviewResponse {
   3: i32 numExperimentRuns
 }
 
+struct ModelResponse {
+  1: i32 id,
+  2: i32 experimentRunId,
+  3: i32 experimentId,
+  4: i32 projectId,
+  5: DataFrame trainingDataFrame,
+  6: TransformerSpec specification,
+  7: ProblemType problemType,
+  8: list<string> featureColumns,
+  9: list<string> labelColumns,
+  10: list<string> predictionColumns,
+  // Map from metric name to evaluation DataFrame ID to metric value.
+  // We need the evaluation DataFrame ID because we could compute the same
+  // metric on multiple DataFrames.
+  11: map<string, map<i32, double>> metrics,
+  // Turn each annotation into a string.
+  12: list<string> annotations,
+  13: string sha,
+  14: string filepath,
+  15: optional LinearModel linearModelData
+}
+
 struct ExperimentRunDetailsResponse {
   1: Project project,
   2: Experiment experiment,
   3: ExperimentRun experimentRun,
   4: list<ModelResponse> modelResponses,
 }
+
+struct CrossValidationFold {
+  1: Transformer model,
+  2: DataFrame validationDf,
+  3: DataFrame trainingDf,
+  4: double score
+}
+
+struct CrossValidationFoldResponse {
+  1: i32 modelId,
+  2: i32 validationId,
+  3: i32 trainingId
+}
+
+struct CrossValidationEvent {
+  1: DataFrame df,
+  2: TransformerSpec spec,
+  3: i64 seed,
+  4: string evaluator,
+  5: list<string> labelColumns,
+  6: list<string> predictionColumns,
+  7: list<string> featureColumns,
+  // Note that we don't need to store numFolds, because we can infer that from from the length of this list.
+  8: list<CrossValidationFold> folds,
+  9: i32 experimentRunId,
+  10: optional ProblemType problemType = ProblemType.UNDEFINED
+}
+
+struct CrossValidationEventResponse {
+  1: i32 dfId,
+  2: i32 specId,
+  3: i32 eventId,
+  4: list<CrossValidationFoldResponse> foldResponses,
+  5: i32 crossValidationEventId
+}
+
+struct GridSearchCrossValidationEvent {
+  1: i32 numFolds,
+  2: FitEvent bestFit,
+  3: list<CrossValidationEvent> crossValidations,
+  4: i32 experimentRunId
+  5: optional ProblemType problemType = ProblemType.UNDEFINED
+}
+
+struct GridSearchCrossValidationEventResponse {
+  1: i32 gscveId,
+  2: i32 eventId,
+  3: FitEventResponse fitEventResponse,
+  4: list<CrossValidationEventResponse> crossValidationEventResponses,
+}
+
+
+
+
 
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
 // For example, if you try to read Transformer with ID 1, then we throw this
