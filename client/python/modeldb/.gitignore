@@ -1,0 +1,4 @@
+*.pyc
+*/*.pyc
+*/*/*.pyc
+thrift/modeldb/*

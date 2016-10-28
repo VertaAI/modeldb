@@ -1348,6 +1348,308 @@ class Transformer:
   def __ne__(self, other):
     return not (self == other)
 
+class ModelResponse:
+  """
+  Attributes:
+   - id
+   - experimentRunId
+   - experimentId
+   - projectId
+   - trainingDataFrame
+   - specification
+   - problemType
+   - featureColumns
+   - labelColumns
+   - predictionColumns
+   - metrics
+   - annotations
+   - sha
+   - filepath
+   - linearModelData
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'id', None, None, ), # 1
+    (2, TType.I32, 'experimentRunId', None, None, ), # 2
+    (3, TType.I32, 'experimentId', None, None, ), # 3
+    (4, TType.I32, 'projectId', None, None, ), # 4
+    (5, TType.STRUCT, 'trainingDataFrame', (DataFrame, DataFrame.thrift_spec), None, ), # 5
+    (6, TType.STRUCT, 'specification', (TransformerSpec, TransformerSpec.thrift_spec), None, ), # 6
+    (7, TType.I32, 'problemType', None, None, ), # 7
+    (8, TType.LIST, 'featureColumns', (TType.STRING,None), None, ), # 8
+    (9, TType.LIST, 'labelColumns', (TType.STRING,None), None, ), # 9
+    (10, TType.LIST, 'predictionColumns', (TType.STRING,None), None, ), # 10
+    (11, TType.MAP, 'metrics', (TType.STRING,None,TType.MAP,(TType.I32,None,TType.DOUBLE,None)), None, ), # 11
+    (12, TType.LIST, 'annotations', (TType.STRING,None), None, ), # 12
+    (13, TType.STRING, 'sha', None, None, ), # 13
+    (14, TType.STRING, 'filepath', None, None, ), # 14
+    (15, TType.STRUCT, 'linearModelData', (LinearModel, LinearModel.thrift_spec), None, ), # 15
+  )
+
+  def __init__(self, id=None, experimentRunId=None, experimentId=None, projectId=None, trainingDataFrame=None, specification=None, problemType=None, featureColumns=None, labelColumns=None, predictionColumns=None, metrics=None, annotations=None, sha=None, filepath=None, linearModelData=None,):
+    self.id = id
+    self.experimentRunId = experimentRunId
+    self.experimentId = experimentId
+    self.projectId = projectId
+    self.trainingDataFrame = trainingDataFrame
+    self.specification = specification
+    self.problemType = problemType
+    self.featureColumns = featureColumns
+    self.labelColumns = labelColumns
+    self.predictionColumns = predictionColumns
+    self.metrics = metrics
+    self.annotations = annotations
+    self.sha = sha
+    self.filepath = filepath
+    self.linearModelData = linearModelData
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.id = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.experimentRunId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.experimentId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I32:
+          self.projectId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRUCT:
+          self.trainingDataFrame = DataFrame()
+          self.trainingDataFrame.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRUCT:
+          self.specification = TransformerSpec()
+          self.specification.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I32:
+          self.problemType = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.LIST:
+          self.featureColumns = []
+          (_etype31, _size28) = iprot.readListBegin()
+          for _i32 in xrange(_size28):
+            _elem33 = iprot.readString()
+            self.featureColumns.append(_elem33)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.LIST:
+          self.labelColumns = []
+          (_etype37, _size34) = iprot.readListBegin()
+          for _i38 in xrange(_size34):
+            _elem39 = iprot.readString()
+            self.labelColumns.append(_elem39)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.LIST:
+          self.predictionColumns = []
+          (_etype43, _size40) = iprot.readListBegin()
+          for _i44 in xrange(_size40):
+            _elem45 = iprot.readString()
+            self.predictionColumns.append(_elem45)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.MAP:
+          self.metrics = {}
+          (_ktype47, _vtype48, _size46 ) = iprot.readMapBegin()
+          for _i50 in xrange(_size46):
+            _key51 = iprot.readString()
+            _val52 = {}
+            (_ktype54, _vtype55, _size53 ) = iprot.readMapBegin()
+            for _i57 in xrange(_size53):
+              _key58 = iprot.readI32()
+              _val59 = iprot.readDouble()
+              _val52[_key58] = _val59
+            iprot.readMapEnd()
+            self.metrics[_key51] = _val52
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.LIST:
+          self.annotations = []
+          (_etype63, _size60) = iprot.readListBegin()
+          for _i64 in xrange(_size60):
+            _elem65 = iprot.readString()
+            self.annotations.append(_elem65)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 13:
+        if ftype == TType.STRING:
+          self.sha = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.STRING:
+          self.filepath = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 15:
+        if ftype == TType.STRUCT:
+          self.linearModelData = LinearModel()
+          self.linearModelData.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ModelResponse')
+    if self.id is not None:
+      oprot.writeFieldBegin('id', TType.I32, 1)
+      oprot.writeI32(self.id)
+      oprot.writeFieldEnd()
+    if self.experimentRunId is not None:
+      oprot.writeFieldBegin('experimentRunId', TType.I32, 2)
+      oprot.writeI32(self.experimentRunId)
+      oprot.writeFieldEnd()
+    if self.experimentId is not None:
+      oprot.writeFieldBegin('experimentId', TType.I32, 3)
+      oprot.writeI32(self.experimentId)
+      oprot.writeFieldEnd()
+    if self.projectId is not None:
+      oprot.writeFieldBegin('projectId', TType.I32, 4)
+      oprot.writeI32(self.projectId)
+      oprot.writeFieldEnd()
+    if self.trainingDataFrame is not None:
+      oprot.writeFieldBegin('trainingDataFrame', TType.STRUCT, 5)
+      self.trainingDataFrame.write(oprot)
+      oprot.writeFieldEnd()
+    if self.specification is not None:
+      oprot.writeFieldBegin('specification', TType.STRUCT, 6)
+      self.specification.write(oprot)
+      oprot.writeFieldEnd()
+    if self.problemType is not None:
+      oprot.writeFieldBegin('problemType', TType.I32, 7)
+      oprot.writeI32(self.problemType)
+      oprot.writeFieldEnd()
+    if self.featureColumns is not None:
+      oprot.writeFieldBegin('featureColumns', TType.LIST, 8)
+      oprot.writeListBegin(TType.STRING, len(self.featureColumns))
+      for iter66 in self.featureColumns:
+        oprot.writeString(iter66)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.labelColumns is not None:
+      oprot.writeFieldBegin('labelColumns', TType.LIST, 9)
+      oprot.writeListBegin(TType.STRING, len(self.labelColumns))
+      for iter67 in self.labelColumns:
+        oprot.writeString(iter67)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.predictionColumns is not None:
+      oprot.writeFieldBegin('predictionColumns', TType.LIST, 10)
+      oprot.writeListBegin(TType.STRING, len(self.predictionColumns))
+      for iter68 in self.predictionColumns:
+        oprot.writeString(iter68)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.metrics is not None:
+      oprot.writeFieldBegin('metrics', TType.MAP, 11)
+      oprot.writeMapBegin(TType.STRING, TType.MAP, len(self.metrics))
+      for kiter69,viter70 in self.metrics.items():
+        oprot.writeString(kiter69)
+        oprot.writeMapBegin(TType.I32, TType.DOUBLE, len(viter70))
+        for kiter71,viter72 in viter70.items():
+          oprot.writeI32(kiter71)
+          oprot.writeDouble(viter72)
+        oprot.writeMapEnd()
+      oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    if self.annotations is not None:
+      oprot.writeFieldBegin('annotations', TType.LIST, 12)
+      oprot.writeListBegin(TType.STRING, len(self.annotations))
+      for iter73 in self.annotations:
+        oprot.writeString(iter73)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.sha is not None:
+      oprot.writeFieldBegin('sha', TType.STRING, 13)
+      oprot.writeString(self.sha)
+      oprot.writeFieldEnd()
+    if self.filepath is not None:
+      oprot.writeFieldBegin('filepath', TType.STRING, 14)
+      oprot.writeString(self.filepath)
+      oprot.writeFieldEnd()
+    if self.linearModelData is not None:
+      oprot.writeFieldBegin('linearModelData', TType.STRUCT, 15)
+      self.linearModelData.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.id)
+    value = (value * 31) ^ hash(self.experimentRunId)
+    value = (value * 31) ^ hash(self.experimentId)
+    value = (value * 31) ^ hash(self.projectId)
+    value = (value * 31) ^ hash(self.trainingDataFrame)
+    value = (value * 31) ^ hash(self.specification)
+    value = (value * 31) ^ hash(self.problemType)
+    value = (value * 31) ^ hash(self.featureColumns)
+    value = (value * 31) ^ hash(self.labelColumns)
+    value = (value * 31) ^ hash(self.predictionColumns)
+    value = (value * 31) ^ hash(self.metrics)
+    value = (value * 31) ^ hash(self.annotations)
+    value = (value * 31) ^ hash(self.sha)
+    value = (value * 31) ^ hash(self.filepath)
+    value = (value * 31) ^ hash(self.linearModelData)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class FitEvent:
   """
   Attributes:
@@ -1413,30 +1715,30 @@ class FitEvent:
       elif fid == 4:
         if ftype == TType.LIST:
           self.featureColumns = []
-          (_etype31, _size28) = iprot.readListBegin()
-          for _i32 in xrange(_size28):
-            _elem33 = iprot.readString()
-            self.featureColumns.append(_elem33)
+          (_etype77, _size74) = iprot.readListBegin()
+          for _i78 in xrange(_size74):
+            _elem79 = iprot.readString()
+            self.featureColumns.append(_elem79)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
           self.predictionColumns = []
-          (_etype37, _size34) = iprot.readListBegin()
-          for _i38 in xrange(_size34):
-            _elem39 = iprot.readString()
-            self.predictionColumns.append(_elem39)
+          (_etype83, _size80) = iprot.readListBegin()
+          for _i84 in xrange(_size80):
+            _elem85 = iprot.readString()
+            self.predictionColumns.append(_elem85)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 6:
         if ftype == TType.LIST:
           self.labelColumns = []
-          (_etype43, _size40) = iprot.readListBegin()
-          for _i44 in xrange(_size40):
-            _elem45 = iprot.readString()
-            self.labelColumns.append(_elem45)
+          (_etype89, _size86) = iprot.readListBegin()
+          for _i90 in xrange(_size86):
+            _elem91 = iprot.readString()
+            self.labelColumns.append(_elem91)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1475,22 +1777,22 @@ class FitEvent:
     if self.featureColumns is not None:
       oprot.writeFieldBegin('featureColumns', TType.LIST, 4)
       oprot.writeListBegin(TType.STRING, len(self.featureColumns))
-      for iter46 in self.featureColumns:
-        oprot.writeString(iter46)
+      for iter92 in self.featureColumns:
+        oprot.writeString(iter92)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.predictionColumns is not None:
       oprot.writeFieldBegin('predictionColumns', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.predictionColumns))
-      for iter47 in self.predictionColumns:
-        oprot.writeString(iter47)
+      for iter93 in self.predictionColumns:
+        oprot.writeString(iter93)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.labelColumns is not None:
       oprot.writeFieldBegin('labelColumns', TType.LIST, 6)
       oprot.writeListBegin(TType.STRING, len(self.labelColumns))
-      for iter48 in self.labelColumns:
-        oprot.writeString(iter48)
+      for iter94 in self.labelColumns:
+        oprot.writeString(iter94)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.experimentRunId is not None:
@@ -1682,21 +1984,21 @@ class LinearModel:
       elif fid == 2:
         if ftype == TType.LIST:
           self.featureTerms = []
-          (_etype52, _size49) = iprot.readListBegin()
-          for _i53 in xrange(_size49):
-            _elem54 = LinearModelTerm()
-            _elem54.read(iprot)
-            self.featureTerms.append(_elem54)
+          (_etype98, _size95) = iprot.readListBegin()
+          for _i99 in xrange(_size95):
+            _elem100 = LinearModelTerm()
+            _elem100.read(iprot)
+            self.featureTerms.append(_elem100)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.objectiveHistory = []
-          (_etype58, _size55) = iprot.readListBegin()
-          for _i59 in xrange(_size55):
-            _elem60 = iprot.readDouble()
-            self.objectiveHistory.append(_elem60)
+          (_etype104, _size101) = iprot.readListBegin()
+          for _i105 in xrange(_size101):
+            _elem106 = iprot.readDouble()
+            self.objectiveHistory.append(_elem106)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1732,15 +2034,15 @@ class LinearModel:
     if self.featureTerms is not None:
       oprot.writeFieldBegin('featureTerms', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.featureTerms))
-      for iter61 in self.featureTerms:
-        iter61.write(oprot)
+      for iter107 in self.featureTerms:
+        iter107.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.objectiveHistory is not None:
       oprot.writeFieldBegin('objectiveHistory', TType.LIST, 3)
       oprot.writeListBegin(TType.DOUBLE, len(self.objectiveHistory))
-      for iter62 in self.objectiveHistory:
-        oprot.writeDouble(iter62)
+      for iter108 in self.objectiveHistory:
+        oprot.writeDouble(iter108)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.rmse is not None:
@@ -2208,20 +2510,20 @@ class TransformEvent:
       elif fid == 4:
         if ftype == TType.LIST:
           self.inputColumns = []
-          (_etype66, _size63) = iprot.readListBegin()
-          for _i67 in xrange(_size63):
-            _elem68 = iprot.readString()
-            self.inputColumns.append(_elem68)
+          (_etype112, _size109) = iprot.readListBegin()
+          for _i113 in xrange(_size109):
+            _elem114 = iprot.readString()
+            self.inputColumns.append(_elem114)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
           self.outputColumns = []
-          (_etype72, _size69) = iprot.readListBegin()
-          for _i73 in xrange(_size69):
-            _elem74 = iprot.readString()
-            self.outputColumns.append(_elem74)
+          (_etype118, _size115) = iprot.readListBegin()
+          for _i119 in xrange(_size115):
+            _elem120 = iprot.readString()
+            self.outputColumns.append(_elem120)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2255,15 +2557,15 @@ class TransformEvent:
     if self.inputColumns is not None:
       oprot.writeFieldBegin('inputColumns', TType.LIST, 4)
       oprot.writeListBegin(TType.STRING, len(self.inputColumns))
-      for iter75 in self.inputColumns:
-        oprot.writeString(iter75)
+      for iter121 in self.inputColumns:
+        oprot.writeString(iter121)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.outputColumns is not None:
       oprot.writeFieldBegin('outputColumns', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.outputColumns))
-      for iter76 in self.outputColumns:
-        oprot.writeString(iter76)
+      for iter122 in self.outputColumns:
+        oprot.writeString(iter122)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.experimentRunId is not None:
@@ -2459,10 +2761,10 @@ class RandomSplitEvent:
       elif fid == 2:
         if ftype == TType.LIST:
           self.weights = []
-          (_etype80, _size77) = iprot.readListBegin()
-          for _i81 in xrange(_size77):
-            _elem82 = iprot.readDouble()
-            self.weights.append(_elem82)
+          (_etype126, _size123) = iprot.readListBegin()
+          for _i127 in xrange(_size123):
+            _elem128 = iprot.readDouble()
+            self.weights.append(_elem128)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2474,11 +2776,11 @@ class RandomSplitEvent:
       elif fid == 4:
         if ftype == TType.LIST:
           self.splitDataFrames = []
-          (_etype86, _size83) = iprot.readListBegin()
-          for _i87 in xrange(_size83):
-            _elem88 = DataFrame()
-            _elem88.read(iprot)
-            self.splitDataFrames.append(_elem88)
+          (_etype132, _size129) = iprot.readListBegin()
+          for _i133 in xrange(_size129):
+            _elem134 = DataFrame()
+            _elem134.read(iprot)
+            self.splitDataFrames.append(_elem134)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2504,8 +2806,8 @@ class RandomSplitEvent:
     if self.weights is not None:
       oprot.writeFieldBegin('weights', TType.LIST, 2)
       oprot.writeListBegin(TType.DOUBLE, len(self.weights))
-      for iter89 in self.weights:
-        oprot.writeDouble(iter89)
+      for iter135 in self.weights:
+        oprot.writeDouble(iter135)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.seed is not None:
@@ -2515,8 +2817,8 @@ class RandomSplitEvent:
     if self.splitDataFrames is not None:
       oprot.writeFieldBegin('splitDataFrames', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.splitDataFrames))
-      for iter90 in self.splitDataFrames:
-        iter90.write(oprot)
+      for iter136 in self.splitDataFrames:
+        iter136.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.experimentRunId is not None:
@@ -2587,10 +2889,10 @@ class RandomSplitEventResponse:
       elif fid == 2:
         if ftype == TType.LIST:
           self.splitIds = []
-          (_etype94, _size91) = iprot.readListBegin()
-          for _i95 in xrange(_size91):
-            _elem96 = iprot.readI32()
-            self.splitIds.append(_elem96)
+          (_etype140, _size137) = iprot.readListBegin()
+          for _i141 in xrange(_size137):
+            _elem142 = iprot.readI32()
+            self.splitIds.append(_elem142)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2616,8 +2918,8 @@ class RandomSplitEventResponse:
     if self.splitIds is not None:
       oprot.writeFieldBegin('splitIds', TType.LIST, 2)
       oprot.writeListBegin(TType.I32, len(self.splitIds))
-      for iter97 in self.splitIds:
-        oprot.writeI32(iter97)
+      for iter143 in self.splitIds:
+        oprot.writeI32(iter143)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.splitEventId is not None:
@@ -2922,41 +3224,41 @@ class CrossValidationEvent:
       elif fid == 5:
         if ftype == TType.LIST:
           self.labelColumns = []
-          (_etype101, _size98) = iprot.readListBegin()
-          for _i102 in xrange(_size98):
-            _elem103 = iprot.readString()
-            self.labelColumns.append(_elem103)
+          (_etype147, _size144) = iprot.readListBegin()
+          for _i148 in xrange(_size144):
+            _elem149 = iprot.readString()
+            self.labelColumns.append(_elem149)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 6:
         if ftype == TType.LIST:
           self.predictionColumns = []
-          (_etype107, _size104) = iprot.readListBegin()
-          for _i108 in xrange(_size104):
-            _elem109 = iprot.readString()
-            self.predictionColumns.append(_elem109)
+          (_etype153, _size150) = iprot.readListBegin()
+          for _i154 in xrange(_size150):
+            _elem155 = iprot.readString()
+            self.predictionColumns.append(_elem155)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 7:
         if ftype == TType.LIST:
           self.featureColumns = []
-          (_etype113, _size110) = iprot.readListBegin()
-          for _i114 in xrange(_size110):
-            _elem115 = iprot.readString()
-            self.featureColumns.append(_elem115)
+          (_etype159, _size156) = iprot.readListBegin()
+          for _i160 in xrange(_size156):
+            _elem161 = iprot.readString()
+            self.featureColumns.append(_elem161)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 8:
         if ftype == TType.LIST:
           self.folds = []
-          (_etype119, _size116) = iprot.readListBegin()
-          for _i120 in xrange(_size116):
-            _elem121 = CrossValidationFold()
-            _elem121.read(iprot)
-            self.folds.append(_elem121)
+          (_etype165, _size162) = iprot.readListBegin()
+          for _i166 in xrange(_size162):
+            _elem167 = CrossValidationFold()
+            _elem167.read(iprot)
+            self.folds.append(_elem167)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2999,29 +3301,29 @@ class CrossValidationEvent:
     if self.labelColumns is not None:
       oprot.writeFieldBegin('labelColumns', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.labelColumns))
-      for iter122 in self.labelColumns:
-        oprot.writeString(iter122)
+      for iter168 in self.labelColumns:
+        oprot.writeString(iter168)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.predictionColumns is not None:
       oprot.writeFieldBegin('predictionColumns', TType.LIST, 6)
       oprot.writeListBegin(TType.STRING, len(self.predictionColumns))
-      for iter123 in self.predictionColumns:
-        oprot.writeString(iter123)
+      for iter169 in self.predictionColumns:
+        oprot.writeString(iter169)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.featureColumns is not None:
       oprot.writeFieldBegin('featureColumns', TType.LIST, 7)
       oprot.writeListBegin(TType.STRING, len(self.featureColumns))
-      for iter124 in self.featureColumns:
-        oprot.writeString(iter124)
+      for iter170 in self.featureColumns:
+        oprot.writeString(iter170)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.folds is not None:
       oprot.writeFieldBegin('folds', TType.LIST, 8)
       oprot.writeListBegin(TType.STRUCT, len(self.folds))
-      for iter125 in self.folds:
-        iter125.write(oprot)
+      for iter171 in self.folds:
+        iter171.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.experimentRunId is not None:
@@ -3117,11 +3419,11 @@ class CrossValidationEventResponse:
       elif fid == 4:
         if ftype == TType.LIST:
           self.foldResponses = []
-          (_etype129, _size126) = iprot.readListBegin()
-          for _i130 in xrange(_size126):
-            _elem131 = CrossValidationFoldResponse()
-            _elem131.read(iprot)
-            self.foldResponses.append(_elem131)
+          (_etype175, _size172) = iprot.readListBegin()
+          for _i176 in xrange(_size172):
+            _elem177 = CrossValidationFoldResponse()
+            _elem177.read(iprot)
+            self.foldResponses.append(_elem177)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3155,8 +3457,8 @@ class CrossValidationEventResponse:
     if self.foldResponses is not None:
       oprot.writeFieldBegin('foldResponses', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.foldResponses))
-      for iter132 in self.foldResponses:
-        iter132.write(oprot)
+      for iter178 in self.foldResponses:
+        iter178.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.crossValidationEventId is not None:
@@ -3239,11 +3541,11 @@ class GridSearchCrossValidationEvent:
       elif fid == 3:
         if ftype == TType.LIST:
           self.crossValidations = []
-          (_etype136, _size133) = iprot.readListBegin()
-          for _i137 in xrange(_size133):
-            _elem138 = CrossValidationEvent()
-            _elem138.read(iprot)
-            self.crossValidations.append(_elem138)
+          (_etype182, _size179) = iprot.readListBegin()
+          for _i183 in xrange(_size179):
+            _elem184 = CrossValidationEvent()
+            _elem184.read(iprot)
+            self.crossValidations.append(_elem184)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3278,8 +3580,8 @@ class GridSearchCrossValidationEvent:
     if self.crossValidations is not None:
       oprot.writeFieldBegin('crossValidations', TType.LIST, 3)
       oprot.writeListBegin(TType.STRUCT, len(self.crossValidations))
-      for iter139 in self.crossValidations:
-        iter139.write(oprot)
+      for iter185 in self.crossValidations:
+        iter185.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.experimentRunId is not None:
@@ -3368,11 +3670,11 @@ class GridSearchCrossValidationEventResponse:
       elif fid == 4:
         if ftype == TType.LIST:
           self.crossValidationEventResponses = []
-          (_etype143, _size140) = iprot.readListBegin()
-          for _i144 in xrange(_size140):
-            _elem145 = CrossValidationEventResponse()
-            _elem145.read(iprot)
-            self.crossValidationEventResponses.append(_elem145)
+          (_etype189, _size186) = iprot.readListBegin()
+          for _i190 in xrange(_size186):
+            _elem191 = CrossValidationEventResponse()
+            _elem191.read(iprot)
+            self.crossValidationEventResponses.append(_elem191)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3401,8 +3703,8 @@ class GridSearchCrossValidationEventResponse:
     if self.crossValidationEventResponses is not None:
       oprot.writeFieldBegin('crossValidationEventResponses', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.crossValidationEventResponses))
-      for iter146 in self.crossValidationEventResponses:
-        iter146.write(oprot)
+      for iter192 in self.crossValidationEventResponses:
+        iter192.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3630,22 +3932,22 @@ class PipelineEvent:
       elif fid == 2:
         if ftype == TType.LIST:
           self.transformStages = []
-          (_etype150, _size147) = iprot.readListBegin()
-          for _i151 in xrange(_size147):
-            _elem152 = PipelineTransformStage()
-            _elem152.read(iprot)
-            self.transformStages.append(_elem152)
+          (_etype196, _size193) = iprot.readListBegin()
+          for _i197 in xrange(_size193):
+            _elem198 = PipelineTransformStage()
+            _elem198.read(iprot)
+            self.transformStages.append(_elem198)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.fitStages = []
-          (_etype156, _size153) = iprot.readListBegin()
-          for _i157 in xrange(_size153):
-            _elem158 = PipelineFitStage()
-            _elem158.read(iprot)
-            self.fitStages.append(_elem158)
+          (_etype202, _size199) = iprot.readListBegin()
+          for _i203 in xrange(_size199):
+            _elem204 = PipelineFitStage()
+            _elem204.read(iprot)
+            self.fitStages.append(_elem204)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3671,15 +3973,15 @@ class PipelineEvent:
     if self.transformStages is not None:
       oprot.writeFieldBegin('transformStages', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.transformStages))
-      for iter159 in self.transformStages:
-        iter159.write(oprot)
+      for iter205 in self.transformStages:
+        iter205.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.fitStages is not None:
       oprot.writeFieldBegin('fitStages', TType.LIST, 3)
       oprot.writeListBegin(TType.STRUCT, len(self.fitStages))
-      for iter160 in self.fitStages:
-        iter160.write(oprot)
+      for iter206 in self.fitStages:
+        iter206.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.experimentRunId is not None:
@@ -3750,22 +4052,22 @@ class PipelineEventResponse:
       elif fid == 2:
         if ftype == TType.LIST:
           self.transformStagesResponses = []
-          (_etype164, _size161) = iprot.readListBegin()
-          for _i165 in xrange(_size161):
-            _elem166 = TransformEventResponse()
-            _elem166.read(iprot)
-            self.transformStagesResponses.append(_elem166)
+          (_etype210, _size207) = iprot.readListBegin()
+          for _i211 in xrange(_size207):
+            _elem212 = TransformEventResponse()
+            _elem212.read(iprot)
+            self.transformStagesResponses.append(_elem212)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.fitStagesResponses = []
-          (_etype170, _size167) = iprot.readListBegin()
-          for _i171 in xrange(_size167):
-            _elem172 = FitEventResponse()
-            _elem172.read(iprot)
-            self.fitStagesResponses.append(_elem172)
+          (_etype216, _size213) = iprot.readListBegin()
+          for _i217 in xrange(_size213):
+            _elem218 = FitEventResponse()
+            _elem218.read(iprot)
+            self.fitStagesResponses.append(_elem218)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3786,15 +4088,15 @@ class PipelineEventResponse:
     if self.transformStagesResponses is not None:
       oprot.writeFieldBegin('transformStagesResponses', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.transformStagesResponses))
-      for iter173 in self.transformStagesResponses:
-        iter173.write(oprot)
+      for iter219 in self.transformStagesResponses:
+        iter219.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.fitStagesResponses is not None:
       oprot.writeFieldBegin('fitStagesResponses', TType.LIST, 3)
       oprot.writeListBegin(TType.STRUCT, len(self.fitStagesResponses))
-      for iter174 in self.fitStagesResponses:
-        iter174.write(oprot)
+      for iter220 in self.fitStagesResponses:
+        iter220.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4049,11 +4351,11 @@ class AnnotationEvent:
       if fid == 1:
         if ftype == TType.LIST:
           self.fragments = []
-          (_etype178, _size175) = iprot.readListBegin()
-          for _i179 in xrange(_size175):
-            _elem180 = AnnotationFragment()
-            _elem180.read(iprot)
-            self.fragments.append(_elem180)
+          (_etype224, _size221) = iprot.readListBegin()
+          for _i225 in xrange(_size221):
+            _elem226 = AnnotationFragment()
+            _elem226.read(iprot)
+            self.fragments.append(_elem226)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4075,8 +4377,8 @@ class AnnotationEvent:
     if self.fragments is not None:
       oprot.writeFieldBegin('fragments', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.fragments))
-      for iter181 in self.fragments:
-        iter181.write(oprot)
+      for iter227 in self.fragments:
+        iter227.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.experimentRunId is not None:
@@ -4141,11 +4443,11 @@ class AnnotationEventResponse:
       elif fid == 2:
         if ftype == TType.LIST:
           self.fragmentResponses = []
-          (_etype185, _size182) = iprot.readListBegin()
-          for _i186 in xrange(_size182):
-            _elem187 = AnnotationFragmentResponse()
-            _elem187.read(iprot)
-            self.fragmentResponses.append(_elem187)
+          (_etype231, _size228) = iprot.readListBegin()
+          for _i232 in xrange(_size228):
+            _elem233 = AnnotationFragmentResponse()
+            _elem233.read(iprot)
+            self.fragmentResponses.append(_elem233)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4166,8 +4468,8 @@ class AnnotationEventResponse:
     if self.fragmentResponses is not None:
       oprot.writeFieldBegin('fragmentResponses', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.fragmentResponses))
-      for iter188 in self.fragmentResponses:
-        iter188.write(oprot)
+      for iter234 in self.fragmentResponses:
+        iter234.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4220,11 +4522,11 @@ class DataFrameAncestry:
       if fid == 1:
         if ftype == TType.LIST:
           self.ancestors = []
-          (_etype192, _size189) = iprot.readListBegin()
-          for _i193 in xrange(_size189):
-            _elem194 = DataFrame()
-            _elem194.read(iprot)
-            self.ancestors.append(_elem194)
+          (_etype238, _size235) = iprot.readListBegin()
+          for _i239 in xrange(_size235):
+            _elem240 = DataFrame()
+            _elem240.read(iprot)
+            self.ancestors.append(_elem240)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4241,8 +4543,8 @@ class DataFrameAncestry:
     if self.ancestors is not None:
       oprot.writeFieldBegin('ancestors', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.ancestors))
-      for iter195 in self.ancestors:
-        iter195.write(oprot)
+      for iter241 in self.ancestors:
+        iter241.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4470,34 +4772,34 @@ class CompareHyperParametersResponse:
       if fid == 1:
         if ftype == TType.MAP:
           self.model1OnlyHyperparams = {}
-          (_ktype197, _vtype198, _size196 ) = iprot.readMapBegin()
-          for _i200 in xrange(_size196):
-            _key201 = iprot.readString()
-            _val202 = iprot.readString()
-            self.model1OnlyHyperparams[_key201] = _val202
+          (_ktype243, _vtype244, _size242 ) = iprot.readMapBegin()
+          for _i246 in xrange(_size242):
+            _key247 = iprot.readString()
+            _val248 = iprot.readString()
+            self.model1OnlyHyperparams[_key247] = _val248
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.MAP:
           self.model2OnlyHyperparams = {}
-          (_ktype204, _vtype205, _size203 ) = iprot.readMapBegin()
-          for _i207 in xrange(_size203):
-            _key208 = iprot.readString()
-            _val209 = iprot.readString()
-            self.model2OnlyHyperparams[_key208] = _val209
+          (_ktype250, _vtype251, _size249 ) = iprot.readMapBegin()
+          for _i253 in xrange(_size249):
+            _key254 = iprot.readString()
+            _val255 = iprot.readString()
+            self.model2OnlyHyperparams[_key254] = _val255
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.MAP:
           self.sharedHyperparams = {}
-          (_ktype211, _vtype212, _size210 ) = iprot.readMapBegin()
-          for _i214 in xrange(_size210):
-            _key215 = iprot.readString()
-            _val216 = StringPair()
-            _val216.read(iprot)
-            self.sharedHyperparams[_key215] = _val216
+          (_ktype257, _vtype258, _size256 ) = iprot.readMapBegin()
+          for _i260 in xrange(_size256):
+            _key261 = iprot.readString()
+            _val262 = StringPair()
+            _val262.read(iprot)
+            self.sharedHyperparams[_key261] = _val262
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -4514,25 +4816,25 @@ class CompareHyperParametersResponse:
     if self.model1OnlyHyperparams is not None:
       oprot.writeFieldBegin('model1OnlyHyperparams', TType.MAP, 1)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.model1OnlyHyperparams))
-      for kiter217,viter218 in self.model1OnlyHyperparams.items():
-        oprot.writeString(kiter217)
-        oprot.writeString(viter218)
+      for kiter263,viter264 in self.model1OnlyHyperparams.items():
+        oprot.writeString(kiter263)
+        oprot.writeString(viter264)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.model2OnlyHyperparams is not None:
       oprot.writeFieldBegin('model2OnlyHyperparams', TType.MAP, 2)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.model2OnlyHyperparams))
-      for kiter219,viter220 in self.model2OnlyHyperparams.items():
-        oprot.writeString(kiter219)
-        oprot.writeString(viter220)
+      for kiter265,viter266 in self.model2OnlyHyperparams.items():
+        oprot.writeString(kiter265)
+        oprot.writeString(viter266)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.sharedHyperparams is not None:
       oprot.writeFieldBegin('sharedHyperparams', TType.MAP, 3)
       oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.sharedHyperparams))
-      for kiter221,viter222 in self.sharedHyperparams.items():
-        oprot.writeString(kiter221)
-        viter222.write(oprot)
+      for kiter267,viter268 in self.sharedHyperparams.items():
+        oprot.writeString(kiter267)
+        viter268.write(oprot)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4592,30 +4894,30 @@ class CompareFeaturesResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.model1OnlyFeatures = []
-          (_etype226, _size223) = iprot.readListBegin()
-          for _i227 in xrange(_size223):
-            _elem228 = iprot.readString()
-            self.model1OnlyFeatures.append(_elem228)
+          (_etype272, _size269) = iprot.readListBegin()
+          for _i273 in xrange(_size269):
+            _elem274 = iprot.readString()
+            self.model1OnlyFeatures.append(_elem274)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.LIST:
           self.model2OnlyFeatures = []
-          (_etype232, _size229) = iprot.readListBegin()
-          for _i233 in xrange(_size229):
-            _elem234 = iprot.readString()
-            self.model2OnlyFeatures.append(_elem234)
+          (_etype278, _size275) = iprot.readListBegin()
+          for _i279 in xrange(_size275):
+            _elem280 = iprot.readString()
+            self.model2OnlyFeatures.append(_elem280)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.commonFeatures = []
-          (_etype238, _size235) = iprot.readListBegin()
-          for _i239 in xrange(_size235):
-            _elem240 = iprot.readString()
-            self.commonFeatures.append(_elem240)
+          (_etype284, _size281) = iprot.readListBegin()
+          for _i285 in xrange(_size281):
+            _elem286 = iprot.readString()
+            self.commonFeatures.append(_elem286)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4632,22 +4934,22 @@ class CompareFeaturesResponse:
     if self.model1OnlyFeatures is not None:
       oprot.writeFieldBegin('model1OnlyFeatures', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.model1OnlyFeatures))
-      for iter241 in self.model1OnlyFeatures:
-        oprot.writeString(iter241)
+      for iter287 in self.model1OnlyFeatures:
+        oprot.writeString(iter287)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.model2OnlyFeatures is not None:
       oprot.writeFieldBegin('model2OnlyFeatures', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.model2OnlyFeatures))
-      for iter242 in self.model2OnlyFeatures:
-        oprot.writeString(iter242)
+      for iter288 in self.model2OnlyFeatures:
+        oprot.writeString(iter288)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.commonFeatures is not None:
       oprot.writeFieldBegin('commonFeatures', TType.LIST, 3)
       oprot.writeListBegin(TType.STRING, len(self.commonFeatures))
-      for iter243 in self.commonFeatures:
-        oprot.writeString(iter243)
+      for iter289 in self.commonFeatures:
+        oprot.writeString(iter289)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4844,6 +5146,323 @@ class ConfidenceInterval:
     value = (value * 31) ^ hash(self.featureIndex)
     value = (value * 31) ^ hash(self.low)
     value = (value * 31) ^ hash(self.high)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ProjectExperimentsAndRuns:
+  """
+  Attributes:
+   - projId
+   - experiments
+   - experimentRuns
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'projId', None, None, ), # 1
+    (2, TType.LIST, 'experiments', (TType.STRUCT,(Experiment, Experiment.thrift_spec)), None, ), # 2
+    (3, TType.LIST, 'experimentRuns', (TType.STRUCT,(ExperimentRun, ExperimentRun.thrift_spec)), None, ), # 3
+  )
+
+  def __init__(self, projId=None, experiments=None, experimentRuns=None,):
+    self.projId = projId
+    self.experiments = experiments
+    self.experimentRuns = experimentRuns
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.projId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.LIST:
+          self.experiments = []
+          (_etype293, _size290) = iprot.readListBegin()
+          for _i294 in xrange(_size290):
+            _elem295 = Experiment()
+            _elem295.read(iprot)
+            self.experiments.append(_elem295)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.experimentRuns = []
+          (_etype299, _size296) = iprot.readListBegin()
+          for _i300 in xrange(_size296):
+            _elem301 = ExperimentRun()
+            _elem301.read(iprot)
+            self.experimentRuns.append(_elem301)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ProjectExperimentsAndRuns')
+    if self.projId is not None:
+      oprot.writeFieldBegin('projId', TType.I32, 1)
+      oprot.writeI32(self.projId)
+      oprot.writeFieldEnd()
+    if self.experiments is not None:
+      oprot.writeFieldBegin('experiments', TType.LIST, 2)
+      oprot.writeListBegin(TType.STRUCT, len(self.experiments))
+      for iter302 in self.experiments:
+        iter302.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.experimentRuns is not None:
+      oprot.writeFieldBegin('experimentRuns', TType.LIST, 3)
+      oprot.writeListBegin(TType.STRUCT, len(self.experimentRuns))
+      for iter303 in self.experimentRuns:
+        iter303.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.projId)
+    value = (value * 31) ^ hash(self.experiments)
+    value = (value * 31) ^ hash(self.experimentRuns)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ProjectOverviewResponse:
+  """
+  Attributes:
+   - project
+   - numExperiments
+   - numExperimentRuns
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'project', (Project, Project.thrift_spec), None, ), # 1
+    (2, TType.I32, 'numExperiments', None, None, ), # 2
+    (3, TType.I32, 'numExperimentRuns', None, None, ), # 3
+  )
+
+  def __init__(self, project=None, numExperiments=None, numExperimentRuns=None,):
+    self.project = project
+    self.numExperiments = numExperiments
+    self.numExperimentRuns = numExperimentRuns
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.project = Project()
+          self.project.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.numExperiments = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.numExperimentRuns = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ProjectOverviewResponse')
+    if self.project is not None:
+      oprot.writeFieldBegin('project', TType.STRUCT, 1)
+      self.project.write(oprot)
+      oprot.writeFieldEnd()
+    if self.numExperiments is not None:
+      oprot.writeFieldBegin('numExperiments', TType.I32, 2)
+      oprot.writeI32(self.numExperiments)
+      oprot.writeFieldEnd()
+    if self.numExperimentRuns is not None:
+      oprot.writeFieldBegin('numExperimentRuns', TType.I32, 3)
+      oprot.writeI32(self.numExperimentRuns)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.project)
+    value = (value * 31) ^ hash(self.numExperiments)
+    value = (value * 31) ^ hash(self.numExperimentRuns)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ExperimentRunDetailsResponse:
+  """
+  Attributes:
+   - project
+   - experiment
+   - experimentRun
+   - modelResponses
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'project', (Project, Project.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'experiment', (Experiment, Experiment.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'experimentRun', (ExperimentRun, ExperimentRun.thrift_spec), None, ), # 3
+    (4, TType.LIST, 'modelResponses', (TType.STRUCT,(ModelResponse, ModelResponse.thrift_spec)), None, ), # 4
+  )
+
+  def __init__(self, project=None, experiment=None, experimentRun=None, modelResponses=None,):
+    self.project = project
+    self.experiment = experiment
+    self.experimentRun = experimentRun
+    self.modelResponses = modelResponses
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.project = Project()
+          self.project.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.experiment = Experiment()
+          self.experiment.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.experimentRun = ExperimentRun()
+          self.experimentRun.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.LIST:
+          self.modelResponses = []
+          (_etype307, _size304) = iprot.readListBegin()
+          for _i308 in xrange(_size304):
+            _elem309 = ModelResponse()
+            _elem309.read(iprot)
+            self.modelResponses.append(_elem309)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ExperimentRunDetailsResponse')
+    if self.project is not None:
+      oprot.writeFieldBegin('project', TType.STRUCT, 1)
+      self.project.write(oprot)
+      oprot.writeFieldEnd()
+    if self.experiment is not None:
+      oprot.writeFieldBegin('experiment', TType.STRUCT, 2)
+      self.experiment.write(oprot)
+      oprot.writeFieldEnd()
+    if self.experimentRun is not None:
+      oprot.writeFieldBegin('experimentRun', TType.STRUCT, 3)
+      self.experimentRun.write(oprot)
+      oprot.writeFieldEnd()
+    if self.modelResponses is not None:
+      oprot.writeFieldBegin('modelResponses', TType.LIST, 4)
+      oprot.writeListBegin(TType.STRUCT, len(self.modelResponses))
+      for iter310 in self.modelResponses:
+        iter310.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.project)
+    value = (value * 31) ^ hash(self.experiment)
+    value = (value * 31) ^ hash(self.experimentRun)
+    value = (value * 31) ^ hash(self.modelResponses)
     return value
 
   def __repr__(self):
@@ -5099,6 +5718,74 @@ class IllegalOperationException(TException):
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('IllegalOperationException')
+    if self.message is not None:
+      oprot.writeFieldBegin('message', TType.STRING, 1)
+      oprot.writeString(self.message)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.message)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ServerLogicException(TException):
+  """
+  Attributes:
+   - message
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'message', None, None, ), # 1
+  )
+
+  def __init__(self, message=None,):
+    self.message = message
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.message = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ServerLogicException')
     if self.message is not None:
       oprot.writeFieldBegin('message', TType.STRING, 1)
       oprot.writeString(self.message)

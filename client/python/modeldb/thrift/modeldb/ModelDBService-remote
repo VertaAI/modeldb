@@ -54,6 +54,11 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   confidenceIntervals(i32 modelId, double sigLevel)')
   print('   modelsWithFeatures( featureNames)')
   print('   modelsDerivedFromDataFrame(i32 dfId)')
+  print('  ModelResponse getModel(i32 modelId)')
+  print('   getRunsInExperiment(i32 experimentId)')
+  print('  ProjectExperimentsAndRuns getRunsAndExperimentsInProject(i32 projId)')
+  print('   getProjectOverviews()')
+  print('  ExperimentRunDetailsResponse getExperimentRunDetails(i32 experimentRunId)')
   print('')
   sys.exit(0)
 
@@ -289,6 +294,36 @@ elif cmd == 'modelsDerivedFromDataFrame':
     print('modelsDerivedFromDataFrame requires 1 args')
     sys.exit(1)
   pp.pprint(client.modelsDerivedFromDataFrame(eval(args[0]),))
+
+elif cmd == 'getModel':
+  if len(args) != 1:
+    print('getModel requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getModel(eval(args[0]),))
+
+elif cmd == 'getRunsInExperiment':
+  if len(args) != 1:
+    print('getRunsInExperiment requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getRunsInExperiment(eval(args[0]),))
+
+elif cmd == 'getRunsAndExperimentsInProject':
+  if len(args) != 1:
+    print('getRunsAndExperimentsInProject requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getRunsAndExperimentsInProject(eval(args[0]),))
+
+elif cmd == 'getProjectOverviews':
+  if len(args) != 0:
+    print('getProjectOverviews requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.getProjectOverviews())
+
+elif cmd == 'getExperimentRunDetails':
+  if len(args) != 1:
+    print('getExperimentRunDetails requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getExperimentRunDetails(eval(args[0]),))
 
 else:
   print('Unrecognized method %s' % cmd)

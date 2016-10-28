@@ -236,6 +236,37 @@ class Iface:
     """
     pass
 
+  def getModel(self, modelId):
+    """
+    Parameters:
+     - modelId
+    """
+    pass
+
+  def getRunsInExperiment(self, experimentId):
+    """
+    Parameters:
+     - experimentId
+    """
+    pass
+
+  def getRunsAndExperimentsInProject(self, projId):
+    """
+    Parameters:
+     - projId
+    """
+    pass
+
+  def getProjectOverviews(self):
+    pass
+
+  def getExperimentRunDetails(self, experimentRunId):
+    """
+    Parameters:
+     - experimentRunId
+    """
+    pass
+
 
 class Client(Iface):
   def __init__(self, iprot, oprot=None):
@@ -303,6 +334,8 @@ class Client(Iface):
       raise result.rnfEx
     if result.efEx is not None:
       raise result.efEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "pathForTransformer failed: unknown result")
 
   def storeFitEvent(self, fe):
@@ -336,6 +369,8 @@ class Client(Iface):
       return result.success
     if result.ierEx is not None:
       raise result.ierEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeFitEvent failed: unknown result")
 
   def storeMetricEvent(self, me):
@@ -369,6 +404,8 @@ class Client(Iface):
       return result.success
     if result.ierEx is not None:
       raise result.ierEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeMetricEvent failed: unknown result")
 
   def storeTransformEvent(self, te):
@@ -402,6 +439,8 @@ class Client(Iface):
       return result.success
     if result.ierEx is not None:
       raise result.ierEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeTransformEvent failed: unknown result")
 
   def storeRandomSplitEvent(self, rse):
@@ -433,6 +472,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeRandomSplitEvent failed: unknown result")
 
   def storePipelineEvent(self, pipelineEvent):
@@ -464,6 +505,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storePipelineEvent failed: unknown result")
 
   def storeCrossValidationEvent(self, cve):
@@ -495,6 +538,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeCrossValidationEvent failed: unknown result")
 
   def storeGridSearchCrossValidationEvent(self, gscve):
@@ -526,6 +571,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeGridSearchCrossValidationEvent failed: unknown result")
 
   def storeAnnotationEvent(self, ae):
@@ -557,6 +604,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeAnnotationEvent failed: unknown result")
 
   def storeProjectEvent(self, pr):
@@ -588,6 +637,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeProjectEvent failed: unknown result")
 
   def storeExperimentEvent(self, er):
@@ -619,6 +670,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeExperimentEvent failed: unknown result")
 
   def storeExperimentRunEvent(self, er):
@@ -650,6 +703,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeExperimentRunEvent failed: unknown result")
 
   def storeLinearModel(self, modelId, model):
@@ -685,6 +740,8 @@ class Client(Iface):
       return result.success
     if result.rnfEx is not None:
       raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "storeLinearModel failed: unknown result")
 
   def getDataFrameAncestry(self, dataFrameId):
@@ -718,6 +775,8 @@ class Client(Iface):
       return result.success
     if result.rnfEx is not None:
       raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getDataFrameAncestry failed: unknown result")
 
   def getCommonAncestor(self, dfId1, dfId2):
@@ -753,6 +812,8 @@ class Client(Iface):
       return result.success
     if result.rnfEx is not None:
       raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getCommonAncestor failed: unknown result")
 
   def getCommonAncestorForModels(self, modelId1, modelId2):
@@ -788,6 +849,8 @@ class Client(Iface):
       return result.success
     if result.rnfEx is not None:
       raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getCommonAncestorForModels failed: unknown result")
 
   def getTrainingRowsCount(self, modelId):
@@ -821,6 +884,8 @@ class Client(Iface):
       return result.success
     if result.rnfEx is not None:
       raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getTrainingRowsCount failed: unknown result")
 
   def getTrainingRowsCounts(self, modelIds):
@@ -852,6 +917,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getTrainingRowsCounts failed: unknown result")
 
   def compareHyperparameters(self, modelId1, modelId2):
@@ -887,6 +954,8 @@ class Client(Iface):
       return result.success
     if result.rnfEx is not None:
       raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "compareHyperparameters failed: unknown result")
 
   def compareFeatures(self, modelId1, modelId2):
@@ -922,6 +991,8 @@ class Client(Iface):
       return result.success
     if result.rnfEx is not None:
       raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "compareFeatures failed: unknown result")
 
   def groupByProblemType(self, modelIds):
@@ -953,6 +1024,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "groupByProblemType failed: unknown result")
 
   def similarModels(self, modelId, compMetrics, numModels):
@@ -992,6 +1065,8 @@ class Client(Iface):
       raise result.rnfEx
     if result.brEx is not None:
       raise result.brEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "similarModels failed: unknown result")
 
   def linearModelFeatureImportances(self, modelId):
@@ -1027,6 +1102,8 @@ class Client(Iface):
       raise result.rnfEx
     if result.ioEx is not None:
       raise result.ioEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "linearModelFeatureImportances failed: unknown result")
 
   def compareLinearModelFeatureImportances(self, model1Id, model2Id):
@@ -1064,6 +1141,8 @@ class Client(Iface):
       raise result.rnfEx
     if result.ioEx is not None:
       raise result.ioEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "compareLinearModelFeatureImportances failed: unknown result")
 
   def iterationsUntilConvergence(self, modelIds, tolerance):
@@ -1097,6 +1176,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "iterationsUntilConvergence failed: unknown result")
 
   def rankModels(self, modelIds, metric):
@@ -1130,6 +1211,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "rankModels failed: unknown result")
 
   def confidenceIntervals(self, modelId, sigLevel):
@@ -1169,6 +1252,8 @@ class Client(Iface):
       raise result.ioEx
     if result.brEx is not None:
       raise result.brEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "confidenceIntervals failed: unknown result")
 
   def modelsWithFeatures(self, featureNames):
@@ -1200,6 +1285,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "modelsWithFeatures failed: unknown result")
 
   def modelsDerivedFromDataFrame(self, dfId):
@@ -1233,7 +1320,173 @@ class Client(Iface):
       return result.success
     if result.rnfEx is not None:
       raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
     raise TApplicationException(TApplicationException.MISSING_RESULT, "modelsDerivedFromDataFrame failed: unknown result")
+
+  def getModel(self, modelId):
+    """
+    Parameters:
+     - modelId
+    """
+    self.send_getModel(modelId)
+    return self.recv_getModel()
+
+  def send_getModel(self, modelId):
+    self._oprot.writeMessageBegin('getModel', TMessageType.CALL, self._seqid)
+    args = getModel_args()
+    args.modelId = modelId
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getModel(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getModel_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.rnfEx is not None:
+      raise result.rnfEx
+    if result.svEx is not None:
+      raise result.svEx
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getModel failed: unknown result")
+
+  def getRunsInExperiment(self, experimentId):
+    """
+    Parameters:
+     - experimentId
+    """
+    self.send_getRunsInExperiment(experimentId)
+    return self.recv_getRunsInExperiment()
+
+  def send_getRunsInExperiment(self, experimentId):
+    self._oprot.writeMessageBegin('getRunsInExperiment', TMessageType.CALL, self._seqid)
+    args = getRunsInExperiment_args()
+    args.experimentId = experimentId
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getRunsInExperiment(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getRunsInExperiment_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.svEx is not None:
+      raise result.svEx
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getRunsInExperiment failed: unknown result")
+
+  def getRunsAndExperimentsInProject(self, projId):
+    """
+    Parameters:
+     - projId
+    """
+    self.send_getRunsAndExperimentsInProject(projId)
+    return self.recv_getRunsAndExperimentsInProject()
+
+  def send_getRunsAndExperimentsInProject(self, projId):
+    self._oprot.writeMessageBegin('getRunsAndExperimentsInProject', TMessageType.CALL, self._seqid)
+    args = getRunsAndExperimentsInProject_args()
+    args.projId = projId
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getRunsAndExperimentsInProject(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getRunsAndExperimentsInProject_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.svEx is not None:
+      raise result.svEx
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getRunsAndExperimentsInProject failed: unknown result")
+
+  def getProjectOverviews(self):
+    self.send_getProjectOverviews()
+    return self.recv_getProjectOverviews()
+
+  def send_getProjectOverviews(self):
+    self._oprot.writeMessageBegin('getProjectOverviews', TMessageType.CALL, self._seqid)
+    args = getProjectOverviews_args()
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getProjectOverviews(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getProjectOverviews_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.svEx is not None:
+      raise result.svEx
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getProjectOverviews failed: unknown result")
+
+  def getExperimentRunDetails(self, experimentRunId):
+    """
+    Parameters:
+     - experimentRunId
+    """
+    self.send_getExperimentRunDetails(experimentRunId)
+    return self.recv_getExperimentRunDetails()
+
+  def send_getExperimentRunDetails(self, experimentRunId):
+    self._oprot.writeMessageBegin('getExperimentRunDetails', TMessageType.CALL, self._seqid)
+    args = getExperimentRunDetails_args()
+    args.experimentRunId = experimentRunId
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getExperimentRunDetails(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getExperimentRunDetails_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.svEx is not None:
+      raise result.svEx
+    if result.rnfEx is not None:
+      raise result.rnfEx
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getExperimentRunDetails failed: unknown result")
 
 
 class Processor(Iface, TProcessor):
@@ -1270,6 +1523,11 @@ class Processor(Iface, TProcessor):
     self._processMap["confidenceIntervals"] = Processor.process_confidenceIntervals
     self._processMap["modelsWithFeatures"] = Processor.process_modelsWithFeatures
     self._processMap["modelsDerivedFromDataFrame"] = Processor.process_modelsDerivedFromDataFrame
+    self._processMap["getModel"] = Processor.process_getModel
+    self._processMap["getRunsInExperiment"] = Processor.process_getRunsInExperiment
+    self._processMap["getRunsAndExperimentsInProject"] = Processor.process_getRunsAndExperimentsInProject
+    self._processMap["getProjectOverviews"] = Processor.process_getProjectOverviews
+    self._processMap["getExperimentRunDetails"] = Processor.process_getExperimentRunDetails
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -1321,6 +1579,9 @@ class Processor(Iface, TProcessor):
     except InvalidFieldException as efEx:
       msg_type = TMessageType.REPLY
       result.efEx = efEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1343,6 +1604,9 @@ class Processor(Iface, TProcessor):
     except InvalidExperimentRunException as ierEx:
       msg_type = TMessageType.REPLY
       result.ierEx = ierEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1365,6 +1629,9 @@ class Processor(Iface, TProcessor):
     except InvalidExperimentRunException as ierEx:
       msg_type = TMessageType.REPLY
       result.ierEx = ierEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1387,6 +1654,9 @@ class Processor(Iface, TProcessor):
     except InvalidExperimentRunException as ierEx:
       msg_type = TMessageType.REPLY
       result.ierEx = ierEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1406,6 +1676,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1425,6 +1698,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1444,6 +1720,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1463,6 +1742,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1482,6 +1764,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1501,6 +1786,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1520,6 +1808,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1539,6 +1830,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1561,6 +1855,9 @@ class Processor(Iface, TProcessor):
     except ResourceNotFoundException as rnfEx:
       msg_type = TMessageType.REPLY
       result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1583,6 +1880,9 @@ class Processor(Iface, TProcessor):
     except ResourceNotFoundException as rnfEx:
       msg_type = TMessageType.REPLY
       result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1605,6 +1905,9 @@ class Processor(Iface, TProcessor):
     except ResourceNotFoundException as rnfEx:
       msg_type = TMessageType.REPLY
       result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1627,6 +1930,9 @@ class Processor(Iface, TProcessor):
     except ResourceNotFoundException as rnfEx:
       msg_type = TMessageType.REPLY
       result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1649,6 +1955,9 @@ class Processor(Iface, TProcessor):
     except ResourceNotFoundException as rnfEx:
       msg_type = TMessageType.REPLY
       result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1668,6 +1977,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1690,6 +2002,9 @@ class Processor(Iface, TProcessor):
     except ResourceNotFoundException as rnfEx:
       msg_type = TMessageType.REPLY
       result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1712,6 +2027,9 @@ class Processor(Iface, TProcessor):
     except ResourceNotFoundException as rnfEx:
       msg_type = TMessageType.REPLY
       result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1731,6 +2049,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1756,6 +2077,9 @@ class Processor(Iface, TProcessor):
     except BadRequestException as brEx:
       msg_type = TMessageType.REPLY
       result.brEx = brEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1781,6 +2105,9 @@ class Processor(Iface, TProcessor):
     except IllegalOperationException as ioEx:
       msg_type = TMessageType.REPLY
       result.ioEx = ioEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1806,6 +2133,9 @@ class Processor(Iface, TProcessor):
     except IllegalOperationException as ioEx:
       msg_type = TMessageType.REPLY
       result.ioEx = ioEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1825,6 +2155,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1844,6 +2177,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1872,6 +2208,9 @@ class Processor(Iface, TProcessor):
     except BadRequestException as brEx:
       msg_type = TMessageType.REPLY
       result.brEx = brEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1891,6 +2230,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -1913,11 +2255,130 @@ class Processor(Iface, TProcessor):
     except ResourceNotFoundException as rnfEx:
       msg_type = TMessageType.REPLY
       result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
     oprot.writeMessageBegin("modelsDerivedFromDataFrame", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getModel(self, seqid, iprot, oprot):
+    args = getModel_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getModel_result()
+    try:
+      result.success = self._handler.getModel(args.modelId)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except ResourceNotFoundException as rnfEx:
+      msg_type = TMessageType.REPLY
+      result.rnfEx = rnfEx
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("getModel", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getRunsInExperiment(self, seqid, iprot, oprot):
+    args = getRunsInExperiment_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getRunsInExperiment_result()
+    try:
+      result.success = self._handler.getRunsInExperiment(args.experimentId)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("getRunsInExperiment", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getRunsAndExperimentsInProject(self, seqid, iprot, oprot):
+    args = getRunsAndExperimentsInProject_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getRunsAndExperimentsInProject_result()
+    try:
+      result.success = self._handler.getRunsAndExperimentsInProject(args.projId)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("getRunsAndExperimentsInProject", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getProjectOverviews(self, seqid, iprot, oprot):
+    args = getProjectOverviews_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getProjectOverviews_result()
+    try:
+      result.success = self._handler.getProjectOverviews()
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("getProjectOverviews", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getExperimentRunDetails(self, seqid, iprot, oprot):
+    args = getExperimentRunDetails_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getExperimentRunDetails_result()
+    try:
+      result.success = self._handler.getExperimentRunDetails(args.experimentRunId)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except ServerLogicException as svEx:
+      msg_type = TMessageType.REPLY
+      result.svEx = svEx
+    except ResourceNotFoundException as rnfEx:
+      msg_type = TMessageType.REPLY
+      result.rnfEx = rnfEx
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("getExperimentRunDetails", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -2106,18 +2567,21 @@ class pathForTransformer_result:
    - success
    - rnfEx
    - efEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRING, 'success', None, None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'efEx', (InvalidFieldException, InvalidFieldException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, success=None, rnfEx=None, efEx=None,):
+  def __init__(self, success=None, rnfEx=None, efEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
     self.efEx = efEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2145,6 +2609,12 @@ class pathForTransformer_result:
           self.efEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2167,6 +2637,10 @@ class pathForTransformer_result:
       oprot.writeFieldBegin('efEx', TType.STRUCT, 2)
       self.efEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 3)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -2179,6 +2653,7 @@ class pathForTransformer_result:
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
     value = (value * 31) ^ hash(self.efEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -2263,16 +2738,19 @@ class storeFitEvent_result:
   Attributes:
    - success
    - ierEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (FitEventResponse, FitEventResponse.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'ierEx', (InvalidExperimentRunException, InvalidExperimentRunException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, ierEx=None,):
+  def __init__(self, success=None, ierEx=None, svEx=None,):
     self.success = success
     self.ierEx = ierEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2295,6 +2773,12 @@ class storeFitEvent_result:
           self.ierEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2313,6 +2797,10 @@ class storeFitEvent_result:
       oprot.writeFieldBegin('ierEx', TType.STRUCT, 1)
       self.ierEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -2324,6 +2812,7 @@ class storeFitEvent_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.ierEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -2408,16 +2897,19 @@ class storeMetricEvent_result:
   Attributes:
    - success
    - ierEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (MetricEventResponse, MetricEventResponse.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'ierEx', (InvalidExperimentRunException, InvalidExperimentRunException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, ierEx=None,):
+  def __init__(self, success=None, ierEx=None, svEx=None,):
     self.success = success
     self.ierEx = ierEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2440,6 +2932,12 @@ class storeMetricEvent_result:
           self.ierEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2458,6 +2956,10 @@ class storeMetricEvent_result:
       oprot.writeFieldBegin('ierEx', TType.STRUCT, 1)
       self.ierEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -2469,6 +2971,7 @@ class storeMetricEvent_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.ierEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -2553,16 +3056,19 @@ class storeTransformEvent_result:
   Attributes:
    - success
    - ierEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (TransformEventResponse, TransformEventResponse.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'ierEx', (InvalidExperimentRunException, InvalidExperimentRunException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, ierEx=None,):
+  def __init__(self, success=None, ierEx=None, svEx=None,):
     self.success = success
     self.ierEx = ierEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2585,6 +3091,12 @@ class storeTransformEvent_result:
           self.ierEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2603,6 +3115,10 @@ class storeTransformEvent_result:
       oprot.writeFieldBegin('ierEx', TType.STRUCT, 1)
       self.ierEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -2614,6 +3130,7 @@ class storeTransformEvent_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.ierEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -2697,14 +3214,17 @@ class storeRandomSplitEvent_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (RandomSplitEventResponse, RandomSplitEventResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2721,6 +3241,12 @@ class storeRandomSplitEvent_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2735,6 +3261,10 @@ class storeRandomSplitEvent_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -2745,6 +3275,7 @@ class storeRandomSplitEvent_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -2828,14 +3359,17 @@ class storePipelineEvent_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (PipelineEventResponse, PipelineEventResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2852,6 +3386,12 @@ class storePipelineEvent_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2866,6 +3406,10 @@ class storePipelineEvent_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -2876,6 +3420,7 @@ class storePipelineEvent_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -2959,14 +3504,17 @@ class storeCrossValidationEvent_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (CrossValidationEventResponse, CrossValidationEventResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2983,6 +3531,12 @@ class storeCrossValidationEvent_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2997,6 +3551,10 @@ class storeCrossValidationEvent_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3007,6 +3565,7 @@ class storeCrossValidationEvent_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -3090,14 +3649,17 @@ class storeGridSearchCrossValidationEvent_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (GridSearchCrossValidationEventResponse, GridSearchCrossValidationEventResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3114,6 +3676,12 @@ class storeGridSearchCrossValidationEvent_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3128,6 +3696,10 @@ class storeGridSearchCrossValidationEvent_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3138,6 +3710,7 @@ class storeGridSearchCrossValidationEvent_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -3221,14 +3794,17 @@ class storeAnnotationEvent_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (AnnotationEventResponse, AnnotationEventResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3245,6 +3821,12 @@ class storeAnnotationEvent_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3259,6 +3841,10 @@ class storeAnnotationEvent_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3269,6 +3855,7 @@ class storeAnnotationEvent_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -3352,14 +3939,17 @@ class storeProjectEvent_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (ProjectEventResponse, ProjectEventResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3376,6 +3966,12 @@ class storeProjectEvent_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3390,6 +3986,10 @@ class storeProjectEvent_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3400,6 +4000,7 @@ class storeProjectEvent_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -3483,14 +4084,17 @@ class storeExperimentEvent_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (ExperimentEventResponse, ExperimentEventResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3507,6 +4111,12 @@ class storeExperimentEvent_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3521,6 +4131,10 @@ class storeExperimentEvent_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3531,6 +4145,7 @@ class storeExperimentEvent_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -3614,14 +4229,17 @@ class storeExperimentRunEvent_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (ExperimentRunEventResponse, ExperimentRunEventResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3638,6 +4256,12 @@ class storeExperimentRunEvent_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3652,6 +4276,10 @@ class storeExperimentRunEvent_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3662,6 +4290,7 @@ class storeExperimentRunEvent_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -3759,16 +4388,19 @@ class storeLinearModel_result:
   Attributes:
    - success
    - rnfEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, rnfEx=None,):
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3790,6 +4422,12 @@ class storeLinearModel_result:
           self.rnfEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3808,6 +4446,10 @@ class storeLinearModel_result:
       oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
       self.rnfEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3819,6 +4461,7 @@ class storeLinearModel_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -3902,16 +4545,19 @@ class getDataFrameAncestry_result:
   Attributes:
    - success
    - rnfEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (DataFrameAncestry, DataFrameAncestry.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, rnfEx=None,):
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3934,6 +4580,12 @@ class getDataFrameAncestry_result:
           self.rnfEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3952,6 +4604,10 @@ class getDataFrameAncestry_result:
       oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
       self.rnfEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3963,6 +4619,7 @@ class getDataFrameAncestry_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -4059,16 +4716,19 @@ class getCommonAncestor_result:
   Attributes:
    - success
    - rnfEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (CommonAncestor, CommonAncestor.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, rnfEx=None,):
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4091,6 +4751,12 @@ class getCommonAncestor_result:
           self.rnfEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4109,6 +4775,10 @@ class getCommonAncestor_result:
       oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
       self.rnfEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4120,6 +4790,7 @@ class getCommonAncestor_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -4216,16 +4887,19 @@ class getCommonAncestorForModels_result:
   Attributes:
    - success
    - rnfEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (CommonAncestor, CommonAncestor.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, rnfEx=None,):
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4248,6 +4922,12 @@ class getCommonAncestorForModels_result:
           self.rnfEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4266,6 +4946,10 @@ class getCommonAncestorForModels_result:
       oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
       self.rnfEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4277,6 +4961,7 @@ class getCommonAncestorForModels_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -4360,16 +5045,19 @@ class getTrainingRowsCount_result:
   Attributes:
    - success
    - rnfEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.I32, 'success', None, None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, rnfEx=None,):
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4391,6 +5079,12 @@ class getTrainingRowsCount_result:
           self.rnfEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4409,6 +5103,10 @@ class getTrainingRowsCount_result:
       oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
       self.rnfEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4420,6 +5118,7 @@ class getTrainingRowsCount_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -4459,10 +5158,10 @@ class getTrainingRowsCounts_args:
       if fid == 1:
         if ftype == TType.LIST:
           self.modelIds = []
-          (_etype247, _size244) = iprot.readListBegin()
-          for _i248 in xrange(_size244):
-            _elem249 = iprot.readI32()
-            self.modelIds.append(_elem249)
+          (_etype314, _size311) = iprot.readListBegin()
+          for _i315 in xrange(_size311):
+            _elem316 = iprot.readI32()
+            self.modelIds.append(_elem316)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4479,8 +5178,8 @@ class getTrainingRowsCounts_args:
     if self.modelIds is not None:
       oprot.writeFieldBegin('modelIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I32, len(self.modelIds))
-      for iter250 in self.modelIds:
-        oprot.writeI32(iter250)
+      for iter317 in self.modelIds:
+        oprot.writeI32(iter317)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4510,14 +5209,17 @@ class getTrainingRowsCounts_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4531,11 +5233,17 @@ class getTrainingRowsCounts_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype254, _size251) = iprot.readListBegin()
-          for _i255 in xrange(_size251):
-            _elem256 = iprot.readI32()
-            self.success.append(_elem256)
+          (_etype321, _size318) = iprot.readListBegin()
+          for _i322 in xrange(_size318):
+            _elem323 = iprot.readI32()
+            self.success.append(_elem323)
           iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -4551,9 +5259,13 @@ class getTrainingRowsCounts_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.I32, len(self.success))
-      for iter257 in self.success:
-        oprot.writeI32(iter257)
+      for iter324 in self.success:
+        oprot.writeI32(iter324)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -4565,6 +5277,7 @@ class getTrainingRowsCounts_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -4661,16 +5374,19 @@ class compareHyperparameters_result:
   Attributes:
    - success
    - rnfEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (CompareHyperParametersResponse, CompareHyperParametersResponse.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, rnfEx=None,):
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4693,6 +5409,12 @@ class compareHyperparameters_result:
           self.rnfEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4711,6 +5433,10 @@ class compareHyperparameters_result:
       oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
       self.rnfEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4722,6 +5448,7 @@ class compareHyperparameters_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -4818,16 +5545,19 @@ class compareFeatures_result:
   Attributes:
    - success
    - rnfEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (CompareFeaturesResponse, CompareFeaturesResponse.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, rnfEx=None,):
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4850,6 +5580,12 @@ class compareFeatures_result:
           self.rnfEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4868,6 +5604,10 @@ class compareFeatures_result:
       oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
       self.rnfEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4879,6 +5619,7 @@ class compareFeatures_result:
     value = 17
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -4918,10 +5659,10 @@ class groupByProblemType_args:
       if fid == 1:
         if ftype == TType.LIST:
           self.modelIds = []
-          (_etype261, _size258) = iprot.readListBegin()
-          for _i262 in xrange(_size258):
-            _elem263 = iprot.readI32()
-            self.modelIds.append(_elem263)
+          (_etype328, _size325) = iprot.readListBegin()
+          for _i329 in xrange(_size325):
+            _elem330 = iprot.readI32()
+            self.modelIds.append(_elem330)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4938,8 +5679,8 @@ class groupByProblemType_args:
     if self.modelIds is not None:
       oprot.writeFieldBegin('modelIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I32, len(self.modelIds))
-      for iter264 in self.modelIds:
-        oprot.writeI32(iter264)
+      for iter331 in self.modelIds:
+        oprot.writeI32(iter331)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4969,14 +5710,17 @@ class groupByProblemType_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.MAP, 'success', (TType.I32,None,TType.LIST,(TType.I32,None)), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4990,17 +5734,23 @@ class groupByProblemType_result:
       if fid == 0:
         if ftype == TType.MAP:
           self.success = {}
-          (_ktype266, _vtype267, _size265 ) = iprot.readMapBegin()
-          for _i269 in xrange(_size265):
-            _key270 = iprot.readI32()
-            _val271 = []
-            (_etype275, _size272) = iprot.readListBegin()
-            for _i276 in xrange(_size272):
-              _elem277 = iprot.readI32()
-              _val271.append(_elem277)
+          (_ktype333, _vtype334, _size332 ) = iprot.readMapBegin()
+          for _i336 in xrange(_size332):
+            _key337 = iprot.readI32()
+            _val338 = []
+            (_etype342, _size339) = iprot.readListBegin()
+            for _i343 in xrange(_size339):
+              _elem344 = iprot.readI32()
+              _val338.append(_elem344)
             iprot.readListEnd()
-            self.success[_key270] = _val271
+            self.success[_key337] = _val338
           iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -5016,13 +5766,17 @@ class groupByProblemType_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.MAP, 0)
       oprot.writeMapBegin(TType.I32, TType.LIST, len(self.success))
-      for kiter278,viter279 in self.success.items():
-        oprot.writeI32(kiter278)
-        oprot.writeListBegin(TType.I32, len(viter279))
-        for iter280 in viter279:
-          oprot.writeI32(iter280)
+      for kiter345,viter346 in self.success.items():
+        oprot.writeI32(kiter345)
+        oprot.writeListBegin(TType.I32, len(viter346))
+        for iter347 in viter346:
+          oprot.writeI32(iter347)
         oprot.writeListEnd()
       oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -5034,6 +5788,7 @@ class groupByProblemType_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -5084,10 +5839,10 @@ class similarModels_args:
       elif fid == 2:
         if ftype == TType.LIST:
           self.compMetrics = []
-          (_etype284, _size281) = iprot.readListBegin()
-          for _i285 in xrange(_size281):
-            _elem286 = iprot.readI32()
-            self.compMetrics.append(_elem286)
+          (_etype351, _size348) = iprot.readListBegin()
+          for _i352 in xrange(_size348):
+            _elem353 = iprot.readI32()
+            self.compMetrics.append(_elem353)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -5113,8 +5868,8 @@ class similarModels_args:
     if self.compMetrics is not None:
       oprot.writeFieldBegin('compMetrics', TType.LIST, 2)
       oprot.writeListBegin(TType.I32, len(self.compMetrics))
-      for iter287 in self.compMetrics:
-        oprot.writeI32(iter287)
+      for iter354 in self.compMetrics:
+        oprot.writeI32(iter354)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.numModels is not None:
@@ -5152,18 +5907,21 @@ class similarModels_result:
    - success
    - rnfEx
    - brEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'brEx', (BadRequestException, BadRequestException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, success=None, rnfEx=None, brEx=None,):
+  def __init__(self, success=None, rnfEx=None, brEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
     self.brEx = brEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5177,10 +5935,10 @@ class similarModels_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype291, _size288) = iprot.readListBegin()
-          for _i292 in xrange(_size288):
-            _elem293 = iprot.readI32()
-            self.success.append(_elem293)
+          (_etype358, _size355) = iprot.readListBegin()
+          for _i359 in xrange(_size355):
+            _elem360 = iprot.readI32()
+            self.success.append(_elem360)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -5196,6 +5954,12 @@ class similarModels_result:
           self.brEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5209,8 +5973,8 @@ class similarModels_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.I32, len(self.success))
-      for iter294 in self.success:
-        oprot.writeI32(iter294)
+      for iter361 in self.success:
+        oprot.writeI32(iter361)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.rnfEx is not None:
@@ -5220,6 +5984,10 @@ class similarModels_result:
     if self.brEx is not None:
       oprot.writeFieldBegin('brEx', TType.STRUCT, 2)
       self.brEx.write(oprot)
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 3)
+      self.svEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -5233,6 +6001,7 @@ class similarModels_result:
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
     value = (value * 31) ^ hash(self.brEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -5317,18 +6086,21 @@ class linearModelFeatureImportances_result:
    - success
    - rnfEx
    - ioEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'ioEx', (IllegalOperationException, IllegalOperationException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, success=None, rnfEx=None, ioEx=None,):
+  def __init__(self, success=None, rnfEx=None, ioEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
     self.ioEx = ioEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5342,10 +6114,10 @@ class linearModelFeatureImportances_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype298, _size295) = iprot.readListBegin()
-          for _i299 in xrange(_size295):
-            _elem300 = iprot.readString()
-            self.success.append(_elem300)
+          (_etype365, _size362) = iprot.readListBegin()
+          for _i366 in xrange(_size362):
+            _elem367 = iprot.readString()
+            self.success.append(_elem367)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -5361,6 +6133,12 @@ class linearModelFeatureImportances_result:
           self.ioEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5374,8 +6152,8 @@ class linearModelFeatureImportances_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter301 in self.success:
-        oprot.writeString(iter301)
+      for iter368 in self.success:
+        oprot.writeString(iter368)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.rnfEx is not None:
@@ -5385,6 +6163,10 @@ class linearModelFeatureImportances_result:
     if self.ioEx is not None:
       oprot.writeFieldBegin('ioEx', TType.STRUCT, 2)
       self.ioEx.write(oprot)
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 3)
+      self.svEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -5398,6 +6180,7 @@ class linearModelFeatureImportances_result:
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
     value = (value * 31) ^ hash(self.ioEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -5495,18 +6278,21 @@ class compareLinearModelFeatureImportances_result:
    - success
    - rnfEx
    - ioEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRUCT,(FeatureImportanceComparison, FeatureImportanceComparison.thrift_spec)), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'ioEx', (IllegalOperationException, IllegalOperationException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, success=None, rnfEx=None, ioEx=None,):
+  def __init__(self, success=None, rnfEx=None, ioEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
     self.ioEx = ioEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5520,11 +6306,11 @@ class compareLinearModelFeatureImportances_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype305, _size302) = iprot.readListBegin()
-          for _i306 in xrange(_size302):
-            _elem307 = FeatureImportanceComparison()
-            _elem307.read(iprot)
-            self.success.append(_elem307)
+          (_etype372, _size369) = iprot.readListBegin()
+          for _i373 in xrange(_size369):
+            _elem374 = FeatureImportanceComparison()
+            _elem374.read(iprot)
+            self.success.append(_elem374)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -5540,6 +6326,12 @@ class compareLinearModelFeatureImportances_result:
           self.ioEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5553,8 +6345,8 @@ class compareLinearModelFeatureImportances_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter308 in self.success:
-        iter308.write(oprot)
+      for iter375 in self.success:
+        iter375.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.rnfEx is not None:
@@ -5564,6 +6356,10 @@ class compareLinearModelFeatureImportances_result:
     if self.ioEx is not None:
       oprot.writeFieldBegin('ioEx', TType.STRUCT, 2)
       self.ioEx.write(oprot)
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 3)
+      self.svEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -5577,6 +6373,7 @@ class compareLinearModelFeatureImportances_result:
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.rnfEx)
     value = (value * 31) ^ hash(self.ioEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -5619,10 +6416,10 @@ class iterationsUntilConvergence_args:
       if fid == 1:
         if ftype == TType.LIST:
           self.modelIds = []
-          (_etype312, _size309) = iprot.readListBegin()
-          for _i313 in xrange(_size309):
-            _elem314 = iprot.readI32()
-            self.modelIds.append(_elem314)
+          (_etype379, _size376) = iprot.readListBegin()
+          for _i380 in xrange(_size376):
+            _elem381 = iprot.readI32()
+            self.modelIds.append(_elem381)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -5644,8 +6441,8 @@ class iterationsUntilConvergence_args:
     if self.modelIds is not None:
       oprot.writeFieldBegin('modelIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I32, len(self.modelIds))
-      for iter315 in self.modelIds:
-        oprot.writeI32(iter315)
+      for iter382 in self.modelIds:
+        oprot.writeI32(iter382)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.tolerance is not None:
@@ -5680,14 +6477,17 @@ class iterationsUntilConvergence_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5701,11 +6501,17 @@ class iterationsUntilConvergence_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype319, _size316) = iprot.readListBegin()
-          for _i320 in xrange(_size316):
-            _elem321 = iprot.readI32()
-            self.success.append(_elem321)
+          (_etype386, _size383) = iprot.readListBegin()
+          for _i387 in xrange(_size383):
+            _elem388 = iprot.readI32()
+            self.success.append(_elem388)
           iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -5721,9 +6527,13 @@ class iterationsUntilConvergence_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.I32, len(self.success))
-      for iter322 in self.success:
-        oprot.writeI32(iter322)
+      for iter389 in self.success:
+        oprot.writeI32(iter389)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -5735,6 +6545,7 @@ class iterationsUntilConvergence_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -5777,10 +6588,10 @@ class rankModels_args:
       if fid == 1:
         if ftype == TType.LIST:
           self.modelIds = []
-          (_etype326, _size323) = iprot.readListBegin()
-          for _i327 in xrange(_size323):
-            _elem328 = iprot.readI32()
-            self.modelIds.append(_elem328)
+          (_etype393, _size390) = iprot.readListBegin()
+          for _i394 in xrange(_size390):
+            _elem395 = iprot.readI32()
+            self.modelIds.append(_elem395)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -5802,8 +6613,8 @@ class rankModels_args:
     if self.modelIds is not None:
       oprot.writeFieldBegin('modelIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I32, len(self.modelIds))
-      for iter329 in self.modelIds:
-        oprot.writeI32(iter329)
+      for iter396 in self.modelIds:
+        oprot.writeI32(iter396)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.metric is not None:
@@ -5838,14 +6649,17 @@ class rankModels_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5859,11 +6673,17 @@ class rankModels_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype333, _size330) = iprot.readListBegin()
-          for _i334 in xrange(_size330):
-            _elem335 = iprot.readI32()
-            self.success.append(_elem335)
+          (_etype400, _size397) = iprot.readListBegin()
+          for _i401 in xrange(_size397):
+            _elem402 = iprot.readI32()
+            self.success.append(_elem402)
           iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -5879,9 +6699,13 @@ class rankModels_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.I32, len(self.success))
-      for iter336 in self.success:
-        oprot.writeI32(iter336)
+      for iter403 in self.success:
+        oprot.writeI32(iter403)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -5893,6 +6717,7 @@ class rankModels_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -5991,6 +6816,7 @@ class confidenceIntervals_result:
    - rnfEx
    - ioEx
    - brEx
+   - svEx
   """
 
   thrift_spec = (
@@ -5998,13 +6824,15 @@ class confidenceIntervals_result:
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'ioEx', (IllegalOperationException, IllegalOperationException.thrift_spec), None, ), # 2
     (3, TType.STRUCT, 'brEx', (BadRequestException, BadRequestException.thrift_spec), None, ), # 3
+    (4, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 4
   )
 
-  def __init__(self, success=None, rnfEx=None, ioEx=None, brEx=None,):
+  def __init__(self, success=None, rnfEx=None, ioEx=None, brEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
     self.ioEx = ioEx
     self.brEx = brEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -6018,11 +6846,11 @@ class confidenceIntervals_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype340, _size337) = iprot.readListBegin()
-          for _i341 in xrange(_size337):
-            _elem342 = ConfidenceInterval()
-            _elem342.read(iprot)
-            self.success.append(_elem342)
+          (_etype407, _size404) = iprot.readListBegin()
+          for _i408 in xrange(_size404):
+            _elem409 = ConfidenceInterval()
+            _elem409.read(iprot)
+            self.success.append(_elem409)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -6044,6 +6872,12 @@ class confidenceIntervals_result:
           self.brEx.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -6057,8 +6891,8 @@ class confidenceIntervals_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter343 in self.success:
-        iter343.write(oprot)
+      for iter410 in self.success:
+        iter410.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.rnfEx is not None:
@@ -6073,6 +6907,10 @@ class confidenceIntervals_result:
       oprot.writeFieldBegin('brEx', TType.STRUCT, 3)
       self.brEx.write(oprot)
       oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 4)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -6086,6 +6924,7 @@ class confidenceIntervals_result:
     value = (value * 31) ^ hash(self.rnfEx)
     value = (value * 31) ^ hash(self.ioEx)
     value = (value * 31) ^ hash(self.brEx)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -6125,10 +6964,10 @@ class modelsWithFeatures_args:
       if fid == 1:
         if ftype == TType.LIST:
           self.featureNames = []
-          (_etype347, _size344) = iprot.readListBegin()
-          for _i348 in xrange(_size344):
-            _elem349 = iprot.readString()
-            self.featureNames.append(_elem349)
+          (_etype414, _size411) = iprot.readListBegin()
+          for _i415 in xrange(_size411):
+            _elem416 = iprot.readString()
+            self.featureNames.append(_elem416)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -6145,8 +6984,8 @@ class modelsWithFeatures_args:
     if self.featureNames is not None:
       oprot.writeFieldBegin('featureNames', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.featureNames))
-      for iter350 in self.featureNames:
-        oprot.writeString(iter350)
+      for iter417 in self.featureNames:
+        oprot.writeString(iter417)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -6176,14 +7015,17 @@ class modelsWithFeatures_result:
   """
   Attributes:
    - success
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, svEx=None,):
     self.success = success
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -6197,11 +7039,17 @@ class modelsWithFeatures_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype354, _size351) = iprot.readListBegin()
-          for _i355 in xrange(_size351):
-            _elem356 = iprot.readI32()
-            self.success.append(_elem356)
+          (_etype421, _size418) = iprot.readListBegin()
+          for _i422 in xrange(_size418):
+            _elem423 = iprot.readI32()
+            self.success.append(_elem423)
           iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -6217,9 +7065,13 @@ class modelsWithFeatures_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.I32, len(self.success))
-      for iter357 in self.success:
-        oprot.writeI32(iter357)
+      for iter424 in self.success:
+        oprot.writeI32(iter424)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -6231,6 +7083,7 @@ class modelsWithFeatures_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     return value
 
   def __repr__(self):
@@ -6314,16 +7167,19 @@ class modelsDerivedFromDataFrame_result:
   Attributes:
    - success
    - rnfEx
+   - svEx
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
     (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None, rnfEx=None,):
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
     self.success = success
     self.rnfEx = rnfEx
+    self.svEx = svEx
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -6337,10 +7193,10 @@ class modelsDerivedFromDataFrame_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype361, _size358) = iprot.readListBegin()
-          for _i362 in xrange(_size358):
-            _elem363 = iprot.readI32()
-            self.success.append(_elem363)
+          (_etype428, _size425) = iprot.readListBegin()
+          for _i429 in xrange(_size425):
+            _elem430 = iprot.readI32()
+            self.success.append(_elem430)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -6348,6 +7204,12 @@ class modelsDerivedFromDataFrame_result:
         if ftype == TType.STRUCT:
           self.rnfEx = ResourceNotFoundException()
           self.rnfEx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -6363,12 +7225,761 @@ class modelsDerivedFromDataFrame_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.I32, len(self.success))
-      for iter364 in self.success:
-        oprot.writeI32(iter364)
+      for iter431 in self.success:
+        oprot.writeI32(iter431)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.rnfEx is not None:
       oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
+      self.rnfEx.write(oprot)
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getModel_args:
+  """
+  Attributes:
+   - modelId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'modelId', None, None, ), # 1
+  )
+
+  def __init__(self, modelId=None,):
+    self.modelId = modelId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.modelId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getModel_args')
+    if self.modelId is not None:
+      oprot.writeFieldBegin('modelId', TType.I32, 1)
+      oprot.writeI32(self.modelId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.modelId)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getModel_result:
+  """
+  Attributes:
+   - success
+   - rnfEx
+   - svEx
+  """
+
+  thrift_spec = (
+    (0, TType.STRUCT, 'success', (ModelResponse, ModelResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 2
+  )
+
+  def __init__(self, success=None, rnfEx=None, svEx=None,):
+    self.success = success
+    self.rnfEx = rnfEx
+    self.svEx = svEx
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = ModelResponse()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.rnfEx = ResourceNotFoundException()
+          self.rnfEx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getModel_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.rnfEx is not None:
+      oprot.writeFieldBegin('rnfEx', TType.STRUCT, 1)
+      self.rnfEx.write(oprot)
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 2)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.rnfEx)
+    value = (value * 31) ^ hash(self.svEx)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getRunsInExperiment_args:
+  """
+  Attributes:
+   - experimentId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'experimentId', None, None, ), # 1
+  )
+
+  def __init__(self, experimentId=None,):
+    self.experimentId = experimentId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.experimentId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getRunsInExperiment_args')
+    if self.experimentId is not None:
+      oprot.writeFieldBegin('experimentId', TType.I32, 1)
+      oprot.writeI32(self.experimentId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.experimentId)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getRunsInExperiment_result:
+  """
+  Attributes:
+   - success
+   - svEx
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(ExperimentRun, ExperimentRun.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, svEx=None,):
+    self.success = success
+    self.svEx = svEx
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype435, _size432) = iprot.readListBegin()
+          for _i436 in xrange(_size432):
+            _elem437 = ExperimentRun()
+            _elem437.read(iprot)
+            self.success.append(_elem437)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getRunsInExperiment_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter438 in self.success:
+        iter438.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getRunsAndExperimentsInProject_args:
+  """
+  Attributes:
+   - projId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'projId', None, None, ), # 1
+  )
+
+  def __init__(self, projId=None,):
+    self.projId = projId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.projId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getRunsAndExperimentsInProject_args')
+    if self.projId is not None:
+      oprot.writeFieldBegin('projId', TType.I32, 1)
+      oprot.writeI32(self.projId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.projId)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getRunsAndExperimentsInProject_result:
+  """
+  Attributes:
+   - success
+   - svEx
+  """
+
+  thrift_spec = (
+    (0, TType.STRUCT, 'success', (ProjectExperimentsAndRuns, ProjectExperimentsAndRuns.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, svEx=None,):
+    self.success = success
+    self.svEx = svEx
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = ProjectExperimentsAndRuns()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getRunsAndExperimentsInProject_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getProjectOverviews_args:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getProjectOverviews_args')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getProjectOverviews_result:
+  """
+  Attributes:
+   - success
+   - svEx
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(ProjectOverviewResponse, ProjectOverviewResponse.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, svEx=None,):
+    self.success = success
+    self.svEx = svEx
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype442, _size439) = iprot.readListBegin()
+          for _i443 in xrange(_size439):
+            _elem444 = ProjectOverviewResponse()
+            _elem444.read(iprot)
+            self.success.append(_elem444)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getProjectOverviews_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter445 in self.success:
+        iter445.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getExperimentRunDetails_args:
+  """
+  Attributes:
+   - experimentRunId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'experimentRunId', None, None, ), # 1
+  )
+
+  def __init__(self, experimentRunId=None,):
+    self.experimentRunId = experimentRunId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.experimentRunId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getExperimentRunDetails_args')
+    if self.experimentRunId is not None:
+      oprot.writeFieldBegin('experimentRunId', TType.I32, 1)
+      oprot.writeI32(self.experimentRunId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.experimentRunId)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getExperimentRunDetails_result:
+  """
+  Attributes:
+   - success
+   - svEx
+   - rnfEx
+  """
+
+  thrift_spec = (
+    (0, TType.STRUCT, 'success', (ExperimentRunDetailsResponse, ExperimentRunDetailsResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'svEx', (ServerLogicException, ServerLogicException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'rnfEx', (ResourceNotFoundException, ResourceNotFoundException.thrift_spec), None, ), # 2
+  )
+
+  def __init__(self, success=None, svEx=None, rnfEx=None,):
+    self.success = success
+    self.svEx = svEx
+    self.rnfEx = rnfEx
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = ExperimentRunDetailsResponse()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.svEx = ServerLogicException()
+          self.svEx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.rnfEx = ResourceNotFoundException()
+          self.rnfEx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getExperimentRunDetails_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.svEx is not None:
+      oprot.writeFieldBegin('svEx', TType.STRUCT, 1)
+      self.svEx.write(oprot)
+      oprot.writeFieldEnd()
+    if self.rnfEx is not None:
+      oprot.writeFieldBegin('rnfEx', TType.STRUCT, 2)
       self.rnfEx.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -6381,6 +7992,7 @@ class modelsDerivedFromDataFrame_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.svEx)
     value = (value * 31) ^ hash(self.rnfEx)
     return value
 
