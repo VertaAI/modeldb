@@ -1,16 +1,13 @@
-import numpy as np
-import pandas as pd
-import sys
-sys.path.append('../')
-sys.path.append('../thrift/gen-py')
-from sklearn import preprocessing
-from sklearn import linear_model
-import modeldb.tests.utils
-from modeldb.thrift.modeldb import ttypes as modeldb_types
-from ModelDbSyncerTest import *
-from modeldb.sklearn_native.ModelDbSyncer import *
-import modeldb.tests.utils as utils
 import unittest
+import sys
+from ModelDbSyncerTest import SyncerTest
+
+import modeldb.tests.utils as utils
+from modeldb.thrift.modeldb import ttypes as modeldb_types
+from modeldb.sklearn_native.ModelDbSyncer import *
+
+from sklearn import linear_model
+import pandas as pd
 
 class TestTransformEvent(unittest.TestCase):
     @classmethod
