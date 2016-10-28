@@ -20,7 +20,7 @@ public class TestTransformer {
 
   @Before
   public void initialize() throws Exception {
-    expRunId = TestBase.reset();
+    expRunId = TestBase.reset().expRunId;
   }
 
 

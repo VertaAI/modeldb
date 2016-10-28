@@ -12,7 +12,7 @@ public class TestEvent {
 
   @Before
   public void initialize() throws Exception {
-    expRunId = TestBase.reset();
+    expRunId = TestBase.reset().expRunId;
   }
 
   @Test

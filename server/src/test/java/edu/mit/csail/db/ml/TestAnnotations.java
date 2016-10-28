@@ -101,7 +101,7 @@ public class TestAnnotations {
 
   @Before
   public void initialize() throws Exception {
-    expRunId = TestBase.reset();
+    expRunId = TestBase.reset().expRunId;
   }
 
   @Test

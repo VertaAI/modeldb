@@ -2,8 +2,8 @@ package edu.mit.csail.db.ml;
 
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.ModelDbServer;
+import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.Hyperparameter;
 import jooq.sqlite.gen.tables.records.*;
 import org.apache.commons.cli.ParseException;
 import org.apache.thrift.TException;
@@ -25,6 +25,17 @@ import static jooq.sqlite.gen.Tables.*;
 
 
 public class TestBase {
+  public static class ProjExpRunTriple {
+    public final int projId;
+    public final int expId;
+    public final int expRunId;
+    public ProjExpRunTriple(int projId, int expId, int expRunId) {
+      this.projId = projId;
+      this.expId = expId;
+      this.expRunId = expRunId;
+    }
+  }
+
   private static DSLContext context = null;
   private static ModelDbServer server = null;
 
@@ -47,41 +58,52 @@ public class TestBase {
     return context;
   }
 
-  public static int reset() throws SQLException, IOException, ParseException {
+  public static ProjExpRunTriple reset() throws Exception {
     clearTables();
-    return createTestExperimentRun();
+    return createExperimentRun();
   }
 
   public static Timestamp now() {
     return new Timestamp((new Date()).getTime());
   }
 
-  public static int createTestExperimentRun() throws SQLException, IOException, ParseException {
-    Timestamp now = now();
+  public static ProjExpRunTriple createProject() throws Exception {
     ProjectRecord projRec = ctx().newRecord(Tables.PROJECT);
     projRec.setId(null);
     projRec.setName("Test project");
     projRec.setAuthor("ModelDB Team");
     projRec.setDescription("Test project");
-    projRec.setCreated(now);
+    projRec.setCreated(now());
     projRec.store();
+    return new ProjExpRunTriple(projRec.getId(), -1, -1);
+  }
 
+  public static ProjExpRunTriple createExperiment(int projId) throws Exception {
     ExperimentRecord expRec = ctx().newRecord(Tables.EXPERIMENT);
     expRec.setId(null);
-    expRec.setProject(projRec.getId());
+    expRec.setProject(projId);
     expRec.setName("Test experiment");
-    expRec.setDescription("Test experiment");
-    expRec.setCreated(now);
+    expRec.setDescription("Test experiment description");
+    expRec.setCreated(now());
     expRec.store();
+    return new ProjExpRunTriple(projId, expRec.getId(), -1);
+  }
+
+  public static ProjExpRunTriple createExperiment() throws Exception {
+    return createExperiment(createProject().projId);
+  }
+
+  public static ProjExpRunTriple createExperimentRun() throws Exception {
+    ProjExpRunTriple triple = createExperiment();
 
     ExperimentrunRecord expRunRec = ctx().newRecord(Tables.EXPERIMENTRUN);
     expRunRec.setId(null);
-    expRunRec.setExperiment(expRec.getId());
+    expRunRec.setExperiment(triple.expId);
     expRunRec.setDescription("Test experiment run");
-    expRunRec.setCreated(now);
+    expRunRec.setCreated(now());
     expRunRec.store();
 
-    return expRunRec.getId();
+    return new ProjExpRunTriple(triple.projId, triple.expId, expRunRec.getId());
   }
 
   public static int createDataFrame(int expRunId, int numRows) throws Exception {

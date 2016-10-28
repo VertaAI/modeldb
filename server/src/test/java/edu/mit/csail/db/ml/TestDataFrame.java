@@ -18,7 +18,7 @@ public class TestDataFrame {
 
   @Before
   public void initialize() throws Exception {
-    expRunId = TestBase.reset();
+    expRunId = TestBase.reset().expRunId;
   }
 
   private void checkSchema(List<DataFrameColumn> schema) {
