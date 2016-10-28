@@ -1,4 +1,4 @@
-from modeldb.basic.ModelDBSyncerLight import *
+from modeldb.basic.ModelDbSyncerBase import *
 
 # Creating a new project
 name = "test1"
