@@ -10,7 +10,7 @@ def validate_fit_event_struct(fitEvent, tester):
     tester.assertTrue(type(fitEvent.experimentRunId), 'int')
 
 def validate_project_struct(project, tester):
-    tester.assertTrue(hasattr(project, 'id'))   
+    tester.assertTrue(hasattr(project, 'id')) 
     tester.assertTrue(hasattr(project, 'name'))
     tester.assertTrue(hasattr(project, 'author'))
     tester.assertTrue(hasattr(project, 'description'))
@@ -74,6 +74,7 @@ def is_equal_transformer_spec(spec1, spec2, tester):
     tester.assertEqual(spec1.tag, spec2.tag)
 
     tester.assertEqual(len(spec1.hyperparameters), len(spec2.hyperparameters))
+
     for i in range(len(spec1.hyperparameters)):
         tester.assertEqual(spec1.hyperparameters[i].name, 
             spec2.hyperparameters[i].name)
