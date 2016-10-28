@@ -10,7 +10,7 @@ def validate_fit_event_struct(fitEvent, tester):
     tester.assertTrue(type(fitEvent.experimentRunId), 'int')
 
 def validate_project_struct(project, tester):
-    tester.assertTrue(hasattr(project, 'id')) 
+    tester.assertTrue(hasattr(project, 'id'))
     tester.assertTrue(hasattr(project, 'name'))
     tester.assertTrue(hasattr(project, 'author'))
     tester.assertTrue(hasattr(project, 'description'))
