@@ -28,7 +28,7 @@
 
            You can also provide your own org.jooq.util.Database implementation
            here, if your database is currently not supported or if you wish to
-           readHyperparameters the database schema from a file, such as a Hibernate .hbm.xml file -->
+           read the database schema from a file, such as a Hibernate .hbm.xml file -->
       <name>org.jooq.util.sqlite.SQLiteDatabase</name>
 
       <!-- All elements that are generated from your schema (several Java

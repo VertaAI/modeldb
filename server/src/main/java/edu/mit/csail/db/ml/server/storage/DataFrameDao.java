@@ -53,7 +53,7 @@ public class DataFrameDao {
     DataframeRecord rec = ctx.selectFrom(Tables.DATAFRAME).where(Tables.DATAFRAME.ID.eq(dfId)).fetchOne();
     if (rec == null) {
       throw new ResourceNotFoundException(String.format(
-        "Could not readHyperparameters DataFrame %d, it doesn't exist",
+        "Could not read DataFrame %d, it doesn't exist",
         dfId
       ));
     }

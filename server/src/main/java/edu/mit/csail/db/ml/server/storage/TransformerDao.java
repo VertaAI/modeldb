@@ -155,7 +155,7 @@ public class TransformerDao {
 
   public static ModelResponse readInfo(int modelId, DSLContext ctx)
     throws ResourceNotFoundException {
-    // First readHyperparameters the Transformer record.
+    // First read the Transformer record.
     TransformerRecord rec = read(modelId, ctx);
 
     // Get the experiment and project for the Transformer.
