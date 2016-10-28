@@ -1,13 +1,19 @@
 import unittest
-from ModelDBSyncerTest import SyncerTest
-import utils
-from modeldb.thrift import ttypes as modeldb_types
+import sys
+from ModelDbSyncerTest import SyncerTest
+
+import modeldb.tests.utils as utils
+from modeldb.thrift.modeldb import ttypes as modeldb_types
+from modeldb.sklearn_native.ModelDbSyncer import *
 
 from sklearn import linear_model
 import pandas as pd
 
+FMIN = sys.float_info.min
+FMAX = sys.float_info.max
+
 class TestFitEvent(unittest.TestCase):
-    def setUpClass(self):
+    def setUp(self):
         name = "logistic-test"
         author = "srinidhi"
         description = "income-level logistic regression"
@@ -31,10 +37,10 @@ class TestFitEvent(unittest.TestCase):
         transformer = self.fitEvent.model
         expected_transformer = modeldb_types.Transformer(
             -1,
-            'LinearRegression',
             [0.0],
+            'LinearRegression',
             'linear reg')
-        utils.is_equal_transformer(transformer, expected_transformer)
+        utils.is_equal_transformer(transformer, expected_transformer, self)
         
     # Tests TransformerSpec values.
     def test_transformer_spec(self):
@@ -43,26 +49,29 @@ class TestFitEvent(unittest.TestCase):
             -1, 
             'LinearRegression',
             ['A', 'B', 'C', 'D', 'output'],
-            'linear reg',
-            4,
-            None) # Fix hyperparams here. see below
-        # params = ['copy_X', 'normalize', 'n_jobs', 'fit_intercept']
-        # for i in range(4):
-        #     hyperparam = spec.hyperparameters[i]
-        #     self.assertEqual(hyperparam.name, params[i])
+            [
+                modeldb_types.HyperParameter('copy_X', 'True', 'bool', FMIN, FMAX), 
+                modeldb_types.HyperParameter('normalize', 'False', 'bool', FMIN, FMAX), 
+                modeldb_types.HyperParameter('n_jobs', '1', 'int', FMIN, FMAX), 
+                modeldb_types.HyperParameter('fit_intercept', 'True', 'bool', FMIN, FMAX)
+            ],
+            'linear reg')
+        utils.is_equal_transformer_spec(spec, expected_spec, self)
 
     def test_dataframe(self):
         df = self.fitEvent.df
         expected_df = modeldb_types.DataFrame(
+            -1, 
+            [
+                modeldb_types.DataFrameColumn('A', 'int64'), 
+                modeldb_types.DataFrameColumn('B', 'int64'), 
+                modeldb_types.DataFrameColumn('C', 'int64'), 
+                modeldb_types.DataFrameColumn('D', 'int64'),
+                modeldb_types.DataFrameColumn('output', 'int64')
+            ],
             100,
-            'digits-dataset',
-            -1,
-            None) # fix columns
-        utils.is_equal_dataframe(df, expected_df)  
-        # # Tests individual DataFrameColumns
-        # self.assertEqual(len(df.schema), 5)
-        # column_names = ['A', 'B', 'C', 'D', 'output']
-        # for i in range(0,5):
-        #     df_column = df.schema[i]
-        #     self.assertEqual(df_column.name, column_names[i])
-        #     self.assertEqual(df_column.type, 'int64')
+            'digits-dataset') # TODO: fix columns
+        utils.is_equal_dataframe(df, expected_df, self)  
+
+if __name__ == '__main__':
+    unittest.main()

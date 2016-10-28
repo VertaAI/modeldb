@@ -1,5 +1,5 @@
 # TODO: [MV] are these tests even necessary?
-def validate_fit_event_struct(fitevent, tester):
+def validate_fit_event_struct(fitEvent, tester):
     tester.assertTrue(hasattr(fitEvent, 'df'))
     tester.assertTrue(hasattr(fitEvent, 'spec'))
     tester.assertTrue(hasattr(fitEvent, 'model'))
@@ -65,8 +65,7 @@ def is_equal_dataframe(dataframe1, dataframe2, tester):
     # check schema
     for i in range(len(dataframe1.schema)):
         tester.assertEqual(dataframe1.schema[i].name, dataframe2.schema[i].name)
-        tester.assertEqual(dataframe1.schema[i].type, 'int64')
-        tester.assertEqual(dataframe2.schema[i].type, 'int64')
+        tester.assertEqual(dataframe1.schema[i].type, dataframe2.schema[i].type)
     
 def is_equal_transformer_spec(spec1, spec2, tester):
     tester.assertEqual(spec1.id, spec2.id)
@@ -76,16 +75,18 @@ def is_equal_transformer_spec(spec1, spec2, tester):
     
     tester.assertEqual(len(spec1.hyperparameters), len(spec2.hyperparameters))
     
-    params = ['copy_X', 'normalize', 'n_jobs', 'fit_intercept']
-    for i in len(spec1.hyperparameters):
+    for i in range(len(spec1.hyperparameters)):
         tester.assertEqual(spec1.hyperparameters[i].name, 
             spec2.hyperparameters[i].name)
-        # TODO: test the HP value
+        tester.assertEqual(spec1.hyperparameters[i].value, 
+            spec2.hyperparameters[i].value)
+        tester.assertEqual(spec1.hyperparameters[i].type, 
+            spec2.hyperparameters[i].type)
 
-def is_equal_model(model1, model2, tester):
+def is_equal_transformer(model1, model2, tester):
     tester.assertEqual(model1.id, model2.id)
     tester.assertEqual(model1.transformerType, model2.transformerType)
-    tester.assertEqual(model1.weights, model2.tag)
+    tester.assertEqual(model1.weights, model2.weights)
     tester.assertEqual(model1.tag, model2.tag)
 
 # self.assertEqual(project.id, experiment.projectId)
