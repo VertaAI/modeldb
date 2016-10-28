@@ -71,7 +71,7 @@ class TestFitEvent(unittest.TestCase):
                 modeldb_types.DataFrameColumn('output', 'int64')
             ],
             100,
-            'digits-dataset') # TODO: fix columns
+            'digits-dataset')
         utils.is_equal_dataframe(df, expected_df, self)  
 
 if __name__ == '__main__':

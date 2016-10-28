@@ -72,9 +72,9 @@ def is_equal_transformer_spec(spec1, spec2, tester):
     tester.assertEqual(spec1.transformerType, spec2.transformerType)
     tester.assertEqual(spec1.features, spec2.features)
     tester.assertEqual(spec1.tag, spec2.tag)
-    
+
     tester.assertEqual(len(spec1.hyperparameters), len(spec2.hyperparameters))
-    
+
     for i in range(len(spec1.hyperparameters)):
         tester.assertEqual(spec1.hyperparameters[i].name, 
             spec2.hyperparameters[i].name)
