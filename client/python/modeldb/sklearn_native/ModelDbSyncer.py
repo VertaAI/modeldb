@@ -37,6 +37,8 @@ def fitFn(self,X,y=None):
             df['outputColumn'] = y
     #Calls FitEvent in other class and adds to buffer 
     fitEvent = FitEvent(models, self, df)
+    if hasattr(X, 'tag') and X.tag != "":
+        addTagObject(df, X.tag)
     Syncer.instance.addToBuffer(fitEvent)
 
 #Overrides the predict function for models, provided that the predict function takes in one argument
@@ -134,16 +136,9 @@ def fitFnGridSearch(self, X,y):
     gridEvent = GridSearchCVEvent(inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds)
     Syncer.instance.addToBuffer(gridEvent)
 
-def computeMetrics(model, metric, X, predictionCol, labelCol, actual):
-    predicted = model.predict(X)
-    computeMetric = metric + "_score"
-    metricFunc = getattr(sklearn.metrics, computeMetric)
-    score = metricFunc(actual, predicted, average='weighted')
-    metricEvent = MetricEvent(X, model, labelCol, predictionCol, metric, score, ModelDbSyncer.Syncer.instance.experimentRun.id)
-    ModelDbSyncer.Syncer.instance.addToBuffer(metricEvent)
-
 # Stores object with associated tagName
 def addTagObject(self, tagName):
+    self.tag = tagName
     Syncer.instance.storeTagObject(id(self), tagName)
 
 class Syncer(ModelDbSyncerBase.Syncer):
