@@ -2,7 +2,6 @@ package edu.mit.csail.db.ml.server.storage;
 
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.HyperparameterRecord;
-import jooq.sqlite.gen.tables.records.TransformerRecord;
 import jooq.sqlite.gen.tables.records.TransformerspecRecord;
 import modeldb.HyperParameter;
 import modeldb.ResourceNotFoundException;
@@ -48,9 +47,19 @@ public class TransformerSpecDao {
     return sRec;
   }
 
-  public static TransformerspecRecord read(int sId, DSLContext ctx) throws ResourceNotFoundException {
+  public static TransformerSpec read(int sId, DSLContext ctx) throws ResourceNotFoundException {
     TransformerspecRecord rec =
       ctx.selectFrom(Tables.TRANSFORMERSPEC).where(Tables.TRANSFORMERSPEC.ID.eq(sId)).fetchOne();
+    List<HyperParameter> hps = ctx.selectFrom(Tables.HYPERPARAMETER)
+      .where(Tables.HYPERPARAMETER.SPEC.eq(sId))
+      .fetch()
+      .map(hp -> new HyperParameter(
+        hp.getParamname(),
+        hp.getParamvalue(),
+        hp.getParamtype(),
+        hp.getParamminvalue() == null ? 0 : hp.getParamminvalue(),
+        hp.getParammaxvalue() == null ? Float.MAX_VALUE : hp.getParammaxvalue())
+      );
 
     if (rec == null) {
       throw new ResourceNotFoundException(String.format(
@@ -59,30 +68,11 @@ public class TransformerSpecDao {
       ));
     }
 
-    return rec;
-  }
-
-  public static List<HyperParameter> readHyperparameters(int sId, DSLContext ctx) {
-    return ctx.selectFrom(Tables.HYPERPARAMETER)
-      .where(Tables.HYPERPARAMETER.SPEC.eq(sId))
-      .fetch()
-      .map(hp -> new HyperParameter(
-        hp.getParamname(),
-        hp.getParamvalue(),
-        hp.getParamtype(),
-        hp.getParamminvalue(),
-        hp.getParammaxvalue())
-      );
-  }
-
-  public static TransformerSpec readTransformerSpec(int sId, DSLContext ctx) throws ResourceNotFoundException {
-    TransformerspecRecord rec = read(sId, ctx);
-
     return new TransformerSpec(
       rec.getId(),
       rec.getTransformertype(),
       Collections.emptyList(), //TODO: This is actually not used, we need to remove it.
-      readHyperparameters(sId, ctx),
+      hps,
       rec.getTag()
     );
   }

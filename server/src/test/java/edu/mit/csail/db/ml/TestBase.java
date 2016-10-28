@@ -3,6 +3,7 @@ package edu.mit.csail.db.ml;
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.ModelDbServer;
 import jooq.sqlite.gen.Tables;
+import jooq.sqlite.gen.tables.Hyperparameter;
 import jooq.sqlite.gen.tables.records.*;
 import org.apache.commons.cli.ParseException;
 import org.apache.thrift.TException;
@@ -128,6 +129,31 @@ public class TestBase {
     rec.setTag("");
     rec.setExperimentrun(expRunId);
     rec.store();
+
+    HyperparameterRecord hp1 = ctx().newRecord(Tables.HYPERPARAMETER);
+    hp1.setId(null);
+    hp1.setSpec(rec.getId());
+    hp1.setParamname("hp1");
+    hp1.setParamtype("string");
+    hp1.setParamvalue("val1");
+    hp1.setParamminvalue(1.0f);
+    hp1.setParammaxvalue(2.0f);
+    hp1.setExperimentrun(expRunId);
+    hp1.store();
+    hp1.getId();
+
+    HyperparameterRecord hp2 = ctx().newRecord(Tables.HYPERPARAMETER);
+    hp2.setId(null);
+    hp2.setSpec(rec.getId());
+    hp2.setParamname("hp2");
+    hp2.setParamtype("int");
+    hp2.setParamvalue("val2");
+    hp2.setParamminvalue(3.0f);
+    hp2.setParammaxvalue(4.0f);
+    hp2.setExperimentrun(expRunId);
+    hp2.store();
+    hp2.getId();
+
     return rec.getId();
   }
 

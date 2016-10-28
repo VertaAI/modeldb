@@ -155,7 +155,7 @@ public class TransformerDao {
 
   public static ModelResponse readInfo(int modelId, DSLContext ctx)
     throws ResourceNotFoundException {
-    // First read the Transformer record.
+    // First readHyperparameters the Transformer record.
     TransformerRecord rec = read(modelId, ctx);
 
     // Get the experiment and project for the Transformer.
@@ -169,7 +169,7 @@ public class TransformerDao {
     DataFrame trainingDf = DataFrameDao.read(feRec.getDf(), ctx);
 
     // Read the TransformerSpec mentioned in the FitEvent.
-    TransformerSpec spec = TransformerSpecDao.readTransformerSpec(feRec.getTransformerspec(), ctx);
+    TransformerSpec spec = TransformerSpecDao.read(feRec.getTransformerspec(), ctx);
 
     // Read the features.
     List<String> features = readFeatures(modelId, ctx);
