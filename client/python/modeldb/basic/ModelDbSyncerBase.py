@@ -92,19 +92,22 @@ class Syncer(object):
     def setProject(self, projectConfig):
         self.project = projectConfig.toThrift()
         projectEvent = ProjectEvent(self.project)
-        projectEvent.sync(self)
+        self.bufferList.append(projectEvent)
+        self.sync()
 
     def setExperiment(self, experimentConfig):
         self.experiment = experimentConfig.toThrift()
         self.experiment.projectId = self.project.id
         experimentEvent = ExperimentEvent(self.experiment)
-        experimentEvent.sync(self)
+        self.bufferList.append(experimentEvent)
+        self.sync()
 
     def setExperimentRun(self, experimentRunConfig):
         self.experimentRun = experimentRunConfig.toThrift()
         self.experimentRun.experimentId = self.experiment.id
         experimentRunEvent = ExperimentRunEvent(self.experimentRun)
-        experimentRunEvent.sync(self)
+        self.bufferList.append(experimentRunEvent)
+        self.sync()
 
     def addToBuffer(self, event):
         self.bufferList.append(event)

@@ -1,5 +1,5 @@
 # TODO: [MV] are these tests even necessary?
-def validate_fit_event_struct(fitevent, tester):
+def validate_fit_event_struct(fitEvent, tester):
     tester.assertTrue(hasattr(fitEvent, 'df'))
     tester.assertTrue(hasattr(fitEvent, 'spec'))
     tester.assertTrue(hasattr(fitEvent, 'model'))
@@ -74,12 +74,15 @@ def is_equal_transformer_spec(spec1, spec2, tester):
     tester.assertEqual(spec1.tag, spec2.tag)
 
     tester.assertEqual(len(spec1.hyperparameters), len(spec2.hyperparameters))
-
-    for i in range(0,len(spec1.hyperparameters)):
+    for i in range(len(spec1.hyperparameters)):
         tester.assertEqual(spec1.hyperparameters[i].name, 
             spec2.hyperparameters[i].name)
+        tester.assertEqual(spec1.hyperparameters[i].value, 
+            spec2.hyperparameters[i].value)
+        tester.assertEqual(spec1.hyperparameters[i].type, 
+            spec2.hyperparameters[i].type)
 
-def is_equal_model(model1, model2, tester):
+def is_equal_transformer(model1, model2, tester):
     tester.assertEqual(model1.id, model2.id)
     tester.assertEqual(model1.transformerType, model2.transformerType)
     tester.assertEqual(model1.weights, model2.weights)

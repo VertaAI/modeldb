@@ -136,14 +136,6 @@ def fitFnGridSearch(self, X,y):
     gridEvent = GridSearchCVEvent(inputDataFrame, crossValidations, seed, evaluator, bestModel, bestEstimator, numFolds)
     Syncer.instance.addToBuffer(gridEvent)
 
-def computeMetrics(model, metric, X, predictionCol, labelCol, actual):
-    predicted = model.predict(X)
-    computeMetric = metric + "_score"
-    metricFunc = getattr(sklearn.metrics, computeMetric)
-    score = metricFunc(actual, predicted, average='weighted')
-    metricEvent = MetricEvent(X, model, labelCol, predictionCol, metric, score, ModelDbSyncer.Syncer.instance.experimentRun.id)
-    ModelDbSyncer.Syncer.instance.addToBuffer(metricEvent)
-
 # Stores object with associated tagName
 def addTagObject(self, tagName):
     self.tag = tagName
