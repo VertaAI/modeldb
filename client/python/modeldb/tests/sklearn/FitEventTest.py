@@ -26,7 +26,8 @@ class TestFitEvent(unittest.TestCase):
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
         X.tag("digits-dataset")
         model.tag("linear reg")
-
+        
+        SyncerTest.instance.clearBuffer()
         model.fitSync(X,y)
         events = SyncerTest.instance.sync()
         self.fitEvent = events[0]

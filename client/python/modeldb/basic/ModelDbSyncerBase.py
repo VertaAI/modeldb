@@ -116,6 +116,9 @@ class Syncer(object):
         for b in self.bufferList:
             b.sync(self)
 
+    def clearBuffer(self):
+        self.bufferList = []
+
     def initializeThriftClient(self, host="localhost", port=6543):
         # Make socket
         self.transport = TSocket.TSocket(host, port)
