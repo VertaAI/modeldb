@@ -108,7 +108,7 @@ public class TestProject {
     Assert.assertEquals(0, overview.size());
 
     // Test when there is a project in the response.
-    TestBase.createTestExperimentRun();
+    TestBase.createExperimentRun();
     overview = ProjectDao.getProjectOverviews(TestBase.ctx());
     Assert.assertEquals(1, overview.size());
     Assert.assertEquals("Test project", overview.get(0).getProject().getName());

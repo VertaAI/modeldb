@@ -19,7 +19,7 @@ public class TestTransformerSpec {
 
   @Before
   public void initialize() throws Exception {
-    expRunId = TestBase.reset();
+    expRunId = TestBase.reset().expRunId;
   }
 
   public void checkHyperparameters(List<HyperparameterRecord> hps, int specId) {
