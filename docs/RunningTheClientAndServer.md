@@ -1,0 +1,112 @@
+# Setting up the Client and Server
+
+## In Short
+*from the modeldb/ directory*
+### Server
+
+`cd server`  
+`cd codegen`  
+`./gen_sqlite.sh`  
+`cd ..`  
+`python ./update_thrift_file.py`  
+`./start_server.sh`
+
+### Client
+
+`cd client/scala/libs/spark.ml` 
+`python update_thrift_file.py`  
+`sbt clean`  
+`sbt assembly`  
+
+The JAR file is then in:  
+`target/scala-2.11/ml.jar`
+
+## The Server, Step by Step
+The server is in the `modeldb/server/` directory. 
+
+**From here on out,
+all commands will assume that you are in the `/server` directory.**
+
+`cd server`
+
+### Environment Variables
+
+Make sure the following variables are set:
+* `PATH`: Should include bin folders of SQLite, Maven, Java, Anaconda
+* `JAVA_HOME`: Should be set to the main directory (not bin) of your jdk
+
+### Setting up the SQLite tables
+Navigate to the `codegen` directory, and run the sh file `gen_sqlite.sh`
+
+`cd codegen`
+`./gen_sqlite.sh`
+`cd ..`
+
+This will produce the tables necessary to run the modeldb server.
+
+### Getting the Thrift file
+Next, you need to get the latest thrift files for modeldb. Run the `update_thrift_file.py` 
+script in the server directory to do so. 
+
+*From /server*  
+
+`python ./update_thrift_file.py`
+
+### Launching the Server
+Finally, launch the server using the `start_server.sh` script. You need Maven installed
+to do so.
+
+`./start_server.sh`
+
+### Testing the Server
+You can now test the server with a sample client by running:
+
+`./start_sample_client.sh`
+
+## The Scala Client
+The scala client has a fairly large directory structure. The following commands
+will assume that you are in the `spark.ml` directory.
+
+`cd client/scala/libs/spark.ml`
+
+### Environment Variables
+You will need the following environment variables set:
+
+* `PATH`: Must include the bin directory of *sbt* (Scala build tool), Anaconda, and Apache Spark.
+
+### Getting the Thrift File
+You will need to get the latest client thrift file. Run the `update_thrift_file.py` found in the `spark.ml/` directory.
+
+*From client/scala/libs/spark.ml/*
+
+`python update_thrift_file.py`
+
+### Assembling the JAR File
+Next, assemble the JAR file
+
+*From client/scala/libs/spark.ml/*
+
+`sbt clean`
+`sbt assembly`
+
+This will create a jar:
+
+`target/scala-2.11/ml.jar`
+
+You can then use this jar in your projects.
+
+### Testing the JAR with Sample Projects
+
+ModelDB also includes a few sample projects for you to run. Let's run one 
+to make sure the target compiled correctly.
+
+First, download the adult data set from [http://archive.ics.uci.edu/ml/datasets/Adult](http://archive.ics.uci.edu/ml/datasets/Adult)
+
+Then, from the spark.ml directory, run
+
+`spark-submit --master local[*] --class "edu.mit.csail.db.ml.modeldb.sample.CompareModelsSample" target/scala-2.11/ml.jar <path_to_adult.data>`
+
+
+
+
+
