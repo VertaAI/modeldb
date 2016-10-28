@@ -7,6 +7,7 @@ from modeldb.thrift.modeldb import ttypes as modeldb_types
 from modeldb.sklearn_native.ModelDbSyncer import *
 
 from sklearn import linear_model
+from sklearn import preprocessing
 import pandas as pd
 
 class TestTransformEvent(unittest.TestCase):
@@ -23,6 +24,7 @@ class TestTransformEvent(unittest.TestCase):
         X = np.random.choice(letters, size=(100, 1)).ravel()
         model = preprocessing.LabelEncoder()
         model.tag("label encoder")
+        SyncerTest.instance.clearBuffer()
         model.fitSync(X)
         model.transformSync(X)
         events = SyncerTest.instance.sync()
@@ -31,7 +33,6 @@ class TestTransformEvent(unittest.TestCase):
 
     # Tests Transformer values.
     def test_transformer_construction(self):
-        print("testing transformer construction")
         utils.validate_transform_event_struct(self.transformEvent, self)
         transformer = self.transformEvent.transformer
         expected_transformer = modeldb_types.Transformer(
@@ -39,19 +40,17 @@ class TestTransformEvent(unittest.TestCase):
             [0.0],
             'LabelEncoder',
             'label encoder')
-        utils.is_equal_model(transformer, expected_transformer, self)
+        utils.is_equal_transformer(transformer, expected_transformer, self)
 
     # Tests values of old dataframe of TransformEvent object.
     def test_old_dataframe(self):
         old_df = self.transformEvent.oldDataFrame
         utils.validate_dataframe_struct(old_df, self)
-        print("odl_df", old_df)
         expected_old_df = modeldb_types.DataFrame(
             -1,
             [],
             100,
             '')
-        print("expec", expected_old_df)
         utils.is_equal_dataframe(expected_old_df, old_df, self)
 
     # Tests values of new dataframe of TransformEvent object.
@@ -103,6 +102,6 @@ class TestTransformEvent(unittest.TestCase):
             [0.0],
             'LabelEncoder',
             'label encoder')
-        utils.is_equal_model(transformer, expected_transformer, self)
+        utils.is_equal_transformer(transformer, expected_transformer, self)
 
 unittest.main()
