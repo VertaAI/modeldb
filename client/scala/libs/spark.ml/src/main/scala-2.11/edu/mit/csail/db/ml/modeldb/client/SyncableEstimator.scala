@@ -43,8 +43,6 @@ object SyncableEstimator extends SyncableEstimator {
     }
   }
 
-  private def undefinedSequence: Seq[String] = Seq()
-
   /**
     * Gets the input column (or columns) for a given PipelineStage.
     * @param stage - The PipelineStage, it should not be a PipelineModel
@@ -169,7 +167,7 @@ object SyncableEstimator extends SyncableEstimator {
     realStage match {
       case lc: HasLabelCol => Seq(lc.getLabelCol)
       case p: Pipeline => p.getStages.flatMap(ps => getLabelColumns(ps))
-      case _ => undefinedSequence
+      case _ => Seq[String]()
     }
   }
 
