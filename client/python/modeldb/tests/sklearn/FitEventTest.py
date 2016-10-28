@@ -1,12 +1,14 @@
 import unittest
-from ModelDBSyncerTest import SyncerTest
-import utils
-from modeldb.thrift import ttypes as modeldb_types
+from ModelDbSyncerTest import SyncerTest
+from modeldb.sklearn_native.ModelDbSyncer import *
+import modeldb.tests.utils
+from modeldb.thrift.modeldb import ttypes as modeldb_types
 
 from sklearn import linear_model
 import pandas as pd
 
 class TestFitEvent(unittest.TestCase):
+    @classmethod
     def setUpClass(self):
         name = "logistic-test"
         author = "srinidhi"
@@ -66,3 +68,6 @@ class TestFitEvent(unittest.TestCase):
         #     df_column = df.schema[i]
         #     self.assertEqual(df_column.name, column_names[i])
         #     self.assertEqual(df_column.type, 'int64')
+
+if __name__ == '__main__':
+    unittest.main()

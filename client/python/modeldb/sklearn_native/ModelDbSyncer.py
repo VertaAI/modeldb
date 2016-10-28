@@ -37,6 +37,8 @@ def fitFn(self,X,y=None):
             df['outputColumn'] = y
     #Calls FitEvent in other class and adds to buffer 
     fitEvent = FitEvent(models, self, df)
+    if hasattr(X, 'tag') and X.tag != "":
+        addTagObject(df, X.tag)
     Syncer.instance.addToBuffer(fitEvent)
 
 #Overrides the predict function for models, provided that the predict function takes in one argument
@@ -144,6 +146,7 @@ def computeMetrics(model, metric, X, predictionCol, labelCol, actual):
 
 # Stores object with associated tagName
 def addTagObject(self, tagName):
+    self.tag = tagName
     Syncer.instance.storeTagObject(id(self), tagName)
 
 class Syncer(ModelDbSyncerBase.Syncer):
