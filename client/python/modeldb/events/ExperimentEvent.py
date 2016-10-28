@@ -6,5 +6,8 @@ class ExperimentEvent(Event):
 
     def sync(self, syncer):
         thriftClient = syncer.client
-        res = thriftClient.storeExperimentEvent(modeldb_types.ExperimentEvent(self.experiment))
+        res = thriftClient.storeExperimentEvent(self.makeEvent(syncer))
         syncer.experiment.id = res.experimentId
+
+    def makeEvent(self, syncer):
+        return modeldb_types.ExperimentEvent(self.experiment)

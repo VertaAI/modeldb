@@ -168,6 +168,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def sync(self):
         for b in self.bufferList:
             b.sync(self)
+        self.clearBuffer()
 
     def setColumns(self, df):
         if type(df) is pd.DataFrame:
