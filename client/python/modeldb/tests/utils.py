@@ -14,7 +14,6 @@ def validate_project_struct(project, tester):
     tester.assertTrue(hasattr(project, 'name'))
     tester.assertTrue(hasattr(project, 'author'))
     tester.assertTrue(hasattr(project, 'description'))
-    tester.assertNotEqual(project.id, -1)
 
 def validate_experiment_struct(experiment, tester):
     tester.assertTrue(hasattr(experiment, 'projectId'))
@@ -23,7 +22,7 @@ def validate_experiment_struct(experiment, tester):
     tester.assertTrue(hasattr(experiment, 'isDefault'))
     tester.assertTrue(hasattr(experiment, 'name'))
 
-def valdiate_experiment_run_struct(experimentRun, tester):
+def validate_experiment_run_struct(experimentRun, tester):
     tester.assertTrue(hasattr(experimentRun, 'id'))
     tester.assertTrue(hasattr(experimentRun, 'experimentId'))
     tester.assertTrue(hasattr(experimentRun, 'description'))
@@ -88,6 +87,24 @@ def is_equal_transformer(model1, model2, tester):
     tester.assertEqual(model1.transformerType, model2.transformerType)
     tester.assertEqual(model1.weights, model2.weights)
     tester.assertEqual(model1.tag, model2.tag)
+
+def is_equal_project(project1, project2, tester):
+    tester.assertEqual(project1.id, project2.id)
+    tester.assertEqual(project1.name, project2.name)
+    tester.assertEqual(project1.author, project2.author)
+    tester.assertEqual(project1.description, project2.description)
+
+def is_equal_experiment(experiment1, experiment2, tester):
+    tester.assertEqual(experiment1.id, experiment2.id)
+    tester.assertEqual(experiment1.projectId, experiment2.projectId)
+    tester.assertEqual(experiment1.name, experiment2.name)
+    tester.assertEqual(experiment1.description, experiment2.description)
+    tester.assertEqual(experiment1.isDefault, experiment2.isDefault)
+
+def is_equal_experiment_run(expRun1, expRun2, tester):
+    tester.assertEqual(expRun1.id, expRun2.id)
+    tester.assertEqual(expRun1.experimentId, expRun2.experimentId)
+    tester.assertEqual(expRun1.description, expRun2.description)
 
 # self.assertEqual(project.id, experiment.projectId)
 # self.assertEqual(experimentRun.experimentId, experiment.id)
