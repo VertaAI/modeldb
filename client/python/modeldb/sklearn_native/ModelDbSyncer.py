@@ -138,8 +138,9 @@ def fitFnGridSearch(self, X,y):
 
 # Stores object with associated tagName
 def addTagObject(self, tagName):
-    self.tag = tagName
-    Syncer.instance.storeTagObject(id(self), tagName)
+    if type(tagName) is str:
+        self.tag = tagName
+        Syncer.instance.storeTagObject(id(self), tagName)
 
 class Syncer(ModelDbSyncerBase.Syncer):
     def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
