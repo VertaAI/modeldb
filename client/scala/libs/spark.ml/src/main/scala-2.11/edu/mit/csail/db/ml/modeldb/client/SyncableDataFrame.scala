@@ -46,6 +46,10 @@ trait SyncableDataFrame {
         case None => {}
       }
 
+      // We can think of random splitting as performing n transformations from the original DataFrame to
+      // n smaller DataFrames where there are no input features or output features.
+      // Thus, we will feed this information to the FeatureTracker so that each of the splits know that they
+      // originated from the same DataFrame and so that they remember its features.
       splits.foreach(spl => FeatureTracker.registerTransform(m, spl, Seq[String](), Seq[String]()))
       splits
     }
