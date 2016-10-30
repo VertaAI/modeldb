@@ -61,7 +61,7 @@ public class DataFrameDao {
       ));
     }
     DataFrame df = new DataFrame(rec.getId(), readSchema(dfId, ctx), rec.getNumrows(), rec.getTag());
-    df.filepath = rec.getFilepath();
+    df.setFilepath(rec.getFilepath());
     return df;
   }
 

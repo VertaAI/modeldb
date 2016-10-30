@@ -45,7 +45,7 @@ public class TestDataFrame {
     );
 
     if (hasPath) {
-      df.filepath = "path/to/model";
+      df.setFilepath("path/to/df");
     }
 
     // Store the DataFrame.
