@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import sys
-print sys.path
 from sklearn import preprocessing
 from sklearn import linear_model
 from sklearn.grid_search import GridSearchCV

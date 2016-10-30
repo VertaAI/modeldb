@@ -104,4 +104,5 @@ class TestTransformEvent(unittest.TestCase):
             'label encoder')
         utils.is_equal_transformer(transformer, expected_transformer, self)
 
-unittest.main()
+if __name__ == '__main__':
+    unittest.main()
