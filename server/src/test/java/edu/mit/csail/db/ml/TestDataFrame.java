@@ -36,16 +36,21 @@ public class TestDataFrame {
     Assert.assertEquals("int", secondCol.getType());
   }
 
-  @Test
-  public void testStoreDataFrame() throws Exception {
+  public void testStoreDataFrameHelper(boolean hasPath) throws Exception {
+    DataFrame df = new DataFrame(
+      -1,
+      Arrays.asList(new DataFrameColumn("first", "string"), new DataFrameColumn("second", "int")),
+      10,
+      "tag"
+    );
+
+    if (hasPath) {
+      df.filepath = "path/to/model";
+    }
+
     // Store the DataFrame.
     int dfId = DataFrameDao.store(
-      new DataFrame(
-        -1,
-        Arrays.asList(new DataFrameColumn("first", "string"), new DataFrameColumn("second", "int")),
-        10,
-        "tag"
-      ),
+      df,
       expRunId,
       TestBase.ctx()
     ).getId();
@@ -57,6 +62,11 @@ public class TestDataFrame {
     Assert.assertEquals("tag", rec.getTag());
     Assert.assertEquals(10, rec.getNumrows().intValue());
     Assert.assertEquals(expRunId, rec.getExperimentrun().intValue());
+
+    if (hasPath) {
+      System.out.println(df.filepath);
+      Assert.assertEquals(df.filepath, rec.getFilepath());
+    }
 
     // Verify that the schema is correct.
     Assert.assertEquals(2, TestBase.tableSize(Tables.DATAFRAMECOLUMN));
@@ -70,6 +80,16 @@ public class TestDataFrame {
     Assert.assertArrayEquals(new String[] {"first", "second"}, recs.stream().map(r -> r.getName()).toArray());
     Assert.assertArrayEquals(new String[] {"string", "int"}, recs.stream().map(r -> r.getType()).toArray());
   }
+
+  @Test
+  public void testStoreDataFrameWithPath() throws Exception {
+    testStoreDataFrameHelper(true /* hasPath */);
+  }
+
+  public void testStoreDataFrameHelperWithoutPath() throws Exception {
+    testStoreDataFrameHelper(false /* hasPath */);
+  }
+
 
   @Test
   public void testReadSchema() throws Exception {

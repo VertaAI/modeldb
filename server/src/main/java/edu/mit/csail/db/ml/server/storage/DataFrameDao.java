@@ -25,6 +25,9 @@ public class DataFrameDao {
     dfRec.setNumrows(df.numRows);
     dfRec.setExperimentrun(experimentId);
     dfRec.setTag(df.tag);
+    if (df.isSetFilepath()) {
+      dfRec.setFilepath(df.getFilepath());
+    }
     dfRec.store();
 
     df.getSchema().forEach(col -> {
@@ -57,7 +60,9 @@ public class DataFrameDao {
         dfId
       ));
     }
-    return new DataFrame(rec.getId(), readSchema(dfId, ctx), rec.getNumrows(), rec.getTag());
+    DataFrame df = new DataFrame(rec.getId(), readSchema(dfId, ctx), rec.getNumrows(), rec.getTag());
+    df.filepath = rec.getFilepath();
+    return df;
   }
 
   public static boolean exists(int id, DSLContext ctx) {
