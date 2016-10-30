@@ -1,9 +1,10 @@
 package edu.mit.csail.db.ml.modeldb.client
 
-import org.apache.spark.sql.DataFrame
 import java.util.Random
 
 import edu.mit.csail.db.ml.modeldb.client.event.RandomSplitEvent
+import edu.mit.csail.db.ml.modeldb.util.FeatureTracker
+import org.apache.spark.sql.DataFrame
 
 
 /**
@@ -44,6 +45,8 @@ trait SyncableDataFrame {
         case Some(featureVectorNames) => splits.foreach(df => mdbs.get.setFeaturesForDf(df, featureVectorNames))
         case None => {}
       }
+
+      splits.foreach(spl => FeatureTracker.registerTransform(m, spl, Seq[String](), Seq[String]()))
       splits
     }
   }
@@ -78,8 +81,10 @@ object SyncableDataFrame extends SyncableDataFrame {
       id,
       columns,
       numRows,
-      tag=tag
+      tag=tag,
+      filepath = SyncableDataFramePaths.getPath(FeatureTracker.highestAncestor(df))
     )
+
     modeldbDf
   }
 }
