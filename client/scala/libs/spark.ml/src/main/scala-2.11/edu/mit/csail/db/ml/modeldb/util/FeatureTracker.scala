@@ -32,4 +32,14 @@ object FeatureTracker {
 
     featureSet.toSeq
   }
+
+  def highestAncestor(df: DataFrame): DataFrame = {
+    var currDf = df
+
+    while (transformationForDf.contains(currDf)) {
+      currDf = transformationForDf(currDf).oldDf
+    }
+
+    currDf
+  }
 }
