@@ -5,6 +5,10 @@ import org.apache.spark.sql.{DataFrame, DataFrameReader}
 import scala.collection.mutable
 
 trait SyncableDataFramePaths {
+  /**
+    * Implicit class for DataFrameReader. Basically, whenever the user the user reads a DataFrame, we associate
+    * the DataFrame from the path it was read from.
+    */
   implicit class DataFrameReaderSync(dfr: DataFrameReader) {
     def loadSync(path: String): DataFrame = {
       val df = dfr.load(path)

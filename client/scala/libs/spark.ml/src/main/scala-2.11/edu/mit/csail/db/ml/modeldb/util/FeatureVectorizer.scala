@@ -11,6 +11,8 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 /**
   * Contains logic for combining columns of a DataFrame into a feature vector.
+  *
+  * This is a convenience class that lets us perform common pre-processing steps on a DataFrame.
   */
 object FeatureVectorizer {
   /**
