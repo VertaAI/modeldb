@@ -73,7 +73,7 @@ class TestTransformEvent(unittest.TestCase):
     # Tests TransformerSpec values
     def test_transformer_spec_construction(self):
         spec = self.fitEvent.spec
-        utils.validate_transformer_spec_struc(self.fitEvent.spec, self)
+        utils.validate_transformer_spec_struct(self.fitEvent.spec, self)
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'LabelEncoder',
