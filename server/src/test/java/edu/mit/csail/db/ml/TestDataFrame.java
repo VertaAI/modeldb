@@ -64,7 +64,6 @@ public class TestDataFrame {
     Assert.assertEquals(expRunId, rec.getExperimentrun().intValue());
 
     if (hasPath) {
-      System.out.println(df.filepath);
       Assert.assertEquals(df.filepath, rec.getFilepath());
     }
 
