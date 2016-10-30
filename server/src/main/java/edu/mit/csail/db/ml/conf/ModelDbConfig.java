@@ -12,7 +12,7 @@ public class ModelDbConfig {
     SQLITE
   }
 
-  private static final String CONF_OPT = "c";
+  private static final String CONF_OPT = "conf";
   private static ModelDbConfig instance;
 
   public final String dbUser;
@@ -54,7 +54,15 @@ public class ModelDbConfig {
   public static ModelDbConfig parse(String[] args) throws ParseException {
     Options options = new Options();
 
-    options.addOption(CONF_OPT, "conf", false, "Path to configuration (.conf) file.");
+    options.addOption(
+      Option.builder()
+        .argName(CONF_OPT)
+        .longOpt(CONF_OPT)
+        .desc("Path to configuration (.conf) file.")
+        .optionalArg(true)
+        .numberOfArgs(1)
+        .build()
+    );
 
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
