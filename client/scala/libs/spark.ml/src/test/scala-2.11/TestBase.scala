@@ -26,8 +26,11 @@ object TestBase {
 
   def getSyncer(projectConfig: ProjectConfig,
                 experimentConfig: ExperimentConfig,
-                experimentRunConfig: ExperimentRunConfig): ModelDbTestSyncer =
-    new ModelDbTestSyncer(projectConfig, experimentConfig, experimentRunConfig)
+                experimentRunConfig: ExperimentRunConfig): ModelDbTestSyncer = {
+    val syncer = new ModelDbTestSyncer(projectConfig, experimentConfig, experimentRunConfig)
+    ModelDbSyncer.setSyncer(syncer)
+    syncer
+  }
 
   def getSyncer: ModelDbTestSyncer = getSyncer(
     NewOrExistingProject("unit test",
@@ -37,4 +40,11 @@ object TestBase {
     new DefaultExperiment,
     new NewExperimentRun
   )
+
+  def reset(): Unit = {
+    ModelDbSyncer.syncer match {
+      case Some(s: ModelDbTestSyncer) => s.clearBuffer()
+      case None => {}
+    }
+  }
 }
