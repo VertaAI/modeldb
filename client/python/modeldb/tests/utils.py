@@ -27,7 +27,7 @@ def validate_experiment_run_struct(experimentRun, tester):
     tester.assertTrue(hasattr(experimentRun, 'experimentId'))
     tester.assertTrue(hasattr(experimentRun, 'description'))
 
-def validate_transformer_spec_struc(spec, tester):
+def validate_transformer_spec_struct(spec, tester):
     tester.assertTrue(hasattr(spec, 'id'))
     tester.assertTrue(hasattr(spec, 'transformerType')) 
     tester.assertTrue(hasattr(spec, 'features'))
@@ -54,6 +54,30 @@ def validate_transformer_struct(transformer, tester):
     tester.assertTrue(hasattr(transformer, 'weights')) 
     tester.assertTrue(hasattr(transformer, 'transformerType'))
     tester.assertTrue(hasattr(transformer, 'tag'))
+
+def validate_pipeline_event_struct(pipelineEvent, tester):
+    tester.assertTrue(hasattr(pipelineEvent, 'pipelineFit'))
+    tester.assertTrue(hasattr(pipelineEvent, 'transformStages'))
+    tester.assertTrue(hasattr(pipelineEvent, 'fitStages'))
+    tester.assertTrue(hasattr(pipelineEvent, 'experimentRunId'))
+
+def validate_pipeline_fit_stages(fitStages, tester):
+    count = 0
+    for stage in fitStages:
+        tester.assertTrue(hasattr(stage, 'fe'))
+        tester.assertTrue(hasattr(stage, 'stageNumber'))
+        tester.assertEqual(stage.stageNumber, count)
+        validate_fit_event_struct(stage.fe, tester)
+        count += 1
+
+def validate_pipeline_transform_stages(transformStages, tester):
+    count = 0
+    for stage in transformStages:
+        tester.assertTrue(hasattr(stage, 'te'))
+        tester.assertTrue(hasattr(stage, 'stageNumber'))
+        tester.assertEqual(stage.stageNumber, count)
+        validate_transform_event_struct(stage.te, tester)
+        count += 1
 
 def is_equal_dataframe(dataframe1, dataframe2, tester):
     tester.assertEqual(dataframe1.numRows, dataframe2.numRows)

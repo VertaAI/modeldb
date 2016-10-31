@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
+from sklearn.decomposition import *
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
 import sklearn.metrics
@@ -102,7 +103,7 @@ def fitFnPipeline(self,X,y):
     #Handle last estimator, which has a fit method (and may not have transform)
     oldDf = curDataset
     model = lastEstimator.fit(oldDf, y)
-    fitEvent = FitEvent(model, estimator, oldDf)
+    fitEvent = FitEvent(model, lastEstimator, oldDf)
     fitStages.append((index+1, fitEvent))
 
     #Create the pipeline event with all components
@@ -234,7 +235,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def addTags(self):
         setattr(pd.DataFrame, "tag", addTagObject)
         models = [LogisticRegression, LinearRegression, LabelEncoder, OneHotEncoder,
-                        Pipeline, GridSearchCV]
+                        Pipeline, GridSearchCV, PCA]
         for class_name in models:
             setattr(class_name, "tag", addTagObject)
 
