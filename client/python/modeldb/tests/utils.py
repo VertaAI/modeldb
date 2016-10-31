@@ -79,6 +79,13 @@ def validate_pipeline_transform_stages(transformStages, tester):
         validate_transform_event_struct(stage.te, tester)
         count += 1
 
+def validate_random_split_event_struct(randomSplitEvent, tester):
+    tester.assertTrue(hasattr(randomSplitEvent, 'oldDataFrame'))
+    tester.assertTrue(hasattr(randomSplitEvent, 'weights'))
+    tester.assertTrue(hasattr(randomSplitEvent, 'seed'))
+    tester.assertTrue(hasattr(randomSplitEvent, 'splitDataFrames'))
+    tester.assertTrue(hasattr(randomSplitEvent, 'experimentRunId'))
+
 def is_equal_dataframe(dataframe1, dataframe2, tester):
     tester.assertEqual(dataframe1.numRows, dataframe2.numRows)
     tester.assertEqual(dataframe1.tag, dataframe2.tag)
