@@ -74,20 +74,12 @@ You will need the following environment variables set:
 
 * `PATH`: Must include the bin directory of *sbt* (Scala build tool), Anaconda, and Apache Spark.
 
-### Getting the Thrift File
-You will need to get the latest client thrift file. Run the `update_thrift_file.py` found in the `spark.ml/` directory.
-
-*From client/scala/libs/spark.ml/*
-
-`python update_thrift_file.py`
-
 ### Assembling the JAR File
-Next, assemble the JAR file
+Assemble the JAR file using the executable. Internally, this assumes SBT and Anaconda are in your PATH.
 
 *From client/scala/libs/spark.ml/*
 
-`sbt clean`
-`sbt assembly`
+`build_client.sh`
 
 This will create a jar:
 
