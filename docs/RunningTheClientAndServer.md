@@ -7,8 +7,7 @@
 `cd server`  
 `cd codegen`  
 `./gen_sqlite.sh`  
-`cd ..`  
-`python ./update_thrift_file.py`  
+`cd ..`    
 `./start_server.sh`
 
 ### Client
@@ -44,16 +43,8 @@ Navigate to the `codegen` directory, and run the sh file `gen_sqlite.sh`
 
 This will produce the tables necessary to run the modeldb server.
 
-### Getting the Thrift file
-Next, you need to get the latest thrift files for modeldb. Run the `update_thrift_file.py` 
-script in the server directory to do so. 
-
-*From /server*  
-
-`python ./update_thrift_file.py`
-
 ### Launching the Server
-Finally, launch the server using the `start_server.sh` script. You need Maven installed
+Now, launch the server using the `start_server.sh` script. You need Maven installed
 to do so.
 
 `./start_server.sh`
@@ -61,7 +52,7 @@ to do so.
 ### Testing the Server
 You can now test the server with a sample client by running:
 
-`./start_sample_client.sh`
+`mvn test`
 
 ## The Scala Client
 The scala client has a fairly large directory structure. The following commands
