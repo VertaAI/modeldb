@@ -165,3 +165,4 @@ def is_equal_experiment_run(expRun1, expRun2, tester):
 # self.assertTrue(type(self.fitEvent.featureColumns), 'list')
 # self.assertTrue(type(self.fitEvent.predictionColumns), 'list')
 # self.assertTrue(type(self.fitEvent.labelColumns), 'list')
+
