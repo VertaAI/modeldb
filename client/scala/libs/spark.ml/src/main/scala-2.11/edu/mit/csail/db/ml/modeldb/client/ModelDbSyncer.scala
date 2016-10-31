@@ -49,7 +49,6 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
                     projectConfig: ProjectConfig,
                     experimentConfig: ExperimentConfig = new DefaultExperiment,
                     experimentRunConfig: ExperimentRunConfig) {
-
   /**
     * This is a helper class that will constitute the entries in the buffer.
     * @param event - The event in the buffer.
@@ -180,8 +179,7 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
   }
 
   experimentConfig match {
-    case ne: NewOrExistingExperiment =>
-    case de: DefaultExperiment =>
+    case NewOrExistingExperiment(_, _) | DefaultExperiment() =>
       this.buffer(ExperimentEvent(experiment))
       this.sync()
   }
