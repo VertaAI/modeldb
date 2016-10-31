@@ -17,6 +17,7 @@ import pandas as pd
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
 from sklearn.decomposition import *
+from sklearn.svm import *
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
 import sklearn.metrics
@@ -235,7 +236,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def addTags(self):
         setattr(pd.DataFrame, "tag", addTagObject)
         models = [LogisticRegression, LinearRegression, LabelEncoder, OneHotEncoder,
-                        Pipeline, GridSearchCV, PCA]
+                        Pipeline, GridSearchCV, PCA, SVC]
         for class_name in models:
             setattr(class_name, "tag", addTagObject)
 
