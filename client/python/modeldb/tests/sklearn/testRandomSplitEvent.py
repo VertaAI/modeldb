@@ -10,9 +10,6 @@ from modeldb.sklearn_native import SyncableRandomSplit
 import pandas as pd
 import random
 
-FMIN = sys.float_info.min
-FMAX = sys.float_info.max
-
 class TestRandomSplitEvent(unittest.TestCase):
     def setUp(self):
         name = "random split test"
