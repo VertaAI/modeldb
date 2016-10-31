@@ -13,9 +13,7 @@
 ### Client
 
 `cd client/scala/libs/spark.ml` 
-`python update_thrift_file.py`  
-`sbt clean`  
-`sbt assembly`  
+`./build_client.sh`
 
 The JAR file is then in:  
 `target/scala-2.11/ml.jar`
@@ -70,7 +68,7 @@ Assemble the JAR file using the executable. Internally, this assumes SBT and Ana
 
 *From client/scala/libs/spark.ml/*
 
-`build_client.sh`
+`./build_client.sh`
 
 This will create a jar:
 
