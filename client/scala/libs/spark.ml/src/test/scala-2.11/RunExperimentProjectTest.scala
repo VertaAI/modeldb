@@ -47,6 +47,4 @@ class RunExperimentProjectTest extends FunSuite with BeforeAndAfter {
       case _ => false
     }, 2)
   }
-
-  test()
 }
