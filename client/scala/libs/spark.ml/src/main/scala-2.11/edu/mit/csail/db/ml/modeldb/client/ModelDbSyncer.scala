@@ -5,7 +5,8 @@ import java.util.UUID
 import com.twitter.finagle.Thrift
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client.SyncingStrategy.SyncingStrategy
-import edu.mit.csail.db.ml.modeldb.client.event.{ExperimentRunEvent, ModelDbEvent, ProjectEvent, ExperimentEvent}
+import edu.mit.csail.db.ml.modeldb.client.event.{ExperimentEvent, ExperimentRunEvent, ModelDbEvent, ProjectEvent}
+import modeldb.ModelDBService.FutureIface
 import modeldb._
 import org.apache.spark.ml.classification.LogisticRegressionModel
 import org.apache.spark.ml.regression.LinearRegressionModel
@@ -13,7 +14,6 @@ import org.apache.spark.ml.util.MLReader
 import org.apache.spark.ml.{SyncableCrossValidator, SyncableEstimator, SyncablePipeline, Transformer}
 import org.apache.spark.sql.DataFrame
 
-import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -44,8 +44,7 @@ case class NewExperimentRun(description: String="") extends ExperimentRunConfig(
   * This is the Syncer that is responsible for storing events in the ModelDB.
   */
   // TODO: [MV] see how things has to change
-class ModelDbSyncer(host: String = "localhost",
-                    port: Int = 6543,
+class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543),
                     syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
                     projectConfig: ProjectConfig,
                     experimentConfig: ExperimentConfig = new DefaultExperiment,
@@ -66,7 +65,11 @@ class ModelDbSyncer(host: String = "localhost",
   /**
     * This is the Thrift client that is responsible for talking to the ModelDB server.
     */
-  val client = Thrift.client.newIface[ModelDBService.FutureIface](s"$host:$port")
+  private val client: Option[FutureIface] = hostPortPair match {
+    case Some((host, port)) => Some(Thrift.client.newIface[ModelDBService.FutureIface](s"$host:$port"))
+    case None => None
+  }
+
   /**
     * We keep a mapping between objects and their IDs.
     */
@@ -128,7 +131,7 @@ class ModelDbSyncer(host: String = "localhost",
 
   // Load Transformer with given ID and cast it to type T.
   def load[T](id: Int, reader: MLReader[T]): Option[T] = {
-    val path = Await.result(client.pathForTransformer(id))
+    val path = Await.result(client.get.pathForTransformer(id))
     if (path == null)
       None
     else
@@ -136,8 +139,7 @@ class ModelDbSyncer(host: String = "localhost",
   }
 
   // This does tail recursion optimization so we don't have stack overflows.
-  @tailrec
-  final def sync(): Unit = {
+  def sync(): Unit = {
     // NOTE: This function assumes that we have a single thread.
     // TODO: Do we need to make this multithreaded?
     // Copy the buffered elements into a separate buffer.
@@ -145,7 +147,7 @@ class ModelDbSyncer(host: String = "localhost",
     buffered.clear()
 
     // Sync all the elements in the new buffer.
-    entriesToSync.foreach(_.event.sync(client, Some(this)))
+    entriesToSync.foreach(_.event.sync(client.get, Some(this)))
 
     // Now execute the callbacks.
     entriesToSync.foreach(entry => entry.postSync(this, entry.event))
@@ -203,7 +205,7 @@ class ModelDbSyncer(host: String = "localhost",
   }
 
   // Model functions.
-  def getCommonAncestor(df1Id: Int, df2Id: Int): CommonAncestor = Await.result(client.getCommonAncestor(df1Id, df2Id))
+  def getCommonAncestor(df1Id: Int, df2Id: Int): CommonAncestor = Await.result(client.get.getCommonAncestor(df1Id, df2Id))
 
   private def idsOrNone(items: Object*): Option[Seq[Int]] = {
     val ids = items.map(id)
@@ -222,7 +224,7 @@ class ModelDbSyncer(host: String = "localhost",
   }
 
   def getCommonAncestorDf(m1Id: Int, m2Id: Int): CommonAncestor =
-    Await.result(client.getCommonAncestorForModels(m1Id, m2Id))
+    Await.result(client.get.getCommonAncestorForModels(m1Id, m2Id))
 
   def getCommonAncestorDf(m1: Transformer, m2: Transformer): CommonAncestor = {
     val (m1Id, m2Id) = (id(m1), id(m2))
@@ -232,7 +234,7 @@ class ModelDbSyncer(host: String = "localhost",
       getCommonAncestorDf(m1Id.get, m2Id.get)
   }
 
-  def getDatasetSizes(mids: Int*): Seq[Int] = Await.result(client.getTrainingRowsCounts(mids))
+  def getDatasetSizes(mids: Int*): Seq[Int] = Await.result(client.get.getTrainingRowsCounts(mids))
 
   def getDatasetSizes(models: Transformer*): Option[Seq[Int]] = idsOrNone(models:_*) match {
     case Some(ids) => Some(getDatasetSizes(ids:_*))
@@ -240,7 +242,7 @@ class ModelDbSyncer(host: String = "localhost",
   }
 
   def compareFeatures(m1Id: Int, m2Id: Int): CompareFeaturesResponse =
-    Await.result(client.compareFeatures(m1Id, m2Id))
+    Await.result(client.get.compareFeatures(m1Id, m2Id))
 
   def compareFeatures(m1: Transformer, m2: Transformer): CompareFeaturesResponse = {
     val (m1Id, m2Id) = (id(m1), id(m2))
@@ -251,7 +253,7 @@ class ModelDbSyncer(host: String = "localhost",
   }
 
   def compareHyperparameters(m1Id: Int, m2Id: Int): CompareHyperParametersResponse =
-    Await.result(client.compareHyperparameters(m1Id, m2Id))
+    Await.result(client.get.compareHyperparameters(m1Id, m2Id))
 
   def compareHyperparameters(m1: Transformer, m2: Transformer): CompareHyperParametersResponse = {
     val (m1Id, m2Id) = (id(m1), id(m2))
@@ -262,7 +264,7 @@ class ModelDbSyncer(host: String = "localhost",
   }
 
   def groupModels(modelIds: Int*): scala.collection.Map[ProblemType, Seq[Int]] =
-    Await.result(client.groupByProblemType(modelIds))
+    Await.result(client.get.groupByProblemType(modelIds))
 
   def groupModels(models: Transformer*): Option[scala.collection.Map[ProblemType, Seq[Int]]] =
     idsOrNone(models:_*) match {
@@ -271,7 +273,7 @@ class ModelDbSyncer(host: String = "localhost",
     }
 
   def similarModels(modelId: Int, numModels: Int, compMetrics: ModelCompMetric*): Seq[Int] =
-    Await.result(client.similarModels(modelId, compMetrics, numModels))
+    Await.result(client.get.similarModels(modelId, compMetrics, numModels))
 
   def similarModels(model: Transformer, numModels: Int, compMetrics: ModelCompMetric*): Option[Seq[Int]] =
     id(model) match {
@@ -280,7 +282,7 @@ class ModelDbSyncer(host: String = "localhost",
     }
 
   def featureImportance(linearModelId: Int): Seq[String] =
-    Await.result(client.linearModelFeatureImportances(linearModelId))
+    Await.result(client.get.linearModelFeatureImportances(linearModelId))
   private def featureImportanceHelper(x: Object): Option[Seq[String]] = id(x) match {
     case Some(lrmId) => Some(featureImportance(lrmId))
     case None => None
@@ -288,7 +290,7 @@ class ModelDbSyncer(host: String = "localhost",
   def featureImportance(x: LogisticRegressionModel): Option[Seq[String]] = featureImportanceHelper(x)
   def featureImportance(x: LinearRegressionModel): Option[Seq[String]] = featureImportanceHelper(x)
   def featureImportance(linearModel1Id: Int, linearModel2Id: Int) =
-    Await.result(client.compareLinearModelFeatureImportances(linearModel1Id, linearModel2Id))
+    Await.result(client.get.compareLinearModelFeatureImportances(linearModel1Id, linearModel2Id))
   private def featureImportanceHelper(x: Object, y: Object): Option[Seq[FeatureImportanceComparison]] = id(x) match {
     case Some(lrm1Id) => id(y) match {
       case Some(lrm2Id) => Some(featureImportance(lrm1Id, lrm2Id))
@@ -300,7 +302,7 @@ class ModelDbSyncer(host: String = "localhost",
   def featureImportance(x: LinearRegressionModel, y: LinearRegressionModel) = featureImportanceHelper(x, y)
 
   def convergenceTimes(tolerance: Double, modelIds: Int*): Seq[Int] =
-    Await.result(client.iterationsUntilConvergence(modelIds, tolerance))
+    Await.result(client.get.iterationsUntilConvergence(modelIds, tolerance))
 
   def convergenceTimes(tolerance: Double, models: Transformer*): Option[Seq[Int]] = idsOrNone(models:_*) match {
     case Some(ids) => Some(convergenceTimes(tolerance, ids:_*))
@@ -308,7 +310,7 @@ class ModelDbSyncer(host: String = "localhost",
   }
 
   def rankModels(rankMetric: ModelRankMetric, modelIds: Int*): Seq[Int] =
-    Await.result(client.rankModels(modelIds, rankMetric))
+    Await.result(client.get.rankModels(modelIds, rankMetric))
 
   def rankModels(rankMetric: ModelRankMetric, models: Transformer*): Option[Seq[Int]] = idsOrNone(models:_*) match {
     case Some(ids) => Some(rankModels(rankMetric, ids:_*))
@@ -316,7 +318,7 @@ class ModelDbSyncer(host: String = "localhost",
   }
 
   def confidenceInterval(modelId: Int, significanceLevel: Double): Seq[ConfidenceInterval] =
-    Await.result(client.confidenceIntervals(modelId, significanceLevel))
+    Await.result(client.get.confidenceIntervals(modelId, significanceLevel))
 
   def confidenceInterval(model: Transformer, significanceLevel: Double): Option[Seq[ConfidenceInterval]] =
     id(model) match {
@@ -324,9 +326,9 @@ class ModelDbSyncer(host: String = "localhost",
       case None => None
     }
 
-  def modelsWithFeatures(features: String*): Seq[Int] = Await.result(client.modelsWithFeatures(features))
+  def modelsWithFeatures(features: String*): Seq[Int] = Await.result(client.get.modelsWithFeatures(features))
 
-  def modelsDerivedFromDataFrame(dfId: Int): Seq[Int] = Await.result(client.modelsDerivedFromDataFrame(dfId))
+  def modelsDerivedFromDataFrame(dfId: Int): Seq[Int] = Await.result(client.get.modelsDerivedFromDataFrame(dfId))
   def modelsDerivedFromDataFrame(df: DataFrame): Option[Seq[Int]] = id(df) match {
     case Some(dfId) => Some(modelsDerivedFromDataFrame(dfId))
     case None => None

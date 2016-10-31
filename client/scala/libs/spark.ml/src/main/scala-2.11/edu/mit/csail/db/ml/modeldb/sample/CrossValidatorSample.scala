@@ -1,16 +1,15 @@
 package edu.mit.csail.db.ml.modeldb.sample
 
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, SyncableMetrics, NewOrExistingExperiment, DefaultExperiment, NewExperimentRun}
-import org.apache.spark.{SparkConf, SparkContext}
+import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
+import edu.mit.csail.db.ml.modeldb.client.{DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.mllib.linalg.Vector
-import org.apache.spark.sql.{Row, SparkSession}
-import ModelDbSyncer._
-import org.apache.log4j.{Level, Logger}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * This Spark program demonstrates the use of Syncables, which are a mechanism for intercepting events and objects of
