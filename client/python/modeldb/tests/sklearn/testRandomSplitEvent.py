@@ -57,8 +57,8 @@ class TestRandomSplitEvent(unittest.TestCase):
         utils.validate_dataframe_struct(dataframe2, self)
 
         # Check if dataframes are split according to weights (within some margin of error)
-        self.assertIn(dataframe1.numRows, range(60,80))
-        self.assertIn(dataframe2.numRows, range(20,40))
+        self.assertIn(dataframe1.numRows, range(65,75))
+        self.assertIn(dataframe2.numRows, range(25,35))
         self.assertEquals(dataframe1.numRows + dataframe2.numRows, 100)
 
 if __name__ == '__main__':
