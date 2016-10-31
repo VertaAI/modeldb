@@ -24,3 +24,7 @@ but then various scientific libraries will need to be downloaded seperately.
 *Other Useful Tools*
 * [Git](https://git-scm.com/) (latest): To clone the project
 * [IntelliJ IDE](https://www.jetbrains.com/idea/#chooseYourEdition) (latest): To write Scala and Java code
+
+Once you've downloaded all the dependencies, continue onto:
+
+[Setting Up the Server and Client](RunningTheClientAndServer.md)
