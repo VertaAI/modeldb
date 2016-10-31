@@ -28,7 +28,6 @@ class TestRandomSplitEvent(unittest.TestCase):
         X_set, y_set = SyncableRandomSplit.randomSplit(X, [0.7, 0.3], seed, y)
         events = SyncerTest.instance.sync()
         self.randomSplitEvent = events[0]
-        print self.randomSplitEvent
 
     def test_random_split_event(self):
         utils.validate_random_split_event_struct(self.randomSplitEvent, self)
