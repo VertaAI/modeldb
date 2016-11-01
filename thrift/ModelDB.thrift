@@ -424,7 +424,8 @@ service ModelDBService {
   // This is just a method to test connection to the server. It returns 200.
   i32 testConnection(), 
 
-  i32 storeDataFrame(1: DataFrame df, 2: i32 experimentRunId) throws (1: ServerLogicException svEx),
+  i32 storeDataFrame(1: DataFrame df, 2: i32 experimentRunId) 
+    throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
   string pathForTransformer(1: i32 transformerId) 
     throws (1: ResourceNotFoundException rnfEx, 2: InvalidFieldException efEx, 3: ServerLogicException svEx),

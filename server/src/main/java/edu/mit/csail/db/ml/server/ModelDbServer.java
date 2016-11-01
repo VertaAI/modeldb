@@ -33,7 +33,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public int storeDataFrame(DataFrame df, int experimentRunId) throws TException {
-    return ExceptionWrapper.run(() -> {
+    return ExceptionWrapper.run(experimentRunId, ctx, () -> {
       DataframeRecord dfRec = DataFrameDao.store(df, experimentRunId, ctx);
       return dfRec.getId();
     });
