@@ -38,17 +38,17 @@ public class TestFitEvent {
 
     // Ensure the FitEvent record is valid.
     FiteventRecord rec = TestBase.ctx().selectFrom(Tables.FITEVENT).fetchOne();
-    Assert.assertEquals(resp.fitEventId, rec.getId().intValue());
-    Assert.assertEquals(resp.dfId, rec.getDf().intValue());
-    Assert.assertEquals(resp.specId, rec.getTransformerspec().intValue());
-    Assert.assertEquals(resp.modelId, rec.getTransformer().intValue());
+    Assert.assertEquals(rec.getId().intValue(), resp.fitEventId);
+    Assert.assertEquals(rec.getDf().intValue(), resp.dfId);
+    Assert.assertEquals(rec.getTransformerspec().intValue(), resp.specId);
+    Assert.assertEquals(rec.getTransformer().intValue(), resp.modelId);
     Assert.assertTrue(rec.getLabelcolumn().contains("labCol1"));
     Assert.assertTrue(rec.getPredictioncolumns().contains("predCol2"));
     Assert.assertNotEquals(rec.getProblemtype(), "undefined");
 
     // Ensure that the EventRecord is correct.
     EventRecord evRec = TestBase.ctx().selectFrom(Tables.EVENT).fetchOne();
-    Assert.assertEquals(resp.eventId, evRec.getId().intValue());
+    Assert.assertEquals(evRec.getId().intValue(), resp.eventId);
     Assert.assertEquals(isPipeline ? "pipeline fit" : "fit", evRec.getEventtype());
 
     // Verify that the features have been stored.
