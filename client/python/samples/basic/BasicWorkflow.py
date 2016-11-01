@@ -21,12 +21,11 @@ print Syncer.instance.experimentRun
 
 Syncer.instance.sync()
 
-
 # data paths 
 # model path
 # metrics
-#
-#
+# hyperparams
+# config
 #
 #
 #

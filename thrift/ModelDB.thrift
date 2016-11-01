@@ -424,19 +424,22 @@ service ModelDBService {
   // This is just a method to test connection to the server. It returns 200.
   i32 testConnection(), 
 
+  i32 storeDataFrame(1: DataFrame df, 2: i32 experimentRunId) 
+    throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
+
   string pathForTransformer(1: i32 transformerId) 
     throws (1: ResourceNotFoundException rnfEx, 2: InvalidFieldException efEx, 3: ServerLogicException svEx),
 
-  FitEventResponse storeFitEvent(1:FitEvent fe) 
+  FitEventResponse storeFitEvent(1: FitEvent fe)
    throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
-  MetricEventResponse storeMetricEvent(1:MetricEvent me) 
+  MetricEventResponse storeMetricEvent(1: MetricEvent me)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
-  TransformEventResponse storeTransformEvent(1:TransformEvent te) 
+  TransformEventResponse storeTransformEvent(1: TransformEvent te)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
-  RandomSplitEventResponse storeRandomSplitEvent(1:RandomSplitEvent rse)
+  RandomSplitEventResponse storeRandomSplitEvent(1: RandomSplitEvent rse)
     throws (1: ServerLogicException svEx),
 
   PipelineEventResponse storePipelineEvent(1: PipelineEvent pipelineEvent)
