@@ -200,7 +200,12 @@ class Syncer(ModelDbSyncerBase.Syncer):
         if id(model) in self.tagForObject:
             tag = self.tagForObject[id(model)]
         transformerType = model.__class__.__name__
-        t = modeldb_types.Transformer(tid, [0.0], transformerType, tag)
+        if (hasattr(model, 'coef_')):
+            # Weights must be formatted as a list of doubles.
+            weights = np.concatenate(model.coef_, axis=0)
+        else:
+            weights = [0.0]
+        t = modeldb_types.Transformer(tid, weights, transformerType, tag)
         return t
 
     def convertDftoThrift(self, df):

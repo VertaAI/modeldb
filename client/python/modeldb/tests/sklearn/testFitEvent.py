@@ -22,6 +22,7 @@ class TestFitEvent(unittest.TestCase):
             DefaultExperiment(),
             NewExperimentRun("Abc"))
         model = linear_model.LinearRegression()
+        np.random.seed(0)
         X = pd.DataFrame(np.random.randint(0,100,size=(100, 4)), columns=list('ABCD'))
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
         X.tag("digits-dataset")
@@ -38,7 +39,7 @@ class TestFitEvent(unittest.TestCase):
         transformer = self.fitEvent.model
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.0],
+            [-0.04034543,  0.03176766,  0.01384561, -0.16488021],
             'LinearRegression',
             'linear reg')
         utils.is_equal_transformer(transformer, expected_transformer, self)

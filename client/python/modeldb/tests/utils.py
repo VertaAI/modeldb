@@ -138,7 +138,8 @@ def is_equal_transformer_spec(spec1, spec2, tester):
 def is_equal_transformer(model1, model2, tester):
     tester.assertEqual(model1.id, model2.id)
     tester.assertEqual(model1.transformerType, model2.transformerType)
-    tester.assertEqual(model1.weights, model2.weights)
+    for i in range(0, len(model1.weights)):
+        tester.assertAlmostEqual(model1.weights[i], model2.weights[i])
     tester.assertEqual(model1.tag, model2.tag)
 
 def is_equal_project(project1, project2, tester):
