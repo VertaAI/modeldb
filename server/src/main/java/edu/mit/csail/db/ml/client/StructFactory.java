@@ -152,8 +152,7 @@ public class StructFactory {
       ProblemType.MULTICLASS_CLASSIFICATION,
       ProblemType.REGRESSION,
       ProblemType.RECOMMENDATION,
-      ProblemType.CLUSTERING,
-      ProblemType.UNDEFINED
+      ProblemType.CLUSTERING
     };
     return new FitEvent(
       makeDataFrame(),
