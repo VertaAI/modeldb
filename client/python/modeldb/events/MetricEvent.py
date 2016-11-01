@@ -12,8 +12,14 @@ class MetricEvent(Event):
     def makeEvent(self, syncer):
         self.syncableTransformer = syncer.convertModeltoThrift(self.model)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
-        me = modeldb_types.MetricEvent(self.syncableDataFrame, self.syncableTransformer, self.metricType,
-                                self.metricValue, self.labelCol, self.predictionCol, self.experimentRun.id)
+        me = modeldb_types.MetricEvent(
+            self.syncableDataFrame, 
+            self.syncableTransformer, 
+            self.metricType,
+            self.metricValue, 
+            self.labelCol, 
+            self.predictionCol, 
+            syncer.experimentRun.id)
         return me
 
     def associate(self, res, syncer):

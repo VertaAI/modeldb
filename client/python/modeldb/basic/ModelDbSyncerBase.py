@@ -9,6 +9,9 @@ from ..events import *
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
 
+FMIN = sys.float_info.min
+FMAX = sys.float_info.max
+
 class NewOrExistingProject:
     def __init__(self, name, author, description):
         self.name = name
@@ -68,6 +71,8 @@ class Syncer(object):
 
     def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
         self.bufferList = []
+        self.idForObject = {}
+        self.objectForId = {}
         self.initializeThriftClient()
         self.setup(projectConfig, experimentConfig, experimentRunConfig)
 
@@ -112,9 +117,14 @@ class Syncer(object):
     def addToBuffer(self, event):
         self.bufferList.append(event)
 
+    def storeObject(self, obj, id):
+        self.idForObject[obj] = id
+        self.objectForId[id] = obj
+
     def sync(self):
         for b in self.bufferList:
             b.sync(self)
+        self.clearBuffer()
 
     def clearBuffer(self):
         self.bufferList = []
@@ -136,3 +146,49 @@ class Syncer(object):
     def closeThriftClient(self):
         self.transport.close()
         self.client = None
+
+    def convertModeltoThrift(self, model):
+        return model
+
+    def convertSpectoThrift(self, spec, df):
+        return spec
+
+    def convertDftoThrift(self, df):
+        return df
+
+    def _convertModeltoThrift(self, model_type, path):
+        return modeldb_types.Transformer(-1, [], model_type, "", \
+            path)
+
+    def _convertSpectoThrift(self, config, modelType, features=[]):
+        hyperparameters = []
+        for key in config.keys():
+            hyperparameter = modeldb_types.HyperParameter(key, str(config[key]), \
+                type(config[key]).__name__, FMIN, FMAX)
+            hyperparameters.append(hyperparameter)
+        transformerSpec = modeldb_types.TransformerSpec(-1, modelType, \
+            features, hyperparameters, "")
+        return transformerSpec
+
+    def _convertDftoThrift(self, path):
+        return modeldb_types.DataFrame(-1, [], -1, "", path)
+
+    # data_dict is a dictionary of names and paths:
+    # ["train" : "/path/to/train", "test" : "/path/to/test"]
+    # revisit this
+    def syncData(self, data_dict):
+        self.data = data_dict
+
+    def syncModel(self, trainDf, model_path, model_type, config, features=[]):
+        df = self._convertDftoThrift(trainDf)
+        spec = self._convertSpectoThrift(config, model_type, features)
+        model = self._convertModeltoThrift(model_type, model_path)
+        fe = FitEvent(model, spec, df)
+        self.addToBuffer(fe)
+
+    def syncMetrics(self, testDf, model, metrics):
+        df = self._convertDftoThrift(testDf)
+        for key, value in metrics:
+            me = MetricEvent(df, model, "", "", key, \
+                value)
+            self.addToBuffer(me)

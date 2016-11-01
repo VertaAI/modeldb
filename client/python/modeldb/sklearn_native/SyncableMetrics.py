@@ -15,6 +15,6 @@ def computeMetrics(model, metric, X, predictionCol, labelCol, actual):
     computeMetric = metric + "_score"
     metricFunc = getattr(sklearn.metrics, computeMetric)
     score = metricFunc(actual, predicted, average='weighted')
-    metricEvent = MetricEvent(X, model, labelCol, predictionCol, metric, score, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    metricEvent = MetricEvent(X, model, labelCol, predictionCol, metric, score)
     ModelDbSyncer.Syncer.instance.addToBuffer(metricEvent)
     return score
