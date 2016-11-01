@@ -17,3 +17,4 @@ def computeMetrics(model, metric, X, predictionCol, labelCol, actual):
     score = metricFunc(actual, predicted, average='weighted')
     metricEvent = MetricEvent(X, model, labelCol, predictionCol, metric, score, ModelDbSyncer.Syncer.instance.experimentRun.id)
     ModelDbSyncer.Syncer.instance.addToBuffer(metricEvent)
+    return score
