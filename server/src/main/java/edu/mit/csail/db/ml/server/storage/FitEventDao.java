@@ -66,7 +66,7 @@ public class FitEventDao {
     feRec.store();
 
     // Store Event.
-    EventRecord ev = EventDao.store(feRec.getId(), isPipeline ? "pipeline fit " : "fit", fe.experimentRunId, ctx);
+    EventRecord ev = EventDao.store(feRec.getId(), isPipeline ? "pipeline fit" : "fit", fe.experimentRunId, ctx);
 
     // Store features.
     IntStream.range(0, fe.featureColumns.size()).forEach(i -> {

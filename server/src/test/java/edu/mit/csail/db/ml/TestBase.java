@@ -20,6 +20,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static jooq.sqlite.gen.Tables.*;
 
@@ -175,6 +176,47 @@ public class TestBase {
     hp2.setExperimentrun(expRunId);
     hp2.store();
     hp2.getId();
+
+    return rec.getId();
+  }
+
+  public static int createEvent(int evId, int expRunId, String eventType) throws Exception {
+    EventRecord rec = ctx().newRecord(Tables.EVENT);
+    rec.setId(null);
+    rec.setEventtype(eventType);
+    rec.setEventid(evId);
+    rec.setExperimentrun(expRunId);
+    rec.store();
+    return rec.getId();
+  }
+
+  public static int createFitEvent(int expRunId, int dfId, int specId, int tId) throws Exception {
+    FiteventRecord rec = ctx().newRecord(Tables.FITEVENT);
+    rec.setId(null);
+    rec.setTransformerspec(specId);
+    rec.setTransformer(tId);
+    rec.setDf(dfId);
+    rec.setPredictioncolumns("predCol1,predCol2");
+    rec.setLabelcolumn("labCol1,labCol2");
+    rec.setExperimentrun(expRunId);
+    rec.setProblemtype("regression");
+    rec.store();
+
+    // Store Feature columns.
+    List<String> features = Arrays.asList("featCol1", "featCol2", "featCol3");
+    for (int i = 0; i < features.size(); i++) {
+      FeatureRecord ft = ctx().newRecord(Tables.FEATURE);
+      ft.setId(null);
+      ft.setName(features.get(i));
+      ft.setFeatureindex(i);
+      ft.setImportance(0.0);
+      ft.setTransformer(tId);
+      ft.store();
+      ft.getId();
+    }
+
+    // Store the corresponding event.
+    createEvent(rec.getId(), expRunId, "fit");
 
     return rec.getId();
   }

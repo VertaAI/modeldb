@@ -1,9 +1,9 @@
 package edu.mit.csail.db.ml.modeldb.client
 
-import org.apache.spark.sql.DataFrame
 import java.util.Random
 
 import edu.mit.csail.db.ml.modeldb.client.event.RandomSplitEvent
+import org.apache.spark.sql.DataFrame
 
 
 /**
@@ -44,6 +44,15 @@ trait SyncableDataFrame {
         case Some(featureVectorNames) => splits.foreach(df => mdbs.get.setFeaturesForDf(df, featureVectorNames))
         case None => {}
       }
+
+      // We can think of random splitting as performing n transformations from the original DataFrame to
+      // n smaller DataFrames where there are no input features or output features.
+      // Thus, we will feed this information to the FeatureTracker so that each of the splits know that they
+      // originated from the same DataFrame and so that they remember its features.
+      SyncableDataFramePaths.getPath(m) match {
+        case Some(path) => splits.foreach(spl => SyncableDataFramePaths.setPath(spl, path))
+        case None => {}
+      }
       splits
     }
   }
@@ -78,8 +87,10 @@ object SyncableDataFrame extends SyncableDataFrame {
       id,
       columns,
       numRows,
-      tag=tag
+      tag=tag,
+      filepath = SyncableDataFramePaths.getPath(df)
     )
+
     modeldbDf
   }
 }

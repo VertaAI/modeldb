@@ -42,7 +42,7 @@ object PipelineSample {
 
     // Read the command line argument which indicates the path to the data file.
     val pathToDataFile = args(0)
-    val data = spark.read.format("libsvm").load(pathToDataFile).tag("Sample libsvm data")
+    val data = spark.read.format("libsvm").loadSync(pathToDataFile).tag("Sample libsvm data")
 
     // MODELDB: Optional: Register your object with ModelDB so that a creation event can be logged.
     val labelIndexer = new StringIndexer()

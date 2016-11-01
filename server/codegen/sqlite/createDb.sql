@@ -34,7 +34,8 @@ CREATE TABLE DataFrame (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   tag TEXT, -- Can be empty.
   numRows INTEGER NOT NULL,
-  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
+  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
+  filepath TEXT
 );
 
 DROP TABLE IF EXISTS DataFrameColumn;

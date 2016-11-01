@@ -24,13 +24,19 @@ public class TestTransformer {
   }
 
 
-  private void testStore(boolean generateFilePath) throws Exception {
+  private void testStore(
+    boolean hasPresetFilepath, boolean generateFilepath) throws Exception {
     // Store the Transformer.
+    Transformer t = new Transformer(-1, Arrays.asList(1.1, 2.2), "ttype", "tag");
+    if (hasPresetFilepath) {
+      t.setFilepath("/path/to/transformer");
+    }
+
     int tid = TransformerDao.store(
-      new Transformer(-1, Arrays.asList(1.1, 2.2), "ttype", "tag"),
+      t,
       expRunId,
       TestBase.ctx(),
-      generateFilePath
+      generateFilepath
     ).getId();
 
     // Verify that stored Transformer is correct.
@@ -41,21 +47,36 @@ public class TestTransformer {
     Assert.assertEquals("ttype", rec.getTransformertype());
     Assert.assertEquals("1.1,2.2", rec.getWeights());
     Assert.assertEquals(expRunId, rec.getExperimentrun().intValue());
-    if (generateFilePath) {
-      Assert.assertTrue(rec.getFilepath().length() > 0);
+
+    if (hasPresetFilepath) {
+      Assert.assertEquals(rec.getFilepath(), t.getFilepath());
     } else {
-      Assert.assertEquals("", rec.getFilepath());
+      if (generateFilepath) {
+        Assert.assertTrue(rec.getFilepath().length() > 0);
+      } else {
+        Assert.assertEquals("", rec.getFilepath());
+      }
     }
   }
 
   @Test
-  public void testStore() throws Exception {
-    testStore(false);
+  public void testStoreNoPresetFilepathNoGenerateFilepath() throws Exception {
+    testStore(false, false);
   }
 
   @Test
-  public void testStoreWithFilepath() throws Exception {
-    testStore(true);
+  public void testStoreWithPresetFilepathNoGenerateFilepath() throws Exception {
+    testStore(true, false);
+  }
+
+  @Test
+  public void testStoreWithNoPresetFilepathGenerateFilepath() throws Exception {
+    testStore(false, true);
+  }
+
+  @Test
+  public void testStoreWithPresetFilepathGenerateFilepath() throws Exception {
+    testStore(true, true);
   }
 
   @Test

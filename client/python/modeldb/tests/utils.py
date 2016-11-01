@@ -1,4 +1,3 @@
-# TODO: [MV] are these tests even necessary?
 def validate_fit_event_struct(fitEvent, tester):
     tester.assertTrue(hasattr(fitEvent, 'df'))
     tester.assertTrue(hasattr(fitEvent, 'spec'))
@@ -14,7 +13,6 @@ def validate_project_struct(project, tester):
     tester.assertTrue(hasattr(project, 'name'))
     tester.assertTrue(hasattr(project, 'author'))
     tester.assertTrue(hasattr(project, 'description'))
-    tester.assertNotEqual(project.id, -1)
 
 def validate_experiment_struct(experiment, tester):
     tester.assertTrue(hasattr(experiment, 'projectId'))
@@ -23,12 +21,12 @@ def validate_experiment_struct(experiment, tester):
     tester.assertTrue(hasattr(experiment, 'isDefault'))
     tester.assertTrue(hasattr(experiment, 'name'))
 
-def valdiate_experiment_run_struct(experimentRun, tester):
+def validate_experiment_run_struct(experimentRun, tester):
     tester.assertTrue(hasattr(experimentRun, 'id'))
     tester.assertTrue(hasattr(experimentRun, 'experimentId'))
     tester.assertTrue(hasattr(experimentRun, 'description'))
 
-def validate_transformer_spec_struc(spec, tester):
+def validate_transformer_spec_struct(spec, tester):
     tester.assertTrue(hasattr(spec, 'id'))
     tester.assertTrue(hasattr(spec, 'transformerType')) 
     tester.assertTrue(hasattr(spec, 'features'))
@@ -55,6 +53,60 @@ def validate_transformer_struct(transformer, tester):
     tester.assertTrue(hasattr(transformer, 'weights')) 
     tester.assertTrue(hasattr(transformer, 'transformerType'))
     tester.assertTrue(hasattr(transformer, 'tag'))
+
+def validate_pipeline_event_struct(pipelineEvent, tester):
+    tester.assertTrue(hasattr(pipelineEvent, 'pipelineFit'))
+    tester.assertTrue(hasattr(pipelineEvent, 'transformStages'))
+    tester.assertTrue(hasattr(pipelineEvent, 'fitStages'))
+    tester.assertTrue(hasattr(pipelineEvent, 'experimentRunId'))
+
+def validate_pipeline_fit_stages(fitStages, tester):
+    count = 0
+    for stage in fitStages:
+        tester.assertTrue(hasattr(stage, 'fe'))
+        tester.assertTrue(hasattr(stage, 'stageNumber'))
+        tester.assertEqual(stage.stageNumber, count)
+        validate_fit_event_struct(stage.fe, tester)
+        count += 1
+
+def validate_pipeline_transform_stages(transformStages, tester):
+    count = 0
+    for stage in transformStages:
+        tester.assertTrue(hasattr(stage, 'te'))
+        tester.assertTrue(hasattr(stage, 'stageNumber'))
+        tester.assertEqual(stage.stageNumber, count)
+        validate_transform_event_struct(stage.te, tester)
+        count += 1
+
+def validate_random_split_event_struct(randomSplitEvent, tester):
+    tester.assertTrue(hasattr(randomSplitEvent, 'oldDataFrame'))
+    tester.assertTrue(hasattr(randomSplitEvent, 'weights'))
+    tester.assertTrue(hasattr(randomSplitEvent, 'seed'))
+    tester.assertTrue(hasattr(randomSplitEvent, 'splitDataFrames'))
+    tester.assertTrue(hasattr(randomSplitEvent, 'experimentRunId'))
+
+def validate_grid_search_cv_event(gridcvEvent, tester):
+    tester.assertTrue(hasattr(gridcvEvent, 'numFolds'))
+    tester.assertTrue(hasattr(gridcvEvent, 'bestFit'))
+    tester.assertTrue(hasattr(gridcvEvent, 'crossValidations'))
+    tester.assertTrue(hasattr(gridcvEvent, 'experimentRunId'))
+
+def validate_cross_validate_event(cvEvent, tester):
+    tester.assertTrue(hasattr(cvEvent, 'df'))
+    tester.assertTrue(hasattr(cvEvent, 'spec'))
+    tester.assertTrue(hasattr(cvEvent, 'seed'))
+    tester.assertTrue(hasattr(cvEvent, 'evaluator'))
+    tester.assertTrue(hasattr(cvEvent, 'labelColumns'))
+    tester.assertTrue(hasattr(cvEvent, 'predictionColumns'))
+    tester.assertTrue(hasattr(cvEvent, 'featureColumns'))
+    tester.assertTrue(hasattr(cvEvent, 'folds'))
+    tester.assertTrue(hasattr(cvEvent, 'experimentRunId'))
+
+def validate_cross_validation_fold(cvFold, tester):
+    tester.assertTrue(hasattr(cvFold, 'model'))
+    tester.assertTrue(hasattr(cvFold, 'validationDf'))
+    tester.assertTrue(hasattr(cvFold, 'trainingDf'))
+    tester.assertTrue(hasattr(cvFold, 'score'))
 
 def is_equal_dataframe(dataframe1, dataframe2, tester):
     tester.assertEqual(dataframe1.numRows, dataframe2.numRows)
@@ -86,8 +138,27 @@ def is_equal_transformer_spec(spec1, spec2, tester):
 def is_equal_transformer(model1, model2, tester):
     tester.assertEqual(model1.id, model2.id)
     tester.assertEqual(model1.transformerType, model2.transformerType)
-    tester.assertEqual(model1.weights, model2.weights)
+    for i in range(0, len(model1.weights)):
+        tester.assertAlmostEqual(model1.weights[i], model2.weights[i])
     tester.assertEqual(model1.tag, model2.tag)
+
+def is_equal_project(project1, project2, tester):
+    tester.assertEqual(project1.id, project2.id)
+    tester.assertEqual(project1.name, project2.name)
+    tester.assertEqual(project1.author, project2.author)
+    tester.assertEqual(project1.description, project2.description)
+
+def is_equal_experiment(experiment1, experiment2, tester):
+    tester.assertEqual(experiment1.id, experiment2.id)
+    tester.assertEqual(experiment1.projectId, experiment2.projectId)
+    tester.assertEqual(experiment1.name, experiment2.name)
+    tester.assertEqual(experiment1.description, experiment2.description)
+    tester.assertEqual(experiment1.isDefault, experiment2.isDefault)
+
+def is_equal_experiment_run(expRun1, expRun2, tester):
+    tester.assertEqual(expRun1.id, expRun2.id)
+    tester.assertEqual(expRun1.experimentId, expRun2.experimentId)
+    tester.assertEqual(expRun1.description, expRun2.description)
 
 # self.assertEqual(project.id, experiment.projectId)
 # self.assertEqual(experimentRun.experimentId, experiment.id)
@@ -95,4 +166,3 @@ def is_equal_transformer(model1, model2, tester):
 # self.assertTrue(type(self.fitEvent.featureColumns), 'list')
 # self.assertTrue(type(self.fitEvent.predictionColumns), 'list')
 # self.assertTrue(type(self.fitEvent.labelColumns), 'list')
-               

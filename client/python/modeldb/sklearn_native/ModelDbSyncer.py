@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
+from sklearn.decomposition import *
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
 import sklearn.metrics
@@ -102,7 +103,7 @@ def fitFnPipeline(self,X,y):
     #Handle last estimator, which has a fit method (and may not have transform)
     oldDf = curDataset
     model = lastEstimator.fit(oldDf, y)
-    fitEvent = FitEvent(model, estimator, oldDf)
+    fitEvent = FitEvent(model, lastEstimator, oldDf)
     fitStages.append((index+1, fitEvent))
 
     #Create the pipeline event with all components
@@ -138,8 +139,9 @@ def fitFnGridSearch(self, X,y):
 
 # Stores object with associated tagName
 def addTagObject(self, tagName):
-    self.tag = tagName
-    Syncer.instance.storeTagObject(id(self), tagName)
+    if type(tagName) is str:
+        self.tag = tagName
+        Syncer.instance.storeTagObject(id(self), tagName)
 
 class Syncer(ModelDbSyncerBase.Syncer):
     def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
@@ -198,7 +200,12 @@ class Syncer(ModelDbSyncerBase.Syncer):
         if id(model) in self.tagForObject:
             tag = self.tagForObject[id(model)]
         transformerType = model.__class__.__name__
-        t = modeldb_types.Transformer(tid, [0.0], transformerType, tag)
+        if (hasattr(model, 'coef_')):
+            # Weights must be formatted as a list of doubles.
+            weights = np.concatenate(model.coef_, axis=0)
+        else:
+            weights = [0.0]
+        t = modeldb_types.Transformer(tid, weights, transformerType, tag)
         return t
 
     def convertDftoThrift(self, df):
@@ -233,7 +240,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def addTags(self):
         setattr(pd.DataFrame, "tag", addTagObject)
         models = [LogisticRegression, LinearRegression, LabelEncoder, OneHotEncoder,
-                        Pipeline, GridSearchCV]
+                        Pipeline, GridSearchCV, PCA]
         for class_name in models:
             setattr(class_name, "tag", addTagObject)
 

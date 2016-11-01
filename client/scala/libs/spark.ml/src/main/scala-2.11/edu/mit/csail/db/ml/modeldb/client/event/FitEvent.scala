@@ -20,16 +20,18 @@ case class FitEvent(estimator: PipelineStage,
                     dataframe: DataFrame,
                     model: Transformer) extends ModelDbEvent {
 
-  def makeEvent(mdbs: ModelDbSyncer) = modeldb.FitEvent(
-    SyncableDataFrame(dataframe),
-    SyncableEstimator(dataframe, estimator),
-    SyncableTransformer(model),
-    mdbs.getFeaturesForDf(dataframe).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
-    ml.SyncableEstimator.getPredictionCols(estimator),
-    ml.SyncableEstimator.getLabelColumns(estimator),
-    experimentRunId = mdbs.experimentRun.id,
-    problemType = SyncableProblemType(model)
-  )
+  def makeEvent(mdbs: ModelDbSyncer) = {
+    modeldb.FitEvent(
+      SyncableDataFrame(dataframe),
+      SyncableEstimator(dataframe, estimator),
+      SyncableTransformer(model),
+      mdbs.getFeaturesForDf(dataframe).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
+      ml.SyncableEstimator.getPredictionCols(estimator),
+      ml.SyncableEstimator.getLabelColumns(estimator),
+      experimentRunId = mdbs.experimentRun.id,
+      problemType = SyncableProblemType(model)
+    )
+  }
 
   def associate(fer: modeldb.FitEventResponse, mdbs: ModelDbSyncer) = {
     mdbs.associateObjectAndId(dataframe, fer.dfId)

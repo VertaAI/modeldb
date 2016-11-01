@@ -26,6 +26,10 @@ Now, you can use one of the ModelDB clients, like the
 [Scikit-learn client](https://github.com/mitdbg/sklearn-modeldb-client) to then
 store entries in ModelDB.
 
+# Tests
+
+You can run tests with `mvn test`
+
 # Tables
 
 Here are the [schemas](https://github.com/mitdbg/modeldb/blob/master/codegen/sqlite/createDb.sql)

@@ -44,6 +44,7 @@ public class TransformerDao {
   public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx, boolean generateFilepath) {
     TransformerRecord rec = ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(t.id)).fetchOne();
     if (rec != null) {
+      // assign filepath if not currently assigned
       if (generateFilepath && rec.getFilepath().length() == 0) {
         rec.setFilepath(generateFilepath());
         rec.store();
@@ -57,12 +58,16 @@ public class TransformerDao {
     tRec.setWeights(t.weights.stream().map(String::valueOf).collect(Collectors.joining(",")));
     tRec.setTag(t.tag);
     tRec.setExperimentrun(experimentId);
+    if (t.isSetFilepath()) {
+      tRec.setFilepath(t.getFilepath());
+    } else {
+      tRec.setFilepath("");
+    }
 
-
-    // Generate a UUID and filepath.
-    String filePath = generateFilepath ? generateFilepath() : "";
-
-    tRec.setFilepath(filePath);
+    if (generateFilepath && !t.isSetFilepath()) {
+      // Generate a UUID and filepath.
+      tRec.setFilepath(generateFilepath());
+    }
 
     tRec.store();
     return tRec;

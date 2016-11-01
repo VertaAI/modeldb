@@ -33,6 +33,10 @@ trait HasTransformSync {
       transformer.transform(df, pairs.head, pairs.tail:_*)
 
     mdbs.get.buffer(TransformEvent(transformer, df, result))
+    SyncableDataFramePaths.getPath(df) match {
+      case Some(path) => SyncableDataFramePaths.setPath(result, path)
+      case None => {}
+    }
     result
   }
 
