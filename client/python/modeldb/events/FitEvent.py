@@ -11,8 +11,9 @@ class FitEvent(Event):
         self.modelSpec = syncer.convertSpectoThrift(self.spec,self.df)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
         self.experimentRunId = syncer.experimentRun.id
+        self.columns = syncer.setColumns(self.df)
         fe = modeldb_types.FitEvent(self.syncableDataFrame, self.modelSpec, self.syncableTransformer, 
-                            [], [], [], self.experimentRunId)
+                            self.columns, [], [], self.experimentRunId)
         return fe
 
     def associate(self, res, syncer):

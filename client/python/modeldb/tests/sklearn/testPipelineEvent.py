@@ -88,6 +88,8 @@ class TestPipelineEvent(unittest.TestCase):
             'pipeline with pca + logistic')
         utils.is_equal_transformer_spec(spec, expected_spec, self)
 
+        self.assertItemsEqual(fitEvent.featureColumns, ['A', 'B'])
+
     def test_pipeline_fit_stages(self):
         fitStages = self.pipelineEvent.fitStages
         utils.validate_pipeline_fit_stages(fitStages, self)
@@ -128,6 +130,8 @@ class TestPipelineEvent(unittest.TestCase):
             ],
             'decomposition PCA')
         utils.is_equal_transformer_spec(spec, expected_spec, self)
+
+        self.assertItemsEqual(fitEvent1.featureColumns, ['A', 'B'])
 
     def test_pipeline_second_fit_stage(self):
         fitStages = self.pipelineEvent.fitStages
