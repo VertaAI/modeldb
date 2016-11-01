@@ -12,12 +12,11 @@ class PipelineEvent(Event):
         pipelineFirstFitEvent = self.firstPipelineEvent.makeEvent(syncer)
         transformEventStages = []
         fitEventStages = []
-        self.experimentRunId = syncer.experimentRun.id
         for index, transformEvent in self.transformStages:
             transformEventStages.append(modeldb_types.PipelineTransformStage(index, transformEvent.makeEvent(syncer)))
         for index, fitEvent in self.fitStages:
             fitEventStages.append(modeldb_types.PipelineFitStage(index, fitEvent.makeEvent(syncer)))
-        pe = modeldb_types.PipelineEvent(pipelineFirstFitEvent, transformEventStages, fitEventStages, self.experimentRunId)
+        pe = modeldb_types.PipelineEvent(pipelineFirstFitEvent, transformEventStages, fitEventStages, syncer.experimentRun.id)
         return pe
 
     #Stores each of the individual fit/transform events

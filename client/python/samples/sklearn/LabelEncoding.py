@@ -33,7 +33,6 @@ df['income_level'] = df['income_level'].replace(['>50K'],[1.0])
 #calling labelEncoder on any columns that are object types
 for coltype,colname in zip(df.dtypes, df.columns):
     if coltype == 'object':
-    	print("calling fitsync")
         le.fitSync(df[colname])
         transformedVals = le.transformSync(df[colname])
         newDf[colname+"_index"] = transformedVals
@@ -53,4 +52,4 @@ lr.fitSync(partialTraining, y_train)
 
 SyncableMetrics.computeMetrics(lr, "precision", partialTesting, "predictionCol", "income_level",y_test)
 SyncableMetrics.computeMetrics(lr, "recall", partialTesting, "predictionCol", "income_level",y_test)
-Syncer.instance.sync()
+SyncerObj.instance.sync()

@@ -5,6 +5,7 @@ import edu.mit.csail.db.ml.server.ModelDbServer;
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.*;
+import modeldb.TransformEventResponse;
 import org.apache.commons.cli.ParseException;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
@@ -217,6 +218,27 @@ public class TestBase {
 
     // Store the corresponding event.
     createEvent(rec.getId(), expRunId, "fit");
+
+    return rec.getId();
+  }
+
+  public static int createTransformEvent(int expRunId,
+                                         int tId,
+                                         int oldDfId,
+                                         int newDfId,
+                                         String inCols,
+                                         String outCols) throws Exception {
+    TransformeventRecord rec = ctx().newRecord(Tables.TRANSFORMEVENT);
+    rec.setId(null);
+    rec.setOlddf(oldDfId);
+    rec.setNewdf(newDfId);
+    rec.setTransformer(tId);
+    rec.setInputcolumns(inCols);
+    rec.setOutputcolumns(outCols);
+    rec.setExperimentrun(expRunId);
+    rec.store();
+
+    createEvent(rec.getId(), expRunId, "transform");
 
     return rec.getId();
   }

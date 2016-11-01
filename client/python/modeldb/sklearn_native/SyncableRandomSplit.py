@@ -27,6 +27,6 @@ def randomSplit(X, weights, seed, y=None):
             y = y[~msk]
     result.append(df)
     yresult.append(y)
-    randomEvent = RandomSplitEvent(X, weights, seed, result, ModelDbSyncer.Syncer.instance.experimentRun.id)
+    randomEvent = RandomSplitEvent(X, weights, seed, result)
     ModelDbSyncer.Syncer.instance.addToBuffer(randomEvent)
     return result, yresult

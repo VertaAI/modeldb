@@ -1,4 +1,6 @@
+import unittest
 import numpy as np
+import argparse
 from patsy import dmatrices
 import statsmodels.api as sm
 
@@ -51,13 +53,78 @@ model.tag("Logistic Regression model")
 model2 = preprocessing.OneHotEncoder()
 model2.fitSync(X)
 model2.transformSync(X)
+model2.tag("One Hot encoding")
 
 #Test Metric Class
-SyncableMetrics.computeMetrics(model, 'precision', X, 'children', 'religious', X['religious'])
-SyncableMetrics.computeMetrics(model, 'recall', X, 'children', 'religious', X['religious'])
+precision_score = SyncableMetrics.computeMetrics(model, 'precision', X, 'children', 'religious', X['religious'])
+recall_score = SyncableMetrics.computeMetrics(model, 'recall', X, 'children', 'religious', X['religious'])
 
 #Test Random-Split Event
 SyncableRandomSplit.randomSplit(X, [1,2,3], 1234)
 
 #Sync all the events to database
-Syncer.instance.sync()
+SyncerObj.instance.sync()
+
+
+class TestLinearModelEndToEnd(unittest.TestCase):
+    # Tests if workflow above is stored in database correctly
+    def test_project(self):
+        projectOverview = SyncerObj.client.getProjectOverviews()[0]
+        project = projectOverview.project
+        self.assertEquals(project.description, 'pandas-logistic-regression')
+        self.assertEquals(project.author, 'srinidhi')
+        self.assertEquals(project.name, 'test1')
+        self.assertGreaterEqual(project.id, 0)
+        self.assertGreaterEqual(projectOverview.numExperimentRuns, 0)
+        self.assertGreaterEqual(projectOverview.numExperiments, 0)
+
+    def test_models(self):
+        model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
+        projectOverview = SyncerObj.client.getProjectOverviews()[0]
+        project = projectOverview.project
+        # Two models are stored above - ensure both are in database
+        self.assertEquals(len(model_responses), 2)
+
+        model1 = model_responses[0]
+        model2 = model_responses[1]
+
+        self.assertEqual(model1.projectId, project.id)
+        self.assertEqual(model2.projectId, project.id)
+        self.assertEqual(model1.trainingDataFrame.numRows, X.shape[0])
+        self.assertEqual(model2.trainingDataFrame.numRows, X.shape[0])
+
+        transformer1 = model1.specification
+        transformer2 = model2.specification
+
+        self.assertEqual(transformer1.transformerType, 'LogisticRegression')
+        self.assertEqual(transformer2.transformerType, 'OneHotEncoder')
+
+        self.assertEqual(transformer1.tag, 'Logistic Regression model')
+        self.assertEqual(transformer2.tag, 'One Hot encoding')
+
+        # Check hyperparameters for both models
+        hyperparams1 = transformer1.hyperparameters
+        hyperparams2 = transformer2.hyperparameters
+        self.assertEqual(len(hyperparams1), 14)
+        self.assertEqual(len(hyperparams2), 5)
+
+    def test_metrics(self):
+        model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
+        model1 = model_responses[0]
+        model2 = model_responses[1]
+
+        # Metrics are only stored for the first model.
+        self.assertEquals(len(model1.metrics), 2)
+        self.assertEquals(len(model2.metrics), 0)
+        self.assertIn('recall', model1.metrics)
+        self.assertIn('precision', model1.metrics)
+        self.assertAlmostEqual(recall_score, model1.metrics['recall'][2])
+        self.assertAlmostEqual(precision_score, model1.metrics['precision'][2])
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Pass in -test flag if you wish to run unittests on this workflow')
+    parser.add_argument('-test', action='store_true')
+    args = parser.parse_args()
+    if args.test:
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestLinearModelEndToEnd)
+        unittest.TextTestRunner().run(suite)

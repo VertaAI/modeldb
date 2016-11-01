@@ -48,4 +48,4 @@ anova_svm.fitSync(X_train,y_train)
 #Compute metrics for the model on the testing set
 SyncableMetrics.computeMetrics(anova_svm, "f1", X_test, "predictionCol", "label_col",y_test)
 SyncableMetrics.computeMetrics(anova_svm, "precision", X_test, "predictionCol", "label_col",y_test)
-Syncer.instance.sync()
+SyncerObj.instance.sync()
