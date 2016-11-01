@@ -10,10 +10,9 @@ class TransformEvent(Event):
         self.syncableTransformer = syncer.convertModeltoThrift(self.transformer)
         self.syncableDataFrameOld = syncer.convertDftoThrift(self.oldDf)
         self.syncableDataFrameNew = syncer.convertDftoThrift(self.newDf)
-        self.experimentRunId = syncer.experimentRun.id
         te = modeldb_types.TransformEvent(self.syncableDataFrameOld, self.syncableDataFrameNew, 
                                     self.syncableTransformer, [], [], 
-                                    self.experimentRunId)
+                                    syncer.experimentRun.id)
         return te
 
     def associate(self, res, syncer):
