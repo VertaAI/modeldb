@@ -546,5 +546,7 @@ service ModelDBService {
 
   list<ProjectOverviewResponse> getProjectOverviews() throws (1: ServerLogicException svEx),
 
-  ExperimentRunDetailsResponse getExperimentRunDetails(1: i32 experimentRunId) throws (1: ServerLogicException svEx, 2: ResourceNotFoundException rnfEx)
+  ExperimentRunDetailsResponse getExperimentRunDetails(1: i32 experimentRunId) throws (1: ServerLogicException svEx, 2: ResourceNotFoundException rnfEx),
+
+  list<string> originalFeatures(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 }

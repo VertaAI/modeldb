@@ -331,6 +331,12 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
     case Some(dfId) => Some(modelsDerivedFromDataFrame(dfId))
     case None => None
   }
+
+  def originalFeatures(modelId: Int): Seq[String] = Await.result(client.get.originalFeatures(modelId))
+  def originalFeatures(t: Transformer): Option[Seq[String]] = id(t) match {
+    case Some(modelId) => Some(originalFeatures(modelId))
+    case None => None
+  }
 }
 
 /**
