@@ -11,6 +11,7 @@ import org.apache.thrift.TException;
 import org.jooq.DSLContext;
 import java.util.List;
 import java.util.Map;
+import jooq.sqlite.gen.tables.records.DataframeRecord;
 
 public class ModelDbServer implements ModelDBService.Iface {
   private DSLContext ctx;
@@ -29,6 +30,13 @@ public class ModelDbServer implements ModelDBService.Iface {
 
   public int testConnection() throws TException {
     return 200;
+  }
+
+  public int storeDataFrame(DataFrame df, int experimentRunId) throws TException {
+    return ExceptionWrapper.run(() -> {
+      DataframeRecord dfRec = DataFrameDao.store(df, experimentRunId, ctx);
+      return dfRec.getId();
+    });
   }
 
   public FitEventResponse storeFitEvent(FitEvent fe) throws TException {
