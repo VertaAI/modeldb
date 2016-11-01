@@ -1,4 +1,3 @@
-# TODO: [MV] are these tests even necessary?
 def validate_fit_event_struct(fitEvent, tester):
     tester.assertTrue(hasattr(fitEvent, 'df'))
     tester.assertTrue(hasattr(fitEvent, 'spec'))
@@ -86,6 +85,29 @@ def validate_random_split_event_struct(randomSplitEvent, tester):
     tester.assertTrue(hasattr(randomSplitEvent, 'splitDataFrames'))
     tester.assertTrue(hasattr(randomSplitEvent, 'experimentRunId'))
 
+def validate_grid_search_cv_event(gridcvEvent, tester):
+    tester.assertTrue(hasattr(gridcvEvent, 'numFolds'))
+    tester.assertTrue(hasattr(gridcvEvent, 'bestFit'))
+    tester.assertTrue(hasattr(gridcvEvent, 'crossValidations'))
+    tester.assertTrue(hasattr(gridcvEvent, 'experimentRunId'))
+
+def validate_cross_validate_event(cvEvent, tester):
+    tester.assertTrue(hasattr(cvEvent, 'df'))
+    tester.assertTrue(hasattr(cvEvent, 'spec'))
+    tester.assertTrue(hasattr(cvEvent, 'seed'))
+    tester.assertTrue(hasattr(cvEvent, 'evaluator'))
+    tester.assertTrue(hasattr(cvEvent, 'labelColumns'))
+    tester.assertTrue(hasattr(cvEvent, 'predictionColumns'))
+    tester.assertTrue(hasattr(cvEvent, 'featureColumns'))
+    tester.assertTrue(hasattr(cvEvent, 'folds'))
+    tester.assertTrue(hasattr(cvEvent, 'experimentRunId'))
+
+def validate_cross_validation_fold(cvFold, tester):
+    tester.assertTrue(hasattr(cvFold, 'model'))
+    tester.assertTrue(hasattr(cvFold, 'validationDf'))
+    tester.assertTrue(hasattr(cvFold, 'trainingDf'))
+    tester.assertTrue(hasattr(cvFold, 'score'))
+
 def is_equal_dataframe(dataframe1, dataframe2, tester):
     tester.assertEqual(dataframe1.numRows, dataframe2.numRows)
     tester.assertEqual(dataframe1.tag, dataframe2.tag)
@@ -143,4 +165,3 @@ def is_equal_experiment_run(expRun1, expRun2, tester):
 # self.assertTrue(type(self.fitEvent.featureColumns), 'list')
 # self.assertTrue(type(self.fitEvent.predictionColumns), 'list')
 # self.assertTrue(type(self.fitEvent.labelColumns), 'list')
-               
