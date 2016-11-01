@@ -58,6 +58,7 @@ class TestGridSearchEvent(unittest.TestCase):
             'SVC',
             '')
         utils.is_equal_transformer(transformer, expected_transformer, self)
+        self.assertItemsEqual(best_fit_event.featureColumns, ['A', 'B', 'C', 'D'])
 
         
     def test_cross_validation_event(self):
@@ -70,6 +71,7 @@ class TestGridSearchEvent(unittest.TestCase):
         # certain hyperparameter values.
         for cv in cross_validations:
             utils.validate_cross_validate_event(cv, self)
+            self.assertItemsEqual(cv.featureColumns, ['A', 'B', 'C', 'D'])
             self.assertEquals(cv.evaluator, 'multiclass')
             self.assertEquals(cv.seed, 0)
 

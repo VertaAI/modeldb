@@ -24,9 +24,10 @@ class GridSearchCVEvent(Event):
         self.experimentRunId = syncer.experimentRun.id
         syncableDataFrame = syncer.convertDftoThrift(self.inputDataFrame)
         syncableEstimator = syncer.convertSpectoThrift(estimator,self.inputDataFrame)
+        self.columns = syncer.setColumns(self.inputDataFrame)
         # TODO: Need to add meaningful label/feature/prediction column names
         return modeldb_types.CrossValidationEvent(syncableDataFrame, syncableEstimator, self.seed, self.evaluator,
-                                            [""], [""], [""], crossValidationFolds, self.experimentRunId)
+                                            [""], [""], self.columns, crossValidationFolds, self.experimentRunId)
 
     #Returns a list of CrossValidationEvents, used for creating GridSearchCrossValidationEvent.
     def makeCrossValidationEvents(self, syncer):
