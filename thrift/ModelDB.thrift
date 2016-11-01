@@ -85,7 +85,8 @@ struct Transformer {
   1: i32 id = -1,
   2: list<double> weights,
   3: string transformerType,
-  4: string tag =""
+  4: string tag ="",
+  5: optional string filepath
 }
 
 enum ProblemType {

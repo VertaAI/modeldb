@@ -64,7 +64,7 @@ public class TestDataFrame {
     Assert.assertEquals(expRunId, rec.getExperimentrun().intValue());
 
     if (hasPath) {
-      Assert.assertEquals(df.filepath, rec.getFilepath());
+      Assert.assertEquals(df.getFilepath(), rec.getFilepath());
     }
 
     // Verify that the schema is correct.
