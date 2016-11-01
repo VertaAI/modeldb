@@ -8,7 +8,7 @@ class FitEvent(Event):
 
     def makeEvent(self, syncer):
         self.syncableTransformer = syncer.convertModeltoThrift(self.model)
-        self.modelSpec = syncer.convertSpectoThrift(self.spec,self.df)
+        self.modelSpec = syncer.convertSpectoThrift(self.spec, self.df)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
         self.experimentRunId = syncer.experimentRun.id
         fe = modeldb_types.FitEvent(self.syncableDataFrame, self.modelSpec, self.syncableTransformer, 
@@ -19,7 +19,7 @@ class FitEvent(Event):
         #generate identity for storing in dictionary
         dfImm = id(self.df)
         syncer.storeObject(dfImm,res.dfId)
-        syncer.storeObject(self.spec,res.specId)
+        syncer.storeObject(self.spec, res.specId)
         syncer.storeObject(self.model, res.modelId)
         syncer.storeObject(self, res.eventId)
 
