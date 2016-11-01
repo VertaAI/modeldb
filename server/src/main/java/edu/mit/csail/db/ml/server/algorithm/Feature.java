@@ -1,6 +1,10 @@
 package edu.mit.csail.db.ml.server.algorithm;
 
+import edu.mit.csail.db.ml.server.storage.FitEventDao;
 import jooq.sqlite.gen.Tables;
+import jooq.sqlite.gen.tables.records.FiteventRecord;
+import jooq.sqlite.gen.tables.records.TransformerRecord;
+import jooq.sqlite.gen.tables.records.TransformeventRecord;
 import modeldb.CompareFeaturesResponse;
 import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
@@ -8,6 +12,7 @@ import org.jooq.Record1;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Feature {
   public static List<Integer> modelsWithFeatures(List<String> featureNames, DSLContext ctx) {
@@ -25,6 +30,39 @@ public class Feature {
       .stream()
       .map(Record1::value1)
       .collect(Collectors.toList());
+  }
+
+  /**
+   * Find the original set of features that produced the feature set used by the model with the given ID.
+   */
+  public static List<String> originalFeatures(int modelId, DSLContext ctx) throws ResourceNotFoundException {
+    // This reads everything from the TransformEvent table. If this proves to be a performance bottleneck. We can
+    // use one of the following optimizations:
+    // 1. Only query TransformEvents in the same project as the modelId.
+    // 2. Make TransformEvents keep track of the entire ancestry of DataFrames, rather than just the parent DataFrame.
+
+    // Create a mapping from DataFrame ID to the TransformEvent that produced it.
+    Map<Integer, TransformeventRecord> transformRecordForDf = ctx
+      .selectFrom(Tables.TRANSFORMEVENT)
+      .fetch()
+      .stream()
+      .collect(Collectors.toMap(TransformeventRecord::getNewdf, r -> r));
+
+    // Find the DataFrame that produced the given model.
+    int df = FitEventDao.getParentDfId(modelId, ctx);
+
+    // Walk up the ancestry chain of TransformEvents. For each TransformEvent, remove the output
+    // columns from the feature set and add in the input columns.
+    Set<String> features = new HashSet<>();
+    TransformeventRecord te;
+    while (transformRecordForDf.containsKey(df)) {
+      te = transformRecordForDf.get(df);
+      Stream.of(te.getOutputcolumns().split(",")).forEach(features::remove);
+      Stream.of(te.getInputcolumns().split(",")).forEach(features::add);
+      df = te.getOlddf();
+    }
+
+    return new ArrayList<>(features);
   }
 
   public static CompareFeaturesResponse compareFeatures(int modelId1, int modelId2, DSLContext ctx)

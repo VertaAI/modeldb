@@ -1,8 +1,8 @@
 package org.apache.spark.ml
 
-import edu.mit.csail.db.ml.modeldb.client.{HasFitSync, ModelDbSyncer}
 import edu.mit.csail.db.ml.modeldb.client.event.{FitPipelineStageEvent, PipelineEvent, PipelineStageEvent, TransformerPipelineStageEvent}
-import org.apache.spark.ml.param.ParamMap
+import edu.mit.csail.db.ml.modeldb.client.{HasFitSync, HasTransformSync, ModelDbSyncer, SyncableTransformer}
+import org.apache.spark.ml.param.{ParamMap, ParamPair}
 import org.apache.spark.sql.DataFrame
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
@@ -65,6 +65,17 @@ trait SyncablePipeline {
       } else {
         pms.map(pm => new PipelineFitSync(pipeline.copy(pm)).customFit(df))
       }
+    }
+  }
+
+  implicit class PipelineTransformSync(pm: PipelineModel) extends HasTransformSync {
+    override def transformSync(df: DataFrame, pairs: Seq[ParamPair[_]])
+                              (implicit mdbc: Option[ModelDbSyncer]): DataFrame = {
+      pm.transformSchema(df.schema)
+      pm.stages.foldLeft(df)((cur, transformer) => transformer match {
+        case pm: PipelineModel => pm.transformSync(cur, pairs)(mdbc)
+        case _ => SyncableTransformer.TransformerSync(transformer).transformSync(cur, pairs)(mdbc)
+      })
     }
   }
 }
