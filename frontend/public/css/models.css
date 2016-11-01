@@ -7,11 +7,22 @@ a {
   color: #00B7FF;
 }
 
+h1 {
+	position: fixed;
+	top: 0;
+	margin: 0;
+	padding: 0.67em;
+	background-color: white;
+	z-index: 1;
+	width: 100%;
+}
+
 .filters-container {
 	width: 19%;
 	display: inline-block;
 	vertical-align: top;
-	position: relative;
+	position: fixed;
+	top: 70px;
 }
 
 .filters-info {
@@ -69,13 +80,22 @@ a {
 	margin: 0 10px;
 }
 
+.models {
+	margin-left: 21%;
+	margin-top: 50px;
+}
+
 .model {
 	margin: 0 20px 20px 6px;
 	background-color: #eee;
 	padding: 20px;
 }
 
-.model-config, .model-metric {
+.model-info {
+	width: 200px;
+}
+
+.kv {
 	padding: 4px 7px;
 	cursor: pointer;
 	transition: background-color 0.3s ease;
@@ -86,11 +106,10 @@ a {
 	pointer-events:none;
 }
 
-.model-config:hover, .model-metric:hover {
+.kv:hover {
 	background-color: #62e8e9;
 }
 
-.model-config.ui-draggable-dragging, 
-.model-metric.ui-draggable-dragging {
+.kv.ui-draggable-dragging {
 	background-color: #62e8e9;
 }

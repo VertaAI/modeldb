@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/css/models.css' />
+    
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- d3 and vega -->
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//vega.github.io/vega/vega.js"></script>
+    <script src="//vega.github.io/vega-lite/vega-lite.js"></script>
+    <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
+
+    <script src='/js/models.js'></script>
+    <script src='/js/charts.js'></script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <div class="filters-container">
+        <div class="filters-info">
+            <h2>Filter</h2>
+            Drag configs or metrics into this section to filter models based on key - value pairs.
+        </div>
+        <div class="filters"></div>
+    </div>
+    <div class="models inline-block">
+      <% for(var i=0; i<models.length; i++) { %>
+        <div class="model">
+
+          <div class="inline-block model-info">
+            <div class="kv"
+              data-key="Model ID"
+              data-val="<%= models[i].id %>"
+            >
+              Model ID: <%= models[i].id %>
+            </div>
+            <div class="kv"
+              data-key="Project ID"
+              data-val="<%= models[i].projectId %>"
+            >
+              Project ID: <%= models[i].projectId %>
+            </div>
+            <div class="kv"
+              data-key="Type"
+              data-val="<%= models[i].specification.transformerType %>"
+            >
+              Type: <%= models[i].specification.transformerType %>
+            </div>
+          </div>
+          
+          <div class="inline-block model-configs">
+            <div class="kv"
+              data-key="Experiment ID"
+              data-val="<%= models[i].experimentId %>"
+            >
+              Experiment ID: <%= models[i].experimentId %>
+            </div>
+            <div class="kv"
+              data-key="Experiment Run ID"
+              data-val="<%= models[i].experimentRunId %>"
+            >
+              Experiment Run ID: <%= models[i].experimentRunId %>
+            </div>
+            <div class="kv"
+              data-key="Problem Type"
+              data-val="<%= models[i].problemType %>"
+            >
+              Problem Type: <%= models[i].problemType %>
+            </div>
+          </div>
+
+          <div class="inline-block model-metrics">
+            <% for (var j=0; j<models[i].metrics.length; j++) { %>
+              <div class="model-metric kv"
+                data-key="<%=models[i].metrics[j].key %>"
+                data-val="<%=models[i].metrics[j].val %>"
+                data-num="true"
+              >
+                <%= models[i].metrics[j].key %>: <%= models[i].metrics[j].val %>
+              </div>
+            <% } %>
+          </div>
+
+          <div class="inline-block model-annotation">
+            <%= models[i].annotations %>
+          </div>
+
+          <div class="inline-block model-code">
+              <%= models[i].sha %>
+          </div>
+
+        </div>
+      <% } %>
+    </div>
+
+    <div class="charts-container">
+        <div class="select-container">
+            x-axis: <select class="x-axis"></select>
+        </div>
+        <div class="select-container">
+            y-axis: <select class="y-axis"></select>
+        </div>
+    </div>
+    <button class="compare-button">Compare</button>
+    <div class="model-chart"></div>
+  </body>
+</html>

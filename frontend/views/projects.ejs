@@ -8,17 +8,11 @@
     <h1><%= title %></h1>
     <div class="projects">
       <% for(var i=0; i<projects.length; i++) { %>
-        <a href="projects/<%= projects[i]._id %>/models">
+        <a href="projects/<%= projects[i].project.id %>/models">
           <div class="project">
-            <div class="project-name"><%= projects[i].name %></div>
-            <div class="project-time"><%= projects[i].updated_at %></div>
-            <div class="project-models">
-              Models: [
-              <% for(var j=0; j<projects[i].models.length; j++) { %>
-                <div class="project-model"><%= projects[i].models[j].model_id %></div>
-              <% } %>
-              ]
-            </div>
+            <div class="project-name"><%= projects[i].project.name %></div>
+            <div class="project-author"><%= projects[i].project.author %></div>
+            <div class="project-desc"><%= projects[i].project.description %></div>
           </div>
         </a>
       <% } %>

@@ -7,7 +7,7 @@ router.get('/', function(req, res, next) {
   api.getProjects(function(response) {
     res.render('projects', {
       title: 'Projects',
-      projects: response.data 
+      projects: response
     });   
   });
 });
@@ -16,9 +16,9 @@ router.get('/', function(req, res, next) {
 router.get('/:id/models', function(req, res, next) {
   var projectId = req.params.id;
   api.getProjectModels(projectId, function(response) {
-    res.render('models', {
+    res.render('models2', {
       title: 'Models',
-      models: response.data
+      models: response
     });
   });
 });

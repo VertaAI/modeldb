@@ -23,7 +23,7 @@ $(function() {
 	var supportsRange = false;
 
 	$('.filters').on('mouseup', function() {
-		if (newKey && newVal) {
+		if (newKey != null && newVal != null) {
 			if (supportsRange) {
 				addRange(newKey);
 			} else {
@@ -64,6 +64,12 @@ $(function() {
 	});
 
 	$('.model-metric').draggable({
+		revert: true,
+		revertDuration: 0,
+		start: dragStart
+	});
+
+	$('.kv').draggable({
 		revert: true,
 		revertDuration: 0,
 		start: dragStart
@@ -154,7 +160,6 @@ $(function() {
 	function filter() {
 		var models = $('.model');
 		var show = Array(models.length).fill(true);
-		console.log(show);
 		for (var key in filters) {
 		  if (filters.hasOwnProperty(key)) {
 		  	filterByKey(key, filters[key], show);
@@ -172,10 +177,8 @@ $(function() {
 
 		for (var i=0; i<show.length; i++) {
 			if (show[i]) {
-				console.log("show " + i);
 				$(models[i]).slideDown();
 			} else {
-				console.log("hide " + i);
 				$(models[i]).slideUp()
 			}
 		}
@@ -184,7 +187,7 @@ $(function() {
 	function filterByKey(key, val, show) {
 		let models = $('.model');
 		for (var i=0; i<models.length; i++) {
-			let fields = $(models[i]).find('.model-config, .model-metric');
+			let fields = $(models[i]).find('.kv');
 			let field = fields.findByData('key', key)[0];
 			if (field && $(field).data('val') === val) {
 				console.log('match');
@@ -200,7 +203,7 @@ $(function() {
 		} else {
 			let models = $('.model');
 			for (var i=0; i<models.length; i++) {
-				let fields = $(models[i]).find('.model-config, .model-metric');
+				let fields = $(models[i]).find('.kv');
 				let field = fields.findByData('key', key)[0];
 				if (field) {
 					if (type === "<") {
