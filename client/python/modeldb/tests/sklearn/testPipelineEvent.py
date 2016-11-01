@@ -31,6 +31,7 @@ class TestPipelineEvent(unittest.TestCase):
         lr = linear_model.LinearRegression()
         pipe = Pipeline(steps=[('pca', pca), ('logistic', lr)])
         model = linear_model.LinearRegression()
+        np.random.seed(0)
         X = pd.DataFrame(np.random.randint(0,100,size=(100, 2)), columns=list('AB'))
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
         X.tag("digits-dataset")
@@ -135,7 +136,7 @@ class TestPipelineEvent(unittest.TestCase):
         transformer = fitEvent2.model
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.0],
+            [0.08764694, 0.04159237],
             'LinearRegression',
             'basic linear reg')
         utils.is_equal_transformer(transformer, expected_transformer, self)
