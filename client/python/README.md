@@ -15,6 +15,8 @@ Try running the unittests as:
 python -m unittest discover modeldb/tests/sklearn/
 ```
 
+Note: unittests have been run with scikit-learn version 0.17.
+
 Try running samples as in:
 ```
 python samples/basic/BasicWorkflow.py
