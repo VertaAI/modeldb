@@ -1,8 +1,6 @@
 package edu.mit.csail.db.ml.modeldb.client
 
 import edu.mit.csail.db.ml.modeldb.client.event.TransformEvent
-import edu.mit.csail.db.ml.modeldb.util.FeatureTracker
-import org.apache.spark.ml
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{ParamMap, ParamPair}
 import org.apache.spark.sql.DataFrame
@@ -35,12 +33,10 @@ trait HasTransformSync {
       transformer.transform(df, pairs.head, pairs.tail:_*)
 
     mdbs.get.buffer(TransformEvent(transformer, df, result))
-    FeatureTracker.registerTransform(
-      df,
-      result,
-      ml.SyncableEstimator.getInputCols(transformer),
-      ml.SyncableEstimator.getOutputCols(transformer)
-    )
+    SyncableDataFramePaths.getPath(df) match {
+      case Some(path) => SyncableDataFramePaths.setPath(result, path)
+      case None => {}
+    }
     result
   }
 

@@ -3,7 +3,6 @@ package edu.mit.csail.db.ml.modeldb.client
 import java.util.Random
 
 import edu.mit.csail.db.ml.modeldb.client.event.RandomSplitEvent
-import edu.mit.csail.db.ml.modeldb.util.FeatureTracker
 import org.apache.spark.sql.DataFrame
 
 
@@ -50,7 +49,10 @@ trait SyncableDataFrame {
       // n smaller DataFrames where there are no input features or output features.
       // Thus, we will feed this information to the FeatureTracker so that each of the splits know that they
       // originated from the same DataFrame and so that they remember its features.
-      splits.foreach(spl => FeatureTracker.registerTransform(m, spl, Seq[String](), Seq[String]()))
+      SyncableDataFramePaths.getPath(m) match {
+        case Some(path) => splits.foreach(spl => SyncableDataFramePaths.setPath(spl, path))
+        case None => {}
+      }
       splits
     }
   }
@@ -86,7 +88,7 @@ object SyncableDataFrame extends SyncableDataFrame {
       columns,
       numRows,
       tag=tag,
-      filepath = SyncableDataFramePaths.getPath(FeatureTracker.highestAncestor(df))
+      filepath = SyncableDataFramePaths.getPath(df)
     )
 
     modeldbDf
