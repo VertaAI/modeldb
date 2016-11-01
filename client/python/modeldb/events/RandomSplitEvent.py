@@ -1,19 +1,18 @@
 from Event import *
 
 class RandomSplitEvent(Event):
-    def __init__(self, df, weights, seed, result, experimentRunId):
+    def __init__(self, df, weights, seed, result):
         self.df = df
         self.weights = weights
         self.seed = seed
         self.result = result
-        self.experimentRunId = experimentRunId
 
     def makeEvent(self, syncer):
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
         allSyncableFrames = []
         for dataFrame in self.result:
             allSyncableFrames.append(syncer.convertDftoThrift(dataFrame))
-        re = modeldb_types.RandomSplitEvent(self.syncableDataFrame, self.weights, self.seed, allSyncableFrames, self.experimentRunId)
+        re = modeldb_types.RandomSplitEvent(self.syncableDataFrame, self.weights, self.seed, allSyncableFrames, syncer.experimentRun.id)
         return re
 
     def associate(self, res, syncer):
