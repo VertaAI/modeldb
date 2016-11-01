@@ -5,10 +5,10 @@ import jooq.sqlite.gen.tables.records.DataframeRecord;
 import jooq.sqlite.gen.tables.records.DataframesplitRecord;
 import jooq.sqlite.gen.tables.records.EventRecord;
 import jooq.sqlite.gen.tables.records.RandomspliteventRecord;
-import modeldb.RandomSplitEvent;
-import modeldb.RandomSplitEventResponse;
+import modeldb.*;
 import org.jooq.DSLContext;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -47,6 +47,23 @@ public class RandomSplitEventDao {
       })
       .boxed()
       .collect(Collectors.toList());
+
+    // Store a TransformEvent for each split. This allows us to preserve the ancestor chain of DataFrames.
+    DataFrame oldDataFrame = rse.oldDataFrame.setId(oldDf.getId());
+    Transformer rseTransformer = new Transformer(-1, Collections.emptyList(), "RandomSplitTransformer", "");
+    IntStream.range(0, rse.splitDataFrames.size())
+      .forEach(index -> {
+        DataFrame splitDataFrame = rse.splitDataFrames.get(index).setId(splitDfs.get(index).getId());
+        TransformEvent te = new TransformEvent(
+          oldDataFrame,
+          splitDataFrame,
+          rseTransformer,
+          Collections.emptyList(),
+          Collections.emptyList(),
+          rse.experimentRunId
+        );
+        TransformEventDao.store(te, ctx, false);
+      });
 
     return new RandomSplitEventResponse(oldDf.getId(), splitIds, ev.getId());
   }
