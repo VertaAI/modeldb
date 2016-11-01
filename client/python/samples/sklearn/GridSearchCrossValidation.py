@@ -47,4 +47,4 @@ print("The scores are computed on the full evaluation set.")
 
 SyncableMetrics.computeMetrics(clf, "precision", X_test, "", "",y_test)
 
-Syncer.instance.sync()
+SyncerObj.instance.sync()

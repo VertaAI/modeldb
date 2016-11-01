@@ -44,4 +44,4 @@ clf = GridSearchCV(pipeline, parameters, cv=None,
                        scoring='%s_weighted' % 'precision')
 
 clf.fitSync(x,y)
-Syncer.instance.sync()
+SyncerObj.instance.sync()

@@ -1,3 +1,4 @@
+import unittest
 import numpy as np
 from patsy import dmatrices
 import statsmodels.api as sm
@@ -60,4 +61,51 @@ SyncableMetrics.computeMetrics(model, 'recall', X, 'children', 'religious', X['r
 SyncableRandomSplit.randomSplit(X, [1,2,3], 1234)
 
 #Sync all the events to database
-Syncer.instance.sync()
+SyncerObj.instance.sync()
+
+
+class TestLinearModelEndToEnd(unittest.TestCase):
+    # Tests if workflow above is stored in database correctly
+    def test_project(self):
+        projectOverview = SyncerObj.client.getProjectOverviews()[0]
+        project = projectOverview.project
+        self.assertEquals(project.description, 'pandas-logistic-regression')
+        self.assertEquals(project.author, 'srinidhi')
+        self.assertEquals(project.name, 'test1')
+        self.assertNotEqual(project.id, -1)
+        self.assertNotEqual(projectOverview.numExperimentRuns, -1)
+        self.assertNotEqual(projectOverview.numExperiments, -1)
+
+    def test_models(self):
+        model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
+        projectOverview = SyncerObj.client.getProjectOverviews()[0]
+        project = projectOverview.project
+        # Two models are stored above - ensure both are in database
+        self.assertEquals(len(model_responses), 2)
+
+        model1 = model_responses[0]
+        model2 = model_responses[1]
+
+        self.assertEqual(model1.projectId, project.id)
+        self.assertEqual(model2.projectId, project.id)
+        self.assertEqual(model1.trainingDataFrame.numRows, X.shape[0])
+        self.assertEqual(model2.trainingDataFrame.numRows, X.shape[0])
+
+        transformer1 = model1.specification
+        transformer2 = model2.specification
+        self.assertEqual(transformer1.transformerType, 'LogisticRegression')
+        self.assertEqual(transformer2.transformerType, 'OneHotEncoder')
+
+    def test_metrics(self):
+        model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
+        model1 = model_responses[0]
+        model2 = model_responses[1]
+        # Metrics are only stored for the first model.
+        self.assertEquals(len(model1.metrics), 2)
+        self.assertEquals(len(model2.metrics), 0)
+        self.assertIn('recall', model1.metrics)
+        self.assertIn('precision', model1.metrics)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -65,4 +65,4 @@ pipe.fitSync(partialTraining, y_train)
 SyncableMetrics.computeMetrics(pipe, "f1", partialTesting, "predictionCol", "income_level", y_test)
 SyncableMetrics.computeMetrics(pipe, "precision", partialTesting, "predictionCol", "income_level", y_test)
 
-Syncer.instance.sync()
+SyncerObj.instance.sync()
