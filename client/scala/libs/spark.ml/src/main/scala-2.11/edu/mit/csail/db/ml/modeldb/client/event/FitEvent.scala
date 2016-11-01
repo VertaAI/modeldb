@@ -2,7 +2,6 @@ package edu.mit.csail.db.ml.modeldb.client.event
 
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client._
-import edu.mit.csail.db.ml.modeldb.util.FeatureTracker
 import modeldb.ModelDBService.FutureIface
 import org.apache.spark.ml
 import org.apache.spark.ml.{PipelineStage, SyncableEstimator, Transformer}
@@ -22,13 +21,11 @@ case class FitEvent(estimator: PipelineStage,
                     model: Transformer) extends ModelDbEvent {
 
   def makeEvent(mdbs: ModelDbSyncer) = {
-    // Here is another implementation that gets the feature columns.
-    // mdbs.getFeaturesForDf(dataframe).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator))
     modeldb.FitEvent(
       SyncableDataFrame(dataframe),
       SyncableEstimator(dataframe, estimator),
       SyncableTransformer(model),
-      FeatureTracker.originalFeatures(dataframe, ml.SyncableEstimator.getFeatureCols(estimator)),
+      mdbs.getFeaturesForDf(dataframe).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
       ml.SyncableEstimator.getPredictionCols(estimator),
       ml.SyncableEstimator.getLabelColumns(estimator),
       experimentRunId = mdbs.experimentRun.id,
