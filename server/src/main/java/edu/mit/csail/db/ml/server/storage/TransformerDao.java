@@ -55,7 +55,6 @@ public class TransformerDao {
     final TransformerRecord tRec = ctx.newRecord(TRANSFORMER);
     tRec.setId(null);
     tRec.setTransformertype(t.transformerType);
-    tRec.setWeights(t.weights.stream().map(String::valueOf).collect(Collectors.joining(",")));
     tRec.setTag(t.tag);
     tRec.setExperimentrun(experimentId);
     if (t.isSetFilepath()) {

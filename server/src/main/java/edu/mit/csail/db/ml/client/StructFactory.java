@@ -67,7 +67,6 @@ public class StructFactory {
   private static Transformer makeTransformer() {
     return new Transformer(
       EMPTY_PRIMARY_KEY,
-      IntStream.range(0, 5).mapToDouble(s -> generator.nextDouble()).boxed().collect(Collectors.toList()),
       "linear regression",
       makeTag()
     );

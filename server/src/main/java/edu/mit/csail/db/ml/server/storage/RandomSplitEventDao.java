@@ -56,7 +56,7 @@ public class RandomSplitEventDao {
     DataFrame oldDataFrame = rse.oldDataFrame.setId(oldDf.getId());
 
     // We'll use a dummy Transformer.
-    Transformer rseTransformer = new Transformer(-1, Collections.emptyList(), "RandomSplitTransformer", "");
+    Transformer rseTransformer = new Transformer(-1, "RandomSplitTransformer", "");
 
     // Store the TransformEvent for each split.
     List<Integer> splitIds = IntStream.range(0, rse.splitDataFrames.size())

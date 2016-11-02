@@ -23,7 +23,7 @@ object SyncableTransformer extends SyncableTransformer {
     val tag = mdbs.get.tag(transformer).getOrElse("")
     val transformerType = transformer.getClass.getSimpleName
     transformer match {
-      case _ => modeldb.Transformer(id, Seq.empty[Double], transformerType, tag=tag)
+      case _ => modeldb.Transformer(id, transformerType, tag=tag)
     }
   }
 }

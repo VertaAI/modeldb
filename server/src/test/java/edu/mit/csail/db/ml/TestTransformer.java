@@ -27,7 +27,7 @@ public class TestTransformer {
   private void testStore(
     boolean hasPresetFilepath, boolean generateFilepath) throws Exception {
     // Store the Transformer.
-    Transformer t = new Transformer(-1, Arrays.asList(1.1, 2.2), "ttype", "tag");
+    Transformer t = new Transformer(-1, "ttype", "tag");
     if (hasPresetFilepath) {
       t.setFilepath("/path/to/transformer");
     }
@@ -45,7 +45,6 @@ public class TestTransformer {
     Assert.assertEquals(tid, rec.getId().intValue());
     Assert.assertEquals("tag", rec.getTag());
     Assert.assertEquals("ttype", rec.getTransformertype());
-    Assert.assertEquals("1.1,2.2", rec.getWeights());
     Assert.assertEquals(expRunId, rec.getExperimentrun().intValue());
 
     if (hasPresetFilepath) {

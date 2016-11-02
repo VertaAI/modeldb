@@ -88,7 +88,6 @@ DROP TABLE IF EXISTS Transformer;
 CREATE TABLE Transformer (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   transformerType TEXT NOT NULL,
-  weights TEXT NOT NULL,
   tag TEXT, -- Can be empty.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
   filepath TEXT
