@@ -22,7 +22,7 @@ SyncerObj = Syncer(
     DefaultExperiment(),
     NewExperimentRun("Abc"))
 
-df = pd.read_csv("../data/adult.data.csv")
+df = pd.read_csv_sync("../data/adult.data.csv")
 newDf = pd.DataFrame()
 df.columns = ['age', 'workclass', 'fnlwgt', 'education','education_num','marital_status',
               'occupation', 'relationship','race', 'sex','capital_gain', 'capital_loss', 'hours_per_week', 'native_country'

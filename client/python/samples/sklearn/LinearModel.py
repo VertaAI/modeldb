@@ -1,6 +1,9 @@
+"""
+Sample workflow using scikit-learn linear_model.
+"""
 import unittest
-import numpy as np
 import argparse
+import numpy as np
 from patsy import dmatrices
 import statsmodels.api as sm
 
@@ -11,10 +14,10 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableMetrics
 from modeldb.sklearn_native import SyncableRandomSplit
 
-#Sample sequence of operations
 
-#Helper function to import data
-def loadPandasDataset():
+
+def load_pandas_dataset():
+    """Helper function to import data."""
     # load dataset
     dta = sm.datasets.fair.load_pandas().data
 
@@ -26,7 +29,7 @@ def loadPandasDataset():
     # occupation and occupation_husb
     y, X = dmatrices('affair ~ rate_marriage + age + yrs_married + children + \
                   religious + educ + C(occupation) + C(occupation_husb)',
-                  dta, return_type="dataframe")
+                     dta, return_type="dataframe")
     # flatten y into a 1-D array
     y = np.ravel(y)
     return X, y
@@ -42,33 +45,36 @@ SyncerObj = Syncer(
 
 #Create a sample logistic regression model, and test fit/predict
 model = linear_model.LogisticRegression()
-X,y = loadPandasDataset()
-X.tag("occupation dataset")
+data, target = load_pandas_dataset()
+data.tag("occupation dataset")
 
-model.fitSync(X,y)
-model.predictSync(X)
+model.fitSync(data, target)
+model.predictSync(data)
 model.tag("Logistic Regression model")
 
 #Test OneHotEncoder with transform method
 model2 = preprocessing.OneHotEncoder()
-model2.fitSync(X)
-model2.transformSync(X)
+model2.fitSync(data)
+model2.transformSync(data)
 model2.tag("One Hot encoding")
 
 #Test Metric Class
-precision_score = SyncableMetrics.computeMetrics(model, 'precision', X, 'children', 'religious', X['religious'])
-recall_score = SyncableMetrics.computeMetrics(model, 'recall', X, 'children', 'religious', X['religious'])
+precision_score = SyncableMetrics.computeMetrics(model, 'precision', data, 'children',
+                                                 'religious', data['religious'])
+recall_score = SyncableMetrics.computeMetrics(model, 'recall', data, 'children',
+                                              'religious', data['religious'])
 
 #Test Random-Split Event
-SyncableRandomSplit.randomSplit(X, [1,2,3], 1234)
+SyncableRandomSplit.randomSplit(data, [1, 2, 3], 1234)
 
 #Sync all the events to database
 SyncerObj.instance.sync()
 
 
 class TestLinearModelEndToEnd(unittest.TestCase):
-    # Tests if workflow above is stored in database correctly
+    """Tests if workflow above is stored in database correctly."""
     def test_project(self):
+        """Tests if project is stored correctly."""
         projectOverview = SyncerObj.client.getProjectOverviews()[0]
         project = projectOverview.project
         self.assertEquals(project.description, 'pandas-logistic-regression')
@@ -79,6 +85,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertGreaterEqual(projectOverview.numExperiments, 0)
 
     def test_models(self):
+        """Tests if the two models are stored correctly."""
         model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
         projectOverview = SyncerObj.client.getProjectOverviews()[0]
         project = projectOverview.project
@@ -109,6 +116,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertEqual(len(hyperparams2), 5)
 
     def test_metrics(self):
+        """Tests if metrics are stored correctly."""
         model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
         model1 = model_responses[0]
         model2 = model_responses[1]
@@ -122,7 +130,8 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertAlmostEqual(precision_score, model1.metrics['precision'][2])
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Pass in -test flag if you wish to run unittests on this workflow')
+    parser = argparse.ArgumentParser(description='Pass in '
+                                     ' -test flag if you wish to run unittests on this workflow')
     parser.add_argument('-test', action='store_true')
     args = parser.parse_args()
     if args.test:

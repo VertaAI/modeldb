@@ -22,7 +22,7 @@ from sklearn.grid_search import GridSearchCV
 import sklearn.metrics
 
 #Overrides the fit function for all models except for Pipeline and GridSearch Cross Validation, which have their own functions.
-def fitFn(self,X,y=None):
+def fitFn(self, X, y=None, sample_weight=None):
     df = X
     #Certain fit functions only accept one argument
     if y is None:
@@ -143,6 +143,12 @@ def addTagObject(self, tagName):
         self.tag = tagName
         Syncer.instance.storeTagObject(id(self), tagName)
 
+# Stores the filepath for a dataframe
+def storeDfPath(filepath_or_buffer, **kwargs):
+    df = pd.read_csv(filepath_or_buffer, **kwargs)
+    Syncer.instance.pathForDf[id(df)] = filepath_or_buffer
+    return df
+
 class Syncer(ModelDbSyncerBase.Syncer):
     def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
         super(Syncer, self).__init__(projectConfig, experimentConfig, experimentRunConfig)
@@ -150,8 +156,10 @@ class Syncer(ModelDbSyncerBase.Syncer):
         self.objectForId = {}
         self.tagForObject = {}
         self.objectForTag = {}
+        self.pathForDf = {}
         self.enableSyncFunctions()
         self.addTags()
+        self.addDataframePath()
 
     def __str__(self):
         return "SklearnSyncer"
@@ -211,13 +219,16 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def convertDftoThrift(self, df):
         tid = -1
         tag = ""
+        filePath = ""
         dfImm = id(df)
         if dfImm in self.idForObject:
             tid = self.idForObject[dfImm]
         if dfImm in self.tagForObject:
             tag = self.tagForObject[dfImm]
         dataFrameColumns = self.setDataFrameSchema(df)
-        modeldbDf = modeldb_types.DataFrame(tid, dataFrameColumns, df.shape[0], tag)
+        if dfImm in self.pathForDf:
+            filePath = self.pathForDf[dfImm]
+        modeldbDf = modeldb_types.DataFrame(tid, dataFrameColumns, df.shape[0], tag, filePath)
         return modeldbDf
 
     def convertSpectoThrift(self, spec, df):
@@ -243,6 +254,10 @@ class Syncer(ModelDbSyncerBase.Syncer):
                         Pipeline, GridSearchCV, PCA]
         for class_name in models:
             setattr(class_name, "tag", addTagObject)
+
+    # Adds the read_csv_sync function, allowing users to automatically track dataframe location
+    def addDataframePath(self):
+        a = setattr(pd, "read_csv_sync", storeDfPath)
 
     #This function extends the scikit classes to implement custom *Sync versions of methods. (i.e. fitSync() for fit())
     #Users can easily add more models to this function.
