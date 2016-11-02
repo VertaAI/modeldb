@@ -1,0 +1,43 @@
+body {
+  margin: 20px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+.project {
+  background-color: #eee;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.project:hover {
+  background-color: #ddd;
+}
+
+.project-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.project-time {
+  color: #aaa;
+}
+
+.project-model {
+  display: inline-block;
+}
+
+.project-model::after {
+  content:',';
+}
+
+.project-model:last-child::after {
+  content: '';
+}

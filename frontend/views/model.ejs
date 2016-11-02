@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/css/models.css' />
+    
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <div class="models inline-block">
+      <div class="model">
+        <div class="inline-block model-info">
+          <div class="kv"
+            data-key="id"
+            data-val="<%= model.model_id %>"
+          >
+            ID: <%= model.model_id %>
+          </div>
+          <div class="kv"
+            data-key="type"
+            data-val="<%= model.type %>"
+          >
+           Type: <%= model.type %>
+          </div>
+          <div class="kv"
+            data-key="date"
+            data-val="<%= model.created_at %>"
+          >
+            Date: <%= model.created_at %>
+          </div>
+        </div>
+        <div class="inline-block model-configs">
+          <% for (var j=0; j<model.configs.length; j++) { %>
+            <div class="model-config kv" 
+              data-key="<%=model.configs[j].key %>"
+              data-val="<%=model.configs[j].value %>"
+            >
+              <%= model.configs[j].key %>: <%= model.configs[j].value %>
+            </div>
+          <% } %>
+        </div>
+        <div class="inline-block model-metrics">
+          <% for (var j=0; j<model.metrics.length; j++) { %>
+            <div class="model-metric kv"
+              data-key="<%=model.metrics[j].key %>"
+              data-val="<%=model.metrics[j].value %>"
+                          data-num="true"
+            >
+              <%= model.metrics[j].key %>: <%= model.metrics[j].value %>
+            </div>
+          <% } %>
+        </div>
+        <div class="inline-block model-annotation">
+          <%= model.annotation %>
+        </div>
+        <div class="inline-block model-code">
+            <%= model.code %>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
