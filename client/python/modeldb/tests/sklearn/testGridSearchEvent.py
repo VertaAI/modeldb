@@ -54,7 +54,6 @@ class TestGridSearchEvent(unittest.TestCase):
         utils.validate_transformer_struct(transformer, self)
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.0],
             'SVC',
             '')
         utils.is_equal_transformer(transformer, expected_transformer, self)
@@ -76,9 +75,7 @@ class TestGridSearchEvent(unittest.TestCase):
             self.assertEquals(cv.seed, 0)
 
             hyperparameters = cv.spec.hyperparameters
-            features = cv.spec.features
             self.assertEquals(len(hyperparameters), 14)
-            self.assertEquals(features, ['A', 'B', 'C', 'D'])
 
             # We check these particular hyperparameters because we pass these as 
             # our tuned parameters above.

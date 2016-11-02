@@ -52,7 +52,6 @@ class TestPipelineEvent(unittest.TestCase):
         transformer = fitEvent.model
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.0],
             'Pipeline',
             'pipeline with pca + logistic')
         utils.is_equal_transformer(transformer, expected_transformer, self)
@@ -72,7 +71,6 @@ class TestPipelineEvent(unittest.TestCase):
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'Pipeline',
-            ['A', 'B'],
             [
                 modeldb_types.HyperParameter('logistic__n_jobs', '1', 'int', FMIN, FMAX), 
                 modeldb_types.HyperParameter('pca__copy', 'True', 'bool', FMIN, FMAX), 
@@ -102,7 +100,6 @@ class TestPipelineEvent(unittest.TestCase):
         transformer = fitEvent1.model
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.0],
             'PCA',
             'decomposition PCA')
         utils.is_equal_transformer(transformer, expected_transformer, self)
@@ -122,7 +119,6 @@ class TestPipelineEvent(unittest.TestCase):
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'PCA',
-            ['A', 'B'],
             [
                 modeldb_types.HyperParameter('copy', 'True', 'bool', FMIN, FMAX), 
                 modeldb_types.HyperParameter('n_components', 'None', 'NoneType', FMIN, FMAX), 
@@ -140,7 +136,6 @@ class TestPipelineEvent(unittest.TestCase):
         transformer = fitEvent2.model
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.08764694, 0.04159237],
             'LinearRegression',
             'basic linear reg')
         utils.is_equal_transformer(transformer, expected_transformer, self)
@@ -157,7 +152,6 @@ class TestPipelineEvent(unittest.TestCase):
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'LinearRegression',
-            [],
             [
                 modeldb_types.HyperParameter('copy_X', 'True', 'bool', FMIN, FMAX), 
                 modeldb_types.HyperParameter('normalize', 'False', 'bool', FMIN, FMAX), 
@@ -179,7 +173,6 @@ class TestPipelineEvent(unittest.TestCase):
         transformer = transformEvent1.transformer
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.0],
             'PCA',
             'decomposition PCA')
         utils.is_equal_transformer(transformer, expected_transformer, self)

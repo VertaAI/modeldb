@@ -37,7 +37,6 @@ class TestTransformEvent(unittest.TestCase):
         transformer = self.transformEvent.transformer
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.0],
             'LabelEncoder',
             'label encoder')
         utils.is_equal_transformer(transformer, expected_transformer, self)
@@ -78,7 +77,6 @@ class TestTransformEvent(unittest.TestCase):
             -1, 
             'LabelEncoder',
             [],
-            [],
             'label encoder') # Fix hyperparams.
         utils.is_equal_transformer_spec(expected_spec, spec, self)
 
@@ -99,7 +97,6 @@ class TestTransformEvent(unittest.TestCase):
         utils.validate_transformer_struct(transformer, self)
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [0.0],
             'LabelEncoder',
             'label encoder')
         utils.is_equal_transformer(transformer, expected_transformer, self)
