@@ -41,7 +41,6 @@ class TestFitEvent(unittest.TestCase):
                                     ['A', 'B', 'C', 'D', 'output'])
         expected_transformer = modeldb_types.Transformer(
             -1,
-            [-0.04034543,  0.03176766,  0.01384561, -0.16488021],
             'LinearRegression',
             'linear reg')
         utils.is_equal_transformer(transformer, expected_transformer, self)
@@ -52,7 +51,6 @@ class TestFitEvent(unittest.TestCase):
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'LinearRegression',
-            ['A', 'B', 'C', 'D', 'output'],
             [
                 modeldb_types.HyperParameter('copy_X', 'True', 'bool', FMIN, FMAX), 
                 modeldb_types.HyperParameter('normalize', 'False', 'bool', FMIN, FMAX), 

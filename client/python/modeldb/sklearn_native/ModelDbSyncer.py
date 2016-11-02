@@ -270,12 +270,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         if id(model) in self.tagForObject:
             tag = self.tagForObject[id(model)]
         transformerType = model.__class__.__name__
-        if hasattr(model, 'coef_'):
-            # Weights must be formatted as a list of doubles.
-            weights = np.concatenate(model.coef_, axis=0)
-        else:
-            weights = [0.0]
-        t = modeldb_types.Transformer(tid, weights, transformerType, tag)
+        t = modeldb_types.Transformer(tid, transformerType, tag)
         return t
 
     def convertDftoThrift(self, df):
@@ -306,7 +301,6 @@ class Syncer(ModelDbSyncerBase.Syncer):
             tid = self.idForObject[spec]
         if id(spec) in self.tagForObject:
             tag = self.tagForObject[id(spec)]
-        columns = self.setColumns(df)
         hyperparams = []
         params = spec.get_params()
         for param in params:
@@ -314,7 +308,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
                                               type(params[param]).__name__,
                                               sys.float_info.min, sys.float_info.max)
             hyperparams.append(hp)
-        ts = modeldb_types.TransformerSpec(tid, spec.__class__.__name__, columns, hyperparams, tag)
+        ts = modeldb_types.TransformerSpec(tid, spec.__class__.__name__, hyperparams, tag)
         return ts
 
     def addTags(self):

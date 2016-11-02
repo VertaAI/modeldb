@@ -29,7 +29,6 @@ def validate_experiment_run_struct(experimentRun, tester):
 def validate_transformer_spec_struct(spec, tester):
     tester.assertTrue(hasattr(spec, 'id'))
     tester.assertTrue(hasattr(spec, 'transformerType')) 
-    tester.assertTrue(hasattr(spec, 'features'))
     tester.assertTrue(hasattr(spec, 'hyperparameters'))
     tester.assertTrue(hasattr(spec, 'tag'))
 
@@ -50,7 +49,6 @@ def validate_dataframe_struct(dataframe, tester):
 
 def validate_transformer_struct(transformer, tester):
     tester.assertTrue(hasattr(transformer, 'id'))
-    tester.assertTrue(hasattr(transformer, 'weights')) 
     tester.assertTrue(hasattr(transformer, 'transformerType'))
     tester.assertTrue(hasattr(transformer, 'tag'))
 
@@ -122,7 +120,6 @@ def is_equal_dataframe(dataframe1, dataframe2, tester):
 def is_equal_transformer_spec(spec1, spec2, tester):
     tester.assertEqual(spec1.id, spec2.id)
     tester.assertEqual(spec1.transformerType, spec2.transformerType)
-    tester.assertEqual(spec1.features, spec2.features)
     tester.assertEqual(spec1.tag, spec2.tag)
 
     tester.assertEqual(len(spec1.hyperparameters), len(spec2.hyperparameters))
@@ -138,8 +135,6 @@ def is_equal_transformer_spec(spec1, spec2, tester):
 def is_equal_transformer(model1, model2, tester):
     tester.assertEqual(model1.id, model2.id)
     tester.assertEqual(model1.transformerType, model2.transformerType)
-    for i in range(0, len(model1.weights)):
-        tester.assertAlmostEqual(model1.weights[i], model2.weights[i])
     tester.assertEqual(model1.tag, model2.tag)
 
 def is_equal_project(project1, project2, tester):
