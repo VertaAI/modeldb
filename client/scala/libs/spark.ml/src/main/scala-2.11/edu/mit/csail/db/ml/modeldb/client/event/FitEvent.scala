@@ -23,7 +23,7 @@ case class FitEvent(estimator: PipelineStage,
   def makeEvent(mdbs: ModelDbSyncer) = {
     modeldb.FitEvent(
       SyncableDataFrame(dataframe),
-      SyncableEstimator(dataframe, estimator),
+      SyncableEstimator(estimator),
       SyncableTransformer(model),
       mdbs.getFeaturesForDf(dataframe).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
       ml.SyncableEstimator.getPredictionCols(estimator),

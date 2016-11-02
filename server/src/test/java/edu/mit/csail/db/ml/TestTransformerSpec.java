@@ -55,7 +55,6 @@ public class TestTransformerSpec {
       new TransformerSpec(
         -1,
         "ttype",
-        Collections.emptyList(), // TODO: Remove this when we remove the features field.
         Arrays.asList(
           new HyperParameter("hp1", "val1", "string", 1, 2),
           new HyperParameter("hp2", "val2", "int", 3, 4)

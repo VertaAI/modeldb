@@ -32,7 +32,7 @@ public class TestAnnotations {
   }
 
   private AnnotationFragment makeTransformerSpecFragment(String transformerType) {
-    TransformerSpec s = new TransformerSpec(-1, transformerType, Collections.emptyList(), Collections.emptyList(), "");
+    TransformerSpec s = new TransformerSpec(-1, transformerType, Collections.emptyList(), "");
     return new AnnotationFragment("spec", null, s, null, "");
   }
 

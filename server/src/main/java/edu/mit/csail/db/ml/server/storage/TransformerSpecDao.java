@@ -71,7 +71,6 @@ public class TransformerSpecDao {
     return new TransformerSpec(
       rec.getId(),
       rec.getTransformertype(),
-      Collections.emptyList(), //TODO: This is actually not used, we need to remove it.
       hps,
       rec.getTag()
     );

@@ -75,9 +75,8 @@ struct ExperimentRunEventResponse {
 struct TransformerSpec {
   1: i32 id = -1,
   2: string transformerType,
-  3: list<string> features,
-  4: list<HyperParameter> hyperparameters,
-  5: string tag = ""
+  3: list<HyperParameter> hyperparameters,
+  4: string tag = ""
 }
 
 // Simplified for now. Only LinReg, LogReg
