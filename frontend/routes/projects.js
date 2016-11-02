@@ -16,7 +16,7 @@ router.get('/', function(req, res, next) {
 router.get('/:id/models', function(req, res, next) {
   var projectId = req.params.id;
   api.getProjectModels(projectId, function(response) {
-    res.render('models2', {
+    res.render('models', {
       title: 'Models',
       models: response
     });

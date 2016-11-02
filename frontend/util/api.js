@@ -1,20 +1,14 @@
 var async = require('async');
-var Model = require('../schemas/model.js');
-var Project = require('../schemas/project.js');
 var Thrift = require('./thrift.js');
 
 module.exports = {
 
   getModel: function(modelId, callback) {
-    Model.getModel(modelId, callback);
-  },
-
-  getModels: function(callback) {
-    Model.getAll(callback);
+    //TODO: implement thrift call
+    return;
   },
 
   getProjectModels: function(projectId, callback) {
-    //Model.getProjectModels(projectId, callback);
     var models = []
 
     Thrift.client.getRunsAndExperimentsInProject(projectId, function(err, response) {
