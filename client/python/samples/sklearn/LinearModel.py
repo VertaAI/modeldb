@@ -17,7 +17,9 @@ from modeldb.sklearn_native import SyncableRandomSplit
 
 
 def load_pandas_dataset():
-    """Helper function to import data."""
+    """
+    Helper function to import data.
+    """
     # load dataset
     dta = sm.datasets.fair.load_pandas().data
 
@@ -72,9 +74,13 @@ SyncerObj.instance.sync()
 
 
 class TestLinearModelEndToEnd(unittest.TestCase):
-    """Tests if workflow above is stored in database correctly."""
+    """
+    Tests if workflow above is stored in database correctly.
+    """
     def test_project(self):
-        """Tests if project is stored correctly."""
+        """
+        Tests if project is stored correctly.
+        """
         projectOverview = SyncerObj.client.getProjectOverviews()[0]
         project = projectOverview.project
         self.assertEquals(project.description, 'pandas-logistic-regression')
@@ -85,7 +91,9 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertGreaterEqual(projectOverview.numExperiments, 0)
 
     def test_models(self):
-        """Tests if the two models are stored correctly."""
+        """
+        Tests if the two models are stored correctly.
+        """
         model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
         projectOverview = SyncerObj.client.getProjectOverviews()[0]
         project = projectOverview.project
@@ -116,7 +124,9 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertEqual(len(hyperparams2), 5)
 
     def test_metrics(self):
-        """Tests if metrics are stored correctly."""
+        """
+        Tests if metrics are stored correctly.
+        """
         model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
         model1 = model_responses[0]
         model2 = model_responses[1]
