@@ -26,7 +26,7 @@ case class AnnotationEvent(items: Any*) extends ModelDbEvent {
   private def makeEmptyFragment = modeldb.AnnotationFragment(
     "",
     modeldb.DataFrame(numRows=1),
-    modeldb.TransformerSpec(transformerType=""),
+    modeldb.TransformerSpec(),
     modeldb.Transformer(transformerType=""),
     ""
   )
