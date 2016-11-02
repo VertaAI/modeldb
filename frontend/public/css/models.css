@@ -1,6 +1,6 @@
 body {
-	margin: 20px;
-	font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  margin: 20px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -8,108 +8,108 @@ a {
 }
 
 h1 {
-	position: fixed;
-	top: 0;
-	margin: 0;
-	padding: 0.67em;
-	background-color: white;
-	z-index: 1;
-	width: 100%;
+  position: fixed;
+  top: 0;
+  margin: 0;
+  padding: 0.67em;
+  background-color: white;
+  z-index: 1;
+  width: 100%;
 }
 
 .filters-container {
-	width: 19%;
-	display: inline-block;
-	vertical-align: top;
-	position: fixed;
-	top: 70px;
+  width: 19%;
+  display: inline-block;
+  vertical-align: top;
+  position: fixed;
+  top: 70px;
 }
 
 .filters-info {
-	background-color: #eee;
-	padding: 10px;
+  background-color: #eee;
+  padding: 10px;
 }
 
 .filters-info h2 {
-	margin: 0 0 5px 0;
+  margin: 0 0 5px 0;
 }
 
 .filters {
-	height: 300px;
-	background-color: #eee;
-	overflow-y: auto;
+  height: 300px;
+  background-color: #eee;
+  overflow-y: auto;
 }
 
 .filter, .range {
-	margin: 10px;
-	padding: 5px;
-	background-color: #62e8e9;
-	border-radius: 2px;
+  margin: 10px;
+  padding: 5px;
+  background-color: #62e8e9;
+  border-radius: 2px;
 }
 
 .filter-key, .filter-val, .range-key {
-	display: inline-block;
-	vertical-align: top;
-	margin-left: 5px;
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 5px;
 }
 
 .filter-close, .range-close {
-	float: right;
-	color: #1BC4C4;
-	cursor: pointer;
-	transition: all 0.3s ease;
+  float: right;
+  color: #1BC4C4;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .filter-close:hover, .range-close:hover {
-	color: #000;
+  color: #000;
 }
 
 .range-options {
-	margin: 5px;
+  margin: 5px;
 }
 
 .range-input {
-	text-align: right;
-	margin-left: 5px;
-	width: calc(100% - 50px);
+  text-align: right;
+  margin-left: 5px;
+  width: calc(100% - 50px);
 }
 
 .inline-block {
-	display: inline-block;
-	vertical-align: top;
-	margin: 0 10px;
+  display: inline-block;
+  vertical-align: top;
+  margin: 0 10px;
 }
 
 .models {
-	margin-left: 21%;
-	margin-top: 50px;
+  margin-left: 21%;
+  margin-top: 50px;
 }
 
 .model {
-	margin: 0 20px 20px 6px;
-	background-color: #eee;
-	padding: 20px;
+  margin: 0 20px 20px 6px;
+  background-color: #eee;
+  padding: 20px;
 }
 
 .model-info {
-	width: 200px;
+  width: 200px;
 }
 
 .kv {
-	padding: 4px 7px;
-	cursor: pointer;
-	transition: background-color 0.3s ease;
-	border-radius: 2px;
+  padding: 4px 7px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 2px;
 }
 
 .ui-draggable-dragging{
-	pointer-events:none;
+  pointer-events:none;
 }
 
 .kv:hover {
-	background-color: #62e8e9;
+  background-color: #62e8e9;
 }
 
 .kv.ui-draggable-dragging {
-	background-color: #62e8e9;
+  background-color: #62e8e9;
 }
