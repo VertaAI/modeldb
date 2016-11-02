@@ -1,17 +1,21 @@
 ## Setup
 
-Start mongodb in a separate terminal window
+Follow setup instructions in ../server directory
 
-    $ sudo mongod
-    
-Import dummy data
+Start server in one terminal
 
-    $ cd frontend/data
-    $ chmod u+x import.sh
-    $ ./import.sh
-    
+    $ cd modeldb/server/
+    $ ./start_server.sh
+
+Generate thrift files
+
+    $ cd modeldb/frontend/
+    $ mkdir thrift
+    $ thrift -r -out thrift/ --gen js:node ../thrift/ModelDB.thrift 
+        
 Start up node server
 
-    $ cd ..
     $ npm install
     $ npm start
+
+Visit application at localhost:3000
