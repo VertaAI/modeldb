@@ -32,7 +32,7 @@ public class TestAnnotations {
   }
 
   private AnnotationFragment makeTransformerSpecFragment(String transformerType) {
-    TransformerSpec s = new TransformerSpec(-1, Collections.emptyList(), transformerType);
+    TransformerSpec s = new TransformerSpec(-1, transformerType, Collections.emptyList(), "");
     return new AnnotationFragment("spec", null, s, null, "");
   }
 
@@ -184,7 +184,7 @@ public class TestAnnotations {
     );
     Assert.assertEquals(
       "fourth",
-      TestBase.ctx().select(Tables.TRANSFORMERSPEC.TAG).from(Tables.TRANSFORMERSPEC).fetchOne().value1()
+      TestBase.ctx().select(Tables.TRANSFORMERSPEC.TRANSFORMERTYPE).from(Tables.TRANSFORMERSPEC).fetchOne().value1()
     );
   }
 

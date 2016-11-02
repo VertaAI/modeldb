@@ -54,6 +54,7 @@ public class TestTransformerSpec {
     int specId = TransformerSpecDao.store(
       new TransformerSpec(
         -1,
+        "ttype",
         Arrays.asList(
           new HyperParameter("hp1", "val1", "string", 1, 2),
           new HyperParameter("hp2", "val2", "int", 3, 4)
@@ -68,6 +69,7 @@ public class TestTransformerSpec {
     Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMERSPEC));
     TransformerspecRecord rec = TestBase.ctx().selectFrom(Tables.TRANSFORMERSPEC).fetchOne();
     Assert.assertEquals(specId, rec.getId().intValue());
+    Assert.assertEquals("ttype", rec.getTransformertype());
     Assert.assertEquals("tag", rec.getTag());
     Assert.assertEquals(expRunId, rec.getExperimentrun().intValue());
 
@@ -86,6 +88,7 @@ public class TestTransformerSpec {
     TransformerSpec spec = TransformerSpecDao.read(sid, TestBase.ctx());
 
     Assert.assertEquals(sid, spec.getId());
+    Assert.assertEquals("ttype", spec.getTransformerType());
     Assert.assertEquals(2, spec.hyperparameters.size());
     // Checking the hyperparameters should involve more code, but this will do for now.
     HyperParameter first = spec.hyperparameters.get(0);
