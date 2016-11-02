@@ -97,8 +97,8 @@ class TestLinearModelEndToEnd(unittest.TestCase):
 
         self.assertEqual(model1.projectId, project.id)
         self.assertEqual(model2.projectId, project.id)
-        self.assertEqual(model1.trainingDataFrame.numRows, X.shape[0])
-        self.assertEqual(model2.trainingDataFrame.numRows, X.shape[0])
+        self.assertEqual(model1.trainingDataFrame.numRows, data.shape[0])
+        self.assertEqual(model2.trainingDataFrame.numRows, data.shape[0])
 
         transformer1 = model1.specification
         transformer2 = model2.specification
@@ -120,6 +120,8 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
         model1 = model_responses[0]
         model2 = model_responses[1]
+
+        self.assertNotEqual(model1.trainingDataFrame.id, model2.trainingDataFrame.id)
 
         # Metrics are only stored for the first model.
         self.assertEquals(len(model1.metrics), 2)
