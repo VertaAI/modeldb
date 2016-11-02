@@ -62,7 +62,8 @@ public class Feature {
       df = te.getOlddf();
     }
 
-    return new ArrayList<>(features);
+    // Filter out empty strings and return.
+    return features.stream().filter(f -> !f.equals("")).collect(Collectors.toList());
   }
 
   public static CompareFeaturesResponse compareFeatures(int modelId1, int modelId2, DSLContext ctx)

@@ -15,9 +15,10 @@ import java.util.stream.IntStream;
 
 public class RandomSplitEventDao {
   public static RandomSplitEventResponse store(RandomSplitEvent rse, DSLContext ctx) {
+    // Store the old DataFrame.
     DataframeRecord oldDf = DataFrameDao.store(rse.oldDataFrame, rse.experimentRunId, ctx);
 
-
+    // Store the RandomSplitEvent.
     RandomspliteventRecord rseRec = ctx.newRecord(Tables.RANDOMSPLITEVENT);
     rseRec.setId(null);
     rseRec.setInputdataframeid(oldDf.getId());
@@ -25,17 +26,20 @@ public class RandomSplitEventDao {
     rseRec.setExperimentrun(rse.experimentRunId);
     rseRec.store();
 
+    // Store the associated Event.
     EventRecord ev = EventDao.store(rseRec.getId(), "random split", rse.experimentRunId, ctx);
 
+    // Store a DataFrame for each split.
     List<DataframeRecord> splitDfs = rse
       .splitDataFrames
       .stream()
       .map(df -> DataFrameDao.store(df, rse.experimentRunId, ctx))
       .collect(Collectors.toList());
 
-    List<Integer> splitIds = IntStream
+    // Store a DataFrameSplit for each split.
+    IntStream
       .range(0, rse.splitDataFrames.size())
-      .map(ind -> {
+      .forEach(ind -> {
         DataframesplitRecord splRec = ctx.newRecord(Tables.DATAFRAMESPLIT);
         splRec.setId(null);
         splRec.setSpliteventid(rseRec.getId());
@@ -43,17 +47,21 @@ public class RandomSplitEventDao {
         splRec.setDataframeid(splitDfs.get(ind).getId());
         splRec.setExperimentrun(rse.experimentRunId);
         splRec.store();
-        return splRec.getId();
-      })
-      .boxed()
-      .collect(Collectors.toList());
+        splRec.getId();
+      });
 
     // Store a TransformEvent for each split. This allows us to preserve the ancestor chain of DataFrames.
+
+    // Each split will derive from the original DataFrame.
     DataFrame oldDataFrame = rse.oldDataFrame.setId(oldDf.getId());
+
+    // We'll use a dummy Transformer.
     Transformer rseTransformer = new Transformer(-1, Collections.emptyList(), "RandomSplitTransformer", "");
-    IntStream.range(0, rse.splitDataFrames.size())
-      .forEach(index -> {
-        DataFrame splitDataFrame = rse.splitDataFrames.get(index).setId(splitDfs.get(index).getId());
+
+    // Store the TransformEvent for each split.
+    List<Integer> splitIds = IntStream.range(0, rse.splitDataFrames.size())
+      .mapToObj(index -> {
+        DataFrame splitDataFrame = rse.splitDataFrames.get(index);
         TransformEvent te = new TransformEvent(
           oldDataFrame,
           splitDataFrame,
@@ -62,8 +70,9 @@ public class RandomSplitEventDao {
           Collections.emptyList(),
           rse.experimentRunId
         );
-        TransformEventDao.store(te, ctx, false);
-      });
+        return TransformEventDao.store(te, ctx, false).newDataFrameId;
+      })
+      .collect(Collectors.toList());
 
     return new RandomSplitEventResponse(oldDf.getId(), splitIds, ev.getId());
   }
