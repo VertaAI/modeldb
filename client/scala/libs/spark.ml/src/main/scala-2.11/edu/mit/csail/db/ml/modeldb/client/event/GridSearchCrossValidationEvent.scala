@@ -59,7 +59,7 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       }
       modeldb.CrossValidationEvent(
         SyncableDataFrame(inputDataFrame),
-        SyncableEstimator(inputDataFrame, estimator),
+        SyncableEstimator(estimator),
         seed,
         evaluator.getClass.getSimpleName, // TODO: Replace this with a more useful value.
         ml.SyncableEstimator.getLabelColumns(estimator),
@@ -76,7 +76,7 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       numFolds,
       modeldb.FitEvent(
         SyncableDataFrame(inputDataFrame),
-        SyncableEstimator(inputDataFrame, bestEstimator),
+        SyncableEstimator(bestEstimator),
         SyncableTransformer(bestModel),
         labelColumns = ml.SyncableEstimator.getLabelColumns(bestEstimator),
         predictionColumns = ml.SyncableEstimator.getPredictionCols(bestEstimator),

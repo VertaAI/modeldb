@@ -172,21 +172,19 @@ object SyncableEstimator extends SyncableEstimator {
   }
 
   /**
-    * Create a TransformerSpec from an Estimator (and its associated DataFrame).
+    * Create a TransformerSpec from an Estimator.
     *
-    * @param df - The DataFrame that the stimator will be run on.
     * @param estimator - The Estimator. We set it as a PipelineStage because we can't easily type parametrize all
     *                  Estimators.
     * @return A TransformerSpec.
     */
-  def apply(df: DataFrame, estimator: PipelineStage)(implicit mdbs: Option[ModelDbSyncer]): modeldb.TransformerSpec =
-    apply(estimator)(mdbs).copy(features=df.columns)
+//  def apply(df: DataFrame, estimator: PipelineStage)(implicit mdbs: Option[ModelDbSyncer]): modeldb.TransformerSpec =
+//    apply(estimator)(mdbs)
 
   def apply(estimator: PipelineStage)(implicit mdbs: Option[ModelDbSyncer]): modeldb.TransformerSpec = {
     // Default values.
     var id = mdbs.get.id(estimator).getOrElse(-1)
     val tag = mdbs.get.tag(estimator).getOrElse("")
-    var name = estimator.getClass.getSimpleName
     var hyperparameters = extractHyperParameters(estimator.extractParamMap)
 
     // Override for custom classes.
@@ -198,8 +196,6 @@ object SyncableEstimator extends SyncableEstimator {
 
     modeldb.TransformerSpec(
       id,
-      name,
-      Seq[String](),
       hyperparameters,
       tag
     )

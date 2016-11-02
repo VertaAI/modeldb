@@ -66,7 +66,6 @@ CREATE TABLE DataFrameSplit (
 DROP TABLE IF EXISTS TransformerSpec;
 CREATE TABLE TransformerSpec (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  transformerType TEXT NOT NULL,
   tag TEXT, -- Can be empty.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
@@ -308,9 +307,9 @@ CREATE TABLE AnnotationFragment (
 -- Create a view for models (i.e. the transformers that have an associated FitEvent).
 DROP VIEW IF EXISTS model_view;
 CREATE VIEW model_view AS 
-  SELECT fe.id as fe_id, ts.transformertype as model_type, fe.transformer as model, fe.transformerspec as spec_id, fe.df as train_df
-  FROM fitevent fe, transformerspec ts
-  WHERE ts.id = fe.transformerspec order by fe.id;
+  SELECT fe.id as fe_id, t.transformertype as model_type, fe.transformer as model, fe.transformerspec as spec_id, fe.df as train_df
+  FROM fitevent fe, transformerspec ts, transformer t
+  WHERE ts.id = fe.transformerspec AND t.id = fe.transformer order by fe.id;
 
 -- Create a view for transformers which are not models
 DROP VIEW IF EXISTS transformer_view;
