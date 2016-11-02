@@ -81,10 +81,9 @@ struct TransformerSpec {
 // Simplified for now. Only LinReg, LogReg
 struct Transformer {
   1: i32 id = -1,
-  2: list<double> weights,
-  3: string transformerType,
-  4: string tag ="",
-  5: optional string filepath
+  2: string transformerType,
+  3: string tag ="",
+  4: optional string filepath
 }
 
 enum ProblemType {

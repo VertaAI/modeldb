@@ -27,7 +27,7 @@ public class TestAnnotations {
   }
 
   private AnnotationFragment makeTransformerFragment(String transformerType) {
-    Transformer t = new Transformer(-1, Collections.emptyList(), transformerType, "");
+    Transformer t = new Transformer(-1, transformerType, "");
     return new AnnotationFragment("transformer", null, null, t, "");
   }
 

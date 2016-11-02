@@ -138,7 +138,6 @@ public class TestBase {
     TransformerRecord rec = ctx().newRecord(Tables.TRANSFORMER);
     rec.setId(null);
     rec.setTransformertype(transformerType);
-    rec.setWeights("");
     rec.setTag("");
     rec.setExperimentrun(expRunId);
     rec.setFilepath(filepath);
