@@ -8,7 +8,6 @@ from thrift.protocol import TBinaryProtocol
 from ..basic import *
 from ..events import *
 import GridCrossValidation
-import SyncableDataFramePaths
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
 
