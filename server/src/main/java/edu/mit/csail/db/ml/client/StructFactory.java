@@ -116,6 +116,7 @@ public class StructFactory {
   private static TransformerSpec makeTransformerSpec() {
     return new TransformerSpec(
       EMPTY_PRIMARY_KEY,
+      "lin reg",
       Arrays.asList(
         makeHyperparameter(),
         makeHyperparameter(),

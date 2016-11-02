@@ -185,6 +185,7 @@ object SyncableEstimator extends SyncableEstimator {
     // Default values.
     var id = mdbs.get.id(estimator).getOrElse(-1)
     val tag = mdbs.get.tag(estimator).getOrElse("")
+    var name = estimator.getClass.getSimpleName
     var hyperparameters = extractHyperParameters(estimator.extractParamMap)
 
     // Override for custom classes.
@@ -196,6 +197,7 @@ object SyncableEstimator extends SyncableEstimator {
 
     modeldb.TransformerSpec(
       id,
+      name,
       hyperparameters,
       tag
     )

@@ -26,6 +26,7 @@ public class TransformerSpecDao {
     sRec.setId(null);
     sRec.setExperimentrun(experimentId);
     sRec.setTag(s.tag);
+    sRec.setTransformertype(s.transformerType);
     sRec.store();
 
     s.hyperparameters.forEach(hp -> {
@@ -69,6 +70,7 @@ public class TransformerSpecDao {
 
     return new TransformerSpec(
       rec.getId(),
+      rec.getTransformertype(),
       hps,
       rec.getTag()
     );

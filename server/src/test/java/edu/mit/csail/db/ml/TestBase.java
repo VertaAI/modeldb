@@ -148,7 +148,8 @@ public class TestBase {
   public static int createTransformerSpec(int expRunId, String transformerType) throws Exception {
     TransformerspecRecord rec = ctx().newRecord(Tables.TRANSFORMERSPEC);
     rec.setId(null);
-    rec.setTag(transformerType);
+    rec.setTransformertype(transformerType);
+    rec.setTag("");
     rec.setExperimentrun(expRunId);
     rec.store();
 
