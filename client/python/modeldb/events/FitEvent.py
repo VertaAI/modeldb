@@ -8,7 +8,7 @@ class FitEvent(Event):
 
     def makeEvent(self, syncer):
         self.syncableTransformer = syncer.convertModeltoThrift(self.model)
-        self.modelSpec = syncer.convertSpectoThrift(self.spec, self.df)
+        self.modelSpec = syncer.convertSpectoThrift(self.spec)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
         self.columns = syncer.setColumns(self.df)
         fe = modeldb_types.FitEvent(self.syncableDataFrame, self.modelSpec, self.syncableTransformer, 

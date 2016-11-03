@@ -150,7 +150,7 @@ class Syncer(object):
     def convertModeltoThrift(self, model):
         return model
 
-    def convertSpectoThrift(self, spec, df):
+    def convertSpectoThrift(self, spec):
         return spec
 
     def convertDftoThrift(self, df):
