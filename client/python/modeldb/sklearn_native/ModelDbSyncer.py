@@ -289,7 +289,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         modeldbDf = modeldb_types.DataFrame(tid, dataFrameColumns, df.shape[0], tag, filePath)
         return modeldbDf
 
-    def convertSpectoThrift(self, spec, df):
+    def convertSpectoThrift(self, spec):
         """
         Converts a TransformerSpec object into a Thrift object with appropriate fields.
         """
