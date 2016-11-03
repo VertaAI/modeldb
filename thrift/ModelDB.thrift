@@ -70,8 +70,6 @@ struct ExperimentRunEventResponse {
 }
 
 // update this to be model spec?
-// would make sense because it won't be
-// specific to the ML env
 struct TransformerSpec {
   1: i32 id = -1,
   2: string transformerType,
@@ -79,10 +77,11 @@ struct TransformerSpec {
   4: string tag = ""
 }
 
-// Simplified for now. Only LinReg, LogReg
 struct Transformer {
   1: i32 id = -1,
-  2: string transformerType,
+  // transformerType is present in spec as well as transformer 
+  // because some transformers may not have a spec associated with them
+  2: string transformerType, 
   3: string tag ="",
   4: optional string filepath
 }
