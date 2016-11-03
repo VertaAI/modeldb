@@ -1,6 +1,6 @@
 import sys
-import ModelDbSyncer
-import modeldb.basic.ModelDbSyncerBase
+import modeldb.sklearn_native.ModelDbSyncer
+import modeldb.basic.ModelDbSyncerBase as ModelDbSyncerBase
 
 class SyncerTest(ModelDbSyncerBase.Syncer):
     instance = None

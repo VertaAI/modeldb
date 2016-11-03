@@ -224,7 +224,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
 
     def sync(self):
         """
-        When this function is called, all events in the buffer are written to the database.
+        When this function is called, all events in the buffer are stored on server.
         """
         for b in self.bufferList:
             b.sync(self)
