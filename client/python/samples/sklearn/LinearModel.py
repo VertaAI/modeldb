@@ -16,6 +16,7 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableMetrics
 from modeldb.sklearn_native import SyncableRandomSplit
 
+ROOT_DIR = '../../../../server/'
 
 def load_pandas_dataset():
     """
@@ -84,8 +85,8 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         This executes at the beginning of unittest.
         Database is cleared before testing.
         """
-        os.system("cat ../../../../server/codegen/sqlite/clearDb.sql "
-                  "| sqlite3 ../../../../server/modeldb_test.db")
+        os.system("cat " + ROOT_DIR + "codegen/sqlite/clearDb.sql "
+                  "| sqlite3 " + ROOT_DIR + "modeldb_test.db")
         self.SyncerObj, self.x_test, self.mean_error = run_linear_model_workflow()
 
     def test_project(self):
