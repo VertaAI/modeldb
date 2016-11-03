@@ -25,7 +25,6 @@ class MetricEvent(Event):
     def associate(self, res, syncer):
         #generate identity for storing in dictionary
         dfImm = id(self.df)
-
         syncer.storeObject(dfImm,res.dfId)
         syncer.storeObject(self.model, res.modelId)
         syncer.storeObject(self, res.eventId)
