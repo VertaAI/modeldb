@@ -24,17 +24,17 @@ class TestTransformEvent(unittest.TestCase):
         X = np.random.choice(letters, size=(100, 1)).ravel()
         model = preprocessing.LabelEncoder()
         model.tag("label encoder")
-        SyncerTest.instance.clearBuffer()
-        model.fitSync(X)
-        model.transformSync(X)
+        SyncerTest.instance.clear_buffer()
+        model.fit_sync(X)
+        model.transform_sync(X)
         events = SyncerTest.instance.sync()
-        self.fitEvent = events[0]
-        self.transformEvent = events[1]
+        self.fit_event = events[0]
+        self.transform_event = events[1]
 
     # Tests Transformer values.
     def test_transformer_construction(self):
-        utils.validate_transform_event_struct(self.transformEvent, self)
-        transformer = self.transformEvent.transformer
+        utils.validate_transform_event_struct(self.transform_event, self)
+        transformer = self.transform_event.transformer
         expected_transformer = modeldb_types.Transformer(
             -1,
             'LabelEncoder',
@@ -43,7 +43,7 @@ class TestTransformEvent(unittest.TestCase):
 
     # Tests values of old dataframe of TransformEvent object.
     def test_old_dataframe(self):
-        old_df = self.transformEvent.oldDataFrame
+        old_df = self.transform_event.oldDataFrame
         utils.validate_dataframe_struct(old_df, self)
         expected_old_df = modeldb_types.DataFrame(
             -1,
@@ -54,7 +54,7 @@ class TestTransformEvent(unittest.TestCase):
 
     # Tests values of new dataframe of TransformEvent object.
     def test_new_dataframe(self):
-        new_df = self.transformEvent.newDataFrame
+        new_df = self.transform_event.newDataFrame
         utils.validate_dataframe_struct(new_df, self)
 
         new_df_column = new_df.schema[0]
@@ -71,8 +71,8 @@ class TestTransformEvent(unittest.TestCase):
 
     # Tests TransformerSpec values
     def test_transformer_spec_construction(self):
-        spec = self.fitEvent.spec
-        utils.validate_transformer_spec_struct(self.fitEvent.spec, self)
+        spec = self.fit_event.spec
+        utils.validate_transformer_spec_struct(self.fit_event.spec, self)
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'LabelEncoder',
@@ -82,7 +82,7 @@ class TestTransformEvent(unittest.TestCase):
 
     # Tests DataFrame values, associated with FitEvent
     def test_dataframe_fit_event(self):
-        df = self.fitEvent.df
+        df = self.fit_event.df
         utils.validate_dataframe_struct(df, self)
         expected_df = modeldb_types.DataFrame(
             -1,
@@ -93,7 +93,7 @@ class TestTransformEvent(unittest.TestCase):
 
     # Tests model values, associated with FitEvent
     def test_model_fit_event(self):
-        transformer = self.fitEvent.model
+        transformer = self.fit_event.model
         utils.validate_transformer_struct(transformer, self)
         expected_transformer = modeldb_types.Transformer(
             -1,

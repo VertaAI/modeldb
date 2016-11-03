@@ -31,7 +31,7 @@ X = digits.images.reshape((n_samples, -1))
 y = digits.target
 
 # Split the dataset in two equal parts
-X_train, X_test, y_train, y_test = train_test_split(
+x_train, x_test, y_train, y_test = train_test_split(
     X, y, test_size=0.5, random_state=0)
 
 # Set the parameters by cross-validation
@@ -40,11 +40,11 @@ tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
                     {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
 
 clf = GridSearchCV(SVC(C=1), tuned_parameters, cv=5)
-clf.fitSync(X_train, y_train)
+clf.fit_sync(x_train, y_train)
 
 print("The model is trained on the full development set.")
 print("The scores are computed on the full evaluation set.")
 
-SyncableMetrics.computeMetrics(clf, "precision", X_test, "", "",y_test)
+SyncableMetrics.compute_metrics(clf, "precision", x_test, "", "",y_test)
 
 SyncerObj.instance.sync()

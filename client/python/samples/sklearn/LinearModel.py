@@ -50,24 +50,24 @@ model = linear_model.LogisticRegression()
 data, target = load_pandas_dataset()
 data.tag("occupation dataset")
 
-model.fitSync(data, target)
-model.predictSync(data)
+model.fit_sync(data, target)
+model.predict_sync(data)
 model.tag("Logistic Regression model")
 
 #Test OneHotEncoder with transform method
 model2 = preprocessing.OneHotEncoder()
-model2.fitSync(data)
-model2.transformSync(data)
+model2.fit_sync(data)
+model2.transform_sync(data)
 model2.tag("One Hot encoding")
 
 #Test Metric Class
-precision_score = SyncableMetrics.computeMetrics(model, 'precision', data, 'children',
+precision_score = SyncableMetrics.compute_metrics(model, 'precision', data, 'children',
                                                  'religious', data['religious'])
-recall_score = SyncableMetrics.computeMetrics(model, 'recall', data, 'children',
+recall_score = SyncableMetrics.compute_metrics(model, 'recall', data, 'children',
                                               'religious', data['religious'])
 
 #Test Random-Split Event
-SyncableRandomSplit.randomSplit(data, [1, 2, 3], 1234)
+SyncableRandomSplit.random_split(data, [1, 2, 3], 1234)
 
 #Sync all the events to database
 SyncerObj.instance.sync()
@@ -95,8 +95,8 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         Tests if the two models are stored correctly.
         """
         model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
-        projectOverview = SyncerObj.client.getProjectOverviews()[0]
-        project = projectOverview.project
+        project_overview = SyncerObj.client.getProjectOverviews()[0]
+        project = project_overview.project
         # Two models are stored above - ensure both are in database
         self.assertEquals(len(model_responses), 2)
 

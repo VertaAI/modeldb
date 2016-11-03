@@ -15,12 +15,12 @@ class MetricEvent(Event):
         self.label_col = labelCol
         self.prediction_col = predictionCol
 
-    def makeEvent(self, syncer):
+    def make_event(self, syncer):
         """
         Constructs a thrift MetricEvent object with appropriate fields.
         """
-        syncable_transformer = syncer.convertModeltoThrift(self.model)
-        syncable_dataframe = syncer.convertDftoThrift(self.df)
+        syncable_transformer = syncer.convert_model_to_thrift(self.model)
+        syncable_dataframe = syncer.convert_df_to_thrift(self.df)
         me = modeldb_types.MetricEvent(
             syncable_dataframe,
             syncable_transformer,
@@ -28,7 +28,7 @@ class MetricEvent(Event):
             self.metric_value,
             self.label_col,
             self.prediction_col,
-            syncer.experimentRun.id)
+            syncer.experiment_run.id)
         return me
 
     def associate(self, res, syncer):
@@ -36,15 +36,15 @@ class MetricEvent(Event):
         Stores the server response ids into dictionary.
         """
         df_id = id(self.df)
-        syncer.storeObject(df_id, res.dfId)
-        syncer.storeObject(self.model, res.modelId)
-        syncer.storeObject(self, res.eventId)
+        syncer.store_object(df_id, res.dfId)
+        syncer.store_object(self.model, res.modelId)
+        syncer.store_object(self, res.eventId)
 
     def sync(self, syncer):
         """
         Stores MetricEvent on the server.
         """
-        me = self.makeEvent(syncer)
+        me = self.make_event(syncer)
         thrift_client = syncer.client
         res = thrift_client.storeMetricEvent(me)
         self.associate(res, syncer)

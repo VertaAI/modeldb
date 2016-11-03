@@ -10,11 +10,11 @@ from sklearn.grid_search import GridSearchCV
 import sklearn.metrics
 
 #Computes various scores for models, such as precision, recall, and f1_score.
-def computeMetrics(model, metric, X, predictionCol, labelCol, actual):
+def compute_metrics(model, metric, X, prediction_col, label_col, actual):
     predicted = model.predict(X)
-    computeMetric = metric + "_score"
-    metricFunc = getattr(sklearn.metrics, computeMetric)
-    score = metricFunc(actual, predicted, average='weighted')
-    metricEvent = MetricEvent(X, model, labelCol, predictionCol, metric, score)
-    ModelDbSyncer.Syncer.instance.addToBuffer(metricEvent)
+    compute_metric = metric + "_score"
+    metric_func = getattr(sklearn.metrics, compute_metric)
+    score = metric_func(actual, predicted, average='weighted')
+    metric_event = MetricEvent(X, model, label_col, prediction_col, metric, score)
+    ModelDbSyncer.Syncer.instance.add_to_buffer(metric_event)
     return score

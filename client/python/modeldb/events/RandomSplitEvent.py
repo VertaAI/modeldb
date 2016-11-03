@@ -13,16 +13,16 @@ class RandomSplitEvent(Event):
         self.seed = seed
         self.result = result
 
-    def makeEvent(self, syncer):
+    def make_event(self, syncer):
         """
         Constructs a thrift RandomSplitEvent object with appropriate fields.
         """
-        syncable_dataframe = syncer.convertDftoThrift(self.df)
+        syncable_dataframe = syncer.convert_df_to_thrift(self.df)
         all_syncable_frames = []
         for dataframe in self.result:
-            all_syncable_frames.append(syncer.convertDftoThrift(dataframe))
+            all_syncable_frames.append(syncer.convert_df_to_thrift(dataframe))
         re = modeldb_types.RandomSplitEvent(syncable_dataframe, self.weights, self.seed,
-                                            all_syncable_frames, syncer.experimentRun.id)
+            all_syncable_frames, syncer.experiment_run.id)
         return re
 
     def associate(self, res, syncer):
@@ -30,16 +30,16 @@ class RandomSplitEvent(Event):
         Stores the server response ids for all split dataframes into dictionary.
         """
         df_id = id(self.df)
-        syncer.storeObject(df_id, res.oldDataFrameId)
+        syncer.store_object(df_id, res.oldDataFrameId)
         for i in range(0, len(self.result)):
-            syncer.storeObject(id(self.result[i]), res.splitIds[i])
-        syncer.storeObject(self, res.splitEventId)
+            syncer.store_object(id(self.result[i]), res.splitIds[i])
+        syncer.store_object(self, res.splitEventId)
 
     def sync(self, syncer):
         """
         Stores RandomSplitEvent on the server.
         """
-        re = self.makeEvent(syncer)
+        re = self.make_event(syncer)
         thrift_client = syncer.client
         res = thrift_client.storeRandomSplitEvent(re)
         self.associate(res, syncer)

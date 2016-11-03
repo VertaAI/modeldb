@@ -10,7 +10,7 @@ class ExperimentEvent(Event):
     def __init__(self, experiment):
         self.experiment = experiment
 
-    def makeEvent(self, syncer):
+    def make_event(self, syncer):
         """
         Constructs a thrift ExperimentEvent object with appropriate fields.
         """
@@ -21,5 +21,5 @@ class ExperimentEvent(Event):
         Stores ExperimentEvent on the server.
         """
         thrift_client = syncer.client
-        res = thrift_client.storeExperimentEvent(self.makeEvent(syncer))
+        res = thrift_client.storeExperimentEvent(self.make_event(syncer))
         syncer.experiment.id = res.experimentId

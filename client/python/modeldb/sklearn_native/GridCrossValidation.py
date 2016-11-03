@@ -17,7 +17,7 @@ def fit(self, X, y=None):
 	return _fit(self, X, y, ParameterGrid(self.param_grid))
 
 #This overrides the _fit method typically found in grid_search.py.
-#Changes are clearly marked in comments, but the main change is near the end of the function, creating a new field, gridCVevent for storing attributes.
+#Changes are clearly marked in comments, but the main change is near the end of the function, creating a new field, grid_cv_event for storing attributes.
 def _fit(self, X, y, parameter_iterable):
     """Actual fitting,  performing the search over parameters."""
     estimator = self.estimator
@@ -40,7 +40,8 @@ def _fit(self, X, y, parameter_iterable):
     if self.verbose > 0:
         if isinstance(parameter_iterable, Sized):
             n_candidates = len(parameter_iterable)
-            print("Fitting {0} folds for each of {1} candidates, totalling {2} fits".format(len(cv), n_candidates,n_candidates * len(cv)))
+            print("Fitting {0} folds for each of {1} candidates, totalling \
+                {2} fits".format(len(cv), n_candidates,n_candidates * len(cv)))
 
     base_estimator = clone(self.estimator)
 
@@ -112,7 +113,7 @@ def _fit(self, X, y, parameter_iterable):
 
     # Change from original scikit code:
     # Populate new field with necessary attributes for storing cross-validation event
-    self.gridCVevent = [X, foldsForEstimator, 0, type_of_target(y), self.best_estimator_, self.best_estimator_ , n_folds]
+    self.grid_cv_event = [X, foldsForEstimator, 0, type_of_target(y), self.best_estimator_, self.best_estimator_ , n_folds]
     return self
 
 #This overrides the behavior of _fit_and_score method in cross_validation.py. Note that a new argument, foldsForEstimator, has been added to the function.
@@ -185,14 +186,14 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
 
     start_time = time.time()
 
-    X_train, y_train = _safe_split(estimator, X, y, train)
-    X_test, y_test = _safe_split(estimator, X, y, test, train)
+    x_train, y_train = _safe_split(estimator, X, y, train)
+    x_test, y_test = _safe_split(estimator, X, y, test, train)
 
     try:
         if y_train is None:
-            b = estimator.fit(X_train, **fit_params)
+            b = estimator.fit(x_train, **fit_params)
         else:
-            b = estimator.fit(X_train, y_train, **fit_params)
+            b = estimator.fit(x_train, y_train, **fit_params)
 
     except Exception as e:
         if error_score == 'raise':
@@ -211,9 +212,9 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
                              )
 
     else:
-        test_score = _score(estimator, X_test, y_test, scorer)
+        test_score = _score(estimator, x_test, y_test, scorer)
         if return_train_score:
-            train_score = _score(estimator, X_train, y_train, scorer)
+            train_score = _score(estimator, x_train, y_train, scorer)
 
     scoring_time = time.time() - start_time
 
@@ -229,7 +230,7 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
         print("[CV] %s %s" % ((64 - len(end_msg)) * '.', end_msg))
 
     ret = [train_score] if return_train_score else []
-    ret.extend([test_score, _num_samples(X_test), scoring_time])
+    ret.extend([test_score, _num_samples(x_test), scoring_time])
     if return_parameters:
         ret.append(parameters)
     return ret
