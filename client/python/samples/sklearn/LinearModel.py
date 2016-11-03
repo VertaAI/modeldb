@@ -48,8 +48,8 @@ def run_linear_model_workflow():
     # Hot encode occupation column of data
     hot_enc = preprocessing.OneHotEncoder()
     hot_enc.tag("Hot encoding occupation column")
-    hot_enc.fitSync(data['occupation'].reshape(-1,1))
-    hot_enc_rows = hot_enc.transformSync(data['occupation'].reshape(-1,1))
+    hot_enc.fit_sync(data['occupation'].reshape(-1,1))
+    hot_enc_rows = hot_enc.transform_sync(data['occupation'].reshape(-1,1))
     hot_enc_df = pd.DataFrame(hot_enc_rows.toarray())
 
     # Drop column as it is now encoded
@@ -58,19 +58,20 @@ def run_linear_model_workflow():
     # Join the hot encoded rows with the rest of the data
     data = data.join(hot_enc_df)
 
-    [x_train, x_test], [y_train, y_test] = SyncableRandomSplit.randomSplit(data, [0.7, 0.3], 1, target)
+    [x_train, x_test], [y_train, y_test] = SyncableRandomSplit.random_split(data,
+                                                                            [0.7, 0.3], 1, target)
 
     model = linear_model.LinearRegression()
     model.tag("Linear Regression model")
-    model.fitSync(x_train, y_train)
-    model.predictSync(x_test)
+    model.fit_sync(x_train, y_train)
+    model.predict_sync(x_test)
 
-    mean_error = SyncableMetrics.computeMetrics(model, mean_squared_error, x_test, '',
-                                                     '', y_test)
+    mean_error = SyncableMetrics.compute_metrics(model, mean_squared_error, x_test, '',
+                                                     'affairs', y_test)
 
     #Sync all the events to database
     SyncerObj.instance.sync()
-    return SyncerObj
+    return SyncerObj, x_test, mean_error
 
 
 class TestLinearModelEndToEnd(unittest.TestCase):
@@ -85,7 +86,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         os.system("cat ../../../../server/codegen/sqlite/clearDb.sql "
                   "| sqlite3 ../../../../server/modeldb_test.db")
-        self.SyncerObj = run_linear_model_workflow()
+        self.SyncerObj, self.x_test, self.mean_error = run_linear_model_workflow()
 
     def test_project(self):
         """
@@ -155,9 +156,9 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertEquals(len(model2.metrics), 1)
         self.assertIn('mean_squared_error', model2.metrics)
 
-        # Can't do this test currently because model2.trainingDataFrame.id maps to the x_train dataframe, 
-        # while metrics is stored under the x_test dataframe.
-        #self.assertAlmostEqual(mean_error, model2.metrics['mean_squared_error'][model2.trainingDataFrame.id])
+        dataframe_id = self.SyncerObj.id_for_object[id(self.x_test)]
+        self.assertAlmostEqual(self.mean_error,
+                               model2.metrics['mean_squared_error'][dataframe_id], places=4)
 
 
 if __name__ == '__main__':

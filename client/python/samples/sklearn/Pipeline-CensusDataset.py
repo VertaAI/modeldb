@@ -64,7 +64,7 @@ partial_testing = x_test[x_test.columns[:-1]]
 pipe.fit_sync(partial_training, y_train)
 
 #Compute various metrics on the testing set
-SyncableMetrics.computeMetrics(pipe, f1_score, partial_testing, "predictionCol", "income_level", y_test)
-SyncableMetrics.computeMetrics(pipe, precision_score, partial_testing, "predictionCol", "income_level", y_test)
+SyncableMetrics.compute_metrics(pipe, f1_score, partial_testing, "predictionCol", "income_level", y_test)
+SyncableMetrics.compute_metrics(pipe, precision_score, partial_testing, "predictionCol", "income_level", y_test)
 
 SyncerObj.instance.sync()

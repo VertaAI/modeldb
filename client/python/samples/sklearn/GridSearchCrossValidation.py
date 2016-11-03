@@ -47,6 +47,6 @@ print("The model is trained on the full development set.")
 print("The scores are computed on the full evaluation set.")
 
 
-SyncableMetrics.computeMetrics(clf, precision_score, x_test, "", "", y_test)
+SyncableMetrics.compute_metrics(clf, precision_score, x_test, "", "", y_test)
 
 SyncerObj.instance.sync()

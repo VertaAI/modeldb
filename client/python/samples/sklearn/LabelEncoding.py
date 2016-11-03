@@ -53,6 +53,6 @@ partial_training = x_train[x_train.columns[:-1]]
 partial_testing = x_test[x_test.columns[:-1]]
 lr.fit_sync(partial_training, y_train)
 
-SyncableMetrics.computeMetrics(lr, precision_score, partial_testing, "predictionCol", "income_level", y_test)
-SyncableMetrics.computeMetrics(lr, recall_score, partial_testing, "predictionCol", "income_level",y_test)
+SyncableMetrics.compute_metrics(lr, precision_score, partial_testing, "predictionCol", "income_level", y_test)
+SyncableMetrics.compute_metrics(lr, recall_score, partial_testing, "predictionCol", "income_level",y_test)
 SyncerObj.instance.sync()
