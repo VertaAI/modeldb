@@ -39,18 +39,9 @@ def fit_Fn(self, X, y=None, sample_weight=None):
         models = self.fit(X)
     else:
         models = self.fit(X, y)
-        yDf = pd.DataFrame(y)
-        if type(X) is pd.DataFrame:
-            df = X.join(yDf)
-        else:
-            #if X does not have column-names, we cannot perform a join, and
-            #must instead add a new column.
-            df = pd.DataFrame(X)
-            df['outputColumn'] = y
-    #Calls FitEvent in other class and adds to buffer
-    fitEvent = FitEvent(models, self, df)
+    fitEvent = FitEvent(models, self, X)
     if hasattr(X, 'tag') and X.tag != "":
-        addTagObject(df, X.tag)
+        addTagObject(X, X.tag)
     Syncer.instance.addToBuffer(fitEvent)
 
 def predictFn(self, X):
@@ -60,6 +51,13 @@ def predictFn(self, X):
     """
     predictArray = self.predict(X)
     predictDf = pd.DataFrame(predictArray)
+    # Assign names to the predicted columns.
+    # This is to ensure there are no merge conflicts when joining.
+    num_pred_cols = predictDf.shape[1]
+    pred_col_names = []
+    for i in range(0, num_pred_cols):
+        pred_col_names.append('pred_'+str(i))
+    predictDf.columns = pred_col_names
     newDf = X.join(predictDf)
     predictEvent = TransformEvent(X, newDf, self)
     Syncer.instance.addToBuffer(predictEvent)

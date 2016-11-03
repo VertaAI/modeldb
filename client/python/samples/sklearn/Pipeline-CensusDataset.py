@@ -5,6 +5,8 @@ sys.path.append('../')
 sys.path.append('../thrift/gen-py')
 from sklearn import preprocessing
 from sklearn import linear_model
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
 from sklearn.pipeline import Pipeline
 from sklearn import decomposition
 
@@ -62,7 +64,7 @@ partialTesting = X_test[X_test.columns[:-1]]
 pipe.fitSync(partialTraining, y_train)
 
 #Compute various metrics on the testing set
-SyncableMetrics.computeMetrics(pipe, "f1", partialTesting, "predictionCol", "income_level", y_test)
-SyncableMetrics.computeMetrics(pipe, "precision", partialTesting, "predictionCol", "income_level", y_test)
+SyncableMetrics.computeMetrics(pipe, f1_score, partialTesting, "predictionCol", "income_level", y_test)
+SyncableMetrics.computeMetrics(pipe, precision_score, partialTesting, "predictionCol", "income_level", y_test)
 
 SyncerObj.instance.sync()

@@ -1,19 +1,20 @@
 """
 Sample workflow using scikit-learn linear_model.
 """
+import os
 import unittest
 import argparse
 import numpy as np
-from patsy import dmatrices
 import statsmodels.api as sm
 
 from sklearn import linear_model
 from sklearn import preprocessing
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import recall_score
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableMetrics
 from modeldb.sklearn_native import SyncableRandomSplit
-
 
 
 def load_pandas_dataset():
@@ -21,69 +22,78 @@ def load_pandas_dataset():
     Helper function to import data.
     """
     # load dataset
-    dta = sm.datasets.fair.load_pandas().data
+    df = sm.datasets.fair.load_pandas().data
+    target = pd.DataFrame(df['affairs'])
+    df = df.drop('affairs', 1)
+    target = np.ravel(target)
+    return df, target
 
-    # add "affair" column: 1 represents having affairs, 0 represents not
-    dta['affair'] = (dta.affairs > 0).astype(int)
+def run_linear_model_workflow():
+    """
+    Sample workflow using OneHotEncoder and LinearRegression.
+    """
+    
+    name = "test1"
+    author = "srinidhi"
+    description = "pandas-linear-regression"
+    # Creating a new project
+    SyncerObj = Syncer(
+        NewOrExistingProject(name, author, description),
+        DefaultExperiment(),
+        NewExperimentRun("Abc"))
 
+    data, target = load_pandas_dataset()
+    data.tag("occupation dataset")
 
-    # create dataframes with an intercept column and dummy variables for
-    # occupation and occupation_husb
-    y, X = dmatrices('affair ~ rate_marriage + age + yrs_married + children + \
-                  religious + educ + C(occupation) + C(occupation_husb)',
-                     dta, return_type="dataframe")
-    # flatten y into a 1-D array
-    y = np.ravel(y)
-    return X, y
+    # Hot encode occupation column of data
+    hot_enc = preprocessing.OneHotEncoder()
+    hot_enc.tag("Hot encoding occupation column")
+    hot_enc.fitSync(data['occupation'].reshape(-1,1))
+    hot_enc_rows = hot_enc.transformSync(data['occupation'].reshape(-1,1))
+    hot_enc_df = pd.DataFrame(hot_enc_rows.toarray())
 
-# Creating a new project
-name = "test1"
-author = "srinidhi"
-description = "pandas-logistic-regression"
-SyncerObj = Syncer(
-    NewOrExistingProject(name, author, description),
-    DefaultExperiment(),
-    NewExperimentRun("Abc"))
+    # Drop column as it is now encoded
+    data = data.drop('occupation', axis=1)
 
-#Create a sample logistic regression model, and test fit/predict
-model = linear_model.LogisticRegression()
-data, target = load_pandas_dataset()
-data.tag("occupation dataset")
+    # Join the hot encoded rows with the rest of the data
+    data = data.join(hot_enc_df)
 
-model.fitSync(data, target)
-model.predictSync(data)
-model.tag("Logistic Regression model")
+    [x_train, x_test], [y_train, y_test] = SyncableRandomSplit.randomSplit(data, [0.7, 0.3], 1, target)
 
-#Test OneHotEncoder with transform method
-model2 = preprocessing.OneHotEncoder()
-model2.fitSync(data)
-model2.transformSync(data)
-model2.tag("One Hot encoding")
+    model = linear_model.LinearRegression()
+    model.tag("Linear Regression model")
+    model.fitSync(x_train, y_train)
+    model.predictSync(x_test)
 
-#Test Metric Class
-precision_score = SyncableMetrics.computeMetrics(model, 'precision', data, 'children',
-                                                 'religious', data['religious'])
-recall_score = SyncableMetrics.computeMetrics(model, 'recall', data, 'children',
-                                              'religious', data['religious'])
+    mean_error = SyncableMetrics.computeMetrics(model, mean_squared_error, x_test, '',
+                                                     '', y_test)
 
-#Test Random-Split Event
-SyncableRandomSplit.randomSplit(data, [1, 2, 3], 1234)
-
-#Sync all the events to database
-SyncerObj.instance.sync()
+    #Sync all the events to database
+    SyncerObj.instance.sync()
+    return SyncerObj
 
 
 class TestLinearModelEndToEnd(unittest.TestCase):
     """
     Tests if workflow above is stored in database correctly.
     """
+    @classmethod
+    def setUpClass(self):
+        """
+        This executes at the beginning of unittest.
+        Database is cleared before testing.
+        """
+        os.system("cat ../../../../server/codegen/sqlite/clearDb.sql "
+                  "| sqlite3 ../../../../server/modeldb_test.db")
+        self.SyncerObj = run_linear_model_workflow()
+
     def test_project(self):
         """
         Tests if project is stored correctly.
-        """
-        projectOverview = SyncerObj.client.getProjectOverviews()[0]
+        """   
+        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
         project = projectOverview.project
-        self.assertEquals(project.description, 'pandas-logistic-regression')
+        self.assertEquals(project.description, 'pandas-linear-regression')
         self.assertEquals(project.author, 'srinidhi')
         self.assertEquals(project.name, 'test1')
         self.assertGreaterEqual(project.id, 0)
@@ -94,9 +104,13 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         Tests if the two models are stored correctly.
         """
-        model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
-        projectOverview = SyncerObj.client.getProjectOverviews()[0]
+        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
         project = projectOverview.project
+        runs_and_exps = self.SyncerObj.client.getRunsAndExperimentsInProject(project.id)
+        # Get the latest experiment run id
+        exp_id = runs_and_exps.experimentRuns[-1].id
+        model_responses = self.SyncerObj.client.getExperimentRunDetails(exp_id).modelResponses
+        
         # Two models are stored above - ensure both are in database
         self.assertEquals(len(model_responses), 2)
 
@@ -105,47 +119,53 @@ class TestLinearModelEndToEnd(unittest.TestCase):
 
         self.assertEqual(model1.projectId, project.id)
         self.assertEqual(model2.projectId, project.id)
-        self.assertEqual(model1.trainingDataFrame.numRows, data.shape[0])
-        self.assertEqual(model2.trainingDataFrame.numRows, data.shape[0])
 
         transformer1 = model1.specification
         transformer2 = model2.specification
 
-        self.assertEqual(transformer1.transformerType, 'LogisticRegression')
-        self.assertEqual(transformer2.transformerType, 'OneHotEncoder')
+        self.assertEqual(transformer1.transformerType, 'OneHotEncoder')
+        self.assertEqual(transformer2.transformerType, 'LinearRegression')
 
-        self.assertEqual(transformer1.tag, 'Logistic Regression model')
-        self.assertEqual(transformer2.tag, 'One Hot encoding')
+        self.assertEqual(transformer1.tag, 'Hot encoding occupation column')
+        self.assertEqual(transformer2.tag, 'Linear Regression model')
 
         # Check hyperparameters for both models
         hyperparams1 = transformer1.hyperparameters
         hyperparams2 = transformer2.hyperparameters
-        self.assertEqual(len(hyperparams1), 14)
-        self.assertEqual(len(hyperparams2), 5)
+        self.assertEqual(len(hyperparams1), 5)
+        self.assertEqual(len(hyperparams2), 4)
 
     def test_metrics(self):
         """
         Tests if metrics are stored correctly.
         """
-        model_responses = SyncerObj.client.getExperimentRunDetails(1).modelResponses
+        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
+        project = projectOverview.project
+        runs_and_exps = self.SyncerObj.client.getRunsAndExperimentsInProject(project.id)
+        
+        # Get the latest experiment run id
+        exp_id = runs_and_exps.experimentRuns[-1].id
+        model_responses = self.SyncerObj.client.getExperimentRunDetails(exp_id).modelResponses
         model1 = model_responses[0]
         model2 = model_responses[1]
 
-        self.assertNotEqual(model1.trainingDataFrame.id, model2.trainingDataFrame.id)
+        # Metrics are only stored for the second model.
+        self.assertEquals(len(model1.metrics), 0)
+        self.assertEquals(len(model2.metrics), 1)
+        self.assertIn('mean_squared_error', model2.metrics)
 
-        # Metrics are only stored for the first model.
-        self.assertEquals(len(model1.metrics), 2)
-        self.assertEquals(len(model2.metrics), 0)
-        self.assertIn('recall', model1.metrics)
-        self.assertIn('precision', model1.metrics)
-        self.assertAlmostEqual(recall_score, model1.metrics['recall'][2])
-        self.assertAlmostEqual(precision_score, model1.metrics['precision'][2])
+        # Can't do this test currently because model2.trainingDataFrame.id maps to the x_train dataframe, 
+        # while metrics is stored under the x_test dataframe.
+        #self.assertAlmostEqual(mean_error, model2.metrics['mean_squared_error'][model2.trainingDataFrame.id])
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Pass in '
-                                     ' -test flag if you wish to run unittests on this workflow')
+    parser = argparse.ArgumentParser(description='Pass in -test flag if you wish'
+                                     ' to run unittests on this workflow')
     parser.add_argument('-test', action='store_true')
     args = parser.parse_args()
     if args.test:
         suite = unittest.TestLoader().loadTestsFromTestCase(TestLinearModelEndToEnd)
         unittest.TextTestRunner().run(suite)
+    else:
+        run_linear_model_workflow()

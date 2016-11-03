@@ -4,6 +4,8 @@ import sys
 
 from sklearn import preprocessing
 from sklearn import linear_model
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableRandomSplit
@@ -50,6 +52,6 @@ partialTraining = X_train[X_train.columns[:-1]]
 partialTesting = X_test[X_test.columns[:-1]]
 lr.fitSync(partialTraining, y_train)
 
-SyncableMetrics.computeMetrics(lr, "precision", partialTesting, "predictionCol", "income_level",y_test)
-SyncableMetrics.computeMetrics(lr, "recall", partialTesting, "predictionCol", "income_level",y_test)
+SyncableMetrics.computeMetrics(lr, precision_score, partialTesting, "predictionCol", "income_level",y_test)
+SyncableMetrics.computeMetrics(lr, recall_score, partialTesting, "predictionCol", "income_level",y_test)
 SyncerObj.instance.sync()
