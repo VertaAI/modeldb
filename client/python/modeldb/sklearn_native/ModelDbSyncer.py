@@ -28,107 +28,107 @@ from ..thrift.modeldb import ttypes as modeldb_types
 
 
 
-def fit_Fn(self, X, y=None, sample_weight=None):
+def fit_fn(self, x, y=None, sample_weight=None):
     """
     Overrides the fit function for all models except for Pipeline and GridSearch
     Cross Validation, which have their own functions.
     """
-    df = X
+    df = x
     #Certain fit functions only accept one argument
     if y is None:
-        models = self.fit(X)
+        models = self.fit(x)
     else:
-        models = self.fit(X, y)
-    fitEvent = FitEvent(models, self, X)
-    if hasattr(X, 'tag') and X.tag != "":
-        addTagObject(X, X.tag)
-    Syncer.instance.addToBuffer(fitEvent)
+        models = self.fit(x, y)
+    fit_event = FitEvent(models, self, df)
+    if hasattr(x, 'tag') and x.tag != "":
+        add_tag_object(df, x.tag)
+    Syncer.instance.add_to_buffer(fit_event)
 
-def predictFn(self, X):
+def predict_fn(self, x):
     """
     Overrides the predict function for models, provided that the predict
     function takes in one argument.
     """
-    predictArray = self.predict(X)
-    predictDf = pd.DataFrame(predictArray)
+    predict_array = self.predict(x)
+    predict_df = pd.DataFrame(predict_array)
     # Assign names to the predicted columns.
     # This is to ensure there are no merge conflicts when joining.
-    num_pred_cols = predictDf.shape[1]
+    num_pred_cols = predict_df.shape[1]
     pred_col_names = []
     for i in range(0, num_pred_cols):
         pred_col_names.append('pred_'+str(i))
-    predictDf.columns = pred_col_names
-    newDf = X.join(predictDf)
-    predictEvent = TransformEvent(X, newDf, self)
-    Syncer.instance.addToBuffer(predictEvent)
-    return predictArray
+    predict_df.columns = pred_col_names
+    new_df = x.join(predict_df)
+    predict_event = TransformEvent(x, new_df, self)
+    Syncer.instance.add_to_buffer(predict_event)
+    return predict_array
 
-def transformFn(self, X):
+def transform_fn(self, x):
     """
     Overrides the transform function for models, provided that the
     transform function takes in one argument.
     """
-    transformedOutput = self.transform(X)
-    if type(transformedOutput) is np.ndarray:
-        newDf = pd.DataFrame(transformedOutput)
+    transformed_output = self.transform(x)
+    if type(transformed_output) is np.ndarray:
+        new_df = pd.DataFrame(transformed_output)
     else:
-        newDf = pd.DataFrame(transformedOutput.toarray())
-    transformEvent = TransformEvent(X, newDf, self)
-    Syncer.instance.addToBuffer(transformEvent)
-    return transformedOutput
+        new_df = pd.DataFrame(transformed_output.toarray())
+    transform_event = TransformEvent(x, new_df, self)
+    Syncer.instance.add_to_buffer(transform_event)
+    return transformed_output
 
-def fitFnPipeline(self, X, y):
+def fit_fn_pipeline(self, x, y):
     """
     Overrides the Pipeline model's fit function
     """
     #Check if pipeline contains valid estimators and transformers
-    checkValidPipeline(self.steps)
+    check_valid_pipeline(self.steps)
 
     #Make Fit Event for overall pipeline
-    pipelineModel = self.fit(X, y)
-    pipelineFit = FitEvent(pipelineModel, self, X)
+    pipeline_model = self.fit(x, y)
+    pipeline_fit = FitEvent(pipeline_model, self, x)
 
     #Extract all the estimators from pipeline
     #All estimators call 'fit' and 'transform' except the last estimator (which only calls 'fit')
     names, sk_estimators = zip(*self.steps)
     estimators = sk_estimators[:-1]
-    lastEstimator = sk_estimators[-1]
+    last_estimator = sk_estimators[-1]
 
-    transformStages = []
-    fitStages = []
-    curDataset = X
+    transform_stages = []
+    fit_stages = []
+    cur_dataset = x
 
     for index, estimator in enumerate(estimators):
-        oldDf = curDataset
-        model = estimator.fit(oldDf, y)
-        transformedOutput = model.transform(oldDf)
+        old_df = cur_dataset
+        model = estimator.fit(old_df, y)
+        transformed_output = model.transform(old_df)
 
         #Convert transformed output into a proper pandas DataFrame object
-        if type(transformedOutput) is np.ndarray:
-            newDf = pd.DataFrame(transformedOutput)
+        if type(transformed_output) is np.ndarray:
+            new_df = pd.DataFrame(transformed_output)
         else:
-            newDf = pd.DataFrame(transformedOutput.toarray())
+            new_df = pd.DataFrame(transformed_output.toarray())
 
-        curDataset = transformedOutput
+        cur_dataset = transformed_output
 
         #populate the stages
-        transformEvent = TransformEvent(oldDf, newDf, model)
-        transformStages.append((index, transformEvent))
-        fitEvent = FitEvent(model, estimator, oldDf)
-        fitStages.append((index, fitEvent))
+        transform_event = TransformEvent(old_df, new_df, model)
+        transform_stages.append((index, transform_event))
+        fit_event = FitEvent(model, estimator, old_df)
+        fit_stages.append((index, fit_event))
 
     #Handle last estimator, which has a fit method (and may not have transform)
-    oldDf = curDataset
-    model = lastEstimator.fit(oldDf, y)
-    fitEvent = FitEvent(model, lastEstimator, oldDf)
-    fitStages.append((index+1, fitEvent))
+    old_df = cur_dataset
+    model = last_estimator.fit(old_df, y)
+    fit_event = FitEvent(model, last_estimator, old_df)
+    fit_stages.append((index+1, fit_event))
 
     #Create the pipeline event with all components
-    pipelineEvent = PipelineEvent(pipelineFit, transformStages, fitStages)
+    pipeline_event = PipelineEvent(pipeline_fit, transform_stages, fit_stages)
 
-    Syncer.instance.addToBuffer(pipelineEvent)
+    Syncer.instance.add_to_buffer(pipeline_event)
 
-def checkValidPipeline(steps):
+def check_valid_pipeline(steps):
     """
     Helper function to check whether a pipeline is constructed properly. Taken
     from original sklearn pipeline source code with minor modifications,
@@ -151,33 +151,33 @@ def checkValidPipeline(steps):
                         "'%s' (type %s) doesn't)"
                         % (estimator, type(estimator)))
 
-def fitFnGridSearch(self, X, y):
+def fit_fn_grid_search(self, x, y):
     """
     Overrides GridSearch Cross Validation's fit function
     """
-    GridCrossValidation.fit(self, X, y)
-    [inputDataFrame, crossValidations, seed, evaluator, bestModel,
-     bestEstimator, numFolds] = self.gridCVevent
+    GridCrossValidation.fit(self, x, y)
+    [input_data_frame, cross_validations, seed, evaluator, best_model,
+        best_estimator, num_folds] = self.grid_cv_event
 
     #Calls SyncGridCVEvent and adds to buffer.
-    gridEvent = GridSearchCVEvent(inputDataFrame, crossValidations,
-                                  seed, evaluator, bestModel, bestEstimator, numFolds)
-    Syncer.instance.addToBuffer(gridEvent)
+    grid_event = GridSearchCVEvent(input_data_frame, cross_validations,
+        seed, evaluator, best_model, best_estimator, num_folds)
+    Syncer.instance.add_to_buffer(grid_event)
 
-def addTagObject(self, tagName):
+def add_tag_object(self, tag_name):
     """
     Stores object with associated tagName
     """
-    if type(tagName) is str:
-        self.tag = tagName
-        Syncer.instance.storeTagObject(id(self), tagName)
+    if type(tag_name) is str:
+        self.tag = tag_name
+        Syncer.instance.store_tag_object(id(self), tag_name)
 
-def storeDfPath(filepath_or_buffer, **kwargs):
+def store_df_path(filepath_or_buffer, **kwargs):
     """
     Stores the filepath for a dataframe
     """
     df = pd.read_csv(filepath_or_buffer, **kwargs)
-    Syncer.instance.pathForDf[id(df)] = filepath_or_buffer
+    Syncer.instance.path_for_df[id(df)] = filepath_or_buffer
     return df
 
 class Syncer(ModelDbSyncerBase.Syncer):
@@ -185,50 +185,50 @@ class Syncer(ModelDbSyncerBase.Syncer):
     This is the Syncer class for sklearn functionality, responsible for
     storing events in the ModelDB.
     """
-    def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
-        super(Syncer, self).__init__(projectConfig, experimentConfig, experimentRunConfig)
-        self.idForObject = {}
-        self.objectForId = {}
-        self.tagForObject = {}
-        self.objectForTag = {}
-        self.pathForDf = {}
-        self.enableSyncFunctions()
-        self.addTags()
+    def __init__(self, project_config, experiment_config, experiment_run_config):
+        super(Syncer, self).__init__(project_config, experiment_config, experiment_run_config)
+        self.id_for_object = {}
+        self.object_for_id = {}
+        self.tag_for_object = {}
+        self.object_for_tag = {}
+        self.path_for_df = {}
+        self.enable_sync_functions()
+        self.add_tags()
         self.add_dataframe_path()
 
     def __str__(self):
         return "SklearnSyncer"
 
-    def storeObject(self, obj, Id):
+    def store_object(self, obj, Id):
         """
         Stores mapping between objects and their IDs.
         """
-        self.idForObject[obj] = Id
-        self.objectForId[Id] = obj
+        self.id_for_object[obj] = Id
+        self.object_for_id[Id] = obj
 
-    def storeTagObject(self, obj, tag):
+    def store_tag_object(self, obj, tag):
         """
         Stores mapping between objects and their tags.
         Tags are short, user-generated names.
         """
-        self.tagForObject[obj] = tag
-        self.objectForTag[tag] = obj
+        self.tag_for_object[obj] = tag
+        self.object_for_tag[tag] = obj
 
-    def addToBuffer(self, event):
+    def add_to_buffer(self, event):
         """
         As events are generated, they are added to this buffer.
         """
-        self.bufferList.append(event)
+        self.buffer_list.append(event)
 
     def sync(self):
         """
-        When this function is called, all events in the buffer are written to the database.
+        When this function is called, all events in the buffer are stored on server.
         """
-        for b in self.bufferList:
+        for b in self.buffer_list:
             b.sync(self)
-        self.clearBuffer()
+        self.clear_buffer()
 
-    def setColumns(self, df):
+    def set_columns(self, df):
         """
         Helper function to extract column names from a dataframe.
         Pandas dataframe objects are treated differently from
@@ -249,102 +249,107 @@ class Syncer(ModelDbSyncerBase.Syncer):
         Helper function designated to extract the column schema
         within a dataframe.
         """
-        dataFrameCols = []
-        columns = self.setColumns(df)
+        data_frame_cols = []
+        columns = self.set_columns(df)
         for i in range(0, len(columns)):
             columnName = str(columns[i])
             dfc = modeldb_types.DataFrameColumn(columnName, str(df.dtypes[i]))
-            dataFrameCols.append(dfc)
-        return dataFrameCols
+            data_frame_cols.append(dfc)
+        return data_frame_cols
 
-    def convertModeltoThrift(self, model):
+    def convert_model_to_thrift(self, model):
         """
         Converts a model into a Thrift object with appropriate fields.
         """
         tid = -1
         tag = ""
-        if model in self.idForObject:
-            tid = self.idForObject[model]
-        if id(model) in self.tagForObject:
-            tag = self.tagForObject[id(model)]
-        transformerType = model.__class__.__name__
-        t = modeldb_types.Transformer(tid, transformerType, tag)
+        if model in self.id_for_object:
+            tid = self.id_for_object[model]
+        if id(model) in self.tag_for_object:
+            tag = self.tag_for_object[id(model)]
+        transformer_type = model.__class__.__name__
+        t = modeldb_types.Transformer(tid, transformer_type, tag)
         return t
 
-    def convertDftoThrift(self, df):
+    def convert_df_to_thrift(self, df):
         """
         Converts a dataframe into a Thrift object with appropriate fields.
         """
         tid = -1
         tag = ""
-        filePath = ""
+        filepath = ""
         dfImm = id(df)
-        if dfImm in self.idForObject:
-            tid = self.idForObject[dfImm]
-        if dfImm in self.tagForObject:
-            tag = self.tagForObject[dfImm]
-        dataFrameColumns = self.setDataFrameSchema(df)
-        if dfImm in self.pathForDf:
-            filePath = self.pathForDf[dfImm]
-        modeldbDf = modeldb_types.DataFrame(tid, dataFrameColumns, df.shape[0], tag, filePath)
-        return modeldbDf
+        if dfImm in self.id_for_object:
+            tid = self.id_for_object[dfImm]
+        if dfImm in self.tag_for_object:
+            tag = self.tag_for_object[dfImm]
+        dataframe_columns = self.setDataFrameSchema(df)
+        if dfImm in self.path_for_df:
+            filepath = self.path_for_df[dfImm]
+        modeldb_df = modeldb_types.DataFrame(
+            tid, dataframe_columns, df.shape[0], tag, filepath)
+        return modeldb_df
 
-    def convertSpectoThrift(self, spec):
+    def convert_spec_to_thrift(self, spec):
         """
         Converts a TransformerSpec object into a Thrift object with appropriate fields.
         """
         tid = -1
         tag = ""
-        if spec in self.idForObject:
-            tid = self.idForObject[spec]
-        if id(spec) in self.tagForObject:
-            tag = self.tagForObject[id(spec)]
+        if spec in self.id_for_object:
+            tid = self.id_for_object[spec]
+        if id(spec) in self.tag_for_object:
+            tag = self.tag_for_object[id(spec)]
         hyperparams = []
         params = spec.get_params()
         for param in params:
-            hp = modeldb_types.HyperParameter(param, str(params[param]),
-                                              type(params[param]).__name__,
-                                              sys.float_info.min, sys.float_info.max)
+            hp = modeldb_types.HyperParameter(
+                param, 
+                str(params[param]),
+                type(params[param]).__name__,
+                sys.float_info.min, 
+                sys.float_info.max)
             hyperparams.append(hp)
-        ts = modeldb_types.TransformerSpec(tid, spec.__class__.__name__, hyperparams, tag)
+        ts = modeldb_types.TransformerSpec(tid, spec.__class__.__name__, 
+            hyperparams, tag)
         return ts
 
-    def addTags(self):
+    def add_tags(self):
         """
         Adds tag as a method to objects, allowing users to tag objects with their own description
         """
-        setattr(pd.DataFrame, "tag", addTagObject)
-        models = [LogisticRegression, LinearRegression, LabelEncoder, OneHotEncoder,
-                  Pipeline, GridSearchCV, PCA]
+        setattr(pd.DataFrame, "tag", add_tag_object)
+        models = [LogisticRegression, LinearRegression, LabelEncoder, 
+            OneHotEncoder, Pipeline, GridSearchCV, PCA]
         for class_name in models:
-            setattr(class_name, "tag", addTagObject)
+            setattr(class_name, "tag", add_tag_object)
 
     def add_dataframe_path(self):
         """
         Adds the read_csv_sync function, allowing users to automatically track dataframe location
         """
-        setattr(pd, "read_csv_sync", storeDfPath)
+        setattr(pd, "read_csv_sync", store_df_path)
 
-    def enableSyncFunctions(self):
+    def enable_sync_functions(self):
         """
         This function extends the scikit classes to implement custom
-        *Sync versions of methods. (i.e. fitSync() for fit())
+        *Sync versions of methods. (i.e. fit_sync() for fit())
         Users can easily add more models to this function.
         """
         #Linear Models (transform has been deprecated)
         for class_name in [LogisticRegression, LinearRegression]:
-            setattr(class_name, "fitSync", fit_Fn)
-            setattr(class_name, "predictSync", predictFn)
+            setattr(class_name, "fit_sync", fit_fn)
+            setattr(class_name, "predict_sync", predict_fn)
 
         #Preprocessing models
         for class_name in [LabelEncoder, OneHotEncoder]:
-            setattr(class_name, "fitSync", fit_Fn)
-            setattr(class_name, "transformSync", transformFn)
+            setattr(class_name, "fit_sync", fit_fn)
+            setattr(class_name, "transform_sync", transform_fn)
 
         #Pipeline model
         for class_name in [Pipeline]:
-            setattr(class_name, "fitSync", fitFnPipeline)
+            setattr(class_name, "fit_sync", fit_fn_pipeline)
 
         #Grid-Search Cross Validation model
         for class_name in [GridSearchCV]:
-            setattr(class_name, "fitSync", fitFnGridSearch)
+            setattr(class_name, "fit_sync", fit_fn_grid_search)

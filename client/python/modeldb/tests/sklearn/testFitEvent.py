@@ -28,16 +28,16 @@ class TestFitEvent(unittest.TestCase):
         X.tag("digits-dataset")
         model.tag("linear reg")
         
-        SyncerTest.instance.clearBuffer()
-        model.fitSync(X,y)
+        SyncerTest.instance.clear_buffer()
+        model.fit_sync(X,y)
         events = SyncerTest.instance.sync()
-        self.fitEvent = events[0]
+        self.fit_event = events[0]
 
     # Tests model values, associated with FitEvent
     def test_model(self):
-        utils.validate_fit_event_struct(self.fitEvent, self)
-        transformer = self.fitEvent.model
-        self.assertItemsEqual(self.fitEvent.featureColumns,
+        utils.validate_fit_event_struct(self.fit_event, self)
+        transformer = self.fit_event.model
+        self.assertItemsEqual(self.fit_event.featureColumns,
                                     ['A', 'B', 'C', 'D'])
         expected_transformer = modeldb_types.Transformer(
             -1,
@@ -47,7 +47,7 @@ class TestFitEvent(unittest.TestCase):
         
     # Tests TransformerSpec values.
     def test_transformer_spec(self):
-        spec = self.fitEvent.spec
+        spec = self.fit_event.spec
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'LinearRegression',
@@ -61,7 +61,7 @@ class TestFitEvent(unittest.TestCase):
         utils.is_equal_transformer_spec(spec, expected_spec, self)
 
     def test_dataframe(self):
-        df = self.fitEvent.df
+        df = self.fit_event.df
         expected_df = modeldb_types.DataFrame(
             -1, 
             [

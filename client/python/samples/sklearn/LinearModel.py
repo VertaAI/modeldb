@@ -104,6 +104,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         Tests if the two models are stored correctly.
         """
+
         projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
         project = projectOverview.project
         runs_and_exps = self.SyncerObj.client.getRunsAndExperimentsInProject(project.id)

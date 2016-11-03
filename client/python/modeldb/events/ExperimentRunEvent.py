@@ -1,13 +1,25 @@
-from Event import *
+"""
+Store Experiment Run on server.
+"""
+from modeldb.events.Event import *
 
 class ExperimentRunEvent(Event):
-    def __init__(self, experimentRun):
-        self.experimentRun = experimentRun
+    """
+    Class for creating and storing experiment_run_events
+    """
+    def __init__(self, experiment_run):
+        self.experiment_run = experiment_run
+
+    def make_event(self, syncer):
+        """
+        Constructs a thrift experiment_run_event object with appropriate fields.
+        """
+        return modeldb_types.ExperimentRunEvent(self.experiment_run)
 
     def sync(self, syncer):
-        thriftClient = syncer.client
-        res = thriftClient.storeExperimentRunEvent(self.makeEvent(syncer))
-        syncer.experimentRun.id = res.experimentRunId
-
-    def makeEvent(self, syncer):
-        return modeldb_types.ExperimentRunEvent(self.experimentRun)
+        """
+        Stores experiment_run_event on the server.
+        """
+        thrift_client = syncer.client
+        res = thrift_client.storeExperimentRunEvent(self.make_event(syncer))
+        syncer.experiment_run.id = res.experimentRunId

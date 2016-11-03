@@ -24,18 +24,18 @@ class TestRandomSplitEvent(unittest.TestCase):
         X.tag("digits-dataset")
         seed = 1       
         weights = [0.7, 0.3]
-        SyncerTest.instance.clearBuffer()
-        X_set, y_set = SyncableRandomSplit.randomSplit(X, [0.7, 0.3], seed, y)
+        SyncerTest.instance.clear_buffer()
+        x_set, y_set = SyncableRandomSplit.random_split(X, [0.7, 0.3], seed, y)
         events = SyncerTest.instance.sync()
-        self.randomSplitEvent = events[0]
+        self.random_split_event = events[0]
 
     def test_random_split_event(self):
-        utils.validate_random_split_event_struct(self.randomSplitEvent, self)
-        self.assertEquals(self.randomSplitEvent.weights, [0.7, 0.3])
-        self.assertEquals(self.randomSplitEvent.seed, 1)
+        utils.validate_random_split_event_struct(self.random_split_event, self)
+        self.assertEquals(self.random_split_event.weights, [0.7, 0.3])
+        self.assertEquals(self.random_split_event.seed, 1)
 
     def test_old_dataframe(self):
-        old_df = self.randomSplitEvent.oldDataFrame
+        old_df = self.random_split_event.oldDataFrame
         expected_df = modeldb_types.DataFrame(
             -1, 
             [
@@ -49,7 +49,7 @@ class TestRandomSplitEvent(unittest.TestCase):
         utils.is_equal_dataframe(old_df, expected_df, self)
         
     def test_split_dataframes(self):
-        split_data_frames = self.randomSplitEvent.splitDataFrames
+        split_data_frames = self.random_split_event.splitDataFrames
         self.assertEquals(len(split_data_frames), 2)
         dataframe1 = split_data_frames[0]
         dataframe2 = split_data_frames[1]

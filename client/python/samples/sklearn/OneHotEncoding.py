@@ -43,13 +43,13 @@ new_cols = [col for col in train.columns if "workclass_" in col or "sex_" in col
 
 logreg = linear_model.LogisticRegression(C=10)
 features = ['capital-gain', 'capital-loss', 'age'] + new_cols
-logreg.fitSync(train[features], train.income)
+logreg.fit_sync(train[features], train.income)
 
 [lb, test] = oneHotEncoding(lb, "workclass", test)
 [lb2, test] = oneHotEncoding(lb2, "sex", test)
 test = test.drop(["workclass", "sex"], axis=1)
 
-test_pred = logreg.predictSync(test[features])
+test_pred = logreg.predict_sync(test[features])
 test_proba = logreg.predict_proba(test[features])
 accuracy = metrics.accuracy_score(test.income, test_pred)
 SyncerObj.instance.sync()

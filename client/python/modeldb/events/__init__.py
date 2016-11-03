@@ -1,12 +1,12 @@
-from ExperimentEvent import ExperimentEvent
-from FitEvent import FitEvent
-from ExperimentRunEvent import ExperimentRunEvent
-from GridSearchCVEvent import GridSearchCVEvent
-from MetricEvent import MetricEvent
-from PipelineEvent import PipelineEvent
-from ProjectEvent import ProjectEvent
-from RandomSplitEvent import RandomSplitEvent
-from TransformEvent import TransformEvent
+from modeldb.events.ExperimentEvent import ExperimentEvent
+from modeldb.events.FitEvent import FitEvent
+from modeldb.events.ExperimentRunEvent import ExperimentRunEvent
+from modeldb.events.GridSearchCVEvent import GridSearchCVEvent
+from modeldb.events.MetricEvent import MetricEvent
+from modeldb.events.PipelineEvent import PipelineEvent
+from modeldb.events.ProjectEvent import ProjectEvent
+from modeldb.events.RandomSplitEvent import RandomSplitEvent
+from modeldb.events.TransformEvent import TransformEvent
 
 __all__ = ["FitEvent", "ExperimentEvent", "ExperimentRunEvent", \
     "GridSearchCVEvent", "MetricEvent", "PipelineEvent", "ProjectEvent", \

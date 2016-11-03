@@ -22,21 +22,21 @@ class TestGridSearchEvent(unittest.TestCase):
         X = pd.DataFrame(np.random.randint(0,100,size=(2000, 4)), columns=list('ABCD'))
         y = pd.DataFrame(np.random.randint(0,100,size=(2000, 1)), columns=['output'])
         X.tag("digits-dataset")
-        SyncerTest.instance.clearBuffer()
+        SyncerTest.instance.clear_buffer()
 
         tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
                      'C': [10, 100]}]
         clf = GridSearchCV(SVC(), tuned_parameters, cv=3)
         y = y.values.ravel()
-        clf.fitSync(X, y)
+        clf.fit_sync(X, y)
         events = SyncerTest.instance.sync()
-        self.gridSearchEvent = events[0]
+        self.grid_search_event = events[0]
 
 
     def test_gridcv_event(self):
-        utils.validate_grid_search_cv_event(self.gridSearchEvent, self)
-        self.assertEquals(self.gridSearchEvent.numFolds, 3)
-        best_fit_event = self.gridSearchEvent.bestFit
+        utils.validate_grid_search_cv_event(self.grid_search_event, self)
+        self.assertEquals(self.grid_search_event.numFolds, 3)
+        best_fit_event = self.grid_search_event.bestFit
         df = best_fit_event.df
         expected_df = modeldb_types.DataFrame(
             -1, 
@@ -61,7 +61,7 @@ class TestGridSearchEvent(unittest.TestCase):
 
         
     def test_cross_validation_event(self):
-        cross_validations = self.gridSearchEvent.crossValidations
+        cross_validations = self.grid_search_event.crossValidations
         # Number of cross validations is equal to number of combinations of parameters, 
         # multiplied by the number of folds.
         self.assertEquals(len(cross_validations), 12)
@@ -88,14 +88,14 @@ class TestGridSearchEvent(unittest.TestCase):
                     self.assertEquals(hyperparam.value, 'rbf')
             
     def test_cross_validation_fold(self):
-        cross_validations = self.gridSearchEvent.crossValidations
+        cross_validations = self.grid_search_event.crossValidations
         for cv in cross_validations:
             folds = cv.folds
             for fold in folds:
                 utils.validate_cross_validation_fold(fold, self)
-                training_Df = fold.trainingDf
-                validation_Df = fold.validationDf
-                self.assertEquals(training_Df.numRows + validation_Df.numRows, 2000)
+                training_df = fold.trainingDf
+                validation_df = fold.validationDf
+                self.assertEquals(training_df.numRows + validation_df.numRows, 2000)
 
     
 if __name__ == '__main__':
