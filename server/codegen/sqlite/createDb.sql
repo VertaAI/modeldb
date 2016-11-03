@@ -233,6 +233,7 @@ CREATE TABLE PipelineStage (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   pipelineFitEvent INTEGER REFERENCES FitEvent NOT NULL,
   transformOrFitEvent INTEGER REFERENCES Event NOT NULL,
+  isFit INTEGER NOT NULL, -- 0 if this is a Transform stage and 1 if this is a Fit stage.
   stageNumber INTEGER NOT NULL,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
