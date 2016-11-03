@@ -38,7 +38,7 @@ class TestFitEvent(unittest.TestCase):
         utils.validate_fit_event_struct(self.fit_event, self)
         transformer = self.fit_event.model
         self.assertItemsEqual(self.fit_event.featureColumns,
-                                    ['A', 'B', 'C', 'D', 'output'])
+                                    ['A', 'B', 'C', 'D'])
         expected_transformer = modeldb_types.Transformer(
             -1,
             'LinearRegression',
@@ -68,8 +68,7 @@ class TestFitEvent(unittest.TestCase):
                 modeldb_types.DataFrameColumn('A', 'int64'), 
                 modeldb_types.DataFrameColumn('B', 'int64'), 
                 modeldb_types.DataFrameColumn('C', 'int64'), 
-                modeldb_types.DataFrameColumn('D', 'int64'),
-                modeldb_types.DataFrameColumn('output', 'int64')
+                modeldb_types.DataFrameColumn('D', 'int64')
             ],
             100,
             'digits-dataset')

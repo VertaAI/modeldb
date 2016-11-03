@@ -4,6 +4,8 @@ import sys
 
 from sklearn import preprocessing
 from sklearn import linear_model
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
 from sklearn.pipeline import Pipeline
 from sklearn import decomposition
 
@@ -62,9 +64,7 @@ partial_testing = x_test[x_test.columns[:-1]]
 pipe.fit_sync(partial_training, y_train)
 
 #Compute various metrics on the testing set
-SyncableMetrics.compute_metrics(
-    pipe, "f1", partial_testing, "predictionCol", "income_level", y_test)
-SyncableMetrics.compute_metrics(
-    pipe, "precision", partial_testing, "predictionCol", "income_level", y_test)
+SyncableMetrics.compute_metrics(pipe, f1_score, partial_testing, "predictionCol", "income_level", y_test)
+SyncableMetrics.compute_metrics(pipe, precision_score, partial_testing, "predictionCol", "income_level", y_test)
 
 SyncerObj.instance.sync()

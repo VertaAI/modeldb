@@ -8,6 +8,8 @@ from sklearn import svm
 from sklearn.datasets import samples_generator
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
 from sklearn.pipeline import Pipeline
 
 from modeldb.sklearn_native.ModelDbSyncer import *
@@ -45,8 +47,8 @@ anova_svm = Pipeline([('anova', anova_filter),('svc', clf)])
 anova_svm.fit_sync(x_train, y_train)
 
 #Compute metrics for the model on the testing set
-SyncableMetrics.compute_metrics(
-    anova_svm, "f1", x_test, "predictionCol", "label_col", y_test)
-SyncableMetrics.compute_metrics(
-    anova_svm, "precision", x_test, "predictionCol", "label_col", y_test)
+
+SyncableMetrics.compute_metrics(anova_svm, f1_score, x_test, "predictionCol", "label_col", y_test)
+SyncableMetrics.compute_metrics(anova_svm, precision_score, x_test, "predictionCol", "label_col",y_test)
+
 SyncerObj.instance.sync()
