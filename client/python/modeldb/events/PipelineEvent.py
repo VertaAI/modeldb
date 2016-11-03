@@ -13,23 +13,23 @@ class PipelineEvent(Event):
         self.transform_stages = transformStages
         self.fit_stages = fitStages
 
-    def makeEvent(self, syncer):
+    def make_event(self, syncer):
         """
         Constructs a thrift PipelineEvent object using the
         captured transform and fit stages.
         """
-        pipeline_first_fit_event = self.first_pipeline_event.makeEvent(syncer)
+        pipeline_first_fit_event = self.first_pipeline_event.make_event(syncer)
         transform_event_stages = []
         fit_event_stages = []
         for index, transform_event in self.transform_stages:
             transform_event_stages.append(
                 modeldb_types.PipelineTransformStage(index,
-                                                     transform_event.makeEvent(syncer)))
+                                                     transform_event.make_event(syncer)))
         for index, fit_event in self.fit_stages:
             fit_event_stages.append(modeldb_types.PipelineFitStage(index,
-                                                                   fit_event.makeEvent(syncer)))
+                                                                   fit_event.make_event(syncer)))
         pe = modeldb_types.PipelineEvent(pipeline_first_fit_event, transform_event_stages,
-                                         fit_event_stages, syncer.experimentRun.id)
+                                         fit_event_stages, syncer.experiment_run.id)
         return pe
 
     def associate(self, res, syncer):
@@ -47,7 +47,7 @@ class PipelineEvent(Event):
         """
         Stores PipelineEvent on the server.
         """
-        pe = self.makeEvent(syncer)
+        pe = self.make_event(syncer)
         thrift_client = syncer.client
         res = thrift_client.storePipelineEvent(pe)
         self.associate(res, syncer)

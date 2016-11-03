@@ -1,11 +1,7 @@
 import numpy as np
 import pandas as pd
 import sys
-sys.path.append('../')
-sys.path.append('../thrift/gen-py')
 
-from sklearn import preprocessing
-from sklearn import linear_model
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.linear_model import SGDClassifier
@@ -43,5 +39,5 @@ pipeline = Pipeline([
 clf = GridSearchCV(pipeline, parameters, cv=None,
                        scoring='%s_weighted' % 'precision')
 
-clf.fitSync(x,y)
+clf.fit_sync(x,y)
 SyncerObj.instance.sync()

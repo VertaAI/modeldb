@@ -21,12 +21,12 @@ class TestProjectEvent(unittest.TestCase):
             DefaultExperiment(),
             NewExperimentRun("Abc"))
         events = SyncerTest.instance.sync()
-        self.projectEvent = events[0]
-        self.experimentEvent = events[1]
-        self.experimentRunEvent = events[2]
+        self.project_event = events[0]
+        self.experiment_event = events[1]
+        self.experiment_run_event = events[2]
 
     def test_project_creation(self):
-        project = self.projectEvent.project
+        project = self.project_event.project
         utils.validate_project_struct(project, self)
         expected_project = modeldb_types.Project(
             -1,
@@ -36,7 +36,7 @@ class TestProjectEvent(unittest.TestCase):
         utils.is_equal_project(expected_project, project, self)
 
     def test_experiment_creation(self):
-        experiment = self.experimentEvent.experiment
+        experiment = self.experiment_event.experiment
         utils.validate_experiment_struct(experiment, self)
         expected_experiment = modeldb_types.Experiment(
             -1,
@@ -47,13 +47,13 @@ class TestProjectEvent(unittest.TestCase):
         utils.is_equal_experiment(expected_experiment, experiment, self)
 
     def test_experiment_run_creation(self):
-        experimentRun = self.experimentRunEvent.experimentRun
-        utils.validate_experiment_run_struct(experimentRun, self)
+        experiment_run = self.experiment_run_event.experimentRun
+        utils.validate_experiment_run_struct(experiment_run, self)
         expected_experiment_run = modeldb_types.ExperimentRun(
             -1,
             -1,
             'Abc')
-        utils.is_equal_experiment_run(expected_experiment_run, experimentRun, self)
+        utils.is_equal_experiment_run(expected_experiment_run, experiment_run, self)
 
 # Tests new experiment creation
 class TestNewProjectEvent(unittest.TestCase):
@@ -64,12 +64,12 @@ class TestNewProjectEvent(unittest.TestCase):
             NewOrExistingExperiment("expName", "expDesc"),
             NewExperimentRun("expRunDesc"))
         events = SyncerTest.instance.sync()
-        self.projectEvent = events[0]
-        self.experimentEvent = events[1]
-        self.experimentRunEvent = events[2]
+        self.project_event = events[0]
+        self.experiment_event = events[1]
+        self.experiment_run_event = events[2]
 
     def test_new_project_creation(self):
-        project = self.projectEvent.project
+        project = self.project_event.project
         utils.validate_project_struct(project, self)
         expected_project = modeldb_types.Project(
             -1,
@@ -79,7 +79,7 @@ class TestNewProjectEvent(unittest.TestCase):
         utils.is_equal_project(expected_project, project, self)
 
     def test_new_experiment_creation(self):
-        experiment = self.experimentEvent.experiment
+        experiment = self.experiment_event.experiment
         utils.validate_experiment_struct(experiment, self)
         expected_experiment = modeldb_types.Experiment(
             -1,
@@ -90,13 +90,13 @@ class TestNewProjectEvent(unittest.TestCase):
         utils.is_equal_experiment(expected_experiment, experiment, self)
 
     def test_new_experiment_run_creation(self):
-        experimentRun = self.experimentRunEvent.experimentRun
-        utils.validate_experiment_run_struct(experimentRun, self)
+        experiment_run = self.experiment_run_event.experimentRun
+        utils.validate_experiment_run_struct(experiment_run, self)
         expected_experiment_run = modeldb_types.ExperimentRun(
             -1,
             -1,
             'expRunDesc')
-        utils.is_equal_experiment_run(expected_experiment_run, experimentRun, self)
+        utils.is_equal_experiment_run(expected_experiment_run, experiment_run, self)
 
 if __name__ == '__main__':
     unittest.main()

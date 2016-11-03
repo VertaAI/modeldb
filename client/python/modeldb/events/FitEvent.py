@@ -12,17 +12,17 @@ class FitEvent(Event):
         self.spec = spec
         self.df = df
 
-    def makeEvent(self, syncer):
+    def make_event(self, syncer):
         """
         Constructs a thrift FitEvent object with appropriate fields.
         """
-        syncable_transformer = syncer.convertModeltoThrift(self.model)
-        model_spec = syncer.convertSpectoThrift(self.spec)
-        syncable_dataframe = syncer.convertDftoThrift(self.df)
-        columns = syncer.setColumns(self.df)
+        syncable_transformer = syncer.convert_model_to_thrift(self.model)
+        model_spec = syncer.convert_spec_to_thrift(self.spec)
+        syncable_dataframe = syncer.convert_df_to_thrift(self.df)
+        columns = syncer.set_columns(self.df)
         fe = modeldb_types.FitEvent(syncable_dataframe, model_spec,
                                     syncable_transformer, columns,
-                                    [], [], syncer.experimentRun.id)
+                                    [], [], syncer.experiment_run.id)
         return fe
 
     def associate(self, res, syncer):
@@ -30,16 +30,16 @@ class FitEvent(Event):
         Stores the generated ids into dictionary.
         """
         df_id = id(self.df)
-        syncer.storeObject(df_id, res.dfId)
-        syncer.storeObject(self.spec, res.specId)
-        syncer.storeObject(self.model, res.modelId)
-        syncer.storeObject(self, res.eventId)
+        syncer.store_object(df_id, res.dfId)
+        syncer.store_object(self.spec, res.specId)
+        syncer.store_object(self.model, res.modelId)
+        syncer.store_object(self, res.eventId)
 
     def sync(self, syncer):
         """
         Stores FitEvent on the server.
         """
-        fe = self.makeEvent(syncer)
+        fe = self.make_event(syncer)
         thrift_client = syncer.client
         res = thrift_client.storeFitEvent(fe)
         self.associate(res, syncer)

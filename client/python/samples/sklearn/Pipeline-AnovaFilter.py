@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 import sys
-sys.path.append('../')
-sys.path.append('../thrift/gen-py')
+
 from sklearn import preprocessing
 from sklearn import linear_model
 from sklearn import svm
@@ -31,8 +30,8 @@ SyncerObj = Syncer(
 X, y = samples_generator.make_classification(
     n_informative=5, n_redundant=0, random_state=42)
 
-X_set, y_set = SyncableRandomSplit.randomSplit(X, [0.7, 0.3], 0,y)
-X_train, X_test = X_set[0], X_set[1]
+x_set, y_set = SyncableRandomSplit.random_split(X, [0.7, 0.3], 0,y)
+x_train, x_test = x_set[0], x_set[1]
 y_train, y_test = y_set[0], y_set[1]
 
 # ANOVA SVM-C
@@ -43,9 +42,11 @@ clf = svm.SVC(kernel='linear')
 anova_svm = Pipeline([('anova', anova_filter),('svc', clf)])
 
 #Fit the pipeline on the training set
-anova_svm.fitSync(X_train,y_train)
+anova_svm.fit_sync(x_train, y_train)
 
 #Compute metrics for the model on the testing set
-SyncableMetrics.computeMetrics(anova_svm, "f1", X_test, "predictionCol", "label_col",y_test)
-SyncableMetrics.computeMetrics(anova_svm, "precision", X_test, "predictionCol", "label_col",y_test)
+SyncableMetrics.compute_metrics(
+    anova_svm, "f1", x_test, "predictionCol", "label_col", y_test)
+SyncableMetrics.compute_metrics(
+    anova_svm, "precision", x_test, "predictionCol", "label_col", y_test)
 SyncerObj.instance.sync()

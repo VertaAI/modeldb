@@ -10,7 +10,7 @@ class ProjectEvent(Event):
     def __init__(self, project):
         self.project = project
 
-    def makeEvent(self, syncer):
+    def make_event(self, syncer):
         """
         Constructs a thrift ProjectEvent object with appropriate fields.
         """
@@ -21,5 +21,5 @@ class ProjectEvent(Event):
         Stores ProjectEvent on the server.
         """
         thrift_client = syncer.client
-        res = thrift_client.storeProjectEvent(self.makeEvent(syncer))
+        res = thrift_client.storeProjectEvent(self.make_event(syncer))
         syncer.project.id = res.projectId

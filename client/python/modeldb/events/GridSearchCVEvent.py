@@ -9,15 +9,15 @@ class GridSearchCVEvent(Event):
     """
     Class for creating and storing GridSearchEvents
     """
-    def __init__(self, inputDataFrame, crossValidations, seed, evaluator,
-                 bestModel, bestEstimator, numFolds):
-        self.input_dataframe = inputDataFrame
-        self.cross_validations = crossValidations
+    def __init__(self, input_data_frame, cross_validations, seed, evaluator,
+                 best_model, best_estimator, num_folds):
+        self.input_dataframe = input_data_frame
+        self.cross_validations = cross_validations
         self.seed = seed
         self.evaluator = evaluator
-        self.best_model = bestModel
-        self.best_estimator = bestEstimator
-        self.num_folds = numFolds
+        self.best_model = best_model
+        self.best_estimator = best_estimator
+        self.num_folds = num_folds
 
     def make_cross_validation_fold(self, fold, syncer):
         """
@@ -25,9 +25,9 @@ class GridSearchCVEvent(Event):
         used in making CrossValidationEvents.
         """
         [(transformer, validation_set, training_set, score)] = fold
-        syncable_dataframe_valid_set = syncer.convertDftoThrift(validation_set)
-        syncable_dataframe_train_set = syncer.convertDftoThrift(training_set)
-        syncable_transformer = syncer.convertModeltoThrift(transformer)
+        syncable_dataframe_valid_set = syncer.convert_df_to_thrift(validation_set)
+        syncable_dataframe_train_set = syncer.convert_df_to_thrift(training_set)
+        syncable_transformer = syncer.convert_model_to_thrift(transformer)
         return modeldb_types.CrossValidationFold(syncable_transformer, syncable_dataframe_valid_set,
                                                  syncable_dataframe_train_set, score)
 
@@ -35,14 +35,14 @@ class GridSearchCVEvent(Event):
         """
         Helper function to create CrossValidationEvent.
         """
-        syncable_dataframe = syncer.convertDftoThrift(self.input_dataframe)
-        syncable_estimator = syncer.convertSpectoThrift(estimator)
-        columns = syncer.setColumns(self.input_dataframe)
+        syncable_dataframe = syncer.convert_df_to_thrift(self.input_dataframe)
+        syncable_estimator = syncer.convert_spec_to_thrift(estimator)
+        columns = syncer.set_columns(self.input_dataframe)
         # TODO: Need to add meaningful label/prediction column names
         return modeldb_types.CrossValidationEvent(syncable_dataframe, syncable_estimator,
                                                   self.seed, self.evaluator, [""], [""],
                                                   columns, cross_validation_folds,
-                                                  syncer.experimentRun.id)
+                                                  syncer.experiment_run.id)
 
     def make_cross_validation_events(self, syncer):
         """
@@ -64,9 +64,8 @@ class GridSearchCVEvent(Event):
         """
         fit_event = FitEvent(self.best_model, self.best_estimator, self.input_dataframe)
         gscve = modeldb_types.GridSearchCrossValidationEvent(self.num_folds,
-                                                             fit_event.makeEvent(syncer),
-                                                             cross_validation_events,
-                                                             syncer.experimentRun.id)
+            fit_event.make_event(syncer), cross_validation_events, 
+            syncer.experiment_run.id)
         return gscve
 
     def associate(self, res, syncer):
@@ -75,15 +74,15 @@ class GridSearchCVEvent(Event):
         """
         #First store the fit event
         df_id = id(self.input_dataframe)
-        syncer.storeObject(self, res.eventId)
-        syncer.storeObject(self.best_estimator, res.fitEventResponse.specId)
-        syncer.storeObject(df_id, res.fitEventResponse.dfId)
-        syncer.storeObject(self.best_model, res.fitEventResponse.modelId)
+        syncer.store_object(self, res.eventId)
+        syncer.store_object(self.best_estimator, res.fitEventResponse.specId)
+        syncer.store_object(df_id, res.fitEventResponse.dfId)
+        syncer.store_object(self.best_model, res.fitEventResponse.modelId)
 
         #Store each cross validation from the grid
         for cv, cver in zip(self.cross_validations.items(), res.crossValidationEventResponses):
             estimator, folds = cv
-            syncer.storeObject(cver.specId, estimator)
+            syncer.store_object(cver.specId, estimator)
 
             #Iterate through each fold
             for pair in zip(folds, cver.foldResponses):
@@ -92,11 +91,11 @@ class GridSearchCVEvent(Event):
                 df_id_valid = id(fold[1])
                 df_id_train = id(fold[2])
 
-                syncer.storeObject(fold[0], foldr.modelId)
-                syncer.storeObject(df_id_valid, foldr.validationId)
-                syncer.storeObject(df_id_train, foldr.trainingId)
+                syncer.store_object(fold[0], foldr.modelId)
+                syncer.store_object(df_id_valid, foldr.validationId)
+                syncer.store_object(df_id_train, foldr.trainingId)
 
-    def makeEvent(self, syncer):
+    def make_event(self, syncer):
         """
         Constructs a thrift GridSearchCrossValidation event
         object with appropriate fields.
@@ -109,7 +108,7 @@ class GridSearchCVEvent(Event):
         """
         Stores GridSearchCrossValidation event on the server.
         """
-        gscve = self.makeEvent(syncer)
+        gscve = self.make_event(syncer)
         thrift_client = syncer.client
         res = thrift_client.storeGridSearchCrossValidationEvent(gscve)
         self.associate(res, syncer)

@@ -27,7 +27,7 @@ result = SyncerObj.syncModel('/path/to/train', '/path/to/model', \
 #     None,
 #     ExistingExperimentRun(60))
 
-# print Syncer.instance.experimentRun
+# print Syncer.instance.experiment_run
 
 SyncerObj.instance.sync()
 
