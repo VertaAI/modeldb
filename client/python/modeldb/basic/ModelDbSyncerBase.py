@@ -72,7 +72,6 @@ class Syncer(object):
     def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
         self.bufferList = []
         self.idForObject = {}
-        self.objectForId = {}
         self.initializeThriftClient()
         self.setup(projectConfig, experimentConfig, experimentRunConfig)
 
@@ -117,9 +116,8 @@ class Syncer(object):
     def addToBuffer(self, event):
         self.bufferList.append(event)
 
-    def storeObject(self, obj, id):
-        self.idForObject[obj] = id
-        self.objectForId[id] = obj
+    def storeObject(self, obj, obj_id):
+        self.idForObject[obj] = obj_id
 
     def sync(self):
         for b in self.bufferList:
@@ -150,7 +148,7 @@ class Syncer(object):
     def convertModeltoThrift(self, model):
         return model
 
-    def convertSpectoThrift(self, spec, df):
+    def convertSpectoThrift(self, spec):
         return spec
 
     def convertDftoThrift(self, df):
@@ -163,8 +161,8 @@ class Syncer(object):
     def _convertSpectoThrift(self, config, modelType, features=[]):
         hyperparameters = []
         for key in config.keys():
-            hyperparameter = modeldb_types.HyperParameter(key, str(config[key]), \
-                type(config[key]).__name__, FMIN, FMAX)
+            hyperparameter = modeldb_types.HyperParameter(key, \
+                str(config[key]), type(config[key]).__name__, FMIN, FMAX)
             hyperparameters.append(hyperparameter)
         transformerSpec = modeldb_types.TransformerSpec(-1, modelType, \
             features, hyperparameters, "")
@@ -172,6 +170,9 @@ class Syncer(object):
 
     def _convertDftoThrift(self, path):
         return modeldb_types.DataFrame(-1, [], -1, "", path)
+
+    def setColumns(self, df):
+        return []
 
     # data_dict is a dictionary of names and paths:
     # ["train" : "/path/to/train", "test" : "/path/to/test"]

@@ -1,7 +1,4 @@
-# from modeldb.basic.ModelDbSyncerBase import *
-
-
-from modeldb.sklearn_native.ModelDbSyncer import *
+from modeldb.basic.ModelDbSyncerBase import *
 
 # Creating a new project
 name = "gensim test"

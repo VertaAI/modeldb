@@ -40,7 +40,7 @@ y_train, y_test = y_set[0], y_set[1]
 anova_filter = SelectKBest(f_regression, k=5)
 # 2) svm
 clf = svm.SVC(kernel='linear')
-anova_svm = Pipeline([('anova', anova_filter),('svc', clf)])
+anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
 
 #Fit the pipeline on the training set
 anova_svm.fitSync(X_train,y_train)

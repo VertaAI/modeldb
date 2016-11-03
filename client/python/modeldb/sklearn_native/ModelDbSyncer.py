@@ -189,8 +189,6 @@ class Syncer(ModelDbSyncerBase.Syncer):
     """
     def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
         super(Syncer, self).__init__(projectConfig, experimentConfig, experimentRunConfig)
-        self.idForObject = {}
-        self.objectForId = {}
         self.tagForObject = {}
         self.objectForTag = {}
         self.pathForDf = {}
@@ -201,13 +199,6 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def __str__(self):
         return "SklearnSyncer"
 
-    def storeObject(self, obj, Id):
-        """
-        Stores mapping between objects and their IDs.
-        """
-        self.idForObject[obj] = Id
-        self.objectForId[Id] = obj
-
     def storeTagObject(self, obj, tag):
         """
         Stores mapping between objects and their tags.
@@ -215,20 +206,6 @@ class Syncer(ModelDbSyncerBase.Syncer):
         """
         self.tagForObject[obj] = tag
         self.objectForTag[tag] = obj
-
-    def addToBuffer(self, event):
-        """
-        As events are generated, they are added to this buffer.
-        """
-        self.bufferList.append(event)
-
-    def sync(self):
-        """
-        When this function is called, all events in the buffer are written to the database.
-        """
-        for b in self.bufferList:
-            b.sync(self)
-        self.clearBuffer()
 
     def setColumns(self, df):
         """
@@ -291,7 +268,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         modeldbDf = modeldb_types.DataFrame(tid, dataFrameColumns, df.shape[0], tag, filePath)
         return modeldbDf
 
-    def convertSpectoThrift(self, spec, df):
+    def convertSpectoThrift(self, spec):
         """
         Converts a TransformerSpec object into a Thrift object with appropriate fields.
         """

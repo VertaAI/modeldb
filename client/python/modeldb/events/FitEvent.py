@@ -8,17 +8,20 @@ class FitEvent(Event):
 
     def makeEvent(self, syncer):
         self.syncableTransformer = syncer.convertModeltoThrift(self.model)
-        self.modelSpec = syncer.convertSpectoThrift(self.spec, self.df)
+        self.modelSpec = syncer.convertSpectoThrift(self.spec)
         self.syncableDataFrame = syncer.convertDftoThrift(self.df)
         self.columns = syncer.setColumns(self.df)
         fe = modeldb_types.FitEvent(self.syncableDataFrame, self.modelSpec, self.syncableTransformer, 
-                            self.columns, [], [], syncer.experimentRun.id)
+            self.columns, [], [], syncer.experimentRun.id)
         return fe
 
     def associate(self, res, syncer):
         #generate identity for storing in dictionary
         dfImm = id(self.df)
-        syncer.storeObject(dfImm,res.dfId)
+        print self.model
+        # print "hello", self.spec
+        # print self.df
+        syncer.storeObject(dfImm, res.dfId)
         syncer.storeObject(self.spec, res.specId)
         syncer.storeObject(self.model, res.modelId)
         syncer.storeObject(self, res.eventId)
