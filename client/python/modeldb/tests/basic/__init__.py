@@ -1,5 +1,5 @@
 import sys
-import ModelDbSyncer
+import modeldb.sklearn_native.ModelDbSyncer
 
 # modeldb imports
 from modeldb.events import *
