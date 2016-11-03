@@ -8,6 +8,7 @@ import jooq.sqlite.gen.tables.records.DataframeRecord;
 import jooq.sqlite.gen.tables.records.TransformeventRecord;
 import modeldb.CommonAncestor;
 import modeldb.DataFrame;
+import modeldb.DataFrameColumn;
 import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
@@ -58,13 +59,23 @@ public class DataFrameAncestryComputer {
       .mapToObj(i -> new Pair<>(ancestorChain.get(i), i))
       .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
+    // Get the Schemas for each DataFrame
+    Map<Integer, List<DataFrameColumn>> schemaForDfId = new HashMap<>();
+    ancestorChain.forEach(id -> schemaForDfId.put(id, new ArrayList<>()));
+    ctx
+      .selectFrom(Tables.DATAFRAMECOLUMN)
+      .where(Tables.DATAFRAMECOLUMN.DFID.in(ancestorChain))
+      .forEach(record ->
+        schemaForDfId.get(record.getDfid()).add(new DataFrameColumn(record.getName(), record.getType()))
+      );
+
     // Fetch the DataFrames for the given chain of ancestor IDs.
     List<DataFrame> dfs = ctx
       .selectFrom(Tables.DATAFRAME)
       .where(Tables.DATAFRAME.ID.in(ancestorChain))
       .fetch()
       .stream()
-      .map(df -> new DataFrame(df.getId(), Collections.emptyList(), df.getNumrows(), df.getTag()))
+      .map(df -> new DataFrame(df.getId(), schemaForDfId.get(df.getId()), df.getNumrows(), df.getTag()))
       .collect(Collectors.toList());
 
     // Sort so that the youngest DataFrame comes first.
