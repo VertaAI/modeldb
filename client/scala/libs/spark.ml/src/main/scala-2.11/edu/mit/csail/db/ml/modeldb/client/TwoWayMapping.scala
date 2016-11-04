@@ -33,4 +33,8 @@ class TwoWayMapping[K, V] {
   // Check if the key is contained in the mapping.
   def hasK(k: K): Boolean = kToV.contains(k)
   def hasV(v: V): Boolean = vToK.contains(v)
+  def clear(): Unit = {
+    vToK.clear()
+    kToV.clear()
+  }
 }

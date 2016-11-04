@@ -9,7 +9,7 @@ class RunExperimentProjectTest extends FunSuite with BeforeAndAfter {
   }
 
   test("On creating a ModelDbSyncer the proper events should be stored") {
-    val syncer = TestBase.getSyncer
+    val syncer = TestBase.makeSyncer
     assert(syncer.numEvents == 3)
     // We expect a ProjectEvent, ExperimentEvent, and then an ExperimentRunEvent.
     // Each of them should be new, and the experiment should be default.
@@ -28,7 +28,7 @@ class RunExperimentProjectTest extends FunSuite with BeforeAndAfter {
   }
 
   test("Allow creating a non-default experiment") {
-    val syncer = TestBase.getSyncer(
+    val syncer = TestBase.makeSyncer(
       NewOrExistingProject("name", "author", "description"),
       NewOrExistingExperiment("expName", "expDesc"),
       NewExperimentRun("expRunDesc")

@@ -5,28 +5,14 @@ import org.apache.log4j.Logger
 import org.apache.log4j.Level
 
 object TestBase {
-  private var session: Option[SparkSession] = None
-  def getSession: SparkSession = {
-    Logger.getLogger("org").setLevel(Level.OFF)
-    Logger.getLogger("akka").setLevel(Level.OFF)
-    session match {
-      case Some(s) => s
-      case None => {
-        new SparkContext(
-          new SparkConf()
-            .setMaster("local[*]")
-            .setAppName("test")
-        ).setLogLevel("OFF")
-        session = Some(SparkSession
-          .builder()
-          .appName("Unit tests")
-          .getOrCreate())
-        session.get
-      }
-    }
+  lazy val getSession: SparkSession = {
+      Logger.getLogger("org").setLevel(Level.OFF)
+      Logger.getLogger("akka").setLevel(Level.OFF)
+      new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test")).setLogLevel("OFF")
+      SparkSession.builder().appName("Unit tests").getOrCreate()
   }
 
-  def trainingData = getSession.createDataFrame(Seq(
+  lazy val trainingData = getSession.createDataFrame(Seq(
     (0L, "a b c d e spark", 1.0),
     (1L, "b d", 0.0),
     (2L, "spark f g h", 1.0),
@@ -41,15 +27,15 @@ object TestBase {
     (11L, "hadoop software", 0.0)
   )).toDF("id", "text", "label")
 
-  def getSyncer(projectConfig: ProjectConfig,
-                experimentConfig: ExperimentConfig,
-                experimentRunConfig: ExperimentRunConfig): ModelDbTestSyncer = {
+  def makeSyncer(projectConfig: ProjectConfig,
+                 experimentConfig: ExperimentConfig,
+                 experimentRunConfig: ExperimentRunConfig): ModelDbTestSyncer = {
     val syncer = new ModelDbTestSyncer(projectConfig, experimentConfig, experimentRunConfig)
     ModelDbSyncer.setSyncer(syncer)
     syncer
   }
 
-  def getSyncer: ModelDbTestSyncer = getSyncer(
+  def makeSyncer: ModelDbTestSyncer = makeSyncer(
     NewOrExistingProject("unit test",
       "harihar",
       "this example creates a cross validation"
@@ -60,8 +46,9 @@ object TestBase {
 
   def reset(): Unit = {
     ModelDbSyncer.syncer match {
-      case Some(s: ModelDbTestSyncer) => s.clearBuffer()
-      case None => {}
+      case Some(s: ModelDbTestSyncer) => s.clear()
+      case _ => {}
     }
+    SyncableDataFramePaths.clear()
   }
 }

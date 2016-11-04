@@ -4,7 +4,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 class SyncablePrimitivesTest extends FunSuite with BeforeAndAfter {
   before {
     TestBase.reset()
-    TestBase.getSyncer
+    TestBase.makeSyncer
   }
 
   test("Syncable DataFrame") {
