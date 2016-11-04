@@ -217,6 +217,9 @@ class Syncer(ModelDbSyncerBase.Syncer):
         self.object_for_tag[tag] = obj
 
     def add_tag(self, obj, tag_name):
+        """
+        Adds tag name to object.
+        """
         self.store_tag_object(id(obj), tag_name)
 
     def add_to_buffer(self, event):

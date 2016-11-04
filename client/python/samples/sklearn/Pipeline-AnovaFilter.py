@@ -178,9 +178,9 @@ class TestPipelineEndToEnd(unittest.TestCase):
 			df_1 = ancestry[0]
 			df_2 = ancestry[1]
 			if df == self.x_train:
-				self.assertEqual(df.tag, 'training data')
+				self.assertEqual(df_1.tag, 'training data')
 			if df == self.x_test:
-				self.assertEqual(df.tag, 'testing data')
+				self.assertEqual(df_1.tag, 'testing data')
 			# Ancestor is the original dataframe
 			self.assertEqual(df_2.tag, 'samples generated data')
 
