@@ -1,5 +1,5 @@
 import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableDataFrame, SyncableDataFramePaths, SyncableTransformer}
-import org.apache.spark.ml.SyncableEstimator
+import org.apache.spark.ml.{Pipeline, SyncableEstimator}
 import org.apache.spark.ml.feature.OneHotEncoder
 import org.apache.spark.ml.regression.LinearRegression
 import org.scalatest.{BeforeAndAfter, FunSuite}
@@ -79,5 +79,9 @@ class SyncablePrimitivesTest extends FunSuite with BeforeAndAfter {
     val lr = new LinearRegression()
     ModelDbSyncer.syncer.get.associateObjectAndTag(lr, "tagged")
     assert(SyncableEstimator(lr).tag === "tagged")
+  }
+
+  test("Syncable Estimator for Pipeline") {
+    assert(SyncableEstimator(new Pipeline()).hyperparameters.isEmpty)
   }
 }
