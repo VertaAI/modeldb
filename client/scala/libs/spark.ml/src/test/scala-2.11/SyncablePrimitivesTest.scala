@@ -1,4 +1,4 @@
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableDataFrame}
+import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableDataFrame, SyncableDataFramePaths}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class SyncablePrimitivesTest extends FunSuite with BeforeAndAfter {
@@ -23,9 +23,17 @@ class SyncablePrimitivesTest extends FunSuite with BeforeAndAfter {
   }
 
   test("Syncable DataFrame with ID") {
-    var trainingData = TestBase.trainingData
-    ModelDbSyncer.syncer.get.associateObjectAndId(trainingData, 99)
-    val df = SyncableDataFrame(trainingData)
-    assert(df.id === 99)
+    ModelDbSyncer.syncer.get.associateObjectAndId(TestBase.trainingData, 99)
+    assert(SyncableDataFrame(TestBase.trainingData).id === 99)
+  }
+
+  test("Syncable DataFrame with tag") {
+    ModelDbSyncer.syncer.get.associateObjectAndTag(TestBase.trainingData, "tagged")
+    assert(SyncableDataFrame(TestBase.trainingData).tag === "tagged")
+  }
+
+  test("Syncable DataFrame with path") {
+    SyncableDataFramePaths.setPath(TestBase.trainingData, "filepath")
+    assert(SyncableDataFrame(TestBase.trainingData).filepath.get === "filepath")
   }
 }
