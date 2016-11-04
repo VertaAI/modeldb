@@ -44,26 +44,30 @@ def run_linear_model_workflow():
         NewExperimentRun("Abc"))
 
     data, target = load_pandas_dataset()
-    data.tag("occupation dataset")
+    SyncerObj.instance.add_tag(data, "occupation dataset")
 
     # Hot encode occupation column of data
     hot_enc = preprocessing.OneHotEncoder()
-    hot_enc.tag("Hot encoding occupation column")
+    SyncerObj.instance.add_tag(hot_enc, "Hot encoding occupation column")
+
     hot_enc.fit_sync(data['occupation'].reshape(-1,1))
     hot_enc_rows = hot_enc.transform_sync(data['occupation'].reshape(-1,1))
     hot_enc_df = pd.DataFrame(hot_enc_rows.toarray())
 
     # Drop column as it is now encoded
-    data = data.drop('occupation', axis=1)
-
+    data = data.drop_sync('occupation', axis=1)
     # Join the hot encoded rows with the rest of the data
     data = data.join(hot_enc_df)
 
     [x_train, x_test], [y_train, y_test] = SyncableRandomSplit.random_split(data,
                                                                             [0.7, 0.3], 1, target)
 
+    SyncerObj.instance.add_tag(x_train, "training data - 70%")
+    SyncerObj.instance.add_tag(x_test, "testing data - 30%")
+
     model = linear_model.LinearRegression()
-    model.tag("Linear Regression model")
+    SyncerObj.instance.add_tag(model, "Basic linear reg")
+
     model.fit_sync(x_train, y_train)
     model.predict_sync(x_test)
 
@@ -130,7 +134,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertEqual(transformer2.transformerType, 'LinearRegression')
 
         self.assertEqual(transformer1.tag, 'Hot encoding occupation column')
-        self.assertEqual(transformer2.tag, 'Linear Regression model')
+        self.assertEqual(transformer2.tag, 'Basic linear reg')
 
         # Check hyperparameters for both models
         hyperparams1 = transformer1.hyperparameters

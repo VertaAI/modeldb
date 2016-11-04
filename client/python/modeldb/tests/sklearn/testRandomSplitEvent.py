@@ -21,7 +21,10 @@ class TestRandomSplitEvent(unittest.TestCase):
             NewExperimentRun("Abc"))
         X = pd.DataFrame(np.random.randint(0,100,size=(100, 4)), columns=list('ABCD'))
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
-        X.tag("digits-dataset")
+
+        # Add tag for dataframe
+        SyncerObj.instance.add_tag(X, "digits-dataset")
+
         seed = 1       
         weights = [0.7, 0.3]
         SyncerTest.instance.clear_buffer()
