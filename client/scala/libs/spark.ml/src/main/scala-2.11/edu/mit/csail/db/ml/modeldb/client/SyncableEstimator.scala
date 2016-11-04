@@ -178,9 +178,6 @@ object SyncableEstimator extends SyncableEstimator {
     *                  Estimators.
     * @return A TransformerSpec.
     */
-//  def apply(df: DataFrame, estimator: PipelineStage)(implicit mdbs: Option[ModelDbSyncer]): modeldb.TransformerSpec =
-//    apply(estimator)(mdbs)
-
   def apply(estimator: PipelineStage)(implicit mdbs: Option[ModelDbSyncer]): modeldb.TransformerSpec = {
     // Default values.
     var id = mdbs.get.id(estimator).getOrElse(-1)
