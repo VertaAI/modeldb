@@ -1,13 +1,30 @@
 import edu.mit.csail.db.ml.modeldb.client._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
 
 object TestBase {
-  def getContext: SparkContext = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))
-  def getSession: SparkSession = SparkSession
-    .builder()
-    .appName("Unit tests")
-    .getOrCreate()
+  private var session: Option[SparkSession] = None
+  def getSession: SparkSession = {
+    Logger.getLogger("org").setLevel(Level.OFF)
+    Logger.getLogger("akka").setLevel(Level.OFF)
+    session match {
+      case Some(s) => s
+      case None => {
+        new SparkContext(
+          new SparkConf()
+            .setMaster("local[*]")
+            .setAppName("test")
+        ).setLogLevel("OFF")
+        session = Some(SparkSession
+          .builder()
+          .appName("Unit tests")
+          .getOrCreate())
+        session.get
+      }
+    }
+  }
 
   def trainingData = getSession.createDataFrame(Seq(
     (0L, "a b c d e spark", 1.0),

@@ -18,6 +18,8 @@ libraryDependencies += "com.twitter" %% "finagle-thrift" % "6.36.0"
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+parallelExecution in test := false
+
 
 resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
