@@ -19,6 +19,7 @@ public class GridSearchCrossValidationEventDao {
   public static GridSearchCrossValidationEventResponse store(GridSearchCrossValidationEvent gscve, DSLContext ctx) {
     gscve.bestFit.setExperimentRunId(gscve.experimentRunId);
     FitEventResponse fer = FitEventDao.store(gscve.bestFit.setProblemType(gscve.problemType), ctx);
+    gscve.crossValidations.forEach(cv -> cv.setExperimentRunId(gscve.experimentRunId));
 
     GridsearchcrossvalidationeventRecord gscveRec = ctx.newRecord(Tables.GRIDSEARCHCROSSVALIDATIONEVENT);
     gscveRec.setId(null);
