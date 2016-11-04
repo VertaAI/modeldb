@@ -77,6 +77,29 @@ def transform_fn(self, x):
     Syncer.instance.add_to_buffer(transform_event)
     return transformed_output
 
+def fit_transform_fn(self, x, y=None, **fit_params):
+    """
+    Overrides the fit_transform function for models.
+    Combines fit and transform functions.
+    """
+    df = x
+    #Certain fit functions only accept one argument
+    if y is None:
+        fitted_model = self.fit(x, **fit_params)
+    else:
+        fitted_model = self.fit(x, y, **fit_params)
+    fit_event = FitEvent(fitted_model, self, df)
+    Syncer.instance.add_to_buffer(fit_event)
+    transformed_output = fitted_model.transform(x)
+    if type(transformed_output) is np.ndarray:
+        new_df = pd.DataFrame(transformed_output)
+    else:
+        new_df = pd.DataFrame(transformed_output.toarray())
+    transform_event = TransformEvent(x, new_df, fitted_model)
+    Syncer.instance.add_to_buffer(transform_event)
+    return transformed_output
+
+
 def fit_fn_pipeline(self, x, y):
     """
     Overrides the Pipeline model's fit function
@@ -345,6 +368,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         for class_name in [LabelEncoder, OneHotEncoder]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "transform_sync", transform_fn)
+            setattr(class_name, "fit_transform_sync", fit_transform_fn)
 
         #Pipeline model
         for class_name in [Pipeline]:
