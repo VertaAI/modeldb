@@ -20,9 +20,10 @@ class ModelDbTestSyncer(projectConfig: ProjectConfig,
     this.buffered.clear()
   }
   def numEvents: Int = this.buffered.size
-  def hasEvent(fn: (ModelDbEvent) => Boolean, atIndex: Int = -1): Boolean =
+  def hasEvent(atIndex: Int)(fn: (ModelDbEvent) => Boolean): Boolean =
     this.buffered
       .map(_.event)
       .zipWithIndex
       .exists((pair) => (atIndex == -1 || pair._2 == atIndex) && fn(pair._1))
+  def hasEvent(fn: (ModelDbEvent) => Boolean): Boolean = hasEvent(-1)(fn)
 }
