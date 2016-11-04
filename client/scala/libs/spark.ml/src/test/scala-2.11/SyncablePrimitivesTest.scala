@@ -1,5 +1,7 @@
 import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableDataFrame, SyncableDataFramePaths, SyncableTransformer}
+import org.apache.spark.ml.SyncableEstimator
 import org.apache.spark.ml.feature.OneHotEncoder
+import org.apache.spark.ml.regression.LinearRegression
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class SyncablePrimitivesTest extends FunSuite with BeforeAndAfter {
@@ -56,5 +58,26 @@ class SyncablePrimitivesTest extends FunSuite with BeforeAndAfter {
     val ohe = new OneHotEncoder()
     ModelDbSyncer.syncer.get.associateObjectAndTag(ohe, "tagged")
     assert(SyncableTransformer(ohe).tag === "tagged")
+  }
+
+  test("Syncable Estimator") {
+    val lr = new LinearRegression()
+    val lrs = SyncableEstimator(lr)
+    assert(lrs.id === -1)
+    assert(lrs.transformerType === "LinearRegression")
+    assert(lrs.tag === "")
+    assert(lrs.hyperparameters.exists(hp => hp.name === "regParam" && hp.`type` === "Double"))
+  }
+
+  test("Syncable Estimator with ID") {
+    val lr = new LinearRegression()
+    ModelDbSyncer.syncer.get.associateObjectAndId(lr, 99)
+    assert(SyncableEstimator(lr).id === 99)
+  }
+
+  test("Syncable Estimator with tag") {
+    val lr = new LinearRegression()
+    ModelDbSyncer.syncer.get.associateObjectAndTag(lr, "tagged")
+    assert(SyncableEstimator(lr).tag === "tagged")
   }
 }
