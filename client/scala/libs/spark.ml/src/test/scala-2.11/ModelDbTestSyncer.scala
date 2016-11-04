@@ -14,7 +14,11 @@ class ModelDbTestSyncer(projectConfig: ProjectConfig,
 
   override def sync(): Unit = {}
   def getBuffer: Seq[ModelDbEvent] = this.buffered.map(_.event)
-  def clearBuffer(): Unit = this.buffered.clear()
+  def clear(): Unit = {
+    this.objectIdMappings.clear()
+    this.objectTagMappings.clear()
+    this.buffered.clear()
+  }
   def numEvents: Int = this.buffered.size
   def hasEvent(fn: (ModelDbEvent) => Boolean, atIndex: Int = -1): Boolean =
     this.buffered

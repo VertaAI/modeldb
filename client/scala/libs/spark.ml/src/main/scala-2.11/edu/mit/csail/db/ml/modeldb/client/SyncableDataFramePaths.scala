@@ -52,4 +52,5 @@ object SyncableDataFramePaths {
   private val pathForDf = mutable.HashMap[DataFrame, String]()
   def getPath(df: DataFrame): Option[String] = pathForDf.get(df)
   def setPath(df: DataFrame, path: String): Unit = pathForDf.put(df, path)
+  def clear(): Unit = pathForDf.clear()
 }
