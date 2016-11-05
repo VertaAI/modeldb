@@ -135,6 +135,25 @@ class TestPipelineEndToEnd(unittest.TestCase):
         self.assertEqual(len(hyperparams2), 2)
         self.assertEqual(len(hyperparams3), 14)
 
+    def test_dataframe_ancestry(self):
+		"""
+		Tests if dataframe ancestry is stored correctly.
+		"""
+		# Check ancestry for x_test and x_train.
+		# The data the models were trained and tested on.
+		for df in [self.x_train, self.x_test]:
+			dataframe_id = self.SyncerObj.id_for_object[id(df)]
+			ancestry = self.SyncerObj.client.getDataFrameAncestry(dataframe_id).ancestors
+			self.assertEqual(len(ancestry), 2)
+			df_1 = ancestry[0]
+			df_2 = ancestry[1]
+			if df is self.x_train:
+				self.assertEqual(df_1.tag, 'training data')
+			if df is self.x_test:
+				self.assertEqual(df_1.tag, 'testing data')
+			# Ancestor is the original dataframe
+			self.assertEqual(df_2.tag, 'samples generated data')
+
     def test_metrics(self):
         """
         Tests if metrics are stored correctly.
@@ -164,24 +183,6 @@ class TestPipelineEndToEnd(unittest.TestCase):
         self.assertAlmostEqual(self.precision,
                                model1.metrics['precision_score'][dataframe_id], places=4)
 
-	def test_dataframe_ancestry(self):
-		"""
-		Tests if dataframe ancestry is stored correctly.
-		"""
-		# Check ancestry for x_test and x_train.
-		# The data the models were trained and tested on.
-		for df in [self.x_train, self.x_test]:
-			dataframe_id = self.SyncerObj.id_for_object[id(df)]
-			ancestry = self.SyncerObj.client.getDataFrameAncestry(dataframe_id)
-			self.assertEqual(len(ancestry), 2)
-			df_1 = ancestry[0]
-			df_2 = ancestry[1]
-			if df == self.x_train:
-				self.assertEqual(df_1.tag, 'training data')
-			if df == self.x_test:
-				self.assertEqual(df_1.tag, 'testing data')
-			# Ancestor is the original dataframe
-			self.assertEqual(df_2.tag, 'samples generated data')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pass in -test flag if you wish'

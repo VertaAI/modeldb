@@ -55,9 +55,9 @@ def run_linear_model_workflow():
     hot_enc_df = pd.DataFrame(hot_enc_rows.toarray())
 
     # Drop column as it is now encoded
-    data = data.drop_sync('occupation', axis=1)
+    dropped_data = data.drop_sync('occupation', axis=1)
     # Join the hot encoded rows with the rest of the data
-    data = data.join(hot_enc_df)
+    data = dropped_data.join(hot_enc_df)
 
     [x_train, x_test], [y_train, y_test] = SyncableRandomSplit.random_split(data,
                                                                             [0.7, 0.3], 1, target)
@@ -76,7 +76,9 @@ def run_linear_model_workflow():
 
     #Sync all the events to database
     SyncerObj.instance.sync()
-    return SyncerObj, x_test, mean_error
+
+    #Certain variables are returned so they can be used for unittests below.
+    return SyncerObj, x_test, mean_error, dropped_data
 
 
 class TestLinearModelEndToEnd(unittest.TestCase):
@@ -91,7 +93,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         os.system("cat " + ROOT_DIR + "codegen/sqlite/clearDb.sql "
                   "| sqlite3 " + ROOT_DIR + "modeldb_test.db")
-        self.SyncerObj, self.x_test, self.mean_error = run_linear_model_workflow()
+        self.SyncerObj, self.x_test, self.mean_error, self.dropped_data = run_linear_model_workflow()
 
     def test_project(self):
         """
@@ -164,6 +166,25 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         dataframe_id = self.SyncerObj.id_for_object[id(self.x_test)]
         self.assertAlmostEqual(self.mean_error,
                                model2.metrics['mean_squared_error'][dataframe_id], places=4)
+
+    def test_dataframe_ancestry(self):
+        """
+        Tests if dataframe ancestry is stored correctly for dropped column of dataset.
+        """
+        # Check ancestry for dropped dataframe
+        # Confirm dropped column has the original dataframe in ancestry
+        dataframe_id = self.SyncerObj.id_for_object[id(self.dropped_data)]
+        ancestry = self.SyncerObj.client.getDataFrameAncestry(dataframe_id).ancestors
+        self.assertEqual(len(ancestry), 2)
+
+        df_1 = ancestry[0]
+        df_2 = ancestry[1]
+        df1_schema = df_1.schema
+        df2_schema = df_2.schema
+        self.assertEqual(len(df1_schema), 7)
+        self.assertEqual(len(df2_schema), 8)
+        # Ancestor is the original dataframe
+        self.assertEqual(df_2.tag, 'occupation dataset')
 
 
 if __name__ == '__main__':
