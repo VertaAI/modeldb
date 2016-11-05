@@ -25,8 +25,7 @@ class TestTransformEvent(unittest.TestCase):
         model = preprocessing.LabelEncoder()
         model.tag("label encoder")
         SyncerTest.instance.clear_buffer()
-        model.fit_sync(X)
-        model.transform_sync(X)
+        model.fit_transform_sync(X)
         events = SyncerTest.instance.sync()
         self.fit_event = events[0]
         self.transform_event = events[1]
