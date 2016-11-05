@@ -7,6 +7,7 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.ml.{Pipeline, PipelineStage}
 import org.apache.spark.sql.DataFrame
 import org.scalatest.{BeforeAndAfter, FunSuite}
+import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -209,5 +210,20 @@ class GridSearchCrossValidationTest extends FunSuite with BeforeAndAfter {
     assert(syncer.id(mod4).get === 23)
     assert(syncer.id(lr1).get === 9)
     assert(syncer.id(lr2).get === 19)
+  }
+
+  test("cross validation logs GSCVE") {
+    val syncer = TestBase.makeSyncer
+    val originalCount = syncer.numEvents
+    val (cv, eval) = makeCv
+    val cvModel = cv.fitSync(preprocessedData)
+    assert(syncer.numEvents - originalCount === 1)
+    assert(syncer.hasEvent(originalCount) {
+      case x: GridSearchCrossValidationEvent =>
+        x.inputDataFrame === preprocessedData &&
+        x.evaluator === eval &&
+        x.bestModel === cvModel.bestModel
+      case _ => false
+    })
   }
 }
