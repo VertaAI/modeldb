@@ -10,6 +10,9 @@ import pandas as pd
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
 from sklearn.decomposition import *
+from sklearn.calibration import *
+from sklearn.ensemble import *
+from sklearn.tree import *
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
 import sklearn.metrics
@@ -76,6 +79,29 @@ def transform_fn(self, x):
     transform_event = TransformEvent(x, new_df, self)
     Syncer.instance.add_to_buffer(transform_event)
     return transformed_output
+
+def fit_transform_fn(self, x, y=None, **fit_params):
+    """
+    Overrides the fit_transform function for models.
+    Combines fit and transform functions.
+    """
+    df = x
+    #Certain fit functions only accept one argument
+    if y is None:
+        fitted_model = self.fit(x, **fit_params)
+    else:
+        fitted_model = self.fit(x, y, **fit_params)
+    fit_event = FitEvent(fitted_model, self, df)
+    Syncer.instance.add_to_buffer(fit_event)
+    transformed_output = fitted_model.transform(x)
+    if type(transformed_output) is np.ndarray:
+        new_df = pd.DataFrame(transformed_output)
+    else:
+        new_df = pd.DataFrame(transformed_output.toarray())
+    transform_event = TransformEvent(x, new_df, fitted_model)
+    Syncer.instance.add_to_buffer(transform_event)
+    return transformed_output
+
 
 def fit_fn_pipeline(self, x, y):
     """
@@ -337,14 +363,15 @@ class Syncer(ModelDbSyncerBase.Syncer):
         Users can easily add more models to this function.
         """
         #Linear Models (transform has been deprecated)
-        for class_name in [LogisticRegression, LinearRegression]:
+        for class_name in [LogisticRegression, LinearRegression, CalibratedClassifierCV, RandomForestClassifier, BaggingClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "predict_sync", predict_fn)
 
-        #Preprocessing models
-        for class_name in [LabelEncoder, OneHotEncoder]:
+        #Preprocessing and some Classifier models 
+        for class_name in [LabelEncoder, OneHotEncoder, DecisionTreeClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "transform_sync", transform_fn)
+            setattr(class_name, "fit_transform_sync", fit_transform_fn)
 
         #Pipeline model
         for class_name in [Pipeline]:
