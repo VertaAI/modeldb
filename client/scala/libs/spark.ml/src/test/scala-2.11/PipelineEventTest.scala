@@ -6,6 +6,7 @@ import org.apache.spark.ml.feature.{HashingTF, OneHotEncoder, Tokenizer}
 import org.apache.spark.ml.regression.LinearRegression
 import org.apache.spark.sql.DataFrame
 import org.scalatest.{BeforeAndAfter, FunSuite}
+import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
 class PipelineEventTest extends FunSuite with BeforeAndAfter {
   before {
@@ -33,6 +34,26 @@ class PipelineEventTest extends FunSuite with BeforeAndAfter {
     .setLabelCol("labelCol")
     .setFeaturesCol("featuresCol")
     .setPredictionCol("predictionCol")
+
+  test("pipeline fit logs PipelineEvent") {
+    val syncer = TestBase.makeSyncer
+    val originalCount = syncer.numEvents
+    val pipeline = makePipeline
+    val pipelineModel = pipeline.fitSync(TestBase.trainingData)
+
+    assert(syncer.numEvents - originalCount === 1)
+    assert(syncer.hasEvent(originalCount) {
+      case x: PipelineEvent =>
+        x.pipeline === pipeline &&
+          x.pipelineModel === pipelineModel &&
+          x.inputDataFrame === TestBase.trainingData &&
+          x.stages.length === 3 &&
+          x.stages.head.isInstanceOf[TransformerPipelineStageEvent] &&
+          x.stages(1).isInstanceOf[TransformerPipelineStageEvent] &&
+          x.stages(2).isInstanceOf[FitPipelineStageEvent]
+      case _ => false
+    })
+  }
 
   test("makePipelineFit for PipelineEvent") {
     val syncer = TestBase.makeSyncer
