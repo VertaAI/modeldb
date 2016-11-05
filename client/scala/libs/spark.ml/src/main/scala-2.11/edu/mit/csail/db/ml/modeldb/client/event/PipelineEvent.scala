@@ -3,6 +3,7 @@ package edu.mit.csail.db.ml.modeldb.client.event
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableLinearModel}
 import modeldb.ModelDBService.FutureIface
+import modeldb.PipelineEventResponse
 import org.apache.spark.ml
 import org.apache.spark.ml.{Pipeline, PipelineModel, PipelineStage, Transformer}
 import org.apache.spark.sql.DataFrame
@@ -49,11 +50,10 @@ case class PipelineEvent(pipeline: Pipeline,
                          pipelineModel: PipelineModel,
                          inputDataFrame: DataFrame,
                          stages: Seq[PipelineStageEvent]) extends ModelDbEvent {
-  override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
-    // First make the fit event for the overall pipeline.
-    val pipelineFit = FitEvent(pipeline, inputDataFrame, pipelineModel)
+  def makePipelineFit = FitEvent(pipeline, inputDataFrame, pipelineModel)
 
-    // Populate the stages and columns.
+  def makeStages(mdbs: ModelDbSyncer):
+  (Seq[(Int, TransformEvent)], Seq[(Int, FitEvent)], Seq[String], Seq[String], Seq[String]) = {
     val transformStages = ArrayBuffer[(Int, TransformEvent)]()
     val fitStages = ArrayBuffer[(Int, FitEvent)]()
     val labelCols = ArrayBuffer[String]()
@@ -73,34 +73,68 @@ case class PipelineEvent(pipeline: Pipeline,
           // Now get the columns.
           predictionCols ++= ml.SyncableEstimator.getPredictionCols(est)
           labelCols ++= ml.SyncableEstimator.getLabelColumns(est)
-          featureCols ++= mdbs.get.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(est))
+          featureCols ++= mdbs.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(est))
       }
     }
+    (transformStages, fitStages, labelCols.distinct, featureCols.distinct, predictionCols.distinct)
+  }
 
-    // Now log the event.
-    val pipelineEvent = modeldb.PipelineEvent(
-      pipelineFit.makeEvent(mdbs.get).copy(
+  def makeEvent(pipelineFit: FitEvent,
+                labelCols: Seq[String],
+                featureCols: Seq[String],
+                predictionCols: Seq[String],
+                transformStages: Seq[(Int, TransformEvent)],
+                fitStages: Seq[(Int, FitEvent)],
+                mdbs: ModelDbSyncer) = {
+    modeldb.PipelineEvent(
+      pipelineFit.makeEvent(mdbs).copy(
         featureColumns = featureCols,
         predictionColumns = predictionCols,
         labelColumns = labelCols
       ),
-      transformStages.map(pair => modeldb.PipelineTransformStage(pair._1, pair._2.makeEvent(mdbs.get))),
-      fitStages.map(pair => modeldb.PipelineFitStage(pair._1, pair._2.makeEvent(mdbs.get))),
-      experimentRunId = mdbs.get.experimentRun.id
+      transformStages.map(pair => modeldb.PipelineTransformStage(pair._1, pair._2.makeEvent(mdbs))),
+      fitStages.map(pair => modeldb.PipelineFitStage(pair._1, pair._2.makeEvent(mdbs))),
+      experimentRunId = mdbs.experimentRun.id
     )
-    val res = Await.result(client.storePipelineEvent(pipelineEvent))
+  }
 
-    // Associate the objects and IDs.
-    pipelineFit.associate(res.pipelineFitResponse, mdbs.get)
+  def associate(res: PipelineEventResponse,
+                pipelineFit: FitEvent,
+                transformStages: Seq[(Int, TransformEvent)],
+                fitStages: Seq[(Int, FitEvent)],
+                mdbs: ModelDbSyncer,
+                client: Option[FutureIface]): Unit = {
+    pipelineFit.associate(res.pipelineFitResponse, mdbs)
     (res.transformStagesResponses zip transformStages).foreach { case (ter, (index, te)) =>
-      te.associate(ter, mdbs.get)
+      te.associate(ter, mdbs)
     }
     (res.fitStagesResponses zip fitStages).foreach { case (fer, (index, fe)) =>
       SyncableLinearModel(pipelineModel.stages(index)) match {
-        case Some(lm) => Await.result(client.storeLinearModel(fer.modelId, lm))
+        case Some(lm) => if (client.isDefined) Await.result(client.get.storeLinearModel(fer.modelId, lm))
         case None => {}
       }
-      fe.associate(fer, mdbs.get)
+      fe.associate(fer, mdbs)
     }
+  }
+
+  override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
+    // First make the fit event for the overall pipeline.
+    val pipelineFit = makePipelineFit
+
+    // Populate the stages and columns.
+    val (transformStages, fitStages, labelCols, featureCols, predictionCols) = makeStages(mdbs.get)
+
+    // Now log the event.
+    val pipelineEvent = makeEvent(
+      pipelineFit,
+      labelCols,
+      featureCols,
+      predictionCols,
+      transformStages,
+      fitStages,
+      mdbs.get
+    )
+    val res = Await.result(client.storePipelineEvent(pipelineEvent))
+    associate(res, pipelineFit, transformStages, fitStages, mdbs.get, Some(client))
   }
 }
