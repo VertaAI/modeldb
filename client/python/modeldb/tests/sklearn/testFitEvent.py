@@ -17,7 +17,7 @@ class TestFitEvent(unittest.TestCase):
         name = "logistic-test"
         author = "srinidhi"
         description = "income-level logistic regression"
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
             NewExperimentRun("Abc"))
@@ -27,12 +27,12 @@ class TestFitEvent(unittest.TestCase):
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
 
         # Add tags for models / dataframes
-        SyncerObj.instance.add_tag(X, "digits-dataset")
-        SyncerObj.instance.add_tag(model, "linear reg")
+        syncer_obj.add_tag(X, "digits-dataset")
+        syncer_obj.add_tag(model, "linear reg")
         
-        SyncerTest.instance.clear_buffer()
+        syncer_obj.clear_buffer()
         model.fit_sync(X,y)
-        events = SyncerTest.instance.sync()
+        events = syncer_obj.sync()
         self.fit_event = events[0]
 
     # Tests model values, associated with FitEvent

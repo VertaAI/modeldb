@@ -15,7 +15,7 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 name = "grid search cross validation"
 author = "srinidhi"
 description = "digits dataset"
-SyncerObj = Syncer(
+syncer_obj = Syncer(
     NewOrExistingProject(name, author, description),
     DefaultExperiment(),
     NewExperimentRun("Abc"))
@@ -40,4 +40,4 @@ clf = GridSearchCV(pipeline, parameters, cv=None,
                        scoring='%s_weighted' % 'precision')
 
 clf.fit_sync(x,y)
-SyncerObj.instance.sync()
+syncer_obj.sync()

@@ -16,11 +16,11 @@ class TestProjectEvent(unittest.TestCase):
         name = "logistic-test"
         author = "srinidhi"
         description = "income-level logistic regression"
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
             NewExperimentRun("Abc"))
-        events = SyncerTest.instance.sync()
+        events = syncer_obj.sync()
         self.project_event = events[0]
         self.experiment_event = events[1]
         self.experiment_run_event = events[2]
@@ -59,11 +59,11 @@ class TestProjectEvent(unittest.TestCase):
 class TestNewProjectEvent(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject("name", "author", "desc"),
             NewOrExistingExperiment("expName", "expDesc"),
             NewExperimentRun("expRunDesc"))
-        events = SyncerTest.instance.sync()
+        events = syncer_obj.sync()
         self.project_event = events[0]
         self.experiment_event = events[1]
         self.experiment_run_event = events[2]

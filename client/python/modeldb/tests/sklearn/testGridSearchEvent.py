@@ -15,7 +15,7 @@ class TestGridSearchEvent(unittest.TestCase):
         name = "grid search test"
         author = "srinidhi"
         description = "Grid search cross validation - 3 folds"
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
             NewExperimentRun("Abc"))
@@ -23,15 +23,15 @@ class TestGridSearchEvent(unittest.TestCase):
         y = pd.DataFrame(np.random.randint(0,100,size=(2000, 1)), columns=['output'])
 
         # Add tag for dataframe
-        SyncerObj.instance.add_tag(X, "digits-dataset")
-        SyncerTest.instance.clear_buffer()
+        syncer_obj.add_tag(X, "digits-dataset")
+        syncer_obj.clear_buffer()
 
         tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
                      'C': [10, 100]}]
         clf = GridSearchCV(SVC(), tuned_parameters, cv=3)
         y = y.values.ravel()
         clf.fit_sync(X, y)
-        events = SyncerTest.instance.sync()
+        events = syncer_obj.sync()
         self.grid_search_event = events[0]
 
 

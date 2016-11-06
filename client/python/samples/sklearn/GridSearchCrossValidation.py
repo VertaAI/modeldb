@@ -17,7 +17,7 @@ from modeldb.sklearn_native import SyncableMetrics
 name = "grid search"
 author = "srinidhi"
 description = "digits dataset"
-SyncerObj = Syncer(
+syncer_obj = Syncer(
     NewOrExistingProject(name, author, description),
     DefaultExperiment(),
     NewExperimentRun("Abc"))
@@ -45,8 +45,7 @@ clf.fit_sync(x_train, y_train)
 
 print("The model is trained on the full development set.")
 print("The scores are computed on the full evaluation set.")
+y_pred = clf.predict_sync(x_test)
+mean_error = SyncableMetrics.compute_metrics(clf, precision_score, y_test, y_pred, x_test, '', '')
 
-
-SyncableMetrics.compute_metrics(clf, precision_score, x_test, "", "", y_test)
-
-SyncerObj.instance.sync()
+syncer_obj.sync()

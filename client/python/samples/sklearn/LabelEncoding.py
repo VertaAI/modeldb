@@ -14,7 +14,7 @@ from modeldb.sklearn_native import SyncableMetrics
 name = "logistic-test"
 author = "srinidhi"
 description = "income-level logistic regression"
-SyncerObj = Syncer(
+syncer_obj = Syncer(
     NewOrExistingProject(name, author, description),
     DefaultExperiment(),
     NewExperimentRun("Abc"))
@@ -50,7 +50,8 @@ x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
 partial_training = x_train[x_train.columns[:-1]]
 partial_testing = x_test[x_test.columns[:-1]]
 lr.fit_sync(partial_training, y_train)
+y_pred = lr.predict_sync(partial_testing)
+SyncableMetrics.compute_metrics(lr, precision_score, y_test, y_pred, partial_testing, "predictionCol", 'income_level')
+SyncableMetrics.compute_metrics(lr, recall_score, y_test, y_pred, partial_testing, "predictionCol", 'income_level')
 
-SyncableMetrics.compute_metrics(lr, precision_score, partial_testing, "predictionCol", "income_level", y_test)
-SyncableMetrics.compute_metrics(lr, recall_score, partial_testing, "predictionCol", "income_level",y_test)
-SyncerObj.instance.sync()
+syncer_obj.sync()

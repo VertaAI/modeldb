@@ -10,6 +10,9 @@ import pandas as pd
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
 from sklearn.decomposition import *
+from sklearn.calibration import *
+from sklearn.ensemble import *
+from sklearn.tree import *
 from sklearn.feature_selection import *
 from sklearn.svm import *
 from sklearn.pipeline import Pipeline
@@ -59,7 +62,11 @@ def predict_fn(self, x):
     for i in range(0, num_pred_cols):
         pred_col_names.append('pred_'+str(i))
     predict_df.columns = pred_col_names
-    new_df = x.join(predict_df)
+    if not isinstance(x, pd.DataFrame):
+        x_to_df = pd.DataFrame(x)
+        new_df = x_to_df.join(predict_df)
+    else:
+        new_df = x.join(predict_df)
     predict_event = TransformEvent(x, new_df, self)
     Syncer.instance.add_to_buffer(predict_event)
     return predict_array
@@ -388,12 +395,12 @@ class Syncer(ModelDbSyncerBase.Syncer):
         Users can easily add more models to this function.
         """
         #Linear Models (transform has been deprecated)
-        for class_name in [LogisticRegression, LinearRegression]:
+        for class_name in [LogisticRegression, LinearRegression, CalibratedClassifierCV, RandomForestClassifier, BaggingClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "predict_sync", predict_fn)
 
-        #Preprocessing models
-        for class_name in [LabelEncoder, OneHotEncoder]:
+        #Preprocessing and some Classifier models 
+        for class_name in [LabelEncoder, OneHotEncoder, DecisionTreeClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "transform_sync", transform_fn)
             setattr(class_name, "fit_transform_sync", fit_transform_fn)
@@ -405,6 +412,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         #Grid-Search Cross Validation model
         for class_name in [GridSearchCV]:
             setattr(class_name, "fit_sync", fit_fn_grid_search)
+            setattr(class_name, "predict_sync", predict_fn)
 
         #Train-test split for cross_validation
         setattr(cross_validation, "train_test_split_sync", train_test_split_fn)

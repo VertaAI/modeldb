@@ -16,7 +16,7 @@ class TestTransformEvent(unittest.TestCase):
         name = "logistic-test"
         author = "srinidhi"
         description = "income-level logistic regression"
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
             NewExperimentRun("Abc"))
@@ -25,11 +25,11 @@ class TestTransformEvent(unittest.TestCase):
         model = preprocessing.LabelEncoder()
 
         # Add tag for model
-        SyncerObj.instance.add_tag(model, "label encoder")
+        syncer_obj.add_tag(model, "label encoder")
 
-        SyncerTest.instance.clear_buffer()
+        syncer_obj.clear_buffer()
         model.fit_transform_sync(X)
-        events = SyncerTest.instance.sync()
+        events = syncer_obj.sync()
         self.fit_event = events[0]
         self.transform_event = events[1]
 

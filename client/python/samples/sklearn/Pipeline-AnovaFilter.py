@@ -27,7 +27,7 @@ def run_pipeline_anova_workflow():
     name = "pipeline scikit example"
     author = "srinidhi"
     description = "anova filter pipeline"
-    SyncerObj = Syncer(
+    syncer_obj = Syncer(
 	    NewOrExistingProject(name, author, description),
 	    DefaultExperiment(),
 	    NewExperimentRun("Abc"))
@@ -38,30 +38,29 @@ def run_pipeline_anova_workflow():
 
     x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
     X, y, test_size=0.3, random_state=0)
-    SyncerObj.instance.add_tag(X, "samples generated data")
-    SyncerObj.instance.add_tag(x_train, "training data")
-    SyncerObj.instance.add_tag(x_test, "testing data")
+    syncer_obj.add_tag(X, "samples generated data")
+    syncer_obj.add_tag(x_train, "training data")
+    syncer_obj.add_tag(x_test, "testing data")
 
 	# ANOVA SVM-C
 	# 1) anova filter, take 5 best ranked features
     anova_filter = SelectKBest(f_regression, k=5)
-    SyncerObj.instance.add_tag(anova_filter, "Anova filter, with k=5")
+    syncer_obj.add_tag(anova_filter, "Anova filter, with k=5")
     # 2) svm
     clf = svm.SVC(kernel='linear')
-    SyncerObj.instance.add_tag(clf, "SVC with linear kernel")
+    syncer_obj.add_tag(clf, "SVC with linear kernel")
     anova_svm = Pipeline([('anova', anova_filter),('svc', clf)])
 
-    SyncerObj.instance.add_tag(anova_svm, "Pipeline with anova_filter and SVC")
+    syncer_obj.add_tag(anova_svm, "Pipeline with anova_filter and SVC")
 
 	#Fit the pipeline on the training set
     anova_svm.fit_sync(x_train, y_train)
-
+    y_pred = anova_svm.predict(x_test)
 	#Compute metrics for the model on the testing set
-    f1 = SyncableMetrics.compute_metrics(anova_svm, f1_score, x_test, "predictionCol", "label_col", y_test)
-    precision = SyncableMetrics.compute_metrics(anova_svm, precision_score, x_test, "predictionCol", "label_col",y_test)
-
-    SyncerObj.instance.sync()
-    return SyncerObj, f1, precision, x_train, x_test
+    f1 = SyncableMetrics.compute_metrics(anova_svm, f1_score, y_test, y_pred, x_test, "predictionCol", 'label_col')
+    precision = SyncableMetrics.compute_metrics(anova_svm, precision_score, y_test, y_pred, x_test, "predictionCol", 'label_col')
+    syncer_obj.sync()
+    return syncer_obj, f1, precision, x_train, x_test
 
 
 class TestPipelineEndToEnd(unittest.TestCase):
@@ -76,13 +75,13 @@ class TestPipelineEndToEnd(unittest.TestCase):
         """
         os.system("cat " + ROOT_DIR + "codegen/sqlite/clearDb.sql "
                   "| sqlite3 " + ROOT_DIR + "modeldb_test.db")
-        self.SyncerObj, self.f1, self.precision, self.x_train, self.x_test = run_pipeline_anova_workflow()
+        self.syncer_obj, self.f1, self.precision, self.x_train, self.x_test = run_pipeline_anova_workflow()
 
     def test_project(self):
         """
         Tests if project is stored correctly.
         """
-        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
+        projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
         self.assertEquals(project.description, 'anova filter pipeline')
         self.assertEquals(project.author, 'srinidhi')
@@ -95,12 +94,12 @@ class TestPipelineEndToEnd(unittest.TestCase):
         """
         Tests if the two models are stored correctly.
         """
-        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
+        projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
-        runs_and_exps = self.SyncerObj.client.getRunsAndExperimentsInProject(project.id)
+        runs_and_exps = self.syncer_obj.client.getRunsAndExperimentsInProject(project.id)
         # Get the latest experiment run id
         exp_id = runs_and_exps.experimentRuns[-1].id
-        model_responses = self.SyncerObj.client.getExperimentRunDetails(exp_id).modelResponses
+        model_responses = self.syncer_obj.client.getExperimentRunDetails(exp_id).modelResponses
 
         # Two models are stored above - ensure both are in database
         self.assertEquals(len(model_responses), 3)
@@ -140,8 +139,8 @@ class TestPipelineEndToEnd(unittest.TestCase):
 		# Check ancestry for x_test and x_train.
 		# The data the models were trained and tested on.
 		for df in [self.x_train, self.x_test]:
-			dataframe_id = self.SyncerObj.id_for_object[id(df)]
-			ancestry = self.SyncerObj.client.getDataFrameAncestry(dataframe_id).ancestors
+			dataframe_id = self.syncer_obj.id_for_object[id(df)]
+			ancestry = self.syncer_obj.client.getDataFrameAncestry(dataframe_id).ancestors
 			self.assertEqual(len(ancestry), 2)
 			df_1 = ancestry[0]
 			df_2 = ancestry[1]
@@ -156,13 +155,13 @@ class TestPipelineEndToEnd(unittest.TestCase):
         """
         Tests if metrics are stored correctly.
         """
-        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
+        projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
-        runs_and_exps = self.SyncerObj.client.getRunsAndExperimentsInProject(project.id)
+        runs_and_exps = self.syncer_obj.client.getRunsAndExperimentsInProject(project.id)
 
         # Get the latest experiment run id
         exp_id = runs_and_exps.experimentRuns[-1].id
-        model_responses = self.SyncerObj.client.getExperimentRunDetails(exp_id).modelResponses
+        model_responses = self.syncer_obj.client.getExperimentRunDetails(exp_id).modelResponses
         model1 = model_responses[0]
         model2 = model_responses[1]
         model3 = model_responses[2]
@@ -175,7 +174,7 @@ class TestPipelineEndToEnd(unittest.TestCase):
         self.assertIn('precision_score', model1.metrics)
 
         # Metrics are mapped to their associated dataframe.
-        dataframe_id = self.SyncerObj.id_for_object[id(self.x_test)]
+        dataframe_id = self.syncer_obj.id_for_object[id(self.x_test)]
         self.assertAlmostEqual(self.f1,
                                model1.metrics['f1_score'][dataframe_id], places=4)
         self.assertAlmostEqual(self.precision,
