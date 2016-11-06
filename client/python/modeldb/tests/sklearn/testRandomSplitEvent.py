@@ -1,5 +1,6 @@
 import unittest
 import sys
+from sklearn.cross_validation import train_test_split
 from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
@@ -21,17 +22,22 @@ class TestRandomSplitEvent(unittest.TestCase):
             NewExperimentRun("Abc"))
         X = pd.DataFrame(np.random.randint(0,100,size=(100, 4)), columns=list('ABCD'))
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
-        X.tag("digits-dataset")
+
+        # Add tag for dataframe
+        SyncerObj.instance.add_tag(X, "digits-dataset")
+
         seed = 1       
         weights = [0.7, 0.3]
         SyncerTest.instance.clear_buffer()
-        x_set, y_set = SyncableRandomSplit.random_split(X, [0.7, 0.3], seed, y)
+        x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(X, y, train_size=0.7)
         events = SyncerTest.instance.sync()
         self.random_split_event = events[0]
 
     def test_random_split_event(self):
         utils.validate_random_split_event_struct(self.random_split_event, self)
-        self.assertEquals(self.random_split_event.weights, [0.7, 0.3])
+        weights = self.random_split_event.weights
+        self.assertAlmostEqual(weights[0], 0.7)
+        self.assertAlmostEqual(weights[1], 0.3)
         self.assertEquals(self.random_split_event.seed, 1)
 
     def test_old_dataframe(self):

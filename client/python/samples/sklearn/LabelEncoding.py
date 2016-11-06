@@ -43,10 +43,8 @@ for coltype, colname in zip(df.dtypes, df.columns):
 
 lr = linear_model.LogisticRegression()
 
-x_set, y_set = SyncableRandomSplit.random_split(
-    new_df, [0.7, 0.3], 0, new_df['income_level'])
-x_train, x_test = x_set[0], x_set[1]
-y_train, y_test = y_set[0], y_set[1]
+x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
+    new_df, new_df['income_level'], test_size=0.3, random_state=0)
 
 #We don't want to include our label (income_level) when fitting
 partial_training = x_train[x_train.columns[:-1]]

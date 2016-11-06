@@ -21,7 +21,9 @@ class TestGridSearchEvent(unittest.TestCase):
             NewExperimentRun("Abc"))
         X = pd.DataFrame(np.random.randint(0,100,size=(2000, 4)), columns=list('ABCD'))
         y = pd.DataFrame(np.random.randint(0,100,size=(2000, 1)), columns=['output'])
-        X.tag("digits-dataset")
+
+        # Add tag for dataframe
+        SyncerObj.instance.add_tag(X, "digits-dataset")
         SyncerTest.instance.clear_buffer()
 
         tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
