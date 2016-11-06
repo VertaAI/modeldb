@@ -14,6 +14,7 @@ from sklearn.feature_selection import *
 from sklearn.svm import *
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
+from sklearn import cross_validation
 import sklearn.metrics
 
 from thrift import Thrift
@@ -76,6 +77,29 @@ def transform_fn(self, x):
     transform_event = TransformEvent(x, new_df, self)
     Syncer.instance.add_to_buffer(transform_event)
     return transformed_output
+
+def fit_transform_fn(self, x, y=None, **fit_params):
+    """
+    Overrides the fit_transform function for models.
+    Combines fit and transform functions.
+    """
+    df = x
+    #Certain fit functions only accept one argument
+    if y is None:
+        fitted_model = self.fit(x, **fit_params)
+    else:
+        fitted_model = self.fit(x, y, **fit_params)
+    fit_event = FitEvent(fitted_model, self, df)
+    Syncer.instance.add_to_buffer(fit_event)
+    transformed_output = fitted_model.transform(x)
+    if type(transformed_output) is np.ndarray:
+        new_df = pd.DataFrame(transformed_output)
+    else:
+        new_df = pd.DataFrame(transformed_output.toarray())
+    transform_event = TransformEvent(x, new_df, fitted_model)
+    Syncer.instance.add_to_buffer(transform_event)
+    return transformed_output
+
 
 def fit_fn_pipeline(self, x, y):
     """
@@ -171,6 +195,32 @@ def store_df_path(filepath_or_buffer, **kwargs):
     df = pd.read_csv(filepath_or_buffer, **kwargs)
     Syncer.instance.path_for_df[id(df)] = filepath_or_buffer
     return df
+
+def train_test_split_fn(*arrays, **options):
+    """
+    Stores the split dataframes.
+    """
+    split_dfs = cross_validation.train_test_split(*arrays, **options)
+
+    # Extract the option values to create RandomSplitEvent
+    test_size = options.pop('test_size', None)
+    train_size = options.pop('train_size', None)
+    random_state = options.pop('random_state', None)
+    if test_size is None and train_size is None:
+        test_size = 0.25
+        train_size = 0.75
+    elif test_size is None:
+        test_size = 1.0 - train_size
+    else:
+        train_size = 1.0 - test_size
+    if random_state is None:
+        random_state = 1
+    main_df = arrays[0]
+    weights = [train_size, test_size]
+    result = split_dfs[:len(split_dfs)/2]
+    random_split_event = RandomSplitEvent(main_df, weights, random_state, result)
+    Syncer.instance.add_to_buffer(random_split_event)
+    return split_dfs
 
 def drop_columns(self, labels, **kwargs):
     """
@@ -346,6 +396,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         for class_name in [LabelEncoder, OneHotEncoder]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "transform_sync", transform_fn)
+            setattr(class_name, "fit_transform_sync", fit_transform_fn)
 
         #Pipeline model
         for class_name in [Pipeline]:
@@ -354,3 +405,6 @@ class Syncer(ModelDbSyncerBase.Syncer):
         #Grid-Search Cross Validation model
         for class_name in [GridSearchCV]:
             setattr(class_name, "fit_sync", fit_fn_grid_search)
+
+        #Train-test split for cross_validation
+        setattr(cross_validation, "train_test_split_sync", train_test_split_fn)

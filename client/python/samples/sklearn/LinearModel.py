@@ -59,8 +59,8 @@ def run_linear_model_workflow():
     # Join the hot encoded rows with the rest of the data
     data = dropped_data.join(hot_enc_df)
 
-    [x_train, x_test], [y_train, y_test] = SyncableRandomSplit.random_split(data,
-                                                                            [0.7, 0.3], 1, target)
+    x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
+    data, target, test_size=0.3, random_state=1)
 
     SyncerObj.instance.add_tag(x_train, "training data - 70%")
     SyncerObj.instance.add_tag(x_test, "testing data - 30%")
