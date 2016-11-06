@@ -34,10 +34,13 @@ class TestPipelineEvent(unittest.TestCase):
         np.random.seed(0)
         X = pd.DataFrame(np.random.randint(0,100,size=(100, 2)), columns=list('AB'))
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
-        X.tag("digits-dataset")
-        pipe.tag("pipeline with pca + logistic")
-        pca.tag("decomposition PCA")
-        lr.tag("basic linear reg")
+
+        # Add tags for models / dataframes
+        SyncerObj.instance.add_tag(X, "digits-dataset")
+        SyncerObj.instance.add_tag(pipe, "pipeline with pca + logistic")
+        SyncerObj.instance.add_tag(pca, "decomposition PCA")
+        SyncerObj.instance.add_tag(lr, "basic linear reg")
+
         SyncerTest.instance.clear_buffer()
         pipe.fit_sync(X,y)
         events = SyncerTest.instance.sync()

@@ -10,6 +10,8 @@ import pandas as pd
 from sklearn.linear_model import *
 from sklearn.preprocessing import *
 from sklearn.decomposition import *
+from sklearn.feature_selection import *
+from sklearn.svm import *
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
 import sklearn.metrics
@@ -39,9 +41,7 @@ def fit_fn(self, x, y=None, sample_weight=None):
         models = self.fit(x)
     else:
         models = self.fit(x, y)
-    fit_event = FitEvent(models, self, df)
-    if hasattr(x, 'tag') and x.tag != "":
-        add_tag_object(df, x.tag)
+    fit_event = FitEvent(models, self, x)
     Syncer.instance.add_to_buffer(fit_event)
 
 def predict_fn(self, x):
@@ -164,14 +164,6 @@ def fit_fn_grid_search(self, x, y):
         seed, evaluator, best_model, best_estimator, num_folds)
     Syncer.instance.add_to_buffer(grid_event)
 
-def add_tag_object(self, tag_name):
-    """
-    Stores object with associated tagName
-    """
-    if type(tag_name) is str:
-        self.tag = tag_name
-        Syncer.instance.store_tag_object(id(self), tag_name)
-
 def store_df_path(filepath_or_buffer, **kwargs):
     """
     Stores the filepath for a dataframe
@@ -179,6 +171,17 @@ def store_df_path(filepath_or_buffer, **kwargs):
     df = pd.read_csv(filepath_or_buffer, **kwargs)
     Syncer.instance.path_for_df[id(df)] = filepath_or_buffer
     return df
+
+def drop_columns(self, labels, **kwargs):
+    """
+    Overrides the "drop" function of pandas dataframes
+    so event can be logged as a TransformEvent.
+    """
+    dropped_df = self.drop(labels, **kwargs)
+    drop_event = TransformEvent(self, dropped_df, 'DropColumns')
+    Syncer.instance.add_to_buffer(drop_event)
+    return dropped_df
+
 
 class Syncer(ModelDbSyncerBase.Syncer):
     """
@@ -193,8 +196,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         self.object_for_tag = {}
         self.path_for_df = {}
         self.enable_sync_functions()
-        self.add_tags()
-        self.add_dataframe_path()
+        self.add_dataframe_attr()
 
     def __str__(self):
         return "SklearnSyncer"
@@ -213,6 +215,12 @@ class Syncer(ModelDbSyncerBase.Syncer):
         """
         self.tag_for_object[obj] = tag
         self.object_for_tag[tag] = obj
+
+    def add_tag(self, obj, tag_name):
+        """
+        Adds tag name to object.
+        """
+        self.store_tag_object(id(obj), tag_name)
 
     def add_to_buffer(self, event):
         """
@@ -314,21 +322,14 @@ class Syncer(ModelDbSyncerBase.Syncer):
             hyperparams, tag)
         return ts
 
-    def add_tags(self):
+    def add_dataframe_attr(self):
         """
-        Adds tag as a method to objects, allowing users to tag objects with their own description
-        """
-        setattr(pd.DataFrame, "tag", add_tag_object)
-        models = [LogisticRegression, LinearRegression, LabelEncoder, 
-            OneHotEncoder, Pipeline, GridSearchCV, PCA]
-        for class_name in models:
-            setattr(class_name, "tag", add_tag_object)
-
-    def add_dataframe_path(self):
-        """
-        Adds the read_csv_sync function, allowing users to automatically track dataframe location
+        Adds the read_csv_sync function, allowing users to automatically
+        track dataframe location, and the drop_sync function, allowing users
+        to track dropped columns from a dataframe.
         """
         setattr(pd, "read_csv_sync", store_df_path)
+        setattr(pd.DataFrame, "drop_sync", drop_columns)
 
     def enable_sync_functions(self):
         """
