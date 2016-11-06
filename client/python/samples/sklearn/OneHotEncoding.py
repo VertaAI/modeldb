@@ -4,6 +4,7 @@ import sys
 
 from sklearn import preprocessing, linear_model, cross_validation, metrics
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.metrics import accuracy_score
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableRandomSplit 
@@ -51,5 +52,7 @@ test = test.drop(["workclass", "sex"], axis=1)
 
 test_pred = logreg.predict_sync(test[features])
 test_proba = logreg.predict_proba(test[features])
-accuracy = metrics.accuracy_score(test.income, test_pred)
+
+accuracy = SyncableMetrics.compute_metrics(logreg, accuracy_score, test.income, test_pred, test[features], "predictionCol", 'income_level')
+
 SyncerObj.instance.sync()

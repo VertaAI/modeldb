@@ -84,26 +84,25 @@ Perform classification
 # We can extract the data in this format from pandas like this:
 all_inputs = iris_data_clean[['sepal_length_cm', 'sepal_width_cm',
                              'petal_length_cm', 'petal_width_cm']].values
+SyncerObj.instance.add_tag(all_inputs, "data to input into model")
 
 # Similarly, we can extract the classes
 all_classes = iris_data_clean['class'].values
 
 # Make sure that you don't mix up the order of the entries
 # all_inputs[5] inputs should correspond to the class in all_classes[5]
-'''
+
 (training_inputs,
  testing_inputs,
  training_classes,
- testing_classes) = train_test_split(all_inputs, all_classes, train_size=0.75, random_state=1)
-'''
-# We use random split instead.
-[training_inputs, testing_inputs], [training_classes, testing_classes] = SyncableRandomSplit.random_split(all_inputs, [0.75, 0.25], 1, all_classes)
+ testing_classes) = cross_validation.train_test_split_sync(all_inputs, all_classes, train_size=0.75, random_state=1)
 
 """
 Cross Validation
 """
 # Create the classifier
 decision_tree_classifier = DecisionTreeClassifier()
+SyncerObj.instance.add_tag(decision_tree_classifier, "decision tree")
 
 # Train the classifier on the training set
 decision_tree_classifier.fit_sync(training_inputs, training_classes)

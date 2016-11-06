@@ -55,11 +55,10 @@ def run_pipeline_anova_workflow():
 
 	#Fit the pipeline on the training set
     anova_svm.fit_sync(x_train, y_train)
-
+    y_pred = anova_svm.predict(x_test)
 	#Compute metrics for the model on the testing set
-    f1 = SyncableMetrics.compute_metrics(anova_svm, f1_score, x_test, "predictionCol", "label_col", y_test)
-    precision = SyncableMetrics.compute_metrics(anova_svm, precision_score, x_test, "predictionCol", "label_col",y_test)
-
+    f1 = SyncableMetrics.compute_metrics(anova_svm, f1_score, y_test, y_pred, x_test, "predictionCol", 'label_col')
+    precision = SyncableMetrics.compute_metrics(anova_svm, precision_score, y_test, y_pred, x_test, "predictionCol", 'label_col')
     SyncerObj.instance.sync()
     return SyncerObj, f1, precision, x_train, x_test
 

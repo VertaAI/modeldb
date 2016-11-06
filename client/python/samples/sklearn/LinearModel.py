@@ -69,10 +69,9 @@ def run_linear_model_workflow():
     SyncerObj.instance.add_tag(model, "Basic linear reg")
 
     model.fit_sync(x_train, y_train)
-    model.predict_sync(x_test)
+    y_pred = model.predict_sync(x_test)
 
-    mean_error = SyncableMetrics.compute_metrics(model, mean_squared_error, x_test, '',
-                                                     'affairs', y_test)
+    mean_error = SyncableMetrics.compute_metrics(model, mean_squared_error, y_test, y_pred, x_test, "", 'affairs')
 
     #Sync all the events to database
     SyncerObj.instance.sync()

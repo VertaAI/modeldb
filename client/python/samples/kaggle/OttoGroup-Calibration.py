@@ -1,3 +1,6 @@
+"""
+Source: https://www.kaggle.com/cbourguignat/otto-group-product-classification-challenge/why-calibration-works
+"""
 import os
 import pandas as pd
 import sklearn
@@ -38,8 +41,7 @@ SyncerObj = Syncer(
 # Import Data
 X = pd.read_csv_sync('../data/otto-train.csv')
 
-# NOTE: an do drop_sync, but change is not merged yet (currently in PR)
-X = X.drop('id', axis=1)
+X = X.drop_sync('id', axis=1)
 
 # Extract target
 # Encode it to make it manageable by ML algo
@@ -48,14 +50,14 @@ y = X.target.values
 y = LabelEncoder().fit_transform_sync(y)
 
 # Remove target from train, else it's too easy ...
-X = X.drop('target', axis=1)
+X = X.drop_sync('target', axis=1)
+
+SyncerObj.instance.add_tag(X, "data - label encoded data")
 
 # Split Train / Test
-X.tag("data - label encoded data")
-Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.20, random_state=36)
-# NOTE: Converting this to random split Sync 
-[Xtrain, Xtest], [ytrain, ytest] = SyncableRandomSplit.random_split(X, [0.8, 0.2], 1, y)
-Xtest.tag("testing data")
+Xtrain, Xtest, ytrain, ytest = cross_validation.train_test_split_sync(X, y, test_size=0.20, random_state=36)
+
+SyncerObj.instance.add_tag(Xtest, "testing data")
 # First, we will train and apply a Random Forest WITHOUT calibration
 # we use a BaggingClassifier to make 5 predictions, and average
 # because that's what CalibratedClassifierCV do behind the scene,

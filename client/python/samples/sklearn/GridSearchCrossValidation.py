@@ -45,8 +45,7 @@ clf.fit_sync(x_train, y_train)
 
 print("The model is trained on the full development set.")
 print("The scores are computed on the full evaluation set.")
-
-
-SyncableMetrics.compute_metrics(clf, precision_score, x_test, "", "", y_test)
+y_pred = clf.predict_sync(x_test)
+mean_error = SyncableMetrics.compute_metrics(clf, precision_score, y_test, y_pred, x_test, '', '')
 
 SyncerObj.instance.sync()
