@@ -23,7 +23,10 @@ class TestTransformEvent(unittest.TestCase):
         letters = ['A', 'B', 'C', 'D']
         X = np.random.choice(letters, size=(100, 1)).ravel()
         model = preprocessing.LabelEncoder()
-        model.tag("label encoder")
+
+        # Add tag for model
+        SyncerObj.instance.add_tag(model, "label encoder")
+
         SyncerTest.instance.clear_buffer()
         model.fit_transform_sync(X)
         events = SyncerTest.instance.sync()

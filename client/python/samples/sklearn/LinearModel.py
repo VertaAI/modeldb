@@ -44,26 +44,30 @@ def run_linear_model_workflow():
         NewExperimentRun("Abc"))
 
     data, target = load_pandas_dataset()
-    data.tag("occupation dataset")
+    SyncerObj.instance.add_tag(data, "occupation dataset")
 
     # Hot encode occupation column of data
     hot_enc = preprocessing.OneHotEncoder()
-    hot_enc.tag("Hot encoding occupation column")
+    SyncerObj.instance.add_tag(hot_enc, "Hot encoding occupation column")
+
     hot_enc.fit_sync(data['occupation'].reshape(-1,1))
     hot_enc_rows = hot_enc.transform_sync(data['occupation'].reshape(-1,1))
     hot_enc_df = pd.DataFrame(hot_enc_rows.toarray())
 
     # Drop column as it is now encoded
-    data = data.drop('occupation', axis=1)
-
+    dropped_data = data.drop_sync('occupation', axis=1)
     # Join the hot encoded rows with the rest of the data
-    data = data.join(hot_enc_df)
+    data = dropped_data.join(hot_enc_df)
 
     x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
     data, target, test_size=0.3, random_state=1)
 
+    SyncerObj.instance.add_tag(x_train, "training data - 70%")
+    SyncerObj.instance.add_tag(x_test, "testing data - 30%")
+
     model = linear_model.LinearRegression()
-    model.tag("Linear Regression model")
+    SyncerObj.instance.add_tag(model, "Basic linear reg")
+
     model.fit_sync(x_train, y_train)
     model.predict_sync(x_test)
 
@@ -72,7 +76,9 @@ def run_linear_model_workflow():
 
     #Sync all the events to database
     SyncerObj.instance.sync()
-    return SyncerObj, x_test, mean_error
+
+    #Certain variables are returned so they can be used for unittests below.
+    return SyncerObj, x_test, mean_error, dropped_data
 
 
 class TestLinearModelEndToEnd(unittest.TestCase):
@@ -87,7 +93,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         os.system("cat " + ROOT_DIR + "codegen/sqlite/clearDb.sql "
                   "| sqlite3 " + ROOT_DIR + "modeldb_test.db")
-        self.SyncerObj, self.x_test, self.mean_error = run_linear_model_workflow()
+        self.SyncerObj, self.x_test, self.mean_error, self.dropped_data = run_linear_model_workflow()
 
     def test_project(self):
         """
@@ -130,7 +136,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertEqual(transformer2.transformerType, 'LinearRegression')
 
         self.assertEqual(transformer1.tag, 'Hot encoding occupation column')
-        self.assertEqual(transformer2.tag, 'Linear Regression model')
+        self.assertEqual(transformer2.tag, 'Basic linear reg')
 
         # Check hyperparameters for both models
         hyperparams1 = transformer1.hyperparameters
@@ -160,6 +166,25 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         dataframe_id = self.SyncerObj.id_for_object[id(self.x_test)]
         self.assertAlmostEqual(self.mean_error,
                                model2.metrics['mean_squared_error'][dataframe_id], places=4)
+
+    def test_dataframe_ancestry(self):
+        """
+        Tests if dataframe ancestry is stored correctly for dropped column of dataset.
+        """
+        # Check ancestry for dropped dataframe
+        # Confirm dropped column has the original dataframe in ancestry
+        dataframe_id = self.SyncerObj.id_for_object[id(self.dropped_data)]
+        ancestry = self.SyncerObj.client.getDataFrameAncestry(dataframe_id).ancestors
+        self.assertEqual(len(ancestry), 2)
+
+        df_1 = ancestry[0]
+        df_2 = ancestry[1]
+        df1_schema = df_1.schema
+        df2_schema = df_2.schema
+        self.assertEqual(len(df1_schema), 7)
+        self.assertEqual(len(df2_schema), 8)
+        # Ancestor is the original dataframe
+        self.assertEqual(df_2.tag, 'occupation dataset')
 
 
 if __name__ == '__main__':

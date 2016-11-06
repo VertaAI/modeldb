@@ -25,8 +25,10 @@ class TestFitEvent(unittest.TestCase):
         np.random.seed(0)
         X = pd.DataFrame(np.random.randint(0,100,size=(100, 4)), columns=list('ABCD'))
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
-        X.tag("digits-dataset")
-        model.tag("linear reg")
+
+        # Add tags for models / dataframes
+        SyncerObj.instance.add_tag(X, "digits-dataset")
+        SyncerObj.instance.add_tag(model, "linear reg")
         
         SyncerTest.instance.clear_buffer()
         model.fit_sync(X,y)
