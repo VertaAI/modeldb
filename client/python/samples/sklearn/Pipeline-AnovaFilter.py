@@ -32,9 +32,8 @@ SyncerObj = Syncer(
 X, y = samples_generator.make_classification(
     n_informative=5, n_redundant=0, random_state=42)
 
-x_set, y_set = SyncableRandomSplit.random_split(X, [0.7, 0.3], 0,y)
-x_train, x_test = x_set[0], x_set[1]
-y_train, y_test = y_set[0], y_set[1]
+x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
+    X, y, test_size=0.3, random_state=0)
 
 # ANOVA SVM-C
 # 1) anova filter, take 5 best ranked features

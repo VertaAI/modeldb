@@ -12,6 +12,7 @@ from sklearn.preprocessing import *
 from sklearn.decomposition import *
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
+from sklearn import cross_validation
 import sklearn.metrics
 
 from thrift import Thrift
@@ -203,6 +204,32 @@ def store_df_path(filepath_or_buffer, **kwargs):
     Syncer.instance.path_for_df[id(df)] = filepath_or_buffer
     return df
 
+def train_test_split_fn(*arrays, **options):
+    """
+    Stores the split dataframes.
+    """
+    split_dfs = cross_validation.train_test_split(*arrays, **options)
+
+    # Extract the option values to create RandomSplitEvent
+    test_size = options.pop('test_size', None)
+    train_size = options.pop('train_size', None)
+    random_state = options.pop('random_state', None)
+    if test_size is None and train_size is None:
+        test_size = 0.25
+        train_size = 0.75
+    elif test_size is None:
+        test_size = 1.0 - train_size
+    else:
+        train_size = 1.0 - test_size
+    if random_state is None:
+        random_state = 1
+    main_df = arrays[0]
+    weights = [train_size, test_size]
+    result = split_dfs[:len(split_dfs)/2]
+    random_split_event = RandomSplitEvent(main_df, weights, random_state, result)
+    Syncer.instance.add_to_buffer(random_split_event)
+    return split_dfs
+
 class Syncer(ModelDbSyncerBase.Syncer):
     """
     This is the Syncer class for sklearn functionality, responsible for
@@ -377,3 +404,6 @@ class Syncer(ModelDbSyncerBase.Syncer):
         #Grid-Search Cross Validation model
         for class_name in [GridSearchCV]:
             setattr(class_name, "fit_sync", fit_fn_grid_search)
+
+        #Train-test split for cross_validation
+        setattr(cross_validation, "train_test_split_sync", train_test_split_fn)

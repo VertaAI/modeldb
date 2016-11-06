@@ -31,7 +31,7 @@ def oneHotEncoding(lb, feature, df):
     return [lb, df]
 
 orig = pd.read_csv_sync("../data/adult_with_colnames.csv", index_col=0)
-[train, test] = cross_validation.train_test_split(orig, test_size=0.3, random_state=501)
+[train, test] = cross_validation.train_test_split_sync(orig, test_size=0.3, random_state=501)
 
 
 [lb, train] = oneHotEncoding(None, "workclass", train)

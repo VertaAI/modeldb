@@ -32,7 +32,7 @@ X = digits.images.reshape((n_samples, -1))
 y = digits.target
 
 # Split the dataset in two equal parts
-x_train, x_test, y_train, y_test = train_test_split(
+x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
     X, y, test_size=0.5, random_state=0)
 
 # Set the parameters by cross-validation
