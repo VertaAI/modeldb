@@ -21,7 +21,7 @@ name = "test1"
 author = "author"
 description = "kaggle-titanic-script"
 # Creating a new project
-SyncerObj = Syncer(
+syncer_obj = Syncer(
         NewOrExistingProject(name, author, description),
         NewOrExistingExperiment("expName", "expDesc"),
         NewExperimentRun("titanic test"))
@@ -72,4 +72,4 @@ alg = LogisticRegression(random_state = 1)
 #Currently we don't support cross_val_score 
 scores = cross_validation.cross_val_score(alg, titanic[predictors], titanic["Survived"], cv = 3)
 print scores.mean()
-SyncerObj.instance.sync()
+syncer_obj.sync()

@@ -38,17 +38,17 @@ def run_linear_model_workflow():
     author = "srinidhi"
     description = "pandas-linear-regression"
     # Creating a new project
-    SyncerObj = Syncer(
+    syncer_obj = Syncer(
         NewOrExistingProject(name, author, description),
         DefaultExperiment(),
         NewExperimentRun("Abc"))
 
     data, target = load_pandas_dataset()
-    SyncerObj.instance.add_tag(data, "occupation dataset")
+    syncer_obj.add_tag(data, "occupation dataset")
 
     # Hot encode occupation column of data
     hot_enc = preprocessing.OneHotEncoder()
-    SyncerObj.instance.add_tag(hot_enc, "Hot encoding occupation column")
+    syncer_obj.add_tag(hot_enc, "Hot encoding occupation column")
 
     hot_enc.fit_sync(data['occupation'].reshape(-1,1))
     hot_enc_rows = hot_enc.transform_sync(data['occupation'].reshape(-1,1))
@@ -62,11 +62,11 @@ def run_linear_model_workflow():
     x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
     data, target, test_size=0.3, random_state=1)
 
-    SyncerObj.instance.add_tag(x_train, "training data - 70%")
-    SyncerObj.instance.add_tag(x_test, "testing data - 30%")
+    syncer_obj.add_tag(x_train, "training data - 70%")
+    syncer_obj.add_tag(x_test, "testing data - 30%")
 
     model = linear_model.LinearRegression()
-    SyncerObj.instance.add_tag(model, "Basic linear reg")
+    syncer_obj.add_tag(model, "Basic linear reg")
 
     model.fit_sync(x_train, y_train)
     y_pred = model.predict_sync(x_test)
@@ -74,10 +74,10 @@ def run_linear_model_workflow():
     mean_error = SyncableMetrics.compute_metrics(model, mean_squared_error, y_test, y_pred, x_test, "", 'affairs')
 
     #Sync all the events to database
-    SyncerObj.instance.sync()
+    syncer_obj.sync()
 
     #Certain variables are returned so they can be used for unittests below.
-    return SyncerObj, x_test, mean_error, dropped_data
+    return syncer_obj, x_test, mean_error, dropped_data
 
 
 class TestLinearModelEndToEnd(unittest.TestCase):
@@ -92,13 +92,13 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         os.system("cat " + ROOT_DIR + "codegen/sqlite/clearDb.sql "
                   "| sqlite3 " + ROOT_DIR + "modeldb_test.db")
-        self.SyncerObj, self.x_test, self.mean_error, self.dropped_data = run_linear_model_workflow()
+        self.syncer_obj, self.x_test, self.mean_error, self.dropped_data = run_linear_model_workflow()
 
     def test_project(self):
         """
         Tests if project is stored correctly.
         """   
-        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
+        projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
         self.assertEquals(project.description, 'pandas-linear-regression')
         self.assertEquals(project.author, 'srinidhi')
@@ -112,12 +112,12 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         Tests if the two models are stored correctly.
         """
 
-        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
+        projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
-        runs_and_exps = self.SyncerObj.client.getRunsAndExperimentsInProject(project.id)
+        runs_and_exps = self.syncer_obj.client.getRunsAndExperimentsInProject(project.id)
         # Get the latest experiment run id
         exp_id = runs_and_exps.experimentRuns[-1].id
-        model_responses = self.SyncerObj.client.getExperimentRunDetails(exp_id).modelResponses
+        model_responses = self.syncer_obj.client.getExperimentRunDetails(exp_id).modelResponses
         
         # Two models are stored above - ensure both are in database
         self.assertEquals(len(model_responses), 2)
@@ -147,13 +147,13 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         Tests if metrics are stored correctly.
         """
-        projectOverview = self.SyncerObj.client.getProjectOverviews()[0]
+        projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
-        runs_and_exps = self.SyncerObj.client.getRunsAndExperimentsInProject(project.id)
+        runs_and_exps = self.syncer_obj.client.getRunsAndExperimentsInProject(project.id)
         
         # Get the latest experiment run id
         exp_id = runs_and_exps.experimentRuns[-1].id
-        model_responses = self.SyncerObj.client.getExperimentRunDetails(exp_id).modelResponses
+        model_responses = self.syncer_obj.client.getExperimentRunDetails(exp_id).modelResponses
         model1 = model_responses[0]
         model2 = model_responses[1]
 
@@ -162,7 +162,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertEquals(len(model2.metrics), 1)
         self.assertIn('mean_squared_error', model2.metrics)
 
-        dataframe_id = self.SyncerObj.id_for_object[id(self.x_test)]
+        dataframe_id = self.syncer_obj.id_for_object[id(self.x_test)]
         self.assertAlmostEqual(self.mean_error,
                                model2.metrics['mean_squared_error'][dataframe_id], places=4)
 
@@ -172,8 +172,8 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         # Check ancestry for dropped dataframe
         # Confirm dropped column has the original dataframe in ancestry
-        dataframe_id = self.SyncerObj.id_for_object[id(self.dropped_data)]
-        ancestry = self.SyncerObj.client.getDataFrameAncestry(dataframe_id).ancestors
+        dataframe_id = self.syncer_obj.id_for_object[id(self.dropped_data)]
+        ancestry = self.syncer_obj.client.getDataFrameAncestry(dataframe_id).ancestors
         self.assertEqual(len(ancestry), 2)
 
         df_1 = ancestry[0]

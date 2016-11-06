@@ -33,7 +33,7 @@ name = "test1"
 author = "author"
 description = "kaggle-otto-script"
 # Creating a new project
-SyncerObj = Syncer(
+syncer_obj = Syncer(
         NewOrExistingProject(name, author, description),
         NewOrExistingExperiment("expName", "expDesc"),
         NewExperimentRun("otto test"))
@@ -52,12 +52,12 @@ y = LabelEncoder().fit_transform_sync(y)
 # Remove target from train, else it's too easy ...
 X = X.drop_sync('target', axis=1)
 
-SyncerObj.instance.add_tag(X, "data - label encoded data")
+syncer_obj.add_tag(X, "data - label encoded data")
 
 # Split Train / Test
 Xtrain, Xtest, ytrain, ytest = cross_validation.train_test_split_sync(X, y, test_size=0.20, random_state=36)
 
-SyncerObj.instance.add_tag(Xtest, "testing data")
+syncer_obj.add_tag(Xtest, "testing data")
 # First, we will train and apply a Random Forest WITHOUT calibration
 # we use a BaggingClassifier to make 5 predictions, and average
 # because that's what CalibratedClassifierCV do behind the scene,
@@ -88,7 +88,7 @@ SyncableMetrics.compute_metrics(calibrated_clf, log_loss, ytest, ypreds, Xtest, 
 
 print(" ")
 print("Conclusion : in our case, calibration improved performance a lot ! (reduced loss)")
-SyncerObj.instance.sync()
+syncer_obj.sync()
 # We can see that we highly improved performance with calibration (loss is reduced) !
 # Using calibration helped our team a lot to climb the leaderboard.
 # In the future competitions, that's for sure, I will not forget to test this trick !

@@ -24,7 +24,7 @@ name = "test1"
 author = "author"
 description = "kaggle-iris-script"
 # Creating a new project
-SyncerObj = Syncer(
+syncer_obj = Syncer(
         NewOrExistingProject(name, author, description),
         NewOrExistingExperiment("expName", "expDesc"),
         NewExperimentRun("iris test"))
@@ -84,7 +84,7 @@ Perform classification
 # We can extract the data in this format from pandas like this:
 all_inputs = iris_data_clean[['sepal_length_cm', 'sepal_width_cm',
                              'petal_length_cm', 'petal_width_cm']].values
-SyncerObj.instance.add_tag(all_inputs, "data to input into model")
+syncer_obj.add_tag(all_inputs, "data to input into model")
 
 # Similarly, we can extract the classes
 all_classes = iris_data_clean['class'].values
@@ -102,7 +102,7 @@ Cross Validation
 """
 # Create the classifier
 decision_tree_classifier = DecisionTreeClassifier()
-SyncerObj.instance.add_tag(decision_tree_classifier, "decision tree")
+syncer_obj.add_tag(decision_tree_classifier, "decision tree")
 
 # Train the classifier on the training set
 decision_tree_classifier.fit_sync(training_inputs, training_classes)
@@ -156,4 +156,4 @@ print('Best score: {}'.format(grid_search.best_score_))
 print('Best parameters: {}'.format(grid_search.best_params_))
 
 random_forest_classifier = grid_search.best_estimator_
-SyncerObj.instance.sync()
+syncer_obj.sync()

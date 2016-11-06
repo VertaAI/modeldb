@@ -16,7 +16,7 @@ class TestRandomSplitEvent(unittest.TestCase):
         name = "random split test"
         author = "srinidhi"
         description = "70/30 split"
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
             NewExperimentRun("Abc"))
@@ -24,13 +24,13 @@ class TestRandomSplitEvent(unittest.TestCase):
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
 
         # Add tag for dataframe
-        SyncerObj.instance.add_tag(X, "digits-dataset")
+        syncer_obj.add_tag(X, "digits-dataset")
 
         seed = 1       
         weights = [0.7, 0.3]
-        SyncerTest.instance.clear_buffer()
+        syncer_obj.clear_buffer()
         x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(X, y, train_size=0.7)
-        events = SyncerTest.instance.sync()
+        events = syncer_obj.sync()
         self.random_split_event = events[0]
 
     def test_random_split_event(self):

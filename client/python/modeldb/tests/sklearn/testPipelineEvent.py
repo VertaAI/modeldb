@@ -21,7 +21,7 @@ class TestPipelineEvent(unittest.TestCase):
         name = "logistic-test"
         author = "srinidhi"
         description = "income-level logistic regression"
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
             NewExperimentRun("Abc"))
@@ -36,14 +36,14 @@ class TestPipelineEvent(unittest.TestCase):
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
 
         # Add tags for models / dataframes
-        SyncerObj.instance.add_tag(X, "digits-dataset")
-        SyncerObj.instance.add_tag(pipe, "pipeline with pca + logistic")
-        SyncerObj.instance.add_tag(pca, "decomposition PCA")
-        SyncerObj.instance.add_tag(lr, "basic linear reg")
+        syncer_obj.add_tag(X, "digits-dataset")
+        syncer_obj.add_tag(pipe, "pipeline with pca + logistic")
+        syncer_obj.add_tag(pca, "decomposition PCA")
+        syncer_obj.add_tag(lr, "basic linear reg")
 
-        SyncerTest.instance.clear_buffer()
+        syncer_obj.clear_buffer()
         pipe.fit_sync(X,y)
-        events = SyncerTest.instance.sync()
+        events = syncer_obj.sync()
         self.pipeline_event = events[0]
         
     def test_pipeline_construction(self):

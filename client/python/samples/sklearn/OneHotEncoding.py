@@ -13,7 +13,7 @@ from modeldb.sklearn_native import SyncableMetrics
 name = "logistic regression - one hot encoding"
 author = "srinidhi"
 description = "predicting income"
-SyncerObj = Syncer(
+syncer_obj = Syncer(
     NewOrExistingProject(name, author, description),
     DefaultExperiment(),
     NewExperimentRun("Abc"))
@@ -55,4 +55,4 @@ test_proba = logreg.predict_proba(test[features])
 
 accuracy = SyncableMetrics.compute_metrics(logreg, accuracy_score, test.income, test_pred, test[features], "predictionCol", 'income_level')
 
-SyncerObj.instance.sync()
+syncer_obj.sync()
