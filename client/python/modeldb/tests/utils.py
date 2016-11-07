@@ -83,6 +83,15 @@ def validate_random_split_event_struct(random_splitEvent, tester):
     tester.assertTrue(hasattr(random_splitEvent, 'splitDataFrames'))
     tester.assertTrue(hasattr(random_splitEvent, 'experimentRunId'))
 
+def validate_metric_event_struct(metric_event, tester):
+    tester.assertTrue(hasattr(metric_event, 'df'))
+    tester.assertTrue(hasattr(metric_event, 'model'))
+    tester.assertTrue(hasattr(metric_event, 'metricType'))
+    tester.assertTrue(hasattr(metric_event, 'metricValue'))
+    tester.assertTrue(hasattr(metric_event, 'labelCol'))
+    tester.assertTrue(hasattr(metric_event, 'predictionCol'))
+    tester.assertTrue(hasattr(metric_event, 'experimentRunId'))
+
 def validate_grid_search_cv_event(gridcvEvent, tester):
     tester.assertTrue(hasattr(gridcvEvent, 'numFolds'))
     tester.assertTrue(hasattr(gridcvEvent, 'bestFit'))

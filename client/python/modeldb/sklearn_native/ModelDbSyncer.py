@@ -27,6 +27,7 @@ from thrift.protocol import TBinaryProtocol
 
 # modeldb imports
 import GridCrossValidation
+from  CrossValidationScore import *
 from ..basic import *
 from ..events import *
 from ..thrift.modeldb import ModelDBService
@@ -416,3 +417,4 @@ class Syncer(ModelDbSyncerBase.Syncer):
 
         #Train-test split for cross_validation
         setattr(cross_validation, "train_test_split_sync", train_test_split_fn)
+        setattr(cross_validation, "cross_val_score_sync", cross_val_score_fn)

@@ -115,7 +115,7 @@ SyncableMetrics.compute_metrics(decision_tree_classifier, accuracy_score, testin
 
 # cross_val_score returns a list of the scores, which we can visualize
 # to get a reasonable estimate of our classifier's performance
-cv_scores = cross_val_score(decision_tree_classifier, all_inputs, all_classes, cv=10)
+cv_scores = cross_validation.cross_val_score_sync(decision_tree_classifier, all_inputs, all_classes, cv=10)
 
 """
 Parameter-tuning

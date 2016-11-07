@@ -63,13 +63,12 @@ predictions[predictions > .5] = 1
 predictions[predictions <= .5] = 0
 
 accuracy = 1 - sum(abs(predictions - titanic["Survived"])) / len(predictions)
-# NOTE: How will user store accuracy?
+
 print (accuracy)
 
 # Logistic Regression
 alg = LogisticRegression(random_state = 1)
 
-#Currently we don't support cross_val_score 
-scores = cross_validation.cross_val_score(alg, titanic[predictors], titanic["Survived"], cv = 3)
+scores = cross_validation.cross_val_score_sync(alg, titanic[predictors], titanic["Survived"], cv = 3)
 print scores.mean()
 syncer_obj.sync()
