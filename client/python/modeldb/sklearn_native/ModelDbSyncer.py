@@ -49,12 +49,7 @@ def fit_fn(self, x, y=None, sample_weight=None):
     fit_event = FitEvent(models, self, x)
     Syncer.instance.add_to_buffer(fit_event)
 
-def predict_fn(self, x):
-    """
-    Overrides the predict function for models, provided that the predict
-    function takes in one argument.
-    """
-    predict_array = self.predict(x)
+def convert_prediction_to_event(self, predict_array, x):
     predict_df = pd.DataFrame(predict_array)
     # Assign names to the predicted columns.
     # This is to ensure there are no merge conflicts when joining.
@@ -71,6 +66,21 @@ def predict_fn(self, x):
     predict_event = TransformEvent(x, new_df, self)
     Syncer.instance.add_to_buffer(predict_event)
     return predict_array
+
+def predict_fn(self, x):
+    """
+    Overrides the predict function for models, provided that the predict
+    function takes in one argument.
+    """
+    predict_array = self.predict(x)
+    return convert_prediction_to_event(self, predict_array, x)
+
+def predict_proba_fn(self, x):
+    """
+    Overrides the predict_proba function for models.
+    """
+    predict_array = self.predict_proba(x)
+    return convert_prediction_to_event(self, predict_array, x)
 
 def transform_fn(self, x):
     """
@@ -399,6 +409,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         for class_name in [LogisticRegression, LinearRegression, CalibratedClassifierCV, RandomForestClassifier, BaggingClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "predict_sync", predict_fn)
+            setattr(class_name, "predict_proba_sync", predict_proba_fn)
 
         #Preprocessing and some Classifier models 
         for class_name in [LabelEncoder, OneHotEncoder, DecisionTreeClassifier]:
