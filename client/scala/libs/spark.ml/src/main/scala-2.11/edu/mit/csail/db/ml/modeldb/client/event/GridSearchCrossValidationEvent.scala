@@ -60,7 +60,7 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       SyncableDataFrame(inputDataFrame),
       SyncableEstimator(estimator),
       seed,
-      evaluator.getClass.getSimpleName, // TODO: Replace this with a more useful value.
+      SyncableEvaluator.getMetricNameLabelColPredictionCol(evaluator)._1,
       ml.SyncableEstimator.getLabelColumns(estimator),
       ml.SyncableEstimator.getPredictionCols(estimator),
       mdbs.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
