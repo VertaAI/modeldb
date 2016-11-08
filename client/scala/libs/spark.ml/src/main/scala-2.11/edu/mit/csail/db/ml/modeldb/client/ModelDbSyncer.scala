@@ -351,7 +351,8 @@ object ModelDbSyncer
     with SyncableTransformer
     with Annotater
     with Taggable
-    with SyncableDataFramePaths {
+    with SyncableDataFramePaths
+    with SyncableEvaluator {
   implicit var syncer: Option[ModelDbSyncer] = None
 
   // Allow the user to configure the syncer.
