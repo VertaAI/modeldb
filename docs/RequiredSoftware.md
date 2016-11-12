@@ -28,3 +28,7 @@ but then various scientific libraries will need to be downloaded seperately.
 Once you've downloaded all the dependencies, continue onto:
 
 [Setting Up the Server and Client](RunningTheClientAndServer.md)
+
+If you would like more detailed installation instructions check out these:
+
+For [Linux](InstallOnLinux.sh) you can use this .sh file. You can also look at the commands to see which commands to run to install each dependency.
