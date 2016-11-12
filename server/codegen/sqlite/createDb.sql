@@ -1,96 +1,159 @@
--- THIS FILE IS IN FLUX --
-
--- Create a database. We may want to make the database name a parameter
--- CREATE DATABASE ModelDb;
-
+-- Top level grouping mechanism for machine learning events.
+-- ModelDB stores multiple projects, each of which contains multiple
+-- experiments, each of which contains multiple experiment runs.
+-- Each event and primitive (DataFrame, Transformer, TransformerSpec) is
+-- associated with an ExperimentRun.
 DROP TABLE IF EXISTS Project;
 CREATE TABLE Project (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT, -- Can be empty.
-  author TEXT, -- Can be empty.
-  description TEXT, -- Can be empty.
+  -- A descriptive name for the project.
+  name TEXT,
+  -- The name of the project author.
+  author TEXT,
+  -- A description of the project and its goals.
+  description TEXT,
+  -- The timestamp at which the project was created.
   created TIMESTAMP NOT NULL
 );
 
+-- The second level in the hierarchy of grouping. Many experiments
+-- Can be contained in a single project. Each experiment has multiple runs.
 DROP TABLE IF EXISTS Experiment;
 CREATE TABLE Experiment (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The project that contains this experiment
   project INTEGER REFERENCES Project NOT NULL,
+  -- The name of this particular experiment
   name TEXT NOT NULL,
-  description TEXT, -- Can be empty.
+  -- A description of the experiment and the purpose of the experiment
+  description TEXT, 
+  -- A timestamp at which the experiment was created.
   created TIMESTAMP NOT NULL
 );
 
+-- Each experiment contains many experiment runs. In experiment runs,
+-- you will find the actual machine learning events
 DROP TABLE IF EXISTS ExperimentRun;
 CREATE TABLE ExperimentRun (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The experiment which contains this run.
   experiment INTEGER REFERENCES Experiment NOT NULL,
-  description TEXT, -- Can be empty.
+  -- A description of this particular run, with the goals and parameters it used.
+  description TEXT, 
+  -- A timestamp indicating the time at which this experiment run was created.
   created TIMESTAMP NOT NULL
 );
 
+-- A DataFrame is a machine learning primitive. It is a table
+-- of data with named and typed columns.
 DROP TABLE IF EXISTS DataFrame;
 CREATE TABLE DataFrame (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  tag TEXT, -- Can be empty.
+  -- User assigned content associated with the data frame
+  tag TEXT,
+  --  The number of rows (elements) stored within this DataFrame.
   numRows INTEGER NOT NULL,
+  -- The ExperimentRun that contains this DataFrame
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
+  -- A path to the file where this DataFrame is stored
   filepath TEXT
 );
 
+-- A single column in a DataFrame
+-- Each column has a unique name and can only contain a single type.
 DROP TABLE IF EXISTS DataFrameColumn;
 CREATE TABLE DataFrameColumn (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The ID of the DataFrame that has this column
   dfId INTEGER REFERENCES DataFrame NOT NULL,
+  -- The name of the column
   name TEXT NOT NULL,
+  -- The type of data that is stored in this column: e.g: Integer, String
   type TEXT NOT NULL
+  -- TODO: Should we store the index of each column in a DataFrame?
 );
 
+-- A Random Split event represents breaking a DataFrame into 
+-- smaller DataFrames randomly according to a weight vector that
+-- specifies the relative sizes of the smaller DataFrames.
 DROP TABLE IF EXISTS RandomSplitEvent;
 CREATE TABLE RandomSplitEvent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The DataFrame to split
   inputDataFrameId INTEGER REFERENCES DataFrame NOT NULL,
+  -- A seed to use to randomize the splitting process
   randomSeed BIGINT NOT NULL,
+  -- The experiment run that contains RandomSplitEvent
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
+-- TODO: This is not a great name, try something closer in meaning to "portion" or "part"
+-- Something like DataPiece?
+-- A DataFrameSplit represents a portion of a data frame produced by a Random Split Event
+-- For example, if you split a DataFrame into pieces with weights of 0.3 and 0.7,
+-- You would have two entries in the DataFrameSplit table, one for the 0.3 and one for the 0.7
 DROP TABLE IF EXISTS DataFrameSplit;
 CREATE TABLE DataFrameSplit (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The random split event that produced this piece (DataFrameSplit)
   splitEventId INTEGER REFERENCES RandomSplitEvent NOT NULL,
+  -- The weight (relative size) of this piece (DataFrameSplit) 
   weight FLOAT NOT NULL,
+  -- The produced DataFrame
   dataFrameId INTEGER REFERENCES DataFrame NOT NULL,
+  -- The experiment run that contains this piece (DataFrameSplit)
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
+-- A TransformerSpec is a machine learning primitive that describes
+-- the hyperparameters used to create a model (A Transformer produced
+-- by fitting a TransformerSpec to a DataFrame).
 DROP TABLE IF EXISTS TransformerSpec;
 CREATE TABLE TransformerSpec (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The kind of Transformer that this spec describes (e.g. linear regression)
   transformerType TEXT NOT NULL,
-  tag TEXT, -- Can be empty.
+  -- User assigned content about this spec
+  tag TEXT, 
+  -- The experiment run in which this spec is contained
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
--- NOTE: Our hyperparameter table is simple for now.
+-- A hyperparameter helps guide the fitting of a model.
+-- e.g. Number of trees in a random forest, 
+--      number of nuerons in a nueral network 
 DROP TABLE IF EXISTS HyperParameter;
 CREATE TABLE HyperParameter (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The TransformerSpec that contains this hyperparameter
   spec INTEGER REFERENCES TransformerSpec NOT NULL,
+  -- The name of this hyperparameter
   paramName TEXT NOT NULL,
+  -- The type of the hyperparameter (e.g. String, Integer)
   paramType VARCHAR(40) NOT NULL,
+  -- The value assigned to this hyperparameter 
   paramValue TEXT NOT NULL,
-  paramMinValue FLOAT, -- Can be empty.
-  paramMaxValue FLOAT, -- Can be empty.
+  -- The minimum value allowed to be assigned to this hyperparameter
+  -- Leave Min and Max NULL for non-numerical hyperparameters
+  paramMinValue FLOAT, 
+  -- The maximum value allowed for this hyperparameter
+  paramMaxValue FLOAT, 
+  -- The ExperimentRun that contains this hyperparameter
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
--- This is only for the demo: logreg and linreg
+-- Transformers are machine learning primitives that take an input
+-- DataFrame and produce an output DataFrame
 DROP TABLE IF EXISTS Transformer;
 CREATE TABLE Transformer (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  --  The kind of Transformer (e.g. Linear Regression Model, One-Hot Encoder)
   transformerType TEXT NOT NULL,
-  tag TEXT, -- Can be empty.
+  --  User assigned text to describe this Transformer
+  tag TEXT, 
+  -- The ExperimentRun that contains this Transformer
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
+  --  The path to the serialized Transformer
   filepath TEXT
 );
 
@@ -139,39 +202,65 @@ CREATE TABLE ModelObjectiveHistory (
     objectiveValue DOUBLE NOT NULL
 );
 
-
+-- Describes a Fit Event - Fitting a Transformer Spec to a DataFrame to 
+-- produce a model (Transformer)
 DROP TABLE IF EXISTS FitEvent;
 CREATE TABLE FitEvent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The TransformerSpec guiding the fitting
   transformerSpec INTEGER REFERENCES TransformerSpec NOT NULL,
+  -- The model (fitted Transformer) produced by the fitting
   transformer INTEGER REFERENCES Transformer NOT NULL,
+  -- The DataFrame that the Spec is being fitted to
   df INTEGER REFERENCES DataFrame NOT NULL,
+  -- The names of the output columns that will contain the model's predictions
+  -- There may be multiple columns produced - one predicting the actual data, and the others
+  -- describing additional information, such as confidence
   predictionColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
+  -- The name of the column in the DataFrame whose values this Transformer is supposed to predict
   labelColumn TEXT NOT NULL,
+  -- The ExperimentRun that contains this event.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
+  -- The type of problem that the FitEvent is solving (e.g. Regression, 
+  -- Classification, Clustering, Recommendation, Undefined)
   problemType TEXT NOT NULL
 );
 
+-- Describes a feature in the DataFrame - an attribute to consider when
+-- creating a Transformer from a DataFrame via a FitEvent.
 DROP TABLE IF EXISTS Feature;
 CREATE TABLE Feature (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The name of the feature
   name TEXT NOT NULL,
+  -- The index of this feature in the DataFrame in the feature vector 
   featureIndex INTEGER NOT NULL,
+  -- The importance to assign to this feature compared to the others 
+  -- (Depends on transformer type)
   importance DOUBLE NOT NULL,
+  -- The transformer that should utilize this feature
   transformer INTEGER REFERENCES TRANSFORMER
 );
 
+-- A TransformEvent describes using a Transformer to produce an output 
+-- DataFrame from an input DataFrame
 DROP TABLE IF EXISTS TransformEvent;
 CREATE TABLE TransformEvent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The original DataFrame that is input into the Transformer
   oldDf INTEGER REFERENCES DataFrame NOT NULL,
+  -- The output DataFrame of the Transformer
   newDf INTEGER REFERENCES DataFrame NOT NULL,
+  -- The Transformer used to perform this transformation
   transformer INTEGER REFERENCES Transformer NOT NULL,
+  -- The columns in the input DataFrame that are used by the transformer
   inputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
+  -- The columns outputted by the Transformer
   outputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
+--TODO
 DROP TABLE IF EXISTS TreeNode;
 CREATE TABLE TreeNode (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -208,29 +297,40 @@ CREATE TABLE TreeModelComponent (
   rootNode INTEGER REFERENCES TreeNode
 );
 
+-- An event that represents the evaluation of a model given a DataFrame
 DROP TABLE IF EXISTS MetricEvent;
 CREATE TABLE MetricEvent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The model (Transformer) being evaluated
   transformer INTEGER REFERENCES Transformer NOT NULL,
+  -- The DataFrame that the model is being evaluated on
   df INTEGER REFERENCES DataFrame NOT NULL,
+  -- The type of the Metric being measured (e.g. String, Integer)
   metricType TEXT NOT NULL,
+  -- The value of the measured Metric
   metricValue REAL NOT NULL,
+  -- The Experiment Run that contains this Metric
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
+-- A generic Event that can represent anything
 DROP TABLE IF EXISTS Event;
 CREATE TABLE Event (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- The type of the event that this entry represents
   eventType TEXT NOT NULL,
+  -- The id of the event within its respective table
   eventId INTEGER NOT NULL, -- references the actual event in the table
+  -- The Experiment Run that contains this Event
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
--- This is how we store pipelines. We associate each transformer in the pipeline to the event representing the fit of
--- the pipeline. The stage number orders these transformers in the pipeline.
+--  This is how we store pipelines. We associate each Transformer in the pipeline to the event representing the fit of
+--  the pipeline. The stage number orders these Transformers in the pipeline.
 DROP TABLE IF EXISTS PipelineStage;
 CREATE TABLE PipelineStage (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- 
   pipelineFitEvent INTEGER REFERENCES FitEvent NOT NULL,
   transformOrFitEvent INTEGER REFERENCES Event NOT NULL,
   isFit INTEGER NOT NULL, -- 0 if this is a Transform stage and 1 if this is a Fit stage.
@@ -283,15 +383,15 @@ CREATE TABLE Annotation (
 );
 
 -- An AnnotationFragment is part of an Annotation. For example, consider the annotation:
--- ("I'm having issues with"), (model 1), ("it seems that it was trained on an erroneous dataset"), (dataframe 2).
+-- ("I'm having issues with"), (model 1), ("it seems that it was trained on an erroneous dataset"), (DataFrame 2).
 -- This annotation has four fragments (in parentheses). We let an AnnotationFragment to represent one of the following:
 --  message: A string
 --  spec: A reference to a TransformerSpec
---  transformer: A references to a Transformer
---  dataframe: A reference to a DataFrame
+--   Transformer: A references to a Transformer
+--  DataFrame: A reference to a DataFrame
 -- We indicate which of these four types the AnnotationFragment is by using the 'type' column.
 -- The 'index' column represents the position of the fragment in the Annotation. In our example annotation above, the
--- (dataframe 2) fragment would have index 3 while the ("I'm having issues with") fragment would have index 0.
+-- (DataFrame 2) fragment would have index 3 while the ("I'm having issues with") fragment would have index 0.
 DROP TABLE IF EXISTS AnnotationFragment;
 CREATE TABLE AnnotationFragment (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -299,20 +399,20 @@ CREATE TABLE AnnotationFragment (
   fragmentIndex INTEGER NOT NULL,
   type TEXT NOT NULL,
   transformer INTEGER REFERENCES Transformer,
-  dataframe INTEGER REFERENCES DataFrame,
+  DataFrame INTEGER REFERENCES DataFrame,
   spec INTEGER REFERENCES TransformerSpec,
   message TEXT,
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
--- Create a view for models (i.e. the transformers that have an associated FitEvent).
+--  Create a view for models (i.e. the Transformers that have an associated FitEvent).
 DROP VIEW IF EXISTS model_view;
 CREATE VIEW model_view AS 
   SELECT fe.id as fe_id, ts.transformertype as model_type, fe.transformer as model, fe.transformerspec as spec_id, fe.df as train_df
   FROM fitevent fe, transformerspec ts
   WHERE ts.id = fe.transformerspec order by fe.id;
 
--- Create a view for transformers which are not models
+--  Create a view for Transformers which are not models
 DROP VIEW IF EXISTS transformer_view;
 CREATE VIEW transformer_view AS 
   SELECT te.id as te_id, t.transformertype as transformer_type, te.transformer as transformer, te.olddf as input_df, te.newdf as output_df
