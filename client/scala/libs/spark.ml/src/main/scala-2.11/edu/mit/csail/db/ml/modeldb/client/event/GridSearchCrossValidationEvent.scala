@@ -108,11 +108,7 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       // Iterate through each fold.
       (folds zip cver.foldResponses).foreach { pair =>
         val (fold, foldr) = pair
-        // Store the model if it is linear.
-        SyncableLinearModel(fold.model) match {
-          case Some(lm) => if (client.isDefined) Await.result(client.get.storeLinearModel(foldr.modelId, lm))
-          case None => {}
-        }
+        SyncableSpecificModel(foldr.modelId, fold.model, client)
         // Associate the model and validation dataframe produced by the fold.
         mdbs.associateObjectAndId(fold.model, foldr.modelId)
           .associateObjectAndId(fold.validationDf, foldr.validationId)
@@ -129,10 +125,7 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
 
     val res = Await.result(client.storeGridSearchCrossValidationEvent(gscve))
 
-    SyncableLinearModel(bestModel) match {
-      case Some(lm) => Await.result(client.storeLinearModel(res.fitEventResponse.modelId, lm))
-      case None => {}
-    }
+    SyncableSpecificModel(res.fitEventResponse.modelId, bestModel, Some(client))
 
     associate(mdbs.get, res, Some(client))
   }
