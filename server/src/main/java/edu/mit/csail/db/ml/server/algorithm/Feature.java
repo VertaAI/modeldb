@@ -2,8 +2,6 @@ package edu.mit.csail.db.ml.server.algorithm;
 
 import edu.mit.csail.db.ml.server.storage.FitEventDao;
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.records.FiteventRecord;
-import jooq.sqlite.gen.tables.records.TransformerRecord;
 import jooq.sqlite.gen.tables.records.TransformeventRecord;
 import modeldb.CompareFeaturesResponse;
 import modeldb.ResourceNotFoundException;

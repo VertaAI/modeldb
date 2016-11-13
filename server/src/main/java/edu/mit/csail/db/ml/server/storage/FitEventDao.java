@@ -2,13 +2,11 @@ package edu.mit.csail.db.ml.server.storage;
 
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.Feature;
 import jooq.sqlite.gen.tables.records.*;
 import modeldb.FitEvent;
 import modeldb.FitEventResponse;
 import modeldb.ResourceNotFoundException;
 import org.jooq.DSLContext;
-import org.jooq.Record1;
 
 import java.util.Collections;
 import java.util.List;

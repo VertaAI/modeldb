@@ -8,7 +8,6 @@ import modeldb.ResourceNotFoundException;
 import modeldb.TransformerSpec;
 import org.jooq.DSLContext;
 
-import java.util.Collections;
 import java.util.List;
 
 public class TransformerSpecDao {

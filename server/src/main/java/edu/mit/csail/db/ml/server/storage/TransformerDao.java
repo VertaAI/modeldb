@@ -11,7 +11,6 @@ import org.jooq.Record1;
 
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static jooq.sqlite.gen.Tables.TRANSFORMER;
 
