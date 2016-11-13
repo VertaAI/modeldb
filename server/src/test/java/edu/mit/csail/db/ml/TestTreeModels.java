@@ -3,12 +3,10 @@ package edu.mit.csail.db.ml;
 import edu.mit.csail.db.ml.server.storage.TreeModelDao;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.TreelinkRecord;
+import jooq.sqlite.gen.tables.records.TreemodelRecord;
 import jooq.sqlite.gen.tables.records.TreemodelcomponentRecord;
 import jooq.sqlite.gen.tables.records.TreenodeRecord;
-import modeldb.InvalidFieldException;
-import modeldb.TreeComponent;
-import modeldb.TreeLink;
-import modeldb.TreeNode;
+import modeldb.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -262,5 +260,39 @@ public class TestTreeModels {
     Assert.assertEquals(nodes.get(0).getId().intValue(), compRec.getRootnode().intValue());
   }
 
+  @Test
+  public void testStore() throws Exception {
+    int modelId = TestBase.createTransformer(triple.expRunId, "ttype", "");
 
+    TreeModelDao.store(
+      modelId,
+      new TreeModel(
+        "Random Forest",
+        Arrays.asList(
+          new TreeComponent(
+            1.2,
+            Arrays.asList(new TreeNode(1.0, 0.5), new TreeNode(1.1, 0.6)),
+            Collections.singletonList(new TreeLink(0, 1, true))
+          ),
+          new TreeComponent(
+            1.5,
+            Arrays.asList(new TreeNode(1.3, 0.7), new TreeNode(1.4, 0.8)),
+            Collections.singletonList(new TreeLink(0, 1, true))
+          )
+        )
+      ),
+      TestBase.ctx()
+    );
+
+    // Verify table sizes.
+    Assert.assertEquals(4, TestBase.tableSize(Tables.TREENODE));
+    Assert.assertEquals(2, TestBase.tableSize(Tables.TREELINK));
+    Assert.assertEquals(2, TestBase.tableSize(Tables.TREEMODELCOMPONENT));
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TREEMODEL));
+
+    // Verify the TreeModel.
+    TreemodelRecord rec = TestBase.ctx().selectFrom(Tables.TREEMODEL).fetchOne();
+    Assert.assertEquals(modelId, rec.getModel().intValue());
+    Assert.assertEquals("Random Forest", rec.getModeltype());
+  }
 }
