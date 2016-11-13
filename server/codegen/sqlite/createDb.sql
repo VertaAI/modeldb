@@ -233,7 +233,7 @@ CREATE TABLE Feature (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   -- The name of the feature
   name TEXT NOT NULL,
-  -- The index of this feature in the DataFrame in the feature vector 
+  -- The index of this feature in the feature vector
   featureIndex INTEGER NOT NULL,
   -- The importance to assign to this feature compared to the others 
   -- (Depends on transformer type)
