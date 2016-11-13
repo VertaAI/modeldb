@@ -6,12 +6,13 @@ import edu.mit.csail.db.ml.server.algorithm.similarity.SimilarModels;
 import edu.mit.csail.db.ml.server.storage.*;
 import edu.mit.csail.db.ml.util.ContextFactory;
 import edu.mit.csail.db.ml.util.ExceptionWrapper;
+import jooq.sqlite.gen.tables.records.DataframeRecord;
 import modeldb.*;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
+
 import java.util.List;
 import java.util.Map;
-import jooq.sqlite.gen.tables.records.DataframeRecord;
 
 public class ModelDbServer implements ModelDBService.Iface {
   private DSLContext ctx;

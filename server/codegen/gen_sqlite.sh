@@ -11,3 +11,5 @@ cat ./sqlite/createDb.sql | sqlite3 modeldb_test.db  &&
 java -classpath jars/jooq-3.8.4.jar:jars/jooq-meta-3.8.4.jar:jars/jooq-codegen-3.8.4.jar:sqlite/sqlite-jdbc-3.8.11.2.jar:. org.jooq.util.GenerationTool sqlite/library.xml && 
 mv modeldb.db ../
 mv modeldb_test.db ../
+chmod a+wrx ../modeldb.db
+chmod a+wrx ../modeldb_test.db
