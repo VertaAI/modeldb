@@ -2,10 +2,7 @@ package edu.mit.csail.db.ml.server.storage;
 
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.records.TreelinkRecord;
-import jooq.sqlite.gen.tables.records.TreemodelRecord;
-import jooq.sqlite.gen.tables.records.TreemodelcomponentRecord;
-import jooq.sqlite.gen.tables.records.TreenodeRecord;
+import jooq.sqlite.gen.tables.records.*;
 import modeldb.*;
 import org.jooq.DSLContext;
 
@@ -236,6 +233,24 @@ public class TreeModelDao {
     for (int i = 0; i < model.components.size(); i++) {
       storeComponent(modelId, i, model.components.get(i), ctx);
     }
+
+    // Get the features for the model.
+    List<FeatureRecord> features = ctx.selectFrom(Tables.FEATURE)
+      .where(Tables.FEATURE.TRANSFORMER.eq(modelId))
+      .fetch()
+      .stream()
+      .collect(Collectors.toList());
+
+    // Delete all the features for the models.
+    ctx.deleteFrom(Tables.FEATURE)
+      .where(Tables.FEATURE.TRANSFORMER.eq(modelId));
+
+    // Store the features again.
+    features.forEach(ft -> {
+      ft.setImportance(Math.abs(model.featureImportances.get(ft.getFeatureindex())));
+      ft.store();
+      ft.getImportance();
+    });
     return false;
   }
 }

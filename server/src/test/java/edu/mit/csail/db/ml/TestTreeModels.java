@@ -279,7 +279,8 @@ public class TestTreeModels {
             Arrays.asList(new TreeNode(1.3, 0.7), new TreeNode(1.4, 0.8)),
             Collections.singletonList(new TreeLink(0, 1, true))
           )
-        )
+        ),
+        Collections.emptyList()
       ),
       TestBase.ctx()
     );
