@@ -1,7 +1,7 @@
 package edu.mit.csail.db.ml.modeldb.client.event
 
 import com.twitter.util.Await
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableLinearModel}
+import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableSpecificModel}
 import modeldb.ModelDBService.FutureIface
 import modeldb.PipelineEventResponse
 import org.apache.spark.ml
@@ -109,10 +109,7 @@ case class PipelineEvent(pipeline: Pipeline,
       te.associate(ter, mdbs)
     }
     (res.fitStagesResponses zip fitStages).foreach { case (fer, (index, fe)) =>
-      SyncableLinearModel(pipelineModel.stages(index)) match {
-        case Some(lm) => if (client.isDefined) Await.result(client.get.storeLinearModel(fer.modelId, lm))
-        case None => {}
-      }
+      SyncableSpecificModel(fer.modelId, pipelineModel.stages(index), client)
       fe.associate(fer, mdbs)
     }
   }
