@@ -1,6 +1,10 @@
 package edu.mit.csail.db.ml;
 
 import edu.mit.csail.db.ml.server.storage.TreeModelDao;
+import jooq.sqlite.gen.Tables;
+import jooq.sqlite.gen.tables.records.TreelinkRecord;
+import jooq.sqlite.gen.tables.records.TreemodelcomponentRecord;
+import jooq.sqlite.gen.tables.records.TreenodeRecord;
 import modeldb.InvalidFieldException;
 import modeldb.TreeComponent;
 import modeldb.TreeLink;
@@ -195,4 +199,68 @@ public class TestTreeModels {
       Assert.fail();
     }
   }
+
+  @Test
+  public void testStoreNode() throws Exception {
+    TreeModelDao.storeNode(new TreeNode(1.0, 1.5), null, null, false, TestBase.ctx());
+
+    // Verify table sizes.
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TREENODE));
+    Assert.assertEquals(0, TestBase.tableSize(Tables.TREELINK));
+
+    // Verify the node.
+    TreenodeRecord node = TestBase.ctx().selectFrom(Tables.TREENODE).fetchOne();
+    Assert.assertEquals(0, node.getIsleaf().intValue());
+    Assert.assertEquals(1.0, node.getPrediction(), 0.01);
+    Assert.assertEquals(1.5, node.getImpurity(), 0.01);
+  }
+
+  @Test
+  public void testStoreComponent() throws Exception {
+    int modelId = TestBase.createTransformer(triple.expRunId, "ttype", "");
+
+    TreeModelDao.storeComponent(
+      modelId,
+      1,
+      new TreeComponent(
+        1.5,
+        Arrays.asList(new TreeNode(1.0, 0.5), new TreeNode(1.1, 0.6)),
+        Collections.singletonList(new TreeLink(0, 1, true))
+      ),
+      TestBase.ctx()
+    );
+
+    // Verify table sizes.
+    Assert.assertEquals(2, TestBase.tableSize(Tables.TREENODE));
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TREELINK));
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TREEMODELCOMPONENT));
+
+    // Verify the TreeNodes.
+    List<TreenodeRecord> nodes = TestBase.ctx()
+      .selectFrom(Tables.TREENODE)
+      .orderBy(Tables.TREENODE.PREDICTION.asc())
+      .fetch();
+    Assert.assertEquals(0, nodes.get(0).getIsleaf().intValue());
+    Assert.assertEquals(1.0, nodes.get(0).getPrediction(), 0.01);
+    Assert.assertEquals(0.5, nodes.get(0).getImpurity(), 0.01);
+
+    Assert.assertEquals(1, nodes.get(1).getIsleaf().intValue());
+    Assert.assertEquals(1.1, nodes.get(1).getPrediction(), 0.01);
+    Assert.assertEquals(0.6, nodes.get(1).getImpurity(), 0.01);
+
+    // Verify the TreeLinks.
+    TreelinkRecord link = TestBase.ctx().selectFrom(Tables.TREELINK).fetchOne();
+    Assert.assertEquals(nodes.get(0).getId().intValue(), link.getParent().intValue());
+    Assert.assertEquals(nodes.get(1).getId().intValue(), link.getChild().intValue());
+    Assert.assertEquals(1, link.getIsleft().intValue());
+
+    // Verify the TreeModelComponent.
+    TreemodelcomponentRecord compRec = TestBase.ctx().selectFrom(Tables.TREEMODELCOMPONENT).fetchOne();
+    Assert.assertEquals(modelId, compRec.getModel().intValue());
+    Assert.assertEquals(1, compRec.getComponentindex().intValue());
+    Assert.assertEquals(1.5, compRec.getComponentweight(), 0.01);
+    Assert.assertEquals(nodes.get(0).getId().intValue(), compRec.getRootnode().intValue());
+  }
+
+
 }

@@ -196,10 +196,10 @@ public class TreeModelDao {
 
       // Push the children on the stack.
       if (tree.hasLeftChild(processIndex)) {
-        toProcess.push(new Pair<>(processIndex, tree.leftChild(processIndex)));
+        toProcess.push(new Pair<>(processId, tree.leftChild(processIndex)));
       }
       if (tree.hasRightChild(processIndex)) {
-        toProcess.push(new Pair<>(processIndex, tree.rightChild(processIndex)));
+        toProcess.push(new Pair<>(processId, tree.rightChild(processIndex)));
       }
     }
 
