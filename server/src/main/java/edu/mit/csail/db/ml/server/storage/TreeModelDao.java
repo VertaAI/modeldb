@@ -2,8 +2,6 @@ package edu.mit.csail.db.ml.server.storage;
 
 import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.Treemodelcomponent;
-import jooq.sqlite.gen.tables.Treenode;
 import jooq.sqlite.gen.tables.records.TreelinkRecord;
 import jooq.sqlite.gen.tables.records.TreemodelRecord;
 import jooq.sqlite.gen.tables.records.TreemodelcomponentRecord;
