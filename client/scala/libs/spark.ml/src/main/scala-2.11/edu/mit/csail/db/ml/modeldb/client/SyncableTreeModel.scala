@@ -50,29 +50,33 @@ object SyncableTreeModel {
   }
 
   private def toTreeModel(dt: DecisionTreeRegressionModel): TreeModel =
-    TreeModel("Decision Tree", Seq(toTreeComponent(dt.rootNode)))
+    TreeModel("Decision Tree", Seq(toTreeComponent(dt.rootNode)), dt.featureImportances.toArray)
 
   private def toTreeModel(dt: DecisionTreeClassificationModel): TreeModel =
-    TreeModel("Decision Tree", Seq(toTreeComponent(dt.rootNode)))
+    TreeModel("Decision Tree", Seq(toTreeComponent(dt.rootNode)), dt.featureImportances.toArray)
 
   private def toTreeModel(rf: RandomForestRegressionModel): TreeModel = TreeModel(
     "Random Forest",
-    (rf.treeWeights zip rf.trees).map(p => toTreeComponent(p._2.rootNode, p._1))
+    (rf.treeWeights zip rf.trees).map(p => toTreeComponent(p._2.rootNode, p._1)),
+    rf.featureImportances.toArray
   )
 
   private def toTreeModel(rf: RandomForestClassificationModel): TreeModel = TreeModel(
     "Random Forest",
-    (rf.treeWeights zip rf.trees).map(p => toTreeComponent(p._2.rootNode, p._1))
+    (rf.treeWeights zip rf.trees).map(p => toTreeComponent(p._2.rootNode, p._1)),
+    rf.featureImportances.toArray
   )
 
   private def toTreeModel(gbt: GBTRegressionModel): TreeModel = TreeModel(
     "GBT",
-    (gbt.treeWeights zip gbt.trees).map(p => toTreeComponent(p._2.rootNode, p._1))
+    (gbt.treeWeights zip gbt.trees).map(p => toTreeComponent(p._2.rootNode, p._1)),
+    gbt.featureImportances.toArray
   )
 
   private def toTreeModel(gbt: GBTClassificationModel): TreeModel = TreeModel(
     "GBT",
-    (gbt.treeWeights zip gbt.trees).map(p => toTreeComponent(p._2.rootNode, p._1))
+    (gbt.treeWeights zip gbt.trees).map(p => toTreeComponent(p._2.rootNode, p._1)),
+    gbt.featureImportances.toArray
   )
 
   def apply(x: Transformer): Option[TreeModel] = x match {

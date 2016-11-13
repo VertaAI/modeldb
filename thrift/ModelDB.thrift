@@ -400,7 +400,8 @@ struct TreeComponent {
 
 struct TreeModel {
   1: string modelType, // Should be "Decision Tree", "GBT", or "Random Forest".
-  2: list<TreeComponent> components // Should have one component for Decision Tree.
+  2: list<TreeComponent> components, // Should have one component for Decision Tree.
+  3: list<double> featureImportances
 }
 
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
