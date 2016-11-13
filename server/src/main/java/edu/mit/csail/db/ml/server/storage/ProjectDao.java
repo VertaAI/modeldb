@@ -1,14 +1,12 @@
 package edu.mit.csail.db.ml.server.storage;
 
-import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.records.ProjectRecord;
 import jooq.sqlite.gen.tables.records.ExperimentRecord;
+import jooq.sqlite.gen.tables.records.ProjectRecord;
 import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Record2;
-import org.jooq.Record3;
 
 import java.sql.Timestamp;
 import java.util.Date;

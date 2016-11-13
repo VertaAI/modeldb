@@ -8,7 +8,6 @@ import modeldb.StringPair;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
