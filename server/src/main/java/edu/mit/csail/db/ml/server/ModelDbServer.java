@@ -184,7 +184,7 @@ public class ModelDbServer implements ModelDBService.Iface {
     return ExceptionWrapper.run(() -> Feature.originalFeatures(modelId, ctx));
   }
 
-  public boolean storeTreeModel(int modelId, TreeModel model) {
-    return true;
+  public boolean storeTreeModel(int modelId, TreeModel model) throws TException {
+    return ExceptionWrapper.run(() -> TreeModelDao.store(modelId, model, ctx));
   }
 }
