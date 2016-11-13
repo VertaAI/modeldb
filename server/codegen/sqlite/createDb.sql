@@ -274,10 +274,10 @@ CREATE TABLE TreeNode (
 
 DROP TABLE IF EXISTS TreeLink;
 CREATE TABLE TreeLink (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   parent INTEGER REFERENCES TreeNode NOT NULL,
   child INTEGER REFERENCES TreeNode NOT NULL,
-  isLeft INTEGER NOT NULL, -- 1 if the child is a left child and 0 if the child is a right child.
-  PRIMARY KEY (parent, child, isLeft)
+  isLeft INTEGER NOT NULL -- 1 if the child is a left child and 0 if the child is a right child.
 );
 
 DROP TABLE IF EXISTS TreeModel;
@@ -291,6 +291,7 @@ CREATE TABLE TreeModel (
 -- Note that we can also represent a decision tree as an ensemble with a single component that has weight 1.0.
 DROP TABLE IF EXISTS TreeModelComponent;
 CREATE TABLE TreeModelComponent (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   model INTEGER REFERENCES Transformer,
   componentIndex INTEGER NOT NULL,
   componentWeight DOUBLE NOT NULL,

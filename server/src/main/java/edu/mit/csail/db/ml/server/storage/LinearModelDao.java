@@ -36,12 +36,8 @@ public class LinearModelDao {
   }
 
   public static boolean store(int modelId, LinearModel model, DSLContext ctx) throws ResourceNotFoundException {
-    // Check if the modelId exists, and if it doesn't, return false.
-    if (ctx
-      .select(Tables.TRANSFORMER.ID)
-      .from(Tables.TRANSFORMER)
-      .where(Tables.TRANSFORMER.ID.eq(modelId))
-      .fetchOne() == null) {
+    // Check if the modelId exists.
+    if (!TransformerDao.exists(modelId, ctx)) {
       throw new ResourceNotFoundException(
         String.format("Cannot store linear model for Transformer %d because it doesn't exist", modelId)
       );

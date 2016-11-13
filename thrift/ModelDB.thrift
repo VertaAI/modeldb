@@ -374,9 +374,34 @@ struct GridSearchCrossValidationEventResponse {
   4: list<CrossValidationEventResponse> crossValidationEventResponses,
 }
 
+struct TreeNode {
+  1: double prediction,
+  2: double impurity,
+  3: optional double gain,
+  4: optional i32 splitIndex
+}
 
+// Thrift does not allow recursive structs in some languages, so we need
+// to flatten the structure to indicate links between TreeNodes.
+// This represents a link between a parent node (at some index) and a child
+// node (at some index). The indices are given assuming that the list
+// containing all the nodes is known.
+struct TreeLink {
+  1: i32 parentIndex,
+  2: i32 childIndex,
+  3: bool isLeft
+}
 
+struct TreeComponent {
+  1: double weight,
+  2: list<TreeNode> nodes,
+  3: list<TreeLink> links
+}
 
+struct TreeModel {
+  1: string modelType, // Should be "Decision Tree", "GBT", or "Random Forest".
+  2: list<TreeComponent> components // Should have one component for Decision Tree.
+}
 
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
 // For example, if you try to read Transformer with ID 1, then we throw this
@@ -545,5 +570,11 @@ service ModelDBService {
 
   ExperimentRunDetailsResponse getExperimentRunDetails(1: i32 experimentRunId) throws (1: ServerLogicException svEx, 2: ResourceNotFoundException rnfEx),
 
-  list<string> originalFeatures(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
+  list<string> originalFeatures(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
+  // Associate TreeModel metadata with an already stored model
+  // (i.e. Transformer) with the given id. Returns a boolean indicating
+  // whether the metadata was correctly stored.
+  bool storeTreeModel(1: i32 modelId, 2: TreeModel model) 
+    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 }
