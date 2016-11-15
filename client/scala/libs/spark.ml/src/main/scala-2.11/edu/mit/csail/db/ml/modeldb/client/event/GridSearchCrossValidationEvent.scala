@@ -2,9 +2,8 @@ package edu.mit.csail.db.ml.modeldb.client.event
 
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client._
-import modeldb.{CrossValidationEvent, GridSearchCrossValidationEventResponse}
 import modeldb.ModelDBService.FutureIface
-import org.apache.spark.ml
+import modeldb.{CrossValidationEvent, GridSearchCrossValidationEventResponse}
 import org.apache.spark.ml.evaluation.Evaluator
 import org.apache.spark.ml.{PipelineStage, SyncableEstimator, Transformer}
 import org.apache.spark.sql.DataFrame
@@ -61,9 +60,10 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       SyncableEstimator(estimator),
       seed,
       SyncableEvaluator.getMetricNameLabelColPredictionCol(evaluator)._1,
-      ml.SyncableEstimator.getLabelColumns(estimator),
-      ml.SyncableEstimator.getPredictionCols(estimator),
-      mdbs.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
+
+      mdbs.featureTracker.getLabelColumns(bestModel),
+      mdbs.featureTracker.getOutputCols(bestModel),
+      mdbs.featureTracker.getFeatureCols(inputDataFrame, bestModel),
       folds,
       experimentRunId = mdbs.experimentRun.id,
       problemType = SyncableProblemType(bestModel)
@@ -78,10 +78,9 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
         SyncableDataFrame(inputDataFrame),
         SyncableEstimator(bestEstimator),
         SyncableTransformer(bestModel),
-        labelColumns = ml.SyncableEstimator.getLabelColumns(bestEstimator),
-        predictionColumns = ml.SyncableEstimator.getPredictionCols(bestEstimator),
-        featureColumns =
-          mdbs.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(bestEstimator)),
+        labelColumns = mdbs.featureTracker.getLabelColumns(bestModel),
+        predictionColumns = mdbs.featureTracker.getOutputCols(bestModel),
+        featureColumns = mdbs.featureTracker.getFeatureCols(inputDataFrame, bestModel),
         experimentRunId = mdbs.experimentRun.id,
         problemType = SyncableProblemType(bestModel)
       ),

@@ -40,10 +40,7 @@ trait SyncableDataFrame {
         splits
       ))
 
-      mdbs.get.getFeaturesForDf(m) match {
-        case Some(featureVectorNames) => splits.foreach(df => mdbs.get.setFeaturesForDf(df, featureVectorNames))
-        case None => {}
-      }
+      if (mdbs.isDefined) splits.foreach(df => mdbs.get.featureTracker.copyFeatures(m, df))
 
       // We can think of random splitting as performing n transformations from the original DataFrame to
       // n smaller DataFrames where there are no input features or output features.

@@ -97,16 +97,13 @@ class PipelineEventTest extends FunSuite with BeforeAndAfter {
 
     val (transformStages, fitStages, labelCols, featureCols, predictionCols) = pipelineEvent.makeStages(syncer)
 
-    // Verify counts of columns.
-    assert(labelCols.length === 1)
-    assert(featureCols.length === 2)
-    assert(predictionCols.length === 2)
+    // Verify counts of columns. Note that these are set according to the expected results of oheFit.
+    assert(labelCols.length === 0)
+    assert(featureCols.length === 1)
+    assert(predictionCols.length === 1)
 
     // Verify contents of columns.
-    assert(labelCols.contains("labelCol"))
     assert(featureCols.contains("inputCol"))
-    assert(featureCols.contains("featuresCol"))
-    assert(predictionCols.contains("predictionCol"))
     assert(predictionCols.contains("outputCol"))
 
     // Verify lengths of stages.
