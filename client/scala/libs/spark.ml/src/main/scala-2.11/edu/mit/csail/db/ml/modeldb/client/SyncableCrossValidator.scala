@@ -118,8 +118,7 @@ trait SyncableCrossValidator {
 
     override def fitSync(df: DataFrame, pms: Array[ParamMap], featureVectorNames: Seq[String])
                         (implicit mdbs: Option[ModelDbSyncer]): Seq[CrossValidatorModel] = {
-      if (featureVectorNames.nonEmpty)
-        mdbs.get.setFeaturesForDf(df, featureVectorNames)
+      mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
       val models = if (pms.length == 0) {
         Array(customFit(df))
       } else {
