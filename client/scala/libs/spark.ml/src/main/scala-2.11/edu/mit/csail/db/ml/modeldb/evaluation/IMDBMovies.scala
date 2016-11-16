@@ -1,43 +1,58 @@
-/*
- * Our objective is to predict the IMDB score of a movie. 
- * We'll use the IMDB 5000 Movie Dataset
- * (see https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset).
- *
- * The exploratory data analysis
- * (see https://public.tableau.com/views/IMDBMovies_0/FirstGenre?:embed=y&:display_count=yes) 
- * shows the following:
- *
- * 1. Content ratings tend to have very different IMDB scores
- * 2. Some countries (e.g. Russia) tend to produce worse rated movies 
- *  than others (e.g. Brazil). However, the overwhelming majority of movies 
- *  in the dataset come from the U.S.A
- * 3. Most movies in the dataset are English, and there's great variation in 
- *  score by language
- * 4. Budget does not correlate strongly with score. 
- *  Title year has a moderate (Rsquared ~ 0.1) negative correlation with score 
- *  - older movies are scored higher. The gross income and budget of the movie 
- *  are weakly correlated to score.
- * 5. The # of Facebook likes for the actors and director is not really 
- *  correlated with the score
- * 6. The number of critics, number of user reviews, and number of voted 
- *  users are all moderately correlated (between Rsquared~ 0.9 and Rsquared = 
- *  0.17) with score
- * 7. There is moderate variation in the first genre (movies can fall into 
- *  multiple genres) of the movie vs. score.
- */
+package edu.mit.csail.db.ml.modeldb.evaluation
 
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{IntegerType, StructType}
+/**
+  * Our objective is to predict the IMDB score of a movie.
+  * We'll use the IMDB 5000 Movie Dataset
+  * (see https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset).
+  *
+  * The exploratory data analysis
+  * (see https://public.tableau.com/views/IMDBMovies_0/FirstGenre?:embed=y&:display_count=yes)
+  * shows the following:
+  *
+  * 1. Content ratings tend to have very different IMDB scores
+  * 2. Some countries (e.g. Russia) tend to produce worse rated movies
+  *  than others (e.g. Brazil). However, the overwhelming majority of movies
+  *  in the dataset come from the U.S.A
+  * 3. Most movies in the dataset are English, and there's great variation in
+  *  score by language
+  * 4. Budget does not correlate strongly with score.
+  *  Title year has a moderate (Rsquared ~ 0.1) negative correlation with score
+  *  - older movies are scored higher. The gross income and budget of the movie
+  *  are weakly correlated to score.
+  * 5. The # of Facebook likes for the actors and director is not really
+  *  correlated with the score
+  * 6. The number of critics, number of user reviews, and number of voted
+  *  users are all moderately correlated (between Rsquared~ 0.9 and Rsquared =
+  *  0.17) with score
+  * 7. There is moderate variation in the first genre (movies can fall into
+  *  multiple genres) of the movie vs. score.
+  *
+  *  Run this with:
+  *  spark-submit --master local[*] --class "edu.mit.csail.db.ml.modeldb.evaluation.IMDBMovies" target/scala-2.11/ml.jar <path_to_data>
+  */
+
+import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
+import edu.mit.csail.db.ml.modeldb.client.{DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
+import edu.mit.csail.db.ml.modeldb.util._
+import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.regression.{LinearRegression, LinearRegressionModel}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import edu.mit.csail.db.ml.modeldb.util._
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, DefaultExperiment, NewExperimentRun, SyncableMetrics}
-import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
+import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.{SparkConf, SparkContext}
 
-object Main {
-  def run(pathToData: String): (LinearRegressionModel, LinearRegressionModel, LinearRegressionModel) = {
+
+object IMDBMovies {
+  def main(args: Array[String]): Unit = {
+    val pathToData = args(0)
+    val conf = new SparkConf().setAppName("IMDB Movies")
+    val sc = new SparkContext(conf)
+    val spark = SparkSession
+      .builder()
+      .appName("IMDB Movies")
+      .getOrCreate()
+    import spark.implicits._
+
     // Create the ModelDBSyncer
     ModelDbSyncer.setSyncer(
       new ModelDbSyncer(projectConfig = NewOrExistingProject(

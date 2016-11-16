@@ -1,3 +1,5 @@
+package edu.mit.csail.db.ml.modeldb.evaluation
+
 /**
  * I'll work on the following Kaggle problem to predict shelter outcomes for
  * cats and dogs: https://www.kaggle.com/c/shelter-animal-outcomes
@@ -8,21 +10,32 @@
  * From the analysis, it seems age is highly predictive, as is sex. 
  * The animal type (cat or dog) also matters a good deal. 
  * The breed and color are less predictive.
- */
-import edu.mit.csail.db.ml.modeldb.util._
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, DefaultExperiment, NewExperimentRun, SyncableMetrics}
+  *
+  * Run this with:
+  * spark-submit --master local[*] --class "edu.mit.csail.db.ml.modeldb.evaluation.AnimalShelterOutcomes" target/scala-2.11/ml.jar <path_to_data_file>
+  */
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-import org.apache.spark.sql.functions.udf
-import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
-import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+import edu.mit.csail.db.ml.modeldb.client.{DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
+import edu.mit.csail.db.ml.modeldb.util._
+import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest, RandomForestClassificationModel, RandomForestClassifier}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.PipelineModel
-import org.apache.spark.ml.classification.{LogisticRegressionModel, LogisticRegression, OneVsRest}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+import org.apache.spark.ml.{Pipeline, PipelineModel}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.udf
+import org.apache.spark.{SparkConf, SparkContext}
 
-object Main {
-  def run(pathToData: String): Unit = {
+object AnimalShelterOutcomes {
+  def main(args: Array[String]): Unit = {
+    val pathToData = args(0)
+    val conf = new SparkConf().setAppName("Animal Shelter Outcomes")
+    val sc = new SparkContext(conf)
+    val spark = SparkSession
+      .builder()
+      .appName("Animal Shelter Outcomes")
+      .getOrCreate()
+    import spark.implicits._
+
     ModelDbSyncer.setSyncer(
       new ModelDbSyncer(projectConfig = NewOrExistingProject(
         "Animal Shelter Outcomes",

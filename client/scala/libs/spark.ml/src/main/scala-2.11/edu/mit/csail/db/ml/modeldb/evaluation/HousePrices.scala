@@ -1,24 +1,38 @@
-/**
- * Here's a notebook for the Advanced Housing Regression Kaggle competition.
- * (see https://www.kaggle.com/c/house-prices-advanced-regression-techniques)
- *
- * Here's an exploratory data analysis
- * (see https://public.tableau.com/views/HousingRegression/Utilities?:embed=y&:display_count=yes)
- */
-import org.apache.spark.sql.types.{IntegerType, StructType, StructField}
-import org.apache.spark.sql.Row
-import scala.util.Try
-import edu.mit.csail.db.ml.modeldb.util._
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, DefaultExperiment, NewExperimentRun, SyncableMetrics}
-import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-import org.apache.spark.ml.regression.{LinearRegression}
-import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.regression.GBTRegressor
-import org.apache.spark.ml.regression.RandomForestRegressor
+package edu.mit.csail.db.ml.modeldb.evaluation
 
-object Main {
-  def run(pathToData: String): Unit = {
+/**
+  * Here's a notebook for the Advanced Housing Regression Kaggle competition.
+  * (see https://www.kaggle.com/c/house-prices-advanced-regression-techniques)
+  *
+  * Here's an exploratory data analysis
+  * (see https://public.tableau.com/views/HousingRegression/Utilities?:embed=y&:display_count=yes)
+  *
+  * Run this with:
+  * spark-submit --master local[*] --class "edu.mit.csail.db.ml.modeldb.evaluation.HousePrices" target/scala-2.11/ml.jar <path_to_data_file>
+  */
+import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
+import edu.mit.csail.db.ml.modeldb.client.{DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
+import edu.mit.csail.db.ml.modeldb.util._
+import org.apache.spark.ml.evaluation.RegressionEvaluator
+import org.apache.spark.ml.regression.{GBTRegressor, LinearRegression, RandomForestRegressor}
+import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
+import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.util.Try
+
+object HousePrices {
+  def main(args: Array[String]): Unit = {
+    val pathToData = args(0)
+    val conf = new SparkConf().setAppName("House Prices")
+    val sc = new SparkContext(conf)
+    val spark = SparkSession
+      .builder()
+      .appName("House Prices")
+      .getOrCreate()
+    import spark.implicits._
+
     ModelDbSyncer.setSyncer(
       new ModelDbSyncer(projectConfig = NewOrExistingProject(
         "House Prices",
