@@ -156,7 +156,7 @@ object FeatureVectorizer {
       actualNumericalCols
 
     if (ModelDbSyncer.syncer.isDefined)
-      ModelDbSyncer.syncer.get.setFeaturesForDf(resultDf, featureVectorNames)
+      ModelDbSyncer.syncer.get.featureTracker.setFeaturesForDf(resultDf, featureVectorNames)
 
     // Return the result.
     (resultDf, featureVectorNames, labelConverter)

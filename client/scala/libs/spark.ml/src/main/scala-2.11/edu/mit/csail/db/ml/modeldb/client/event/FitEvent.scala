@@ -3,7 +3,6 @@ package edu.mit.csail.db.ml.modeldb.client.event
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client._
 import modeldb.ModelDBService.FutureIface
-import org.apache.spark.ml
 import org.apache.spark.ml.{PipelineStage, SyncableEstimator, Transformer}
 import org.apache.spark.sql.DataFrame
 
@@ -25,9 +24,9 @@ case class FitEvent(estimator: PipelineStage,
       SyncableDataFrame(dataframe),
       SyncableEstimator(estimator),
       SyncableTransformer(model),
-      mdbs.getFeaturesForDf(dataframe).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
-      ml.SyncableEstimator.getPredictionCols(estimator),
-      ml.SyncableEstimator.getLabelColumns(estimator),
+      mdbs.featureTracker.getFeatureCols(dataframe, model),
+      mdbs.featureTracker.getOutputCols(model),
+      mdbs.featureTracker.getLabelColumns(model),
       experimentRunId = mdbs.experimentRun.id,
       problemType = SyncableProblemType(model)
     )
@@ -41,10 +40,7 @@ case class FitEvent(estimator: PipelineStage,
   }
   override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
     val res = Await.result(client.storeFitEvent(makeEvent(mdbs.get)))
-    SyncableLinearModel(model) match {
-      case Some(lm) => Await.result(client.storeLinearModel(res.modelId, lm))
-      case None => {}
-    }
+    SyncableSpecificModel(res.modelId, model, Some(client))
     associate(res, mdbs.get)
   }
 }

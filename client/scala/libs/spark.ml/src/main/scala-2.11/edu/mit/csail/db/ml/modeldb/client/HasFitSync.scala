@@ -35,8 +35,7 @@ trait HasFitSync[T <: Model[T]] {
               mdbs: Option[ModelDbSyncer],
               featureVectorNames: Seq[String]) = {
     // Associate the feature vector names with the dataframe.
-    if (featureVectorNames.nonEmpty)
-      mdbs.get.setFeaturesForDf(df, featureVectorNames)
+    mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
 
     // Train the models.
     val models = if (pms.length == 0) Seq(estimator.fit(df)) else estimator.fit(df, pms)

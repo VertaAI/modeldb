@@ -1,10 +1,9 @@
 package edu.mit.csail.db.ml.modeldb.client.event
 
 import com.twitter.util.Await
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableLinearModel}
+import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableSpecificModel}
 import modeldb.ModelDBService.FutureIface
 import modeldb.PipelineEventResponse
-import org.apache.spark.ml
 import org.apache.spark.ml.{Pipeline, PipelineModel, PipelineStage, Transformer}
 import org.apache.spark.sql.DataFrame
 
@@ -64,16 +63,16 @@ case class PipelineEvent(pipeline: Pipeline,
         case TransformerPipelineStageEvent(in, out, t) =>
           transformStages.append((index, TransformEvent(t, in, out)))
           // We treat the input columns as features and output columns as predictions.
-          predictionCols ++= ml.SyncableEstimator.getOutputCols(t)
-          featureCols ++= ml.SyncableEstimator.getInputCols(t)
+          predictionCols ++= mdbs.featureTracker.getOutputCols(t)
+          featureCols ++= mdbs.featureTracker.getInputCols(t)
         case FitPipelineStageEvent(in, out, est, mod) =>
           // Create both a transform AND a fit event for an estimator in the pipeline.
           transformStages.append((index, TransformEvent(mod, in, out)))
           fitStages.append((index, FitEvent(est, in, mod)))
           // Now get the columns.
-          predictionCols ++= ml.SyncableEstimator.getPredictionCols(est)
-          labelCols ++= ml.SyncableEstimator.getLabelColumns(est)
-          featureCols ++= mdbs.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(est))
+          predictionCols ++= mdbs.featureTracker.getOutputCols(mod)
+          labelCols ++= mdbs.featureTracker.getLabelColumns(mod)
+          featureCols ++= mdbs.featureTracker.getFeatureCols(inputDataFrame, mod)
       }
     }
     (transformStages, fitStages, labelCols.distinct, featureCols.distinct, predictionCols.distinct)
@@ -109,10 +108,7 @@ case class PipelineEvent(pipeline: Pipeline,
       te.associate(ter, mdbs)
     }
     (res.fitStagesResponses zip fitStages).foreach { case (fer, (index, fe)) =>
-      SyncableLinearModel(pipelineModel.stages(index)) match {
-        case Some(lm) => if (client.isDefined) Await.result(client.get.storeLinearModel(fer.modelId, lm))
-        case None => {}
-      }
+      SyncableSpecificModel(fer.modelId, pipelineModel.stages(index), client)
       fe.associate(fer, mdbs)
     }
   }

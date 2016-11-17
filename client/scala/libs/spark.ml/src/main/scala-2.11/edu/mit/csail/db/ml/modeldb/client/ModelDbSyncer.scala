@@ -6,6 +6,7 @@ import com.twitter.finagle.Thrift
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client.SyncingStrategy.SyncingStrategy
 import edu.mit.csail.db.ml.modeldb.client.event.{ExperimentEvent, ExperimentRunEvent, ModelDbEvent, ProjectEvent}
+import org.apache.spark.ml.FeatureTracker
 import modeldb.ModelDBService.FutureIface
 import modeldb._
 import org.apache.spark.ml.classification.LogisticRegressionModel
@@ -82,11 +83,7 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
   /**
     * We will map DataFrames to the contents of their feature vectors.
     */
-  private val featuresForDf = new mutable.HashMap[DataFrame, Seq[String]]()
-
-  def setFeaturesForDf(df: DataFrame, features: Seq[String]) = featuresForDf.put(df, features)
-
-  def getFeaturesForDf(df: DataFrame): Option[Seq[String]] = featuresForDf.get(df)
+  val featureTracker = new FeatureTracker
 
   // The two functions below associate an object and an ID.
   def associateObjectAndId(obj: Any, id: Int): ModelDbSyncer = {
