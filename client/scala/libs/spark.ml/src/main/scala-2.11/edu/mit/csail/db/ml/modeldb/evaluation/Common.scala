@@ -123,6 +123,7 @@ object Common {
   }
 
   def readHousingPrices(pathToData: String, spark: SparkSession): DataFrame = {
+    import spark.implicits._
     // Read the data.
     val dfOrig = spark
       .read
