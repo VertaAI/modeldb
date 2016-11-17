@@ -37,7 +37,11 @@ object Evaluate {
     }
 
     parser.parse(args, Config()) match {
-      case Some(config) => println(config)
+      case Some(config) =>
+        if (config.dataset == "imdb" && config.workflow == "simple")
+          IMDBSimple.run(config)
+        else
+          println("Failed to match any configuration", config)
       case None => println("Failed to parse command line arguments - make sure to enter them properly.")
     }
   }

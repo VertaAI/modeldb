@@ -33,14 +33,10 @@ trait SyncableDataFrame {
     def randomSplitSync(weights: Array[Double], seed: Long)(implicit mdbs: Option[ModelDbSyncer]): Array[DataFrame] = {
       val splits = m.randomSplit(weights, seed)
 
-      mdbs.get.buffer(new RandomSplitEvent(
-        m,
-        weights,
-        seed,
-        splits
-      ))
-
-      if (mdbs.isDefined) splits.foreach(df => mdbs.get.featureTracker.copyFeatures(m, df))
+      if (mdbs.isDefined) {
+        mdbs.get.buffer(RandomSplitEvent(m, weights, seed, splits))
+        splits.foreach(df => mdbs.get.featureTracker.copyFeatures(m, df))
+      }
 
       // We can think of random splitting as performing n transformations from the original DataFrame to
       // n smaller DataFrames where there are no input features or output features.
