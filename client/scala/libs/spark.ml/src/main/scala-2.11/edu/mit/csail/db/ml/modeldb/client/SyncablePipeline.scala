@@ -52,13 +52,13 @@ trait SyncablePipeline {
       }
 
       val model = new PipelineModel(pipeline.uid, transformers.toArray).setParent(pipeline)
-      mdbs.get.buffer(PipelineEvent(pipeline, model, df, stageEvents))
+      if (mdbs.isDefined) mdbs.get.buffer(PipelineEvent(pipeline, model, df, stageEvents))
       model
     }
 
     override def fitSync(df: DataFrame, pms: Array[ParamMap], featureVectorNames: Seq[String])
                         (implicit mdbs: Option[ModelDbSyncer]): Seq[PipelineModel] = {
-      mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
+      if (mdbs.isDefined) mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
       if (pms.length == 0) {
         Array(customFit(df))
       } else {
