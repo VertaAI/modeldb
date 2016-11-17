@@ -325,8 +325,10 @@ CREATE TABLE Event (
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
---  This is how we store pipelines. We associate each Transformer in the pipeline to the event representing the fit of
---  the pipeline. The stage number orders these Transformers in the pipeline.
+-- Represents a transform event or fit event that was part of the creation of a pipeline model
+-- A pipeline model is a sequence of transformers, some of which may have been created by 
+-- Fit Events, in which each transformer transforms its input and passes its output to the next
+-- Transformer
 DROP TABLE IF EXISTS PipelineStage;
 CREATE TABLE PipelineStage (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
