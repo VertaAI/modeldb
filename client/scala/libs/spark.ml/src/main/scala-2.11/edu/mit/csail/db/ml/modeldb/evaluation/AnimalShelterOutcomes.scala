@@ -15,97 +15,19 @@ package edu.mit.csail.db.ml.modeldb.evaluation
   * spark-submit --master local[*] --class "edu.mit.csail.db.ml.modeldb.evaluation.AnimalShelterOutcomes" target/scala-2.11/ml.jar <path_to_data_file>
   */
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-import edu.mit.csail.db.ml.modeldb.client.{DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
 import edu.mit.csail.db.ml.modeldb.util._
 import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest, RandomForestClassificationModel, RandomForestClassifier}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.udf
-import org.apache.spark.{SparkConf, SparkContext}
 
 object AnimalShelterOutcomes {
   def main(args: Array[String]): Unit = {
     val pathToData = args(0)
-    val conf = new SparkConf().setAppName("Animal Shelter Outcomes")
-    val sc = new SparkContext(conf)
-    val spark = SparkSession
-      .builder()
-      .appName("Animal Shelter Outcomes")
-      .getOrCreate()
-    import spark.implicits._
+    val spark = Common.makeSession()
+    val syncer = Common.makeSyncer()
+    val df = Common.readAnimalShelter(pathToData, spark)
 
-    ModelDbSyncer.setSyncer(
-      new ModelDbSyncer(projectConfig = NewOrExistingProject(
-        "Animal Shelter Outcomes",
-        "hsubrama@mit.edu",
-        "Attempt to predict outcome for cats and dogs in shelters."
-      ),
-      experimentConfig = new DefaultExperiment,
-      experimentRunConfig = new NewExperimentRun)
-    )
-
-    // We'll read the AgeUponOutcome and convert that to the number of years.
-    val parseAge = udf((ageStr: String) => {
-        if (ageStr == "Unknown") {
-            0
-        } else {
-            val split = ageStr.split(" ")
-            val age = split(0).toInt
-            val numPerYear = split(1) match {
-                case "days" | "day" => 365
-                case "month" | "months" => 12
-                case "week" | "weeks" => 52
-                case "years" | "year" => 1
-                case _ => 1
-            }
-            age / 1.0 / numPerYear
-        }
-    })
-
-    // Instead of using all the breeds, we'll use the give most common breeds.
-    val groupBreed = udf((breedStr: String) => 
-        if (Set("Domestic Shorthair Mix", 
-                "Pit Bull Mix", 
-                "Chihuahua Shorthair Mix", 
-                "Labrador Retriever Mix",
-                "Domestic Medium Hair Mix").contains(breedStr))
-            breedStr
-        else
-            "other"
-    )
-
-    // Instead of using all the colors, we'll use the ten most common colors.
-    val groupColor = udf((colorStr: String) =>
-        if (Set("Black/White",
-                "Black",
-                "Brown Tabby",
-                "Brown Tabby/White",
-                "White",
-                "Brown/White",
-                "Orange Tabby",
-                "Tan/White",
-                "Tricolor",
-                "Blue/White").contains(colorStr))
-            colorStr
-        else
-            "other"
-    )
-
-    // Read the data into a DataFrame.
-    val df = spark
-        .read
-        .option("header", true)
-        .option("inferSchema", true)
-        .option("ignoreLeadingWhiteSpace", true)
-        .option("ignoreTrailingWhiteSpace", true)
-        .option("nullValue", "Unknown")
-        .option("dateFormat", "yyyy-MM-dd")
-        .csv(pathToData)
-        .withColumn("AgeInYears", parseAge($"AgeuponOutcome"))
-        .withColumn("SimpleBreed", groupBreed($"Breed"))
-        .withColumn("SimpleColor", groupColor($"Color"))
     val categoricalCols = Array[String]("AnimalType", "SexuponOutcome", 
       "SimpleBreed", "SimpleColor")
     val numericalCol = "AgeInYears"

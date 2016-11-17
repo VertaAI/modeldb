@@ -32,61 +32,19 @@ package edu.mit.csail.db.ml.modeldb.evaluation
   */
 
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-import edu.mit.csail.db.ml.modeldb.client.{DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
 import edu.mit.csail.db.ml.modeldb.util._
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.regression.{LinearRegression, LinearRegressionModel}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.sql.functions.udf
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.DataFrame
 
 
 object IMDBMovies {
   def main(args: Array[String]): Unit = {
     val pathToData = args(0)
-    val conf = new SparkConf().setAppName("IMDB Movies")
-    val sc = new SparkContext(conf)
-    val spark = SparkSession
-      .builder()
-      .appName("IMDB Movies")
-      .getOrCreate()
-    import spark.implicits._
-
-    // Create the ModelDBSyncer
-    ModelDbSyncer.setSyncer(
-      new ModelDbSyncer(projectConfig = NewOrExistingProject(
-        "IMDB Movies",
-        "hsubrama@mit.edu",
-        "Attempt to predict IMDB scores for movies."
-      ),
-      experimentConfig = new DefaultExperiment,
-      experimentRunConfig = new NewExperimentRun)
-    )
-    // Extract the genres from the genre column, which looks like this:
-    // genre1|genre2|genre3|...
-    val extractFirstGenre = udf((col: String) => col.split('|')(0))
-    val extractSecondGenre = udf((col: String) => {
-        val items = col.split('|').tail
-        if (items.length == 0)
-            "None"
-        else
-            items(0)
-    })
-
-    // Read the data.
-    val df = spark
-        .read
-        .option("header", true)
-        .option("inferSchema", true)
-        .option("ignoreLeadingWhiteSpace", true)
-        .option("ignoreTrainingWhiteSpace", true)
-        .option("nullValue", "None")
-        .csv(pathToData)
-        .withColumn("first_genre", extractFirstGenre($"genres"))
-        .withColumn("second_genre", extractSecondGenre($"genres"))
-        .na.fill(0)
-    df.schema.foreach(field => println(field.dataType + ": " + field.name))
+    val spark = Common.makeSession()
+    val syncer = Common.makeSyncer()
+    val df = Common.readImdb(pathToData, spark)
 
     // So, we will use the following features in our model.
     // Color, Number of Critics, Gross, Number of User Reviews, 
@@ -229,7 +187,6 @@ object IMDBMovies {
     val (lrModel3, lrPredictions3) = makeLrModel(train3, test3, Some(featureVectorNames3))
     println("Evaluating " + makeEvaluator().evaluateSync(lrPredictions3, lrModel3))
 
-    val syncer = ModelDbSyncer.syncer.get
     if (syncer.originalFeatures(lrModel).get.length != 10)
       throw new Exception("First model does not have proper feature count")
 

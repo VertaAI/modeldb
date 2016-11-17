@@ -11,68 +11,17 @@ package edu.mit.csail.db.ml.modeldb.evaluation
   * spark-submit --master local[*] --class "edu.mit.csail.db.ml.modeldb.evaluation.HousePrices" target/scala-2.11/ml.jar <path_to_data_file>
   */
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-import edu.mit.csail.db.ml.modeldb.client.{DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
 import edu.mit.csail.db.ml.modeldb.util._
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.regression.{GBTRegressor, LinearRegression, RandomForestRegressor}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
-import org.apache.spark.sql.{Row, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext}
-
-import scala.util.Try
 
 object HousePrices {
   def main(args: Array[String]): Unit = {
     val pathToData = args(0)
-    val conf = new SparkConf().setAppName("House Prices")
-    val sc = new SparkContext(conf)
-    val spark = SparkSession
-      .builder()
-      .appName("House Prices")
-      .getOrCreate()
-    import spark.implicits._
-
-    ModelDbSyncer.setSyncer(
-      new ModelDbSyncer(projectConfig = NewOrExistingProject(
-        "House Prices",
-        "hsubrama@mit.edu",
-        "Attempt to predict home prices."
-      ),
-      experimentConfig = new DefaultExperiment,
-      experimentRunConfig = new NewExperimentRun)
-    )
-
-    // Read the data.
-    val dfOrig = spark
-        .read
-        .option("header", true)
-        .option("inferSchema", true)
-        .option("ignoreLeadingWhiteSpace", true)
-        .option("ignoreTrainingWhiteSpace", true)
-        .option("nullValue", "Unknown")
-        .csv(pathToData)
-        .withColumn("label", $"SalePrice".cast("double"))
-
-    val hasNAs = Set("GarageYrBlt", "MasVnrArea", "LotFrontage")
-    val numericalIndices = dfOrig
-        .schema
-        .fields
-        .zipWithIndex
-        .filter{case (value, index) => value.dataType == IntegerType || hasNAs.contains(value.name)}
-        .map{case (value, index) => index}
-        .toSet
-    val df = spark.sqlContext.createDataFrame(dfOrig.rdd.map{ row =>
-        Row.fromSeq(row.toSeq.zipWithIndex.map{ case (value, index) =>
-            if (numericalIndices.contains(index) && (value == null || value.isInstanceOf[String]))
-                Try(value.asInstanceOf[String].toInt).toOption.getOrElse(0)
-            else
-                value  
-        })
-    }, StructType(dfOrig.schema.map(field => StructField(field.name, if (hasNAs.contains(field.name)) IntegerType else field.dataType))))
-
-    // Print the schema.
-    df.schema.foreach(println)
+    val spark = Common.makeSession()
+    val syncer = Common.makeSyncer()
+    val df = Common.readHousingPrices(pathToData, spark)
 
     // Let's categorize the columns:
     val uselessCols = Set("Id")
