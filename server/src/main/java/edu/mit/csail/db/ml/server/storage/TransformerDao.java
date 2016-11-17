@@ -197,7 +197,7 @@ public class TransformerDao {
       spec,
       ProblemTypeConverter.fromString(feRec.getProblemtype()),
       features,
-      Arrays.asList(feRec.getLabelcolumn().split(",")),
+      Arrays.asList(feRec.getLabelcolumns().split(",")),
       Arrays.asList(feRec.getPredictioncolumns().split(",")),
       metricMap,
       annotations,
