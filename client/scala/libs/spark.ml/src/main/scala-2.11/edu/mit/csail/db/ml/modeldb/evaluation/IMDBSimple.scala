@@ -9,7 +9,6 @@ object IMDBSimple {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
     val df = Common.readImdb(config.pathToData, spark)
-    val timer = new Timer
 
     // We cannot do machine learning without doing some preprocessing, so we'll
     // preprocess the data, but we won't time it.
@@ -22,8 +21,12 @@ object IMDBSimple {
       scaler = Some(true, true)
     )(spark.sqlContext)
 
+    Timer.activate()
+
+    if (config.syncer) Common.makeSyncer()
+
     // Train test split.
-    val Array(train, test) = timer.time("Random Splitting")(preprocessedData.randomSplitSync(Array(0.7, 0.3)))
+    val Array(train, test) = preprocessedData.randomSplitSync(Array(0.7, 0.3))
 
     // Train a Linear Regression model.
     val labelCol = "imdb_score"
@@ -36,7 +39,7 @@ object IMDBSimple {
       .setFeaturesCol(featuresCol)
       .setRegParam(0.3)
       .setElasticNetParam(0.1)
-    val lrModel = timer.time("Fit Model")(lr.fitSync(train))
+    val lrModel = lr.fitSync(train)
 
     // Evaluate the model.
     val eval = new RegressionEvaluator()
@@ -44,10 +47,11 @@ object IMDBSimple {
       .setLabelCol(labelCol)
       .setPredictionCol(predictionCol)
 
-    val predictions = timer.time("Make predictions")(lrModel.transformSync(test))
-    val score = timer.time("Evaluated predictions")(eval.evaluateSync(predictions, lrModel))
+    val predictions = lrModel.transformSync(test)
+    val score = eval.evaluateSync(predictions, lrModel)
 
     // Write the timing data to an output file.
-    timer.writeTimingsToFile(config.outfile)
+    Timer.deactivate()
+    Timer.writeTimingsToFile(config.outfile)
   }
 }

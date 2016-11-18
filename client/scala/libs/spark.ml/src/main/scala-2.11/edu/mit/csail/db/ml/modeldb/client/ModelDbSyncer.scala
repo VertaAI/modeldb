@@ -7,6 +7,7 @@ import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client.SyncingStrategy.SyncingStrategy
 import edu.mit.csail.db.ml.modeldb.client.event.{ExperimentEvent, ExperimentRunEvent, ModelDbEvent, ProjectEvent}
 import org.apache.spark.ml.FeatureTracker
+import edu.mit.csail.db.ml.modeldb.evaluation.Timer
 import modeldb.ModelDBService.FutureIface
 import modeldb._
 import org.apache.spark.ml.classification.LogisticRegressionModel
@@ -143,7 +144,9 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
     buffered.clear()
 
     // Sync all the elements in the new buffer.
-    entriesToSync.foreach(_.event.sync(client.get, Some(this)))
+    entriesToSync.foreach(ent =>
+      Timer.time("Syncing " + ent.event.getClass.getSimpleName)(ent.event.sync(client.get, Some(this)))
+    )
 
     // Now execute the callbacks.
     entriesToSync.foreach(entry => entry.postSync(this, entry.event))
