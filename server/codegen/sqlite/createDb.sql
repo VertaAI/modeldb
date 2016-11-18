@@ -88,7 +88,7 @@ CREATE TABLE RandomSplitEvent (
 );
 
 -- TODO: This is not a great name, try something closer in meaning to "portion" or "part"
--- Something like DataPiece?
+-- Something like DataPiece? Or just SplitDataFrame?
 -- A DataFrameSplit represents a portion of a data frame produced by a Random Split Event
 -- For example, if you split a DataFrame into pieces with weights of 0.3 and 0.7,
 -- You would have two entries in the DataFrameSplit table, one for the 0.3 and one for the 0.7
@@ -306,7 +306,7 @@ CREATE TABLE MetricEvent (
   transformer INTEGER REFERENCES Transformer NOT NULL,
   -- The DataFrame that the model is being evaluated on
   df INTEGER REFERENCES DataFrame NOT NULL,
-  -- The type of the Metric being measured (e.g. String, Integer)
+  -- The type of Metric being measured (e.g. Squared Error, Accuracy, f1)
   metricType TEXT NOT NULL,
   -- The value of the measured Metric
   metricValue REAL NOT NULL,
