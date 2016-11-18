@@ -217,8 +217,9 @@ CREATE TABLE FitEvent (
   -- There may be multiple columns produced - one predicting the actual data, and the others
   -- describing additional information, such as confidence
   predictionColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
-  -- The name of the column in the DataFrame whose values this Transformer is supposed to predict
-  labelColumn TEXT NOT NULL,
+  -- The name of the columns in the DataFrame whose values this Transformer is supposed to predict. We support
+  -- multiple label columns.
+  labelColumns TEXT NOT NULL,
   -- The ExperimentRun that contains this event.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
   -- The type of problem that the FitEvent is solving (e.g. Regression, 

@@ -5,6 +5,8 @@ import java.util.Random
 import edu.mit.csail.db.ml.modeldb.client.event.RandomSplitEvent
 import org.apache.spark.sql.DataFrame
 
+import scala.collection.mutable
+
 
 /**
   * This trait defines an implicit class that
@@ -33,14 +35,10 @@ trait SyncableDataFrame {
     def randomSplitSync(weights: Array[Double], seed: Long)(implicit mdbs: Option[ModelDbSyncer]): Array[DataFrame] = {
       val splits = m.randomSplit(weights, seed)
 
-      mdbs.get.buffer(new RandomSplitEvent(
-        m,
-        weights,
-        seed,
-        splits
-      ))
-
-      if (mdbs.isDefined) splits.foreach(df => mdbs.get.featureTracker.copyFeatures(m, df))
+      if (mdbs.isDefined) {
+        mdbs.get.buffer(RandomSplitEvent(m, weights, seed, splits))
+        splits.foreach(df => mdbs.get.featureTracker.copyFeatures(m, df))
+      }
 
       // We can think of random splitting as performing n transformations from the original DataFrame to
       // n smaller DataFrames where there are no input features or output features.
@@ -56,6 +54,8 @@ trait SyncableDataFrame {
 }
 
 object SyncableDataFrame extends SyncableDataFrame {
+  private def rowCountForDf =  mutable.Map[DataFrame, Long]()
+
   /**
     * Convert a Spark DataFrame into a modeldb.DataFrame.
     * @param df - The Spark DataFrame.
@@ -73,11 +73,16 @@ object SyncableDataFrame extends SyncableDataFrame {
       df.schema.map(field => modeldb.DataFrameColumn(field.name, field.dataType.simpleString))
     }
 
-    // Similar to above, we only compute the number of rows in the dataframe if the server has not seen this dataframe.
-    val numRows = if (id != -1) {
+    // If the server has seen this DataFrame or if the ModelDBSyncer is configured not to count the rows, don't
+    // count the rows.
+    val numRows = if (id != -1 || !mdbs.get.shouldCountRows) {
       -1
+    } else if (rowCountForDf.contains(df)) {
+      rowCountForDf(df).toInt
     } else {
-      df.count.toInt
+      val count = df.count // This is a performance intensive operation.
+      rowCountForDf.put(df, count)
+      count.toInt
     }
 
     val modeldbDf = modeldb.DataFrame(

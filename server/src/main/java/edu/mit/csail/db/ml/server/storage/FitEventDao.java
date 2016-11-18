@@ -60,7 +60,7 @@ public class FitEventDao {
     );
 
     feRec.setPredictioncolumns(fe.predictionColumns.stream().collect(Collectors.joining(",")));
-    feRec.setLabelcolumn(fe.labelColumns.stream().collect(Collectors.joining(",")));
+    feRec.setLabelcolumns(fe.labelColumns.stream().collect(Collectors.joining(",")));
     feRec.store();
 
     // Store Event.
