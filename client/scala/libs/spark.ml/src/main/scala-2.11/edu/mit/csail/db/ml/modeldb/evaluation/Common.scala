@@ -42,7 +42,8 @@ object Common {
         appDesc
       ),
       experimentConfig = new DefaultExperiment,
-      experimentRunConfig = new NewExperimentRun
+      experimentRunConfig = new NewExperimentRun,
+      shouldCountRows = false
     )
     ModelDbSyncer.setSyncer(syncer)
     syncer
