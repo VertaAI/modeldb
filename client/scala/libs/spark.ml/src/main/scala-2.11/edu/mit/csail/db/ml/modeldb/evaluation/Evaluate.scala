@@ -3,7 +3,8 @@ package edu.mit.csail.db.ml.modeldb.evaluation
 case class Config(pathToData: String = "",
                   dataset: String = "",
                   workflow: String = "",
-                  outfile: String ="")
+                  outfile: String = "",
+                  syncer: Boolean = true)
 
 object Evaluate {
   def main(args: Array[String]): Unit = {
@@ -34,6 +35,10 @@ object Evaluate {
         .valueName("<outfile>")
         .action((outfile, config) => config.copy(outfile = outfile))
         .text("Path to file that will hold the output. It will be overwritten")
+
+      opt[Boolean]('s', "syncer")
+        .action((syncer, config) => config.copy(syncer = syncer))
+        .text("If 'true' (default), then ModelDB will be used. If 'false', ModelDB will not be used.")
     }
 
     parser.parse(args, Config()) match {
