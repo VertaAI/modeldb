@@ -54,6 +54,8 @@ object Evaluate {
           IMDBSimple.run(config)
         else if (config.dataset == "housing" && config.workflow == "simple")
           HousingSimple.run(config)
+        else if (config.dataset == "animal" && config.workflow == "simple")
+          AnimalSimple.run(config)
         else
           println("Failed to match any configuration", config)
       case None => println("Failed to parse command line arguments - make sure to enter them properly.")
