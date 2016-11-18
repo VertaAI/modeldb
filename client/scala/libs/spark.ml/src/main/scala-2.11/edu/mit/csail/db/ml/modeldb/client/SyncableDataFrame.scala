@@ -73,7 +73,8 @@ object SyncableDataFrame extends SyncableDataFrame {
     val numRows = if (id != -1) {
       -1
     } else {
-      df.count.toInt
+//      df.count.toInt // This is a performance intensive operation. We need to think if we actually want to keep this in.
+      -1
     }
 
     val modeldbDf = modeldb.DataFrame(

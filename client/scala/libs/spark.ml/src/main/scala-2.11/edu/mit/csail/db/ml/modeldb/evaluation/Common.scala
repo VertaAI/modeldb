@@ -19,6 +19,21 @@ object Common {
     spark
   }
 
+  def ensureMinSize(origDf: DataFrame, minNumRows: Int): DataFrame = {
+    val numRows = origDf.count
+
+    if (numRows >= minNumRows)
+      origDf
+    else {
+      var df = origDf.toDF()
+      val numMultiplies = 1 + minNumRows / numRows
+      for (i <- 1 to numMultiplies.toInt)
+        df = df.union(origDf.toDF())
+      assert(df.count > minNumRows)
+      df
+    }
+  }
+
   def makeSyncer(appName: String = "default app name", appDesc: String = "default description"): ModelDbSyncer = {
     val syncer = new ModelDbSyncer(
       projectConfig = NewOrExistingProject(

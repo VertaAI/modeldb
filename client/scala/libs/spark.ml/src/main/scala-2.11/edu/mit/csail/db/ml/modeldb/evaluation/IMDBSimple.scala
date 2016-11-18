@@ -8,7 +8,7 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 object IMDBSimple {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
-    val df = Common.readImdb(config.pathToData, spark)
+    val df = Common.ensureMinSize(Common.readImdb(config.pathToData, spark), config.minNumRows)
 
     // We cannot do machine learning without doing some preprocessing, so we'll
     // preprocess the data, but we won't time it.
