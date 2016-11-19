@@ -6,12 +6,13 @@ import edu.mit.csail.db.ml.server.algorithm.similarity.SimilarModels;
 import edu.mit.csail.db.ml.server.storage.*;
 import edu.mit.csail.db.ml.util.ContextFactory;
 import edu.mit.csail.db.ml.util.ExceptionWrapper;
+import jooq.sqlite.gen.tables.records.DataframeRecord;
 import modeldb.*;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
+
 import java.util.List;
 import java.util.Map;
-import jooq.sqlite.gen.tables.records.DataframeRecord;
 
 public class ModelDbServer implements ModelDBService.Iface {
   private DSLContext ctx;
@@ -181,5 +182,9 @@ public class ModelDbServer implements ModelDBService.Iface {
 
   public List<String> originalFeatures(int modelId) throws TException {
     return ExceptionWrapper.run(() -> Feature.originalFeatures(modelId, ctx));
+  }
+
+  public boolean storeTreeModel(int modelId, TreeModel model) throws TException {
+    return ExceptionWrapper.run(() -> TreeModelDao.store(modelId, model, ctx));
   }
 }

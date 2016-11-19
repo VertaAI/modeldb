@@ -21,10 +21,10 @@ def validate_experiment_struct(experiment, tester):
     tester.assertTrue(hasattr(experiment, 'isDefault'))
     tester.assertTrue(hasattr(experiment, 'name'))
 
-def validate_experiment_run_struct(experimentRun, tester):
-    tester.assertTrue(hasattr(experimentRun, 'id'))
-    tester.assertTrue(hasattr(experimentRun, 'experimentId'))
-    tester.assertTrue(hasattr(experimentRun, 'description'))
+def validate_experiment_run_struct(experiment_run, tester):
+    tester.assertTrue(hasattr(experiment_run, 'id'))
+    tester.assertTrue(hasattr(experiment_run, 'experimentId'))
+    tester.assertTrue(hasattr(experiment_run, 'description'))
 
 def validate_transformer_spec_struct(spec, tester):
     tester.assertTrue(hasattr(spec, 'id'))
@@ -76,12 +76,21 @@ def validate_pipeline_transform_stages(transformStages, tester):
         validate_transform_event_struct(stage.te, tester)
         count += 1
 
-def validate_random_split_event_struct(randomSplitEvent, tester):
-    tester.assertTrue(hasattr(randomSplitEvent, 'oldDataFrame'))
-    tester.assertTrue(hasattr(randomSplitEvent, 'weights'))
-    tester.assertTrue(hasattr(randomSplitEvent, 'seed'))
-    tester.assertTrue(hasattr(randomSplitEvent, 'splitDataFrames'))
-    tester.assertTrue(hasattr(randomSplitEvent, 'experimentRunId'))
+def validate_random_split_event_struct(random_splitEvent, tester):
+    tester.assertTrue(hasattr(random_splitEvent, 'oldDataFrame'))
+    tester.assertTrue(hasattr(random_splitEvent, 'weights'))
+    tester.assertTrue(hasattr(random_splitEvent, 'seed'))
+    tester.assertTrue(hasattr(random_splitEvent, 'splitDataFrames'))
+    tester.assertTrue(hasattr(random_splitEvent, 'experimentRunId'))
+
+def validate_metric_event_struct(metric_event, tester):
+    tester.assertTrue(hasattr(metric_event, 'df'))
+    tester.assertTrue(hasattr(metric_event, 'model'))
+    tester.assertTrue(hasattr(metric_event, 'metricType'))
+    tester.assertTrue(hasattr(metric_event, 'metricValue'))
+    tester.assertTrue(hasattr(metric_event, 'labelCol'))
+    tester.assertTrue(hasattr(metric_event, 'predictionCol'))
+    tester.assertTrue(hasattr(metric_event, 'experimentRunId'))
 
 def validate_grid_search_cv_event(gridcvEvent, tester):
     tester.assertTrue(hasattr(gridcvEvent, 'numFolds'))
@@ -154,10 +163,3 @@ def is_equal_experiment_run(expRun1, expRun2, tester):
     tester.assertEqual(expRun1.id, expRun2.id)
     tester.assertEqual(expRun1.experimentId, expRun2.experimentId)
     tester.assertEqual(expRun1.description, expRun2.description)
-
-# self.assertEqual(project.id, experiment.projectId)
-# self.assertEqual(experimentRun.experimentId, experiment.id)
-
-# self.assertTrue(type(self.fitEvent.featureColumns), 'list')
-# self.assertTrue(type(self.fitEvent.predictionColumns), 'list')
-# self.assertTrue(type(self.fitEvent.labelColumns), 'list')

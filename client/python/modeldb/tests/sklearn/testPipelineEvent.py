@@ -21,7 +21,7 @@ class TestPipelineEvent(unittest.TestCase):
         name = "logistic-test"
         author = "srinidhi"
         description = "income-level logistic regression"
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
             NewExperimentRun("Abc"))
@@ -34,29 +34,32 @@ class TestPipelineEvent(unittest.TestCase):
         np.random.seed(0)
         X = pd.DataFrame(np.random.randint(0,100,size=(100, 2)), columns=list('AB'))
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
-        X.tag("digits-dataset")
-        pipe.tag("pipeline with pca + logistic")
-        pca.tag("decomposition PCA")
-        lr.tag("basic linear reg")
-        SyncerTest.instance.clearBuffer()
-        pipe.fitSync(X,y)
-        events = SyncerTest.instance.sync()
-        self.pipelineEvent = events[0]
+
+        # Add tags for models / dataframes
+        syncer_obj.add_tag(X, "digits-dataset")
+        syncer_obj.add_tag(pipe, "pipeline with pca + logistic")
+        syncer_obj.add_tag(pca, "decomposition PCA")
+        syncer_obj.add_tag(lr, "basic linear reg")
+
+        syncer_obj.clear_buffer()
+        pipe.fit_sync(X,y)
+        events = syncer_obj.sync()
+        self.pipeline_event = events[0]
         
     def test_pipeline_construction(self):
-        utils.validate_pipeline_event_struct(self.pipelineEvent, self)
+        utils.validate_pipeline_event_struct(self.pipeline_event, self)
 
     def test_overall_pipeline_fit_event(self):
-        fitEvent = self.pipelineEvent.pipelineFit
-        utils.validate_fit_event_struct(fitEvent, self)
-        transformer = fitEvent.model
+        fit_event = self.pipeline_event.pipelineFit
+        utils.validate_fit_event_struct(fit_event, self)
+        transformer = fit_event.model
         expected_transformer = modeldb_types.Transformer(
             -1,
             'Pipeline',
             'pipeline with pca + logistic')
         utils.is_equal_transformer(transformer, expected_transformer, self)
 
-        df = fitEvent.df
+        df = fit_event.df
         expected_df = modeldb_types.DataFrame(
             -1, 
             [
@@ -67,7 +70,7 @@ class TestPipelineEvent(unittest.TestCase):
             'digits-dataset')
         utils.is_equal_dataframe(df, expected_df, self)
 
-        spec = fitEvent.spec
+        spec = fit_event.spec
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'Pipeline',
@@ -86,25 +89,25 @@ class TestPipelineEvent(unittest.TestCase):
             'pipeline with pca + logistic')
         utils.is_equal_transformer_spec(spec, expected_spec, self)
 
-        self.assertItemsEqual(fitEvent.featureColumns, ['A', 'B'])
+        self.assertItemsEqual(fit_event.featureColumns, ['A', 'B'])
 
     def test_pipeline_fit_stages(self):
-        fitStages = self.pipelineEvent.fitStages
-        utils.validate_pipeline_fit_stages(fitStages, self)
-        self.assertEqual(len(fitStages), 2)
+        fit_stages = self.pipeline_event.fitStages
+        utils.validate_pipeline_fit_stages(fit_stages, self)
+        self.assertEqual(len(fit_stages), 2)
 
     def test_pipeline_first_fit_stage(self):
-        fitStages = self.pipelineEvent.fitStages
-        fitEvent1 = fitStages[0].fe
+        fit_stages = self.pipeline_event.fitStages
+        fit_event1 = fit_stages[0].fe
         # First Stage
-        transformer = fitEvent1.model
+        transformer = fit_event1.model
         expected_transformer = modeldb_types.Transformer(
             -1,
             'PCA',
             'decomposition PCA')
         utils.is_equal_transformer(transformer, expected_transformer, self)
 
-        df = fitEvent1.df
+        df = fit_event1.df
         expected_df = modeldb_types.DataFrame(
             -1, 
             [
@@ -115,7 +118,7 @@ class TestPipelineEvent(unittest.TestCase):
             'digits-dataset')
         utils.is_equal_dataframe(df, expected_df, self)
 
-        spec = fitEvent1.spec
+        spec = fit_event1.spec
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'PCA',
@@ -127,20 +130,20 @@ class TestPipelineEvent(unittest.TestCase):
             'decomposition PCA')
         utils.is_equal_transformer_spec(spec, expected_spec, self)
 
-        self.assertItemsEqual(fitEvent1.featureColumns, ['A', 'B'])
+        self.assertItemsEqual(fit_event1.featureColumns, ['A', 'B'])
 
     def test_pipeline_second_fit_stage(self):
-        fitStages = self.pipelineEvent.fitStages
-        fitEvent2 = fitStages[1].fe
+        fit_stages = self.pipeline_event.fitStages
+        fit_event2 = fit_stages[1].fe
         # Second Stage
-        transformer = fitEvent2.model
+        transformer = fit_event2.model
         expected_transformer = modeldb_types.Transformer(
             -1,
             'LinearRegression',
             'basic linear reg')
         utils.is_equal_transformer(transformer, expected_transformer, self)
 
-        df = fitEvent2.df
+        df = fit_event2.df
         expected_df = modeldb_types.DataFrame(
             -1, 
             [],
@@ -148,7 +151,7 @@ class TestPipelineEvent(unittest.TestCase):
             '')
         utils.is_equal_dataframe(df, expected_df, self)
 
-        spec = fitEvent2.spec
+        spec = fit_event2.spec
         expected_spec = modeldb_types.TransformerSpec(
             -1, 
             'LinearRegression',
@@ -162,22 +165,22 @@ class TestPipelineEvent(unittest.TestCase):
         utils.is_equal_transformer_spec(spec, expected_spec, self)
 
     def test_pipeline_transform_stages(self):
-        transformStages = self.pipelineEvent.transformStages
-        utils.validate_pipeline_transform_stages(transformStages, self)
-        self.assertEqual(len(transformStages), 1)
+        transform_stages = self.pipeline_event.transformStages
+        utils.validate_pipeline_transform_stages(transform_stages, self)
+        self.assertEqual(len(transform_stages), 1)
 
     def test_pipeline_first_transform_stage(self):
-        transformStages = self.pipelineEvent.transformStages
-        transformEvent1 = transformStages[0].te
+        transform_stages = self.pipeline_event.transformStages
+        transform_event = transform_stages[0].te
 
-        transformer = transformEvent1.transformer
+        transformer = transform_event.transformer
         expected_transformer = modeldb_types.Transformer(
             -1,
             'PCA',
             'decomposition PCA')
         utils.is_equal_transformer(transformer, expected_transformer, self)
 
-        old_df = transformEvent1.oldDataFrame
+        old_df = transform_event.oldDataFrame
         expected_old_df = modeldb_types.DataFrame(
             -1,
             [
@@ -188,7 +191,7 @@ class TestPipelineEvent(unittest.TestCase):
             'digits-dataset')
         utils.is_equal_dataframe(expected_old_df, old_df, self)
 
-        new_df = transformEvent1.newDataFrame
+        new_df = transform_event.newDataFrame
         expected_new_df = modeldb_types.DataFrame(
             -1,
             [

@@ -4,6 +4,8 @@ import sys
 
 from sklearn import preprocessing
 from sklearn import linear_model
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableRandomSplit
@@ -12,16 +14,16 @@ from modeldb.sklearn_native import SyncableMetrics
 name = "logistic-test"
 author = "srinidhi"
 description = "income-level logistic regression"
-SyncerObj = Syncer(
+syncer_obj = Syncer(
     NewOrExistingProject(name, author, description),
     DefaultExperiment(),
     NewExperimentRun("Abc"))
 
 df = pd.read_csv("../data/adult.data.csv")
-newDf = pd.DataFrame()
-df.columns = ['age', 'workclass', 'fnlwgt', 'education','education_num','marital_status',
-              'occupation', 'relationship','race', 'sex','capital_gain', 'capital_loss', 'hours_per_week', 'native_country'
-              ,'income_level']
+new_df = pd.DataFrame()
+df.columns = ['age', 'workclass', 'fnlwgt', 'education','education_num',
+    'marital_status', 'occupation', 'relationship','race', 'sex','capital_gain',
+    'capital_loss', 'hours_per_week', 'native_country' ,'income_level']
 
 le = preprocessing.LabelEncoder()
 
@@ -31,25 +33,25 @@ df['income_level'] = df['income_level'].replace(['<=50K'],[0.0])
 df['income_level'] = df['income_level'].replace(['>50K'],[1.0])
 
 #calling labelEncoder on any columns that are object types
-for coltype,colname in zip(df.dtypes, df.columns):
+for coltype, colname in zip(df.dtypes, df.columns):
     if coltype == 'object':
-        le.fitSync(df[colname])
-        transformedVals = le.transformSync(df[colname])
-        newDf[colname+"_index"] = transformedVals
+        le.fit_sync(df[colname])
+        transformed_vals = le.transform_sync(df[colname])
+        new_df[colname+"_index"] = transformed_vals
     else:
-        newDf[colname]=df[colname]
+        new_df[colname]=df[colname]
 
 lr = linear_model.LogisticRegression()
 
-X_set, y_set = SyncableRandomSplit.randomSplit(newDf, [0.7, 0.3], 0, newDf['income_level'])
-X_train, X_test = X_set[0], X_set[1]
-y_train, y_test = y_set[0], y_set[1]
+x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
+    new_df, new_df['income_level'], test_size=0.3, random_state=0)
 
 #We don't want to include our label (income_level) when fitting
-partialTraining = X_train[X_train.columns[:-1]]
-partialTesting = X_test[X_test.columns[:-1]]
-lr.fitSync(partialTraining, y_train)
+partial_training = x_train[x_train.columns[:-1]]
+partial_testing = x_test[x_test.columns[:-1]]
+lr.fit_sync(partial_training, y_train)
+y_pred = lr.predict_sync(partial_testing)
+SyncableMetrics.compute_metrics(lr, precision_score, y_test, y_pred, partial_testing, "predictionCol", 'income_level')
+SyncableMetrics.compute_metrics(lr, recall_score, y_test, y_pred, partial_testing, "predictionCol", 'income_level')
 
-SyncableMetrics.computeMetrics(lr, "precision", partialTesting, "predictionCol", "income_level",y_test)
-SyncableMetrics.computeMetrics(lr, "recall", partialTesting, "predictionCol", "income_level",y_test)
-SyncerObj.instance.sync()
+syncer_obj.sync()

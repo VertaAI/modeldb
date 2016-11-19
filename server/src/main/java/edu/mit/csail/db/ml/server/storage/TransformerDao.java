@@ -11,7 +11,6 @@ import org.jooq.Record1;
 
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static jooq.sqlite.gen.Tables.TRANSFORMER;
 
@@ -198,7 +197,7 @@ public class TransformerDao {
       spec,
       ProblemTypeConverter.fromString(feRec.getProblemtype()),
       features,
-      Arrays.asList(feRec.getLabelcolumn().split(",")),
+      Arrays.asList(feRec.getLabelcolumns().split(",")),
       Arrays.asList(feRec.getPredictioncolumns().split(",")),
       metricMap,
       annotations,

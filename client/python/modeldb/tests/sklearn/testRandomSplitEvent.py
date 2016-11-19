@@ -1,5 +1,6 @@
 import unittest
 import sys
+from sklearn.cross_validation import train_test_split
 from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
@@ -15,27 +16,32 @@ class TestRandomSplitEvent(unittest.TestCase):
         name = "random split test"
         author = "srinidhi"
         description = "70/30 split"
-        SyncerObj = SyncerTest(
+        syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
             NewExperimentRun("Abc"))
         X = pd.DataFrame(np.random.randint(0,100,size=(100, 4)), columns=list('ABCD'))
         y = pd.DataFrame(np.random.randint(0,100,size=(100, 1)), columns=['output'])
-        X.tag("digits-dataset")
+
+        # Add tag for dataframe
+        syncer_obj.add_tag(X, "digits-dataset")
+
         seed = 1       
         weights = [0.7, 0.3]
-        SyncerTest.instance.clearBuffer()
-        X_set, y_set = SyncableRandomSplit.randomSplit(X, [0.7, 0.3], seed, y)
-        events = SyncerTest.instance.sync()
-        self.randomSplitEvent = events[0]
+        syncer_obj.clear_buffer()
+        x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(X, y, train_size=0.7)
+        events = syncer_obj.sync()
+        self.random_split_event = events[0]
 
     def test_random_split_event(self):
-        utils.validate_random_split_event_struct(self.randomSplitEvent, self)
-        self.assertEquals(self.randomSplitEvent.weights, [0.7, 0.3])
-        self.assertEquals(self.randomSplitEvent.seed, 1)
+        utils.validate_random_split_event_struct(self.random_split_event, self)
+        weights = self.random_split_event.weights
+        self.assertAlmostEqual(weights[0], 0.7)
+        self.assertAlmostEqual(weights[1], 0.3)
+        self.assertEquals(self.random_split_event.seed, 1)
 
     def test_old_dataframe(self):
-        old_df = self.randomSplitEvent.oldDataFrame
+        old_df = self.random_split_event.oldDataFrame
         expected_df = modeldb_types.DataFrame(
             -1, 
             [
@@ -49,7 +55,7 @@ class TestRandomSplitEvent(unittest.TestCase):
         utils.is_equal_dataframe(old_df, expected_df, self)
         
     def test_split_dataframes(self):
-        split_data_frames = self.randomSplitEvent.splitDataFrames
+        split_data_frames = self.random_split_event.splitDataFrames
         self.assertEquals(len(split_data_frames), 2)
         dataframe1 = split_data_frames[0]
         dataframe2 = split_data_frames[1]

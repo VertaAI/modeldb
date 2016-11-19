@@ -1,31 +1,45 @@
-from Event import *
+"""
+Event indicating a Transformer transformed a dataframe.
+"""
+from modeldb.events.Event import *
 
 class TransformEvent(Event):
-    def __init__(self, oldDf, newDf, transformer):
-        self.oldDf = oldDf
-        self.newDf = newDf
+    """
+    Class for creating and storing TransformEvents
+    """
+    def __init__(self, oldDf, new_df, transformer):
+        self.old_df = oldDf
+        self.new_df = new_df
         self.transformer = transformer
 
-    def makeEvent(self, syncer):
-        self.syncableTransformer = syncer.convertModeltoThrift(self.transformer)
-        self.syncableDataFrameOld = syncer.convertDftoThrift(self.oldDf)
-        self.syncableDataFrameNew = syncer.convertDftoThrift(self.newDf)
-        te = modeldb_types.TransformEvent(self.syncableDataFrameOld, self.syncableDataFrameNew, 
-                                    self.syncableTransformer, [], [], 
-                                    syncer.experimentRun.id)
+    def make_event(self, syncer):
+        """
+        Constructs a thrift TransformEvent object with appropriate fields.
+        """
+        syncable_transformer = syncer.convert_model_to_thrift(self.transformer)
+        syncable_dataframe_old = syncer.convert_df_to_thrift(self.old_df)
+        syncable_dataframe_new = syncer.convert_df_to_thrift(self.new_df)
+        te = modeldb_types.TransformEvent(syncable_dataframe_old, 
+            syncable_dataframe_new, syncable_transformer, [], [], 
+            syncer.experiment_run.id)
         return te
 
     def associate(self, res, syncer):
-        #generate identity for storing in dictionary
-        dfImmOld = id(self.oldDf)
-        dfImmNew = id(self.newDf)
-        syncer.storeObject(dfImmOld,res.oldDataFrameId)
-        syncer.storeObject(dfImmNew,res.newDataFrameId)
-        syncer.storeObject(self.transformer, res.transformerId)
-        syncer.storeObject(self, res.eventId)
+        """
+        Stores the server response ids into dictionary.
+        """
+        df_old_id = id(self.old_df)
+        df_new_id = id(self.new_df)
+        syncer.store_object(df_old_id, res.oldDataFrameId)
+        syncer.store_object(df_new_id, res.newDataFrameId)
+        syncer.store_object(self.transformer, res.transformerId)
+        syncer.store_object(self, res.eventId)
 
     def sync(self, syncer):
-        te = self.makeEvent(syncer)
-        thriftClient = syncer.client
-        res = thriftClient.storeTransformEvent(te)
+        """
+        Stores TransformEvent on the server.
+        """
+        te = self.make_event(syncer)
+        thrift_client = syncer.client
+        res = thrift_client.storeTransformEvent(te)
         self.associate(res, syncer)

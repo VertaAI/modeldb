@@ -1,30 +1,45 @@
-from Event import *
+"""
+Event indicating that a dataFrame was split into smaller dataFrames.
+"""
+from modeldb.events.Event import *
 
 class RandomSplitEvent(Event):
+    """
+    Class for creating and storing RandomSplitEvents
+    """
     def __init__(self, df, weights, seed, result):
         self.df = df
         self.weights = weights
         self.seed = seed
         self.result = result
 
-    def makeEvent(self, syncer):
-        self.syncableDataFrame = syncer.convertDftoThrift(self.df)
-        allSyncableFrames = []
-        for dataFrame in self.result:
-            allSyncableFrames.append(syncer.convertDftoThrift(dataFrame))
-        re = modeldb_types.RandomSplitEvent(self.syncableDataFrame, self.weights, self.seed, allSyncableFrames, syncer.experimentRun.id)
+    def make_event(self, syncer):
+        """
+        Constructs a thrift RandomSplitEvent object with appropriate fields.
+        """
+        syncable_dataframe = syncer.convert_df_to_thrift(self.df)
+        all_syncable_frames = []
+        for dataframe in self.result:
+            all_syncable_frames.append(syncer.convert_df_to_thrift(dataframe))
+        re = modeldb_types.RandomSplitEvent(syncable_dataframe, self.weights, self.seed,
+            all_syncable_frames, syncer.experiment_run.id)
         return re
 
     def associate(self, res, syncer):
-        #generate identity for storing in dictionary
-        dfImmOld = id(self.df)
-        syncer.storeObject(dfImmOld,res.oldDataFrameId)
+        """
+        Stores the server response ids for all split dataframes into dictionary.
+        """
+        df_id = id(self.df)
+        syncer.store_object(df_id, res.oldDataFrameId)
         for i in range(0, len(self.result)):
-            syncer.storeObject(id(self.result[i]), res.splitIds[i])
-        syncer.storeObject(self, res.splitEventId)
+            syncer.store_object(id(self.result[i]), res.splitIds[i])
+        syncer.store_object(self, res.splitEventId)
 
     def sync(self, syncer):
-        re = self.makeEvent(syncer)
-        thriftClient = syncer.client
-        res = thriftClient.storeRandomSplitEvent(re)
+        """
+        Stores RandomSplitEvent on the server.
+        """
+        re = self.make_event(syncer)
+        thrift_client = syncer.client
+        res = thrift_client.storeRandomSplitEvent(re)
         self.associate(res, syncer)

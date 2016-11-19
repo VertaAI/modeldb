@@ -21,19 +21,27 @@ case class RandomSplitEvent(dataframe: DataFrame,
                             weights: Array[Double],
                             seed: Long,
                             result: Array[DataFrame]) extends ModelDbEvent {
-  override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
-    val event = modeldb.RandomSplitEvent(
+  def makeEvent(mdbs: ModelDbSyncer): modeldb.RandomSplitEvent = {
+    modeldb.RandomSplitEvent(
       SyncableDataFrame(dataframe),
       weights,
       seed,
       result.map(df => SyncableDataFrame(df)),
-      experimentRunId = mdbs.get.experimentRun.id
+      experimentRunId = mdbs.experimentRun.id
     )
-    val res = Await.result(client.storeRandomSplitEvent(event))
-    mdbs.get.associateObjectAndId(dataframe, res.oldDataFrameId)
+  }
+
+  def associate(res: modeldb.RandomSplitEventResponse, mdbs: ModelDbSyncer) = {
+    mdbs.associateObjectAndId(dataframe, res.oldDataFrameId)
     result.zipWithIndex.foreach { case (df, i) =>
-      mdbs.get.associateObjectAndId(result(i), res.splitIds(i))
+      mdbs.associateObjectAndId(result(i), res.splitIds(i))
     }
-    mdbs.get.associateObjectAndId(this, res.splitEventId)
+    mdbs.associateObjectAndId(this, res.splitEventId)
+  }
+
+  override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
+    val event = makeEvent(mdbs.get)
+    val res = Await.result(client.storeRandomSplitEvent(event))
+    associate(res, mdbs.get)
   }
 }

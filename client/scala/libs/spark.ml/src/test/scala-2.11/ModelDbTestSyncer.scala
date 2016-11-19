@@ -14,11 +14,16 @@ class ModelDbTestSyncer(projectConfig: ProjectConfig,
 
   override def sync(): Unit = {}
   def getBuffer: Seq[ModelDbEvent] = this.buffered.map(_.event)
-  def clearBuffer(): Unit = this.buffered.clear()
+  def clear(): Unit = {
+    this.objectIdMappings.clear()
+    this.objectTagMappings.clear()
+    this.buffered.clear()
+  }
   def numEvents: Int = this.buffered.size
-  def hasEvent(fn: (ModelDbEvent) => Boolean, atIndex: Int = -1): Boolean =
+  def hasEvent(atIndex: Int)(fn: (ModelDbEvent) => Boolean): Boolean =
     this.buffered
       .map(_.event)
       .zipWithIndex
       .exists((pair) => (atIndex == -1 || pair._2 == atIndex) && fn(pair._1))
+  def hasEvent(fn: (ModelDbEvent) => Boolean): Boolean = hasEvent(-1)(fn)
 }

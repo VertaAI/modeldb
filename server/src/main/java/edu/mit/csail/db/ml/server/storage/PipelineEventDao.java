@@ -11,20 +11,23 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PipelineEventDao {
-  private static int storePipelineStage(int pipelineFitEventId,
-                                         int stageId,
-                                         int stageNumber,
-                                         int experimentId,
-                                         DSLContext ctx) {
+  public static int storePipelineStage(int pipelineFitEventId,
+                                       int stageId,
+                                       int stageNumber,
+                                       boolean isFit,
+                                       int experimentId,
+                                       DSLContext ctx) {
     PipelinestageRecord rec = ctx.newRecord(Tables.PIPELINESTAGE);
     rec.setId(null);
     rec.setPipelinefitevent(pipelineFitEventId);
     rec.setTransformorfitevent(stageId);
     rec.setStagenumber(stageNumber);
+    rec.setIsfit(isFit ? 1 : 0);
     rec.setExperimentrun(experimentId);
     rec.store();
     return rec.getId();
   }
+
   public static PipelineEventResponse store(PipelineEvent pe, DSLContext ctx) {
     // Store the FitEvent.
     pe.pipelineFit.setExperimentRunId(pe.experimentRunId);
@@ -114,6 +117,7 @@ public class PipelineEventDao {
         fe.getFitEventId(),
         tes.get(ind).getEventId(),
         pe.transformStages.get(ind).stageNumber,
+        false,
         pe.experimentRunId,
         ctx
       ));
@@ -123,6 +127,7 @@ public class PipelineEventDao {
           fe.getFitEventId(),
           fes.get(ind).getEventId(),
           pe.fitStages.get(ind).stageNumber,
+          true,
           pe.experimentRunId,
           ctx
         );

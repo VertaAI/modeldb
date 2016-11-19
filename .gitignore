@@ -8,3 +8,9 @@ server/src/main/thrift/ModelDB.thrift
 .local_files/*
 node_modules/
 frontend/thrift/
+spark-warehouse/
+run_imdb.sh
+run_animal.sh
+run_house_prices.sh
+metastore_db/
+derby.log

@@ -3,7 +3,7 @@ package edu.mit.csail.db.ml.modeldb.client.event
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client._
 import modeldb.ModelDBService.FutureIface
-import org.apache.spark.ml
+import modeldb.{CrossValidationEvent, GridSearchCrossValidationEventResponse}
 import org.apache.spark.ml.evaluation.Evaluator
 import org.apache.spark.ml.{PipelineStage, SyncableEstimator, Transformer}
 import org.apache.spark.sql.DataFrame
@@ -47,58 +47,51 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
                                           bestModel: Transformer,
                                           bestEstimator: PipelineStage,
                                           numFolds: Int)  extends ModelDbEvent {
-  override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
 
-    // First create the CrossValidationEvents.
-    val crossValidationEvents = crossValidations.keys.map { (estimator) =>
-      val folds = crossValidations(estimator).map { (fold) =>
-        modeldb.CrossValidationFold(SyncableTransformer(fold.model),
-          SyncableDataFrame(fold.validationDf),
-          SyncableDataFrame(fold.trainingDf),
-          fold.score)
-      }
-      modeldb.CrossValidationEvent(
-        SyncableDataFrame(inputDataFrame),
-        SyncableEstimator(estimator),
-        seed,
-        evaluator.getClass.getSimpleName, // TODO: Replace this with a more useful value.
-        ml.SyncableEstimator.getLabelColumns(estimator),
-        ml.SyncableEstimator.getPredictionCols(estimator),
-        mdbs.get.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(estimator)),
-        folds,
-        experimentRunId = mdbs.get.experimentRun.id,
-        problemType = SyncableProblemType(bestModel)
-      )
-    }.toSeq
+  def makeCrossValidationEvents(mdbs: ModelDbSyncer): Seq[CrossValidationEvent] = crossValidations.keys.map { (estimator) =>
+    val folds = crossValidations(estimator).map { (fold) =>
+      modeldb.CrossValidationFold(SyncableTransformer(fold.model),
+        SyncableDataFrame(fold.validationDf),
+        SyncableDataFrame(fold.trainingDf),
+        fold.score)
+    }
+    modeldb.CrossValidationEvent(
+      SyncableDataFrame(inputDataFrame),
+      SyncableEstimator(estimator),
+      seed,
+      SyncableEvaluator.getMetricNameLabelColPredictionCol(evaluator)._1,
 
-    // Now create the GridSearchCrossValidationEvent.
-    val gscve = modeldb.GridSearchCrossValidationEvent(
+      mdbs.featureTracker.getLabelColumns(bestModel),
+      mdbs.featureTracker.getOutputCols(bestModel),
+      mdbs.featureTracker.getFeatureCols(inputDataFrame, bestModel),
+      folds,
+      experimentRunId = mdbs.experimentRun.id,
+      problemType = SyncableProblemType(bestModel)
+    )
+  }.toSeq
+
+  def makeGscve(mdbs: ModelDbSyncer,
+                crossValidationEvents: Seq[CrossValidationEvent]): modeldb.GridSearchCrossValidationEvent =
+    modeldb.GridSearchCrossValidationEvent(
       numFolds,
       modeldb.FitEvent(
         SyncableDataFrame(inputDataFrame),
         SyncableEstimator(bestEstimator),
         SyncableTransformer(bestModel),
-        labelColumns = ml.SyncableEstimator.getLabelColumns(bestEstimator),
-        predictionColumns = ml.SyncableEstimator.getPredictionCols(bestEstimator),
-        featureColumns =
-          mdbs.get.getFeaturesForDf(inputDataFrame).getOrElse(ml.SyncableEstimator.getFeatureCols(bestEstimator)),
-        experimentRunId = mdbs.get.experimentRun.id,
+        labelColumns = mdbs.featureTracker.getLabelColumns(bestModel),
+        predictionColumns = mdbs.featureTracker.getOutputCols(bestModel),
+        featureColumns = mdbs.featureTracker.getFeatureCols(inputDataFrame, bestModel),
+        experimentRunId = mdbs.experimentRun.id,
         problemType = SyncableProblemType(bestModel)
       ),
       crossValidationEvents,
-      experimentRunId = mdbs.get.experimentRun.id,
+      experimentRunId = mdbs.experimentRun.id,
       problemType = SyncableProblemType(bestModel)
     )
 
-    val res = Await.result(client.storeGridSearchCrossValidationEvent(gscve))
-
-    SyncableLinearModel(bestModel) match {
-      case Some(lm) => Await.result(client.storeLinearModel(res.fitEventResponse.modelId, lm))
-      case None => {}
-    }
-
+  def associate(mdbs: ModelDbSyncer, res: GridSearchCrossValidationEventResponse, client: Option[FutureIface]): Unit = {
     // First associate the fit event.
-    mdbs.get.associateObjectAndId(this, res.eventId)
+    mdbs.associateObjectAndId(this, res.eventId)
       .associateObjectAndId(bestEstimator, res.fitEventResponse.specId)
       .associateObjectAndId(inputDataFrame, res.fitEventResponse.dfId)
       .associateObjectAndId(bestModel, res.fitEventResponse.modelId)
@@ -109,22 +102,31 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       val cver = pair._2
 
       // Associate each spec.
-      mdbs.get.associateObjectAndId(cver.specId, estimator)
+      mdbs.associateObjectAndId(cver.specId, estimator)
 
       // Iterate through each fold.
       (folds zip cver.foldResponses).foreach { pair =>
         val (fold, foldr) = pair
-        // Store the model if it is linear.
-        SyncableLinearModel(fold.model) match {
-          case Some(lm) => Await.result(client.storeLinearModel(foldr.modelId, lm))
-          case None => {}
-        }
+        SyncableSpecificModel(foldr.modelId, fold.model, client)
         // Associate the model and validation dataframe produced by the fold.
-        mdbs.get.associateObjectAndId(fold.model, foldr.modelId)
+        mdbs.associateObjectAndId(fold.model, foldr.modelId)
           .associateObjectAndId(fold.validationDf, foldr.validationId)
           .associateObjectAndId(fold.trainingDf, foldr.trainingId)
       }
     }
+  }
+
+  override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
+
+    val crossValidationEvents = makeCrossValidationEvents(mdbs.get)
+
+    val gscve = makeGscve(mdbs.get, crossValidationEvents)
+
+    val res = Await.result(client.storeGridSearchCrossValidationEvent(gscve))
+
+    SyncableSpecificModel(res.fitEventResponse.modelId, bestModel, Some(client))
+
+    associate(mdbs.get, res, Some(client))
   }
 }
 

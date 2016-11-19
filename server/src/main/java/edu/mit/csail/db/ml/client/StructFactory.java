@@ -55,7 +55,7 @@ public class StructFactory {
     );
   }
 
-  private static DataFrame makeDataFrame() {
+  public static DataFrame makeDataFrame() {
     return new DataFrame(
       EMPTY_PRIMARY_KEY,
       IntStream.range(0, 5).mapToObj(s -> makeDataFrameColumn()).collect(Collectors.toList()),
@@ -64,7 +64,7 @@ public class StructFactory {
     );
   }
 
-  private static Transformer makeTransformer() {
+  public static Transformer makeTransformer() {
     return new Transformer(
       EMPTY_PRIMARY_KEY,
       "linear regression",
@@ -113,7 +113,7 @@ public class StructFactory {
     );
   }
 
-  private static TransformerSpec makeTransformerSpec() {
+  public static TransformerSpec makeTransformerSpec() {
     return new TransformerSpec(
       EMPTY_PRIMARY_KEY,
       "lin reg",

@@ -42,7 +42,7 @@ public class TestFitEvent {
     Assert.assertEquals(rec.getDf().intValue(), resp.dfId);
     Assert.assertEquals(rec.getTransformerspec().intValue(), resp.specId);
     Assert.assertEquals(rec.getTransformer().intValue(), resp.modelId);
-    Assert.assertTrue(rec.getLabelcolumn().contains("labCol1"));
+    Assert.assertTrue(rec.getLabelcolumns().contains("labCol1"));
     Assert.assertTrue(rec.getPredictioncolumns().contains("predCol2"));
     Assert.assertNotEquals(rec.getProblemtype(), "undefined");
 

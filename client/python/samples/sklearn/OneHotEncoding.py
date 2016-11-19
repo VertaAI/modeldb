@@ -4,6 +4,7 @@ import sys
 
 from sklearn import preprocessing, linear_model, cross_validation, metrics
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.metrics import accuracy_score
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableRandomSplit 
@@ -12,7 +13,7 @@ from modeldb.sklearn_native import SyncableMetrics
 name = "logistic regression - one hot encoding"
 author = "srinidhi"
 description = "predicting income"
-SyncerObj = Syncer(
+syncer_obj = Syncer(
     NewOrExistingProject(name, author, description),
     DefaultExperiment(),
     NewExperimentRun("Abc"))
@@ -31,7 +32,7 @@ def oneHotEncoding(lb, feature, df):
     return [lb, df]
 
 orig = pd.read_csv_sync("../data/adult_with_colnames.csv", index_col=0)
-[train, test] = cross_validation.train_test_split(orig, test_size=0.3, random_state=501)
+[train, test] = cross_validation.train_test_split_sync(orig, test_size=0.3, random_state=501)
 
 
 [lb, train] = oneHotEncoding(None, "workclass", train)
@@ -43,13 +44,15 @@ new_cols = [col for col in train.columns if "workclass_" in col or "sex_" in col
 
 logreg = linear_model.LogisticRegression(C=10)
 features = ['capital-gain', 'capital-loss', 'age'] + new_cols
-logreg.fitSync(train[features], train.income)
+logreg.fit_sync(train[features], train.income)
 
 [lb, test] = oneHotEncoding(lb, "workclass", test)
 [lb2, test] = oneHotEncoding(lb2, "sex", test)
 test = test.drop(["workclass", "sex"], axis=1)
 
-test_pred = logreg.predictSync(test[features])
+test_pred = logreg.predict_sync(test[features])
 test_proba = logreg.predict_proba(test[features])
-accuracy = metrics.accuracy_score(test.income, test_pred)
-SyncerObj.instance.sync()
+
+accuracy = SyncableMetrics.compute_metrics(logreg, accuracy_score, test.income, test_pred, test[features], "predictionCol", 'income_level')
+
+syncer_obj.sync()

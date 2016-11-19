@@ -6,9 +6,9 @@ import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.LinearmodelRecord;
 import modeldb.*;
 import org.apache.commons.math.MathException;
+import org.apache.commons.math.distribution.TDistribution;
 import org.apache.commons.math.distribution.TDistributionImpl;
 import org.jooq.*;
-import org.apache.commons.math.distribution.TDistribution;
 
 import java.util.*;
 import java.util.stream.Collectors;

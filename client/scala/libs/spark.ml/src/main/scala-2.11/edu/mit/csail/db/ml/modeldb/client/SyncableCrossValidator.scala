@@ -3,7 +3,7 @@ package org.apache.spark.ml
 import java.util.Random
 
 import com.github.fommil.netlib.F2jBLAS
-import edu.mit.csail.db.ml.modeldb.client.{HasFitSync, ModelDbSyncer}
+import edu.mit.csail.db.ml.modeldb.client.{HasFitSync, ModelDbSyncer, SyncableEvaluator}
 import edu.mit.csail.db.ml.modeldb.client.event.{CrossValidationFold, GridSearchCrossValidationEvent}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.tuning.{CrossValidator, CrossValidatorModel}
@@ -37,6 +37,7 @@ trait SyncableCrossValidator {
       val epm = cv.getEstimatorParamMaps
       val numModels = epm.length
       val metrics = new Array[Double](epm.length)
+      val (metricName, labelCol, predictionCol) = SyncableEvaluator.getMetricNameLabelColPredictionCol(cv.getEvaluator)
 
       // Create a list of estimators - one for each param map.
       val estimators = epm.map(pm => est.copy(pm))
@@ -117,8 +118,7 @@ trait SyncableCrossValidator {
 
     override def fitSync(df: DataFrame, pms: Array[ParamMap], featureVectorNames: Seq[String])
                         (implicit mdbs: Option[ModelDbSyncer]): Seq[CrossValidatorModel] = {
-      if (featureVectorNames.nonEmpty)
-        mdbs.get.setFeaturesForDf(df, featureVectorNames)
+      mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
       val models = if (pms.length == 0) {
         Array(customFit(df))
       } else {

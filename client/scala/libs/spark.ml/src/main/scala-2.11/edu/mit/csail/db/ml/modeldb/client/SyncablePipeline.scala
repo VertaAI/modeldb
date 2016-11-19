@@ -34,8 +34,8 @@ trait SyncablePipeline {
           case estimator: Estimator[_] =>
             val model = estimator.fit(oldDf)
             val newDf = model.transform(oldDf)
-            if (mdbs.isDefined && mdbs.get.getFeaturesForDf(df).isDefined)
-              mdbs.get.setFeaturesForDf(oldDf, mdbs.get.getFeaturesForDf(df).get)
+            if (mdbs.isDefined)
+              mdbs.get.featureTracker.copyFeatures(oldDf, df)
             stageEvents.append(FitPipelineStageEvent(oldDf, newDf, estimator, model))
             curDataset = newDf
             model
@@ -52,14 +52,13 @@ trait SyncablePipeline {
       }
 
       val model = new PipelineModel(pipeline.uid, transformers.toArray).setParent(pipeline)
-      mdbs.get.buffer(PipelineEvent(pipeline, model, df, stageEvents))
+      if (mdbs.isDefined) mdbs.get.buffer(PipelineEvent(pipeline, model, df, stageEvents))
       model
     }
 
     override def fitSync(df: DataFrame, pms: Array[ParamMap], featureVectorNames: Seq[String])
                         (implicit mdbs: Option[ModelDbSyncer]): Seq[PipelineModel] = {
-      if (featureVectorNames.nonEmpty)
-        mdbs.get.setFeaturesForDf(df, featureVectorNames)
+      if (mdbs.isDefined) mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
       if (pms.length == 0) {
         Array(customFit(df))
       } else {

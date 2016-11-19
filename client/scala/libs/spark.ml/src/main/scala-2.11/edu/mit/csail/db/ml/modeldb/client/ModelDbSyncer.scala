@@ -6,6 +6,8 @@ import com.twitter.finagle.Thrift
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client.SyncingStrategy.SyncingStrategy
 import edu.mit.csail.db.ml.modeldb.client.event.{ExperimentEvent, ExperimentRunEvent, ModelDbEvent, ProjectEvent}
+import org.apache.spark.ml.FeatureTracker
+import edu.mit.csail.db.ml.modeldb.evaluation.Timer
 import modeldb.ModelDBService.FutureIface
 import modeldb._
 import org.apache.spark.ml.classification.LogisticRegressionModel
@@ -42,13 +44,19 @@ case class NewExperimentRun(description: String="") extends ExperimentRunConfig(
 
 /**
   * This is the Syncer that is responsible for storing events in the ModelDB.
+  *
+  * The shouldCountRows parameter is a boolean indicating whether ModelDB should count the number of rows in each
+  * DataFrame and store the count in the database. Counting the number of rows requires a full sequential scan of the
+  * DataFrame, which is a performance intensive operation. If shouldCountRows is set to true, then the rows will
+  * be counted and stored in the database. if shouldCountRows is set to false, then ModelDB will simply store -1 as
+  * the number of rows in each DataFrame. By default, we count the number of rows.
   */
-  // TODO: [MV] see how things has to change
 class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543),
                     syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
                     projectConfig: ProjectConfig,
                     experimentConfig: ExperimentConfig = new DefaultExperiment,
-                    experimentRunConfig: ExperimentRunConfig) {
+                    experimentRunConfig: ExperimentRunConfig,
+                    val shouldCountRows: Boolean = true) {
   /**
     * This is a helper class that will constitute the entries in the buffer.
     * @param event - The event in the buffer.
@@ -82,11 +90,7 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
   /**
     * We will map DataFrames to the contents of their feature vectors.
     */
-  private val featuresForDf = new mutable.HashMap[DataFrame, Seq[String]]()
-
-  def setFeaturesForDf(df: DataFrame, features: Seq[String]) = featuresForDf.put(df, features)
-
-  def getFeaturesForDf(df: DataFrame): Option[Seq[String]] = featuresForDf.get(df)
+  val featureTracker = new FeatureTracker
 
   // The two functions below associate an object and an ID.
   def associateObjectAndId(obj: Any, id: Int): ModelDbSyncer = {
@@ -146,7 +150,9 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
     buffered.clear()
 
     // Sync all the elements in the new buffer.
-    entriesToSync.foreach(_.event.sync(client.get, Some(this)))
+    entriesToSync.foreach(ent =>
+      Timer.time("Syncing " + ent.event.getClass.getSimpleName)(ent.event.sync(client.get, Some(this)))
+    )
 
     // Now execute the callbacks.
     entriesToSync.foreach(entry => entry.postSync(this, entry.event))
@@ -351,7 +357,8 @@ object ModelDbSyncer
     with SyncableTransformer
     with Annotater
     with Taggable
-    with SyncableDataFramePaths {
+    with SyncableDataFramePaths
+    with SyncableEvaluator {
   implicit var syncer: Option[ModelDbSyncer] = None
 
   // Allow the user to configure the syncer.

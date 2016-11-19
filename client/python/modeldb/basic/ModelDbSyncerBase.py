@@ -18,25 +18,25 @@ class NewOrExistingProject:
         self.author = author
         self.description = description
 
-    def toThrift(self):
+    def to_thrift(self):
         return modeldb_types.Project(-1, self.name, self.author, self.description)
 
 class ExistingProject:
     def __init__(self, id):
         self.id = id
 
-    def toThrift(self):
+    def to_thrift(self):
         return modeldb_types.Project(self.id, "", "", "")
 
 class ExistingExperiment:
     def __init__(self, id):
         self.id = id
 
-    def toThrift(self):
+    def to_thrift(self):
         return modeldb_types.Experiment(self.id, -1, "", "", False)
 
 class DefaultExperiment:
-    def toThrift(self):
+    def to_thrift(self):
         return modeldb_types.Experiment(-1, -1, "", "", True)
 
 class NewOrExistingExperiment:
@@ -44,21 +44,22 @@ class NewOrExistingExperiment:
         self.name = name
         self.description = description
 
-    def toThrift(self):
-        return modeldb_types.Experiment(-1, -1, self.name, self.description, False)
+    def to_thrift(self):
+        return modeldb_types.Experiment(
+            -1, -1, self.name, self.description, False)
 
 class NewExperimentRun:
     def __init__(self, description=""):
         self.description = description
 
-    def toThrift(self):
+    def to_thrift(self):
         return modeldb_types.ExperimentRun(-1, -1, self.description)
 
 class ExistingExperimentRun:
     def __init__(self, id):
         self.id = id
 
-    def toThrift(self):
+    def to_thrift(self):
         return modeldb_types.ExperimentRun(self.id, -1, "")
 
 class DataSources:
@@ -79,71 +80,75 @@ class ExperimentRunInfo:
 
 class Syncer(object):
     instance = None
-    def __new__(cls, projectConfig, experimentConfig, experimentRunConfig): # __new__ always a classmethod
+    def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
         # This will break if cls is some random class.
         if not cls.instance:
-            cls.instance = object.__new__(cls, projectConfig, experimentConfig, experimentRunConfig)
+            cls.instance = object.__new__(
+                cls, project_config, experiment_config, experiment_run_config)
         return cls.instance
 
-    def __init__(self, projectConfig, experimentConfig, experimentRunConfig):
-        self.bufferList = []
-        self.idForObject = {}
-        self.initializeThriftClient()
-        self.setup(projectConfig, experimentConfig, experimentRunConfig)
+    def __init__(
+        self, project_config, experiment_config, experiment_run_config):
+        self.buffer_list = []
+        self.id_for_object = {}
+        self.object_for_id = {}
+        self.initialize_thrift_client()
+        self.setup(project_config, experiment_config, experiment_run_config)
 
-    def setup(self, projectConfig, experimentConfig, experimentRunConfig):
-        if isinstance(experimentRunConfig, ExistingExperimentRun):
-            self.experimentRun = experimentRunConfig.toThrift()
+    def setup(self, project_config, experiment_config, experiment_run_config):
+        if isinstance(experiment_run_config, ExistingExperimentRun):
+            self.experiment_run = experiment_run_config.to_thrift()
             self.project = None
             self.experiment = None
-        elif not projectConfig or not experimentConfig:
+        elif not project_config or not experiment_config:
             # TODO: fix this error message
-            print "Either (projectConfig and experimentConfig) need to be " \
+            print "Either (project_config and experiment_config) need to be " \
                 "specified or ExistingExperimentRunConfig needs to be specified"
             sys.exit(-1)
         else:
-            self.setProject(projectConfig)
-            self.setExperiment(experimentConfig)
-            self.setExperimentRun(experimentRunConfig)
+            self.set_project(project_config)
+            self.set_experiment(experiment_config)
+            self.set_experiment_run(experiment_run_config)
 
     def __str__(self):
         return "BaseSyncer"
 
-    def setProject(self, projectConfig):
-        self.project = projectConfig.toThrift()
-        projectEvent = ProjectEvent(self.project)
-        self.bufferList.append(projectEvent)
+    def set_project(self, project_config):
+        self.project = project_config.to_thrift()
+        project_event = ProjectEvent(self.project)
+        self.buffer_list.append(project_event)
         self.sync()
 
-    def setExperiment(self, experimentConfig):
-        self.experiment = experimentConfig.toThrift()
+    def set_experiment(self, experiment_config):
+        self.experiment = experiment_config.to_thrift()
         self.experiment.projectId = self.project.id
-        experimentEvent = ExperimentEvent(self.experiment)
-        self.bufferList.append(experimentEvent)
+        experiment_event = ExperimentEvent(self.experiment)
+        self.buffer_list.append(experiment_event)
         self.sync()
 
-    def setExperimentRun(self, experimentRunConfig):
-        self.experimentRun = experimentRunConfig.toThrift()
-        self.experimentRun.experimentId = self.experiment.id
-        experimentRunEvent = ExperimentRunEvent(self.experimentRun)
-        self.bufferList.append(experimentRunEvent)
+    def set_experiment_run(self, experiment_run_config):
+        self.experiment_run = experiment_run_config.to_thrift()
+        self.experiment_run.experimentId = self.experiment.id
+        experiment_run_event = ExperimentRunEvent(self.experiment_run)
+        self.buffer_list.append(experiment_run_event)
         self.sync()
 
-    def addToBuffer(self, event):
-        self.bufferList.append(event)
+    def add_to_buffer(self, event):
+        self.buffer_list.append(event)
 
-    def storeObject(self, obj, obj_id):
-        self.idForObject[obj] = obj_id
+    def store_object(self, obj, id):
+        self.id_for_object[obj] = id
+        self.object_for_id[id] = obj
 
     def sync(self):
-        for b in self.bufferList:
+        for b in self.buffer_list:
             b.sync(self)
-        self.clearBuffer()
+        self.clear_buffer()
 
-    def clearBuffer(self):
-        self.bufferList = []
+    def clear_buffer(self):
+        self.buffer_list = []
 
-    def initializeThriftClient(self, host="localhost", port=6543):
+    def initialize_thrift_client(self, host="localhost", port=6543):
         # Make socket
         self.transport = TSocket.TSocket(host, port)
 
@@ -161,17 +166,14 @@ class Syncer(object):
         self.transport.close()
         self.client = None
 
-    def convertModeltoThrift(self, model):
+    def convert_model_to_thrift(self, model):
         return model
 
-    def convertSpectoThrift(self, spec):
+    def convert_spec_to_thrift(self, spec):
         return spec
 
-    def convertDftoThrift(self, df):
+    def convert_df_to_thrift(self, df):
         return df
-
-    def setColumns(self, df):
-        return []
 
     def _sync_model_config(self, config, modeldb_type=""):
         hyperparameters = []
@@ -184,7 +186,7 @@ class Syncer(object):
         return transformer_spec
 
     def _sync_model_metrics(self, metrics, df, model):
-        df = self._convertDftoThrift(testDf)
+        df = self._convert_df_to_thrift(testDf)
         for key, value in metrics:
             me = MetricEvent(df, model, "", "", key, value)
             self.addToBuffer(me)
@@ -195,10 +197,9 @@ class Syncer(object):
         else:
             # we need to export the model object
             print 'Exporting models directly is not implemented.'
-
         model = modeldb_types.Transformer(-1, [], model_type, "", path)
         fe = FitEvent(model, spec, df)
-        self.addToBuffer(fe)
+        self.add_to_buffer(fe)
 
     def _sync_data_sources(self, data):
         '''

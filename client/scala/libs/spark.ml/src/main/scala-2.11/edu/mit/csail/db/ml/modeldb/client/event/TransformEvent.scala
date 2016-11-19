@@ -3,7 +3,6 @@ package edu.mit.csail.db.ml.modeldb.client.event
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableDataFrame, SyncableTransformer}
 import modeldb.ModelDBService.FutureIface
-import org.apache.spark.ml
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.util.MLWritable
 import org.apache.spark.sql.DataFrame
@@ -22,8 +21,8 @@ case class TransformEvent(transformer: Transformer,
     SyncableDataFrame(inputDataframe),
     SyncableDataFrame(outputDataframe),
     SyncableTransformer(transformer),
-    ml.SyncableEstimator.getInputCols(transformer),
-    ml.SyncableEstimator.getOutputCols(transformer),
+    mdbs.featureTracker.getInputCols(transformer),
+    mdbs.featureTracker.getOutputCols(transformer),
     experimentRunId = mdbs.experimentRun.id
   )
 
