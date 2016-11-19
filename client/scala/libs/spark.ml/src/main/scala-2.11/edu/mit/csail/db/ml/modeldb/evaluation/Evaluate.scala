@@ -60,6 +60,8 @@ object Evaluate {
           IMDBFull.run(config)
         else if (config.dataset == "housing" && config.workflow == "full")
           HousingFull.run(config)
+        else if (config.dataset == "animal" && config.workflow == "full")
+          AnimalFull.run(config)
         else
           println("Failed to match any configuration", config)
       case None => println("Failed to parse command line arguments - make sure to enter them properly.")

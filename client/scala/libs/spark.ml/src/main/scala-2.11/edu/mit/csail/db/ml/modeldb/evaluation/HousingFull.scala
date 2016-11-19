@@ -10,9 +10,9 @@ object HousingFull {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
     val df = Common.ensureMinSize(Common.readHousingPrices(config.pathToData, spark), config.minNumRows)
-    if (config.syncer) Common.makeSyncer()
-
     Timer.activate()
+
+    if (config.syncer) Common.makeSyncer()
 
     val uselessCols = Set("Id")
     val leakCols = Set("MoSold", "YrSold", "SaleType", "SaleCondition")
