@@ -107,7 +107,8 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       // Iterate through each fold.
       (folds zip cver.foldResponses).foreach { pair =>
         val (fold, foldr) = pair
-        SyncableSpecificModel(foldr.modelId, fold.model, client)
+        // It's debatable whether we actually want to store these.
+//        SyncableSpecificModel(foldr.modelId, fold.model, client)
         // Associate the model and validation dataframe produced by the fold.
         mdbs.associateObjectAndId(fold.model, foldr.modelId)
           .associateObjectAndId(fold.validationDf, foldr.validationId)
