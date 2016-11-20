@@ -1032,5 +1032,25 @@ service ModelDBService {
   // (i.e. Transformer) with the given id. Returns a boolean indicating
   // whether the metadata was correctly stored.
   bool storeTreeModel(1: i32 modelId, 2: TreeModel model) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
+    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
+  /*
+    An N stage pipeline will store N TransformEvents when it transforms a 
+    DataFrame. So, the client can make N calls to storeTransformEvent. However,
+    N can be very large. For example, consider a pre-processing pipeline that
+    does string indexing and one-hot encoding for 20 features. This would result
+    in N = 2*20 = 40, which means the client has to make 40 calls to 
+    storeTransformEvent. This means the client has to wait for 40 round trip
+    times at least. Notice that this operation cannot be parallelized either,
+    because the first stage's TransformEvent must be stored in order to store
+    the second stage's TransformEvent (because the ID of the DataFrame output
+    by the first stage must equal the ID of the DataFrame input to the second
+    stage).
+
+    To mitigate the performance issue described above, 
+    storePipelineTransformEvent allows the client to store all N stages of 
+    transformation at once.
+  */
+  list<TransformEventResponse> storePipelineTransformEvent(1: list<TransformEvent> te)
+    throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 }

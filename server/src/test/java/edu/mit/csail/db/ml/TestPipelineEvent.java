@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class TestPipelineEvent {
   private TestBase.ProjExpRunTriple triple;
@@ -207,6 +208,26 @@ public class TestPipelineEvent {
     assertCorrectStage(resp.pipelineFitResponse.fitEventId, resp.transformStagesResponses.get(2).eventId, 3, false);
     assertCorrectStage(resp.pipelineFitResponse.fitEventId, resp.fitStagesResponses.get(0).eventId, 1, true);
     assertCorrectStage(resp.pipelineFitResponse.fitEventId, resp.fitStagesResponses.get(1).eventId, 3, true);
+  }
+
+  @Test
+  public void testStorePipelineTransformEvent() throws Exception {
+    TransformEvent te1 = StructFactory.makeTransformEvent();
+    TransformEvent te2 = StructFactory.makeTransformEvent();
+    TransformEvent te3 = StructFactory.makeTransformEvent();
+
+    List<TransformEventResponse> resp =
+      PipelineEventDao.storePipelineTransformEvent(Arrays.asList(te1, te2, te3), TestBase.ctx());
+
+    // Check table sizes.
+    Assert.assertEquals(3, TestBase.tableSize(Tables.TRANSFORMEVENT));
+    Assert.assertEquals(4, TestBase.tableSize(Tables.DATAFRAME));
+    Assert.assertEquals(3, TestBase.tableSize(Tables.TRANSFORMER));
+
+    // Verify the dependencies between DataFrames.
+    Assert.assertEquals(3, resp.size());
+    Assert.assertEquals(resp.get(0).newDataFrameId, resp.get(1).oldDataFrameId);
+    Assert.assertEquals(resp.get(1).newDataFrameId, resp.get(2).oldDataFrameId);
   }
 
   @Test

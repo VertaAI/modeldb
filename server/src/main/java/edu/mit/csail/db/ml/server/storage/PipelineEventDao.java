@@ -6,6 +6,7 @@ import modeldb.*;
 import org.jooq.DSLContext;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -26,6 +27,21 @@ public class PipelineEventDao {
     rec.setExperimentrun(experimentId);
     rec.store();
     return rec.getId();
+  }
+
+  public static List<TransformEventResponse> storePipelineTransformEvent(List<TransformEvent> transformEvents,
+                                                                         DSLContext ctx) {
+    List<TransformEventResponse> result = new ArrayList<>();
+    TransformEvent te;
+    for (int i = 0; i < transformEvents.size(); i++) {
+      te = (i == 0) ?
+        transformEvents.get(i) :
+        transformEvents.get(i).setOldDataFrame(
+          transformEvents.get(i).getOldDataFrame().setId(result.get(i - 1).newDataFrameId)
+        );
+      result.add(TransformEventDao.store(te, ctx, true));
+    }
+    return result;
   }
 
   public static PipelineEventResponse store(PipelineEvent pe, DSLContext ctx) {
