@@ -3,6 +3,7 @@ package edu.mit.csail.db.ml.modeldb.client.event
 import com.twitter.util.Await
 import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableDataFrame, SyncableTransformer}
 import modeldb.ModelDBService.FutureIface
+import modeldb.TransformEventResponse
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.util.MLWritable
 import org.apache.spark.sql.DataFrame
@@ -34,13 +35,16 @@ case class TransformEvent(transformer: Transformer,
       .associateObjectAndId(this, ter.eventId)
   }
 
+  def writeTransformer(res: TransformEventResponse): Unit = transformer match {
+    case w: MLWritable => if (res.filepath.length > 0)
+      w.write.overwrite().save(res.filepath)
+  }
+
   override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
     val res = Await.result(client.storeTransformEvent(makeEvent(mdbs.get)))
 
-    transformer match {
-      case w: MLWritable => if (res.filepath.length > 0)
-        w.write.overwrite().save(res.filepath)
-    }
+    writeTransformer(res)
+
     associate(res, mdbs.get)
   }
 }

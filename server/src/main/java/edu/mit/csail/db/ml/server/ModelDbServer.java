@@ -187,4 +187,9 @@ public class ModelDbServer implements ModelDBService.Iface {
   public boolean storeTreeModel(int modelId, TreeModel model) throws TException {
     return ExceptionWrapper.run(() -> TreeModelDao.store(modelId, model, ctx));
   }
+
+  public List<TransformEventResponse> storePipelineTransformEvent(List<TransformEvent> transformEvents)
+    throws TException {
+    return ExceptionWrapper.run(() -> PipelineEventDao.storePipelineTransformEvent(transformEvents, ctx));
+  }
 }

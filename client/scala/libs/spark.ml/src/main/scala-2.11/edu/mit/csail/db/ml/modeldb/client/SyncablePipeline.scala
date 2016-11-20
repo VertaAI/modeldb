@@ -1,6 +1,6 @@
 package org.apache.spark.ml
 
-import edu.mit.csail.db.ml.modeldb.client.event.{FitPipelineStageEvent, PipelineEvent, PipelineStageEvent, TransformerPipelineStageEvent}
+import edu.mit.csail.db.ml.modeldb.client.event._
 import edu.mit.csail.db.ml.modeldb.client.{HasFitSync, HasTransformSync, ModelDbSyncer, SyncableTransformer}
 import org.apache.spark.ml.param.{ParamMap, ParamPair}
 import org.apache.spark.sql.DataFrame
@@ -71,10 +71,28 @@ trait SyncablePipeline {
     override def transformSync(df: DataFrame, pairs: Seq[ParamPair[_]])
                               (implicit mdbc: Option[ModelDbSyncer]): DataFrame = {
       pm.transformSchema(df.schema)
-      pm.stages.foldLeft(df)((cur, transformer) => transformer match {
+      // The code below has not been erased because I need it in order evaluate the performance of an optimization.
+//      pm.stages.foldLeft(df)((cur, transformer) => transformer match {
+//        case pm: PipelineModel => pm.transformSync(cur, pairs)(mdbc)
+//        case _ => SyncableTransformer.TransformerSync(transformer).transformSync(cur, pairs)(mdbc)
+//      })
+      val transformEvents = ArrayBuffer[TransformEvent]()
+      val finalResult = pm.stages.foldLeft(df)((cur, transformer) => transformer match {
         case pm: PipelineModel => pm.transformSync(cur, pairs)(mdbc)
-        case _ => SyncableTransformer.TransformerSync(transformer).transformSync(cur, pairs)(mdbc)
+        case _ =>
+          val result =
+            if (pairs.isEmpty)
+            transformer.transform(cur)
+          else if (pairs.size == 1)
+            transformer.transform(cur, pairs.head)
+          else
+            transformer.transform(cur, pairs.head, pairs.tail:_*)
+          transformEvents.append(TransformEvent(transformer, cur, result))
+          result
       })
+      if (mdbc.isDefined)
+        mdbc.get.buffer(PipelineTransformEvent(transformEvents:_*))
+      finalResult
     }
   }
 }
