@@ -1,4 +1,5 @@
-ample workflow using scikit-learn linear_model.
+"""
+Sample workflow using scikit-learn linear_model.
 """
 import os
 import unittest

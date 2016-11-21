@@ -34,6 +34,9 @@ from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
 
 
+'''
+Functions that extract information 
+'''
 
 def fit_fn(self, x, y=None, sample_weight=None):
     """

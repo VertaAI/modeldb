@@ -36,3 +36,10 @@ SyncerObj.instance.sync()
 # metrics
 # hyperparams
 # config
+
+# mdb.sync_dataset(dataset) # need a tag
+mdb.sync_dataset(make_dataset(filename, {}))
+
+mdb.sync_dataset({"train" : make_dataset(), "validate" : make_dataset()})
+# mdb.sync_dataset("default", dataset)
+# mdb.sync_dataset("train", train_dataset, "test", test_dataset)

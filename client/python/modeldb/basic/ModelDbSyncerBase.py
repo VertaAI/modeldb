@@ -62,14 +62,19 @@ class ExistingExperimentRun:
     def to_thrift(self):
         return modeldb_types.ExperimentRun(self.id, -1, "")
 
-class DataSources:
-    def __init__(self, data_dict):
-        self.train = self.create_dataframe(data_dict["train"] or "")
-        self.test = self.create_dataframe(data_dict["test"] or "")
-        self.validate = self.create_dataframe(data_dict["validate"] or "")
+def Dataset:
+    def __init__(self, filename, metadata={}):
+        self.filename = filename
+        self.metadata = metadata
 
-    def create_dataframe(self, path):
-        return modeldb_types.DataFrame(-1, [], -1, "", path)
+def ModelConfig:
+    def __init__(self, model_type, config, tag=None):
+        self.model_type = model_type
+        self.config = config
+        self.tag = tag
+
+# def make_dataset(filename, metadata):
+#     return Dataset(filename, metadata)
 
 class ExperimentRunInfo:
     def __init__(self, data, config, model, metrics):
@@ -175,7 +180,8 @@ class Syncer(object):
     def convert_df_to_thrift(self, df):
         return df
 
-    def _sync_model_config(self, config, modeldb_type=""):
+    # need to deal with modeldb_types
+    def sync_model_config(self, model_type, config, tag):
         hyperparameters = []
         for key in config.keys():
             hyperparameter = modeldb_types.HyperParameter(key, \
@@ -183,15 +189,16 @@ class Syncer(object):
             hyperparameters.append(hyperparameter)
         transformer_spec = modeldb_types.TransformerSpec(-1, model_type, \
             hyperparameters, "")
-        return transformer_spec
+        self.model_config = transformer_spec
 
-    def _sync_model_metrics(self, metrics, df, model):
+    def sync_model_metrics(self, model, metrics, dataset="default"):
+        # TODO: do I need this code?
         df = self._convert_df_to_thrift(testDf)
         for key, value in metrics:
             me = MetricEvent(df, model, "", "", key, value)
             self.addToBuffer(me)
 
-    def _sync_model(self, model, df, spec):
+    def sync_model(self, model, df, spec):
         if type(model) == str:
             # we only need to store the model path
         else:
@@ -201,29 +208,43 @@ class Syncer(object):
         fe = FitEvent(model, spec, df)
         self.add_to_buffer(fe)
 
-    def _sync_data_sources(self, data):
+    def sync_datasets(self, datasets):
         '''
         Registers the data used in this experiment run.
         The input is expected to be a dictionary with three keys,
         train, test and validate. All keys are optional.
 
-        E.g. _sync_data({"train" : "/path/to/train"})
+        E.g. sync_data({"train" : "/path/to/train"})
         '''
-        if type(data) != dict:
-            print 'Cannot sync data dictionary.'
-            sys.exit(-1)
-        return DataSources(data)
+        result = {}
+        if type(datasets) != dict:
+            # TODO: need to capture the metadata
+            result["default"] = \
+                modeldb_types.DataFrame(-1, [], -1, "", datasets.filename)
+        else:
+            # this is a dictionary
+            for key, dataset in datasets.items:
+                result[key] = \
+                    modeldb_types.DataFrame(-1, [], -1, "", datasets.filename)
+        self.datasets = result
 
-    def sync_all(self, data, config, model, metrics):
+    def sync_model(self, data_tag, config, model):
+        '''
+
+        '''
+
+
+
+    def sync_all(self, data, model_type, config, model, metrics):
         expt_run_info = ExperimentRunInfo(data, config, model, metrics)
         # convert the data frames to thrift
-        data_sources = self._sync_data(data)
+        self.sync_data(data)
 
         # convert config to thrift
-        spec = self._sync_model_config(config)
+        spec = self.sync_model_config(model_type, config)
 
         # convert model to thrift
         model = self._sync_model(model, data_sources.train, spec)
 
         # convert metrics to thrift
-        metrics = self._sync_model_metrics(metrics, data_sources.test, model)
+        metrics = self.sync_model_metrics(model, metrics)
