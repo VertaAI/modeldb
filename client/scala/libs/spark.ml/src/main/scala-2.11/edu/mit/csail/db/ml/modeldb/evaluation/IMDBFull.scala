@@ -10,8 +10,8 @@ object IMDBFull {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
     val df = Common.ensureMinSize(Common.readImdb(config.pathToData, spark), config.minNumRows)
-    if (config.syncer) Common.makeSyncer()
     Timer.activate()
+    if (config.syncer) Common.makeSyncer()
 
     // Apply preprocessing pipeline.
     val (preprocessedData, featureVectorNames, _) = FeatureVectorizer(

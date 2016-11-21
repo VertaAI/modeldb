@@ -62,6 +62,8 @@ object Evaluate {
           HousingFull.run(config)
         else if (config.dataset == "animal" && config.workflow == "full")
           AnimalFull.run(config)
+        else if (config.dataset == "imdb" && config.workflow == "exploratory")
+          IMDBExploratory.run(config)
         else
           println("Failed to match any configuration", config)
       case None => println("Failed to parse command line arguments - make sure to enter them properly.")
