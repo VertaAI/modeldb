@@ -37,7 +37,7 @@ public class TransformerDao {
 
   public static String generateFilepath() {
     String uuid = UUID.randomUUID().toString();
-    return Paths.get(ModelDbConfig.getInstance().fsPrefix, uuid).toString();
+    return Paths.get(ModelDbConfig.getInstance().fsPrefix, "model_" + uuid).toString();
   }
 
   public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx, boolean generateFilepath) {

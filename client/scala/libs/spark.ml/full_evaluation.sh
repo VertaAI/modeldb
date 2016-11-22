@@ -39,6 +39,9 @@ do
 
       echo "[FULL_EVAL] Recording database size"
       du -h ../../../../server/modeldb.db > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.dbsize
+
+      echo "[FULL_EVAL] Recording model files size"
+      du -hcs /tmp/model_* > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.modelsize
     done
   done
 done
