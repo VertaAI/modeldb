@@ -264,10 +264,6 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def __init__(self, project_config, experiment_config, experiment_run_config):
         super(Syncer, self).__init__(project_config, experiment_config, \
             experiment_run_config)
-        self.id_for_object = {}
-        self.object_for_id = {}
-        self.tag_for_object = {}
-        self.object_for_tag = {}
         self.path_for_df = {}
         self.enable_sklearn_sync_functions()
         self.enable_pandas_sync_functions()

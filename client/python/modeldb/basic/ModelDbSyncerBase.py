@@ -114,8 +114,8 @@ class Syncer(object):
     def __init__(
         self, project_config, experiment_config, experiment_run_config):
         self.buffer_list = []
-        self.id_for_object = {}
-        self.object_for_id = {}
+        self.local_id_to_modeldb_id = {}
+        self.local_id_to_object = {}
         self.tag_for_object = {}
         self.object_for_tag = {}
         self.path_for_df = {}
@@ -160,12 +160,13 @@ class Syncer(object):
         self.buffer_list.append(experiment_run_event)
         self.sync()
 
-    def store_object(self, obj, Id):
+    def store_object(self, obj, modeldb_id):
         """
         Stores mapping between objects and their IDs.
         """
-        self.id_for_object[obj] = Id
-        self.object_for_id[Id] = obj
+        local_id = id(obj)
+        self.local_id_to_modeldb_id[local_id] = modeldb_id
+        self.local_id_to_object[local_id] = obj
 
     def store_tag_object(self, obj, tag):
         """
@@ -224,8 +225,9 @@ class Syncer(object):
     thrift classes
     '''
     def get_id_for_object(self, obj):
-        if obj in self.id_for_object:
-            return self.id_for_object[obj]
+        local_id = id(obj)
+        if local_id in self.local_id_to_modeldb_id:
+            return self.local_id_to_modeldb_id[local_id]
         else:
             return -1
 
