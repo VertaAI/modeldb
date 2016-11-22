@@ -66,6 +66,8 @@ object Evaluate {
           IMDBExploratory.run(config)
         else if (config.dataset == "animal" && config.workflow == "exploratory")
           AnimalExploratory.run(config)
+        else if (config.dataset == "housing" && config.workflow == "exploratory")
+          HousingExploratory.run(config)
         else
           println("Failed to match any configuration", config)
       case None => println("Failed to parse command line arguments - make sure to enter them properly.")
