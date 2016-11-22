@@ -31,7 +31,7 @@ class RandomSplitEvent(Event):
         """
         syncer.store_object(self.df, res.oldDataFrameId)
         for i in range(0, len(self.result)):
-            syncer.store_object(id(self.result[i]), res.splitIds[i])
+            syncer.store_object(self.result[i], res.splitIds[i])
         syncer.store_object(self, res.splitEventId)
 
     def sync(self, syncer):

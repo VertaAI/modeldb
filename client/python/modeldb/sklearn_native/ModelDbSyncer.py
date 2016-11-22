@@ -326,7 +326,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
         local_id = self.get_local_id(df)
         self.local_id_to_path[local_id] = path
         if local_id not in self.local_id_to_object:
-            self.local_id_to_object[local_id] = object
+            self.local_id_to_object[local_id] = df
 
     def convert_df_to_thrift(self, df):
         """

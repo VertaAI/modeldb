@@ -167,7 +167,8 @@ class Syncer(object):
         """
         local_id = self.get_local_id(obj)
         self.local_id_to_modeldb_id[local_id] = modeldb_id
-        self.local_id_to_object[local_id] = obj
+        if local_id not in self.local_id_to_object:
+            self.local_id_to_object[local_id] = obj
 
     def get_modeldb_id_for_object(self, obj):
         local_id = self.get_local_id(obj)
@@ -183,20 +184,15 @@ class Syncer(object):
         else:
             return ""
 
-    def store_tag_object(self, local_id, tag):
+    def add_tag(self, obj, tag):
         """
         Stores mapping between objects and their tags.
         Tags are short, user-generated names.
         """
+        local_id = self.get_local_id(obj)
         self.local_id_to_tag[local_id] = tag
         if local_id not in self.local_id_to_object:
-            self.local_id_to_object[local_id] = object
-
-    def add_tag(self, obj, tag):
-        """
-        Adds tag name to object.
-        """
-        self.store_tag_object(self.get_local_id(obj), tag)
+            self.local_id_to_object[local_id] = obj
 
     def add_to_buffer(self, event):
         """
