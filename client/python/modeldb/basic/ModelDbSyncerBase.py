@@ -69,11 +69,17 @@ class Dataset:
         self.metadata = metadata
         self.tag = tag if tag else ""
 
+    def __str__(self):
+        return self.filename + "," + self.tag
+
 class ModelConfig:
     def __init__(self, model_type, config, tag=None):
         self.model_type = model_type
         self.config = config
         self.tag = tag if tag else ""
+
+    def __str__(self):
+        return self.model_type + "," + self.tag
 
 class Model:
     def __init__(self, model_type, model, path=None, tag=None):
@@ -82,10 +88,16 @@ class Model:
         self.path = path
         self.tag = tag if tag else ""
 
+    def __str__(self):
+        return self.model_type + "," + self.path + "," + self.tag
+
 class ModelMetrics:
     def __init__(self, metrics, tag=None):
         self.metrics = metrics
         self.tag = tag if tag else ""
+
+    def __str__(self):
+        return self.metrics
 
 # def make_dataset(filename, metadata):
 #     return Dataset(filename, metadata)
@@ -152,10 +164,12 @@ class Syncer(object):
         """
         Stores mapping between objects and their IDs.
         """
+        print obj
+        print Id
         self.id_for_object[obj] = Id
         self.object_for_id[Id] = obj
-        # for key, value in self.id_for_object.items():
-        #     print key, ":", value
+        for key, value in self.id_for_object.items():
+            print key, ":", value
 
     def store_tag_object(self, obj, tag):
         """
@@ -243,9 +257,14 @@ class Syncer(object):
         return []
 
     def convert_df_to_thrift(self, dataset):
+        print dataset
         dataset_id = self.get_id_for_object(dataset)
-        if id != -1:
+        if dataset_id != -1:
+            print "dataset seen before", dataset_id
             return modeldb_types.DataFrame(dataset_id, [], -1, "", "")
+        print "here"
+        print modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
+            dataset.filename)
         return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
             dataset.filename)
     '''
@@ -272,12 +291,16 @@ class Syncer(object):
                 if not dataset.tag:
                     dataset.tag = key
                 self.datasets[key] = dataset
+        for key, dataset in self.datasets.items():
+            print key, self.datasets[key]
+
 
     def sync_model(self, data_tag, config, model):
         '''
         Syncs the model as having been generated from a given dataset using
         the given config
         '''
+        print "sync_model"
         dataset = self.get_dataset_for_tag(data_tag)
         fit_event = FitEvent(model, config, dataset)
         Syncer.instance.add_to_buffer(fit_event)
@@ -286,6 +309,7 @@ class Syncer(object):
         '''
         Syncs the metrics for the given model on the given data
         '''
+        print "sync_metrics"
         dataset = self.get_dataset_for_tag(data_tag)
         for metric, value in metrics.metrics.items():
             metric_event = MetricEvent(dataset, model, "label_col", \
