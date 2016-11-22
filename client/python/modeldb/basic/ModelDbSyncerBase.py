@@ -63,30 +63,29 @@ class ExistingExperimentRun:
         return modeldb_types.ExperimentRun(self.id, -1, "")
 
 # TODO: fix the way i'm doing tagging
-def Dataset:
+class Dataset:
     def __init__(self, filename, metadata={}, tag=None):
         self.filename = filename
         self.metadata = metadata
-        self.tag = tag
+        self.tag = tag if tag else ""
 
-def ModelConfig:
+class ModelConfig:
     def __init__(self, model_type, config, tag=None):
         self.model_type = model_type
         self.config = config
-        self.tag = tag
+        self.tag = tag if tag else ""
 
-def Model:
+class Model:
     def __init__(self, model_type, model, path=None, tag=None):
         self.model_type = model_type
         self.model = model
         self.path = path
-        self.tag = tag
+        self.tag = tag if tag else ""
 
-def ModelMetrics:
-    def __init__(self, model, metrics, tag=None):
-        self.model = model
+class ModelMetrics:
+    def __init__(self, metrics, tag=None):
         self.metrics = metrics
-        self.tag = tag
+        self.tag = tag if tag else ""
 
 # def make_dataset(filename, metadata):
 #     return Dataset(filename, metadata)
@@ -213,20 +212,23 @@ class Syncer(object):
     thrift classes
     '''
     def convert_model_to_thrift(self, model):
-        return modeldb_types.Transformer(-1, [], model.model_type, model.tag, 
+        return modeldb_types.Transformer(-1, model.model_type, model.tag, 
             model.path)
 
     def convert_spec_to_thrift(self, spec):
         hyperparameters = []
-        for key in config.keys():
+        for key, value in spec.config.items():
             hyperparameter = modeldb_types.HyperParameter(key, \
-                str(config[key]), type(config[key]).__name__, FMIN, FMAX)
+                str(value), type(value).__name__, FMIN, FMAX)
             hyperparameters.append(hyperparameter)
-        transformer_spec = modeldb_types.TransformerSpec(-1, model_type, \
+        transformer_spec = modeldb_types.TransformerSpec(-1, spec.model_type, \
             hyperparameters, spec.tag)
         return transformer_spec
 
-    def convert_df_to_thrift(self, df):
+    def set_columns(self, df):
+        return []
+
+    def convert_df_to_thrift(self, dataset):
         return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
             dataset.filename)
     '''
@@ -245,14 +247,14 @@ class Syncer(object):
         dataset objects.
         '''
         # TODO: need to capture the metadata
-        result = {}
+        self.datasets = {}
         if type(datasets) != dict:
-            result["default"] = dataset
+            self.datasets["default"] = dataset
         else:
-            for key, dataset in datasets.items:
+            for key, dataset in datasets.items():
                 if not dataset.tag:
                     dataset.tag = key
-        self.datasets = result
+                self.datasets[key] = dataset
 
     def sync_model(self, data_tag, config, model):
         '''
@@ -268,16 +270,16 @@ class Syncer(object):
         Syncs the metrics for the given model on the given data
         '''
         dataset = self.get_dataset_for_tag(data_tag)
-        for metric, value in metrics.items:
+        for metric, value in metrics.metrics.items():
             metric_event = MetricEvent(dataset, model, "label_col", \
                 "prediction_col", metric, value)
             Syncer.instance.add_to_buffer(metric_event)
 
-    def get_dataset_for_tag(self, tag):
+    def get_dataset_for_tag(self, data_tag):
         if data_tag not in self.datasets:
             if "default" not in self.datasets:
                 self.datasets["default"] = Dataset("", {}) 
-            print data_tag, 
+            print data_tag, \
                 ' dataset not defined. default dataset will be used.'
             data_tag = "default"
         return self.datasets[data_tag]
