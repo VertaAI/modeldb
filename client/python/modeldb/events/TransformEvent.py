@@ -7,8 +7,8 @@ class TransformEvent(Event):
     """
     Class for creating and storing TransformEvents
     """
-    def __init__(self, oldDf, new_df, transformer):
-        self.old_df = oldDf
+    def __init__(self, old_df, new_df, transformer):
+        self.old_df = old_df
         self.new_df = new_df
         self.transformer = transformer
 
