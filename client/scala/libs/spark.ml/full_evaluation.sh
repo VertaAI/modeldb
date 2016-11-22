@@ -5,7 +5,7 @@ animal_path=$3
 house_path=$4
 datasets=($imdb_path $animal_path $house_path)
 datasetnames=("imdb" "animal" "housing")
-workflows=("simple" "full")
+workflows=("simple" "full", "exploratory")
 
 # Create the output directory if it doesn't exist.
 mkdir -p $output_dir
@@ -14,7 +14,7 @@ mkdir -p $output_dir
 ./build_client.sh
 
 # Evaluate simple workflows on varying dataset sizes.
-for workflow in {0..1}
+for workflow in {0..2}
 do
   for dataset_index in {0..2}
   do
