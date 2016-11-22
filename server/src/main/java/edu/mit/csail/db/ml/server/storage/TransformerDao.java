@@ -1,7 +1,7 @@
 package edu.mit.csail.db.ml.server.storage;
 
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
-import javafx.util.Pair;
+import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.FiteventRecord;
 import jooq.sqlite.gen.tables.records.TransformerRecord;

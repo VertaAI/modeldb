@@ -1,6 +1,6 @@
 package edu.mit.csail.db.ml.server.storage;
 
-import javafx.util.Pair;
+import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.*;
 import modeldb.*;
