@@ -34,7 +34,10 @@ from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
 
 
-
+'''
+Functions that extract relevant information from scikit-learn, pandas and
+numpy calls
+'''
 def fit_fn(self, x, y=None, sample_weight=None):
     """
     Overrides the fit function for all models except for Pipeline and GridSearch
@@ -49,7 +52,7 @@ def fit_fn(self, x, y=None, sample_weight=None):
     fit_event = FitEvent(models, self, x)
     Syncer.instance.add_to_buffer(fit_event)
 
-def convert_prediction_to_event(self, predict_array, x):
+def convert_prediction_to_event(model, predict_array, x):
     predict_df = pd.DataFrame(predict_array)
     # Assign names to the predicted columns.
     # This is to ensure there are no merge conflicts when joining.
@@ -63,7 +66,7 @@ def convert_prediction_to_event(self, predict_array, x):
         new_df = x_to_df.join(predict_df)
     else:
         new_df = x.join(predict_df)
-    predict_event = TransformEvent(x, new_df, self)
+    predict_event = TransformEvent(x, new_df, model)
     Syncer.instance.add_to_buffer(predict_event)
     return predict_array
 
@@ -117,7 +120,6 @@ def fit_transform_fn(self, x, y=None, **fit_params):
     transform_event = TransformEvent(x, new_df, fitted_model)
     Syncer.instance.add_to_buffer(transform_event)
     return transformed_output
-
 
 def fit_fn_pipeline(self, x, y):
     """
@@ -250,59 +252,33 @@ def drop_columns(self, labels, **kwargs):
     Syncer.instance.add_to_buffer(drop_event)
     return dropped_df
 
+'''
+End functions that extract information from scikit-learn, pandas and numpy
+'''
 
 class Syncer(ModelDbSyncerBase.Syncer):
     """
-    This is the Syncer class for sklearn functionality, responsible for
+    This is the Syncer class for sklearn, responsible for
     storing events in the ModelDB.
     """
     def __init__(self, project_config, experiment_config, experiment_run_config):
-        super(Syncer, self).__init__(project_config, experiment_config, experiment_run_config)
+        super(Syncer, self).__init__(project_config, experiment_config, \
+            experiment_run_config)
         self.id_for_object = {}
         self.object_for_id = {}
         self.tag_for_object = {}
         self.object_for_tag = {}
         self.path_for_df = {}
-        self.enable_sync_functions()
-        self.add_dataframe_attr()
+        self.enable_sklearn_sync_functions()
+        self.enable_pandas_sync_functions()
 
     def __str__(self):
         return "SklearnSyncer"
 
-    def store_object(self, obj, Id):
-        """
-        Stores mapping between objects and their IDs.
-        """
-        self.id_for_object[obj] = Id
-        self.object_for_id[Id] = obj
-
-    def store_tag_object(self, obj, tag):
-        """
-        Stores mapping between objects and their tags.
-        Tags are short, user-generated names.
-        """
-        self.tag_for_object[obj] = tag
-        self.object_for_tag[tag] = obj
-
-    def add_tag(self, obj, tag_name):
-        """
-        Adds tag name to object.
-        """
-        self.store_tag_object(id(obj), tag_name)
-
-    def add_to_buffer(self, event):
-        """
-        As events are generated, they are added to this buffer.
-        """
-        self.buffer_list.append(event)
-
-    def sync(self):
-        """
-        When this function is called, all events in the buffer are stored on server.
-        """
-        for b in self.buffer_list:
-            b.sync(self)
-        self.clear_buffer()
+    '''
+    Functions that turn classes specific to this syncer into equivalent
+    thrift classes
+    '''
 
     def set_columns(self, df):
         """
@@ -390,7 +366,16 @@ class Syncer(ModelDbSyncerBase.Syncer):
             hyperparams, tag)
         return ts
 
-    def add_dataframe_attr(self):
+    '''
+    End Functions that turn classes specific to this syncer into equivalent
+    thrift classes
+    '''
+
+    '''
+    Enable sync functionality on various functions
+    '''
+
+    def enable_pandas_sync_functions(self):
         """
         Adds the read_csv_sync function, allowing users to automatically
         track dataframe location, and the drop_sync function, allowing users
@@ -399,14 +384,15 @@ class Syncer(ModelDbSyncerBase.Syncer):
         setattr(pd, "read_csv_sync", store_df_path)
         setattr(pd.DataFrame, "drop_sync", drop_columns)
 
-    def enable_sync_functions(self):
+    def enable_sklearn_sync_functions(self):
         """
         This function extends the scikit classes to implement custom
         *Sync versions of methods. (i.e. fit_sync() for fit())
         Users can easily add more models to this function.
         """
         #Linear Models (transform has been deprecated)
-        for class_name in [LogisticRegression, LinearRegression, CalibratedClassifierCV, RandomForestClassifier, BaggingClassifier]:
+        for class_name in [LogisticRegression, LinearRegression, \
+            CalibratedClassifierCV, RandomForestClassifier, BaggingClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "predict_sync", predict_fn)
             setattr(class_name, "predict_proba_sync", predict_proba_fn)
