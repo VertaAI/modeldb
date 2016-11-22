@@ -116,9 +116,7 @@ class Syncer(object):
         self.buffer_list = []
         self.local_id_to_modeldb_id = {}
         self.local_id_to_object = {}
-        self.tag_for_object = {}
-        self.object_for_tag = {}
-        self.path_for_df = {}
+        self.local_id_to_tag = {}
         self.initialize_thrift_client()
         self.setup(project_config, experiment_config, experiment_run_config)
 
@@ -160,27 +158,45 @@ class Syncer(object):
         self.buffer_list.append(experiment_run_event)
         self.sync()
 
+    def get_local_id(self, obj):
+        return id(obj)
+
     def store_object(self, obj, modeldb_id):
         """
         Stores mapping between objects and their IDs.
         """
-        local_id = id(obj)
+        local_id = self.get_local_id(obj)
         self.local_id_to_modeldb_id[local_id] = modeldb_id
         self.local_id_to_object[local_id] = obj
 
-    def store_tag_object(self, obj, tag):
+    def get_modeldb_id_for_object(self, obj):
+        local_id = self.get_local_id(obj)
+        if local_id in self.local_id_to_modeldb_id:
+            return self.local_id_to_modeldb_id[local_id]
+        else:
+            return -1
+
+    def get_tag_for_object(self, obj):
+        local_id = self.get_local_id(obj)
+        if local_id in self.local_id_to_tag:
+            return self.local_id_to_tag[local_id]
+        else:
+            return ""
+
+    def store_tag_object(self, local_id, tag):
         """
         Stores mapping between objects and their tags.
         Tags are short, user-generated names.
         """
-        self.tag_for_object[obj] = tag
-        self.object_for_tag[tag] = obj
+        self.local_id_to_tag[local_id] = tag
+        if local_id not in self.local_id_to_object:
+            self.local_id_to_object[local_id] = object
 
-    def add_tag(self, obj, tag_name):
+    def add_tag(self, obj, tag):
         """
         Adds tag name to object.
         """
-        self.store_tag_object(id(obj), tag_name)
+        self.store_tag_object(self.get_local_id(obj), tag)
 
     def add_to_buffer(self, event):
         """
@@ -224,22 +240,17 @@ class Syncer(object):
     Functions that convert ModelDBSyncerLight classes into ModelDB 
     thrift classes
     '''
-    def get_id_for_object(self, obj):
-        local_id = id(obj)
-        if local_id in self.local_id_to_modeldb_id:
-            return self.local_id_to_modeldb_id[local_id]
-        else:
-            return -1
+    
 
     def convert_model_to_thrift(self, model):
-        model_id = self.get_id_for_object(model)
+        model_id = self.get_modeldb_id_for_object(model)
         if model_id != -1:
             return modeldb_types.Transformer(model_id, "", "", "")
         return modeldb_types.Transformer(-1, 
             model.model_type, model.tag, model.path)
 
     def convert_spec_to_thrift(self, spec):
-        spec_id = self.get_id_for_object(spec)
+        spec_id = self.get_modeldb_id_for_object(spec)
         if spec_id != -1:
             return modeldb_types.TransformerSpec(spec_id, "", [], "")
         hyperparameters = []
@@ -255,7 +266,7 @@ class Syncer(object):
         return []
 
     def convert_df_to_thrift(self, dataset):
-        dataset_id = self.get_id_for_object(dataset)
+        dataset_id = self.get_modeldb_id_for_object(dataset)
         if dataset_id != -1:
             return modeldb_types.DataFrame(dataset_id, [], -1, "", "")
         return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
