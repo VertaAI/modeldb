@@ -45,7 +45,7 @@ mkdir -p $output_dir
 # Build the project.
 ./build_client.sh
 
-# Evaluate simple workflows on varying dataset sizes.
+# Evaluate many (workflow, dataset, dataset size) triples.
 for workflow in {0..2}
 do
   for dataset_index in {0..2}
