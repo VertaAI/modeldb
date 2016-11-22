@@ -4,7 +4,7 @@ from modeldb.basic.ModelDbSyncerBase import *
 name = "gensim test"
 author = "test_user"
 description = "using modeldb light logging"
-SyncerObj = Syncer(
+syncer_obj = Syncer(
     NewOrExistingProject(name, author, description),
     DefaultExperiment(),
     NewExperimentRun("Abc"))
@@ -13,33 +13,18 @@ print Syncer.instance.experiment
 
 print "I'm training some model"
 
-config = {'l1' : 0.3, 'l2' : 0.4}
-# data may be specified in the config
-data = {'train' : '/path/to/train', 'test' : '/path/to/test'}
-metrics = {'accuracy' : 0.9, 'rce' : 0.5}
-# this may be an object or path
-model = '/path/to/model'
+# datasets = {
+#     "train" : Dataset("/path/to/train", {}),
+#     "test" : Dataset("/path/to/test", {})
+# }
+# model ="model_obj"
+# mdb_model = Config("NN", model, "/path/to/model")
+# model_config = Model("NN", {"l1" : 10})
+# model_metrics = ModelMetrics(model, {"accuracy" : 0.8})
 
-SyncerObj.syncData()
-SyncerObj.syncModel()
-SyncerObj.syncMetrics()
 
-SyncerObj.syncAll(ExperimentRunInfo(data, config, model, metrics))
 
-result = SyncerObj.syncModel('/path/to/train', '/path/to/model', \
-    'LinearRegression', config)
+# syncer_obj.sync_datasets(datasets)
+# syncer_obj.sync_model("train", model_config, mdb_model)
+# syncer_obj.sync_metrics("test", mdb_model, model_metrics)
 
-SyncerObj.instance.sync()
-
-# data paths 
-# model path
-# metrics
-# hyperparams
-# config
-
-# mdb.sync_dataset(dataset) # need a tag
-mdb.sync_dataset(make_dataset(filename, {}))
-
-mdb.sync_dataset({"train" : make_dataset(), "validate" : make_dataset()})
-# mdb.sync_dataset("default", dataset)
-# mdb.sync_dataset("train", train_dataset, "test", test_dataset)

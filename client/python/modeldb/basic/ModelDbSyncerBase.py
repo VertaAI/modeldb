@@ -62,10 +62,12 @@ class ExistingExperimentRun:
     def to_thrift(self):
         return modeldb_types.ExperimentRun(self.id, -1, "")
 
+# TODO: fix the way i'm doing tagging
 def Dataset:
-    def __init__(self, filename, metadata={}):
+    def __init__(self, filename, metadata={}, tag=None):
         self.filename = filename
         self.metadata = metadata
+        self.tag = tag
 
 def ModelConfig:
     def __init__(self, model_type, config, tag=None):
@@ -73,15 +75,21 @@ def ModelConfig:
         self.config = config
         self.tag = tag
 
+def Model:
+    def __init__(self, model_type, model, path=None, tag=None):
+        self.model_type = model_type
+        self.model = model
+        self.path = path
+        self.tag = tag
+
+def ModelMetrics:
+    def __init__(self, model, metrics, tag=None):
+        self.model = model
+        self.metrics = metrics
+        self.tag = tag
+
 # def make_dataset(filename, metadata):
 #     return Dataset(filename, metadata)
-
-class ExperimentRunInfo:
-    def __init__(self, data, config, model, metrics):
-        this.data = data
-        this.config = config
-        this.model = model
-        this.metrics = metrics
 
 class Syncer(object):
     instance = None
@@ -97,6 +105,9 @@ class Syncer(object):
         self.buffer_list = []
         self.id_for_object = {}
         self.object_for_id = {}
+        self.tag_for_object = {}
+        self.object_for_tag = {}
+        self.path_for_df = {}
         self.initialize_thrift_client()
         self.setup(project_config, experiment_config, experiment_run_config)
 
@@ -138,19 +149,45 @@ class Syncer(object):
         self.buffer_list.append(experiment_run_event)
         self.sync()
 
+    def store_object(self, obj, Id):
+        """
+        Stores mapping between objects and their IDs.
+        """
+        self.id_for_object[obj] = Id
+        self.object_for_id[Id] = obj
+
+    def store_tag_object(self, obj, tag):
+        """
+        Stores mapping between objects and their tags.
+        Tags are short, user-generated names.
+        """
+        self.tag_for_object[obj] = tag
+        self.object_for_tag[tag] = obj
+
+    def add_tag(self, obj, tag_name):
+        """
+        Adds tag name to object.
+        """
+        self.store_tag_object(id(obj), tag_name)
+
     def add_to_buffer(self, event):
+        """
+        As events are generated, they are added to this buffer.
+        """
         self.buffer_list.append(event)
 
-    def store_object(self, obj, id):
-        self.id_for_object[obj] = id
-        self.object_for_id[id] = obj
-
     def sync(self):
+        """
+        When this function is called, all events in the buffer are stored on server.
+        """
         for b in self.buffer_list:
             b.sync(self)
         self.clear_buffer()
 
     def clear_buffer(self):
+        '''
+        Remove all events from the buffer
+        '''
         self.buffer_list = []
 
     def initialize_thrift_client(self, host="localhost", port=6543):
@@ -171,80 +208,78 @@ class Syncer(object):
         self.transport.close()
         self.client = None
 
+    '''
+    Functions that convert ModelDBSyncerLight classes into ModelDB 
+    thrift classes
+    '''
     def convert_model_to_thrift(self, model):
-        return model
+        return modeldb_types.Transformer(-1, [], model.model_type, model.tag, 
+            model.path)
 
     def convert_spec_to_thrift(self, spec):
-        return spec
-
-    def convert_df_to_thrift(self, df):
-        return df
-
-    # need to deal with modeldb_types
-    def sync_model_config(self, model_type, config, tag):
         hyperparameters = []
         for key in config.keys():
             hyperparameter = modeldb_types.HyperParameter(key, \
                 str(config[key]), type(config[key]).__name__, FMIN, FMAX)
             hyperparameters.append(hyperparameter)
         transformer_spec = modeldb_types.TransformerSpec(-1, model_type, \
-            hyperparameters, "")
-        self.model_config = transformer_spec
+            hyperparameters, spec.tag)
+        return transformer_spec
 
-    def sync_model_metrics(self, model, metrics, dataset="default"):
-        # TODO: do I need this code?
-        df = self._convert_df_to_thrift(testDf)
-        for key, value in metrics:
-            me = MetricEvent(df, model, "", "", key, value)
-            self.addToBuffer(me)
+    def convert_df_to_thrift(self, df):
+        return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
+            dataset.filename)
+    '''
+    End. Functions that convert ModelDBSyncerLight classes into ModelDB 
+    thrift classes
+    '''
 
-    def sync_model(self, model, df, spec):
-        if type(model) == str:
-            # we only need to store the model path
-        else:
-            # we need to export the model object
-            print 'Exporting models directly is not implemented.'
-        model = modeldb_types.Transformer(-1, [], model_type, "", path)
-        fe = FitEvent(model, spec, df)
-        self.add_to_buffer(fe)
-
+    '''
+    ModelDBSyncerLight API
+    '''
     def sync_datasets(self, datasets):
         '''
-        Registers the data used in this experiment run.
-        The input is expected to be a dictionary with three keys,
-        train, test and validate. All keys are optional.
-
-        E.g. sync_data({"train" : "/path/to/train"})
+        Registers the datasets used in this experiment run.
+        The input is expected to be either a single dataset or a dictionary
+        with keys which are local tags for the dataset and values are the
+        dataset objects.
         '''
+        # TODO: need to capture the metadata
         result = {}
         if type(datasets) != dict:
-            # TODO: need to capture the metadata
-            result["default"] = \
-                modeldb_types.DataFrame(-1, [], -1, "", datasets.filename)
+            result["default"] = dataset
         else:
-            # this is a dictionary
             for key, dataset in datasets.items:
-                result[key] = \
-                    modeldb_types.DataFrame(-1, [], -1, "", datasets.filename)
+                if not dataset.tag:
+                    dataset.tag = key
         self.datasets = result
 
     def sync_model(self, data_tag, config, model):
         '''
-
+        Syncs the model as having been generated from a given dataset using
+        the given config
         '''
+        dataset = self.get_dataset_for_tag(data_tag)
+        fit_event = FitEvent(model, config, dataset)
+        Syncer.instance.add_to_buffer(fit_event)
 
+    def sync_metrics(self, data_tag, model, metrics):
+        '''
+        Syncs the metrics for the given model on the given data
+        '''
+        dataset = self.get_dataset_for_tag(data_tag)
+        for metric, value in metrics.items:
+            metric_event = MetricEvent(dataset, model, "label_col", \
+                "prediction_col", metric, value)
+            Syncer.instance.add_to_buffer(metric_event)
 
+    def get_dataset_for_tag(self, tag):
+        if data_tag not in self.datasets:
+            if "default" not in self.datasets:
+                self.datasets["default"] = Dataset("", {}) 
+            print data_tag, 
+                ' dataset not defined. default dataset will be used.'
+            data_tag = "default"
+        return self.datasets[data_tag]
 
-    def sync_all(self, data, model_type, config, model, metrics):
-        expt_run_info = ExperimentRunInfo(data, config, model, metrics)
-        # convert the data frames to thrift
-        self.sync_data(data)
-
-        # convert config to thrift
-        spec = self.sync_model_config(model_type, config)
-
-        # convert model to thrift
-        model = self._sync_model(model, data_sources.train, spec)
-
-        # convert metrics to thrift
-        metrics = self.sync_model_metrics(model, metrics)
+    # TODO: do we want a sync all?
