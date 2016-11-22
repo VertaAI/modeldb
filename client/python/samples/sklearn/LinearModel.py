@@ -33,15 +33,8 @@ def run_linear_model_workflow():
     """
     Sample workflow using OneHotEncoder and LinearRegression.
     """
-    
-    name = "test1"
-    author = "srinidhi"
-    description = "pandas-linear-regression"
-    # Creating a new project
-    syncer_obj = Syncer(
-        NewOrExistingProject(name, author, description),
-        DefaultExperiment(),
-        NewExperimentRun("Abc"))
+    syncer_obj = Syncer.create_syncer("test1", "test_user", \
+        "pandas-linear-regression")
 
     data, target = load_pandas_dataset()
     syncer_obj.add_tag(data, "occupation dataset")

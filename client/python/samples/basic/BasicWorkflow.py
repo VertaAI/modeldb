@@ -1,13 +1,15 @@
 from modeldb.basic.ModelDbSyncerBase import *
 
 # Creating a new project
-name = "gensim test"
-author = "test_user"
-description = "using modeldb light logging"
-syncer_obj = Syncer(
-    NewOrExistingProject(name, author, description),
-    DefaultExperiment(),
-    NewExperimentRun("Abc"))
+# name = "gensim test"
+# author = "test_user"
+# description = "using modeldb light logging"
+# syncer_obj = Syncer(
+#     NewOrExistingProject(name, author, description),
+#     DefaultExperiment(),
+#     NewExperimentRun("Abc"))
+syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
+    "using modeldb light logging")
 
 print syncer_obj.experiment
 
