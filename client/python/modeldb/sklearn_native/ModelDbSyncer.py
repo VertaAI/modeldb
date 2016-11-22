@@ -213,7 +213,7 @@ def store_df_path(filepath_or_buffer, **kwargs):
     Stores the filepath for a dataframe
     """
     df = pd.read_csv(filepath_or_buffer, **kwargs)
-    Syncer.instance.path_for_df[id(df)] = filepath_or_buffer
+    Syncer.instance.store_path_for_df(df, str(filepath_or_buffer))
     return df
 
 def train_test_split_fn(*arrays, **options):
@@ -264,11 +264,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def __init__(self, project_config, experiment_config, experiment_run_config):
         super(Syncer, self).__init__(project_config, experiment_config, \
             experiment_run_config)
-        self.id_for_object = {}
-        self.object_for_id = {}
-        self.tag_for_object = {}
-        self.object_for_tag = {}
-        self.path_for_df = {}
+        self.local_id_to_path = {}
         self.enable_sklearn_sync_functions()
         self.enable_pandas_sync_functions()
 
@@ -313,31 +309,34 @@ class Syncer(ModelDbSyncerBase.Syncer):
         """
         Converts a model into a Thrift object with appropriate fields.
         """
-        tid = -1
-        tag = ""
-        if model in self.id_for_object:
-            tid = self.id_for_object[model]
-        if id(model) in self.tag_for_object:
-            tag = self.tag_for_object[id(model)]
+        tid = self.get_modeldb_id_for_object(model)
+        tag = self.get_tag_for_object(model)
         transformer_type = model.__class__.__name__
         t = modeldb_types.Transformer(tid, transformer_type, tag)
         return t
+
+    def get_path_for_df(self, df):
+        local_id = self.get_local_id(df)
+        if local_id in self.local_id_to_path:
+            return self.local_id_to_path[local_id]
+        else:
+            return ""
+
+    def store_path_for_df(self, df, path):
+        local_id = self.get_local_id(df)
+        self.local_id_to_path[local_id] = path
+        if local_id not in self.local_id_to_object:
+            self.local_id_to_object[local_id] = df
 
     def convert_df_to_thrift(self, df):
         """
         Converts a dataframe into a Thrift object with appropriate fields.
         """
-        tid = -1
-        tag = ""
-        filepath = ""
-        dfImm = id(df)
-        if dfImm in self.id_for_object:
-            tid = self.id_for_object[dfImm]
-        if dfImm in self.tag_for_object:
-            tag = self.tag_for_object[dfImm]
+        tid = self.get_modeldb_id_for_object(df)
+        tag = self.get_tag_for_object(df)
+        filepath = self.get_path_for_df(df)
+
         dataframe_columns = self.setDataFrameSchema(df)
-        if dfImm in self.path_for_df:
-            filepath = self.path_for_df[dfImm]
         modeldb_df = modeldb_types.DataFrame(
             tid, dataframe_columns, df.shape[0], tag, filepath)
         return modeldb_df
@@ -346,12 +345,8 @@ class Syncer(ModelDbSyncerBase.Syncer):
         """
         Converts a TransformerSpec object into a Thrift object with appropriate fields.
         """
-        tid = -1
-        tag = ""
-        if spec in self.id_for_object:
-            tid = self.id_for_object[spec]
-        if id(spec) in self.tag_for_object:
-            tag = self.tag_for_object[id(spec)]
+        tid = self.get_modeldb_id_for_object(spec)
+        tag = self.get_tag_for_object(spec)
         hyperparams = []
         params = spec.get_params()
         for param in params:
