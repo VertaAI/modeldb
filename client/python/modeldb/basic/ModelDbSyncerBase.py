@@ -104,6 +104,20 @@ class ModelMetrics:
 
 class Syncer(object):
     instance = None
+
+    @classmethod
+    def create_syncer(cls, proj_name, user_name, proj_desc=None):
+        """
+        Create a syncer given project information. A default experiment will be
+        created and a default experiment run will be used
+        """
+        syncer_obj = cls(
+            NewOrExistingProject(proj_name, user_name, \
+                proj_desc if proj_desc else ""),
+            DefaultExperiment(),
+            NewExperimentRun(""))
+        return syncer_obj
+
     def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
         # This will break if cls is some random class.
         if not cls.instance:
