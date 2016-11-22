@@ -6,7 +6,7 @@ ModelDB depends on the following:
 (The version number in parentheses is a recommended version that has been tested and works)
 
 *Server*
-* [SQLite](http://sqlite.org/) (3.13.0): To store the models
+* [SQLite](http://sqlite.org/) (3.15.1): To store the models
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (1.8): To run the server
 * [Apache Thrift](http://thrift.apache.org/) (0.9.3): To interface with the different clients
 * [Maven](http://maven.apache.org/download.cgi) (3.3.9): To build the project

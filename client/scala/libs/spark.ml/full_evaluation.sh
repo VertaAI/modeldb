@@ -47,11 +47,11 @@ mkdir -p $output_dir
 ./build_client.sh
 
 # Evaluate many (workflow, dataset, dataset size) triples.
-for workflow in {0..2}
+for dataset_size in 1 10000 20000 40000 70000 100000 200000 400000 700000 1000000
 do
-  for dataset_index in {0..2}
+  for workflow in {0..2}
   do
-    for dataset_size in 1 10000 20000 30000 40000 50000 60000 70000 80000 90000 1000000
+    for dataset_index in {0..2}
     do
       echo "[FULL_EVAL] Evaluating (${workflows[$workflow]}, ${datasetnames[$dataset_index]}, $dataset_size)"
 
@@ -68,7 +68,7 @@ do
       sleep 90
 
       echo "[FULL_EVAL] Removing model files"
-      rm /tmp/model_*
+      rm -rf /tmp/model_*
 
       echo "[FULL_EVAL] Launching test"
       cmd="./evaluate.sh --path ${datasets[$dataset_index]} --dataset ${datasetnames[$dataset_index]} --workflow ${workflows[$workflow]} --outfile $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.csv --syncer true  --min_num_rows $dataset_size"
