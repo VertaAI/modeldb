@@ -31,7 +31,6 @@ class FitEvent(Event):
         """
         df_id = id(self.df)
         syncer.store_object(df_id, res.dfId)
-        print "associate df"
         syncer.store_object(self.spec, res.specId)
         syncer.store_object(self.model, res.modelId)
         syncer.store_object(self, res.eventId)
