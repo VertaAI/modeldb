@@ -76,6 +76,9 @@ class Syncer(object):
         self.buffer_list = []
         self.id_for_object = {}
         self.object_for_id = {}
+        self.tag_for_object = {}
+        self.object_for_tag = {}
+        self.path_for_df = {}
         self.initialize_thrift_client()
         self.setup(project_config, experiment_config, experiment_run_config)
 
@@ -117,19 +120,45 @@ class Syncer(object):
         self.buffer_list.append(experiment_run_event)
         self.sync()
 
+    def store_object(self, obj, Id):
+        """
+        Stores mapping between objects and their IDs.
+        """
+        self.id_for_object[obj] = Id
+        self.object_for_id[Id] = obj
+
+    def store_tag_object(self, obj, tag):
+        """
+        Stores mapping between objects and their tags.
+        Tags are short, user-generated names.
+        """
+        self.tag_for_object[obj] = tag
+        self.object_for_tag[tag] = obj
+
+    def add_tag(self, obj, tag_name):
+        """
+        Adds tag name to object.
+        """
+        self.store_tag_object(id(obj), tag_name)
+
     def add_to_buffer(self, event):
+        """
+        As events are generated, they are added to this buffer.
+        """
         self.buffer_list.append(event)
 
-    def store_object(self, obj, id):
-        self.id_for_object[obj] = id
-        self.object_for_id[id] = obj
-
     def sync(self):
+        """
+        When this function is called, all events in the buffer are stored on server.
+        """
         for b in self.buffer_list:
             b.sync(self)
         self.clear_buffer()
 
     def clear_buffer(self):
+        '''
+        Remove all events from the buffer
+        '''
         self.buffer_list = []
 
     def initialize_thrift_client(self, host="localhost", port=6543):
@@ -150,6 +179,11 @@ class Syncer(object):
         self.transport.close()
         self.client = None
 
+
+    '''
+    Functions that convert ModelDBSyncerLight classes into ModelDB 
+    thrift classes
+    '''
     def convert_model_to_thrift(self, model):
         return model
 
@@ -175,6 +209,14 @@ class Syncer(object):
 
     def _convert_df_to_thrift(self, path):
         return modeldb_types.DataFrame(-1, [], -1, "", path)
+    '''
+    End Functions that convert ModelDBSyncerLight classes into ModelDB 
+    thrift classes
+    '''
+
+    '''
+    ModelDBSyncerLight API
+    '''
 
     # data_dict is a dictionary of names and paths:
     # ["train" : "/path/to/train", "test" : "/path/to/test"]
@@ -195,3 +237,7 @@ class Syncer(object):
             me = MetricEvent(df, model, "", "", key, \
                 value)
             self.add_to_buffer(me)
+
+    '''
+    End ModelDBSyncerLight API
+    '''
