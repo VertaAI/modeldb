@@ -62,6 +62,46 @@ class ExistingExperimentRun:
     def to_thrift(self):
         return modeldb_types.ExperimentRun(self.id, -1, "")
 
+# TODO: fix the way i'm doing tagging
+class Dataset:
+    def __init__(self, filename, metadata={}, tag=None):
+        self.filename = filename
+        self.metadata = metadata
+        self.tag = tag if tag else ""
+
+    def __str__(self):
+        return self.filename + "," + self.tag
+
+class ModelConfig:
+    def __init__(self, model_type, config, tag=None):
+        self.model_type = model_type
+        self.config = config
+        self.tag = tag if tag else ""
+
+    def __str__(self):
+        return self.model_type + "," + self.tag
+
+class Model:
+    def __init__(self, model_type, model, path=None, tag=None):
+        self.model_type = model_type
+        self.model = model
+        self.path = path
+        self.tag = tag if tag else ""
+
+    def __str__(self):
+        return self.model_type + "," + self.path + "," + self.tag
+
+class ModelMetrics:
+    def __init__(self, metrics, tag=None):
+        self.metrics = metrics
+        self.tag = tag if tag else ""
+
+    def __str__(self):
+        return self.metrics
+
+# def make_dataset(filename, metadata):
+#     return Dataset(filename, metadata)
+
 class Syncer(object):
     instance = None
     def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
@@ -179,65 +219,96 @@ class Syncer(object):
         self.transport.close()
         self.client = None
 
-
     '''
     Functions that convert ModelDBSyncerLight classes into ModelDB 
     thrift classes
     '''
+    def get_id_for_object(self, obj):
+        if obj in self.id_for_object:
+            return self.id_for_object[obj]
+        else:
+            return -1
+
     def convert_model_to_thrift(self, model):
-        return model
+        model_id = self.get_id_for_object(model)
+        if model_id != -1:
+            return modeldb_types.Transformer(model_id, "", "", "")
+        return modeldb_types.Transformer(-1, 
+            model.model_type, model.tag, model.path)
 
     def convert_spec_to_thrift(self, spec):
-        return spec
-
-    def convert_df_to_thrift(self, df):
-        return df
-
-    def _convert_model_to_thrift(self, model_type, path):
-        return modeldb_types.Transformer(-1, [], model_type, "", \
-            path)
-
-    def _convert_spec_to_thrift(self, config, modelType, features=[]):
+        spec_id = self.get_id_for_object(spec)
+        if spec_id != -1:
+            return modeldb_types.TransformerSpec(spec_id, "", [], "")
         hyperparameters = []
-        for key in config.keys():
-            hyperparameter = modeldb_types.HyperParameter(key, str(config[key]), \
-                type(config[key]).__name__, FMIN, FMAX)
+        for key, value in spec.config.items():
+            hyperparameter = modeldb_types.HyperParameter(key, \
+                str(value), type(value).__name__, FMIN, FMAX)
             hyperparameters.append(hyperparameter)
-        transformerSpec = modeldb_types.TransformerSpec(-1, modelType, \
-            features, hyperparameters, "")
-        return transformerSpec
+        transformer_spec = modeldb_types.TransformerSpec(-1, spec.model_type, \
+            hyperparameters, spec.tag)
+        return transformer_spec
 
-    def _convert_df_to_thrift(self, path):
-        return modeldb_types.DataFrame(-1, [], -1, "", path)
+    def set_columns(self, df):
+        return []
+
+    def convert_df_to_thrift(self, dataset):
+        dataset_id = self.get_id_for_object(dataset)
+        if dataset_id != -1:
+            return modeldb_types.DataFrame(dataset_id, [], -1, "", "")
+        return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
+            dataset.filename)
     '''
-    End Functions that convert ModelDBSyncerLight classes into ModelDB 
+    End. Functions that convert ModelDBSyncerLight classes into ModelDB 
     thrift classes
     '''
 
     '''
     ModelDBSyncerLight API
     '''
+    def sync_datasets(self, datasets):
+        '''
+        Registers the datasets used in this experiment run.
+        The input is expected to be either a single dataset or a dictionary
+        with keys which are local tags for the dataset and values are the
+        dataset objects.
+        '''
+        # TODO: need to capture the metadata
+        self.datasets = {}
+        if type(datasets) != dict:
+            self.datasets["default"] = dataset
+        else:
+            for key, dataset in datasets.items():
+                if not dataset.tag:
+                    dataset.tag = key
+                self.datasets[key] = dataset
 
-    # data_dict is a dictionary of names and paths:
-    # ["train" : "/path/to/train", "test" : "/path/to/test"]
-    # revisit this
-    def syncData(self, data_dict):
-        self.data = data_dict
+    def sync_model(self, data_tag, config, model):
+        '''
+        Syncs the model as having been generated from a given dataset using
+        the given config
+        '''
+        dataset = self.get_dataset_for_tag(data_tag)
+        fit_event = FitEvent(model, config, dataset)
+        Syncer.instance.add_to_buffer(fit_event)
 
-    def syncModel(self, trainDf, model_path, model_type, config, features=[]):
-        df = self._convert_df_to_thrift(trainDf)
-        spec = self._convert_spec_to_thrift(config, model_type, features)
-        model = self._convert_model_to_thrift(model_type, model_path)
-        fe = FitEvent(model, spec, df)
-        self.add_to_buffer(fe)
+    def sync_metrics(self, data_tag, model, metrics):
+        '''
+        Syncs the metrics for the given model on the given data
+        '''
+        dataset = self.get_dataset_for_tag(data_tag)
+        for metric, value in metrics.metrics.items():
+            metric_event = MetricEvent(dataset, model, "label_col", \
+                "prediction_col", metric, value)
+            Syncer.instance.add_to_buffer(metric_event)
 
-    def syncMetrics(self, testDf, model, metrics):
-        df = self._convert_df_to_thrift(testDf)
-        for key, value in metrics:
-            me = MetricEvent(df, model, "", "", key, \
-                value)
-            self.add_to_buffer(me)
+    def get_dataset_for_tag(self, data_tag):
+        if data_tag not in self.datasets:
+            if "default" not in self.datasets:
+                self.datasets["default"] = Dataset("", {}) 
+            print data_tag, \
+                ' dataset not defined. default dataset will be used.'
+            data_tag = "default"
+        return self.datasets[data_tag]
 
-    '''
-    End ModelDBSyncerLight API
-    '''
+    # TODO: do we want a sync all?

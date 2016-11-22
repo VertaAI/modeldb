@@ -46,10 +46,10 @@ def fit_fn(self, x, y=None, sample_weight=None):
     df = x
     #Certain fit functions only accept one argument
     if y is None:
-        models = self.fit(x)
+        model = self.fit(x)
     else:
-        models = self.fit(x, y)
-    fit_event = FitEvent(models, self, x)
+        model = self.fit(x, y)
+    fit_event = FitEvent(model, self, x)
     Syncer.instance.add_to_buffer(fit_event)
 
 def convert_prediction_to_event(model, predict_array, x):
