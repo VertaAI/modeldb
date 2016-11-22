@@ -4,4 +4,3 @@ target/
 *.jar
 src/main/java/jooq/
 *.db
-reset.sh
