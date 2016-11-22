@@ -139,7 +139,7 @@ class TestPipelineEndToEnd(unittest.TestCase):
 		# Check ancestry for x_test and x_train.
 		# The data the models were trained and tested on.
 		for df in [self.x_train, self.x_test]:
-			dataframe_id = self.syncer_obj.id_for_object[id(df)]
+			dataframe_id = self.syncer_obj.get_modeldb_id_for_object(df)
 			ancestry = self.syncer_obj.client.getDataFrameAncestry(dataframe_id).ancestors
 			self.assertEqual(len(ancestry), 2)
 			df_1 = ancestry[0]
@@ -174,7 +174,7 @@ class TestPipelineEndToEnd(unittest.TestCase):
         self.assertIn('precision_score', model1.metrics)
 
         # Metrics are mapped to their associated dataframe.
-        dataframe_id = self.syncer_obj.id_for_object[id(self.x_test)]
+        dataframe_id = self.syncer_obj.get_modeldb_id_for_object(self.x_test)
         self.assertAlmostEqual(self.f1,
                                model1.metrics['f1_score'][dataframe_id], places=4)
         self.assertAlmostEqual(self.precision,

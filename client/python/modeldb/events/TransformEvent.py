@@ -28,10 +28,8 @@ class TransformEvent(Event):
         """
         Stores the server response ids into dictionary.
         """
-        df_old_id = id(self.old_df)
-        df_new_id = id(self.new_df)
-        syncer.store_object(df_old_id, res.oldDataFrameId)
-        syncer.store_object(df_new_id, res.newDataFrameId)
+        syncer.store_object(self.old_df, res.oldDataFrameId)
+        syncer.store_object(self.new_df, res.newDataFrameId)
         syncer.store_object(self.transformer, res.transformerId)
         syncer.store_object(self, res.eventId)
 
