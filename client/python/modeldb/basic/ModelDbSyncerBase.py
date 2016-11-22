@@ -154,6 +154,8 @@ class Syncer(object):
         """
         self.id_for_object[obj] = Id
         self.object_for_id[Id] = obj
+        # for key, value in self.id_for_object.items():
+        #     print key, ":", value
 
     def store_tag_object(self, obj, tag):
         """
@@ -211,11 +213,23 @@ class Syncer(object):
     Functions that convert ModelDBSyncerLight classes into ModelDB 
     thrift classes
     '''
+    def get_id_for_object(self, obj):
+        if obj in self.id_for_object:
+            return self.id_for_object[obj]
+        else:
+            return -1
+
     def convert_model_to_thrift(self, model):
-        return modeldb_types.Transformer(-1, model.model_type, model.tag, 
-            model.path)
+        model_id = self.get_id_for_object(model)
+        if model_id != -1:
+            return modeldb_types.Transformer(model_id, "", "", "")
+        return modeldb_types.Transformer(-1, 
+            model.model_type, model.tag, model.path)
 
     def convert_spec_to_thrift(self, spec):
+        spec_id = self.get_id_for_object(spec)
+        if spec_id != -1:
+            return modeldb_types.TransformerSpec(spec_id, "", [], "")
         hyperparameters = []
         for key, value in spec.config.items():
             hyperparameter = modeldb_types.HyperParameter(key, \
@@ -229,6 +243,9 @@ class Syncer(object):
         return []
 
     def convert_df_to_thrift(self, dataset):
+        dataset_id = self.get_id_for_object(dataset)
+        if id != -1:
+            return modeldb_types.DataFrame(dataset_id, [], -1, "", "")
         return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
             dataset.filename)
     '''
