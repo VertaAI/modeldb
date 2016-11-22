@@ -7,6 +7,38 @@ datasets=($imdb_path $animal_path $house_path)
 datasetnames=("imdb" "animal" "housing")
 workflows=("simple" "full", "exploratory")
 
+# These are the tables in the database.
+tables=(Annotation
+MetricEvent
+AnnotationFragment
+ModelObjectiveHistory
+CrossValidationEvent
+PipelineStage
+CrossValidationFold
+Project
+DataFrame
+RandomSplitEvent
+DataFrameColumn
+TransformEvent
+DataFrameSplit
+Transformer
+Event
+TransformerSpec
+Experiment
+TreeLink
+ExperimentRun
+TreeModel
+Feature
+TreeModelComponent
+FitEvent
+TreeNode
+GridCellCrossValidation
+GridSearchCrossValidationEvent
+HyperParameter
+LinearModel
+LinearModelTerm
+)
+
 # Create the output directory if it doesn't exist.
 mkdir -p $output_dir
 
@@ -39,6 +71,13 @@ do
 
       echo "[FULL_EVAL] Recording database size"
       du -h ../../../../server/modeldb.db > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.dbsize
+
+      echo "[FULL_EVAL] Recording table sizes"
+      for i in {0..28}
+      do
+        printf "${tables[$i]}, " >> $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.tablesizes
+        echo "SELECT COUNT(*) FROM ${tables[$i]};" | sqlite3 ../../../../server/modeldb.db >> $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.tablesizes
+      done
 
       echo "[FULL_EVAL] Recording model files size"
       du -hcs /tmp/model_* > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.modelsize
