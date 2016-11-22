@@ -68,7 +68,7 @@ do
       sleep 90
 
       echo "[FULL_EVAL] Removing model files"
-      rm /tmp/model_*
+      rm -rf /tmp/model_*
 
       echo "[FULL_EVAL] Launching test"
       cmd="./evaluate.sh --path ${datasets[$dataset_index]} --dataset ${datasetnames[$dataset_index]} --workflow ${workflows[$workflow]} --outfile $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.csv --syncer true  --min_num_rows $dataset_size"
