@@ -9,6 +9,7 @@ from ..events import *
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
 from ..utils.ConfigUtils import ConfigReader
+from ..utils import ConfigConstants as constants
 
 FMIN = sys.float_info.min
 FMAX = sys.float_info.max
@@ -120,25 +121,31 @@ class Syncer(object):
         return syncer_obj
 
     @classmethod
-    def create_syncer_from_config(cls, config_file=".mdb_config"):
+    def create_syncer_from_config(
+        cls, config_file=".mdb_config", expt_name=None):
         """
         Create a syncer based on the modeldb configuration file
         """
         config_reader = ConfigReader(config_file)
         project_info = config_reader.get_project()
-        experiment_info = config_reader.get_experiment()
+        experiment_info = config_reader.get_experiment(expt_name)
 
-        project = NewOrExistingProject(project_info["name"],
-            project_info["username"], project_info["description"])
+        project = NewOrExistingProject(
+            project_info[constants.NAME_KEY],
+            project_info[constants.GIT_USERNAME_KEY], 
+            project_info[constants.DESCRIPTION_KEY])
         experiment = DefaultExperiment() if experiment_info == None else \
-            NewOrExistingExperiment(experiment_info["name"],
-                experiment_info["description"])
+            NewOrExistingExperiment(experiment_info[constants.NAME_KEY],
+                experiment_info[constants.DESCRIPTION_KEY])
 
-        syncer_obj = cls(
-            project,
-            experiment,
-            NewExperimentRun(""))
+        syncer_obj = cls(project, experiment, NewExperimentRun(""))
         return syncer_obj
+
+    @classmethod
+    def create_syncer_for_experiment_run(cls, experiment_run_id):
+        syncer_obj = cls(None, None, ExistingExperimentRun(experiment_run_id))
+        return syncer_obj
+
 
     def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
         # This will break if cls is some random class.

@@ -1,34 +1,35 @@
 import os.path
 import requests
-import constants
+import ConfigConstants as constants
 
-def version(config):
+def version(version_config):
     # check that the experiment directory exists
-    if not os.path.isdir(config[constants.EXPT_DIR_KEY]):
+    if not os.path.isdir(version_config[constants.EXPT_DIR_KEY]):
         print 'Experiment dir %s does not exist. Please specify in config.' \
-        % config[EXPT_DIR_KEY]
+        % version_config["expt_dir"]
         return None
 
-    if not os.path.isdir(config[constants.GIT_REPO_DIR_KEY]):
+    if not os.path.isdir(version_config[constants.GIT_REPO_DIR_KEY]):
         print 'Git repo dir %s does not exist. Please specify in config.' \
-        % config[GIT_REPO_DIR_KEY]
+        % version_config[GIT_REPO_DIR_KEY]
         return None
 
     session = requests.Session()
     session.headers['Authorization'] = 'token %s' \
-        % config[constants.ACCESS_TOKEN_KEY]
+        % version_config[constants.ACCESS_TOKEN_KEY]
     
     # check if the repo exists, if not create it
     repo_exists_url = 'https://api.github.com/repos/%s/%s' % \
-        (config[constants.GIT_USERNAME_KEY], config[constants.GIT_REPO_KEY])
+        (version_config[constants.GIT_USERNAME_KEY], 
+            version_config[constants.GIT_REPO_KEY])
     repo_exists = session.get(repo_exists_url)
 
     if repo_exists.status_code == 404:
         print "repo named %s doesn't exist, creating one." % \
-        config[constants.GIT_REPO_KEY]
+        version_config[constants.GIT_REPO_KEY]
 
         create_repo_url = 'https://api.github.com/user/repos'
-        create_repo_params = {'name' : config[constants.GIT_REPO_KEY]}
+        create_repo_params = {'name' : version_config[constants.GIT_REPO_KEY]}
         print create_repo_params
         create_repo = session.post(create_repo_url, 
             json=create_repo_params
@@ -40,9 +41,9 @@ def version(config):
                 'git@github.com:%s/%s.git;' \
                 'echo \'.mdb_config\'> .gitignore;' \
                 'popd;' % \
-                (config[constants.GIT_REPO_DIR_KEY], 
-                    config[constants.GIT_USERNAME_KEY], 
-                    config[constants.GIT_REPO_KEY])
+                (version_config[constants.GIT_REPO_DIR_KEY], 
+                    version_config[constants.GIT_USERNAME_KEY], 
+                    version_config[constants.GIT_REPO_KEY])
             # TODO: redirect the output to log or screen?
             os.system(git_init_cmd)
         else:
@@ -59,7 +60,8 @@ def version(config):
 
     # copy code to the experiment dir
     copy_code_cmd = 'rsync -av --progress %s/* %s --exclude .git' \
-    % (config[constants.EXPT_DIR_KEY], config[constants.GIT_REPO_DIR_KEY])
+    % (version_config[constants.EXPT_DIR_KEY], 
+        version_config[constants.GIT_REPO_DIR_KEY])
     os.system(copy_code_cmd)
 
     # commit code
@@ -67,13 +69,14 @@ def version(config):
     'git add .;' \
     'git commit -m "running experiment";' \
     'git push origin master;' \
-    'popd;' % config[constants.GIT_REPO_DIR_KEY]
+    'popd;' % version_config[constants.GIT_REPO_DIR_KEY]
 
     os.system(git_commit_cmd)
 
     # get the sha for the lastest commit
     git_commit_url = 'https://api.github.com/repos/%s/%s/commits/master' \
-    % (config[constants.GIT_USERNAME_KEY], config[constants.GIT_REPO_KEY])
+    % (version_config[constants.GIT_USERNAME_KEY], 
+        version_config[constants.GIT_REPO_KEY])
     git_commit = session.get(git_commit_url)
 
     sha = None

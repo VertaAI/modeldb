@@ -19,9 +19,9 @@ class ConfigReader(object):
 
     def get_project(self):
         project = self.config[constants.PROJECT_KEY]
-        return {"name" : project[constants.NAME_KEY], 
-            "username" : self.get_username(), 
-            "description" : project[constants.DESCRIPTION_KEY]}
+        return {constants.NAME_KEY : project[constants.NAME_KEY], 
+            constants.GIT_USERNAME_KEY : self.config[constants.GIT_USERNAME_KEY], 
+            constants.DESCRIPTION_KEY : project[constants.DESCRIPTION_KEY]}
 
     def get_experiment(self, expt_name=None):
         if not expt_name:
@@ -44,27 +44,25 @@ class ConfigReader(object):
             return None
 
         # create an experiment from the config data
-        return {"name" : experiment[constants.NAME_KEY],
-            "description" : experiment[constants.DESCRIPTION_KEY]}
+        return {constants.NAME_KEY : experiment[constants.NAME_KEY],
+            constants.DESCRIPTION_KEY : experiment[constants.DESCRIPTION_KEY]}
 
     def get_mdb_server_info(self):
         host = self.config[constants.MDB_SERVER_HOST_KEY] \
             if MDB_SERVER_HOST_KEY in self.config else "localhost"
         port = int(self.config[constants.MDB_SERVER_HOST_KEY]) \
-            if MDB_SERVER_HOST_KEY in self.config else 6543
-        return { "host" : host, "port" : port }
-
-    def get_username(self):
-        return self.config[constants.GIT_USERNAME_KEY]
+            if MDB_SERVER_PORT_KEY in self.config else 6543
+        return { constants.MDB_SERVER_HOST_KEY : host, 
+            constants.MDB_SERVER_PORT_KEY : port }
 
     def get_versioning_information(self):
         if not config[constants.VERSION_CODE_KEY]:
-            return {}
+            return None
         else:
             return {
-                "username" : self.get_username(),
-                "repo_name" : self.config[constants.GIT_REPO_KEY],
-                "access_token" : self.config[constants.ACCESS_TOKEN_KEY],
-                "expt_dir" : self.config[constants.EXPT_DIR_KEY],
-                "repo_dir" : self.config[constants.GIT_REPO_DIR_KEY],
+                constants.GIT_USERNAME_KEY : self.config[constants.GIT_USERNAME_KEY],
+                constants.GIT_REPO_KEY : self.config[constants.GIT_REPO_KEY],
+                constants.ACCESS_TOKEN_KEY : self.config[constants.ACCESS_TOKEN_KEY],
+                constants.EXPT_DIR_KEY : self.config[constants.EXPT_DIR_KEY],
+                constants.GIT_REPO_DIR_KEY : self.config[constants.GIT_REPO_DIR_KEY],
             }
