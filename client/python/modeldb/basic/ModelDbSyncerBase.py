@@ -8,6 +8,7 @@ from ..events import *
 
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
+from ..utils.ConfigUtils import ConfigReader
 
 FMIN = sys.float_info.min
 FMAX = sys.float_info.max
@@ -115,6 +116,27 @@ class Syncer(object):
             NewOrExistingProject(proj_name, user_name, \
                 proj_desc if proj_desc else ""),
             DefaultExperiment(),
+            NewExperimentRun(""))
+        return syncer_obj
+
+    @classmethod
+    def create_syncer_from_config(cls, config_file=".mdb_config"):
+        """
+        Create a syncer based on the modeldb configuration file
+        """
+        config_reader = ConfigReader(config_file)
+        project_info = config_reader.get_project()
+        experiment_info = config_reader.get_experiment()
+
+        project = NewOrExistingProject(project_info["name"],
+            project_info["username"], project_info["description"])
+        experiment = DefaultExperiment() if experiment_info == None else \
+            NewOrExistingExperiment(experiment_info["name"],
+                experiment_info["description"])
+
+        syncer_obj = cls(
+            project,
+            experiment,
             NewExperimentRun(""))
         return syncer_obj
 
