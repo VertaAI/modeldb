@@ -162,8 +162,7 @@ public class TransformerDao {
     TransformerRecord rec = read(modelId, ctx);
 
     // get experiment run associated with the transformer
-    ExperimentRun erRec = ExperimentRunDao.read(
-      rec.getExperimentrun(), ctx);
+    ExperimentRun er = ExperimentRunDao.read(rec.getExperimentrun(), ctx);
 
     // Get the experiment and project for the Transformer.
     Pair<Integer, Integer> experimentAndProjectId =
@@ -187,7 +186,7 @@ public class TransformerDao {
     // Get the annotations.
     List<String> annotations = readAnnotations(modelId, ctx);
 
-    String sha = erRec.getSha();
+    String sha = er.getSha();
 
 
     // TODO: Read the LinearModel data if applicable.
