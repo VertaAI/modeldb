@@ -60,7 +60,7 @@ struct ExperimentRun {
   1: i32 id = -1,
   2: i32 experimentId,
   3: string description,
-  4: optional sha
+  4: optional string sha
 }
 
 /* 

@@ -95,7 +95,8 @@ public class TestBase {
     return createExperiment(createProject().projId);
   }
 
-  public static ProjExpRunTriple createExperimentRun() throws Exception {
+  public static ProjExpRunTriple createExperimentRunHelper(
+    boolean hasSha) throws Exception {
     ProjExpRunTriple triple = createExperiment();
 
     ExperimentrunRecord expRunRec = ctx().newRecord(Tables.EXPERIMENTRUN);
@@ -103,9 +104,20 @@ public class TestBase {
     expRunRec.setExperiment(triple.expId);
     expRunRec.setDescription("Test experiment run");
     expRunRec.setCreated(now());
+    if (hasSha) {
+      expRunRec.setSha("A1B2C3D4E5");
+    }
     expRunRec.store();
 
     return new ProjExpRunTriple(triple.projId, triple.expId, expRunRec.getId());
+  }
+
+  public static ProjExpRunTriple createExperimentRun() throws Exception {
+    return createExperimentRunHelper(false);
+  }
+
+  public static ProjExpRunTriple createExperimentRunWithSha() throws Exception {
+    return createExperimentRunHelper(true);
   }
 
   public static int createDataFrame(int expRunId, int numRows) throws Exception {

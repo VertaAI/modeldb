@@ -162,7 +162,8 @@ public class TransformerDao {
     TransformerRecord rec = read(modelId, ctx);
 
     // get experiment run associated with the transformer
-    ExperimentRunRecord erRec = ExperimentRunDao.read(rec.getExperimentrun(), ctx)
+    ExperimentRun erRec = ExperimentRunDao.read(
+      rec.getExperimentrun(), ctx);
 
     // Get the experiment and project for the Transformer.
     Pair<Integer, Integer> experimentAndProjectId =
@@ -186,7 +187,6 @@ public class TransformerDao {
     // Get the annotations.
     List<String> annotations = readAnnotations(modelId, ctx);
 
-    // For now, all the SHA values will be the empty string.
     String sha = erRec.getSha();
 
 
