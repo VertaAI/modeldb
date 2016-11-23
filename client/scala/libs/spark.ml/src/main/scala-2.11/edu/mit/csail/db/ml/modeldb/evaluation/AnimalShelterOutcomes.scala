@@ -53,7 +53,7 @@ object AnimalShelterOutcomes {
         .setLabelCol(FeatureVectorizer.indexed(labelCol))
         .setPredictionCol(predictionCol)
         .setFeaturesCol(featuresCol)
-        .setNumTrees(200)
+        .setNumTrees(20)
         
     val rfPipeline = new Pipeline()
         .setStages(Array(rf, labelConverter))

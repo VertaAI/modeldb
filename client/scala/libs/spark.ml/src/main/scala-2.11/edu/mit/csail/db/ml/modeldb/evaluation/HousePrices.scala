@@ -93,7 +93,7 @@ object HousePrices {
         .setLabelCol(labelCol)
         .setFeaturesCol(featuresCol)
         .setPredictionCol(predictionCol)
-        .setNumTrees(200)
+        .setNumTrees(20)
 
     val rfParamGrid = new ParamGridBuilder()
         .addGrid(rf.featureSubsetStrategy, Array("sqrt", "onethird", "log2"))
