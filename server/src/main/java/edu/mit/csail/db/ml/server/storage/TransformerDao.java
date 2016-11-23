@@ -161,6 +161,9 @@ public class TransformerDao {
     // First read the Transformer record.
     TransformerRecord rec = read(modelId, ctx);
 
+    // get experiment run associated with the transformer
+    ExperimentRunRecord erRec = ExperimentRunDao.read(rec.getExperimentrun(), ctx)
+
     // Get the experiment and project for the Transformer.
     Pair<Integer, Integer> experimentAndProjectId =
       ExperimentRunDao.getExperimentAndProjectIds(rec.getExperimentrun(), ctx);
@@ -184,7 +187,8 @@ public class TransformerDao {
     List<String> annotations = readAnnotations(modelId, ctx);
 
     // For now, all the SHA values will be the empty string.
-    String SHA = "";
+    String sha = erRec.getSha();
+
 
     // TODO: Read the LinearModel data if applicable.
 
@@ -201,7 +205,7 @@ public class TransformerDao {
       Arrays.asList(feRec.getPredictioncolumns().split(",")),
       metricMap,
       annotations,
-      SHA,
+      sha,
       rec.getFilepath()
     );
   }

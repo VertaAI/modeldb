@@ -54,11 +54,13 @@ struct Experiment {
   experimentId: The id of the experiment that contains this run
   description: User assigned text to this experiment run. Can be used to summarize
     data, method, etc.
+  sha: Commit hash of the code used in the current run
 */
 struct ExperimentRun {
   1: i32 id = -1,
   2: i32 experimentId,
-  3: string description
+  3: string description,
+  4: optional sha
 }
 
 /* 
