@@ -25,7 +25,6 @@ class ConfigReader(object):
 
     def get_experiment(self, expt_name=None):
         if not expt_name:
-            # return the default experiment
             return None
         
         if constants.EXPT_KEY not in self.config:
