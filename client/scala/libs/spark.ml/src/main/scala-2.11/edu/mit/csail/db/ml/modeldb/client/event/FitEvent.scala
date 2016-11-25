@@ -40,7 +40,7 @@ case class FitEvent(estimator: PipelineStage,
   }
   override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
     val res = Await.result(client.storeFitEvent(makeEvent(mdbs.get)))
-    SyncableSpecificModel(res.modelId, model, Some(client))
+    SyncableSpecificModel(res.modelId, model, Some(client), mdbs.get.shouldStoreSpecificModels)
     associate(res, mdbs.get)
   }
 }
