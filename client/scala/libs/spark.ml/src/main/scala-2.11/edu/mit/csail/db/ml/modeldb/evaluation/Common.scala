@@ -43,7 +43,9 @@ object Common {
       ),
       experimentConfig = new DefaultExperiment,
       experimentRunConfig = new NewExperimentRun,
-      shouldCountRows = false
+      shouldCountRows = false,
+      shouldStoreGSCVE = false,
+      shouldStoreSpecificModels = false
     )
     ModelDbSyncer.setSyncer(syncer)
     syncer

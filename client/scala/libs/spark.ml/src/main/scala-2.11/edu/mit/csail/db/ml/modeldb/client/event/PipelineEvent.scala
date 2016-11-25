@@ -108,7 +108,7 @@ case class PipelineEvent(pipeline: Pipeline,
       te.associate(ter, mdbs)
     }
     (res.fitStagesResponses zip fitStages).foreach { case (fer, (index, fe)) =>
-      SyncableSpecificModel(fer.modelId, pipelineModel.stages(index), client)
+      SyncableSpecificModel(fer.modelId, pipelineModel.stages(index), client, mdbs.shouldStoreSpecificModels)
       fe.associate(fer, mdbs)
     }
   }
