@@ -6,7 +6,7 @@ animal_path=$3
 house_path=$4
 datasets=($imdb_path $animal_path $house_path)
 datasetnames=("imdb" "animal" "housing")
-workflows=("simple" "full", "exploratory")
+workflows=("simple" "full" "exploratory")
 
 # These are the tables in the database.
 tables=(Annotation
