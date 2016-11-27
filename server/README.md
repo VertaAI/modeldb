@@ -6,7 +6,7 @@ data to and querying data from the ModelDB.
 
 # Setup
 
-ModelDB Server currently uses SQLite3 for storing data. So make sure you've installed SQLite3. 
+ModelDB Server currently uses SQLite3 for storing data. So make sure you've installed SQLite3 (see [dependencies] (https://github.com/mitdbg/modeldb/blob/master/docs/RequiredSoftware.md). 
 
 Create the SQLite database and tables for ModelDB using:
 
