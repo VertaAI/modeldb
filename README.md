@@ -7,7 +7,7 @@ ModelDB is an end-to-end system to manage machine learning models.
 ModelDB is made up of three main parts: the ModelDB server, the ModelDB clients, and the ModelDB frontend. 
 
 ### ModelDB server 
-The (ModelDB server)[https://github.com/mitdbg/modeldb/tree/master/server] stores all the data for ModelDB and exposes a thrift API for storing as well as querying data.
+The [ModelDB server](https://github.com/mitdbg/modeldb/tree/master/server) stores all the data for ModelDB and exposes a thrift API for storing as well as querying data.
 
 ### ModelDB client
 ModelDB clients are native libraries in various languages that can be used to log data to ModelDB. We currently provide clients for [spark.ml](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml) and [scikit-learn](https://github.com/mitdbg/modeldb/tree/master/client/python).
