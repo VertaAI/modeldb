@@ -32,7 +32,7 @@ You can run tests with `mvn test`
 
 # Tables
 
-Here are the [schemas](https://github.com/mitdbg/modeldb/blob/master/codegen/sqlite/createDb.sql)
+Here are the [schemas](https://github.com/mitdbg/modeldb/blob/master/server/codegen/sqlite/createDb.sql)
 for the tables created by ModelDB.
 
 # Configuration
