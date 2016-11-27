@@ -1,11 +1,6 @@
 ## Setup
 
-Follow setup instructions in ../server directory
-
-Start server in one terminal
-
-    $ cd modeldb/server/
-    $ ./start_server.sh
+Make sure the ModelDB server is running, following the instructions in the server/ directory. 
 
 Generate thrift files
 
