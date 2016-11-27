@@ -3,8 +3,14 @@ from modeldb.basic.ModelDbSyncerBase import *
 # syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
 #     "using modeldb light logging")
 
-syncer_obj = Syncer.create_syncer_from_config(
-    "/Users/mvartak/Projects/modeldb_test_dir/dir/.mdb_config")
+# syncer_obj = Syncer.create_syncer_from_config(
+#     "/Users/mvartak/Projects/modeldb_test_dir/dir/.mdb_config")
+
+syncer_obj = Syncer(
+    NewOrExistingProject("gensim test", "test_user",
+    "using modeldb light logging"),
+    DefaultExperiment(),
+    NewExperimentRun("", "A1B2C3"))
 
 print syncer_obj.experiment
 

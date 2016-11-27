@@ -19,12 +19,14 @@ public class ExperimentRunDao {
   public static ExperimentRunEventResponse store(
     ExperimentRunEvent erun, DSLContext ctx) {
     ExperimentRun er = erun.experimentRun;
+    System.out.println(er);
     ExperimentrunRecord erRec = ctx.newRecord(Tables.EXPERIMENTRUN);
     erRec.setId(er.id < 0 ? null : er.id);
     erRec.setExperiment(er.experimentId);
     erRec.setDescription(er.description);
     erRec.setCreated(new Timestamp((new Date()).getTime()));
     if (er.isSetSha()) {
+      System.out.println("sha is set");
       erRec.setSha(er.getSha());
     }
     erRec.store();
