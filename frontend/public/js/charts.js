@@ -39,7 +39,7 @@ $(function() {
         var option = new Option(key, key);
         $('.x-axis').append(option);
       }
-    } 
+    }
 
     for (var key in yaxis) {
       if (yaxis.hasOwnProperty(key)) {
@@ -88,17 +88,18 @@ $(function() {
     vlSpec.data.values = [];
     var models = $('.model');
     for (var i=0; i<models.length; i++) {
-      console.log(i);
-      var kvs = $(models[i]).find('.kv');
-      var xfield = $(kvs.findByData('key', x)[0]);
-      var yfield = $(kvs.findByData('key', y)[0]);
-      xfield = xfield.data('val');
-      yfield = yfield.data('val');
-      if (xfield && yfield) {
-        var val = {};
-        val[x] = xfield;
-        val[y] = yfield;
-        vlSpec.data.values.push(val);
+      if ($(models[i]).is(":visible")) {
+        var kvs = $(models[i]).find('.kv');
+        var xfield = $(kvs.findByData('key', x)[0]);
+        var yfield = $(kvs.findByData('key', y)[0]);
+        xfield = xfield.data('val');
+        yfield = yfield.data('val');
+        if (xfield && yfield) {
+          var val = {};
+          val[x] = xfield;
+          val[y] = yfield;
+          vlSpec.data.values.push(val);
+        }
       }
     }
 

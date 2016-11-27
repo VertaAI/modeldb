@@ -8,7 +8,9 @@ router.get('/:id', function(req, res, next) {
   api.getModel(modelId, function(response) {
     res.render('model', {
       title: 'Model',
-      model: response.data
+      path: ' > Model',
+      menu: false,
+      models: [response]
     });
   });
 })
