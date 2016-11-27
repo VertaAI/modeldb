@@ -1,13 +1,12 @@
 # Introduction
 
-ModelDB is a system for storing machine learning operations. This repository 
-houses the ModelDB server, which is responsible for exposing a Thrift API so 
-that clients can store machine learning operations, like training a model, in
-a database.
+The ModelDB server is responsible for storing all the ModelDB data and exposing
+a query interface for this data. The ModelDB server exposes a thrift API for storing
+data to and querying data from the ModelDB.
 
-# Usage
+# Setup
 
-Make sure you've installed SQLite3. 
+ModelDB Server currently uses SQLite3 for storing data. So make sure you've installed SQLite3. 
 
 Create the SQLite database and tables for ModelDB using:
 
@@ -29,11 +28,6 @@ store entries in ModelDB.
 # Tests
 
 You can run tests with `mvn test`
-
-# Tables
-
-Here are the [schemas](https://github.com/mitdbg/modeldb/blob/master/server/codegen/sqlite/createDb.sql)
-for the tables created by ModelDB.
 
 # Configuration
 Edit the [configuration file](https://github.com/mitdbg/modeldb/blob/master/server/src/main/resources/reference.conf) to your liking.
