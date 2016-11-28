@@ -878,7 +878,7 @@ struct TreeModel {
 struct ModelAncestryResponse {
   1: i32 modelId,
   2: FitEvent fitEvent,
-  3: list<TransformEvent> transformEvent
+  3: list<TransformEvent> transformEvents
 }
 
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.

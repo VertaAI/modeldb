@@ -81,6 +81,7 @@ public class DataFrameAncestryComputer {
 
     // Compute the TransformEvents involved in the ancestry chain.
     List<Integer> ancestorChain = getAncestorChain(fitEvent.df.id, parentIdForDfId);
+    Collections.reverse(ancestorChain);
     List<Integer> transformEventIds = IntStream
       .range(1, ancestorChain.size())
       .map(i -> transformEventIdForDfId.get(ancestorChain.get(i)))
