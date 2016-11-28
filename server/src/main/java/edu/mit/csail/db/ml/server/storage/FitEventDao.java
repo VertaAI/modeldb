@@ -17,7 +17,19 @@ public class FitEventDao {
     return store(fe, ctx, false);
   }
 
+  public static FitEventResponse readResponse(int modelId, DSLContext ctx) throws ResourceNotFoundException {
+    int fitEventId = getFitEventIdForModelId(modelId, ctx);
+    FitEvent fe = read(fitEventId, ctx);
+    int eventId = EventDao.getEventId(fitEventId, "fit", ctx);
+    return new FitEventResponse(fe.df.id, fe.spec.id, fe.model.id, eventId, fitEventId);
+  }
+
   public static FitEventResponse store(FitEvent fe, DSLContext ctx, boolean isPipeline) {
+    // First, attempt to read the FitEvent if it's already stored.
+    try {
+      return readResponse(fe.model.id, ctx);
+    } catch (ResourceNotFoundException rnf) {}
+
     // Store DataFrame, Transformer, and TransformerSpec.
     DataframeRecord df = DataFrameDao.store(fe.df, fe.experimentRunId, ctx);
     TransformerRecord t = TransformerDao.store(fe.model, fe.experimentRunId, ctx);
