@@ -22,7 +22,9 @@ Once machine learning workflows and models have been logged to ModelDB, they can
 
 To setup ModelDB, follow these steps:
 
-1. ModelDB has various dependencies. See [Required Software](docs/RequiredSoftware.md). Install the relevant ones
-2. Configure and start the [server](https://github.com/mitdbg/modeldb/tree/master/server)
-3. Use the client libraries to log workflows and models to ModelDB, as in [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) and [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples).
-4. Start the ModelDB [frontend](https://github.com/mitdbg/modeldb/tree/master/frontend) and explore models in ModelDB.
+1. ModelDB has various dependencies. See [Required Software](docs/RequiredSoftware.md). Install the relevant ones.
+2. Configure and start the [server](https://github.com/mitdbg/modeldb/tree/master/server).
+3. Build the modeldb client jar (for spark) and update PATHs in case of scikit-learn.
+4. Update your code to use the client libraries to log workflows and models to ModelDB, as in [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) and [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples).
+5. Run your ML code normally.
+6. Start the ModelDB [frontend](https://github.com/mitdbg/modeldb/tree/master/frontend) and explore models in ModelDB.
