@@ -1,6 +1,6 @@
 package edu.mit.csail.db.ml.server.storage;
 
-import javafx.util.Pair;
+import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.*;
 import modeldb.FitEvent;
@@ -60,7 +60,7 @@ public class FitEventDao {
     );
 
     feRec.setPredictioncolumns(fe.predictionColumns.stream().collect(Collectors.joining(",")));
-    feRec.setLabelcolumn(fe.labelColumns.stream().collect(Collectors.joining(",")));
+    feRec.setLabelcolumns(fe.labelColumns.stream().collect(Collectors.joining(",")));
     feRec.store();
 
     // Store Event.

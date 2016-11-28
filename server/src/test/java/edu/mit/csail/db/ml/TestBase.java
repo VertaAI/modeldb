@@ -2,26 +2,26 @@ package edu.mit.csail.db.ml;
 
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.ModelDbServer;
-import javafx.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.*;
-import modeldb.TransformEventResponse;
 import org.apache.commons.cli.ParseException;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
+import org.jooq.Query;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static jooq.sqlite.gen.Tables.*;
 
@@ -197,7 +197,7 @@ public class TestBase {
     rec.setTransformer(tId);
     rec.setDf(dfId);
     rec.setPredictioncolumns("predCol1,predCol2");
-    rec.setLabelcolumn("labCol1,labCol2");
+    rec.setLabelcolumns("labCol1,labCol2");
     rec.setExperimentrun(expRunId);
     rec.setProblemtype("regression");
     rec.store();
@@ -290,8 +290,10 @@ public class TestBase {
       TREEMODELCOMPONENT,
       TREENODE
     );
+    List<Query> queries = new ArrayList<>();
     for (Table table : tables) {
-      ctx().deleteFrom(table).where("1 = 1").execute();
+      queries.add(ctx().deleteFrom(table).where("1 = 1"));
     }
+    ctx().batch(queries).execute();
   }
 }

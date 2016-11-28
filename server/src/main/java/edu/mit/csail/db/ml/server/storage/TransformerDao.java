@@ -1,7 +1,7 @@
 package edu.mit.csail.db.ml.server.storage;
 
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
-import javafx.util.Pair;
+import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.FiteventRecord;
 import jooq.sqlite.gen.tables.records.TransformerRecord;
@@ -37,7 +37,7 @@ public class TransformerDao {
 
   public static String generateFilepath() {
     String uuid = UUID.randomUUID().toString();
-    return Paths.get(ModelDbConfig.getInstance().fsPrefix, uuid).toString();
+    return Paths.get(ModelDbConfig.getInstance().fsPrefix, "model_" + uuid).toString();
   }
 
   public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx, boolean generateFilepath) {
@@ -197,7 +197,7 @@ public class TransformerDao {
       spec,
       ProblemTypeConverter.fromString(feRec.getProblemtype()),
       features,
-      Arrays.asList(feRec.getLabelcolumn().split(",")),
+      Arrays.asList(feRec.getLabelcolumns().split(",")),
       Arrays.asList(feRec.getPredictioncolumns().split(",")),
       metricMap,
       annotations,

@@ -33,15 +33,8 @@ def run_linear_model_workflow():
     """
     Sample workflow using OneHotEncoder and LinearRegression.
     """
-    
-    name = "test1"
-    author = "srinidhi"
-    description = "pandas-linear-regression"
-    # Creating a new project
-    syncer_obj = Syncer(
-        NewOrExistingProject(name, author, description),
-        DefaultExperiment(),
-        NewExperimentRun("Abc"))
+    syncer_obj = Syncer.create_syncer("test1", "test_user", \
+        "pandas-linear-regression")
 
     data, target = load_pandas_dataset()
     syncer_obj.add_tag(data, "occupation dataset")
@@ -162,7 +155,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         self.assertEquals(len(model2.metrics), 1)
         self.assertIn('mean_squared_error', model2.metrics)
 
-        dataframe_id = self.syncer_obj.id_for_object[id(self.x_test)]
+        dataframe_id = self.syncer_obj.get_modeldb_id_for_object(self.x_test)
         self.assertAlmostEqual(self.mean_error,
                                model2.metrics['mean_squared_error'][dataframe_id], places=4)
 
@@ -172,7 +165,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         # Check ancestry for dropped dataframe
         # Confirm dropped column has the original dataframe in ancestry
-        dataframe_id = self.syncer_obj.id_for_object[id(self.dropped_data)]
+        dataframe_id = self.syncer_obj.get_modeldb_id_for_object(self.dropped_data)
         ancestry = self.syncer_obj.client.getDataFrameAncestry(dataframe_id).ancestors
         self.assertEqual(len(ancestry), 2)
 

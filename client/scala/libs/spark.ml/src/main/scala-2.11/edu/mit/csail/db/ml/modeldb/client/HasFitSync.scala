@@ -35,8 +35,7 @@ trait HasFitSync[T <: Model[T]] {
               mdbs: Option[ModelDbSyncer],
               featureVectorNames: Seq[String]) = {
     // Associate the feature vector names with the dataframe.
-    if (featureVectorNames.nonEmpty)
-      mdbs.get.setFeaturesForDf(df, featureVectorNames)
+    if (mdbs.isDefined) mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
 
     // Train the models.
     val models = if (pms.length == 0) Seq(estimator.fit(df)) else estimator.fit(df, pms)
@@ -45,9 +44,7 @@ trait HasFitSync[T <: Model[T]] {
     val pmsSync = if (pms.length == 0) Seq() else pms
 
     // Record a FitEvent in the event syncer.
-    models.foreach { (model) =>
-      mdbs.get.buffer(FitEvent(estimator, df, model))
-    }
+    if (mdbs.isDefined) models.foreach((model) => mdbs.get.buffer(FitEvent(estimator, df, model)))
 
     // Return the models.
     models

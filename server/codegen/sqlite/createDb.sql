@@ -88,7 +88,7 @@ CREATE TABLE RandomSplitEvent (
 );
 
 -- TODO: This is not a great name, try something closer in meaning to "portion" or "part"
--- Something like DataPiece?
+-- Something like DataPiece? Or just SplitDataFrame?
 -- A DataFrameSplit represents a portion of a data frame produced by a Random Split Event
 -- For example, if you split a DataFrame into pieces with weights of 0.3 and 0.7,
 -- You would have two entries in the DataFrameSplit table, one for the 0.3 and one for the 0.7
@@ -217,8 +217,9 @@ CREATE TABLE FitEvent (
   -- There may be multiple columns produced - one predicting the actual data, and the others
   -- describing additional information, such as confidence
   predictionColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
-  -- The name of the column in the DataFrame whose values this Transformer is supposed to predict
-  labelColumn TEXT NOT NULL,
+  -- The name of the columns in the DataFrame whose values this Transformer is supposed to predict. We support
+  -- multiple label columns.
+  labelColumns TEXT NOT NULL,
   -- The ExperimentRun that contains this event.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
   -- The type of problem that the FitEvent is solving (e.g. Regression, 
@@ -306,7 +307,7 @@ CREATE TABLE MetricEvent (
   transformer INTEGER REFERENCES Transformer NOT NULL,
   -- The DataFrame that the model is being evaluated on
   df INTEGER REFERENCES DataFrame NOT NULL,
-  -- The type of the Metric being measured (e.g. String, Integer)
+  -- The type of Metric being measured (e.g. Squared Error, Accuracy, f1)
   metricType TEXT NOT NULL,
   -- The value of the measured Metric
   metricValue REAL NOT NULL,
@@ -326,8 +327,10 @@ CREATE TABLE Event (
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
---  This is how we store pipelines. We associate each Transformer in the pipeline to the event representing the fit of
---  the pipeline. The stage number orders these Transformers in the pipeline.
+-- Represents a transform event or fit event that was part of the creation of a pipeline model
+-- A pipeline model is a sequence of transformers, some of which may have been created by 
+-- Fit Events, in which each transformer transforms its input and passes its output to the next
+-- Transformer
 DROP TABLE IF EXISTS PipelineStage;
 CREATE TABLE PipelineStage (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

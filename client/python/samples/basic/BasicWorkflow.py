@@ -1,38 +1,35 @@
-# from modeldb.basic.ModelDbSyncerBase import *
+from modeldb.basic.ModelDbSyncerBase import *
 
+# syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
+#     "using modeldb light logging")
 
-from modeldb.sklearn_native.ModelDbSyncer import *
+syncer_obj = Syncer.create_syncer_from_config(
+    "/Users/mvartak/Projects/modeldb_test_dir/dir/.mdb_config")
 
-# Creating a new project
-name = "gensim test"
-author = "test_user"
-description = "using modeldb light logging"
-SyncerObj = Syncer(
-    NewOrExistingProject(name, author, description),
-    DefaultExperiment(),
-    NewExperimentRun("Abc"))
-
-print Syncer.instance.experiment
+print syncer_obj.experiment
 
 print "I'm training some model"
 
-config = {'l1' : 0.3, 'l2' : 0.4}
-result = SyncerObj.syncModel('/path/to/train', '/path/to/model', \
-    'LinearRegression', config)
+datasets = {
+    "train" : Dataset("/path/to/train", {}),
+    "test" : Dataset("/path/to/test", {})
+}
+model ="model_obj"
+mdb_model1 = Model("NN", model, "/path/to/model1")
+model_config1 = ModelConfig("NN", {"l1" : 10})
+model_metrics1 = ModelMetrics({"accuracy" : 0.8})
 
-# syncModel(self, trainDf, model_path, model_type, config, features=[]):
+mdb_model2 = Model("NN", model, "/path/to/model2")
+model_config2 = ModelConfig("NN", {"l1" : 20})
+model_metrics2 = ModelMetrics({"accuracy" : 0.9})
 
-# SyncerObj = Syncer(
-#     None,
-#     None,
-#     ExistingExperimentRun(60))
+syncer_obj.sync_datasets(datasets)
 
-# print Syncer.instance.experiment_run
+syncer_obj.sync_model("train", model_config1, mdb_model1)
+syncer_obj.sync_metrics("test", mdb_model1, model_metrics1)
 
-SyncerObj.instance.sync()
+syncer_obj.sync_model("train", model_config2, mdb_model2)
+syncer_obj.sync_metrics("test", mdb_model2, model_metrics2)
 
-# data paths 
-# model path
-# metrics
-# hyperparams
-# config
+syncer_obj.sync()
+

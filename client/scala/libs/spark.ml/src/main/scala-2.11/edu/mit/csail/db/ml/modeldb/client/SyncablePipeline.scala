@@ -1,6 +1,6 @@
 package org.apache.spark.ml
 
-import edu.mit.csail.db.ml.modeldb.client.event.{FitPipelineStageEvent, PipelineEvent, PipelineStageEvent, TransformerPipelineStageEvent}
+import edu.mit.csail.db.ml.modeldb.client.event._
 import edu.mit.csail.db.ml.modeldb.client.{HasFitSync, HasTransformSync, ModelDbSyncer, SyncableTransformer}
 import org.apache.spark.ml.param.{ParamMap, ParamPair}
 import org.apache.spark.sql.DataFrame
@@ -34,8 +34,8 @@ trait SyncablePipeline {
           case estimator: Estimator[_] =>
             val model = estimator.fit(oldDf)
             val newDf = model.transform(oldDf)
-            if (mdbs.isDefined && mdbs.get.getFeaturesForDf(df).isDefined)
-              mdbs.get.setFeaturesForDf(oldDf, mdbs.get.getFeaturesForDf(df).get)
+            if (mdbs.isDefined)
+              mdbs.get.featureTracker.copyFeatures(oldDf, df)
             stageEvents.append(FitPipelineStageEvent(oldDf, newDf, estimator, model))
             curDataset = newDf
             model
@@ -52,14 +52,13 @@ trait SyncablePipeline {
       }
 
       val model = new PipelineModel(pipeline.uid, transformers.toArray).setParent(pipeline)
-      mdbs.get.buffer(PipelineEvent(pipeline, model, df, stageEvents))
+      if (mdbs.isDefined) mdbs.get.buffer(PipelineEvent(pipeline, model, df, stageEvents))
       model
     }
 
     override def fitSync(df: DataFrame, pms: Array[ParamMap], featureVectorNames: Seq[String])
                         (implicit mdbs: Option[ModelDbSyncer]): Seq[PipelineModel] = {
-      if (featureVectorNames.nonEmpty)
-        mdbs.get.setFeaturesForDf(df, featureVectorNames)
+      if (mdbs.isDefined) mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
       if (pms.length == 0) {
         Array(customFit(df))
       } else {
@@ -72,10 +71,28 @@ trait SyncablePipeline {
     override def transformSync(df: DataFrame, pairs: Seq[ParamPair[_]])
                               (implicit mdbc: Option[ModelDbSyncer]): DataFrame = {
       pm.transformSchema(df.schema)
-      pm.stages.foldLeft(df)((cur, transformer) => transformer match {
+      // The code below has not been erased because I need it in order evaluate the performance of an optimization.
+//      pm.stages.foldLeft(df)((cur, transformer) => transformer match {
+//        case pm: PipelineModel => pm.transformSync(cur, pairs)(mdbc)
+//        case _ => SyncableTransformer.TransformerSync(transformer).transformSync(cur, pairs)(mdbc)
+//      })
+      val transformEvents = ArrayBuffer[TransformEvent]()
+      val finalResult = pm.stages.foldLeft(df)((cur, transformer) => transformer match {
         case pm: PipelineModel => pm.transformSync(cur, pairs)(mdbc)
-        case _ => SyncableTransformer.TransformerSync(transformer).transformSync(cur, pairs)(mdbc)
+        case _ =>
+          val result =
+            if (pairs.isEmpty)
+            transformer.transform(cur)
+          else if (pairs.size == 1)
+            transformer.transform(cur, pairs.head)
+          else
+            transformer.transform(cur, pairs.head, pairs.tail:_*)
+          transformEvents.append(TransformEvent(transformer, cur, result))
+          result
       })
+      if (mdbc.isDefined)
+        mdbc.get.buffer(PipelineTransformEvent(transformEvents:_*))
+      finalResult
     }
   }
 }

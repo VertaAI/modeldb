@@ -29,8 +29,7 @@ class FitEvent(Event):
         """
         Stores the generated ids into dictionary.
         """
-        df_id = id(self.df)
-        syncer.store_object(df_id, res.dfId)
+        syncer.store_object(self.df, res.dfId)
         syncer.store_object(self.spec, res.specId)
         syncer.store_object(self.model, res.modelId)
         syncer.store_object(self, res.eventId)
