@@ -19,7 +19,7 @@ This will create the JAR `target/scala-2.11/ml.jar`.
 
 # Samples
 
-This project includes [samples](https://github.com/mitdbg/spark-modeldb-client/tree/master/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) demonstrating usage of the library.
+This project includes samples [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation) and [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) demonstrating usage of the library.
 
 First, you'll need to import the classes you need, for example:
 
