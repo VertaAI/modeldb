@@ -9,10 +9,10 @@ like `estimator.fit(dataframe)`, in ModelDB.
 # Usage
 
 To build the JAR, first make sure you have installed 
-sbt (see [dependencies](../../../../docs/RequiredSoftware.md)). Then, run:
+sbt (see [dependencies](../../../../docs/RequiredSoftware.md)). Then, from the spark.ml dir, run:
 
 ```
-sbt assembly
+./build_client.sh
 ```
 
 This will create the JAR `target/scala-2.11/ml.jar`.
