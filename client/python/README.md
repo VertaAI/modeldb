@@ -1,4 +1,4 @@
-To run this project, first ensure that ModelDB Server is up and running. See instructions [here](server).
+To run this project, first ensure that ModelDB Server is up and running. See instructions [here](../../server).
 
 Run:
 ```
