@@ -6,7 +6,7 @@ data to and querying data from the ModelDB.
 
 # Setup
 
-ModelDB Server currently uses SQLite3 for storing data. So make sure you've installed SQLite3 (see [dependencies] (https://github.com/mitdbg/modeldb/blob/master/docs/RequiredSoftware.md)). 
+ModelDB Server currently uses SQLite3 for storing data. So make sure you've installed SQLite3 (see [dependencies] (docs/RequiredSoftware.md)). 
 
 From the server directory, create the SQLite database and tables for ModelDB using:
 
@@ -25,7 +25,7 @@ To launch the server, make sure you have installed Maven 3.
 You can run server tests with `mvn test`
 
 # Configuration
-Edit the server [configuration file](https://github.com/mitdbg/modeldb/blob/master/server/src/main/resources/reference.conf) to your liking.
+Edit the server [configuration file](server/src/main/resources/reference.conf) to your liking.
 
 Currently, only SQLite is supported, so you cannot change the database type.
 
