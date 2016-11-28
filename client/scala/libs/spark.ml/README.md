@@ -9,7 +9,7 @@ like `estimator.fit(dataframe)`, in ModelDB.
 # Usage
 
 To build the JAR, first make sure you have installed 
-[SBT](http://www.scala-sbt.org/). Then, run:
+sbt (see [dependencies](https://github.com/mitdbg/modeldb/blob/master/docs/RequiredSoftware.md)). Then, run:
 
 ```
 sbt assembly
