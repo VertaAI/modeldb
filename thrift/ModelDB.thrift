@@ -859,6 +859,28 @@ struct TreeModel {
   3: list<double> featureImportances
 }
 
+/*
+ Represents the ancestry that produced a given model.
+
+ Recall that a model is a Transformer produced by fitting a DataFrame with a
+ TransformerSpec. This FitEvent is thus included in the ancestry.
+
+ The DataFrame used in the fitting may have been produced by transforming
+ other DataFrames. So, we include all the TransformEvents that were involved in
+ producing the DataFrame that was fit to produce the given model. 
+ They are ordered such that the oldest TransformEvent is first and the 
+ TransformEvent that produced the DataFrame used for fitting is last.
+
+ All of the DataFrames stored in the FitEvent and the TransformEvents have
+ empty schema fields. The FitEvent has an empty hyperparameters and empty
+ featureColumns field. This is for performance purposes.
+*/
+struct ModelAncestryResponse {
+  1: i32 modelId,
+  2: FitEvent fitEvent,
+  3: list<TransformEvent> transformEvent
+}
+
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
 // For example, if you try to read Transformer with ID 1, then we throw this
 // exception if that Transformer does not exist.
@@ -1053,4 +1075,6 @@ service ModelDBService {
   */
   list<TransformEventResponse> storePipelineTransformEvent(1: list<TransformEvent> te)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
+
+  ModelAncestryResponse computeModelAncestry(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 }
