@@ -8,12 +8,6 @@ like `estimator.fit(dataframe)`, in ModelDB.
 
 # Usage
 
-First, make sure you update the thrift file.
-
-```
-./update_thrift_file.py
-```
-
 To build the JAR, first make sure you have installed 
 [SBT](http://www.scala-sbt.org/). Then, run:
 
