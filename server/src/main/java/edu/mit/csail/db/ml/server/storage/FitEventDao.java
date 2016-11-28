@@ -181,6 +181,7 @@ public class FitEventDao {
           labelCols,
           expRunId
         );
+        fitEvent.setProblemType(ProblemTypeConverter.fromString(rec.get(Tables.FITEVENT.PROBLEMTYPE)));
 
         int fitEventId = rec.get(Tables.FITEVENT.ID);
         fitEventForId.put(fitEventId, fitEvent);
