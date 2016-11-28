@@ -80,6 +80,8 @@ public class TestTransformEvent {
     List<TransformEvent> tes = TransformEventDao.read(Arrays.asList(te1, te2), TestBase.ctx());
 
     Assert.assertEquals(2, tes.size());
+    Assert.assertEquals(triple.expRunId, tes.get(0).experimentRunId);
+    Assert.assertEquals(triple.expRunId, tes.get(1).experimentRunId);
 
     // Verify models.
     Assert.assertEquals(m1, tes.get(0).transformer.id);

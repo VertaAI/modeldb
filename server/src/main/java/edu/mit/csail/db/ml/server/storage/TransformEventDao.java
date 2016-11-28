@@ -91,6 +91,7 @@ public class TransformEventDao {
       Tables.TRANSFORMEVENT.ID,
       Tables.TRANSFORMEVENT.INPUTCOLUMNS,
       Tables.TRANSFORMEVENT.OUTPUTCOLUMNS,
+      Tables.TRANSFORMEVENT.EXPERIMENTRUN,
       Tables.TRANSFORMER.ID,
       Tables.TRANSFORMER.TRANSFORMERTYPE,
       Tables.TRANSFORMER.TAG,
@@ -127,7 +128,7 @@ public class TransformEventDao {
         );
         transformer.setFilepath(rec.get(Tables.TRANSFORMER.FILEPATH));
 
-        int expRunId = rec.get(Tables.TRANSFORMEVENT.ID);
+        int expRunId = rec.get(Tables.TRANSFORMEVENT.EXPERIMENTRUN);
         List<String> inputCols = Arrays.asList(rec.get(Tables.TRANSFORMEVENT.INPUTCOLUMNS).split(","));
         List<String> outputCols = Arrays.asList(rec.get(Tables.TRANSFORMEVENT.OUTPUTCOLUMNS).split(","));
         TransformEvent transformEvent = new TransformEvent(oldDf, newDf, transformer, inputCols, outputCols, expRunId);
