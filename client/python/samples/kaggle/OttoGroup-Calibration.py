@@ -29,73 +29,73 @@ from modeldb.sklearn_native import SyncableMetrics
 ROOT_DIR = '../../../../server/'
 
 def run_otto_workflow():
-	name = "test1"
-	author = "author"
-	description = "kaggle-otto-script"
-	# Creating a new project
-	syncer_obj = Syncer(
-	        NewOrExistingProject(name, author, description),
-	        NewOrExistingExperiment("expName", "expDesc"),
-	        NewExperimentRun("otto test"))
+    name = "test1"
+    author = "author"
+    description = "kaggle-otto-script"
+    # Creating a new project
+    syncer_obj = Syncer(
+            NewOrExistingProject(name, author, description),
+            NewOrExistingExperiment("expName", "expDesc"),
+            NewExperimentRun("otto test"))
 
-	# Import Data
-	X = pd.read_csv_sync('../data/otto-train.csv')
-	syncer_obj.add_tag(X, "original otto csv data")
-	X = X.drop_sync('id', axis=1)
+    # Import Data
+    X = pd.read_csv_sync('../data/otto-train.csv')
+    syncer_obj.add_tag(X, "original otto csv data")
+    X = X.drop_sync('id', axis=1)
 
-	syncer_obj.add_tag(X, "dropped id column")
-	# Extract target
-	# Encode it to make it manageable by ML algo
-	y = X.target.values
+    syncer_obj.add_tag(X, "dropped id column")
+    # Extract target
+    # Encode it to make it manageable by ML algo
+    y = X.target.values
 
-	y = LabelEncoder().fit_transform_sync(y)
+    y = LabelEncoder().fit_transform_sync(y)
 
-	# Remove target from train, else it's too easy ...
-	X = X.drop_sync('target', axis=1)
+    # Remove target from train, else it's too easy ...
+    X = X.drop_sync('target', axis=1)
 
-	syncer_obj.add_tag(X, "data with dropped id and target columns")
+    syncer_obj.add_tag(X, "data with dropped id and target columns")
 
-	# Split Train / Test
-	x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(X, y, test_size=0.20, random_state=36)
+    # Split Train / Test
+    x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(X, y, test_size=0.20, random_state=36)
 
-	syncer_obj.add_tag(x_test, "testing data")
-	syncer_obj.add_tag(x_train, "training data")
-	# First, we will train and apply a Random Forest WITHOUT calibration
-	# we use a BaggingClassifier to make 5 predictions, and average
-	# because that's what CalibratedClassifierCV do behind the scene,
-	# and we want to compare things fairly, i.e. be sure that averaging several models
-	# is not what explains a performance difference between no calibration, and calibration.
+    syncer_obj.add_tag(x_test, "testing data")
+    syncer_obj.add_tag(x_train, "training data")
+    # First, we will train and apply a Random Forest WITHOUT calibration
+    # we use a BaggingClassifier to make 5 predictions, and average
+    # because that's what CalibratedClassifierCV do behind the scene,
+    # and we want to compare things fairly, i.e. be sure that averaging several models
+    # is not what explains a performance difference between no calibration, and calibration.
 
-	clf = RandomForestClassifier(n_estimators=50, n_jobs=-1)
+    clf = RandomForestClassifier(n_estimators=50, n_jobs=-1)
 
-	clfbag = BaggingClassifier(clf, n_estimators=5)
-	clfbag.fit_sync(x_train, y_train)
+    clfbag = BaggingClassifier(clf, n_estimators=5)
+    clfbag.fit_sync(x_train, y_train)
 
-	y_preds = clfbag.predict_proba_sync(x_test)
+    y_preds = clfbag.predict_proba_sync(x_test)
 
-	SyncableMetrics.compute_metrics(clfbag, log_loss, y_test, y_preds, x_test, "", "", eps=1e-15, normalize=True)
-	#print("loss WITHOUT calibration : ", log_loss(ytest, ypreds, eps=1e-15, normalize=True))
+    SyncableMetrics.compute_metrics(clfbag, log_loss, y_test, y_preds, x_test, "", "", eps=1e-15, normalize=True)
+    #print("loss WITHOUT calibration : ", log_loss(ytest, ypreds, eps=1e-15, normalize=True))
 
 
-	# Now, we train and apply a Random Forest WITH calibration
-	# In our case, 'isotonic' worked better than default 'sigmoid'
-	# This is not always the case. Depending of the case, you have to test the two possibilities
+    # Now, we train and apply a Random Forest WITH calibration
+    # In our case, 'isotonic' worked better than default 'sigmoid'
+    # This is not always the case. Depending of the case, you have to test the two possibilities
 
-	clf = RandomForestClassifier(n_estimators=50, n_jobs=-1)
-	calibrated_clf = CalibratedClassifierCV(clf, method='isotonic', cv=5)
-	calibrated_clf.fit_sync(x_train, y_train)
-	y_preds = calibrated_clf.predict_proba_sync(x_test)
-	SyncableMetrics.compute_metrics(calibrated_clf, log_loss, y_test, y_preds, x_test, "", "", eps=1e-15, normalize=True)
+    clf = RandomForestClassifier(n_estimators=50, n_jobs=-1)
+    calibrated_clf = CalibratedClassifierCV(clf, method='isotonic', cv=5)
+    calibrated_clf.fit_sync(x_train, y_train)
+    y_preds = calibrated_clf.predict_proba_sync(x_test)
+    SyncableMetrics.compute_metrics(calibrated_clf, log_loss, y_test, y_preds, x_test, "", "", eps=1e-15, normalize=True)
 
-	#print("loss WITH calibration : ", log_loss(ytest, ypreds, eps=1e-15, normalize=True))
+    #print("loss WITH calibration : ", log_loss(ytest, ypreds, eps=1e-15, normalize=True))
 
-	print(" ")
-	print("Conclusion : in our case, calibration improved performance a lot ! (reduced loss)")
-	syncer_obj.sync()
-	return syncer_obj, x_train, x_test
-	# We can see that we highly improved performance with calibration (loss is reduced) !
-	# Using calibration helped our team a lot to climb the leaderboard.
-	# In the future competitions, that's for sure, I will not forget to test this trick !
+    print(" ")
+    print("Conclusion : in our case, calibration improved performance a lot ! (reduced loss)")
+    syncer_obj.sync()
+    return syncer_obj, x_train, x_test
+    # We can see that we highly improved performance with calibration (loss is reduced) !
+    # Using calibration helped our team a lot to climb the leaderboard.
+    # In the future competitions, that's for sure, I will not forget to test this trick !
 
 
 class TestOttoCalibration(unittest.TestCase):
@@ -148,7 +148,7 @@ class TestOttoCalibration(unittest.TestCase):
         """
         Tests if models are properly derived from dataframe, given id
         """
-    	dataframe_id = self.syncer_obj.id_for_object[id(self.x_train)]
+        dataframe_id = self.syncer_obj.id_for_object[id(self.x_train)]
 
         # Two models use the x_train dataset.
         model_ids = self.syncer_obj.client.modelsDerivedFromDataFrame(dataframe_id)
