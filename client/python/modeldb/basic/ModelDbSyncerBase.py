@@ -121,7 +121,6 @@ class Syncer(object):
             NewExperimentRun(""))
         return syncer_obj
 
-    # TODO: need a way to specify the experiment in the config
     @classmethod
     def create_syncer_from_config(
         cls, config_file=".mdb_config", expt_name=None, sha=None):
