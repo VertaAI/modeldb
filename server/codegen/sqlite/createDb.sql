@@ -41,6 +41,8 @@ CREATE TABLE ExperimentRun (
   -- A description of this particular run, with the goals and parameters it used.
   description TEXT, 
   -- A timestamp indicating the time at which this experiment run was created.
+  sha TEXT,
+  -- Commit hash of the code for this run
   created TIMESTAMP NOT NULL
 );
 
