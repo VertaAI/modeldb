@@ -2,20 +2,27 @@
 <html>
   <head>
     <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
+    <link rel='stylesheet' href='/css/style.css' />
     <link rel='stylesheet' href='/css/projects.css' />
   </head>
   <body>
-    <h1><%= title %></h1>
-    <div class="projects">
-      <% for(var i=0; i<projects.length; i++) { %>
-        <a href="projects/<%= projects[i].project.id %>/models">
-          <div class="project">
-            <div class="project-name"><%= projects[i].project.name %></div>
-            <div class="project-author"><%= projects[i].project.author %></div>
-            <div class="project-desc"><%= projects[i].project.description %></div>
-          </div>
-        </a>
-      <% } %>
+    <%- include partials/nav.ejs %>
+    <div class="container">
+      <div class="input-container">
+        <input placeholder="Search for project"></input>
+      </div>
+      <div class="projects">
+        <% for(var i=0; i<projects.length; i++) { %>
+          <a href="projects/<%= projects[i].project.id %>/models">
+            <div class="project">
+              <div class="project-name"><%= projects[i].project.name %></div>
+              <div class="project-author"><%= projects[i].project.author %></div>
+              <div class="project-desc"><%= projects[i].project.description %></div>
+            </div>
+          </a>
+        <% } %>
+      </div>
     </div>
   </body>
 </html>

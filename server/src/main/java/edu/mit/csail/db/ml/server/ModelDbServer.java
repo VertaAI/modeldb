@@ -192,4 +192,8 @@ public class ModelDbServer implements ModelDBService.Iface {
     throws TException {
     return ExceptionWrapper.run(() -> PipelineEventDao.storePipelineTransformEvent(transformEvents, ctx));
   }
+
+  public ModelAncestryResponse computeModelAncestry(int modelId) throws TException {
+    return ExceptionWrapper.run(() -> DataFrameAncestryComputer.computeModelAncestry(modelId, ctx));
+  }
 }

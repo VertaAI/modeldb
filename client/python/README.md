@@ -1,6 +1,4 @@
-To run this project, 
-
-First ensure ModelDB Server is up and running. See the ModelDB server's [repo](https://github.com/mitdbg/modeldb/tree/master/server) for more information.
+To run this project, first ensure that ModelDB Server is up and running. See instructions [here](../../server).
 
 Run:
 ```

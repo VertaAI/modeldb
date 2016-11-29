@@ -1,15 +1,25 @@
-body {
-  margin: 20px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.input-container {
+  margin: 10px;
 }
 
-a {
-  text-decoration: none;
-  color: black;
+.input-container input {
+  padding: 5px;
+  font-size: 15px;
+  font-weight: 100;
+  width: 325px;
+}
+
+.input-container input:focus {
+  outline: none;
+}
+
+.projects {
+  margin: 10px;
 }
 
 .project {
-  background-color: #eee;
+  border: 1px solid #D9E0E8;
+  background-color: white;
   padding: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -17,7 +27,7 @@ a {
 }
 
 .project:hover {
-  background-color: #ddd;
+  box-shadow: 5px 5px 10px #AEBDCD;
 }
 
 .project-name {

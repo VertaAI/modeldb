@@ -4,12 +4,13 @@ var Thrift = require('./thrift.js');
 module.exports = {
 
   getModel: function(modelId, callback) {
-    //TODO: implement thrift call
-    return;
+    Thrift.client.getModel(modelId, function(err, response) {
+      callback(response);
+    });
   },
 
   getProjectModels: function(projectId, callback) {
-    var models = []
+    var models = [];
 
     Thrift.client.getRunsAndExperimentsInProject(projectId, function(err, response) {
       var runs = response.experimentRuns;
@@ -25,6 +26,7 @@ module.exports = {
         for (var i=0; i<models.length; i++) {
           var model_metrics = models[i].metrics;
           var metrics = [];
+          models[i].show = false;
           for (key in model_metrics) {
             if (model_metrics.hasOwnProperty(key)) {
               var val = Object.keys(model_metrics[key]).map(function(k){return model_metrics[key][k]})[0];
@@ -33,11 +35,16 @@ module.exports = {
                 "key": key,
                 "val": val
               });
+              models[i].show = true;
             }
           }
 
           models[i].metrics = metrics;
         }
+        models = models.filter(function(model) {
+          console.log(model);
+          return model.show;
+        });
         callback(models);
       });
     });
@@ -64,7 +71,9 @@ module.exports = {
           finish();
         });
       }, function(err) {
-        console.log(models);
+        for (var i=0; i<models.length; i++) {
+          console.log(models[i].metrics);
+        }
       });
     });
   }

@@ -98,7 +98,7 @@ trait SyncableCrossValidator {
 
       mdbs.get.buffer(GridSearchCrossValidationEvent(
         df,
-        foldsForEstimator,
+        if (mdbs.get.shouldStoreGSCVE) foldsForEstimator else Map(),
         seed,
         eval,
         bestModel,

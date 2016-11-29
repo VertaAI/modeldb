@@ -51,11 +51,15 @@ class NewOrExistingExperiment:
             -1, -1, self.name, self.description, False)
 
 class NewExperimentRun:
-    def __init__(self, description=""):
+    def __init__(self, description="", sha=None):
         self.description = description
+        self.sha = sha
 
     def to_thrift(self):
-        return modeldb_types.ExperimentRun(-1, -1, self.description)
+        erun = modeldb_types.ExperimentRun(-1, -1, self.description)
+        if self.sha:
+            erun.sha = self.sha
+        return erun
 
 class ExistingExperimentRun:
     def __init__(self, id):

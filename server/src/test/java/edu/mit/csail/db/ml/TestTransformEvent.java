@@ -11,6 +11,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class TestTransformEvent {
   TestBase.ProjExpRunTriple triple;
 
@@ -59,5 +62,51 @@ public class TestTransformEvent {
   @Test
   public void testStoreFilepath() throws Exception {
     testStore(true);
+  }
+
+  @Test
+  public void testRead() throws Exception {
+    int df1 = TestBase.createDataFrame(triple.expRunId, 101);
+    int df2 = TestBase.createDataFrame(triple.expRunId, 102);
+    int m1 = TestBase.createTransformer(triple.expRunId, "t1", "");
+
+    int df3 = TestBase.createDataFrame(triple.expRunId, 103);
+    int df4 = TestBase.createDataFrame(triple.expRunId, 104);
+    int m2 = TestBase.createTransformer(triple.expRunId, "t2", "");
+
+    int te1 = TestBase.createTransformEvent(triple.expRunId, m1, df1, df2, "incol1,incol2", "outcol1");
+    int te2 = TestBase.createTransformEvent(triple.expRunId, m2, df3, df4, "incol4", "outcol2,outcol3");
+
+    List<TransformEvent> tes = TransformEventDao.read(Arrays.asList(te1, te2), TestBase.ctx());
+
+    Assert.assertEquals(2, tes.size());
+    Assert.assertEquals(triple.expRunId, tes.get(0).experimentRunId);
+    Assert.assertEquals(triple.expRunId, tes.get(1).experimentRunId);
+
+    // Verify models.
+    Assert.assertEquals(m1, tes.get(0).transformer.id);
+    Assert.assertEquals(m2, tes.get(1).transformer.id);
+    Assert.assertEquals(2, tes.get(0).inputColumns.size());
+    Assert.assertEquals(1, tes.get(1).inputColumns.size());
+    Assert.assertEquals(1, tes.get(0).outputColumns.size());
+    Assert.assertEquals(2, tes.get(1).outputColumns.size());
+    Assert.assertEquals("t1", tes.get(0).transformer.transformerType);
+    Assert.assertEquals("t2", tes.get(1).transformer.transformerType);
+
+    // Verify input DataFrame.
+    Assert.assertEquals(df1, tes.get(0).oldDataFrame.id);
+    Assert.assertEquals(df3, tes.get(1).oldDataFrame.id);
+    Assert.assertEquals(0, tes.get(0).oldDataFrame.schema.size());
+    Assert.assertEquals(0, tes.get(1).oldDataFrame.schema.size());
+    Assert.assertEquals(101, tes.get(0).oldDataFrame.numRows);
+    Assert.assertEquals(103, tes.get(1).oldDataFrame.numRows);
+
+    // Verify the output DataFrame.
+    Assert.assertEquals(df2, tes.get(0).newDataFrame.id);
+    Assert.assertEquals(df4, tes.get(1).newDataFrame.id);
+    Assert.assertEquals(0, tes.get(0).newDataFrame.schema.size());
+    Assert.assertEquals(0, tes.get(1).newDataFrame.schema.size());
+    Assert.assertEquals(102, tes.get(0).newDataFrame.numRows);
+    Assert.assertEquals(104, tes.get(1).newDataFrame.numRows);
   }
 }

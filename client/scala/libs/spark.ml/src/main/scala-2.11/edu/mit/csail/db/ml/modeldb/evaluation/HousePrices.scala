@@ -20,7 +20,7 @@ object HousePrices {
   def main(args: Array[String]): Unit = {
     val pathToData = args(0)
     val spark = Common.makeSession()
-    val syncer = Common.makeSyncer()
+    val syncer = Common.makeSyncer(shouldCountRows = true, shouldStoreGSCVE = true, shouldStoreSpecificModels = true)
     val df = Common.readHousingPrices(pathToData, spark)
 
     // Let's categorize the columns:
@@ -93,7 +93,7 @@ object HousePrices {
         .setLabelCol(labelCol)
         .setFeaturesCol(featuresCol)
         .setPredictionCol(predictionCol)
-        .setNumTrees(200)
+        .setNumTrees(20)
 
     val rfParamGrid = new ParamGridBuilder()
         .addGrid(rf.featureSubsetStrategy, Array("sqrt", "onethird", "log2"))
