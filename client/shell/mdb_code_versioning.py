@@ -1,6 +1,6 @@
 import os.path
 import requests
-import ConfigConstants as constants
+import modeldb.utils.ConfigConstants as constants
 
 def version(version_config):
     # check that the experiment directory exists

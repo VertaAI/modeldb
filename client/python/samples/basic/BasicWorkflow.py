@@ -7,11 +7,14 @@ import sys
 # syncer_obj = Syncer.create_syncer_from_config(
 #     "/Users/mvartak/Projects/modeldb_test_dir/dir/.mdb_config")
 
-syncer_obj = Syncer(
-    NewOrExistingProject("gensim test", "test_user",
-    "using modeldb light logging"),
-    DefaultExperiment(),
-    NewExperimentRun("", "A1B2C3"))
+# syncer_obj = Syncer(
+#     NewOrExistingProject("gensim test", "test_user",
+#     "using modeldb light logging"),
+#     DefaultExperiment(),
+#     NewExperimentRun("", "A1B2C3"))
+
+# experiment_run_id = int(sys.argv[len(sys.argv) - 1])
+# syncer_obj = Syncer.create_syncer_for_experiment_run(experiment_run_id)
 
 print "I'm training some model"
 

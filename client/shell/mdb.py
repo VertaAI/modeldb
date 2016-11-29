@@ -1,11 +1,10 @@
 #!/usr/local/bin/python
-
 import argparse
 import yaml
 import sys
 import os, os.path
 import mdb_code_versioning
-import constants
+import modeldb.utils.ConfigConstants as constants
 from modeldb.basic.ModelDbSyncerBase import *
 from modeldb.utils.ConfigUtils import ConfigReader
 
@@ -18,6 +17,7 @@ parser.add_argument('--expt', nargs='?',
 parser.add_argument('script', nargs='+', 
     help='Script to be invoked to run the experiment')
 args = parser.parse_args()
+print args.script
 
 config = ConfigReader(args.config)
 versioning_info = config.get_versioning_information()
@@ -27,20 +27,14 @@ if versioning_info:
     if not sha:
         print "Unable to version code. See errors above."
 
-syncer = Syncer.create_syncer_from_config(args.config, args.expt)
-
-
 # connect to modeldb and create an experiment run
-expt_run_id = -1
-
-# expt_run_id = modeldb.createExperimentRun({})
-# create a connection
-# create a project
-# create an experiment
-# create an experiment run
+syncer = Syncer.create_syncer_from_config(args.config, args.expt, sha)
+print syncer.experiment_run.id
 
 # call the remainder of the script with the additional information
-script_cmd = ' '.join(args.script + ['--mdb_expt_run_id=' + str(expt_run_id)])
+args.script.append(str(syncer.experiment_run.id))
+script_cmd = ' '.join(args.script)
+print script_cmd
 os.system(script_cmd)
 
 sys.exit(0) 

@@ -56,7 +56,7 @@ class ConfigReader(object):
             constants.MDB_SERVER_PORT_KEY : port }
 
     def get_versioning_information(self):
-        if not config[constants.VERSION_CODE_KEY]:
+        if not self.config[constants.VERSION_CODE_KEY]:
             return None
         else:
             return {
