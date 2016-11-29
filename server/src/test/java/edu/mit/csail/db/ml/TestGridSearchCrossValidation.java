@@ -116,8 +116,9 @@ public class TestGridSearchCrossValidation {
     // 1 original DataFrame, 3 training splits, 3 validation splits. 3 + 3 + 1 = 7.
     Assert.assertEquals(7, TestBase.tableSize(Tables.DATAFRAME));
 
-    // One model per for each of the six folds and one best model. 6 + 1 = 7.
-    Assert.assertEquals(7, TestBase.tableSize(Tables.TRANSFORMER));
+    // One model per for each of the six folds and one best model.
+    // One transformer for each split (3 training, 3 validation). 6 + 6 + 1 = 13.
+    Assert.assertEquals(13, TestBase.tableSize(Tables.TRANSFORMER));
 
     // One spec for best model and one for each of the two cross validation grid cells.
     Assert.assertEquals(3, TestBase.tableSize(Tables.TRANSFORMERSPEC));
