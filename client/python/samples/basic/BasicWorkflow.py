@@ -1,4 +1,5 @@
 from modeldb.basic.ModelDbSyncerBase import *
+import sys
 
 # syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
 #     "using modeldb light logging")
@@ -11,8 +12,6 @@ syncer_obj = Syncer(
     "using modeldb light logging"),
     DefaultExperiment(),
     NewExperimentRun("", "A1B2C3"))
-
-print syncer_obj.experiment
 
 print "I'm training some model"
 
