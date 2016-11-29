@@ -67,7 +67,7 @@ object IMDBMovies {
 
     // Create the feature vector.
     val (preprocessedData, featureVectorNames, _) = FeatureVectorizer(
-        df.toDF(),
+        df,
         categoricalCols,
         Array[String](),
         featuresCol = "features",
@@ -136,7 +136,7 @@ object IMDBMovies {
 
     // Let's try doing the calculation again and try using the languages as a feature.
     val (preprocessedData2, featureVectorNames2, _) = FeatureVectorizer(
-        df.toDF(),
+        df,
         Array(
             "color",
             "content_rating",
@@ -164,7 +164,7 @@ object IMDBMovies {
     // Using the language decreased the RMS error. Now, let's try again and remove the country and language
     // features.
     val (preprocessedData3, featureVectorNames3, _) = FeatureVectorizer(
-        df.toDF(),
+        df,
         Array(
             "color",
             "content_rating",
@@ -186,6 +186,21 @@ object IMDBMovies {
 
     val (lrModel3, lrPredictions3) = makeLrModel(train3, test3, Some(featureVectorNames3))
     println("Evaluating " + makeEvaluator().evaluateSync(lrPredictions3, lrModel3))
+
+    println("df", syncer.id(df))
+    println("preprocessedData", syncer.id(preprocessedData))
+    println("preprocessedData2", syncer.id(preprocessedData2))
+    println("preprocessedData3", syncer.id(preprocessedData3))
+    println("train", syncer.id(train))
+    println("train2", syncer.id(train2))
+    println("train3", syncer.id(train3))
+    println("test", syncer.id(test))
+    println("test2", syncer.id(test2))
+    println("test3", syncer.id(test3))
+    println("lrPredictions", syncer.id(lrPredictions))
+    println("lrPredictions2", syncer.id(lrPredictions2))
+    println("lrPredictions3", syncer.id(lrPredictions3))
+
 
     if (syncer.originalFeatures(lrModel).get.length != 10)
       throw new Exception("First model does not have proper feature count")

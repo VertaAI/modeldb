@@ -1,14 +1,8 @@
 package edu.mit.csail.db.ml.server.storage;
 
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.records.DataframeRecord;
-import jooq.sqlite.gen.tables.records.EventRecord;
-import jooq.sqlite.gen.tables.records.GridcellcrossvalidationRecord;
-import jooq.sqlite.gen.tables.records.GridsearchcrossvalidationeventRecord;
-import modeldb.CrossValidationEventResponse;
-import modeldb.FitEventResponse;
-import modeldb.GridSearchCrossValidationEvent;
-import modeldb.GridSearchCrossValidationEventResponse;
+import jooq.sqlite.gen.tables.records.*;
+import modeldb.*;
 import org.jooq.DSLContext;
 
 import java.util.Collections;
@@ -37,22 +31,44 @@ public class GridSearchCrossValidationEventDao {
     if (!gscve.crossValidations.isEmpty()) {
 
       gscve.crossValidations.forEach(cve -> cve.setDf(cve.df.setId(fer.dfId)));
+      Transformer cveTransformer = new Transformer(-1, "CrossValidationSplitterTransformer", "");
 
-      List<DataframeRecord> validationDfs = gscve
+      List<TransformEventResponse> validationDfs = gscve
         .crossValidations
         .get(0)
         .folds
         .stream()
-        .map(fold -> DataFrameDao.store(fold.validationDf, gscve.experimentRunId, ctx))
+        .map(fold -> TransformEventDao.store(
+          new TransformEvent(
+            gscve.bestFit.df.setId(fer.dfId),
+            fold.validationDf,
+            cveTransformer,
+            Collections.emptyList(),
+            Collections.emptyList(),
+            gscve.experimentRunId
+          ),
+          ctx
+        ))
         .collect(Collectors.toList());
 
-      List<DataframeRecord> trainingDfs = gscve
+      List<TransformEventResponse> trainingDfs = gscve
         .crossValidations
         .get(0)
         .folds
         .stream()
-        .map(fold -> DataFrameDao.store(fold.trainingDf, gscve.experimentRunId, ctx))
+        .map(fold -> TransformEventDao.store(
+          new TransformEvent(
+            gscve.bestFit.df.setId(fer.dfId),
+            fold.trainingDf,
+            cveTransformer,
+            Collections.emptyList(),
+            Collections.emptyList(),
+            gscve.experimentRunId
+          ),
+          ctx
+        ))
         .collect(Collectors.toList());
+
 
       cveResponses = gscve
         .crossValidations
@@ -62,8 +78,8 @@ public class GridSearchCrossValidationEventDao {
             .range(0, cve.folds.size())
             .forEach(ind ->
               cve.folds.get(ind)
-                .setValidationDf(cve.folds.get(ind).validationDf.setId(validationDfs.get(ind).getId()))
-                .setTrainingDf(cve.folds.get(ind).trainingDf.setId(trainingDfs.get(ind).getId()))
+                .setValidationDf(cve.folds.get(ind).validationDf.setId(validationDfs.get(ind).getNewDataFrameId()))
+                .setTrainingDf(cve.folds.get(ind).trainingDf.setId(trainingDfs.get(ind).getNewDataFrameId()))
             );
           return CrossValidationEventDao.store(cve.setProblemType(gscve.problemType), ctx);
         })
