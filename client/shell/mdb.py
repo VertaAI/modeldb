@@ -17,7 +17,6 @@ parser.add_argument('--expt', nargs='?',
 parser.add_argument('script', nargs='+', 
     help='Script to be invoked to run the experiment')
 args = parser.parse_args()
-print args.script
 
 config = ConfigReader(args.config)
 versioning_info = config.get_versioning_information()
@@ -29,12 +28,10 @@ if versioning_info:
 
 # connect to modeldb and create an experiment run
 syncer = Syncer.create_syncer_from_config(args.config, args.expt, sha)
-print syncer.experiment_run.id
 
 # call the remainder of the script with the additional information
 args.script.append(str(syncer.experiment_run.id))
 script_cmd = ' '.join(args.script)
-print script_cmd
 os.system(script_cmd)
 
 sys.exit(0) 

@@ -150,7 +150,6 @@ class Syncer(object):
         Create a syncer for this experiment run
         """
         syncer_obj = cls(None, None, ExistingExperimentRun(experiment_run_id))
-        print syncer_obj.experiment_run
         return syncer_obj
 
     def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
