@@ -60,7 +60,6 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       SyncableEstimator(estimator),
       seed,
       SyncableEvaluator.getMetricNameLabelColPredictionCol(evaluator)._1,
-
       mdbs.featureTracker.getLabelColumns(bestModel),
       mdbs.featureTracker.getOutputCols(bestModel),
       mdbs.featureTracker.getFeatureCols(inputDataFrame, bestModel),
@@ -125,7 +124,12 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
 
     val res = Await.result(client.storeGridSearchCrossValidationEvent(gscve))
 
-    SyncableSpecificModel(res.fitEventResponse.modelId, bestModel, Some(client))
+    SyncableSpecificModel(
+      res.fitEventResponse.modelId,
+      bestModel,
+      Some(client),
+      mdbs.get.shouldStoreSpecificModels
+    )
 
     associate(mdbs.get, res, Some(client))
   }

@@ -2,22 +2,95 @@ package edu.mit.csail.db.ml.server.algorithm;
 
 import edu.mit.csail.db.ml.server.storage.DataFrameDao;
 import edu.mit.csail.db.ml.server.storage.FitEventDao;
+import edu.mit.csail.db.ml.server.storage.TransformEventDao;
 import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.DataframeRecord;
 import jooq.sqlite.gen.tables.records.TransformeventRecord;
-import modeldb.CommonAncestor;
-import modeldb.DataFrame;
-import modeldb.DataFrameColumn;
-import modeldb.ResourceNotFoundException;
+import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
+import org.jooq.impl.DSL;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DataFrameAncestryComputer {
+  /**
+   * Scans all the TransformEvents and returns two maps. The first maps from newDf ID to oldDf ID. The second maps from
+   * newDf ID to TransformEvent ID.
+   * @return (map from newDf ID to oldDf ID, map from newDf ID to TransformEvent ID)
+   */
+  public static Pair<Map<Integer, Integer>, Map<Integer, Integer>> getTransformEventMaps(DSLContext ctx) {
+    // Fetch all the TransformEvents and create a map from child DataFrame to parent DataFrame.
+    // This is expensive because we fetch all the TransformEvents. We could speed it up by only getting the
+    // TransformEvents from the current project. We also could also speed it up by making each DataFrame store its
+    // entire ancestor chain (rather than just its parent). However, let's not prematurely optimize.
+
+    List<TransformeventRecord> transformEvents = ctx
+      .selectFrom(Tables.TRANSFORMEVENT)
+      .fetch()
+      .map(r -> r);
+
+    Map<Integer, Integer> parentIdForDfId = transformEvents
+      .stream()
+      .collect(Collectors.toMap(TransformeventRecord::getNewdf, TransformeventRecord::getOlddf));
+
+    Map<Integer, Integer> transformEventForDfId = transformEvents
+      .stream()
+      .collect(Collectors.toMap(TransformeventRecord::getNewdf, TransformeventRecord::getId));
+
+    return new Pair<>(parentIdForDfId, transformEventForDfId);
+  }
+
+  /**
+   * Find the ancestor chain for a given DataFrame ID.
+   * @param dfId - The ID of a DataFrame. This MUST exist in the database.
+   * @param oldDfIdForNewDfId - Maps from newDf ID to oldDf ID.
+   * @return The ancestry chain. That is, the list of IDs of DataFrames that produced dfId, with the oldest ancestor
+   *  first and dfId last.
+   */
+  public static List<Integer> getAncestorChain(int dfId, Map<Integer, Integer> oldDfIdForNewDfId) {
+    // Populate the ancestor chain.
+    List<Integer> ancestorChain = new ArrayList<>();
+    int currId = dfId;
+    boolean hasCurrId = true;
+    while (hasCurrId) {
+      ancestorChain.add(currId);
+      if (oldDfIdForNewDfId.containsKey(currId)) {
+        currId = oldDfIdForNewDfId.get(currId);
+      } else {
+        hasCurrId = false;
+      }
+    }
+
+    return ancestorChain;
+  }
+
+  public static ModelAncestryResponse computeModelAncestry(int modelId, DSLContext ctx)
+    throws ResourceNotFoundException {
+    // First read the FitEvent.
+    int fitEventId = FitEventDao.getFitEventIdForModelId(modelId, ctx);
+    FitEvent fitEvent = FitEventDao.read(fitEventId, ctx);
+
+    // Read TransformEvent maps.
+    Pair<Map<Integer, Integer>, Map<Integer, Integer>> pair = getTransformEventMaps(ctx);
+    Map<Integer, Integer> parentIdForDfId = pair.getKey();
+    Map<Integer, Integer> transformEventIdForDfId = pair.getValue();
+
+    // Compute the TransformEvents involved in the ancestry chain.
+    List<Integer> ancestorChain = getAncestorChain(fitEvent.df.id, parentIdForDfId);
+    Collections.reverse(ancestorChain);
+    List<Integer> transformEventIds = IntStream
+      .range(1, ancestorChain.size())
+      .map(i -> transformEventIdForDfId.get(ancestorChain.get(i)))
+      .boxed()
+      .collect(Collectors.toList());
+    List<TransformEvent> transformEvents = TransformEventDao.read(transformEventIds, ctx);
+
+    return new ModelAncestryResponse(modelId, fitEvent, transformEvents);
+  }
 
   public static modeldb.DataFrameAncestry compute(int dfId, DSLContext ctx) throws ResourceNotFoundException {
     // Fetch the DataFrame wth the given ID.
@@ -34,24 +107,8 @@ public class DataFrameAncestryComputer {
     // This is expensive because we fetch all the TransformEvents. We could speed it up by only getting the
     // TransformEvents from the current project. We also could also speed it up by making each DataFrame store its
     // entire ancestor chain (rather than just its parent). However, let's not prematurely optimize.
-    Map<Integer, Integer> parentIdForDfId = ctx
-      .selectFrom(Tables.TRANSFORMEVENT)
-      .fetch()
-      .stream()
-      .collect(Collectors.toMap(TransformeventRecord::getNewdf, TransformeventRecord::getOlddf));
-
-    // Populate the ancestor chain.
-    List<Integer> ancestorChain = new ArrayList<>();
-    int currId = dfId;
-    boolean hasCurrId = true;
-    while (hasCurrId) {
-      ancestorChain.add(currId);
-      if (parentIdForDfId.containsKey(currId)) {
-        currId = parentIdForDfId.get(currId);
-      } else {
-        hasCurrId = false;
-      }
-    }
+    Map<Integer, Integer> parentIdForDfId = getTransformEventMaps(ctx).getKey();
+    List<Integer> ancestorChain = getAncestorChain(dfId, parentIdForDfId);
 
     // Create mapping from ID to order in the ancestor chain.
     Map<Integer, Integer> indexForId = IntStream

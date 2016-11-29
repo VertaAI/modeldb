@@ -1,15 +1,14 @@
 # Introduction
 
-ModelDB is a system for storing machine learning operations. This repository 
-houses the ModelDB server, which is responsible for exposing a Thrift API so 
-that clients can store machine learning operations, like training a model, in
-a database.
+The ModelDB server is responsible for storing all the ModelDB data and exposing
+a query interface for this data. The ModelDB server exposes a thrift API for storing
+data to and querying data from the ModelDB.
 
-# Usage
+# Setup
 
-Make sure you've installed SQLite3. 
+ModelDB Server currently uses SQLite3 for storing data. So make sure you've installed SQLite3 (see [dependencies] (docs/RequiredSoftware.md)). 
 
-Create the SQLite database and tables for ModelDB using:
+From the server directory, create the SQLite database and tables for ModelDB using:
 
 ```
 cd codegen && ./gen_sqlite.sh && cd ..
@@ -21,22 +20,12 @@ To launch the server, make sure you have installed Maven 3.
 ./start_server.sh
 ```
 
-Now, you can use one of the ModelDB clients, like the 
-[Spark client](https://github.com/mitdbg/spark-modeldb-client) or the 
-[Scikit-learn client](https://github.com/mitdbg/sklearn-modeldb-client) to then
-store entries in ModelDB.
-
 # Tests
 
-You can run tests with `mvn test`
-
-# Tables
-
-Here are the [schemas](https://github.com/mitdbg/modeldb/blob/master/codegen/sqlite/createDb.sql)
-for the tables created by ModelDB.
+You can run server tests with `mvn test`
 
 # Configuration
-Edit the [configuration file](https://github.com/mitdbg/modeldb/blob/master/server/src/main/resources/reference.conf) to your liking.
+Edit the server [configuration file](server/src/main/resources/reference.conf) to your liking.
 
 Currently, only SQLite is supported, so you cannot change the database type.
 

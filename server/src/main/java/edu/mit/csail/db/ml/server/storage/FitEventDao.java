@@ -3,14 +3,12 @@ package edu.mit.csail.db.ml.server.storage;
 import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.*;
-import modeldb.FitEvent;
-import modeldb.FitEventResponse;
-import modeldb.ResourceNotFoundException;
+import modeldb.*;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record1;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -19,7 +17,19 @@ public class FitEventDao {
     return store(fe, ctx, false);
   }
 
+  public static FitEventResponse readResponse(int modelId, DSLContext ctx) throws ResourceNotFoundException {
+    int fitEventId = getFitEventIdForModelId(modelId, ctx);
+    FitEvent fe = read(fitEventId, ctx);
+    int eventId = EventDao.getEventId(fitEventId, "fit", ctx);
+    return new FitEventResponse(fe.df.id, fe.spec.id, fe.model.id, eventId, fitEventId);
+  }
+
   public static FitEventResponse store(FitEvent fe, DSLContext ctx, boolean isPipeline) {
+    // First, attempt to read the FitEvent if it's already stored.
+    try {
+      return readResponse(fe.model.id, ctx);
+    } catch (ResourceNotFoundException rnf) {}
+
     // Store DataFrame, Transformer, and TransformerSpec.
     DataframeRecord df = DataFrameDao.store(fe.df, fe.experimentRunId, ctx);
     TransformerRecord t = TransformerDao.store(fe.model, fe.experimentRunId, ctx);
@@ -93,6 +103,111 @@ public class FitEventDao {
       ));
     }
     return numRows;
+  }
+
+  public static FitEvent read(int fitEventId, DSLContext ctx) throws ResourceNotFoundException {
+    return read(Collections.singletonList(fitEventId), ctx).get(0);
+  }
+
+  public static int getFitEventIdForModelId(int modelId, DSLContext ctx) throws ResourceNotFoundException {
+    Record1<Integer> rec =
+      ctx.select(Tables.FITEVENT.ID).from(Tables.FITEVENT).where(Tables.FITEVENT.TRANSFORMER.eq(modelId)).fetchOne();
+
+    if (rec == null) {
+      throw new ResourceNotFoundException(String.format("Could not find FitEvent for model %d", modelId));
+    }
+
+    return rec.value1();
+  }
+
+  /**
+   * Read the FitEvents associated with the given IDs.
+   * @param fitEventIds - The TransformEvent IDs to look up.
+   * @return A list of TransformEvents, transformEvents, where transformEvents.get(i) is the TransformEvent associated
+   *  with transformEventIds.get(i). The schema field of each TransformEvent will be emtpy. This is done for performance
+   *  reasons (reduces storage space and avoids extra query).
+   * @throws ResourceNotFoundException - Thrown if any of the IDs do not have an associated TransformEvent.
+   */
+  public static List<FitEvent> read(List<Integer> fitEventIds, DSLContext ctx)
+    throws ResourceNotFoundException {
+    Map<Integer, FitEvent> fitEventForId = new HashMap<>();
+
+    ctx.select(
+      Tables.DATAFRAME.ID,
+      Tables.DATAFRAME.TAG,
+      Tables.DATAFRAME.NUMROWS,
+      Tables.DATAFRAME.FILEPATH,
+      Tables.TRANSFORMERSPEC.ID,
+      Tables.TRANSFORMERSPEC.TRANSFORMERTYPE,
+      Tables.TRANSFORMERSPEC.TAG,
+      Tables.FITEVENT.ID,
+      Tables.FITEVENT.PREDICTIONCOLUMNS,
+      Tables.FITEVENT.LABELCOLUMNS,
+      Tables.FITEVENT.PROBLEMTYPE,
+      Tables.FITEVENT.EXPERIMENTRUN,
+      Tables.TRANSFORMER.ID,
+      Tables.TRANSFORMER.TRANSFORMERTYPE,
+      Tables.TRANSFORMER.TAG,
+      Tables.TRANSFORMER.FILEPATH
+    )
+      .from(
+        Tables.FITEVENT
+          .join(Tables.TRANSFORMER).on(Tables.FITEVENT.TRANSFORMER.eq(Tables.TRANSFORMER.ID))
+          .join(Tables.DATAFRAME).on(Tables.FITEVENT.DF.eq(Tables.DATAFRAME.ID))
+          .join(Tables.TRANSFORMERSPEC).on(Tables.FITEVENT.TRANSFORMERSPEC.eq(Tables.TRANSFORMERSPEC.ID)))
+      .where(Tables.FITEVENT.ID.in(fitEventIds))
+      .fetch()
+      .forEach(rec -> {
+        DataFrame df = new DataFrame(
+          rec.get(Tables.DATAFRAME.ID),
+          Collections.emptyList(),
+          rec.get(Tables.DATAFRAME.NUMROWS),
+          rec.get(Tables.DATAFRAME.TAG)
+        );
+        df.setFilepath(rec.get(Tables.DATAFRAME.FILEPATH));
+
+        TransformerSpec spec = new TransformerSpec(
+          rec.get(Tables.TRANSFORMERSPEC.ID),
+          rec.get(Tables.TRANSFORMERSPEC.TRANSFORMERTYPE),
+          Collections.emptyList(),
+          rec.get(Tables.TRANSFORMERSPEC.TAG)
+        );
+
+        Transformer transformer = new Transformer(
+          rec.get(Tables.TRANSFORMER.ID),
+          rec.get(Tables.TRANSFORMER.TRANSFORMERTYPE),
+          rec.get(Tables.TRANSFORMER.TAG)
+        );
+        transformer.setFilepath(rec.get(Tables.TRANSFORMER.FILEPATH));
+
+        int expRunId = rec.get(Tables.FITEVENT.EXPERIMENTRUN);
+        List<String> predictionCols = Arrays.asList(rec.get(Tables.FITEVENT.PREDICTIONCOLUMNS).split(","));
+        List<String> labelCols = Arrays.asList(rec.get(Tables.FITEVENT.LABELCOLUMNS).split(","));
+
+        FitEvent fitEvent = new FitEvent(
+          df,
+          spec,
+          transformer,
+          Collections.emptyList(),
+          predictionCols,
+          labelCols,
+          expRunId
+        );
+        fitEvent.setProblemType(ProblemTypeConverter.fromString(rec.get(Tables.FITEVENT.PROBLEMTYPE)));
+
+        int fitEventId = rec.get(Tables.FITEVENT.ID);
+        fitEventForId.put(fitEventId, fitEvent);
+      });
+
+    List<FitEvent> fitEvents = new ArrayList<>();
+    IntStream.range(0, fitEventIds.size()).forEach(i -> {
+      fitEvents.add(fitEventForId.getOrDefault(fitEventIds.get(i), null));
+    });
+
+    if (fitEvents.contains(null)) {
+      throw new ResourceNotFoundException("Could not find FitEvent with ID %s" + fitEvents.indexOf(null));
+    }
+    return fitEvents;
   }
 
   public static List<Integer> getNumRowsForModels(List<Integer> modelIds, DSLContext ctx) {
