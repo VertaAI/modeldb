@@ -311,9 +311,13 @@ class Syncer(object):
     def convert_df_to_thrift(self, dataset):
         dataset_id = self.get_modeldb_id_for_object(dataset)
         if dataset_id != -1:
-            return modeldb_types.DataFrame(dataset_id, [], -1, "", "")
+            return modeldb_types.DataFrame(dataset_id, [], -1, "", "", [])
+        metadata = []
+        for key, value in dataset.metadata.items():
+            kv = modeldb_types.MetadataKV(key, str(value), str(type(value)))
+            metadata.append(kv)
         return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
-            dataset.filename)
+            dataset.filename, metadata)
     '''
     End. Functions that convert ModelDBSyncerLight classes into ModelDB 
     thrift classes

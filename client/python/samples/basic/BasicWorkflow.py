@@ -23,8 +23,8 @@ syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
 print "I'm training some model"
 
 datasets = {
-    "train" : Dataset("/path/to/train", {}),
-    "test" : Dataset("/path/to/test", {})
+    "train" : Dataset("/path/to/train", {"num_cols" : 15, "dist" : "random"}),
+    "test" : Dataset("/path/to/test", {"num_cols" : 15, "dist" : "gaussian"})
 }
 model ="model_obj"
 mdb_model1 = Model("NN", model, "/path/to/model1")
