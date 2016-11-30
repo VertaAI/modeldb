@@ -37,8 +37,8 @@ object Common {
   def makeSyncer(appName: String = "default app name",
                  appDesc: String = "default description",
                  shouldCountRows: Boolean = false,
-                 shouldStoreGSCVE: Boolean = false,
-                 shouldStoreSpecificModels: Boolean = false): ModelDbSyncer = {
+                 shouldStoreGSCVE: Boolean = true,
+                 shouldStoreSpecificModels: Boolean = true): ModelDbSyncer = {
     val syncer = new ModelDbSyncer(
       projectConfig = NewOrExistingProject(
         appName,
