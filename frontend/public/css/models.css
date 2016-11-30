@@ -34,14 +34,6 @@ h2 {
   padding: 10px;
 }
 
-.charts-container {
-  width: 345px;
-  display: inline-block;
-  box-sizing: border-box;
-  padding: 20px;
-  position: absolute;
-}
-
 .filter-area {
   height: 250px;
   overflow-y: auto;
@@ -117,8 +109,9 @@ h2 {
 
 .models-container {
   margin: 0 10px;
-  height: calc(100vh - 300px);
+  height: calc(100vh - 165px);
   overflow-y: auto;
+  transition: all 0.3s ease;
 }
 
 .model {
@@ -236,20 +229,52 @@ h2 {
 }
 
 .model-chart {
-  margin: 10px;
+  margin: 60px 10px 10px 10px;
   display: inline-block;
   vertical-align: top;
-  margin-left: 345px;
 }
+
+.charts-container {
+  width: 345px;
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 20px;
+}
+
 
 .chart-container {
   background-color: #ecf0f1;
   width: 100%;
-  height: 200px;
-  overflow-y: auto;
+  height: 50px;
+  overflow: hidden;
   vertical-align: top;
+  position: relative;
+  transition: all 0.5s ease;
 }
 
 .chart-container h2 {
   margin-bottom: 25px;
+  line-height: 30px;
+}
+
+.chart-toggle {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 20px;
+  cursor: pointer;
+  color: #AEBDCD;
+  transition: all 0.5s ease;
+}
+
+.chart-toggle:hover {
+  color: #2c3e50;
+}
+
+.models-container-hide {
+  height: calc(100vh - 600px);
+}
+
+.chart-container-show {
+  height: 500px;
 }
