@@ -23,14 +23,45 @@ $(function() {
     updateVega();
   });
 
+  $(document).on('click', '.chart-toggle', function(event) {
+    var show = $(event.target).data('show');
+    if (!show) {
+      $(event.target).data('show', true);
+      $(event.target).html("&#9660;");
+      $('.models-container').addClass('models-container-hide');
+      $('.chart-container').addClass('chart-container-show');
+      /*
+      $('.models-container').animate({
+        height: ($(window).height() - 600) + "px"
+      }, 500);
+      $('.chart-container').animate({
+        height: "500px"
+      }, 500);
+      */
+    } else {
+      $(event.target).data('show', false);
+      $(event.target).html("&#9650;");
+      $('.models-container').removeClass('models-container-hide');
+      $('.chart-container').removeClass('chart-container-show');
+      /*
+      $('.models-container').animate({
+        height: ($(window).height() - 165) + "px"
+      }, 500);
+      $('.chart-container').animate({
+        height: "50px"
+      }, 500);
+      */
+    }
+  });
+
   function init() {
     var kvs = $('.kv');
     for (var i=0; i<kvs.length; i++) {
       var kv = $(kvs[i]);
       if (kv.data('num')) {
-        xaxis[kv.data('key')] = true;
-      } else {
         yaxis[kv.data('key')] = true;
+      } else {
+        xaxis[kv.data('key')] = true;
       }
     }
 
@@ -60,12 +91,12 @@ $(function() {
       },
       "mark": "bar",
       "encoding": {
-        "y": {
+        "x": {
           "type": "nominal",
           "axis": {
           }
         },
-        "x": {
+        "y": {
           "aggregate": "average",
           "type": "numeric",
           "axis": {

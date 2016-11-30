@@ -1,0 +1,9 @@
+#network {
+  background-color: white;
+  margin: 10px;
+}
+
+.models-container {
+  height: auto;
+  overflow: initial;
+}

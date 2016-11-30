@@ -13,7 +13,13 @@ router.get('/:id', function(req, res, next) {
       models: [response]
     });
   });
-})
+});
 
+router.get('/ancestry/:id', function(req, res, next) {
+  var modelId = req.params.id;
+  api.getModelAncestry(modelId, function(response) {
+    res.json(response);
+  });
+});
 
 module.exports = router;

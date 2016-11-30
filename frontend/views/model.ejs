@@ -3,8 +3,10 @@
   <head>
     <title><%= title %></title>
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
+    <link rel='stylesheet' href='/css/vis.min.css' />
     <link rel='stylesheet' href='/css/style.css' />
     <link rel='stylesheet' href='/css/models.css' />
+    <link rel='stylesheet' href='/css/pipeline.css' />
 
     <!-- JQuery -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
@@ -16,31 +18,34 @@
     <script src="//vega.github.io/vega-lite/vega-lite.js"></script>
     <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
 
+    <!-- Load vis.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vis/4.15.1/vis.min.js"></script>
+
     <script src='/js/models.js'></script>
     <script src='/js/charts.js'></script>
+    <script src='/js/pipeline.js'></script>
   </head>
   <body>
     <%- include partials/nav.ejs %>
     <div class="container">
-      <div class="model-headings-container">
-        <div class="model-headings">
-          <div class="model-heading model-ids">
-            IDs
-          </div>
-          <div class="model-heading model-dataframe">
-            DataFrame
-          </div>
-          <div class="model-heading model-spec">
-            Specifications
-          </div>
-          <div class="model-heading model-metrics">
-            Metrics
-          </div>
-          <div class="model-heading model-misc">
-            Misc.
-          </div>
+      <div class="model-headings">
+        <div class="model-heading model-ids">
+          IDs
+        </div>
+        <div class="model-heading model-dataframe">
+          DataFrame
+        </div>
+        <div class="model-heading model-spec">
+          Specifications
+        </div>
+        <div class="model-heading model-metrics">
+          Metrics
+        </div>
+        <div class="model-heading model-misc">
+          Misc.
         </div>
       </div>
+
       <div class="models-container">
         <div class="models">
           <% for(var i=0; i<models.length; i++) { %>
@@ -69,6 +74,7 @@
                   Experiment ID: <%= models[i].experimentId %>
                 </div>
 
+
                 <a href="/projects/<%= models[i].projectId %>/models">
                   <div class="nkv"
                     data-key="Project ID"
@@ -95,19 +101,23 @@
                   DF numRows: <%= models[i].trainingDataFrame.numRows %>
                 </div>
 
-                <div class="nkv"
-                  data-key="DF Tag"
-                  data-val="<%= models[i].trainingDataFrame.tag %>"
-                >
-                  DF Tag: <%= models[i].trainingDataFrame.tag %>
-                </div>
+                <% if (models[i].trainingDataFrame.tag) { %>
+                  <div class="nkv"
+                    data-key="DF Tag"
+                    data-val="<%= models[i].trainingDataFrame.tag %>"
+                  >
+                    DF Tag: <%= models[i].trainingDataFrame.tag %>
+                  </div>
+                <% } %>
 
-                <div class="nkv"
-                  data-key="DF Filepath"
-                  data-val="<%= models[i].trainingDataFrame.filepath %>"
-                >
-                  DF Filepath: <%= models[i].trainingDataFrame.filepath %>
-                </div>
+                <% if (models[i].trainingDataFrame.filepath) { %>
+                  <div class="nkv"
+                    data-key="DF Filepath"
+                    data-val="<%= models[i].trainingDataFrame.filepath %>"
+                  >
+                    DF Filepath: <%= models[i].trainingDataFrame.filepath %>
+                  </div>
+                <% } %>
               </div>
 
 
@@ -126,18 +136,50 @@
                   Type: <%= models[i].specification.transformerType %>
                 </div>
 
-                <div class="nkv"
-                  data-key="Spec Tag"
-                  data-val="<%= models[i].specification.tag %>"
-                >
-                  Spec Tag: <%= models[i].specification.tag %>
-                </div>
+                <% if (models[i].specification.tag) { %>
+                  <div class="nkv"
+                    data-key="Spec Tag"
+                    data-val="<%= models[i].specification.tag %>"
+                  >
+                    Spec Tag: <%= models[i].specification.tag %>
+                  </div>
+                <% } %>
 
                 <div class="nkv"
                   data-key="Problem Type"
                   data-val="<%= models[i].problemType %>"
                 >
                   Problem Type: <%= models[i].problemType %>
+                </div>
+
+                <div class="nkv hyperparams-container"
+                >
+                  Hyperparameters
+                  <div class="hyperparams">
+                    <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
+                      <div class="hyperparam">
+                        <div class="hyperparam-field">
+                          Name: <%= models[i].specification.hyperparameters[j].name %>
+                        </div>
+
+                        <div class="hyperparam-field">
+                          Value: <%= models[i].specification.hyperparameters[j].value %>
+                        </div>
+
+                        <div class="hyperparam-field">
+                          Type: <%= models[i].specification.hyperparameters[j].type %>
+                        </div>
+
+                        <div class="hyperparam-field">
+                          Min: <%= models[i].specification.hyperparameters[j].min %>
+                        </div>
+
+                        <div class="hyperparam-field">
+                          Max: <%= models[i].specification.hyperparameters[j].max %>
+                        </div>
+                      </div>
+                    <% } %>
+                  </div>
                 </div>
               </div>
 
@@ -160,20 +202,23 @@
                   data-key="Code SHA"
                   data-val="<%= models[i].sha %>"
                 >
-                  Code SHA: <%= models[i].sha %>
+                  Code SHA: N/A <%= models[i].sha %>
                 </div>
 
                 <div class="nkv"
                   data-key="Filepath"
                   data-val="<%= models[i].filepath %>"
                 >
-                  Filepath: <%= models[i].filepath %>
+                  Filepath: N/A <%= models[i].filepath %>
                 </div>
               </div>
 
             </div>
           <% } %>
         </div>
+      </div>
+
+      <div id="network" data-id=<%= models[0].id %>>
       </div>
 
     </div>
