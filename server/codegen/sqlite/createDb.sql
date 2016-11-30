@@ -52,7 +52,7 @@ CREATE TABLE MetadataKV (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   -- key name for this piece of metadata
   key TEXT NOT NULL,
-  -- The type of the hyperparameter (e.g. String, Integer)
+  -- value of this metadata piece
   value TEXT NOT NULL,
   -- The type of the value
   valueType TEXT NOT NULL
