@@ -6,6 +6,7 @@ import org.jooq.DSLContext;
 import org.jooq.Query;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class Duplicator<T> {
   protected Map<Integer, List<Integer>> idsForOriginalId;
@@ -17,7 +18,7 @@ public abstract class Duplicator<T> {
   void duplicate(int numIterations) {
     resetQuery();
 
-    Set<Integer> keys = idsForOriginalId.keySet();
+    Set<Integer> keys = idsForOriginalId.keySet().stream().sorted().collect(Collectors.toSet());
     for (int id : keys) {
       T rec = recForOriginalId.get(id);
       for (int i = 1; i < numIterations; i++) {
