@@ -26,7 +26,7 @@ CREATE TABLE Experiment (
   -- The name of this particular experiment
   name TEXT NOT NULL,
   -- A description of the experiment and the purpose of the experiment
-  description TEXT, 
+  description TEXT,
   -- A timestamp at which the experiment was created.
   created TIMESTAMP NOT NULL
 );
@@ -39,7 +39,7 @@ CREATE TABLE ExperimentRun (
   -- The experiment which contains this run.
   experiment INTEGER REFERENCES Experiment NOT NULL,
   -- A description of this particular run, with the goals and parameters it used.
-  description TEXT, 
+  description TEXT,
   -- A timestamp indicating the time at which this experiment run was created.
   sha TEXT,
   -- Commit hash of the code for this run
@@ -97,7 +97,7 @@ CREATE TABLE DataFrameMetadata (
   metadataKvId INTEGER REFERENCES MetadataKV NOT NULL
 );
 
--- A Random Split event represents breaking a DataFrame into 
+-- A Random Split event represents breaking a DataFrame into
 -- smaller DataFrames randomly according to a weight vector that
 -- specifies the relative sizes of the smaller DataFrames.
 DROP TABLE IF EXISTS RandomSplitEvent;
@@ -121,7 +121,7 @@ CREATE TABLE DataFrameSplit (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   -- The random split event that produced this piece (DataFrameSplit)
   splitEventId INTEGER REFERENCES RandomSplitEvent NOT NULL,
-  -- The weight (relative size) of this piece (DataFrameSplit) 
+  -- The weight (relative size) of this piece (DataFrameSplit)
   weight FLOAT NOT NULL,
   -- The produced DataFrame
   dataFrameId INTEGER REFERENCES DataFrame NOT NULL,
@@ -138,14 +138,14 @@ CREATE TABLE TransformerSpec (
   -- The kind of Transformer that this spec describes (e.g. linear regression)
   transformerType TEXT NOT NULL,
   -- User assigned content about this spec
-  tag TEXT, 
+  tag TEXT,
   -- The experiment run in which this spec is contained
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
 -- A hyperparameter helps guide the fitting of a model.
--- e.g. Number of trees in a random forest, 
---      number of nuerons in a nueral network 
+-- e.g. Number of trees in a random forest,
+--      number of nuerons in a nueral network
 DROP TABLE IF EXISTS HyperParameter;
 CREATE TABLE HyperParameter (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -155,13 +155,13 @@ CREATE TABLE HyperParameter (
   paramName TEXT NOT NULL,
   -- The type of the hyperparameter (e.g. String, Integer)
   paramType VARCHAR(40) NOT NULL,
-  -- The value assigned to this hyperparameter 
+  -- The value assigned to this hyperparameter
   paramValue TEXT NOT NULL,
   -- The minimum value allowed to be assigned to this hyperparameter
   -- Leave Min and Max NULL for non-numerical hyperparameters
-  paramMinValue FLOAT, 
+  paramMinValue FLOAT,
   -- The maximum value allowed for this hyperparameter
-  paramMaxValue FLOAT, 
+  paramMaxValue FLOAT,
   -- The ExperimentRun that contains this hyperparameter
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
@@ -174,7 +174,7 @@ CREATE TABLE Transformer (
   --  The kind of Transformer (e.g. Linear Regression Model, One-Hot Encoder)
   transformerType TEXT NOT NULL,
   --  User assigned text to describe this Transformer
-  tag TEXT, 
+  tag TEXT,
   -- The ExperimentRun that contains this Transformer
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
   --  The path to the serialized Transformer
@@ -226,7 +226,7 @@ CREATE TABLE ModelObjectiveHistory (
     objectiveValue DOUBLE NOT NULL
 );
 
--- Describes a Fit Event - Fitting a Transformer Spec to a DataFrame to 
+-- Describes a Fit Event - Fitting a Transformer Spec to a DataFrame to
 -- produce a model (Transformer)
 DROP TABLE IF EXISTS FitEvent;
 CREATE TABLE FitEvent (
@@ -246,7 +246,7 @@ CREATE TABLE FitEvent (
   labelColumns TEXT NOT NULL,
   -- The ExperimentRun that contains this event.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
-  -- The type of problem that the FitEvent is solving (e.g. Regression, 
+  -- The type of problem that the FitEvent is solving (e.g. Regression,
   -- Classification, Clustering, Recommendation, Undefined)
   problemType TEXT NOT NULL
 );
@@ -260,14 +260,14 @@ CREATE TABLE Feature (
   name TEXT NOT NULL,
   -- The index of this feature in the feature vector
   featureIndex INTEGER NOT NULL,
-  -- The importance to assign to this feature compared to the others 
+  -- The importance to assign to this feature compared to the others
   -- (Depends on transformer type)
   importance DOUBLE NOT NULL,
   -- The transformer that should utilize this feature
   transformer INTEGER REFERENCES TRANSFORMER
 );
 
--- A TransformEvent describes using a Transformer to produce an output 
+-- A TransformEvent describes using a Transformer to produce an output
 -- DataFrame from an input DataFrame
 DROP TABLE IF EXISTS TransformEvent;
 CREATE TABLE TransformEvent (
@@ -352,13 +352,12 @@ CREATE TABLE Event (
 );
 
 -- Represents a transform event or fit event that was part of the creation of a pipeline model
--- A pipeline model is a sequence of transformers, some of which may have been created by 
+-- A pipeline model is a sequence of transformers, some of which may have been created by
 -- Fit Events, in which each transformer transforms its input and passes its output to the next
 -- Transformer
 DROP TABLE IF EXISTS PipelineStage;
 CREATE TABLE PipelineStage (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  -- 
   pipelineFitEvent INTEGER REFERENCES FitEvent NOT NULL,
   transformOrFitEvent INTEGER REFERENCES Event NOT NULL,
   isFit INTEGER NOT NULL, -- 0 if this is a Transform stage and 1 if this is a Fit stage.
@@ -435,21 +434,21 @@ CREATE TABLE AnnotationFragment (
 
 --  Create a view for models (i.e. the Transformers that have an associated FitEvent).
 DROP VIEW IF EXISTS model_view;
-CREATE VIEW model_view AS 
+CREATE VIEW model_view AS
   SELECT fe.id as fe_id, ts.transformertype as model_type, fe.transformer as model, fe.transformerspec as spec_id, fe.df as train_df
   FROM fitevent fe, transformerspec ts
   WHERE ts.id = fe.transformerspec order by fe.id;
 
 --  Create a view for Transformers which are not models
 DROP VIEW IF EXISTS transformer_view;
-CREATE VIEW transformer_view AS 
+CREATE VIEW transformer_view AS
   SELECT te.id as te_id, t.transformertype as transformer_type, te.transformer as transformer, te.olddf as input_df, te.newdf as output_df
   FROM transformevent te, transformer t
   WHERE te.transformer = t.id order by te.id;
 
 -- Create a view for pipeline structure
 DROP VIEW IF EXISTS pipeline_view;
-CREATE VIEW pipeline_view AS 
+CREATE VIEW pipeline_view AS
   SELECT pipelinefitevent, stagenumber, e.id as event_id, e.eventtype, e.eventid
   FROM pipelinestage ps, event e
   WHERE ps.transformorfitevent = e.id order by stagenumber, eventtype;

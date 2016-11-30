@@ -28,7 +28,11 @@ public class DuplicatorMain {
       HyperParameterDuplicator.getInstance(ctx),
       LinearModelDuplicator.getInstance(ctx),
       LinearModelTermDuplicator.getInstance(ctx),
-      TreeModelDuplicator.getInstance(ctx)
+      TreeModelDuplicator.getInstance(ctx),
+      TreeNodeDuplicator.getInstance(ctx),
+      TreeLinkDuplicator.getInstance(ctx),
+      TreeModelComponentDuplicator.getInstance(ctx),
+      ModelObjectiveHistoryDuplicator.getInstance(ctx)
     );
 
     for (Duplicator duplicator : duplicators) {
