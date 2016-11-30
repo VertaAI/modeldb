@@ -19,7 +19,16 @@ public class DuplicatorMain {
       TransformerDuplicator.getInstance(ctx),
       TransformerSpecDuplicator.getInstance(ctx),
       TransformEventDuplicator.getInstance(ctx),
-      FitEventDuplicator.getInstance(ctx)
+      FitEventDuplicator.getInstance(ctx),
+      MetricEventDuplicator.getInstance(ctx),
+      RandomSplitEventDuplicator.getInstance(ctx),
+      DataFrameColumnDuplicator.getInstance(ctx),
+      DataFrameSplitDuplicator.getInstance(ctx),
+      FeatureDuplicator.getInstance(ctx),
+      HyperParameterDuplicator.getInstance(ctx),
+      LinearModelDuplicator.getInstance(ctx),
+      LinearModelTermDuplicator.getInstance(ctx),
+      TreeModelDuplicator.getInstance(ctx)
     );
 
     for (Duplicator duplicator : duplicators) {
