@@ -34,8 +34,6 @@ public class TestAncestryComputer {
 
     ModelAncestryResponse resp = DataFrameAncestryComputer.computeModelAncestry(t3, TestBase.ctx());
 
-    System.out.println(resp);
-
     Assert.assertEquals(t3, resp.modelId);
     Assert.assertEquals(df3, resp.fitEvent.df.id);
     Assert.assertEquals(103, resp.fitEvent.df.numRows);

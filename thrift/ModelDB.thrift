@@ -75,6 +75,20 @@ struct DataFrameColumn {
   2: string type
 }
 
+/*
+  A MetadataKV is any key-value pair along with the type of the value. 
+  It is used to associate arbitrary metadata with ModelDB entities
+
+  key: key
+  value: value
+  valueType: The type of value
+*/
+struct MetadataKV {
+  1: string key,
+  2: string value,
+  3: string valueType
+}
+
 /* 
   A tabular set of data. Contains many columns, each containing a single type
   of data. Each row in a DataFrame represents a new element.
@@ -91,7 +105,8 @@ struct DataFrame {
   2: list<DataFrameColumn> schema,
   3: i32 numRows,
   4: string tag = "",
-  5: optional string filepath
+  5: optional string filepath,
+  6: optional list<MetadataKV> metadata
 }
 
 /* 

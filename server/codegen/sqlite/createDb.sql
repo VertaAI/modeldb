@@ -46,6 +46,18 @@ CREATE TABLE ExperimentRun (
   created TIMESTAMP NOT NULL
 );
 
+-- Metadata information
+DROP TABLE IF EXISTS MetadataKV;
+CREATE TABLE MetadataKV (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- key name for this piece of metadata
+  key TEXT NOT NULL,
+  -- value of this metadata piece
+  value TEXT NOT NULL,
+  -- The type of the value
+  valueType TEXT NOT NULL
+);
+
 -- A DataFrame is a machine learning primitive. It is a table
 -- of data with named and typed columns.
 DROP TABLE IF EXISTS DataFrame;
@@ -73,6 +85,16 @@ CREATE TABLE DataFrameColumn (
   -- The type of data that is stored in this column: e.g: Integer, String
   type TEXT NOT NULL
   -- TODO: Should we store the index of each column in a DataFrame?
+);
+
+-- Table associating metadata with dataframes
+DROP TABLE IF EXISTS DataFrameMetadata;
+CREATE TABLE DataFrameMetadata (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- id of the dataframe
+  dfId INTEGER REFERENCES DataFrame NOT NULL,
+  -- id of the metadatakv
+  metadataKvId INTEGER REFERENCES MetadataKV NOT NULL
 );
 
 -- A Random Split event represents breaking a DataFrame into 
