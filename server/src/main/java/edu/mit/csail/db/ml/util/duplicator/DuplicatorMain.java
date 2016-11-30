@@ -32,7 +32,13 @@ public class DuplicatorMain {
       TreeNodeDuplicator.getInstance(ctx),
       TreeLinkDuplicator.getInstance(ctx),
       TreeModelComponentDuplicator.getInstance(ctx),
-      ModelObjectiveHistoryDuplicator.getInstance(ctx)
+      ModelObjectiveHistoryDuplicator.getInstance(ctx),
+      CrossValidationEventDuplicator.getInstance(ctx),
+      CrossValidationFoldDuplicator.getInstance(ctx),
+      GridSearchCrossValidationEventDuplicator.getInstance(ctx),
+      GridCellCrossValidationDuplicator.getInstance(ctx),
+      EventDuplicator.getInstance(ctx),
+      PipelineStageDuplicator.getInstance(ctx)
     );
 
     for (Duplicator duplicator : duplicators) {
