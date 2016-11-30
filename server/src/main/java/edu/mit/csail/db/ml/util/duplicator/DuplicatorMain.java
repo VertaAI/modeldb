@@ -12,11 +12,14 @@ public class DuplicatorMain {
     ModelDbConfig config = ModelDbConfig.parse(args);
     DSLContext ctx = ContextFactory.create(config.dbUser, config.dbPassword, config.jbdcUrl, config.dbType);
 
-    int NUM_ITERATIONS = 2;
+    int NUM_ITERATIONS = 3;
     List<Duplicator> duplicators = Arrays.asList(
       ExperimentRunDuplicator.getInstance(ctx),
       DataFrameDuplicator.getInstance(ctx),
-      TransformerDuplicator.getInstance(ctx)
+      TransformerDuplicator.getInstance(ctx),
+      TransformerSpecDuplicator.getInstance(ctx),
+      TransformEventDuplicator.getInstance(ctx),
+      FitEventDuplicator.getInstance(ctx)
     );
 
     for (Duplicator duplicator : duplicators) {
