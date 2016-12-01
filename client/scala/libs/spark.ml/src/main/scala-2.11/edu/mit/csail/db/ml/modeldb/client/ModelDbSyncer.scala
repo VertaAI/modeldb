@@ -56,9 +56,9 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
                     projectConfig: ProjectConfig,
                     experimentConfig: ExperimentConfig = new DefaultExperiment,
                     experimentRunConfig: ExperimentRunConfig,
-                    val shouldCountRows: Boolean = true,
-                    val shouldStoreGSCVE: Boolean = true,
-                    val shouldStoreSpecificModels: Boolean = true) {
+                    val shouldCountRows: Boolean = false,
+                    val shouldStoreGSCVE: Boolean = false,
+                    val shouldStoreSpecificModels: Boolean = false) {
   /**
     * This is a helper class that will constitute the entries in the buffer.
     * @param event - The event in the buffer.
