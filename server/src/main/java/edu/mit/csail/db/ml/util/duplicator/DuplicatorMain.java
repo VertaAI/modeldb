@@ -12,8 +12,9 @@ public class DuplicatorMain {
     ModelDbConfig config = ModelDbConfig.parse(args);
     DSLContext ctx = ContextFactory.create(config.dbUser, config.dbPassword, config.jbdcUrl, config.dbType);
 
-    int NUM_ITERATIONS = 3;
+    int NUM_ITERATIONS = 100;
     List<Duplicator> duplicators = Arrays.asList(
+      TreeNodeDuplicator.getInstance(ctx),
       ExperimentRunDuplicator.getInstance(ctx),
       DataFrameDuplicator.getInstance(ctx),
       TransformerDuplicator.getInstance(ctx),
@@ -29,7 +30,6 @@ public class DuplicatorMain {
       LinearModelDuplicator.getInstance(ctx),
       LinearModelTermDuplicator.getInstance(ctx),
       TreeModelDuplicator.getInstance(ctx),
-      TreeNodeDuplicator.getInstance(ctx),
       TreeLinkDuplicator.getInstance(ctx),
       TreeModelComponentDuplicator.getInstance(ctx),
       ModelObjectiveHistoryDuplicator.getInstance(ctx),
