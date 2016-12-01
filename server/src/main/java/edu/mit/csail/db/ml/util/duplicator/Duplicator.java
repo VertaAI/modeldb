@@ -15,10 +15,14 @@ public abstract class Duplicator<T> {
   protected int maxId;
   int numBuffered;
 
+  protected List<Integer> keys() {
+    return idsForOriginalId.keySet().stream().sorted().collect(Collectors.toList());
+  }
+
   void duplicate(int numIterations) {
     resetQuery();
 
-    Set<Integer> keys = idsForOriginalId.keySet().stream().sorted().collect(Collectors.toSet());
+    List<Integer> keys = keys();
     for (int id : keys) {
       T rec = recForOriginalId.get(id);
       for (int i = 1; i < numIterations; i++) {
@@ -31,6 +35,8 @@ public abstract class Duplicator<T> {
       }
     }
     forceExecute(getQuery());
+
+    System.out.println("Finished " + this.getClass().getSimpleName());
   }
 
   abstract protected Query getQuery();

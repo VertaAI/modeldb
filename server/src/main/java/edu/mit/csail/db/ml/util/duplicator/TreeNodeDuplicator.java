@@ -7,12 +7,40 @@ import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep7;
 import org.jooq.Query;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class TreeNodeDuplicator extends Duplicator<TreenodeRecord> {
   InsertValuesStep7<TreenodeRecord, Integer, Integer, Double, Double, Double, Integer, Integer> query;
 
   public TreeNodeDuplicator(DSLContext ctx) {
     init(ctx);
     ctx.selectFrom(Tables.TREENODE).forEach(rec -> updateMaps(rec.getId(), rec));
+  }
+
+  @Override
+  public List<Integer> keys() {
+    // First, make a set containing all the root nodes.
+    Set<Integer> rootNodes = new HashSet<>();
+    recForOriginalId.forEach((key, val) -> {
+      if (val.getRootnode() != null) {
+        rootNodes.add(val.getRootnode());
+      }
+    });
+
+    // We'll process the root nodes first.
+    List<Integer> keys = new ArrayList<>(rootNodes);
+
+    // Now, add all non-root nodes.
+    recForOriginalId.keySet().forEach(key -> {
+      if (!rootNodes.contains(key)) {
+        keys.add(key);
+      }
+    });
+    assert(recForOriginalId.keySet().size() == idsForOriginalId.keySet().size());
+    return keys;
   }
 
   @Override
