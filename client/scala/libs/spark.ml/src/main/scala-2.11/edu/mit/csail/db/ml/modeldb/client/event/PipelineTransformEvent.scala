@@ -1,11 +1,8 @@
 package edu.mit.csail.db.ml.modeldb.client.event
 
 import com.twitter.util.Await
-import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, SyncableDataFrame, SyncableTransformer}
+import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer
 import modeldb.ModelDBService.FutureIface
-import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.util.MLWritable
-import org.apache.spark.sql.DataFrame
 
 /**
   * Event indicating that a Pipeline performed a transformation.
@@ -18,7 +15,6 @@ case class PipelineTransformEvent(transformEvents: TransformEvent*) extends Mode
 
     res.zipWithIndex.foreach { pair =>
       transformEvents(pair._2).associate(pair._1, mdbs.get)
-      transformEvents(pair._2).writeTransformer(pair._1)
     }
   }
 }

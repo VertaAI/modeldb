@@ -49,7 +49,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public TransformEventResponse storeTransformEvent(TransformEvent te) throws TException {
-    return ExceptionWrapper.run(te.experimentRunId, ctx, () -> TransformEventDao.store(te, ctx, true));
+    return ExceptionWrapper.run(te.experimentRunId, ctx, () -> TransformEventDao.store(te, ctx));
   }
 
   public RandomSplitEventResponse storeRandomSplitEvent(RandomSplitEvent rse) throws TException {
@@ -195,5 +195,9 @@ public class ModelDbServer implements ModelDBService.Iface {
 
   public ModelAncestryResponse computeModelAncestry(int modelId) throws TException {
     return ExceptionWrapper.run(() -> DataFrameAncestryComputer.computeModelAncestry(modelId, ctx));
+  }
+
+  public String getFilePath(Transformer t, int experimentRunId) throws TException {
+    return ExceptionWrapper.run(() -> TransformerDao.getFilePath(t, experimentRunId, ctx));
   }
 }
