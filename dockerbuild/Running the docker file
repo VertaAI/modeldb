@@ -1,4 +1,4 @@
-docker run -it -p 8082:8082 -p 8081:3000 sanjayganeshan/modeldb:v2
+docker run -it -p 8082:8082 -p 8081:3000 sanjayganeshan/modeldb:v2.2
 
 OR 
 
