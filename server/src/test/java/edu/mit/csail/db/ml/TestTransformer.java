@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 // Note that this just tests the Transformer specific methods.
@@ -54,8 +55,8 @@ public class TestTransformer {
   @Test
   public void testGetFilePathNewTransformer() throws Exception {
     Assert.assertEquals(0, TestBase.tableSize(Tables.TRANSFORMER));
-    String filepath = TransformerDao.getFilePath(StructFactory.makeTransformer(), expRunId, TestBase.ctx());
-    Assert.assertTrue(filepath.length() > 0);
+    String filepath = TransformerDao.getFilePath(StructFactory.makeTransformer(), expRunId, "myfile", TestBase.ctx());
+    Assert.assertTrue(filepath.endsWith("myfile"));
     Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
   }
 
@@ -63,7 +64,7 @@ public class TestTransformer {
   public void testGetFilepathExistingTransformer() throws Exception {
     int tid = TestBase.createTransformer(expRunId, "ttype", null);
     Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
-    String filepath = TransformerDao.getFilePath(new Transformer(tid, null, null), expRunId, TestBase.ctx());
+    String filepath = TransformerDao.getFilePath(new Transformer(tid, null, null), expRunId, "", TestBase.ctx());
     Assert.assertTrue(filepath.length() > 0);
     Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
   }
@@ -72,7 +73,7 @@ public class TestTransformer {
   public void testGetFilepathForTransformerWithFilepath() throws Exception {
     int tid = TestBase.createTransformer(expRunId, "ttype", "test");
     Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
-    String filepath = TransformerDao.getFilePath(new Transformer(tid, null, null), expRunId, TestBase.ctx());
+    String filepath = TransformerDao.getFilePath(new Transformer(tid, null, null), expRunId, "ignore", TestBase.ctx());
     Assert.assertEquals("test", filepath);
     Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
   }
@@ -80,12 +81,20 @@ public class TestTransformer {
   @Test
   public void testGetFilepathNonExistentTransformer() throws Exception {
     try {
-      TransformerDao.getFilePath(new Transformer(1, null, null), expRunId, TestBase.ctx());
+      TransformerDao.getFilePath(new Transformer(1, null, null), expRunId, "", TestBase.ctx());
       Assert.fail();
     } catch (ResourceNotFoundException ex) {} catch (Exception ex) {
       ex.printStackTrace();
       Assert.fail();
     }
+  }
+
+  @Test
+  public void testGetFilepathDuplicate() throws Exception {
+    TestBase.createTransformer(expRunId, "ttype", Paths.get(TestBase.getConfig().fsPrefix, "myfile").toString());
+    String filepath = TransformerDao.getFilePath(StructFactory.makeTransformer(), expRunId, "myfile", TestBase.ctx());
+    Assert.assertFalse(filepath.endsWith("myfile"));
+    Assert.assertTrue(filepath.contains("myfile"));
   }
 
   @Test

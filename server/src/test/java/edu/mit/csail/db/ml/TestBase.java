@@ -40,11 +40,16 @@ public class TestBase {
 
   private static DSLContext context = null;
   private static ModelDbServer server = null;
+  private static ModelDbConfig config = null;
 
   private static void createSqliteDb() throws IOException {
     ProcessBuilder pb = new ProcessBuilder("sh", "gen_sqlite.sh");
     pb.directory(new File("codegen/"));
     pb.start();
+  }
+
+  public static ModelDbConfig getConfig() {
+    return config;
   }
 
   public static DSLContext ctx() throws SQLException, IOException, ParseException {
@@ -53,7 +58,7 @@ public class TestBase {
     }
 
     createSqliteDb();
-    ModelDbConfig config = ModelDbConfig.parse(new String[] {});
+    config = ModelDbConfig.parse(new String[] {});
     Connection conn = DriverManager.getConnection(config.jbdcTestUrl, "", "");
     context = DSL.using(conn, SQLDialect.SQLITE);
 

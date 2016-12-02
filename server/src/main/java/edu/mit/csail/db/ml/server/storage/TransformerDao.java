@@ -31,8 +31,13 @@ public class TransformerDao {
     return rec.getFilepath();
   }
 
+  public static boolean filePathExists(String filepath, DSLContext ctx) {
+    return ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.FILEPATH.eq(filepath)).fetchOne() != null;
+  }
+
   public static String getFilePath(Transformer t,
                                    int experimentRunId,
+                                   String desiredFilename,
                                    DSLContext ctx) throws ResourceNotFoundException {
     if (t.id > 0 && !exists(t.id, ctx)) {
       throw new ResourceNotFoundException(String.format(
@@ -42,7 +47,16 @@ public class TransformerDao {
     }
     TransformerRecord rec = store(t, experimentRunId, ctx);
     boolean hasFilepath = rec.getFilepath() != null && rec.getFilepath().length() > 0;
-    rec.setFilepath(hasFilepath ? rec.getFilepath() : generateFilepath());
+    String newFilepath = generateFilepath();
+    if (desiredFilename != null && desiredFilename.length() > 0) {
+      if (filePathExists(Paths.get(ModelDbConfig.getInstance().fsPrefix, desiredFilename).toString(), ctx)) {
+        newFilepath = Paths.get(ModelDbConfig.getInstance().fsPrefix,
+          desiredFilename + UUID.randomUUID().toString()).toString();
+      } else {
+        newFilepath = Paths.get(ModelDbConfig.getInstance().fsPrefix, desiredFilename).toString();
+      }
+    }
+    rec.setFilepath(hasFilepath ? rec.getFilepath() : newFilepath);
     rec.store();
     rec.getId();
     return rec.getFilepath();

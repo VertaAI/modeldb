@@ -73,6 +73,7 @@ object HousingFull {
       .setNumFolds(3)
 
     val model = cv.fitSync(train)
+    model.saveSync("housing_full_model")
     val predictions = model.transformSync(test)
 
     val score = eval.evaluateSync(predictions, model)
