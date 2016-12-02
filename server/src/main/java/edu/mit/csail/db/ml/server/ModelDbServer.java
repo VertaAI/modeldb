@@ -197,7 +197,7 @@ public class ModelDbServer implements ModelDBService.Iface {
     return ExceptionWrapper.run(() -> DataFrameAncestryComputer.computeModelAncestry(modelId, ctx));
   }
 
-  public String getFilePath(Transformer t, int experimentRunId) throws TException {
-    return ExceptionWrapper.run(() -> TransformerDao.getFilePath(t, experimentRunId, ctx));
+  public String getFilePath(Transformer t, int experimentRunId, String filepath) throws TException {
+    return ExceptionWrapper.run(() -> TransformerDao.getFilePath(t, experimentRunId, filepath, ctx));
   }
 }

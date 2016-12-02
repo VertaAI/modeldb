@@ -83,6 +83,7 @@ object IMDBExploratory {
         .setNumFolds(3)
 
       val lrCvModel = lrCv.fitSync(train)
+      lrCvModel.saveSync("imdb_exploratory_lr")
       val lrPredictions = lrCvModel.transformSync(test)
 
       /*
@@ -119,6 +120,7 @@ object IMDBExploratory {
         .setNumFolds(3)
 
       val rfCvModel = rfCv.fitSync(train)
+      rfCvModel.saveSync("imdb_exploratory_rf")
       val rfPredictions = rfCvModel.transformSync(test)
 
       (rfCvModel.bestModel.asInstanceOf[RandomForestRegressionModel], rfPredictions)
@@ -144,6 +146,7 @@ object IMDBExploratory {
         .setNumFolds(3)
 
       val gbtCvModel = gbtCv.fitSync(train)
+      gbtCvModel.saveSync("imdb_exploratory_gbt")
       val gbtPredictions = gbtCvModel.transformSync(test)
 
       (gbtCvModel.bestModel.asInstanceOf[GBTRegressionModel], gbtPredictions)

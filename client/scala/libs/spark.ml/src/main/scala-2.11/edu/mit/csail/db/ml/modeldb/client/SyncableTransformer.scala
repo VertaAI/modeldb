@@ -15,13 +15,15 @@ trait SyncableTransformer {
                               (implicit mdbc: Option[ModelDbSyncer]): DataFrame =
       transformSync(m, df, pairs, mdbc)
 
-    def save()(implicit mdbs: Option[ModelDbSyncer]): Boolean = {
+    def saveSync()(implicit mdbs: Option[ModelDbSyncer]): Boolean = saveSync("")(mdbs)
+
+    def saveSync(desiredFileName: String)(implicit mdbs: Option[ModelDbSyncer]): Boolean = {
       if (mdbs.isEmpty)
         false
       else
         m match {
           case w: MLWritable =>
-            val filepath = mdbs.get.getFilepath(m)
+            val filepath = mdbs.get.getFilepath(m, desiredFileName)
             w.write.overwrite().save(filepath)
             true
           case _ => false

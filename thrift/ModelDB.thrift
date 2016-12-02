@@ -967,7 +967,13 @@ service ModelDBService {
   //
   // If the Transformer has t.id < 0, then a new Transformer will be created,
   // given a filepath, and that filepath will be returned.
-  string getFilePath(1: Transformer t, 2: i32 experimentRunId)
+  //
+  // You can specify a filename as well. This will be ignored if the Transformer
+  // already has a filename. Otherwise, your Transformer will be saved at this
+  // filename. If there's already a Transformer at the given filename, some
+  // random characters will be added to your filename to prevent conflict. Set
+  // filename to the empty string if you want a randomly generated filename.
+  string getFilePath(1: Transformer t, 2: i32 experimentRunId, 3: string filename)
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
   TransformEventResponse storeTransformEvent(1: TransformEvent te)

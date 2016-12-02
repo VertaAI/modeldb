@@ -57,6 +57,7 @@ object HousingSimple {
       .setRegParam(0.1)
 
     val model = lr.fitSync(train)
+    model.saveSync("housing_simple_lr")
     val predictions = model.transformSync(test)
 
     val eval = new RegressionEvaluator()

@@ -59,6 +59,7 @@ object IMDBFull {
 
     // Select a model with cross validation.
     val model = cv.fitSync(train)
+    model.saveSync("imdb_full_model")
 
     // Evaluate the resulting model.
     val predictions = model.transformSync(test)

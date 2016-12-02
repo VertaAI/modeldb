@@ -47,6 +47,7 @@ object HousingExploratory {
         .setNumFolds(3)
 
       val lrCvModel = lrCv.fitSync(lrTrain, featureVectorNames)
+      lrCvModel.saveSync("housing_exploratory_lr")
       val lrPredictions = lrCvModel.transformSync(lrTest)
       println("Evaluation LR " + eval.evaluateSync(lrPredictions, lrCvModel.bestModel))
     }
@@ -76,6 +77,7 @@ object HousingExploratory {
         .setNumFolds(3)
 
       val rfCvModel = rfCv.fitSync(rfTrain, featureVectorNames)
+      rfCvModel.saveSync("housing_exploratory_rf")
       val rfPredictions = rfCvModel.transformSync(rfTest)
       println("Evaluation RF " + eval.evaluateSync(rfPredictions, rfCvModel.bestModel))
     }
@@ -104,6 +106,7 @@ object HousingExploratory {
         .setNumFolds(3)
 
       val gbtCvModel = gbtCv.fitSync(gbtTrain, featureVectorNames)
+      gbtCvModel.saveSync("housing_exploratory_gbt")
       val gbtPredictions = gbtCvModel.transformSync(gbtTest)
       println("Evaluation " + eval.evaluateSync(gbtPredictions, gbtCvModel.bestModel))
     }
