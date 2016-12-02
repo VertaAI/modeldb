@@ -2,6 +2,7 @@ package edu.mit.csail.db.ml.modeldb.client
 
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamPair
+import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.ml.util.MLWritable
 import org.apache.spark.sql.DataFrame
 
@@ -22,6 +23,7 @@ trait SyncableTransformer {
         false
       else
         m match {
+          case cvm: CrossValidatorModel => cvm.bestModel.saveSync(desiredFileName)
           case w: MLWritable =>
             val filepath = mdbs.get.getFilepath(m, desiredFileName)
             w.write.overwrite().save(filepath)
