@@ -953,6 +953,23 @@ service ModelDBService {
   MetricEventResponse storeMetricEvent(1: MetricEvent me)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
+  // Gets the filepath associated with the given Transformer.
+  //
+  // If the Transformer exists (t.id > 0 and there's a Transformer with the 
+  // given ID), then we will generate a filepath for it (unless a filepath
+  // already exists) and return the filepath. In this case, we only access the
+  // t.id field, so you can leave the other fields and the experimentRunId empty.
+  //
+  // If the Transformer does not exist (t.id > 0 and there's no Transformer
+  // with the given ID), then we will throw a ResourceNotFoundException. In
+  // this case, we only access the t.id field, so you can leave the other
+  // fields and the experimentRunId empty.
+  //
+  // If the Transformer has t.id < 0, then a new Transformer will be created,
+  // given a filepath, and that filepath will be returned.
+  string getFilePath(1: Transformer t, 2: i32 experimentRunId)
+    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
   TransformEventResponse storeTransformEvent(1: TransformEvent te)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 

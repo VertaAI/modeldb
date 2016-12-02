@@ -17,12 +17,12 @@ import static jooq.sqlite.gen.Tables.DATAFRAME;
 import static jooq.sqlite.gen.Tables.TRANSFORMEVENT;
 
 public class TransformEventDao {
-  public static TransformEventResponse store(TransformEvent te, DSLContext ctx,boolean generateFilepath) {
+  public static TransformEventResponse store(TransformEvent te, DSLContext ctx) {
     // Store the DataFrames and Transformer.
 
     DataframeRecord oldDf = DataFrameDao.store(te.oldDataFrame, te.experimentRunId, ctx);
     DataframeRecord newDf = DataFrameDao.store(te.newDataFrame, te.experimentRunId, ctx);
-    TransformerRecord t = TransformerDao.store(te.transformer, te.experimentRunId, ctx, generateFilepath);
+    TransformerRecord t = TransformerDao.store(te.transformer, te.experimentRunId, ctx);
 
     // Store the TransformEvent.
     TransformeventRecord teRec = ctx.newRecord(TRANSFORMEVENT);
@@ -146,9 +146,5 @@ public class TransformEventDao {
       throw new ResourceNotFoundException("Could not find TransformEvent with ID %s" + transformEvents.indexOf(null));
     }
     return transformEvents;
-  }
-
-  public static TransformEventResponse store(TransformEvent te, DSLContext ctx) {
-    return store(te, ctx, false);
   }
 }

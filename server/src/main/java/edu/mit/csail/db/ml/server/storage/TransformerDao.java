@@ -31,6 +31,23 @@ public class TransformerDao {
     return rec.getFilepath();
   }
 
+  public static String getFilePath(Transformer t,
+                                   int experimentRunId,
+                                   DSLContext ctx) throws ResourceNotFoundException {
+    if (t.id > 0 && !exists(t.id, ctx)) {
+      throw new ResourceNotFoundException(String.format(
+        "Cannot fetch or create a filepath for Transformer %d because it does not exist",
+        t.id
+      ));
+    }
+    TransformerRecord rec = store(t, experimentRunId, ctx);
+    boolean hasFilepath = rec.getFilepath() != null && rec.getFilepath().length() > 0;
+    rec.setFilepath(hasFilepath ? rec.getFilepath() : generateFilepath());
+    rec.store();
+    rec.getId();
+    return rec.getFilepath();
+  }
+
   public static boolean exists(int id, DSLContext ctx) {
     return ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(id)).fetchOne() != null;
   }
@@ -40,14 +57,9 @@ public class TransformerDao {
     return Paths.get(ModelDbConfig.getInstance().fsPrefix, "model_" + uuid).toString();
   }
 
-  public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx, boolean generateFilepath) {
+  public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx) {
     TransformerRecord rec = ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(t.id)).fetchOne();
     if (rec != null) {
-      // assign filepath if not currently assigned
-      if (generateFilepath && rec.getFilepath().length() == 0) {
-        rec.setFilepath(generateFilepath());
-        rec.store();
-      }
       return rec;
     }
 
@@ -56,23 +68,8 @@ public class TransformerDao {
     tRec.setTransformertype(t.transformerType);
     tRec.setTag(t.tag);
     tRec.setExperimentrun(experimentId);
-    if (t.isSetFilepath()) {
-      tRec.setFilepath(t.getFilepath());
-    } else {
-      tRec.setFilepath("");
-    }
-
-    if (generateFilepath && !t.isSetFilepath()) {
-      // Generate a UUID and filepath.
-      tRec.setFilepath(generateFilepath());
-    }
-
     tRec.store();
     return tRec;
-  }
-
-  public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx) {
-    return store(t, experimentId, ctx, false);
   }
 
   private static TransformerRecord read(int modelId, DSLContext ctx)

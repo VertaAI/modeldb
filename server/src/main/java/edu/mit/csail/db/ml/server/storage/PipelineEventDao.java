@@ -39,7 +39,7 @@ public class PipelineEventDao {
         transformEvents.get(i).setOldDataFrame(
           transformEvents.get(i).getOldDataFrame().setId(result.get(i - 1).newDataFrameId)
         );
-      result.add(TransformEventDao.store(te, ctx, true));
+      result.add(TransformEventDao.store(te, ctx));
     }
     return result;
   }
@@ -119,7 +119,7 @@ public class PipelineEventDao {
         stage.te.setExperimentRunId(pe.experimentRunId);
         stage.te.setOldDataFrame(stage.te.oldDataFrame.setId(dfId));
 
-        TransformEventResponse resp = TransformEventDao.store(stage.te, ctx, false);
+        TransformEventResponse resp = TransformEventDao.store(stage.te, ctx);
         tes.add(resp);
 
         dfId = resp.newDataFrameId;

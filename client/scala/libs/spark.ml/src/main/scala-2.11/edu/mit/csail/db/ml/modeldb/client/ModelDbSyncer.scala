@@ -213,6 +213,11 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
   // Model functions.
   def getCommonAncestor(df1Id: Int, df2Id: Int): CommonAncestor = Await.result(client.get.getCommonAncestor(df1Id, df2Id))
 
+  def getFilepath(t: Transformer): String = {
+    val st = SyncableTransformer.apply(t)
+    Await.result(client.get.getFilePath(st, experimentRun.id))
+  }
+
   private def idsOrNone(items: Object*): Option[Seq[Int]] = {
     val ids = items.map(id)
     if (ids.exists(_.isEmpty))

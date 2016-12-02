@@ -9,7 +9,8 @@ class ModelDbTestSyncer(projectConfig: ProjectConfig,
     hostPortPair = None,
     projectConfig = projectConfig,
     experimentConfig = experimentConfig,
-    experimentRunConfig = experimentRunConfig
+    experimentRunConfig = experimentRunConfig,
+    shouldCountRows = true
   ) {
 
   override def sync(): Unit = {}

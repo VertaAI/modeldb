@@ -1,5 +1,6 @@
 package edu.mit.csail.db.ml;
 
+import edu.mit.csail.db.ml.client.StructFactory;
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.storage.TransformerDao;
 import jooq.sqlite.gen.Tables;
@@ -24,19 +25,15 @@ public class TestTransformer {
   }
 
 
-  private void testStore(
-    boolean hasPresetFilepath, boolean generateFilepath) throws Exception {
+  @Test
+  public void testStore() throws Exception {
     // Store the Transformer.
     Transformer t = new Transformer(-1, "ttype", "tag");
-    if (hasPresetFilepath) {
-      t.setFilepath("/path/to/transformer");
-    }
 
     int tid = TransformerDao.store(
       t,
       expRunId,
-      TestBase.ctx(),
-      generateFilepath
+      TestBase.ctx()
     ).getId();
 
     // Verify that stored Transformer is correct.
@@ -47,40 +44,48 @@ public class TestTransformer {
     Assert.assertEquals("ttype", rec.getTransformertype());
     Assert.assertEquals(expRunId, rec.getExperimentrun().intValue());
 
-    if (hasPresetFilepath) {
-      Assert.assertEquals(rec.getFilepath(), t.getFilepath());
-    } else {
-      if (generateFilepath) {
-        Assert.assertTrue(rec.getFilepath().length() > 0);
-      } else {
-        Assert.assertEquals("", rec.getFilepath());
-      }
-    }
-  }
-
-  @Test
-  public void testStoreNoPresetFilepathNoGenerateFilepath() throws Exception {
-    testStore(false, false);
-  }
-
-  @Test
-  public void testStoreWithPresetFilepathNoGenerateFilepath() throws Exception {
-    testStore(true, false);
-  }
-
-  @Test
-  public void testStoreWithNoPresetFilepathGenerateFilepath() throws Exception {
-    testStore(false, true);
-  }
-
-  @Test
-  public void testStoreWithPresetFilepathGenerateFilepath() throws Exception {
-    testStore(true, true);
   }
 
   @Test
   public void testGenerateFilePath() throws Exception {
     Assert.assertTrue(TransformerDao.generateFilepath().startsWith(ModelDbConfig.getInstance().fsPrefix));
+  }
+
+  @Test
+  public void testGetFilePathNewTransformer() throws Exception {
+    Assert.assertEquals(0, TestBase.tableSize(Tables.TRANSFORMER));
+    String filepath = TransformerDao.getFilePath(StructFactory.makeTransformer(), expRunId, TestBase.ctx());
+    Assert.assertTrue(filepath.length() > 0);
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
+  }
+
+  @Test
+  public void testGetFilepathExistingTransformer() throws Exception {
+    int tid = TestBase.createTransformer(expRunId, "ttype", null);
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
+    String filepath = TransformerDao.getFilePath(new Transformer(tid, null, null), expRunId, TestBase.ctx());
+    Assert.assertTrue(filepath.length() > 0);
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
+  }
+
+  @Test
+  public void testGetFilepathForTransformerWithFilepath() throws Exception {
+    int tid = TestBase.createTransformer(expRunId, "ttype", "test");
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
+    String filepath = TransformerDao.getFilePath(new Transformer(tid, null, null), expRunId, TestBase.ctx());
+    Assert.assertEquals("test", filepath);
+    Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMER));
+  }
+
+  @Test
+  public void testGetFilepathNonExistentTransformer() throws Exception {
+    try {
+      TransformerDao.getFilePath(new Transformer(1, null, null), expRunId, TestBase.ctx());
+      Assert.fail();
+    } catch (ResourceNotFoundException ex) {} catch (Exception ex) {
+      ex.printStackTrace();
+      Assert.fail();
+    }
   }
 
   @Test

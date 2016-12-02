@@ -22,9 +22,10 @@ public class TestTransformEvent {
     triple = TestBase.reset();
   }
 
-  public void testStore(boolean generateFilePath) throws Exception {
+  @Test
+  public void testStore() throws Exception {
     TransformEvent te = StructFactory.makeTransformEvent();
-    TransformEventResponse resp = TransformEventDao.store(te, TestBase.ctx(), generateFilePath);
+    TransformEventResponse resp = TransformEventDao.store(te, TestBase.ctx());
 
     // Verify that we've stored entries in each table.
     Assert.assertEquals(1, TestBase.tableSize(Tables.TRANSFORMEVENT));
@@ -44,24 +45,6 @@ public class TestTransformEvent {
     EventRecord evRec = TestBase.ctx().selectFrom(Tables.EVENT).fetchOne();
     Assert.assertEquals(evRec.getId().intValue(), resp.eventId);
     Assert.assertEquals("transform", evRec.getEventtype());
-
-    // Verify that the Transformer has a filepath.
-    String filepath = TestBase.ctx().selectFrom(Tables.TRANSFORMER).fetchOne().getFilepath();
-    if (generateFilePath) {
-      Assert.assertTrue(filepath.length() > 0);
-    } else {
-      Assert.assertEquals("", filepath);
-    }
-  }
-
-  @Test
-  public void testStoreNoFilepath() throws Exception {
-    testStore(false);
-  }
-
-  @Test
-  public void testStoreFilepath() throws Exception {
-    testStore(true);
   }
 
   @Test

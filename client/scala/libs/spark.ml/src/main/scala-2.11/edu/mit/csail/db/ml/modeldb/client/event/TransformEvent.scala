@@ -35,16 +35,8 @@ case class TransformEvent(transformer: Transformer,
       .associateObjectAndId(this, ter.eventId)
   }
 
-  def writeTransformer(res: TransformEventResponse): Unit = transformer match {
-    case w: MLWritable => if (res.filepath.length > 0)
-      w.write.overwrite().save(res.filepath)
-  }
-
   override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
     val res = Await.result(client.storeTransformEvent(makeEvent(mdbs.get)))
-
-    writeTransformer(res)
-
     associate(res, mdbs.get)
   }
 }

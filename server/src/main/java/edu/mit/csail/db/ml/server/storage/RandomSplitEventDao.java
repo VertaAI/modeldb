@@ -70,7 +70,7 @@ public class RandomSplitEventDao {
           Collections.emptyList(),
           rse.experimentRunId
         );
-        return TransformEventDao.store(te, ctx, false).newDataFrameId;
+        return TransformEventDao.store(te, ctx).newDataFrameId;
       })
       .collect(Collectors.toList());
 
