@@ -10,6 +10,10 @@ public class ExceptionWrapper {
     T get() throws Exception;
   }
 
+  public interface CheckedRunnable {
+    void run() throws Exception;
+  }
+
   public static <T> T run(CheckedSupplier<T> fn) throws TException {
     try {
       return fn.get();

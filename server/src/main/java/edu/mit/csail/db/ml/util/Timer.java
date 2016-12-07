@@ -11,6 +11,12 @@ public class Timer {
 
   public void stop() {
     long elapsedTime = System.currentTimeMillis() - startTime;
-    System.out.println(message + ": " + elapsedTime + " ms");
+    System.out.println(message + ", " + elapsedTime);
+  }
+
+  public static void time(String message, ExceptionWrapper.CheckedRunnable fn) throws Exception {
+    Timer t = new Timer(message);
+    fn.run();
+    t.stop();
   }
 }
