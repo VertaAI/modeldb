@@ -9,10 +9,11 @@ import java.util.List;
 
 public class DuplicatorMain {
   public static void main(String[] args) throws Exception {
-    ModelDbConfig config = ModelDbConfig.parse(args);
+    System.out.println("Duplicating a total of " + args[0] + " times.");
+    ModelDbConfig config = ModelDbConfig.parse(new String[] {});
     DSLContext ctx = ContextFactory.create(config.dbUser, config.dbPassword, config.jbdcUrl, config.dbType);
 
-    int NUM_ITERATIONS = 100;
+    int NUM_ITERATIONS = Integer.parseInt(args[0]);
     List<Duplicator> duplicators = Arrays.asList(
       TreeNodeDuplicator.getInstance(ctx),
       ExperimentRunDuplicator.getInstance(ctx),
@@ -44,6 +45,6 @@ public class DuplicatorMain {
     for (Duplicator duplicator : duplicators) {
       duplicator.duplicate(NUM_ITERATIONS);
     }
-    System.out.println("Hello world!");
+    System.out.println("Finished duplication!");
   }
 }
