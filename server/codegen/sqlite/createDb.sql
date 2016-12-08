@@ -86,6 +86,7 @@ CREATE TABLE DataFrameColumn (
   type TEXT NOT NULL
   -- TODO: Should we store the index of each column in a DataFrame?
 );
+CREATE INDEX IF NOT EXISTS DataFrameColumnIndexDfId ON DataFrameColumn(dfId);
 
 -- Table associating metadata with dataframes
 DROP TABLE IF EXISTS DataFrameMetadata;
@@ -250,6 +251,7 @@ CREATE TABLE FitEvent (
   -- Classification, Clustering, Recommendation, Undefined)
   problemType TEXT NOT NULL
 );
+CREATE INDEX IF NOT EXISTS FitEventIndexTransformer ON FitEvent(transformer);
 
 -- Describes a feature in the DataFrame - an attribute to consider when
 -- creating a Transformer from a DataFrame via a FitEvent.
@@ -286,6 +288,8 @@ CREATE TABLE TransformEvent (
   outputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
+CREATE INDEX IF NOT EXISTS TransformEventIndexNewDf ON TransformEvent(newDf);
+CREATE INDEX IF NOT EXISTS TransformEventIndexExperimentRun ON TransformEvent(experimentRun);
 
 --TODO
 DROP TABLE IF EXISTS TreeNode;

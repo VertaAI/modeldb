@@ -10,7 +10,6 @@ import jooq.sqlite.gen.tables.records.TransformeventRecord;
 import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
-import org.jooq.impl.DSL;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,7 +21,7 @@ public class DataFrameAncestryComputer {
    * newDf ID to TransformEvent ID.
    * @return (map from newDf ID to oldDf ID, map from newDf ID to TransformEvent ID)
    */
-  public static Pair<Map<Integer, Integer>, Map<Integer, Integer>> getTransformEventMaps(DSLContext ctx) {
+  public static Pair<Map<Integer, Integer>, Map<Integer, Integer>> getTransformEventMaps(DSLContext ctx, int expRunId) {
     // Fetch all the TransformEvents and create a map from child DataFrame to parent DataFrame.
     // This is expensive because we fetch all the TransformEvents. We could speed it up by only getting the
     // TransformEvents from the current project. We also could also speed it up by making each DataFrame store its
@@ -30,6 +29,7 @@ public class DataFrameAncestryComputer {
 
     List<TransformeventRecord> transformEvents = ctx
       .selectFrom(Tables.TRANSFORMEVENT)
+      .where(Tables.TRANSFORMEVENT.EXPERIMENTRUN.eq(expRunId))
       .fetch()
       .map(r -> r);
 
@@ -75,7 +75,7 @@ public class DataFrameAncestryComputer {
     FitEvent fitEvent = FitEventDao.read(fitEventId, ctx);
 
     // Read TransformEvent maps.
-    Pair<Map<Integer, Integer>, Map<Integer, Integer>> pair = getTransformEventMaps(ctx);
+    Pair<Map<Integer, Integer>, Map<Integer, Integer>> pair = getTransformEventMaps(ctx, fitEvent.experimentRunId);
     Map<Integer, Integer> parentIdForDfId = pair.getKey();
     Map<Integer, Integer> transformEventIdForDfId = pair.getValue();
 
@@ -103,11 +103,15 @@ public class DataFrameAncestryComputer {
       );
     }
 
-    // Otherwise, fetch all the TransformEvents and create a map from child DataFrame to parent DataFrame.
-    // This is expensive because we fetch all the TransformEvents. We could speed it up by only getting the
-    // TransformEvents from the current project. We also could also speed it up by making each DataFrame store its
-    // entire ancestor chain (rather than just its parent). However, let's not prematurely optimize.
-    Map<Integer, Integer> parentIdForDfId = getTransformEventMaps(ctx).getKey();
+    Record1<Integer> expRunIdRec = ctx
+      .select(Tables.TRANSFORMEVENT.EXPERIMENTRUN)
+      .from(Tables.TRANSFORMEVENT)
+      .where(Tables.TRANSFORMEVENT.NEWDF.eq(dfId))
+      .fetchOne();
+    Map<Integer, Integer> parentIdForDfId = new HashMap<>();
+    if (expRunIdRec != null) {
+      parentIdForDfId = getTransformEventMaps(ctx, expRunIdRec.value1()).getKey();
+    }
     List<Integer> ancestorChain = getAncestorChain(dfId, parentIdForDfId);
 
     // Create mapping from ID to order in the ancestor chain.
