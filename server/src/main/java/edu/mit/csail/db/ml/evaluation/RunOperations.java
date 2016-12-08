@@ -14,9 +14,13 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class RunOperations {
+  /**
+   * There should be one command line argument - the path to write the output to.
+   */
   public static void main(String[] args) throws Exception {
-    ModelDbConfig config = ModelDbConfig.parse(args);
+    ModelDbConfig config = ModelDbConfig.parse(new String[] {});
     DSLContext ctx = ContextFactory.create(config.dbUser, config.dbPassword, config.jbdcUrl, config.dbType);
+    Timer.clear();
 
     // Ancestry algorithms.
     Timer.time("Ancestry", () -> DataFrameAncestryComputer.compute(140, ctx));
@@ -54,5 +58,8 @@ public class RunOperations {
 
     // Group Models
     Timer.time("Group Models", () -> ProblemTypeGrouper.groupByProblemType(Arrays.asList(92, 99), ctx));
+
+    // Write the results to the given file.
+    Timer.writeToFile(args[0]);
   }
 }
