@@ -266,6 +266,8 @@ CREATE TABLE Feature (
   -- The transformer that should utilize this feature
   transformer INTEGER REFERENCES TRANSFORMER
 );
+CREATE INDEX IF NOT EXISTS FeatureIndexTransformer ON Feature(transformer);
+CREATE INDEX IF NOT EXISTS FeatureIndexName ON Feature(name);
 
 -- A TransformEvent describes using a Transformer to produce an output
 -- DataFrame from an input DataFrame
