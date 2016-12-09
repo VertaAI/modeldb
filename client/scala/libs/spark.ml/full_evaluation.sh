@@ -68,7 +68,9 @@ do
       sleep 90
 
       echo "[FULL_EVAL] Removing model files"
-      rm -rf /tmp/model_*
+      rm -rf /tmp/animal*
+      rm -rf /tmp/imdb*
+      rm -rf /tmp/hous*
 
       echo "[FULL_EVAL] Growing dataset"
       python ../../../../scripts/evaluation/grow_dataset.py ${datasets[$dataset_index]} $dataset_size > dataset_tmp.csv
@@ -92,7 +94,7 @@ do
       done
 
       echo "[FULL_EVAL] Recording model files size"
-      du -hcs /tmp/model_* > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.modelsize
+      du -hcs /tmp/${datasetnames[$dataset_index]}* > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.modelsize
     done
   done
 done
