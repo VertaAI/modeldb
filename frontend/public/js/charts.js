@@ -16,6 +16,7 @@ $(function() {
 
   var xaxis = {};
   var yaxis = {};
+  var groupby = {};
   var vlSpec;
   var embedSpec;
 
@@ -30,27 +31,11 @@ $(function() {
       $(event.target).html("&#9660;");
       $('.models-container').addClass('models-container-hide');
       $('.chart-container').addClass('chart-container-show');
-      /*
-      $('.models-container').animate({
-        height: ($(window).height() - 600) + "px"
-      }, 500);
-      $('.chart-container').animate({
-        height: "500px"
-      }, 500);
-      */
     } else {
       $(event.target).data('show', false);
       $(event.target).html("&#9650;");
       $('.models-container').removeClass('models-container-hide');
       $('.chart-container').removeClass('chart-container-show');
-      /*
-      $('.models-container').animate({
-        height: ($(window).height() - 165) + "px"
-      }, 500);
-      $('.chart-container').animate({
-        height: "50px"
-      }, 500);
-      */
     }
   });
 
@@ -62,6 +47,7 @@ $(function() {
         yaxis[kv.data('key')] = true;
       } else {
         xaxis[kv.data('key')] = true;
+        groupby[kv.data('key')] = true;
       }
     }
 
@@ -79,8 +65,13 @@ $(function() {
       }
     }
 
-    console.log(xaxis);
-    console.log(yaxis);
+    for (var key in groupby) {
+      if (groupby.hasOwnProperty(key)) {
+        var option = new Option(key, key);
+        $('.group-by').append(option);
+      }
+    }
+
     vegaInit();
   }
 
@@ -91,17 +82,24 @@ $(function() {
       },
       "mark": "bar",
       "encoding": {
+        "column": {
+          "type": "nominal",
+          "axis": {"orient": "bottom", "axisWidth": 1, "offset": -8}
+        },
         "x": {
           "type": "nominal",
-          "axis": {
-          }
+          "axis": null
         },
         "y": {
           "aggregate": "average",
           "type": "numeric",
           "axis": {
           }
-        }
+        },
+        "color": {
+          "type": "nominal",
+        },
+        "config": {"facet": {"cell": {"strokeWidth": 0}}}
       }
     };
 
@@ -114,6 +112,7 @@ $(function() {
   function updateVega() {
     var x = $('.x-axis').val();
     var y = $('.y-axis').val();
+    var z = $('.group-by').val();
 
     // update values
     vlSpec.data.values = [];
@@ -123,22 +122,28 @@ $(function() {
         var kvs = $(models[i]).find('.kv');
         var xfield = $(kvs.findByData('key', x)[0]);
         var yfield = $(kvs.findByData('key', y)[0]);
+        var zfield = $(kvs.findByData('key', z)[0]);
         xfield = xfield.data('val');
         yfield = yfield.data('val');
-        if (xfield && yfield) {
+        zfield = zfield.data('val');
+        console.log(zfield);
+        if (xfield && yfield && zfield) {
           var val = {};
           val[x] = xfield;
           val[y] = yfield;
+          val[z] = zfield;
           vlSpec.data.values.push(val);
         }
       }
     }
 
     // update axes
-    vlSpec.encoding.x.field  = x;
+    vlSpec.encoding.column.field  = x;
     vlSpec.encoding.y.field = y;
-    vlSpec.encoding.x.axis.title = x;
+    vlSpec.encoding.column.axis.title = x;
     vlSpec.encoding.y.axis.title = y;
+    vlSpec.encoding.x.field = z;
+    vlSpec.encoding.color.field = z;
 
     vg.embed(".model-chart", embedSpec, function(error, result) {
       // Callback receiving the View instance and parsed Vega spec

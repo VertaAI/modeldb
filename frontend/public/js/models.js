@@ -39,16 +39,51 @@ $(function() {
 
   $(document).on('click', '.hyperparams-container', function(event) {
     var params = $(event.target).find('.hyperparams');
-    params.toggle();
+    if (params.hasClass('hyperparams-show')) {
+      params.removeClass('hyperparams-show');
+      params.hide();
+    } else {
+      params.addClass('hyperparams-show');
+      params.show();
+    }
+  });
+
+  $(document).on('click', '.dfmetadata-container', function(event) {
+    var params = $(event.target).find('.dfmetadata');
+    if (params.hasClass('dfmetadata-show')) {
+      params.removeClass('dfmetadata-show');
+      params.hide();
+    } else {
+      params.addClass('dfmetadata-show');
+      params.show();
+    }
   });
 
   $(document).mouseup(function (e) {
-    var container = $('.hyperparams');
+    var elt = $(e.target);
+    if (!(elt.hasClass('popup-container') ||
+      elt.closest('.popup-container').length == 1)) {
+      $('.hyperparams').hide();
+      $('.hyperparams-show').removeClass('hyperparams-show');
+      $('.dfmetadata').hide();
+      $('.dfmetadata-show').removeClass('dfmetadata-show');
+    }
+    /*
+    var container = $($('.hyperparams-container')[0]);
     if (!container.is(e.target) // if the target of the click isn't the container...
       && container.has(e.target).length === 0) // ... nor a descendant of the container
     {
-      container.hide();
+      container.find('.hyperparams').hide();
+      container.find('.hyperparams').removeClass('hyperparams-show');
     }
+    var container = $($('.dfmetadata-container')[0]);
+    if (!container.is(e.target) // if the target of the click isn't the container...
+      && container.has(e.target).length === 0) // ... nor a descendant of the container
+    {
+      container.find('.dfmetadata').hide();
+      container.find('.dfmetadata').removeClass('dfmetadata-show');
+    }
+    */
     if (!($(e.target).hasClass('filters') || $(e.target).hasClass('sort'))) {
       newKey = null;
       newVal = null;
@@ -129,7 +164,7 @@ $(function() {
     start: dragStart
   });
 
-  $('.kv').draggable({
+  $('.kv:not(.nkv)').draggable({
     revert: true,
     revertDuration: 0,
     start: dragStart
