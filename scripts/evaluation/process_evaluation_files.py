@@ -83,12 +83,12 @@ for (k, v) in modelsizes.iteritems():
     print ", ".join((k[0], k[1], dbsize))
 
 for (k, v) in overhead.iteritems():
-    plt.scatter([x[0] for x in v], [y[1] for y in v])
-    plt.title("Overhead percent for %s %s" % k)
+    plt.scatter([x[0] for x in v], [y[1]*100 for y in v])
+    plt.title("Time Overhead (as percentage of overall time) for %s %s" % k)
     plt.xlabel("Dataset size (num rows)")
     plt.ylabel("ModelDB Overhead time (%)")
     plt.xlim([0, 1000000])
-    plt.ylim([0, 0.7])
+    plt.ylim([0, 70])
     plt.show()
 
 for (k, v) in tablesizes.iteritems():
