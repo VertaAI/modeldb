@@ -68,22 +68,6 @@ $(function() {
       $('.dfmetadata').hide();
       $('.dfmetadata-show').removeClass('dfmetadata-show');
     }
-    /*
-    var container = $($('.hyperparams-container')[0]);
-    if (!container.is(e.target) // if the target of the click isn't the container...
-      && container.has(e.target).length === 0) // ... nor a descendant of the container
-    {
-      container.find('.hyperparams').hide();
-      container.find('.hyperparams').removeClass('hyperparams-show');
-    }
-    var container = $($('.dfmetadata-container')[0]);
-    if (!container.is(e.target) // if the target of the click isn't the container...
-      && container.has(e.target).length === 0) // ... nor a descendant of the container
-    {
-      container.find('.dfmetadata').hide();
-      container.find('.dfmetadata').removeClass('dfmetadata-show');
-    }
-    */
     if (!($(e.target).hasClass('filters') || $(e.target).hasClass('sort'))) {
       newKey = null;
       newVal = null;
