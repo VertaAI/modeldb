@@ -14,7 +14,10 @@ object AnimalExploratory {
     val spark = Common.makeSession()
     val df = Common.ensureMinSize(Common.readAnimalShelter(config.pathToData, spark), config.minNumRows)
     Timer.activate()
-    if (config.syncer) Common.makeSyncer()
+    if (config.syncer) Common.makeSyncer(
+      appName = "Animal Shelter Outcomes",
+      appDesc = "Predict outcome (e.g. adopted, transferred) for animals in a shelter."
+    )
 
     val labelCol = "OutcomeType"
     val featuresCol = "features"

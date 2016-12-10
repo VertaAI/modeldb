@@ -14,7 +14,10 @@ object HousingExploratory {
 
     Timer.activate()
 
-    if (config.syncer) Common.makeSyncer()
+    if (config.syncer) Common.makeSyncer(
+      appName = "Housing Prices",
+      appDesc = "Predict sale prices for homes."
+    )
 
     val uselessCols = Set("Id")
     val leakCols = Set("MoSold", "YrSold", "SaleType", "SaleCondition")

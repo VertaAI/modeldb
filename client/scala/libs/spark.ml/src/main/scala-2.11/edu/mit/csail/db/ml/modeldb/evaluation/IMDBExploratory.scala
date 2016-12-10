@@ -13,7 +13,10 @@ object IMDBExploratory {
     val df = Common.ensureMinSize(Common.readImdb(config.pathToData, spark), config.minNumRows)
 
     Timer.activate()
-    if (config.syncer) Common.makeSyncer()
+    if (config.syncer) Common.makeSyncer(
+      appName = "IMDB",
+      appDesc = "Predict IMDB score for movies."
+    )
 
     // So, we will use the following features in our model.
     // Color, Number of Critics, Gross, Number of User Reviews,
