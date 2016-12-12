@@ -898,6 +898,11 @@ struct ModelAncestryResponse {
   3: list<TransformEvent> transformEvents
 }
 
+struct ExtractedPipelineResponse {
+  1: list<Transformer> transformers;
+  2: list<TransformerSpec> specs;
+}
+
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
 // For example, if you try to read Transformer with ID 1, then we throw this
 // exception if that Transformer does not exist.
@@ -1116,5 +1121,7 @@ service ModelDBService {
   list<TransformEventResponse> storePipelineTransformEvent(1: list<TransformEvent> te)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
-  ModelAncestryResponse computeModelAncestry(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
+  ModelAncestryResponse computeModelAncestry(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
+  ExtractedPipelineResponse extractPipeline(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 }

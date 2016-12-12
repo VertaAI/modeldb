@@ -200,4 +200,8 @@ public class ModelDbServer implements ModelDBService.Iface {
   public String getFilePath(Transformer t, int experimentRunId, String filepath) throws TException {
     return ExceptionWrapper.run(() -> TransformerDao.getFilePath(t, experimentRunId, filepath, ctx));
   }
+
+  public ExtractedPipelineResponse extractPipeline(int modelId) throws TException {
+    return ExceptionWrapper.run(() -> DataFrameAncestryComputer.extractPipeline(modelId, ctx));
+  }
 }

@@ -1,12 +1,9 @@
 package edu.mit.csail.db.ml.server.algorithm;
 
-import edu.mit.csail.db.ml.server.storage.DataFrameDao;
-import edu.mit.csail.db.ml.server.storage.FitEventDao;
-import edu.mit.csail.db.ml.server.storage.TransformEventDao;
+import edu.mit.csail.db.ml.server.storage.*;
 import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
-import jooq.sqlite.gen.tables.records.DataframeRecord;
-import jooq.sqlite.gen.tables.records.TransformeventRecord;
+import jooq.sqlite.gen.tables.records.*;
 import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
@@ -66,6 +63,150 @@ public class DataFrameAncestryComputer {
     }
 
     return ancestorChain;
+  }
+
+  public static ExtractedPipelineResponse extractPipeline(int modelId, DSLContext ctx)
+    throws ResourceNotFoundException {
+    // First read the FitEvent.
+    int fitEventId = FitEventDao.getFitEventIdForModelId(modelId, ctx);
+    FitEvent fitEvent = FitEventDao.read(fitEventId, ctx);
+
+    // Read TransformEvent maps.
+    Pair<Map<Integer, Integer>, Map<Integer, Integer>> pair = getTransformEventMaps(ctx, fitEvent.experimentRunId);
+    Map<Integer, Integer> parentIdForDfId = pair.getKey();
+    Map<Integer, Integer> transformEventIdForDfId = pair.getValue();
+
+    // Compute the TransformEvents involved in the ancestry chain.
+    List<Integer> ancestorChain = getAncestorChain(fitEvent.df.id, parentIdForDfId);
+
+    // Compute the chain of TransformEvent IDs. Notice that we ignore the first DataFrame because it has no parent.
+    List<Integer> transformEventIdChain = ancestorChain.subList(1, ancestorChain.size())
+      .stream()
+      .map(transformEventIdForDfId::get)
+      .collect(Collectors.toList());
+
+    // Map each TransformEvent to its Transformer ID.
+    Map<Integer, Integer> transformerIdForTransformEventId = ctx
+      .selectFrom(Tables.TRANSFORMEVENT)
+      .where(Tables.TRANSFORMEVENT.ID.in(transformEventIdChain))
+      .fetch()
+      .stream()
+      .collect(Collectors.toMap(TransformeventRecord::getId, TransformeventRecord::getTransformer));
+
+    // Create the transformer ID ancestry chain.
+    List<Integer> transformerIdsChain = transformEventIdChain
+      .stream()
+      .map(id -> {
+        if (transformerIdForTransformEventId.containsKey(id)) {
+          return transformerIdForTransformEventId.get(id);
+        } else {
+          return null;
+        }
+      })
+      .collect(Collectors.toList());
+
+    // Create a list of Transformers.
+    Map<Integer, TransformerRecord> recForTransformerId = ctx
+      .selectFrom(Tables.TRANSFORMER)
+      .where(
+        Tables.TRANSFORMER.ID.in(
+          transformerIdsChain
+            .stream()
+            .filter(r -> r != null)
+            .collect(Collectors.toList())
+        )
+      )
+      .fetch()
+      .stream()
+      .collect(Collectors.toMap(TransformerRecord::getId, r -> r));
+
+    List<Transformer> transformerChain = transformerIdsChain
+      .stream()
+      .map(id -> {
+        if (id == null || !recForTransformerId.containsKey(id)) {
+          return null;
+        } else {
+          TransformerRecord rec = recForTransformerId.get(id);
+          Transformer t = new Transformer(rec.getId(), rec.getTransformertype(), rec.getTag());
+          t.setFilepath(rec.getFilepath());
+          return t;
+        }
+      })
+      .collect(Collectors.toList());
+
+    // Create a list of TransformerSpecs.
+    Map<Integer, Integer> specIdForTransformerId = ctx
+      .select(Tables.FITEVENT.TRANSFORMER, Tables.FITEVENT.TRANSFORMERSPEC)
+      .from(Tables.FITEVENT)
+      .where(
+        Tables.FITEVENT.TRANSFORMER.in(
+          transformerChain
+          .stream()
+          .filter(r -> r != null)
+          .map(Transformer::getId)
+          .collect(Collectors.toList())
+        )
+      )
+      .fetch()
+      .stream()
+      .collect(Collectors.toMap(r -> r.value1(), r -> r.value2()));
+
+    List<Integer> specChain = transformerChain
+      .stream()
+      .map(t -> {
+        if (t == null || !specIdForTransformerId.containsKey(t.getId())) {
+          return null;
+        } else {
+          return specIdForTransformerId.get(t.getId());
+        }
+      })
+      .collect(Collectors.toList());
+
+    Map<Integer, TransformerSpec> specForSpecId = ctx
+      .selectFrom(Tables.TRANSFORMERSPEC)
+      .where(
+        Tables.TRANSFORMERSPEC.ID.in(
+          specChain
+            .stream()
+            .filter(id -> id != null)
+            .collect(Collectors.toList())
+        )
+      )
+      .fetch()
+      .stream()
+      .collect(Collectors.toMap(TransformerspecRecord::getId, r -> {
+        TransformerSpec spec = new TransformerSpec(r.getId(), r.getTransformertype(), new ArrayList<>(), r.getTag());
+        return spec;
+      }));
+
+    ctx
+      .selectFrom(Tables.HYPERPARAMETER)
+      .where(
+        Tables.HYPERPARAMETER.SPEC.in(specForSpecId.keySet())
+      )
+      .fetch()
+      .forEach(rec -> {
+        specForSpecId.get(rec.getSpec()).addToHyperparameters(new HyperParameter(
+          rec.getParamname(),
+          rec.getParamvalue(),
+          rec.getParamtype(),
+          rec.getParamminvalue(),
+          rec.getParammaxvalue()
+        ));
+      });
+
+    List<TransformerSpec> specs = specChain
+      .stream()
+      .map(id -> {
+        if (id == null || !specForSpecId.containsKey(id)) {
+          return null;
+        } else {
+          return specForSpecId.get(id);
+        }
+      })
+      .collect(Collectors.toList());
+
+    return new ExtractedPipelineResponse(transformerChain, specs);
   }
 
   public static ModelAncestryResponse computeModelAncestry(int modelId, DSLContext ctx)
