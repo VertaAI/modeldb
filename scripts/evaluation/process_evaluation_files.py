@@ -98,23 +98,31 @@ for (k, v) in modelsizes.iteritems():
     dbsize = [x[0] for x in v if x[1] == dbsize][0]
     print ", ".join((k[0], k[1], dbsize))
 
+def cleanOp(op):
+    if "GridSearchCrossValidationEvent" in op:
+        return "GridSearchCVEvent"
+    elif "GridCell" in op:
+        return "GridCellCV"
+    elif "TreeModelComponent" in op:
+        return "TreeModelComp"
+    elif "ModelObjectiveHistory" in op:
+        return "ModelObjHistory"
+    else:
+        return op
 print "Time overhead per operation"
 for op in overhead_for_op:
     overhead_for_op[op] = sum(overhead_for_op[op]) * 1.0 / len(overhead_for_op[op])
 plt.figure(figsize=(20, 10))
-def cleanOp(op):
-    if "Grid" in op:
-        return "GridSearchCVEvent"
-    else:
-        return op
 pairs = [(cleanOp(op), overhead_for_op[op]) for op in overhead_for_op]
 objects = [x[0] for x in pairs]
 performance = [x[1] * 100 for x in pairs]
-y_pos = np.arange(len(objects))
+y_pos = np.arange(0, len(objects) * 2, 2)
 plt.barh(y_pos, performance, align='center', alpha=0.5)
-plt.yticks(y_pos, objects)
-plt.xlabel('Overhead Percentage')
-plt.title('Average time overhead by event')
+plt.yticks(y_pos, objects, fontsize=15)
+plt.autoscale(tight=True)
+plt.xticks(fontsize=20)
+plt.xlabel('Time Overhead (% of overall runtime)', fontsize=20)
+plt.title('Average Time Overhead by Event', fontsize=30)
 plt.show()
 
 for (k, v) in overhead.iteritems():
@@ -128,11 +136,14 @@ for (k, v) in overhead.iteritems():
 
 for (k, v) in tablesizes.iteritems():
     plt.figure(figsize=(18, 10))
-    objects = [x[0] for x in v]
-    y_pos = np.arange(len(objects))
+    objects = [cleanOp(x[0]) for x in v]
+    scaler = 1
+    y_pos = np.arange(0, len(objects) * scaler, scaler)
     performance = [x[1] for x in v]
     plt.barh(y_pos, performance, align='center', alpha=0.5)
-    plt.yticks(y_pos, objects)
-    plt.xlabel('Size')
-    plt.title('Table sizes for %s %s' % k)
+    plt.autoscale(tight=True)
+    plt.yticks(y_pos, objects, fontsize=15)
+    plt.xticks(fontsize=20)
+    plt.xlabel('Number of Rows', fontsize=20)
+    plt.title('Table Sizes for %s %s' % k, fontsize=30)
     plt.show()
