@@ -163,6 +163,10 @@ h2 {
   background-color: #AEBDCD;
 }
 
+.nkv:hover {
+  background-color: white;
+}
+
 .kv.ui-draggable-dragging {
   background-color: #AEBDCD;
   z-index: 4;
@@ -171,7 +175,7 @@ h2 {
 .select-label {
   display: inline-block;
   vertical-align: top;
-  width: 50px;
+  width: 70px;
   line-height: 27px;
 }
 
@@ -202,28 +206,25 @@ h2 {
   display: none;
 }
 
-.hyperparams-container {
+.hyperparams-container, .dfmetadata-container {
   position: relative;
   overflow: visible;
   cursor: pointer;
   color: #00B7FF;
+  -webkit-user-select: none; /* Chrome/Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
 }
 
-.hyperparams {
-  background-color: #ecf0f1;
+.hyperparams, .dfmetadata {
+  background-color: white;
   position: absolute;
   top: 0;
-  right: -220px;
-  z-index: 1;
-  height: 300px;
-  overflow-y: auto;
+  right: -160px;
+  z-index: 2;
+  width: 200px;
   display: none;
   color: black;
-}
-
-.hyperparam {
-  background-color: white;
-  margin: 10px;
   border: 1px solid #D9E0E8;
   padding: 10px;
 }
@@ -232,10 +233,12 @@ h2 {
   margin: 60px 10px 10px 10px;
   display: inline-block;
   vertical-align: top;
+  width: calc(100% - 400px);
+  overflow-x: scroll;
 }
 
 .charts-container {
-  width: 345px;
+  width: 364px;
   display: inline-block;
   box-sizing: border-box;
   padding: 20px;

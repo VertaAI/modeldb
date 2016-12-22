@@ -20,6 +20,7 @@ module.exports = {
         }
       }
       response.metrics = metrics;
+      console.log('test');
       console.log(response.trainingDataFrame);
       callback(response);
     });
@@ -27,7 +28,7 @@ module.exports = {
 
   getModelAncestry: function(modelId, callback) {
     Thrift.client.computeModelAncestry(modelId, function(err, response) {
-      console.log(response);
+      //console.log(response);
       callback(response);
     });
   },
@@ -67,6 +68,7 @@ module.exports = {
         models = models.filter(function(model) {
           return model.show;
         });
+        console.log(models);
         callback(models);
       });
     });

@@ -118,6 +118,20 @@
                     DF Filepath: <%= models[i].trainingDataFrame.filepath %>
                   </div>
                 <% } %>
+
+                <div class="nkv dfmetadata-container popup-container">
+                  Metadata
+                  <div class="dfmetadata">
+                    <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
+                      <div class="kv nkv"
+                        data-key="<%= models[i].trainingDataFrame.metadata[j].key %>"
+                        data-val="<%= models[i].trainingDataFrame.metadata[j].value %>"
+                      >
+                        <%= models[i].trainingDataFrame.metadata[j].key %>: <%= models[i].trainingDataFrame.metadata[j].value %>
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
               </div>
 
 
@@ -152,31 +166,15 @@
                   Problem Type: <%= models[i].problemType %>
                 </div>
 
-                <div class="nkv hyperparams-container"
-                >
+                <div class="nkv hyperparams-container popup-container">
                   Hyperparameters
                   <div class="hyperparams">
                     <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
-                      <div class="hyperparam">
-                        <div class="hyperparam-field">
-                          Name: <%= models[i].specification.hyperparameters[j].name %>
-                        </div>
-
-                        <div class="hyperparam-field">
-                          Value: <%= models[i].specification.hyperparameters[j].value %>
-                        </div>
-
-                        <div class="hyperparam-field">
-                          Type: <%= models[i].specification.hyperparameters[j].type %>
-                        </div>
-
-                        <div class="hyperparam-field">
-                          Min: <%= models[i].specification.hyperparameters[j].min %>
-                        </div>
-
-                        <div class="hyperparam-field">
-                          Max: <%= models[i].specification.hyperparameters[j].max %>
-                        </div>
+                      <div class="kv nkv"
+                        data-key="<%= models[i].specification.hyperparameters[j].name %>"
+                        data-val="<%= models[i].specification.hyperparameters[j].value %>"
+                      >
+                        <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
                       </div>
                     <% } %>
                   </div>
@@ -198,19 +196,23 @@
 
 
               <div class="model-section model-misc">
-                <div class="nkv"
-                  data-key="Code SHA"
-                  data-val="<%= models[i].sha %>"
-                >
-                  Code SHA: N/A <%= models[i].sha %>
-                </div>
+                <% if (models[i].sha) { %>
+                  <div class="nkv"
+                    data-key="Code SHA"
+                    data-val="<%= models[i].sha %>"
+                  >
+                    Code SHA: N/A <%= models[i].sha %>
+                  </div>
+                <% } %>
 
-                <div class="nkv"
-                  data-key="Filepath"
-                  data-val="<%= models[i].filepath %>"
-                >
-                  Filepath: N/A <%= models[i].filepath %>
-                </div>
+                <% if (models[i].filepath) { %>
+                  <div class="nkv"
+                    data-key="Filepath"
+                    data-val="<%= models[i].filepath %>"
+                  >
+                    Filepath: <%= models[i].filepath %>
+                  </div>
+                <% } %>
               </div>
 
             </div>
