@@ -120,7 +120,21 @@ $(function() {
 
   $(document).on('click', '.chart-close', function(event) {
     $('.model-chart').html("");
-  })
+  });
+
+  $(document).on('click', '.group-header', function(event) {
+    var group = $($(event.target).parent());
+    if (group.hasClass("hide-group")) {
+      group.removeClass("hide-group");
+      group.css("height", "auto");
+      var height = group.height();
+      group.css("height", "48px");
+      group.animate({height: height+"px"}, 300);
+    } else {
+      group.addClass("hide-group");
+      group.animate({height: "48px"}, 300);
+    }
+  });
 
   $(document).on('change', '.range-options select, .range-options input', function(event) {
     var range = $(this).closest('.range');
@@ -132,8 +146,14 @@ $(function() {
   });
 
   $(document).on('change', '.sort-order', function(event) {
+    console.log("triggered");
     sortOrder = event.target.value;
     sort($('.sort').data('key'), sortOrder);
+  });
+
+  $(document).on('change', '.group-chart', function(event) {
+    var groupkey = event.target.value;
+    groupModels(groupkey);
   });
 
   $('.model-config').draggable({
@@ -258,7 +278,10 @@ $(function() {
       order: order
     };
     options.selector = '.kv[data-key="' + key + '"], .nkv[data-key="' + key + '"]';
-    tinysort($('.model'), options)
+    var groups = $('.models-group');
+    for (var i=0; i<groups.length; i++) {
+      tinysort($($('.models-group')[i]).find('.model'), options);
+    }
   }
 
   function filter() {
@@ -320,5 +343,57 @@ $(function() {
         }
       }
     }
+  }
+
+  function groupModels(key) {
+    var models = $('.model');
+    if (key == "None") {
+      // no grouping
+      group = $('<div data-groupkey="' + key + '" data-groupval="None"></div>');
+      group.addClass("models-group");
+      for (var i=0; i<models.length; i++) {
+        group.append($(models[i]));
+        $('.models').append(group);
+      }
+    } else {
+      // separate into groups
+      for (var i=0; i<models.length; i++) {
+        let fields = $(models[i]).find('.kv');
+        let field = fields.findByData('key', key)[0];
+        var val = $(field).data('val');
+        var group = $('.models-group').filter(function() {
+          return ($(this).data('groupkey') == key && $(this).data('groupval') == val);
+        });
+        if (group.length == 0) {
+          // create new group
+          group = $('<div data-groupkey="' + key + '" data-groupval="' + val + '"></div>');
+          group.addClass("models-group");
+          if (key != "None") {
+            group.append($('<div class="group-header">' + key + ': ' + val + '</div>'));
+          }
+          group.append($(models[i]));
+          $('.models').append(group);
+        } else {
+          // add to existing group
+          $(group[0]).append($(models[i]));
+        }
+      }
+    }
+
+    // remove old groups
+    var groups = $('.models-group');
+    for (var i=0; i<groups.length; i++) {
+      if ($(groups[i]).data('groupkey') != key) {
+        $(groups[i]).remove();
+      }
+    }
+
+    // sort groups
+    var options = {
+      data: "groupval",
+      order: "asc"
+    };
+    tinysort($('.models-group'), options);
+    $('.sort-order').trigger('change');
   }
 });

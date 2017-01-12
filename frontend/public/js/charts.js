@@ -69,8 +69,16 @@ $(function() {
       if (groupby.hasOwnProperty(key)) {
         var option = new Option(key, key);
         $('.group-by').append(option);
+
+        // had to re-initialize option b/c
+        // otherwise the select was empty
+        option = new Option(key, key);
+        $('.group-chart').append(option);
       }
     }
+
+    // group-chart default should be none
+    $('.group-chart').val('None');
 
     vegaInit();
   }

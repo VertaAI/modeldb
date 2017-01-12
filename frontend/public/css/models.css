@@ -109,7 +109,7 @@ h2 {
 
 .models-container {
   margin: 0 10px;
-  height: calc(100vh - 165px);
+  height: calc(100vh - 220px);
   overflow-y: auto;
   transition: all 0.3s ease;
 }
@@ -185,6 +185,10 @@ h2 {
 
 .select-container select {
   width:250px;
+}
+
+.sort-container .select-label {
+  width: 50px;
 }
 
 .compare-button {
@@ -280,4 +284,25 @@ h2 {
 
 .chart-container-show {
   height: 500px;
+}
+
+.group-chart-container {
+  margin: 20px;
+  height: 27px;
+}
+
+.group-header {
+  background-color: #D9E0E8;
+  cursor: pointer;
+  margin: 10px 0;
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.group-header:hover {
+  background-color: #AEBDCD;
+}
+
+.models-group {
+  overflow: hidden;
 }
