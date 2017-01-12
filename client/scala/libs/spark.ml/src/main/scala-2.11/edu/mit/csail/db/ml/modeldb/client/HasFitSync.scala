@@ -33,21 +33,22 @@ trait HasFitSync[T <: Model[T]] {
               df: DataFrame,
               pms: Array[ParamMap],
               mdbs: Option[ModelDbSyncer],
-              featureVectorNames: Seq[String]) = {
-    // Associate the feature vector names with the dataframe.
-    if (mdbs.isDefined) mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
+              featureVectorNames: Seq[String]): Seq[T] = {
+    if (pms.nonEmpty) {
+      pms.flatMap(pm => fitSync(estimator.copy(pm), df, Array[ParamMap](), mdbs, featureVectorNames))
+    } else {
+      // Associate the feature vector names with the dataframe.
+      if (mdbs.isDefined) mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
 
-    // Train the models.
-    val models = if (pms.length == 0) Seq(estimator.fit(df)) else estimator.fit(df, pms)
+      // Train the models.
+      val model = estimator.fit(df)
 
-    // Turn the ParamMaps into Syncables.
-    val pmsSync = if (pms.length == 0) Seq() else pms
+      // Record a FitEvent in the event syncer.
+      if (mdbs.isDefined) mdbs.get.buffer(FitEvent(estimator, df, model))
 
-    // Record a FitEvent in the event syncer.
-    if (mdbs.isDefined) models.foreach((model) => mdbs.get.buffer(FitEvent(estimator, df, model)))
-
-    // Return the models.
-    models
+      // Return the models.
+      Seq(model)
+    }
   }
 
   // Define the fitSync methods.
