@@ -297,10 +297,17 @@ h2 {
   margin: 10px 0;
   padding: 10px;
   transition: all 0.3s ease;
+  font-weight: bold;
 }
 
 .group-header:hover {
   background-color: #AEBDCD;
+}
+
+.group-num-models {
+  display: inline-block;
+  margin-left: 10px;
+  font-weight: 300;
 }
 
 .models-group {

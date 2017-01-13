@@ -61,7 +61,7 @@
         <div class="models">
           <div class="models-group" data-groupkey="none" data-groupval="none">
             <% for(var i=0; i<models.length; i++) { %>
-              <div class="model">
+              <div class="model" data-show="true">
 
                 <div class="model-section model-ids">
                   <a href="/models/<%= models[i].id %>">
@@ -129,20 +129,22 @@
                     </div>
                   <% } %>
 
-                  <div class="nkv dfmetadata-container popup-container">
-                    Metadata
-                    <div class="dfmetadata">
-                      <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
-                        <div class="kv"
-                          data-src="metadata"
-                          data-key="<%= models[i].trainingDataFrame.metadata[j].key %>"
-                          data-val="<%= models[i].trainingDataFrame.metadata[j].value %>"
-                        >
-                          <%= models[i].trainingDataFrame.metadata[j].key %>: <%= models[i].trainingDataFrame.metadata[j].value %>
-                        </div>
-                      <% } %>
+                  <% if (models[i].trainingDataFrame.metadata.length > 0) { %>
+                    <div class="nkv dfmetadata-container popup-container">
+                      Metadata
+                      <div class="dfmetadata">
+                        <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
+                          <div class="kv"
+                            data-src="metadata"
+                            data-key="<%= models[i].trainingDataFrame.metadata[j].key %>"
+                            data-val="<%= models[i].trainingDataFrame.metadata[j].value %>"
+                          >
+                            <%= models[i].trainingDataFrame.metadata[j].key %>: <%= models[i].trainingDataFrame.metadata[j].value %>
+                          </div>
+                        <% } %>
+                      </div>
                     </div>
-                  </div>
+                  <% } %>
                 </div>
 
 

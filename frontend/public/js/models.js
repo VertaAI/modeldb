@@ -104,12 +104,7 @@ $(function() {
     var filter = $(event.target).parent('.filter');
     var key = filter.data('key');
     filter.remove();
-
-    $('.loader').show();
-    setTimeout(function() {
-      removeFilter(key);
-      $('.loader').hide();
-    }, numModels);
+    removeFilter(key);
   });
 
   $(document).on('click', '.range-close', function(event) {
@@ -118,10 +113,7 @@ $(function() {
     range.remove();
 
     $('.loader').show();
-    setTimeout(function() {
-      removeRange(id);
-      $('.loader').hide();
-    }, numModels);
+    removeRange(id);
   });
 
   $(document).on('click', '.sort-close', function(event) {
@@ -140,18 +132,20 @@ $(function() {
   });
 
   $(document).on('click', '.group-header', function(event) {
-    var group = $($(event.target).parent());
+    var group = $($(event.target).closest('.models-group'));
     if (group.hasClass("hide-group")) {
       group.removeClass("hide-group");
       group.css("height", "auto");
       var height = group.height();
       group.css("height", "48px");
       group.animate({height: height+"px"}, 300, function() {
-        group.css("height", "auto");
+        group.css({"height": "auto", "overflow": "visible"});
       });
     } else {
       group.addClass("hide-group");
-      group.animate({height: "48px"}, 300);
+      group.animate({height: "48px"}, 300, function() {
+        group.css({"overflow": "hidden"});
+      });
     }
   });
 
@@ -328,11 +322,15 @@ $(function() {
 
       for (var i=0; i<show.length; i++) {
         if (show[i]) {
+          $(models[i]).data('show', true);
           $(models[i]).slideDown();
          } else {
+          $(models[i]).data('show', false);
           $(models[i]).slideUp()
         }
       }
+
+      groupModels($('.group-table').val());
       $('.loader').hide();
     }, numModels);
   };
@@ -372,6 +370,12 @@ $(function() {
   }
 
   function groupModels(key) {
+    // get rid of old groups
+    var groups = $('.models-group');
+    for (var i=0; i<groups.length; i++) {
+      $(groups[i]).data('groupkey', 'delete');
+    }
+
     var models = $('.model');
     if (key == "None") {
       // no grouping
@@ -411,11 +415,21 @@ $(function() {
       }
     }
 
-    // remove old groups
+    // remove old groups and add numbers
     var groups = $('.models-group');
     for (var i=0; i<groups.length; i++) {
       if ($(groups[i]).data('groupkey') != key) {
         $(groups[i]).remove();
+      } else {
+        var header = $(groups[i]).find('.group-header');
+        var numModels = $(groups[i]).children().filter(function() {
+          return $(this).data('show');
+        });
+        numModels = numModels.length;
+        var text = numModels == 1 ? " model" : " models";
+        $(header).append($('<div class="group-num-models"> ('
+          + numModels + text
+          + ')</div>'));
       }
     }
 
