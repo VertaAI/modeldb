@@ -25,11 +25,16 @@
   <body>
     <%- include partials/nav.ejs %>
     <div class="container">
-      <div class="group-chart-container select-container">
+
+      <div class="loader">
+        <img src="/images/loading.gif">
+      </div>
+
+      <div class="group-table-container select-container">
         <div class="select-label">
           group by:
         </div>
-        <select class="group-chart">
+        <select class="group-table">
           <option value="None" selected="selected">None</option>
         </select>
       </div>
@@ -129,6 +134,7 @@
                     <div class="dfmetadata">
                       <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
                         <div class="kv"
+                          data-src="metadata"
                           data-key="<%= models[i].trainingDataFrame.metadata[j].key %>"
                           data-val="<%= models[i].trainingDataFrame.metadata[j].value %>"
                         >
@@ -176,6 +182,7 @@
                     <div class="hyperparams">
                       <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
                         <div class="kv"
+                          data-src="hyperparameters"
                           data-key="<%= models[i].specification.hyperparameters[j].name %>"
                           data-val="<%= models[i].specification.hyperparameters[j].value %>"
                         >
@@ -279,6 +286,8 @@
         </div>
         <div class="model-chart"></div>
       </div>
+
+
 
     </div>
   </body>

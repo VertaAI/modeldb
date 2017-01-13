@@ -17,8 +17,17 @@ $(function() {
   var xaxis = {};
   var yaxis = {};
   var groupby = {};
+  var grouptable = {};
   var vlSpec;
   var embedSpec;
+
+  // don't create these groups
+  var groupFilter = {
+    "metadata": true,
+    "hyperparameters": true,
+    "Model ID": true,
+    "Project ID": true
+  }
 
   $(document).on('click', '.compare-button', function(event) {
     updateVega();
@@ -48,6 +57,10 @@ $(function() {
       } else {
         xaxis[kv.data('key')] = true;
         groupby[kv.data('key')] = true;
+
+        if (!(groupFilter[kv.data('src')] || groupFilter[kv.data('key')])) {
+          grouptable[kv.data('key')] = true;
+        }
       }
     }
 
@@ -69,16 +82,16 @@ $(function() {
       if (groupby.hasOwnProperty(key)) {
         var option = new Option(key, key);
         $('.group-by').append(option);
-
-        // had to re-initialize option b/c
-        // otherwise the select was empty
-        option = new Option(key, key);
-        $('.group-chart').append(option);
       }
     }
 
-    // group-chart default should be none
-    $('.group-chart').val('None');
+    for (var key in grouptable) {
+      option = new Option(key, key);
+      $('.group-table').append(option);
+    }
+
+    // group-table default should be none
+    $('.group-table').val('None');
 
     vegaInit();
   }
@@ -134,7 +147,6 @@ $(function() {
         xfield = xfield.data('val');
         yfield = yfield.data('val');
         zfield = zfield.data('val');
-        console.log(zfield);
         if (xfield && yfield && zfield) {
           var val = {};
           val[x] = xfield;
@@ -160,5 +172,5 @@ $(function() {
   }
 
   init();
-
+  $('.loader').hide();
 });
