@@ -14,3 +14,5 @@ run_animal.sh
 run_house_prices.sh
 metastore_db/
 derby.log
+dataset_tmp.csv
+duplicator.sh

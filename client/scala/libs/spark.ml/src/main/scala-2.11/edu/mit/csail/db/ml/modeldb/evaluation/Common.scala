@@ -34,7 +34,11 @@ object Common {
     }
   }
 
-  def makeSyncer(appName: String = "default app name", appDesc: String = "default description"): ModelDbSyncer = {
+  def makeSyncer(appName: String = "default app name",
+                 appDesc: String = "default description",
+                 shouldCountRows: Boolean = false,
+                 shouldStoreGSCVE: Boolean = false,
+                 shouldStoreSpecificModels: Boolean = false): ModelDbSyncer = {
     val syncer = new ModelDbSyncer(
       projectConfig = NewOrExistingProject(
         appName,
@@ -43,9 +47,9 @@ object Common {
       ),
       experimentConfig = new DefaultExperiment,
       experimentRunConfig = new NewExperimentRun,
-      shouldCountRows = false,
-      shouldStoreGSCVE = false,
-      shouldStoreSpecificModels = false
+      shouldCountRows = shouldCountRows,
+      shouldStoreGSCVE = shouldStoreGSCVE,
+      shouldStoreSpecificModels = shouldStoreSpecificModels
     )
     ModelDbSyncer.setSyncer(syncer)
     syncer

@@ -34,9 +34,12 @@ object Timer {
   def clearTimings(): Unit = timings.clear()
 
   def writeTimingsToFile(path: String): Unit = {
-    val pw = new PrintWriter(new File(path))
-    pw.write("Operation, Time in seconds\n")
-    timings.foreach(t => pw.write(t.message + ", " + t.timeInNanoseconds / 1000000000.0 + "\n"))
-    pw.close()
+    if (path.nonEmpty) {
+      val pw = new PrintWriter(new File(path))
+      pw.write("Operation, Time in seconds\n")
+      timings.foreach(t => pw.write(t.message + ", " + t.timeInNanoseconds / 1000000000.0 + "\n"))
+      pw.close()
+
+    }
   }
 }

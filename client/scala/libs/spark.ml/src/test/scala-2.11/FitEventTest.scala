@@ -2,6 +2,7 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 import edu.mit.csail.db.ml.modeldb.client.event.FitEvent
 import modeldb.{FitEventResponse, ProblemType}
 import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.ml.param.ParamMap
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class FitEventTest extends FunSuite with BeforeAndAfter {
@@ -23,6 +24,31 @@ class FitEventTest extends FunSuite with BeforeAndAfter {
         x.model === indexerModel &&
         x.estimator === indexer &&
         x.dataframe === TestBase.trainingData
+      case _ => false
+    })
+  }
+
+  test("Fit with ParamMap") {
+    val syncer = TestBase.makeSyncer
+    val originalCount = syncer.numEvents
+    val indexer = new StringIndexer()
+    val pm = ParamMap()
+      .put(indexer.inputCol -> "text")
+      .put(indexer.outputCol -> "textIndexed")
+    val pm2 = ParamMap()
+      .put(indexer.inputCol -> "text")
+      .put(indexer.outputCol -> "textIndexed2")
+    indexer.fitSync(TestBase.trainingData, Array(pm, pm2))
+
+    assert(syncer.numEvents - originalCount === 2)
+    assert(syncer.hasEvent(originalCount) {
+      case x: FitEvent =>
+        x.estimator.asInstanceOf[StringIndexer].getOutputCol === "textIndexed"
+      case _ => false
+    })
+    assert(syncer.hasEvent(originalCount + 1) {
+      case x: FitEvent =>
+        x.estimator.asInstanceOf[StringIndexer].getOutputCol === "textIndexed2"
       case _ => false
     })
   }

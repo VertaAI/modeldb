@@ -4,12 +4,37 @@ var Thrift = require('./thrift.js');
 module.exports = {
 
   getModel: function(modelId, callback) {
-    //TODO: implement thrift call
-    return;
+    Thrift.client.getModel(modelId, function(err, response) {
+      var model_metrics = response.metrics;
+      var metrics =[];
+      response.show = false;
+      for (key in model_metrics) {
+        if (model_metrics.hasOwnProperty(key)) {
+          var val = Object.keys(model_metrics[key]).map(function(k){return model_metrics[key][k]})[0];
+          val = Math.round(parseFloat(val) * 1000) / 1000;
+          metrics.push({
+            "key": key,
+            "val": val
+          });
+          response.show = true;
+        }
+      }
+      response.metrics = metrics;
+      console.log('test');
+      console.log(response.trainingDataFrame);
+      callback(response);
+    });
+  },
+
+  getModelAncestry: function(modelId, callback) {
+    Thrift.client.computeModelAncestry(modelId, function(err, response) {
+      //console.log(response);
+      callback(response);
+    });
   },
 
   getProjectModels: function(projectId, callback) {
-    var models = []
+    var models = [];
 
     Thrift.client.getRunsAndExperimentsInProject(projectId, function(err, response) {
       var runs = response.experimentRuns;
@@ -25,6 +50,7 @@ module.exports = {
         for (var i=0; i<models.length; i++) {
           var model_metrics = models[i].metrics;
           var metrics = [];
+          models[i].show = false;
           for (key in model_metrics) {
             if (model_metrics.hasOwnProperty(key)) {
               var val = Object.keys(model_metrics[key]).map(function(k){return model_metrics[key][k]})[0];
@@ -33,11 +59,16 @@ module.exports = {
                 "key": key,
                 "val": val
               });
+              models[i].show = true;
             }
           }
 
           models[i].metrics = metrics;
         }
+        models = models.filter(function(model) {
+          return model.show;
+        });
+        console.log(models);
         callback(models);
       });
     });
@@ -55,6 +86,7 @@ module.exports = {
     console.log("hello");
     var models = []
 
+    /*
     Thrift.client.getRunsAndExperimentsInProject(1, function(err, response) {
       var runs = response.experimentRuns;
 
@@ -64,8 +96,18 @@ module.exports = {
           finish();
         });
       }, function(err) {
-        console.log(models);
+        for (var i=0; i<models.length; i++) {
+          console.log(models[i].metrics);
+        }
       });
+    });
+    */
+    Thrift.client.computeModelAncestry(22, function(err, response) {
+      console.log("error: ");
+      console.log(err);
+
+      console.log("response: ");
+      console.log(response);
     });
   }
 };

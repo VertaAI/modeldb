@@ -65,6 +65,7 @@ object AnimalFull {
 
     val model = cv.fitSync(train)
     val predictions = model.transformSync(test)
+    model.saveSync("animal_full_model")
 
     val score = eval.evaluateSync(predictions, model)
 

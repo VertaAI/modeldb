@@ -40,6 +40,7 @@ object IMDBSimple {
       .setRegParam(0.3)
       .setElasticNetParam(0.1)
     val lrModel = lr.fitSync(train)
+    lrModel.saveSync("imdb_simple_lr")
 
     // Evaluate the model.
     val eval = new RegressionEvaluator()

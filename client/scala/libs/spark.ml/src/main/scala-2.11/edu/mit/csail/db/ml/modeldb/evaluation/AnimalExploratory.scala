@@ -14,7 +14,10 @@ object AnimalExploratory {
     val spark = Common.makeSession()
     val df = Common.ensureMinSize(Common.readAnimalShelter(config.pathToData, spark), config.minNumRows)
     Timer.activate()
-    if (config.syncer) Common.makeSyncer()
+    if (config.syncer) Common.makeSyncer(
+      appName = "Animal Shelter Outcomes",
+      appDesc = "Predict outcome (e.g. adopted, transferred) for animals in a shelter."
+    )
 
     val labelCol = "OutcomeType"
     val featuresCol = "features"
@@ -58,6 +61,7 @@ object AnimalExploratory {
         .setNumFolds(3)
 
       val model = lrCv.fitSync(train)
+      model.saveSync("animal_exploratory_lr")
       val predictions = model.transformSync(test)
       val score = eval.evaluateSync(predictions, model.bestModel)
       println("Evaluated LR model: " + score)
@@ -95,6 +99,7 @@ object AnimalExploratory {
         .setNumFolds(3)
 
       val model = rfCv.fitSync(train)
+      model.saveSync("animal_exploratory_rf")
       val predictions = model.transformSync(test)
       val score = eval.evaluateSync(predictions, model.bestModel)
       println("Evaluated RF model: " + score)

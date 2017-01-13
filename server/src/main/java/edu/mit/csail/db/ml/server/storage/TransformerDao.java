@@ -31,6 +31,37 @@ public class TransformerDao {
     return rec.getFilepath();
   }
 
+  public static boolean filePathExists(String filepath, DSLContext ctx) {
+    return ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.FILEPATH.eq(filepath)).fetchOne() != null;
+  }
+
+  public static String getFilePath(Transformer t,
+                                   int experimentRunId,
+                                   String desiredFilename,
+                                   DSLContext ctx) throws ResourceNotFoundException {
+    if (t.id > 0 && !exists(t.id, ctx)) {
+      throw new ResourceNotFoundException(String.format(
+        "Cannot fetch or create a filepath for Transformer %d because it does not exist",
+        t.id
+      ));
+    }
+    TransformerRecord rec = store(t, experimentRunId, ctx);
+    boolean hasFilepath = rec.getFilepath() != null && rec.getFilepath().length() > 0;
+    String newFilepath = generateFilepath();
+    if (desiredFilename != null && desiredFilename.length() > 0) {
+      if (filePathExists(Paths.get(ModelDbConfig.getInstance().fsPrefix, desiredFilename).toString(), ctx)) {
+        newFilepath = Paths.get(ModelDbConfig.getInstance().fsPrefix,
+          desiredFilename + UUID.randomUUID().toString()).toString();
+      } else {
+        newFilepath = Paths.get(ModelDbConfig.getInstance().fsPrefix, desiredFilename).toString();
+      }
+    }
+    rec.setFilepath(hasFilepath ? rec.getFilepath() : newFilepath);
+    rec.store();
+    rec.getId();
+    return rec.getFilepath();
+  }
+
   public static boolean exists(int id, DSLContext ctx) {
     return ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(id)).fetchOne() != null;
   }
@@ -40,14 +71,9 @@ public class TransformerDao {
     return Paths.get(ModelDbConfig.getInstance().fsPrefix, "model_" + uuid).toString();
   }
 
-  public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx, boolean generateFilepath) {
+  public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx) {
     TransformerRecord rec = ctx.selectFrom(Tables.TRANSFORMER).where(Tables.TRANSFORMER.ID.eq(t.id)).fetchOne();
     if (rec != null) {
-      // assign filepath if not currently assigned
-      if (generateFilepath && rec.getFilepath().length() == 0) {
-        rec.setFilepath(generateFilepath());
-        rec.store();
-      }
       return rec;
     }
 
@@ -56,23 +82,8 @@ public class TransformerDao {
     tRec.setTransformertype(t.transformerType);
     tRec.setTag(t.tag);
     tRec.setExperimentrun(experimentId);
-    if (t.isSetFilepath()) {
-      tRec.setFilepath(t.getFilepath());
-    } else {
-      tRec.setFilepath("");
-    }
-
-    if (generateFilepath && !t.isSetFilepath()) {
-      // Generate a UUID and filepath.
-      tRec.setFilepath(generateFilepath());
-    }
-
     tRec.store();
     return tRec;
-  }
-
-  public static TransformerRecord store(Transformer t, int experimentId, DSLContext ctx) {
-    return store(t, experimentId, ctx, false);
   }
 
   private static TransformerRecord read(int modelId, DSLContext ctx)
@@ -161,6 +172,9 @@ public class TransformerDao {
     // First read the Transformer record.
     TransformerRecord rec = read(modelId, ctx);
 
+    // get experiment run associated with the transformer
+    ExperimentRun er = ExperimentRunDao.read(rec.getExperimentrun(), ctx);
+
     // Get the experiment and project for the Transformer.
     Pair<Integer, Integer> experimentAndProjectId =
       ExperimentRunDao.getExperimentAndProjectIds(rec.getExperimentrun(), ctx);
@@ -183,8 +197,8 @@ public class TransformerDao {
     // Get the annotations.
     List<String> annotations = readAnnotations(modelId, ctx);
 
-    // For now, all the SHA values will be the empty string.
-    String SHA = "";
+    String sha = er.getSha();
+
 
     // TODO: Read the LinearModel data if applicable.
 
@@ -201,7 +215,7 @@ public class TransformerDao {
       Arrays.asList(feRec.getPredictioncolumns().split(",")),
       metricMap,
       annotations,
-      SHA,
+      sha,
       rec.getFilepath()
     );
   }

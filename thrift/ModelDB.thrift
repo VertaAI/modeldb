@@ -54,11 +54,13 @@ struct Experiment {
   experimentId: The id of the experiment that contains this run
   description: User assigned text to this experiment run. Can be used to summarize
     data, method, etc.
+  sha: Commit hash of the code used in the current run
 */
 struct ExperimentRun {
   1: i32 id = -1,
   2: i32 experimentId,
-  3: string description
+  3: string description,
+  4: optional string sha
 }
 
 /* 
@@ -71,6 +73,20 @@ struct ExperimentRun {
 struct DataFrameColumn {
   1: string name,
   2: string type
+}
+
+/*
+  A MetadataKV is any key-value pair along with the type of the value. 
+  It is used to associate arbitrary metadata with ModelDB entities
+
+  key: key
+  value: value
+  valueType: The type of value
+*/
+struct MetadataKV {
+  1: string key,
+  2: string value,
+  3: string valueType
 }
 
 /* 
@@ -89,7 +105,8 @@ struct DataFrame {
   2: list<DataFrameColumn> schema,
   3: i32 numRows,
   4: string tag = "",
-  5: optional string filepath
+  5: optional string filepath,
+  6: optional list<MetadataKV> metadata
 }
 
 /* 
@@ -859,6 +876,33 @@ struct TreeModel {
   3: list<double> featureImportances
 }
 
+/*
+ Represents the ancestry that produced a given model.
+
+ Recall that a model is a Transformer produced by fitting a DataFrame with a
+ TransformerSpec. This FitEvent is thus included in the ancestry.
+
+ The DataFrame used in the fitting may have been produced by transforming
+ other DataFrames. So, we include all the TransformEvents that were involved in
+ producing the DataFrame that was fit to produce the given model. 
+ They are ordered such that the oldest TransformEvent is first and the 
+ TransformEvent that produced the DataFrame used for fitting is last.
+
+ All of the DataFrames stored in the FitEvent and the TransformEvents have
+ empty schema fields. The FitEvent has an empty hyperparameters and empty
+ featureColumns field. This is for performance purposes.
+*/
+struct ModelAncestryResponse {
+  1: i32 modelId,
+  2: FitEvent fitEvent,
+  3: list<TransformEvent> transformEvents
+}
+
+struct ExtractedPipelineResponse {
+  1: list<Transformer> transformers;
+  2: list<TransformerSpec> specs;
+}
+
 // Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
 // For example, if you try to read Transformer with ID 1, then we throw this
 // exception if that Transformer does not exist.
@@ -913,6 +957,29 @@ service ModelDBService {
 
   MetricEventResponse storeMetricEvent(1: MetricEvent me)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
+
+  // Gets the filepath associated with the given Transformer.
+  //
+  // If the Transformer exists (t.id > 0 and there's a Transformer with the 
+  // given ID), then we will generate a filepath for it (unless a filepath
+  // already exists) and return the filepath. In this case, we only access the
+  // t.id field, so you can leave the other fields and the experimentRunId empty.
+  //
+  // If the Transformer does not exist (t.id > 0 and there's no Transformer
+  // with the given ID), then we will throw a ResourceNotFoundException. In
+  // this case, we only access the t.id field, so you can leave the other
+  // fields and the experimentRunId empty.
+  //
+  // If the Transformer has t.id < 0, then a new Transformer will be created,
+  // given a filepath, and that filepath will be returned.
+  //
+  // You can specify a filename as well. This will be ignored if the Transformer
+  // already has a filename. Otherwise, your Transformer will be saved at this
+  // filename. If there's already a Transformer at the given filename, some
+  // random characters will be added to your filename to prevent conflict. Set
+  // filename to the empty string if you want a randomly generated filename.
+  string getFilePath(1: Transformer t, 2: i32 experimentRunId, 3: string filename)
+    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
   TransformEventResponse storeTransformEvent(1: TransformEvent te)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
@@ -1053,4 +1120,8 @@ service ModelDBService {
   */
   list<TransformEventResponse> storePipelineTransformEvent(1: list<TransformEvent> te)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
+
+  ModelAncestryResponse computeModelAncestry(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
+  ExtractedPipelineResponse extractPipeline(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 }

@@ -56,9 +56,9 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
                     projectConfig: ProjectConfig,
                     experimentConfig: ExperimentConfig = new DefaultExperiment,
                     experimentRunConfig: ExperimentRunConfig,
-                    val shouldCountRows: Boolean = true,
-                    val shouldStoreGSCVE: Boolean = true,
-                    val shouldStoreSpecificModels: Boolean = true) {
+                    val shouldCountRows: Boolean = false,
+                    val shouldStoreGSCVE: Boolean = false,
+                    val shouldStoreSpecificModels: Boolean = false) {
   /**
     * This is a helper class that will constitute the entries in the buffer.
     * @param event - The event in the buffer.
@@ -212,6 +212,11 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
 
   // Model functions.
   def getCommonAncestor(df1Id: Int, df2Id: Int): CommonAncestor = Await.result(client.get.getCommonAncestor(df1Id, df2Id))
+
+  def getFilepath(t: Transformer, desiredFileName: String): String = {
+    val st = SyncableTransformer.apply(t)
+    Await.result(client.get.getFilePath(st, experimentRun.id, desiredFileName))
+  }
 
   private def idsOrNone(items: Object*): Option[Seq[Int]] = {
     val ids = items.map(id)

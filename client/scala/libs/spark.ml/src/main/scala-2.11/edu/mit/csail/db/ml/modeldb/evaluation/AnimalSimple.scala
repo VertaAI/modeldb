@@ -48,6 +48,7 @@ object AnimalSimple {
       .setFeaturesCol(featuresCol)
 
     val model = ovr.fitSync(train)
+    model.saveSync("animal_simple_ovr_lr")
     val predictions = model.transformSync(test)
 
     val eval = new MulticlassClassificationEvaluator()

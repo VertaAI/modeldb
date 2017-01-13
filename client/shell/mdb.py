@@ -1,11 +1,12 @@
 #!/usr/local/bin/python
-
 import argparse
 import yaml
 import sys
 import os, os.path
 import mdb_code_versioning
-import constants
+import modeldb.utils.ConfigConstants as constants
+from modeldb.basic.ModelDbSyncerBase import *
+from modeldb.utils.ConfigUtils import ConfigReader
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description='ModelDB command line entry point')
@@ -17,62 +18,20 @@ parser.add_argument('script', nargs='+',
     help='Script to be invoked to run the experiment')
 args = parser.parse_args()
 
-# read in the config file. Config file is specified in yaml
-config = yaml.load(file(args.config, 'r'))
-print config
-
-project = None
-experiment = None
-# A project must be defined in the config
-if constants.PROJECT_KEY not in config:
-    print "Project must be defined in config file. Quitting."
-    sys.exit(-1)
-else:
-    project = config[constants.PROJECT_KEY]
-print "Project:", project
-
-if args.expt is not None:
-    if constants.EXPT_KEY not in config:
-        print "No experiments defined in config file. Quitting."
-        sys.exit(0)
-    else:
-        experiments = config[constants.EXPT_KEY]
-        for _experiment in experiments:
-            if _experiment[constants.NAME_KEY] == args.expt:
-                experiment = _experiment
-        if experiment is None:
-            print "Experiment '%s' not defined in config file. Quitting." % args.expt
-            sys.exit(0)
-else:
-    print "Using default experiment"
-    experiment = {
-      constants.NAME_KEY : 'default_expt', 
-      constants.DESCRIPTION_KEY : 'default_expt description'}
-print "Experiment:", experiment
-
+config = ConfigReader(args.config)
+versioning_info = config.get_versioning_information()
 sha = None
-if config[constants.VERSION_CODE_KEY]:
-    sha = mdb_code_versioning.version(config)
-    print sha
+if versioning_info:
+    sha = mdb_code_versioning.version(versioning_info)
     if not sha:
-        print "Unable to version the code. See errors above."
-        print "Exiting."
-        sys.exit(-1)
-else:
-    print "Not versioning code."
-
+        print "Unable to version code. See errors above."
 
 # connect to modeldb and create an experiment run
-expt_run_id = -1
-
-# expt_run_id = modeldb.createExperimentRun({})
-# create a connection
-# create a project
-# create an experiment
-# create an experiment run
+syncer = Syncer.create_syncer_from_config(args.config, args.expt, sha)
 
 # call the remainder of the script with the additional information
-script_cmd = ' '.join(args.script + ['--mdb_expt_run_id=' + str(expt_run_id)])
+args.script.append(str(syncer.experiment_run.id))
+script_cmd = ' '.join(args.script)
 os.system(script_cmd)
 
 sys.exit(0) 

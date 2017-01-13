@@ -49,7 +49,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public TransformEventResponse storeTransformEvent(TransformEvent te) throws TException {
-    return ExceptionWrapper.run(te.experimentRunId, ctx, () -> TransformEventDao.store(te, ctx, true));
+    return ExceptionWrapper.run(te.experimentRunId, ctx, () -> TransformEventDao.store(te, ctx));
   }
 
   public RandomSplitEventResponse storeRandomSplitEvent(RandomSplitEvent rse) throws TException {
@@ -191,5 +191,17 @@ public class ModelDbServer implements ModelDBService.Iface {
   public List<TransformEventResponse> storePipelineTransformEvent(List<TransformEvent> transformEvents)
     throws TException {
     return ExceptionWrapper.run(() -> PipelineEventDao.storePipelineTransformEvent(transformEvents, ctx));
+  }
+
+  public ModelAncestryResponse computeModelAncestry(int modelId) throws TException {
+    return ExceptionWrapper.run(() -> DataFrameAncestryComputer.computeModelAncestry(modelId, ctx));
+  }
+
+  public String getFilePath(Transformer t, int experimentRunId, String filepath) throws TException {
+    return ExceptionWrapper.run(() -> TransformerDao.getFilePath(t, experimentRunId, filepath, ctx));
+  }
+
+  public ExtractedPipelineResponse extractPipeline(int modelId) throws TException {
+    return ExceptionWrapper.run(() -> DataFrameAncestryComputer.extractPipeline(modelId, ctx));
   }
 }

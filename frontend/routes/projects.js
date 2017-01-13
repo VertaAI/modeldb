@@ -7,8 +7,10 @@ router.get('/', function(req, res, next) {
   api.getProjects(function(response) {
     res.render('projects', {
       title: 'Projects',
+      path: ' > Projects',
+      menu: false,
       projects: response
-    });   
+    });
   });
 });
 
@@ -18,6 +20,8 @@ router.get('/:id/models', function(req, res, next) {
   api.getProjectModels(projectId, function(response) {
     res.render('models', {
       title: 'Models',
+      path: ' > Projects > Models',
+      menu: true,
       models: response
     });
   });

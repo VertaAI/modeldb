@@ -68,12 +68,20 @@ do
       sleep 90
 
       echo "[FULL_EVAL] Removing model files"
-      rm -rf /tmp/model_*
+      rm -rf /tmp/animal*
+      rm -rf /tmp/imdb*
+      rm -rf /tmp/hous*
+
+      echo "[FULL_EVAL] Growing dataset"
+      python ../../../../scripts/evaluation/grow_dataset.py ${datasets[$dataset_index]} $dataset_size > dataset_tmp.csv
 
       echo "[FULL_EVAL] Launching test"
-      cmd="./evaluate.sh --path ${datasets[$dataset_index]} --dataset ${datasetnames[$dataset_index]} --workflow ${workflows[$workflow]} --outfile $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.csv --syncer true  --min_num_rows $dataset_size"
+      cmd="./evaluate.sh --path dataset_tmp.csv --dataset ${datasetnames[$dataset_index]} --workflow ${workflows[$workflow]} --outfile $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.csv --syncer true  --min_num_rows 1"
       echo $cmd
       `$cmd`
+
+      echo "[FULL_EVAL] Removing grown dataset"
+      rm dataset_tmp.csv
 
       echo "[FULL_EVAL] Recording database size"
       du -h ../../../../server/modeldb.db > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.dbsize
@@ -86,7 +94,7 @@ do
       done
 
       echo "[FULL_EVAL] Recording model files size"
-      du -hcs /tmp/model_* > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.modelsize
+      du -hcs /tmp/${datasetnames[$dataset_index]}* > $output_dir/${datasetnames[$dataset_index]}_${workflows[$workflow]}_$dataset_size.modelsize
     done
   done
 done

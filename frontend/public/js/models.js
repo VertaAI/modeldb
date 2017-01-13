@@ -19,8 +19,63 @@ $(function() {
   var newVal = null;
   var rangeId = 0;
   var supportsRange = false;
+  var sortOrder = 'asc';
+  var sortKey = null;
 
-  $('.filters').on('mouseup', function() {
+  $(document).on('click', '.menu-icon', function(event) {
+    var open = $($('.menu')[0]).hasClass('open');
+    $('.menu').toggleClass('open');
+    var px = open ? "-325px" : "0px";
+    $('.menu').animate({
+      right: px
+    }, 500);
+
+    var px = open ? "0px" : "325px";
+    $('.chart-close').animate({
+      right: px
+    }, 200);
+  });
+
+
+  $(document).on('click', '.hyperparams-container', function(event) {
+    var params = $(event.target).find('.hyperparams');
+    if (params.hasClass('hyperparams-show')) {
+      params.removeClass('hyperparams-show');
+      params.hide();
+    } else {
+      params.addClass('hyperparams-show');
+      params.show();
+    }
+  });
+
+  $(document).on('click', '.dfmetadata-container', function(event) {
+    var params = $(event.target).find('.dfmetadata');
+    if (params.hasClass('dfmetadata-show')) {
+      params.removeClass('dfmetadata-show');
+      params.hide();
+    } else {
+      params.addClass('dfmetadata-show');
+      params.show();
+    }
+  });
+
+  $(document).mouseup(function (e) {
+    var elt = $(e.target);
+    if (!(elt.hasClass('popup-container') ||
+      elt.closest('.popup-container').length == 1)) {
+      $('.hyperparams').hide();
+      $('.hyperparams-show').removeClass('hyperparams-show');
+      $('.dfmetadata').hide();
+      $('.dfmetadata-show').removeClass('dfmetadata-show');
+    }
+    if (!($(e.target).hasClass('filters') || $(e.target).hasClass('sort'))) {
+      newKey = null;
+      newVal = null;
+      sortKey = null;
+    }
+  });
+
+  $('.filter-area').on('mouseup', function() {
     if (newKey != null && newVal != null) {
       if (supportsRange) {
         addRange(newKey);
@@ -30,6 +85,17 @@ $(function() {
     }
     newKey = null;
     newVal = null;
+    sortKey = null;
+  });
+
+  $('.sort-area').on('mouseup', function() {
+    if (sortKey != null) {
+      addSort(sortKey);
+      sort(sortKey, sortOrder);
+    }
+    newKey = null;
+    newVal = null;
+    sortKey = null;
   });
 
   $(document).on('click', '.filter-close', function(event) {
@@ -46,6 +112,16 @@ $(function() {
     range.remove();
   });
 
+  $(document).on('click', '.sort-close', function(event) {
+    var sortDiv = $(event.target).parent('.sort');
+    sortDiv.remove();
+    sort('Model ID', 'asc');
+  });
+
+  $(document).on('click', '.chart-close', function(event) {
+    $('.model-chart').html("");
+  })
+
   $(document).on('change', '.range-options select, .range-options input', function(event) {
     var range = $(this).closest('.range');
     var id = range.data('id');
@@ -53,6 +129,11 @@ $(function() {
     var val = range.find('input').val();
     var type = range.find('select').val();
     updateRange(id, key, val, type);
+  });
+
+  $(document).on('change', '.sort-order', function(event) {
+    sortOrder = event.target.value;
+    sort($('.sort').data('key'), sortOrder);
   });
 
   $('.model-config').draggable({
@@ -67,7 +148,7 @@ $(function() {
     start: dragStart
   });
 
-  $('.kv').draggable({
+  $('.kv:not(.nkv)').draggable({
     revert: true,
     revertDuration: 0,
     start: dragStart
@@ -76,6 +157,7 @@ $(function() {
   function dragStart(event, ui) {
     newKey = ui.helper.data('key');
     newVal = ui.helper.data('val');
+    sortKey = newKey;
     supportsRange = ui.helper.data('num');
   }
 
@@ -89,7 +171,7 @@ $(function() {
       // add new filter
       filters[key] = val;
       var filterDiv = getFilterDiv(key,val);
-      $('.filters').append(filterDiv);
+      $('.filter-area').append(filterDiv);
     }
 
     // update models visually
@@ -108,7 +190,7 @@ $(function() {
     rangeDiv.data('key', key);
     rangeDiv.data('id', rangeId);
     rangeId += 1;
-    $('.filters').append(rangeDiv);
+    $('.filter-area').append(rangeDiv);
   }
 
   function updateRange(id, key, val, type) {
@@ -122,10 +204,15 @@ $(function() {
 
   function removeRange(id) {
     delete ranges[id];
-
     filter();
   }
 
+  function addSort(key) {
+    var sortDiv = getSortDiv(key);
+    $('.sort').remove();
+    console.log(sortDiv);
+    $('.sort-area').append(sortDiv);
+  }
 
   function getFilterDiv(key, val) {
     var div = $(
@@ -153,6 +240,25 @@ $(function() {
       '</div>'
     );
     return div;
+  }
+
+  function getSortDiv(key) {
+    var div = $(
+      '<div class="sort">' + key +
+      '<div class="sort-close">X</div>' +
+      '</div>'
+    );
+    div.data('key', key);
+    return div;
+  }
+
+  function sort(key, order) {
+    var options = {
+      data: "val",
+      order: order
+    };
+    options.selector = '.kv[data-key="' + key + '"], .nkv[data-key="' + key + '"]';
+    tinysort($('.model'), options)
   }
 
   function filter() {
@@ -188,7 +294,7 @@ $(function() {
       let fields = $(models[i]).find('.kv');
       let field = fields.findByData('key', key)[0];
       if (field && $(field).data('val') === val) {
-        console.log('match');
+        // console.log('match');
       } else {
         show[i] = false;
       }
