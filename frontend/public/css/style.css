@@ -90,3 +90,21 @@ select:focus, select:active {
   border:0;
   outline:0;
 }
+
+.loader {
+  background-color: white;
+  background-color: #ecf0f1;
+  width: 100%;
+  height: calc(100vh - 49px);
+  line-height: calc(100vh - 49px);
+  position: absolute;
+  top: 49px;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.loader img {
+  vertical-align: middle;
+  height: 200px;
+  width: 200px;
+}

@@ -21,6 +21,8 @@ $(function() {
   var supportsRange = false;
   var sortOrder = 'asc';
   var sortKey = null;
+  var numModels = $('.model').length;
+  console.log(numModels);
 
   $(document).on('click', '.menu-icon', function(event) {
     var open = $($('.menu')[0]).hasClass('open');
@@ -101,26 +103,51 @@ $(function() {
   $(document).on('click', '.filter-close', function(event) {
     var filter = $(event.target).parent('.filter');
     var key = filter.data('key');
-    removeFilter(key);
     filter.remove();
+    removeFilter(key);
   });
 
   $(document).on('click', '.range-close', function(event) {
     var range = $(event.target).parent('.range');
     var id = range.data('id');
-    removeRange(id);
     range.remove();
+
+    $('.loader').show();
+    removeRange(id);
   });
 
   $(document).on('click', '.sort-close', function(event) {
     var sortDiv = $(event.target).parent('.sort');
     sortDiv.remove();
-    sort('Model ID', 'asc');
+
+    $('.loader').show();
+    setTimeout(function() {
+      sort('Model ID', 'asc');
+      $('.loader').hide();
+    }, numModels);
   });
 
   $(document).on('click', '.chart-close', function(event) {
     $('.model-chart').html("");
-  })
+  });
+
+  $(document).on('click', '.group-header', function(event) {
+    var group = $($(event.target).closest('.models-group'));
+    if (group.hasClass("hide-group")) {
+      group.removeClass("hide-group");
+      group.css("height", "auto");
+      var height = group.height();
+      group.css("height", "48px");
+      group.animate({height: height+"px"}, 300, function() {
+        group.css({"height": "auto", "overflow": "visible"});
+      });
+    } else {
+      group.addClass("hide-group");
+      group.animate({height: "48px"}, 300, function() {
+        group.css({"overflow": "hidden"});
+      });
+    }
+  });
 
   $(document).on('change', '.range-options select, .range-options input', function(event) {
     var range = $(this).closest('.range');
@@ -134,6 +161,15 @@ $(function() {
   $(document).on('change', '.sort-order', function(event) {
     sortOrder = event.target.value;
     sort($('.sort').data('key'), sortOrder);
+  });
+
+  $(document).on('change', '.group-table', function(event) {
+    $('.loader').show();
+    setTimeout(function() {
+      var groupkey = event.target.value;
+      groupModels(groupkey);
+      $('.loader').hide();
+    }, numModels);
   });
 
   $('.model-config').draggable({
@@ -258,34 +294,45 @@ $(function() {
       order: order
     };
     options.selector = '.kv[data-key="' + key + '"], .nkv[data-key="' + key + '"]';
-    tinysort($('.model'), options)
+    var groups = $('.models-group');
+    for (var i=0; i<groups.length; i++) {
+      tinysort($($('.models-group')[i]).find('.model'), options);
+    }
   }
 
   function filter() {
-    var models = $('.model');
-    var show = Array(models.length).fill(true);
-    for (var key in filters) {
-      if (filters.hasOwnProperty(key)) {
-        filterByKey(key, filters[key], show);
+    $('.loader').show();
+    setTimeout(function() {
+      var models = $('.model');
+      var show = Array(models.length).fill(true);
+      for (var key in filters) {
+        if (filters.hasOwnProperty(key)) {
+          filterByKey(key, filters[key], show);
+        }
       }
-    }
 
-    for (var id in ranges) {
-      if (ranges.hasOwnProperty(id)) {
-        var key = ranges[id].key;
-        var val = ranges[id].val;
-        var type = ranges[id].type;
-        filterByRange(key, val, type, show);
+      for (var id in ranges) {
+        if (ranges.hasOwnProperty(id)) {
+          var key = ranges[id].key;
+          var val = ranges[id].val;
+          var type = ranges[id].type;
+          filterByRange(key, val, type, show);
+        }
       }
-    }
 
-    for (var i=0; i<show.length; i++) {
-      if (show[i]) {
-        $(models[i]).slideDown();
-      } else {
-        $(models[i]).slideUp()
+      for (var i=0; i<show.length; i++) {
+        if (show[i]) {
+          $(models[i]).data('show', true);
+          $(models[i]).slideDown();
+         } else {
+          $(models[i]).data('show', false);
+          $(models[i]).slideUp()
+        }
       }
-    }
+
+      groupModels($('.group-table').val());
+      $('.loader').hide();
+    }, numModels);
   };
 
   function filterByKey(key, val, show) {
@@ -320,5 +367,78 @@ $(function() {
         }
       }
     }
+  }
+
+  function groupModels(key) {
+    // get rid of old groups
+    var groups = $('.models-group');
+    for (var i=0; i<groups.length; i++) {
+      $(groups[i]).data('groupkey', 'delete');
+    }
+
+    var models = $('.model');
+    if (key == "None") {
+      // no grouping
+      group = $('<div data-groupkey="' + key + '" data-groupval="None"></div>');
+      group.addClass("models-group");
+      for (var i=0; i<models.length; i++) {
+        group.append($(models[i]));
+        $('.models').append(group);
+      }
+    } else {
+      // separate into groups
+      for (var i=0; i<models.length; i++) {
+        let fields = $(models[i]).find('.kv');
+        let field = fields.findByData('key', key)[0];
+        var val = $(field).data('val');
+        if (val == null) {
+          val = "undefined";
+        }
+        var group = $('.models-group').filter(function() {
+          return ($(this).data('groupkey') == key && $(this).data('groupval') == val);
+        });
+        if (group.length == 0) {
+          // create new group
+          group = $('<div data-groupkey="' + key + '" data-groupval="' + val + '"></div>');
+          group.addClass("models-group");
+          group.addClass("hide-group");
+          if (key != "None") {
+            group.append($('<div class="group-header">' + key + ': ' + val + '</div>'));
+          }
+          group.append($(models[i]));
+          $('.models').append(group);
+          group.css('height', '48px');
+        } else {
+          // add to existing group
+          $(group[0]).append($(models[i]));
+        }
+      }
+    }
+
+    // remove old groups and add numbers
+    var groups = $('.models-group');
+    for (var i=0; i<groups.length; i++) {
+      if ($(groups[i]).data('groupkey') != key) {
+        $(groups[i]).remove();
+      } else {
+        var header = $(groups[i]).find('.group-header');
+        var numModels = $(groups[i]).children().filter(function() {
+          return $(this).data('show');
+        });
+        numModels = numModels.length;
+        var text = numModels == 1 ? " model" : " models";
+        $(header).append($('<div class="group-num-models"> ('
+          + numModels + text
+          + ')</div>'));
+      }
+    }
+
+    // sort groups
+    var options = {
+      data: "groupval",
+      order: "asc"
+    };
+    tinysort($('.models-group'), options);
+    $('.sort-order').trigger('change');
   }
 });

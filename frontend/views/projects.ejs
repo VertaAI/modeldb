@@ -5,14 +5,30 @@
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
     <link rel='stylesheet' href='/css/style.css' />
     <link rel='stylesheet' href='/css/projects.css' />
+
+
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+    <!-- hideseek -->
+    <script src='/js/lib/jquery.hideseek.min.js'></script>
+    <script src='/js/projects.js'></script>
+
   </head>
   <body>
     <%- include partials/nav.ejs %>
     <div class="container">
       <div class="input-container">
-        <input placeholder="Search for project"></input>
+        <input
+          autocomplete="off"
+          data-list=".default-list"
+          id="search"
+          placeholder="Search for project"
+          type="text"
+        >
+        </input>
       </div>
-      <div class="projects">
+      <div class="projects default-list">
         <% for(var i=0; i<projects.length; i++) { %>
           <a href="projects/<%= projects[i].project.id %>/models">
             <div class="project">
