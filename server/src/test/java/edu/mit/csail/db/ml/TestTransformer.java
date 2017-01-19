@@ -1,6 +1,5 @@
 package edu.mit.csail.db.ml;
 
-import edu.mit.csail.db.ml.client.StructFactory;
 import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.storage.TransformerDao;
 import jooq.sqlite.gen.Tables;
@@ -13,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 // Note that this just tests the Transformer specific methods.
 // We will test the model (i.e. Transformers with FitEvent and Features) in TestModel.java.

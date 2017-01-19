@@ -1,6 +1,5 @@
 package edu.mit.csail.db.ml;
 
-import edu.mit.csail.db.ml.client.StructFactory;
 import edu.mit.csail.db.ml.server.storage.GridSearchCrossValidationEventDao;
 import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;

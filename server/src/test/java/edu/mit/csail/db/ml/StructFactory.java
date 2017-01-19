@@ -1,4 +1,4 @@
-package edu.mit.csail.db.ml.client;
+package edu.mit.csail.db.ml;
 
 import modeldb.*;
 
