@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/lib/vis-tooltip.css">
+    <link rel='stylesheet' href='/css/style.css' />
+    <link rel='stylesheet' href='/css/m.css' />
+
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- d3 and vega -->
+    <script src="//vega.github.io/vega-editor/vendor/d3.min.js" charset="utf-8"></script>
+    <script src="//vega.github.io/vega-editor/vendor/vega.js" charset="utf-8"></script>
+    <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
+    <script src="//vega.github.io/datalib/datalib.min.js"></script>
+    <script src="/js/lib/vg-tooltip.js"></script>
+
+    <!-- tinysort -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinysort/2.3.6/tinysort.min.js"></script>
+
+    <script src="/js/m.js"></script>
+  </head>
+  <body data-id=<%= id %>>
+    <%- include partials/nav.ejs %>
+    <div class="container">
+
+      <div class="loader">
+        <img src="/images/loading.gif">
+      </div>
+
+      <div class="menu">
+
+        <div class="menu-tabs-container">
+          <div class="menu-tab selected">
+            <img src="/images/charts.png">
+            <div class="menu-tab-label">
+              Overview and Charts
+            </div>
+          </div>
+          <div class="menu-tab">
+            <img src="/images/data.png">
+            <div class="menu-tab-label">
+              Data Tables
+            </div>
+          </div>
+        </div>
+
+        <div class="filters-container">
+            <div class="filters-info">
+                <h2>Filter</h2>
+                Drag configs or metrics into this section to filter models based on key - value pairs.
+            </div>
+            <div class="filter-area"></div>
+        </div>
+
+        <div class="sort-container">
+          <div class="sort-info">
+            <h2>Sort</h2>
+            Drag configs or metrics into this section to sort by a certain key.
+          </div>
+          <div class="select-container">
+            <div class="select-label">
+              order:
+            </div>
+            <select class="sort-order">
+              <option selected value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+          <div class="sort-area"></div>
+        </div>
+
+      </div>
+
+
+      <div class="project-info-container">
+        <div class="project-name"></div>
+        <div class="project-num-models"></div>
+        <div class="project-author"></div>
+        <div class="project-description"></div>
+      </div>
+
+      <div class="summary-chart"></div>
+
+    </div>
+  </body>
+</html>

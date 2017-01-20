@@ -14,6 +14,14 @@ router.get('/', function(req, res, next) {
   });
 });
 
+/* get details for specific project */
+router.get('/:id', function(req, res, next) {
+  var projectId = req.params.id;
+  api.getProject(projectId, function(response) {
+    res.json(response);
+  });
+});
+
 /* get all models for specific project */
 router.get('/:id/models', function(req, res, next) {
   var projectId = req.params.id;
@@ -24,6 +32,23 @@ router.get('/:id/models', function(req, res, next) {
       menu: true,
       models: response
     });
+  });
+});
+
+router.get('/:id/m', function(req, res, next) {
+  var id = req.params.id;
+  res.render('m', {
+    title: 'Models',
+    path: ' > Projects > Models',
+    menu: false,
+    id: id
+  });
+});
+
+router.get('/:id/ms', function(req, res, next) {
+  var projectId = req.params.id;
+  api.getProjectModels(projectId, function(response) {
+    res.json(response);
   });
 });
 

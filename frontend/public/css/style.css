@@ -18,6 +18,10 @@ button:focus {
   outline: none;
 }
 
+h2 {
+  margin: 0 0 5px 0;
+}
+
 nav {
   background-color: #2c3e50;
   color: white;
@@ -97,10 +101,12 @@ select:focus, select:active {
   width: 100%;
   height: calc(100vh - 49px);
   line-height: calc(100vh - 49px);
-  position: absolute;
+  position: fixed;
+  left: 0;
   top: 49px;
   text-align: center;
   opacity: 0.7;
+  z-index: 1;
 }
 
 .loader img {

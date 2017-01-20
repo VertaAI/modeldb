@@ -1,0 +1,137 @@
+body {
+  font-size: 13px;
+}
+
+h2 {
+  font-size: 16px;
+}
+
+.container {
+  padding-left: 250px;
+}
+
+/*
+ * Menu
+ */
+
+.menu {
+  background-color: #D9E0E8;
+  position: fixed;
+  left: 0;
+  height: 100vh;
+  width: 250px;
+}
+
+.menu-tabs-container {
+  border-bottom: 1px dashed #2c3e50;
+}
+
+.menu-tab {
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.menu-tab:hover {
+background-color: #d0d8e2;
+}
+
+.menu .selected {
+  font-weight: bold;
+  background-color: #AEBDCD;
+}
+
+.menu .selected:after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 9px;
+  width: 0;
+  height: 0;
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+  border-left: 20px solid #AEBDCD;
+
+}
+
+.menu-tab-label {
+  line-height: 40px;
+  vertical-align: top;
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 16px;
+}
+
+.menu-tab img {
+  height: 40px;
+  display:inline-block;
+  vertical-align: top;
+}
+
+.filters-container,
+.sort-container {
+  padding: 10px;
+}
+
+.filter-area {
+  height: 200px;
+  overflow-y: scroll;
+}
+
+.select-label {
+  display: inline-block;
+  vertical-align: top;
+  width: 50px;
+  line-height: 24px;
+}
+
+.sort-container .select-label {
+  width: 50px;
+}
+
+.select-container {
+  margin: 10px 0;
+}
+
+.select-container select {
+  font-size: 13px;
+  width:175px;
+}
+
+/*
+ * Project info
+ */
+.project-info-container {
+  padding: 10px 20px;
+}
+
+.project-name {
+  font-size: 24px;
+  font-weight: 500;
+  float: left;
+  line-height: 30px;
+}
+
+.project-num-models {
+  float: right;
+  line-height: 30px;
+  font-size: 20px;
+}
+
+.project-author,
+.project-description {
+  clear: both;
+  font-size: 14px;
+}
+
+/*
+ * Summary charts
+ */
+.summary-chart {
+  margin: 20px;
+  overflow: hidden;
+}
+
+.summary-chart .vega {
+  overflow: scroll;
+}

@@ -68,9 +68,21 @@ module.exports = {
         models = models.filter(function(model) {
           return model.show;
         });
-        console.log(models);
         callback(models);
       });
+    });
+  },
+
+  getProject: function(projectId, callback) {
+    Thrift.client.getProjectOverviews(function(err, response) {
+      for (var i=0; i<response.length; i++) {
+        var project = response[i].project;
+        if (project.id == projectId) {
+          callback(project);
+          return;
+        }
+      }
+      callback(null);
     });
   },
 
