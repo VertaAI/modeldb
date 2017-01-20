@@ -13,13 +13,26 @@ import org.jooq.DSLContext;
 import java.util.Arrays;
 import java.util.Collections;
 
+/**
+ * This defines a main(args) function for evaluating ModelDB Server.
+ *
+ * It reads from the default configuration file: [ModelDB_Dir]/server/src/main/resources/reference.conf
+ * Then, it conects to the database, as specified in a the above configuration file, and
+ * issues a number of API method calls, timing each one. After
+ * measuring the times, it writes them to a file (given in the command line arguments).
+ */
 public class RunOperations {
   /**
    * There should be one command line argument - the path to write the output to.
    */
   public static void main(String[] args) throws Exception {
+    // Read and parse the default configuration file.
     ModelDbConfig config = ModelDbConfig.parse(new String[] {});
+
+    // Create the connection to the database.
     DSLContext ctx = ContextFactory.create(config.dbUser, config.dbPassword, config.jbdcUrl, config.dbType);
+
+    // Set up the timer.
     Timer.clear();
 
     // Ancestry algorithms.
