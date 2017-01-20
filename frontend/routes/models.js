@@ -15,6 +15,15 @@ router.get('/:id', function(req, res, next) {
   });
 });
 
+router.get('/:id/card', function(req, res, next) {
+  var modelId = req.params.id;
+  api.getModel(modelId, function(response) {
+    res.render('card', {
+      models: [response]
+    });
+  });
+});
+
 router.get('/ancestry/:id', function(req, res, next) {
   var modelId = req.params.id;
   api.getModelAncestry(modelId, function(response) {

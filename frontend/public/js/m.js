@@ -1,10 +1,10 @@
-var models = {};
-var values = [];
+var models = [];
 var spec;
 var embedSpec;
 var numModels = 0;
 var min_id = null;
 var max_id = null;
+var metricKeys = {};
 
 $(function() {
 
@@ -12,6 +12,11 @@ $(function() {
     var id = $('body').data('id');
     console.log("project id: " + id);
     fetchData(id);
+
+    $(document).on('click', '.model-card .popup-label', function(event) {
+      console.log(event);
+      $(this).parent().toggleClass('open');
+    });
   };
 
   function fetchData(projectId) {
@@ -42,6 +47,7 @@ $(function() {
         for (var i=0; i<response.length; i++) {
           var model = response[i];
           var id = model.id;
+          var obj = {};
 
           if (min_id == null || id < min_id) {
             min_id = id;
@@ -52,51 +58,63 @@ $(function() {
           }
 
           // id
-          models[id] = {"Model ID": id};
-          models[id]["Experiment Run ID"] = model.experimentRunId;
-          models[id]["Experiment ID"] = model.experimentId;
-          models[id]["Project ID"] = model.projectId;
+          obj["id"] = id;
+          obj["Experiment Run ID"] = model.experimentRunId;
+          obj["Experiment ID"] = model.experimentId;
+          obj["Project ID"] = model.projectId;
 
           // dataframe
-          models[id]["DataFrame ID"] = model.trainingDataFrame.id;
-          models[id]["DF numRows"] = model.trainingDataFrame.numRows;
-          models[id]["DF Tag"] = model.trainingDataFrame.tag;
-          models[id]["DF Filepath"] = model.trainingDataFrame.filepath;
+          obj["DataFrame ID"] = model.trainingDataFrame.id;
+          obj["DF numRows"] = model.trainingDataFrame.numRows;
+          obj["DF Tag"] = model.trainingDataFrame.tag;
+          obj["DF Filepath"] = model.trainingDataFrame.filepath;
           var metadata = model.trainingDataFrame.metadata;
           for (var j=0; j<metadata.length; j++) {
-            models[id][metadata[j].key] = metadata[j].value;
+            obj[metadata[j].key] = metadata[j].value;
           }
 
           // specifications
-          models[id]["Specification ID"] = model.specification.id;
-          models[id]["Type"] = model.specification.transformerType;
-          models[id]["Spec Tag"] = model.specification.tag;
-          models[id]["Problem Type"] = model.problemType;
+          obj["Specification ID"] = model.specification.id;
+          obj["Type"] = model.specification.transformerType;
+          obj["Spec Tag"] = model.specification.tag;
+          obj["Problem Type"] = model.problemType;
           var hyperparameters = model.specification.hyperparameters;
           for (var j=0; j<hyperparameters.length; j++) {
-            models[id][hyperparameters[j].name] = hyperparameters[j].value;
+            obj[hyperparameters[j].name] = hyperparameters[j].value;
           }
 
           // metrics
           var metrics = model.metrics;
           for (var j=0; j<metrics.length; j++) {
-            models[id][metrics[j].key] = metrics[j].val;
-            values.push({
-              "id": id,
-              "type": model.specification.transformerType,
-              "key": metrics[j].key,
-              "val": metrics[j].val
-            });
+            obj[metrics[j].key] = metrics[j].val;
+
+            // add metric key to dictionary
+            if (!metricKeys.hasOwnProperty(metrics[j].key)) {
+              metricKeys[metrics[j].key] = metrics[j].key;
+            }
           }
 
           // misc
-          models[id]["Code SHA"] = model.sha;
-          models[id]["Filepath"] = model.filepath;
-        }
+          obj["Code SHA"] = model.sha;
+          obj["Filepath"] = model.filepath;
 
+          models.push(obj);
+        }
+        metricKeys = Object.values(metricKeys);
         vegaInit();
         $('.loader').hide();
       }
+    });
+  }
+
+  function hideModelCard() {
+    $('.model-card').animate({"right": "-300px"});
+  }
+
+  function showModelCard(model_id) {
+    $('.model-card').css({"right": "-300px"});
+    $('.model-card').load('/models/' + model_id + '/card', function() {
+      $('.model-card').animate({"right": "20px"});
     });
   }
 
@@ -139,12 +157,16 @@ $(function() {
       "data": [
         {
           "name": "table",
-          "values": values
+          "values": models,
+          "transform": [
+            {"type": "fold", "fields": metricKeys}
+          ]
         },
         {
           "name": "filtered",
-          "values": values,
+          "values": models,
           "transform": [
+            {"type": "fold", "fields": metricKeys},
             {"type": "filter", "test": "datum.id >= min_id && datum.id <= max_id"},
           ]
         }
@@ -161,7 +183,7 @@ $(function() {
           "name": "yOverview",
           "range": [70, 0],
           "nice": true,
-          "domain": {"data": "table", "field": "val"}
+          "domain": {"data": "table", "field": "value"}
         },
         {
           "name": "xDetail",
@@ -174,12 +196,12 @@ $(function() {
           "name": "yDetail",
           "range": [300,0],
           "nice": true,
-          "domain": {"data": "filtered", "field": "val"}
+          "domain": {"data": "filtered", "field": "value"}
         },
         {
           "name": "color",
           "type": "ordinal",
-          "domain": {"data": "table", "field": "type"},
+          "domain": {"data": "table", "field": "Type"},
           "range": "category10"
         },
         {
@@ -248,11 +270,11 @@ $(function() {
                   "properties": {
                     "update": {
                       "x": {"scale": "xDetail", "field": "id"},
-                      "y": {"scale": "yDetail", "field": "val"},
+                      "y": {"scale": "yDetail", "field": "value"},
                       "y2": {"scale": "yDetail", "value": 0},
                       "size": {"value": 70},
                       "opacity": {"value": 0.5},
-                      "fill": {"scale": "color", "field": "type"},
+                      "fill": {"scale": "color", "field": "Type"},
                       "shape": {"scale": "shape", "field": "key"}
                     },
                     "hover": {
@@ -295,7 +317,7 @@ $(function() {
               "properties": {
                 "update": {
                   "x": {"scale": "xOverview", "field": "id"},
-                  "y": {"scale": "yOverview", "field": "val"},
+                  "y": {"scale": "yOverview", "field": "value"},
                   "y2": {"scale": "yOverview", "value": 0},
                   "fill": {"value": "steelblue"}
                 },
@@ -327,7 +349,6 @@ $(function() {
 
       ]
     };
-    console.log(specs);
 
     vg.embed(".summary-chart", specs, function(error, result) {
       // Callback receiving the View instance and parsed Vega spec
@@ -335,13 +356,40 @@ $(function() {
       console.log(result);
       console.log(error);
       options = {
-        showAllFields: true,
+        showAllFields: false,
+        fields: [
+          {
+            field: "id",
+            formatType: "string"
+          },
+          {
+            field: "Type",
+            title: "type",
+            formatType: "string"
+          },
+          {
+            field: "key",
+            formatType: "string"
+          },
+          {
+            field: "value",
+            title: "val",
+            formatType: "number"
+          }
+        ],
         colorTheme: "dark"
       }
       vg.tooltip(result.view, options);
       result.view.on('click', function(event, item) {
         console.log(event);
         console.log(item);
+        if (item != null) {
+          if (item.datum.id != null && !item.datum.hidetooltip) {
+            showModelCard(item.datum.id);
+          }
+        } else {
+          hideModelCard();
+        }
       });
     });
   }

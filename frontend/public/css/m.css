@@ -127,6 +127,10 @@ background-color: #d0d8e2;
 /*
  * Summary charts
  */
+.summary-chart-container {
+  position: relative;
+}
+
 .summary-chart {
   margin: 20px;
   overflow: hidden;
@@ -134,4 +138,64 @@ background-color: #d0d8e2;
 
 .summary-chart .vega {
   overflow: scroll;
+}
+
+/*
+ * Model card
+ */
+
+.model-card {
+  position: absolute;
+  right: 20px;
+  top: 0;
+  background-color: #D9E0E8;
+  opacity: 0.95;
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: scroll;
+  -webkit-user-select: none; /* Chrome/Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
+}
+
+.model-card .kv {
+  padding: 4px 7px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 2px;
+  max-width: 200px;
+}
+
+.model-card .nkv {
+  padding: 4px 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 200px;
+}
+
+.model-card .kv:hover {
+  background-color: #AEBDCD;
+}
+
+.model-card .nkv:hover {
+  background-color: #D9E0E8;
+}
+
+.model-card .popup-container {
+  color: #00B7FF;
+  height: 14px;
+  margin-bottom: 2px;
+  cursor: pointer;
+}
+
+.model-card .popup-contents {
+  margin-top: 2px;
+  color: black;
+}
+
+.model-card .open {
+  height: initial;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
