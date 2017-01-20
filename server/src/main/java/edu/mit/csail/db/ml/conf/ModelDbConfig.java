@@ -7,23 +7,78 @@ import org.apache.commons.cli.*;
 
 import java.io.File;
 
+/**
+ * Represents the configuration used to set-up the ModelDB Server.
+ * The configuration is specified in a file like in [ModelDB_Dir]/server/src/main/resources/reference.conf.
+ *
+ * Then, this class can be used to parse the file and read the configuration.
+ *
+ * This is a SINGLETON class.
+ */
 public class ModelDbConfig {
+  /**
+   * The type of the database. Currently, only SQLite is supported. However, JOOQ (the library used to interact with
+   * the database) supports other relational databases like MySQL and PostgreSQL.
+   */
   public enum DatabaseType {
     SQLITE
   }
 
+  /**
+   * This is the name of the command line argument that will be parsed to read the path of the configuration file.
+   */
   private static final String CONF_OPT = "conf";
+
+  /**
+   * The singleton instance of the configuration object.
+   */
   private static ModelDbConfig instance;
 
+  /**
+   * The username used to connect to the database.
+   */
   public final String dbUser;
+
+  /**
+   * The password used to connect to the database.
+   */
   public final String dbPassword;
+
+  /**
+   * The hostname to launch the Thrift server.
+   */
   public final String thriftHost;
+
+  /**
+   * The type of the database to connect to.
+   */
   public final DatabaseType dbType;
+
+  /**
+   * The JDBC URL of the database.
+   */
   public final String jbdcUrl;
+
+  /**
+   * The JDBC URL of the database used for running tests.
+   */
   public final String jbdcTestUrl;
+
+  /**
+   * The port on which to launch the Thrift server.
+   */
   public final int thriftPort;
+
+  /**
+   * ModelDB Server allows the user to store models in a filesystem. ModelDB Server generates
+   * filepaths at which the user can store their models. Each filename is prefixed with the given
+   * prefix string to create the filepath.
+   */
   public final String fsPrefix;
 
+  /**
+   * Creates a configuration object.
+   */
   private ModelDbConfig(
     String dbUser,
     String dbPassword,
@@ -38,19 +93,33 @@ public class ModelDbConfig {
     this.dbPassword = dbPassword;
     this.jbdcUrl = jdbcUrl;
     this.jbdcTestUrl = jdbcTestUrl;
+    this.thriftHost = thriftHost;
+    this.thriftPort = Integer.parseInt(thriftPort);
+    this.fsPrefix = fsPrefix;
+
     switch (databaseType) {
       case "sqlite": this.dbType = DatabaseType.SQLITE; break;
       default: throw new IllegalArgumentException("Not a value databaseType");
     }
-    this.thriftHost = thriftHost;
-    this.thriftPort = Integer.parseInt(thriftPort);
-    this.fsPrefix = fsPrefix;
   }
 
+  /**
+   * Read the key "modeldb.[keyname]" from the given configuration object.
+   * @param config - The configuration object.
+   * @param key - Name of the key to lookup.
+   * @return The value of the given key.
+   */
   private static String getProp(Config config, String key) {
     return config.getString(String.format("modeldb.%s", key));
   }
 
+  /**
+   * Parse command line arguments and create the singleton ModelDbConfig object.
+   * @param args - The command line arguments. If the CONF_OPT option is present, then it will be used as the
+   *             path of the configuration file. Otherwise, the [ModelDB_Dir]/server/src/main/resources/reference.conf
+   *             will be read.
+   * @return The singleton configuration object.
+   */
   public static ModelDbConfig parse(String[] args) throws ParseException {
     Options options = new Options();
 
@@ -67,10 +136,12 @@ public class ModelDbConfig {
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
 
+    // If the configuration file is given, read from that file. Otherwise, read from the default filepath.
     Config config = cmd.hasOption(CONF_OPT)
       ? ConfigFactory.parseFile(new File(cmd.getOptionValue(CONF_OPT)))
       : ConfigFactory.load();
 
+    // Create the singleton object and return it.
     instance = new ModelDbConfig(
       getProp(config, "db.user"),
       getProp(config, "db.password"),
@@ -85,6 +156,10 @@ public class ModelDbConfig {
     return instance;
   }
 
+  /**
+   * @return The singleton configuration.
+   * @throws IllegalStateException Thrown if the parse(args) method has not yet been called.
+   */
   public static ModelDbConfig getInstance() throws IllegalStateException {
     if (instance == null) {
       throw new IllegalStateException("Call parse() to create a ModelDbConfig before you try to access it.");

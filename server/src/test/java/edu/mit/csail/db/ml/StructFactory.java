@@ -8,13 +8,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * This generates dummy objects for use by the SampleClient.
+ * This class exposes static methods for creating dummy Thrift structures
+ * that can be used by the testing code.
  */
 public class StructFactory {
-  // Random number generator.
   private static final Random generator = new Random();
 
-  // Indicates that the primary key is empty.
+  /**
+   * This constant simply indicates that a primary key does not exist and should be generated.
+   */
   private static final int EMPTY_PRIMARY_KEY = -1;
 
   public static Project makeProject() {
@@ -29,10 +31,10 @@ public class StructFactory {
   public static Experiment makeExperiment() {
     return new Experiment(
       EMPTY_PRIMARY_KEY,
-      1,
+      1, // The experiment is in the project with ID = 1.
       "test experiment",
       "this is a test experiment",
-      false
+      false // This experiment is NOT the default experiment.
     );
   }
 
