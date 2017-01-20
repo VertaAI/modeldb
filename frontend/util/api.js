@@ -20,8 +20,7 @@ module.exports = {
         }
       }
       response.metrics = metrics;
-      console.log('test');
-      console.log(response.trainingDataFrame);
+      //console.log(response.trainingDataFrame);
       callback(response);
     });
   },

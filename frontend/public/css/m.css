@@ -146,7 +146,7 @@ background-color: #d0d8e2;
 
 .model-card {
   position: absolute;
-  right: 20px;
+  right: -300px;
   top: 0;
   background-color: #D9E0E8;
   opacity: 0.95;

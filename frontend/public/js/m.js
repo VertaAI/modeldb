@@ -14,7 +14,6 @@ $(function() {
     fetchData(id);
 
     $(document).on('click', '.model-card .popup-label', function(event) {
-      console.log(event);
       $(this).parent().toggleClass('open');
     });
   };
@@ -166,8 +165,8 @@ $(function() {
           "name": "filtered",
           "values": models,
           "transform": [
-            {"type": "fold", "fields": metricKeys},
             {"type": "filter", "test": "datum.id >= min_id && datum.id <= max_id"},
+            {"type": "fold", "fields": metricKeys}
           ]
         }
       ],
@@ -381,8 +380,6 @@ $(function() {
       }
       vg.tooltip(result.view, options);
       result.view.on('click', function(event, item) {
-        console.log(event);
-        console.log(item);
         if (item != null) {
           if (item.datum.id != null && !item.datum.hidetooltip) {
             showModelCard(item.datum.id);
