@@ -14,6 +14,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class HyperparameterComparison {
+  /**
+   * Compare the hyperparameters between two models.
+   * @param modelId1 - The ID of the first model.
+   * @param modelId2 - The ID of the second model.
+   * @param ctx - The database context.
+   * @return The comparison of hyperparameters.
+   */
   public static CompareHyperParametersResponse compareHyperParameters(int modelId1, int modelId2, DSLContext ctx)
     throws ResourceNotFoundException {
     String ERROR_FORMAT = "Could not find TransformerSpec for Transformer %d because it doesn't exist";
