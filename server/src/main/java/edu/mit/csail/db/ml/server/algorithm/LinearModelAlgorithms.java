@@ -13,13 +13,33 @@ import org.jooq.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * This class contains methods that operate on linear models.
+ */
 public class LinearModelAlgorithms {
+  /**
+   * Standardized linear models are assumed to have a hyperparameter called standardization which has a corresponding
+   * value of "true".
+   */
   private final static String STANDARDIZATION = "standardization";
 
+  /**
+   * Checks whether the given model is a linear model.
+   * @param modelId - The ID of the model.
+   * @param ctx - The database context.
+   * @return Whether the model is a linear model (has entry in LinearModel table).
+   */
   private static boolean isLinearModel(int modelId, DSLContext ctx) {
     return ctx.selectFrom(Tables.LINEARMODEL).where(Tables.LINEARMODEL.MODEL.eq(modelId)).fetchOne() != null;
   }
 
+  /**
+   * Checks whether the given model is a standardized model.
+   * @param modelId - The ID of the model.
+   * @param ctx - The database context.
+   * @return Whether the model is standardized (has a hyperparameter called "standardization" that takes on the value
+   * "true".
+   */
   private static boolean isStandardized(int modelId, DSLContext ctx) {
     Record1<String> rec = ctx
       .select(Tables.HYPERPARAMETER.PARAMVALUE)
@@ -34,6 +54,12 @@ public class LinearModelAlgorithms {
     return rec != null && rec.value1().equals("true");
   }
 
+  /**
+   * Order the features of a linear model by importance. This assumes that the model is standardized.
+   * @param modelId - The ID of the mdoel.
+   * @param ctx - The database context.
+   * @return The feature indices (i.e. index in feature vector), ordered from most important to least important.
+   */
   private static List<Integer> orderedFeatures(int modelId, DSLContext ctx) {
     return ctx
       .select(Tables.FEATURE.FEATUREINDEX)
@@ -44,6 +70,12 @@ public class LinearModelAlgorithms {
       .map(Record1::value1);
   }
 
+  /**
+   * Get the names of the features used in the given model.
+   * @param modelId - The ID of the model.
+   * @param ctx - The database context.
+   * @return A map from the feature index (in feature vector) to the name of the feature.
+   */
   private static Map<Integer, String> nameForFeature(int modelId, DSLContext ctx) {
     return ctx.select(Tables.FEATURE.FEATUREINDEX, Tables.FEATURE.NAME)
       .from(Tables.FEATURE)
@@ -54,6 +86,14 @@ public class LinearModelAlgorithms {
       .collect(Collectors.toMap(Record2::value1, Record2::value2));
   }
 
+  /**
+   * Given a sequence of objective function values, count the number of iterations until convergence is achieved.
+   * We say that a sequence, S (zero-indexed), has converged at iteration i + 1 if |S[i] - S[i - 1]| < tolerance.
+   * @param objectiveHistory - The sequence of objective function values.
+   * @param tolerance - The tolerance level to determine convergence. That is, if the objective function changes by
+   *                  less than the tolerance level in consecutive iterations, then it is assumed to have converged.
+   * @return The number of iterations until convergence.
+   */
   private static int iterationsUntilConvergence(List<Double> objectiveHistory, double tolerance) {
     for (int i = 1; i < objectiveHistory.size(); i++) {
       if (Math.abs(objectiveHistory.get(i) - objectiveHistory.get(i - 1)) < tolerance) {
@@ -63,8 +103,16 @@ public class LinearModelAlgorithms {
     return objectiveHistory.size();
   }
 
+  /**
+   * Determine t-distribution confidence intervals for each coefficient of linear model.
+   * @param modelId - The ID of the model.
+   * @param significanceLevel - The confidence level (should be greater than 0 and below 1).
+   * @param ctx - The database context.
+   * @return The confidence interval for each coefficient.
+   */
   public static List<ConfidenceInterval> confidenceIntervals(int modelId, double significanceLevel, DSLContext ctx)
     throws BadRequestException, IllegalOperationException, ResourceNotFoundException {
+    // Ensure that the significance level lies in (0, 1).
     if (!(significanceLevel > 0 && significanceLevel < 1)) {
       throw new BadRequestException(String.format(
         "Can't make linear model confidence intervals for Transformer %d because significance level %.4f " +
@@ -73,6 +121,8 @@ public class LinearModelAlgorithms {
         significanceLevel
       ));
     }
+
+    // Ensure the model exists.
     if (!TransformerDao.exists(modelId, ctx)) {
       throw new ResourceNotFoundException(String.format(
         "Can't make linear model confidence intervals for Transformer %d because it doesn't exist",
@@ -80,7 +130,7 @@ public class LinearModelAlgorithms {
       ));
     }
 
-    // If the model isn't linear, return an error.
+    // Ensure that the model is linear.
     if (!isLinearModel(modelId, ctx)) {
       throw new IllegalOperationException(String.format(
         "Can't make linear model confidence intervals for Transformer %d because it's not a linear model",
@@ -112,6 +162,7 @@ public class LinearModelAlgorithms {
       .stream()
       .collect(Collectors.toMap(Record3::value1, r -> new Pair<Double, Double>(r.value2(), r.value3())));
 
+    // Compute the degrees of freedom and create the t-distribution.
     int df = numRows - coeffStderrPairsForIndex.size() - ((coeffStderrPairsForIndex.containsKey(0)) ? 1 : 0);
     TDistribution dist = new TDistributionImpl(df);
 
@@ -138,6 +189,13 @@ public class LinearModelAlgorithms {
       .collect(Collectors.toList());
   }
 
+  /**
+   * Rank the given models according to a ranking metric.
+   * @param modelIds - The IDs of the models to rank.
+   * @param metric - The metric to use for ranking.
+   * @param ctx - The database context.
+   * @return The IDs of the models. The models are ordered by their ranking.
+   */
   public static List<Integer> rankModels(List<Integer> modelIds, ModelRankMetric metric, DSLContext ctx) {
     TableField<LinearmodelRecord, Double> rankField = Tables.LINEARMODEL.RMSE;
     switch (metric) {
@@ -156,6 +214,15 @@ public class LinearModelAlgorithms {
       .collect(Collectors.toList());
   }
 
+  /**
+   * Compute the number of iterations until convergence for each of the given models. See
+   * iterationsUntilConvergence(List<Double> objectiveHistory, double tolerance) for more information.
+   * @param modelIds - The IDs of the models.
+   * @param tolerance - The tolerance level for determining convergence.
+   * @param ctx - The database context.
+   * @return The list where the value at the i^th index is the number of iterations until convergence for the model with
+   * ID modelIds[i].
+   */
   public static List<Integer> iterationsUntilConvergence(List<Integer> modelIds, double tolerance, DSLContext ctx) {
     Map<Integer, List<Double>> objectiveHistoryForModel = new HashMap<>();
     ctx
@@ -188,6 +255,12 @@ public class LinearModelAlgorithms {
       .collect(Collectors.toList());
   }
 
+  /**
+   * Check if the given model is a standardized linear model. This throws an exception if the model is not linear and
+   * standardized.
+   * @param modelId - The ID of the model.
+   * @param ctx - The database context.
+   */
   private static void checkIsStandardizeLinearModel(int modelId, DSLContext ctx)
     throws ResourceNotFoundException, IllegalOperationException {
     if (!TransformerDao.exists(modelId, ctx)) {
@@ -212,6 +285,14 @@ public class LinearModelAlgorithms {
     }
   }
 
+  /**
+   * Return the names of the features of the given model, ordered from most important feature to least
+   * important feature.
+   * @param modelId - The ID of the model. This must be a linear, standardized model. If not, an exception will be
+   *                thrown.
+   * @param ctx - The database context.
+   * @return The feature names such that the most important feature is first and the least important feature is lst.
+   */
   public static List<String> featureImportances(int modelId, DSLContext ctx)
     throws ResourceNotFoundException, IllegalOperationException {
     // Ensure the model is a standardized linear model.
@@ -230,6 +311,13 @@ public class LinearModelAlgorithms {
       .collect(Collectors.toList());
   }
 
+  /**
+   * Compare the importance of features between two models.
+   * @param model1Id - The ID of the first model.
+   * @param model2Id - The ID of the second model.
+   * @param ctx - The database context.
+   * @return The comparison of feature importances.
+   */
   public static List<FeatureImportanceComparison> featureImportances(int model1Id, int model2Id, DSLContext ctx)
     throws ResourceNotFoundException, IllegalOperationException {
     // Ensure the models are standardized linear models.
