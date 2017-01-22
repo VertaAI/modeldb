@@ -12,7 +12,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * This class exposes methods to operate on the feature-sets of models.
+ */
 public class Feature {
+  /**
+   * Find all models that use any of the given features.
+   * @param featureNames - A set of feature names.
+   * @param ctx - The database context.
+   * @return Lists of IDs of models that have at least one feature (in Feature table) that is present in featureNames.
+   */
   public static List<Integer> modelsWithFeatures(List<String> featureNames, DSLContext ctx) {
     // De-duplicate by making a set.
     Set<String> featureSet = new HashSet<>(featureNames);
@@ -31,7 +40,12 @@ public class Feature {
   }
 
   /**
-   * Find the original set of features that produced the feature set used by the model with the given ID.
+   * Find the original set of features that produced the feature-set used by the model with the given ID.
+   * @param modelId - The ID of the model whose original features we seek.
+   * @param ctx - The database context.
+   * @return The list of original feature names. For example, suppose we begin with a DataFrame that has a column "age"
+   * and do a TransformEvent to produce a DataFrame with column "ageInDays". Then, suppose we train a model on the
+   * "ageInDays" column. Then, the original feature-set of the model is simply "age".
    */
   public static List<String> originalFeatures(int modelId, DSLContext ctx) throws ResourceNotFoundException {
     // This reads everything from the TransformEvent table. If this proves to be a performance bottleneck. We can
@@ -64,6 +78,14 @@ public class Feature {
     return features.stream().filter(f -> !f.equals("")).collect(Collectors.toList());
   }
 
+  /**
+   * Compare the feature-sets of two models.
+   * @param modelId1 - The ID of the first model.
+   * @param modelId2 - The ID of the second model.
+   * @param ctx - The database context.
+   * @return A comparison (i.e. common features, features only in model 1, features only in model 2) of the feature-sets
+   * of the two given models.
+   */
   public static CompareFeaturesResponse compareFeatures(int modelId1, int modelId2, DSLContext ctx)
     throws ResourceNotFoundException {
     String ERROR_FORMAT = "Could not find features for Transformer %d - the Transformer may not exist or it may " +
