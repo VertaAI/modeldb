@@ -12,18 +12,44 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This class contains logic for storing and reading FitEvents.
+ */
 public class FitEventDao {
+  /**
+   * Store a FitEvent for a non-pipeline. See store(FitEvent fe, DSLContext ctx, boolean isPipeline)
+   * for more information.
+   */
   public static FitEventResponse store(FitEvent fe, DSLContext ctx) {
     return store(fe, ctx, false);
   }
 
+  /**
+   * Read info about a FitEvent for a given model (recall that a model is a Transformer produced by a FitEvent).
+   * @param modelId - The ID of a Transformer.
+   * @param ctx - The database context.
+   * @return The response that was generated when the FitEvent was stored.
+   * @throws ResourceNotFoundException - Thrown if there's no Transformer with ID modelId.
+   */
   public static FitEventResponse readResponse(int modelId, DSLContext ctx) throws ResourceNotFoundException {
+    // Find the FitEvent that produced the Transformer with ID modelId.
     int fitEventId = getFitEventIdForModelId(modelId, ctx);
     FitEvent fe = read(fitEventId, ctx);
+
+    // Read the entry in the Event table that was stored for this FitEvent.
     int eventId = EventDao.getEventId(fitEventId, "fit", ctx);
+
+    // Return the response.
     return new FitEventResponse(fe.df.id, fe.spec.id, fe.model.id, eventId, fitEventId);
   }
 
+  /**
+   * Store a FitEvent in the database.
+   * @param fe - The FitEvent.
+   * @param ctx - The database context.
+   * @param isPipeline - Whether this is a FitEvent for a Pipeline, or whether it is a FitEvent for a non-pipeline.
+   * @return A response indicating that the FitEvent has been stored.
+   */
   public static FitEventResponse store(FitEvent fe, DSLContext ctx, boolean isPipeline) {
     // First, attempt to read the FitEvent if it's already stored.
     try {
@@ -92,7 +118,13 @@ public class FitEventDao {
     return new FitEventResponse(df.getId(), s.getId(), t.getId(), ev.getId(), feRec.getId());
   }
 
-
+  /**
+   * Count the number of rows of data that the model with the given ID was trained on.
+   * @param modelId - The ID of a model (i.e. Transformer created by a FitEvent).
+   * @param ctx - The database context.
+   * @return The number of rows of data (i.e. number of examples) used to train the model.
+   * @throws ResourceNotFoundException - Thrown if the model or its associated FitEvent do not exist.
+   */
   public static int getNumRowsForModel(int modelId, DSLContext ctx)
     throws ResourceNotFoundException {
     int numRows = getNumRowsForModels(Collections.singletonList(modelId), ctx).get(0);
@@ -105,10 +137,25 @@ public class FitEventDao {
     return numRows;
   }
 
+  /**
+   * Read the FitEvent with the given ID.
+   * @param fitEventId - The ID of the FitEvent.
+   * @param ctx - The database context.
+   * @return The FitEvent with ID fitEventId.
+   * @throws ResourceNotFoundException - Thrown if there's no FitEvent with the given ID.
+   */
   public static FitEvent read(int fitEventId, DSLContext ctx) throws ResourceNotFoundException {
     return read(Collections.singletonList(fitEventId), ctx).get(0);
   }
 
+  /**
+   * Read the FitEvent that produced the given model.
+   * @param modelId - The ID of a Transformer.
+   * @param ctx - The database context.
+   * @return The ID of the FitEvent that created the Transformer with ID modelId.
+   * @throws ResourceNotFoundException - Thrown if there's no FitEvent that produced the Transformer with the ID
+   * modelId.
+   */
   public static int getFitEventIdForModelId(int modelId, DSLContext ctx) throws ResourceNotFoundException {
     Record1<Integer> rec =
       ctx.select(Tables.FITEVENT.ID).from(Tables.FITEVENT).where(Tables.FITEVENT.TRANSFORMER.eq(modelId)).fetchOne();
@@ -122,16 +169,17 @@ public class FitEventDao {
 
   /**
    * Read the FitEvents associated with the given IDs.
-   * @param fitEventIds - The TransformEvent IDs to look up.
-   * @return A list of TransformEvents, transformEvents, where transformEvents.get(i) is the TransformEvent associated
-   *  with transformEventIds.get(i). The schema field of each TransformEvent will be emtpy. This is done for performance
+   * @param fitEventIds - The FitEvent IDs to look up.
+   * @return A list of FitEvents, fitEvents, where fitEvents.get(i) is the FitEvent associated
+   *  with fitEventIds.get(i). The schema field of each FitEvent will be empty. This is done for performance
    *  reasons (reduces storage space and avoids extra query).
-   * @throws ResourceNotFoundException - Thrown if any of the IDs do not have an associated TransformEvent.
+   * @throws ResourceNotFoundException - Thrown if any of the IDs do not have an associated FitEvent.
    */
   public static List<FitEvent> read(List<Integer> fitEventIds, DSLContext ctx)
     throws ResourceNotFoundException {
     Map<Integer, FitEvent> fitEventForId = new HashMap<>();
 
+    // Run a query to get all the fields we care about.
     ctx.select(
       Tables.DATAFRAME.ID,
       Tables.DATAFRAME.TAG,
@@ -150,66 +198,82 @@ public class FitEventDao {
       Tables.TRANSFORMER.TAG,
       Tables.TRANSFORMER.FILEPATH
     )
-      .from(
-        Tables.FITEVENT
-          .join(Tables.TRANSFORMER).on(Tables.FITEVENT.TRANSFORMER.eq(Tables.TRANSFORMER.ID))
-          .join(Tables.DATAFRAME).on(Tables.FITEVENT.DF.eq(Tables.DATAFRAME.ID))
-          .join(Tables.TRANSFORMERSPEC).on(Tables.FITEVENT.TRANSFORMERSPEC.eq(Tables.TRANSFORMERSPEC.ID)))
-      .where(Tables.FITEVENT.ID.in(fitEventIds))
-      .fetch()
-      .forEach(rec -> {
-        DataFrame df = new DataFrame(
-          rec.get(Tables.DATAFRAME.ID),
-          Collections.emptyList(),
-          rec.get(Tables.DATAFRAME.NUMROWS),
-          rec.get(Tables.DATAFRAME.TAG)
-        );
-        df.setFilepath(rec.get(Tables.DATAFRAME.FILEPATH));
+    .from(
+      Tables.FITEVENT
+        .join(Tables.TRANSFORMER).on(Tables.FITEVENT.TRANSFORMER.eq(Tables.TRANSFORMER.ID))
+        .join(Tables.DATAFRAME).on(Tables.FITEVENT.DF.eq(Tables.DATAFRAME.ID))
+        .join(Tables.TRANSFORMERSPEC).on(Tables.FITEVENT.TRANSFORMERSPEC.eq(Tables.TRANSFORMERSPEC.ID)))
+    .where(Tables.FITEVENT.ID.in(fitEventIds))
+    .fetch()
+    .forEach(rec -> {
+      // For each record returned from the query, we'll generate a FitEvent. First, we'll make a DataFrame.
+      DataFrame df = new DataFrame(
+        rec.get(Tables.DATAFRAME.ID),
+        Collections.emptyList(),
+        rec.get(Tables.DATAFRAME.NUMROWS),
+        rec.get(Tables.DATAFRAME.TAG)
+      );
+      df.setFilepath(rec.get(Tables.DATAFRAME.FILEPATH));
 
-        TransformerSpec spec = new TransformerSpec(
-          rec.get(Tables.TRANSFORMERSPEC.ID),
-          rec.get(Tables.TRANSFORMERSPEC.TRANSFORMERTYPE),
-          Collections.emptyList(),
-          rec.get(Tables.TRANSFORMERSPEC.TAG)
-        );
+      // Now make a TransformerSpec.
+      TransformerSpec spec = new TransformerSpec(
+        rec.get(Tables.TRANSFORMERSPEC.ID),
+        rec.get(Tables.TRANSFORMERSPEC.TRANSFORMERTYPE),
+        Collections.emptyList(),
+        rec.get(Tables.TRANSFORMERSPEC.TAG)
+      );
 
-        Transformer transformer = new Transformer(
-          rec.get(Tables.TRANSFORMER.ID),
-          rec.get(Tables.TRANSFORMER.TRANSFORMERTYPE),
-          rec.get(Tables.TRANSFORMER.TAG)
-        );
-        transformer.setFilepath(rec.get(Tables.TRANSFORMER.FILEPATH));
+      // Now make a Transformer.
+      Transformer transformer = new Transformer(
+        rec.get(Tables.TRANSFORMER.ID),
+        rec.get(Tables.TRANSFORMER.TRANSFORMERTYPE),
+        rec.get(Tables.TRANSFORMER.TAG)
+      );
+      transformer.setFilepath(rec.get(Tables.TRANSFORMER.FILEPATH));
 
-        int expRunId = rec.get(Tables.FITEVENT.EXPERIMENTRUN);
-        List<String> predictionCols = Arrays.asList(rec.get(Tables.FITEVENT.PREDICTIONCOLUMNS).split(","));
-        List<String> labelCols = Arrays.asList(rec.get(Tables.FITEVENT.LABELCOLUMNS).split(","));
+      // Make the columns and experiment run ID.
+      int expRunId = rec.get(Tables.FITEVENT.EXPERIMENTRUN);
+      List<String> predictionCols = Arrays.asList(rec.get(Tables.FITEVENT.PREDICTIONCOLUMNS).split(","));
+      List<String> labelCols = Arrays.asList(rec.get(Tables.FITEVENT.LABELCOLUMNS).split(","));
 
-        FitEvent fitEvent = new FitEvent(
-          df,
-          spec,
-          transformer,
-          Collections.emptyList(),
-          predictionCols,
-          labelCols,
-          expRunId
-        );
-        fitEvent.setProblemType(ProblemTypeConverter.fromString(rec.get(Tables.FITEVENT.PROBLEMTYPE)));
+      // Put the FitEvent together.
+      FitEvent fitEvent = new FitEvent(
+        df,
+        spec,
+        transformer,
+        Collections.emptyList(),
+        predictionCols,
+        labelCols,
+        expRunId
+      );
+      fitEvent.setProblemType(ProblemTypeConverter.fromString(rec.get(Tables.FITEVENT.PROBLEMTYPE)));
 
-        int fitEventId = rec.get(Tables.FITEVENT.ID);
-        fitEventForId.put(fitEventId, fitEvent);
-      });
+      // Create a mapping from ID to the FitEvent.
+      int fitEventId = rec.get(Tables.FITEVENT.ID);
+      fitEventForId.put(fitEventId, fitEvent);
+    });
 
+    // Turn the map into an array.
     List<FitEvent> fitEvents = new ArrayList<>();
     IntStream.range(0, fitEventIds.size()).forEach(i -> {
       fitEvents.add(fitEventForId.getOrDefault(fitEventIds.get(i), null));
     });
 
+    // Check if any of the FitEvents could not be found, and if so, throw an Exception.
     if (fitEvents.contains(null)) {
       throw new ResourceNotFoundException("Could not find FitEvent with ID %s" + fitEvents.indexOf(null));
     }
     return fitEvents;
   }
 
+  /**
+   * Count the number of rows (i.e. number of examples) that were used train each of the given models.
+   * @param modelIds - The IDs of models (i.e. Transformers with associated FitEvents).
+   * @param ctx - The database context.
+   * @return A list such that the value at the i^th index is the number of rows of data (i.e. number of examples)
+   * used to train the model with ID modelIds.get(i). If there is no Transformer with ID modelIds.get(i), then the
+   * value at the i^th index of the returned list is -1.
+   */
   public static List<Integer> getNumRowsForModels(List<Integer> modelIds, DSLContext ctx) {
     Map<Integer, Integer> indexForId =
       IntStream.range(0, modelIds.size())
