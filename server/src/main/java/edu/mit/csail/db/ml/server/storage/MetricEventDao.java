@@ -38,7 +38,7 @@ public class MetricEventDao {
 
     // Store an entry in the Event table.
     EventRecord ev = EventDao.store(meRec.getId(), "metric", me.experimentRunId, ctx);
-    
+
     return new MetricEventResponse(t.getId(), df.getId(), ev.getId(), meRec.getId());
   }
 }
