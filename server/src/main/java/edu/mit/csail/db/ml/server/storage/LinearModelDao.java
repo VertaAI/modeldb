@@ -14,7 +14,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This class contains logic for reading and storing linear models.
+ */
 public class LinearModelDao {
+  /**
+   * Store a LinearModelTerm in the database.
+   * @param linearModelId - The ID of the linear model (i.e. a primary key in the Transformer table).
+   * @param termIndex - The index of the feature vector that this term (i.e. coefficient) belongs to. Use 0 for the
+   *                  intercept term.
+   * @param term - The actual term.
+   * @param ctx - The database context.
+   * @return The row in the LinearModelTerm table after storage.
+   */
   private static LinearmodeltermRecord store(int linearModelId, int termIndex, LinearModelTerm term, DSLContext ctx) {
     LinearmodeltermRecord termRec = ctx.newRecord(Tables.LINEARMODELTERM);
     termRec.setId(null);
@@ -35,6 +47,14 @@ public class LinearModelDao {
     return termRec;
   }
 
+  /**
+   * Store a LinearModel.
+   * @param modelId - The ID of the underlying model (i.e. a primary key from the Transformer table).
+   * @param model - The LinearModel.
+   * @param ctx - The database context.
+   * @return Whether the storage was successful.
+   * @throws ResourceNotFoundException - Thrown if there's no entry in the Transformer table with ID modelId.
+   */
   public static boolean store(int modelId, LinearModel model, DSLContext ctx) throws ResourceNotFoundException {
     // Check if the modelId exists.
     if (!TransformerDao.exists(modelId, ctx)) {
@@ -105,6 +125,7 @@ public class LinearModelDao {
       ft.getImportance();
     });
 
+    // TODO: Is this return value really necessary? After all, we never return false.
     return true;
   }
 }
