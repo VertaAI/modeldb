@@ -2,12 +2,30 @@ body {
   font-size: 13px;
 }
 
+h1 {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 30px;
+  margin: 0 0 10px 0;
+}
+
 h2 {
   font-size: 16px;
 }
 
 .container {
   padding-left: 250px;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+
+.tab{
+width: 100%;
+display: inline-block;
+vertical-align: top;
+overflow-x: hidden;
+height: calc(100vh - 49px);
+overflow-y: scroll;
 }
 
 /*
@@ -20,6 +38,8 @@ h2 {
   left: 0;
   height: 100vh;
   width: 250px;
+  white-space: initial;
+  z-index: 2;
 }
 
 .menu-tabs-container {
@@ -29,7 +49,7 @@ h2 {
 .menu-tab {
   padding: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease-out;
 }
 
 .menu-tab:hover {
@@ -39,19 +59,20 @@ background-color: #d0d8e2;
 .menu .selected {
   font-weight: bold;
   background-color: #AEBDCD;
+  transition: all 0.3s ease-out;
 }
 
-.menu .selected:after {
+.menu .selected-arrow {
   content: '';
   position: absolute;
-  right: -10px;
-  top: 9px;
+  right: -12px;
+  top: 17px;
   width: 0;
   height: 0;
-  border-top: 20px solid transparent;
-  border-bottom: 20px solid transparent;
-  border-left: 20px solid #AEBDCD;
-
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 12px solid #AEBDCD;
+  transition: all 0.1s ease;
 }
 
 .menu-tab-label {
@@ -101,15 +122,13 @@ background-color: #d0d8e2;
 /*
  * Project info
  */
-.project-info-container {
-  padding: 10px 20px;
+.project-info-container,
+.visualizations-container {
+  padding: 20px;
 }
 
 .project-name {
-  font-size: 24px;
-  font-weight: 500;
   float: left;
-  line-height: 30px;
 }
 
 .project-num-models {
@@ -129,11 +148,13 @@ background-color: #d0d8e2;
  */
 .summary-chart-container {
   position: relative;
+  margin-bottom: 20px;
 }
 
 .summary-chart {
   margin: 20px;
   overflow: hidden;
+  margin-bottom: 60px;
 }
 
 .summary-chart .vega {
@@ -151,7 +172,7 @@ background-color: #d0d8e2;
   background-color: #D9E0E8;
   opacity: 0.95;
   padding: 10px;
-  max-height: 300px;
+  max-height: 320px;
   overflow-y: scroll;
   -webkit-user-select: none; /* Chrome/Safari */
   -moz-user-select: none; /* Firefox */
@@ -198,4 +219,79 @@ background-color: #d0d8e2;
   height: initial;
   padding-bottom: 0;
   margin-bottom: 0;
+}
+
+/*
+ *  Visualizations
+ */
+
+.visualizations-container {
+  cursor: auto;
+  background-color: white;
+}
+
+.visualizations-description {
+  width: 470px;
+  margin-bottom: 25px;
+  white-space: initial;
+}
+
+.visualization-options {
+  display: inline-block;
+  margin-bottom: 20px;
+  vertical-align: top;
+}
+
+.visualization-options .select-label {
+  width: 70px;
+}
+
+.visualization-options .compare-button {
+  width: 100%;
+  padding: 5px;
+  background-color: #AEBDCD;
+  font-size: 14px;
+  color: white;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.compare-button:hover {
+  background-color: #a0b2c5;
+}
+
+.explore-chart {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 40px;
+  max-width: 600px;
+  overflow-x: scroll;
+}
+
+.explore-chart .vega {
+  max-height: 280px;
+  overflow-y: scroll;
+}
+
+.vega-actions {
+  position: absolute;
+  display: none;
+}
+
+.vega-actions a {
+  color: black;
+  display: inline-block;
+  padding: 5px;
+  background-color: #AEBDCD;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 200px;
+  color: white;
+  margin: 10px;
+  text-align: center;
+}
+
+.vega-actions a:hover {
+  background-color: #a0b2c5;
 }

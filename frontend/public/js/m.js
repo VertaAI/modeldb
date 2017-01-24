@@ -1,10 +1,18 @@
 var models = [];
-var spec;
-var embedSpec;
+var summarySpecs;
+var exploreSpecs;
+var vlSpec;
 var numModels = 0;
 var min_id = null;
 var max_id = null;
+var hyperparamKeys = {};
 var metricKeys = {};
+var keys = ["Experiment Run ID", "Experiment ID", "Project ID",
+            "DataFrame ID", "DF numRows", "DF Tag", "DF Filepath",
+            "Type", "Spec Tag", "Problem Type",
+            "Code SHA", "Filepath"];
+var defaultX = "Type";
+var defaultZ = "Experiment Run ID";
 
 $(function() {
 
@@ -13,8 +21,31 @@ $(function() {
     console.log("project id: " + id);
     fetchData(id);
 
+    // set up listeners
     $(document).on('click', '.model-card .popup-label', function(event) {
       $(this).parent().toggleClass('open');
+    });
+
+    $(document).on('click', '.compare-button', function(event) {
+      vegaUpdate();
+    });
+
+    // change tabs
+    $(document).on('click', '.menu-tab', function(event) {
+      var tabId = $(this).data('id');
+
+      // update highlighted tab in menu
+      $('.selected').removeClass('selected');
+      $(this).addClass('selected');
+      $('.selected-arrow').css({'top': (17 + tabId * 60) + 'px'});
+
+      // calculate left margin
+      var tab = $('.tab[data-id="0"]');
+      var w = tab.width();
+      var margin = (-1 * w - 3) * tabId
+
+      // scroll to proper tab
+      tab.animate({'margin-left': margin + 'px'});
     });
   };
 
@@ -80,6 +111,11 @@ $(function() {
           var hyperparameters = model.specification.hyperparameters;
           for (var j=0; j<hyperparameters.length; j++) {
             obj[hyperparameters[j].name] = hyperparameters[j].value;
+
+            // add hyperparam key to dictionary
+            if (!hyperparamKeys.hasOwnProperty(hyperparameters[j].key)) {
+              hyperparamKeys[hyperparameters[j].name] = hyperparameters[j].name;
+            }
           }
 
           // metrics
@@ -100,6 +136,8 @@ $(function() {
           models.push(obj);
         }
         metricKeys = Object.values(metricKeys);
+        hyperparamKeys = Object.values(hyperparamKeys);
+        selectInit();
         vegaInit();
         $('.loader').hide();
       }
@@ -117,8 +155,30 @@ $(function() {
     });
   }
 
+  function selectInit() {
+    // add standard keys
+    for (var i=0; i<keys.length; i++) {
+      $('.x-axis').append(new Option(keys[i], keys[i]));
+      $('.group-by').append(new Option(keys[i], keys[i]));
+    }
+
+    // add hyperparam keys
+    for (var i=0; i<hyperparamKeys.length; i++) {
+      $('.x-axis').append(new Option(hyperparamKeys[i], hyperparamKeys[i]));
+      $('.group-by').append(new Option(hyperparamKeys[i], hyperparamKeys[i]));
+    }
+
+    // add metric keys
+    for (var i=0; i<metricKeys.length; i++) {
+      $('.y-axis').append(new Option(metricKeys[i], metricKeys[i]));
+    }
+
+    $('.x-axis').val(defaultX);
+    $('.group-by').val(defaultZ);
+  }
+
   function vegaInit() {
-    specs = {
+    summarySpecs = {
       "height": 300,
       "width": 820,
 
@@ -349,11 +409,60 @@ $(function() {
       ]
     };
 
-    vg.embed(".summary-chart", specs, function(error, result) {
+    /*
+    exploreSpecs = {
+      "height": 200,
+      "width": 600,
+
+      "data": [
+        {
+          "name": "table",
+          "values": models
+        }
+      ],
+
+      "scales": [
+        {
+          "name": "x",
+          "range": "width",
+          "type": "ordinal",
+          "domain": {"data": "table", "field": "Experiment Run ID"}
+        },
+        {
+          "name": "y",
+          "range": "height",
+          "type": "linear",
+          "nice": true,
+          "domain": {"data": "table", "field": "accuracy"}
+        }
+      ],
+      "axes": [
+        {"type": "x", "scale": "x"},
+        {"type": "y", "scale": "y"}
+      ],
+      "marks": [
+        {
+          "type": "rect",
+          "from": {
+            "data": "table",
+          },
+          "properties": {
+            "enter": {
+              "x": {"scale": "x", "field": "Experiment Run ID"},
+              "width": {"scale": "x", "band": true, "offset": -10},
+              "y": {"scale": "y", "field": "accuracy"},
+              "y2": {"scale": "y", "value": 0},
+              "fill": {"value": "steelblue"}
+            },
+          }
+        }
+      ]
+    };
+    */
+
+    vg.embed(".summary-chart", summarySpecs, function(error, result) {
       // Callback receiving the View instance and parsed Vega spec
-      // result.view is the View, which resides under the '#Barchart' element
-      console.log(result);
-      console.log(error);
+      // result.view is the View, which resides under the '.summary-chart' element
       options = {
         showAllFields: false,
         fields: [
@@ -389,7 +498,89 @@ $(function() {
         }
       });
     });
-  }
+
+    vlSpec = {
+      "data": {
+        "values": models
+      },
+      "mark": "bar",
+      "encoding": {
+        "column": {
+          "type": "nominal",
+          "axis": {"orient": "bottom", "axisWidth": 1, "offset": -8}
+        },
+        "x": {
+          "type": "nominal",
+          "axis": null
+        },
+        "y": {
+          "aggregate": "mean",
+          "type": "numeric",
+          "axis": {
+          }
+        },
+        "color": {
+          "type": "nominal",
+        },
+        "config": {"facet": {"cell": {"strokeWidth": 0}}}
+      }
+    };
+
+    var y = metricKeys[0];
+    var x = defaultX;
+    var z = defaultZ;
+
+    vlSpec.encoding.column.field  = x;
+    vlSpec.encoding.y.field = y;
+    vlSpec.encoding.column.axis.title = x;
+    vlSpec.encoding.y.axis.title = y;
+    vlSpec.encoding.x.field = z;
+    vlSpec.encoding.color.field = z;
+
+    exploreSpecs = vl.compile(vlSpec);
+
+    vg.embed(".explore-chart", exploreSpecs, function(error, result) {
+      console.log(error);
+      vg.tooltip(result.view, {showAllFields: true, colorTheme: "dark"});
+    });
+  };
+
+  function vegaUpdate() {
+    var x = $('.x-axis').val();
+    var y = $('.y-axis').val();
+    var z = $('.group-by').val();
+    var aggregate = $('.aggregate').val();
+
+    console.log(vlSpec);
+    var specs = jQuery.extend(true, {}, vlSpec);
+
+    specs.encoding.column.field  = x;
+    specs.encoding.y.field = y;
+    specs.encoding.column.axis.title = x;
+    specs.encoding.y.axis.title = y;
+    specs.encoding.x.field = z;
+    specs.encoding.color.field = z;
+    specs.encoding.y.aggregate = aggregate;
+
+    if (aggregate == "count") {
+      specs.encoding.y.axis.title = aggregate;
+    }
+
+    if (z == "None") {
+      specs.encoding.color = null;
+      specs.encoding.column = null;
+      specs.encoding.x.field = x;
+      specs.encoding.x.axis = {"title": x};
+    }
+
+    console.log(vlSpec);
+    exploreSpecs = vl.compile(specs);
+
+    vg.embed(".explore-chart", exploreSpecs, function(error, result) {
+      console.log(error);
+      vg.tooltip(result.view, {showAllFields: true, colorTheme: "dark"});
+    });
+  };
 
   init();
 });

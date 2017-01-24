@@ -14,6 +14,7 @@
     <!-- d3 and vega -->
     <script src="//vega.github.io/vega-editor/vendor/d3.min.js" charset="utf-8"></script>
     <script src="//vega.github.io/vega-editor/vendor/vega.js" charset="utf-8"></script>
+    <script src="//vega.github.io/vega-lite/vega-lite.js"></script>
     <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
     <script src="//vega.github.io/datalib/datalib.min.js"></script>
     <script src="/js/lib/vg-tooltip.js"></script>
@@ -34,13 +35,14 @@
       <div class="menu">
 
         <div class="menu-tabs-container">
-          <div class="menu-tab selected">
+          <div class="menu-tab selected" data-id="0">
+            <div class="selected-arrow"></div>
             <img src="/images/charts.png">
             <div class="menu-tab-label">
               Overview and Charts
             </div>
           </div>
-          <div class="menu-tab">
+          <div class="menu-tab" data-id="1">
             <img src="/images/data.png">
             <div class="menu-tab-label">
               Data Tables
@@ -75,18 +77,68 @@
 
       </div>
 
+      <div class="tab" data-id="0">
 
-      <div class="project-info-container">
-        <div class="project-name"></div>
-        <div class="project-num-models"></div>
-        <div class="project-author"></div>
-        <div class="project-description"></div>
-      </div>
+        <div class="project-info-container">
+          <h1 class="project-name"></h1>
+          <div class="project-num-models"></div>
+          <div class="project-author"></div>
+          <div class="project-description"></div>
+        </div>
 
-      <div class="summary-chart-container">
-        <div class="summary-chart"></div>
-        <div class="model-card"></div>
-      </div>
+        <div class="summary-chart-container">
+          <div class="summary-chart"></div>
+          <div class="model-card"></div>
+        </div>
+
+        <div class="visualizations-container">
+          <h1>Explore Visualizations</h1>
+          <div class="visualizations-description">
+            Generate charts to visualize trends in data by selecting fields to plot as x and y values. Optionally pick fields to group by and specify what type of aggregation to use.
+          </div>
+          <div class="visualization-options">
+            <div class="select-container">
+              <div class="select-label">
+                y-axis:
+              </div>
+              <select class="y-axis"></select>
+            </div>
+            <div class="select-container">
+              <div class="select-label">
+                x-axis:
+              </div>
+              <select class="x-axis"></select>
+            </div>
+            <div class="select-container">
+              <div class="select-label">
+                group by:
+              </div>
+              <select class="group-by">
+                <option>None</option>
+              </select>
+            </div>
+            <div class="select-container">
+              <div class="select-label">
+                aggregate:
+              </div>
+              <select class="aggregate">
+                <option selected>average</option>
+                <option>sum</option>
+                <option>median</option>
+                <option>variance</option>
+                <option>stdev</option>
+                <option>count</option>
+              </select>
+            </div>
+            <button class="compare-button">Compare</button>
+          </div>
+          <div class="explore-chart"></div>
+        </div>
+
+      </div> <!-- end tab1 -->
+
+      <div class="tab" data-id="1">
+      </div> <!-- end tab2 -->
 
     </div>
   </body>
