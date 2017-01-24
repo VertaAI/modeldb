@@ -13,7 +13,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * This class contains logic for storing and reading FitEvents.
+ * This class contains logic for storing and reading fitting events.
+ *
+ * A FitEvent is when a TransformerSpec is trained on a DataFrame to produce a Transformer.
  */
 public class FitEventDao {
   /**
