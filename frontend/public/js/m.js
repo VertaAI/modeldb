@@ -74,7 +74,7 @@ $(function() {
         el.addClass('sorted');
         el.data('order', 'down');
         el.addClass('down');
-        order = down;
+        order = 'down';
       } else {
         // flip sorting order
         el.removeClass(el.data('order'));
@@ -204,9 +204,7 @@ $(function() {
   };
 
   function sortTable(key, order) {
-    console.log(key);
     console.log(order);
-    console.log(server_response);
     if (key == "id") {
       server_response.sort(function(a, b) {
         var x = (order == "down") ? 1 : -1;
@@ -219,7 +217,6 @@ $(function() {
     } else if (key =="df") {
        server_response.sort(function(a, b) {
         var x = (order == "down") ? 1 : -1;
-        console.log(x);
         if (a.trainingDataFrame.id < b.trainingDataFrame.id)
           return -1 * x;
         if (a.trainingDataFrame.id > b.trainingDataFrame.id)
