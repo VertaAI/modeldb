@@ -22,6 +22,7 @@
     <!-- tinysort -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinysort/2.3.6/tinysort.min.js"></script>
 
+    <script src="/js/lib/ejs_production.js"></script>
     <script src="/js/m.js"></script>
   </head>
   <body data-id=<%= id %>>
@@ -135,10 +136,31 @@
           <div class="explore-chart"></div>
         </div>
 
-      </div> <!-- end tab1 -->
+      </div> <!-- end tab0 -->
 
       <div class="tab" data-id="1">
-      </div> <!-- end tab2 -->
+
+        <div class="model-headings">
+          <div class="model-heading model-ids">
+            IDs
+          </div>
+          <div class="model-heading model-dataframe">
+            DataFrame
+          </div>
+          <div class="model-heading model-spec">
+            Specifications
+          </div>
+          <div class="model-heading model-metrics">
+            Metrics
+          </div>
+          <div class="model-heading model-misc">
+            Misc.
+          </div>
+        </div>
+        <div class="models-container">
+          <div class="models"></div>
+        </div>
+      </div> <!-- end tab1 -->
 
     </div>
   </body>

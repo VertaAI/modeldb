@@ -52,4 +52,13 @@ router.get('/:id/ms', function(req, res, next) {
   });
 });
 
+router.get('/:id/table', function(req, res, next) {
+  var projectId = req.params.id;
+  api.getProjectModels(projectId, function(response) {
+    res.render('card', {
+      models: response
+    });
+  });
+});
+
 module.exports = router;

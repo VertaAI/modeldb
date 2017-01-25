@@ -4,9 +4,6 @@
   </head>
   <body>
 
-      <div class="models-container">
-        <div class="models">
-          <div class="models-group" data-groupkey="none" data-groupval="none">
             <% for(var i=0; i<models.length; i++) { %>
               <div class="model" data-show="true">
 
@@ -44,19 +41,6 @@
 
 
                 <div class="model-section model-dataframe">
-                  <div class="kv"
-                    data-key="DataFrame ID"
-                    data-val="<%= models[i].trainingDataFrame.id %>"
-                  >
-                    DataFrame ID: <%= models[i].trainingDataFrame.id %>
-                  </div>
-
-                  <div class="kv"
-                    data-key="DF numRows"
-                    data-val="<%= models[i].trainingDataFrame.numRows %>"
-                  >
-                    DF numRows: <%= models[i].trainingDataFrame.numRows %>
-                  </div>
 
                   <% if (models[i].trainingDataFrame.tag) { %>
                     <div class="kv"
@@ -96,12 +80,6 @@
 
 
                 <div class="model-section model-spec">
-                  <div class="kv"
-                    data-key="Specification ID"
-                    data-val="<%= models[i].specification.id %>"
-                  >
-                    Specification ID: <%= models[i].specification.id %>
-                  </div>
 
                   <div class="kv"
                     data-key="Type"
@@ -119,29 +97,20 @@
                     </div>
                   <% } %>
 
-                  <div class="kv"
-                    data-key="Problem Type"
-                    data-val="<%= models[i].problemType %>"
-                  >
-                    Problem Type: <%= models[i].problemType %>
-                  </div>
-
-                  <% if (models[i].specification.hyperparameters.length > 0) { %>
-                    <div class="nkv hyperparams-container popup-container">
-                      <div class="popup-label">Hyperparameters</div>
-                      <div class="hyperparams popup-contents">
-                        <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
-                          <div class="kv"
-                            data-src="hyperparameters"
-                            data-key="<%= models[i].specification.hyperparameters[j].name %>"
-                            data-val="<%= models[i].specification.hyperparameters[j].value %>"
-                          >
-                            <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
-                          </div>
-                        <% } %>
-                      </div>
+                  <div class="nkv hyperparams-container popup-container">
+                    <div class="popup-label">Hyperparameters</div>
+                    <div class="hyperparams popup-contents">
+                      <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
+                        <div class="kv"
+                          data-src="hyperparameters"
+                          data-key="<%= models[i].specification.hyperparameters[j].name %>"
+                          data-val="<%= models[i].specification.hyperparameters[j].value %>"
+                        >
+                          <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
+                        </div>
+                      <% } %>
                     </div>
-                  <% } %>
+                  </div>
                 </div>
 
 
@@ -180,9 +149,6 @@
 
               </div>
             <% } %>
-          </div>
-        </div>
-      </div>
 
 
   </body>

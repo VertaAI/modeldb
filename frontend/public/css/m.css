@@ -181,7 +181,7 @@ background-color: #d0d8e2;
 
 .model-card .kv {
   padding: 4px 7px;
-  cursor: pointer;
+  cursor: move;
   transition: background-color 0.3s ease;
   border-radius: 2px;
   max-width: 200px;
@@ -193,6 +193,7 @@ background-color: #d0d8e2;
   white-space: nowrap;
   overflow: hidden;
   max-width: 200px;
+  cursor: inherit;
 }
 
 .model-card .kv:hover {
@@ -203,19 +204,19 @@ background-color: #d0d8e2;
   background-color: #D9E0E8;
 }
 
-.model-card .popup-container {
+.popup-container {
   color: #00B7FF;
   height: 14px;
   margin-bottom: 2px;
   cursor: pointer;
 }
 
-.model-card .popup-contents {
+.popup-contents {
   margin-top: 2px;
   color: black;
 }
 
-.model-card .open {
+.open {
   height: initial;
   padding-bottom: 0;
   margin-bottom: 0;
@@ -270,8 +271,8 @@ background-color: #d0d8e2;
 }
 
 .explore-chart .vega {
-  max-height: 280px;
-  overflow-y: scroll;
+  max-height: 250px;
+  overflow-y: hidden;
 }
 
 .vega-actions {
@@ -294,4 +295,72 @@ background-color: #d0d8e2;
 
 .vega-actions a:hover {
   background-color: #a0b2c5;
+}
+
+/*
+ * Models table
+ */
+
+.models-container {
+  margin: 0 10px;
+  height: calc(100vh - 104px);
+  overflow-y: auto;
+  transition: all 0.3s ease;
+}
+
+.model-headings {
+  margin: 10px 10px 0 10px;
+  background-color: #AEBDCD;
+  padding: 5px 20px;
+  border: 1px solid #D9E0E8;
+  font-weight: bold;
+  border-radius: 7px 7px 0 0;
+  border-bottom: 0px;
+}
+
+.model-heading {
+  padding: 4px 7px;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 190px;
+}
+
+.models-container .model {
+  margin: 0 0 10px 0;
+  background-color: white;
+  padding: 10px 20px;
+  border: 1px solid #D9E0E8;
+}
+
+.models-container .model-section {
+  width: 190px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.models-container .model-section .popup-container {
+  cursor: pointer;
+}
+
+.models-container .kv {
+  padding: 4px 7px;
+  cursor: move;
+  transition: background-color 0.3s ease;
+  border-radius: 2px;
+}
+
+.models-container .nkv {
+  padding: 4px 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: inherit;
+}
+
+.kv:hover {
+  background-color: #AEBDCD;
+}
+
+.nkv:hover {
+  background-color: white;
 }

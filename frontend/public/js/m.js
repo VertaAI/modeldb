@@ -1,3 +1,5 @@
+const MODELS_PER_LOAD = 10;
+
 var models = [];
 var summarySpecs;
 var exploreSpecs;
@@ -14,6 +16,10 @@ var keys = ["Experiment Run ID", "Experiment ID", "Project ID",
 var defaultX = "Type";
 var defaultZ = "Experiment Run ID";
 
+var server_response = [];
+var cursor = 0;
+
+
 $(function() {
 
   function init() {
@@ -22,7 +28,7 @@ $(function() {
     fetchData(id);
 
     // set up listeners
-    $(document).on('click', '.model-card .popup-label', function(event) {
+    $(document).on('click', '.popup-label', function(event) {
       $(this).parent().toggleClass('open');
     });
 
@@ -47,9 +53,17 @@ $(function() {
       // scroll to proper tab
       tab.animate({'margin-left': margin + 'px'});
     });
+
+    $('.models-container').scroll(function(event) {
+      if (this.scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
+        // reached bottom of table, so load more
+        loadTable();
+      }
+    });
   };
 
   function fetchData(projectId) {
+    cursor = 0;
     // get project details
     $.ajax({
       url: '/projects/' + projectId,
@@ -68,6 +82,7 @@ $(function() {
       type: "GET",
       success: function(response) {
         values = [];
+        server_response = response;
 
         // set number of models
         numModels = response.length;
@@ -99,6 +114,7 @@ $(function() {
           obj["DF Tag"] = model.trainingDataFrame.tag;
           obj["DF Filepath"] = model.trainingDataFrame.filepath;
           var metadata = model.trainingDataFrame.metadata;
+          obj["metadata"] = metadata;
           for (var j=0; j<metadata.length; j++) {
             obj[metadata[j].key] = metadata[j].value;
           }
@@ -109,6 +125,7 @@ $(function() {
           obj["Spec Tag"] = model.specification.tag;
           obj["Problem Type"] = model.problemType;
           var hyperparameters = model.specification.hyperparameters;
+          obj["hyperparams"] = hyperparameters;
           for (var j=0; j<hyperparameters.length; j++) {
             obj[hyperparameters[j].name] = hyperparameters[j].value;
 
@@ -120,6 +137,7 @@ $(function() {
 
           // metrics
           var metrics = model.metrics;
+          obj["metrics"] = metrics;
           for (var j=0; j<metrics.length; j++) {
             obj[metrics[j].key] = metrics[j].val;
 
@@ -139,20 +157,30 @@ $(function() {
         hyperparamKeys = Object.values(hyperparamKeys);
         selectInit();
         vegaInit();
+        loadTable();
         $('.loader').hide();
       }
     });
-  }
+  };
 
   function hideModelCard() {
     $('.model-card').animate({"right": "-300px"});
-  }
+  };
 
   function showModelCard(model_id) {
     $('.model-card').css({"right": "-300px"});
     $('.model-card').load('/models/' + model_id + '/card', function() {
       $('.model-card').animate({"right": "20px"});
     });
+  };
+
+  function loadTable() {
+    var start = cursor;
+    for (var i=start; i<Math.min(server_response.length, start + MODELS_PER_LOAD); i++) {
+      var html = getModelDiv(server_response[i]);
+      $('.models').append(html);
+      cursor += 1;
+    }
   }
 
   function selectInit() {
@@ -175,7 +203,7 @@ $(function() {
 
     $('.x-axis').val(defaultX);
     $('.group-by').val(defaultZ);
-  }
+  };
 
   function vegaInit() {
     summarySpecs = {
@@ -580,6 +608,11 @@ $(function() {
       console.log(error);
       vg.tooltip(result.view, {showAllFields: true, colorTheme: "dark"});
     });
+  };
+
+  function getModelDiv(model) {
+    var html = new EJS({url: '/ejs/model.ejs'}).render({"models": [model]});
+    return $(html);
   };
 
   init();
