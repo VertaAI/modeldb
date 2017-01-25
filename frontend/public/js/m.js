@@ -60,6 +60,35 @@ $(function() {
         loadTable();
       }
     });
+
+    $(document).on('click', '.model-heading.pointer', function() {
+      var el = $(this);
+      var sorted = el.hasClass('sorted');
+      var order = el.data('order');
+      var key = el.data('key');
+      if (!sorted) {
+        // default to ascending
+        $('.sorted').removeClass('sorted');
+        $('.down').removeClass('down');
+        $('.up').removeClass('up');
+        el.addClass('sorted');
+        el.data('order', 'down');
+        el.addClass('down');
+        order = down;
+      } else {
+        // flip sorting order
+        el.removeClass(el.data('order'));
+        if (order == 'up') {
+          order = 'down';
+        } else {
+          order = 'up';
+        }
+        el.data('order', order);
+        el.addClass(order);
+      }
+
+      sortTable(key, order);
+    });
   };
 
   function fetchData(projectId) {
@@ -174,6 +203,37 @@ $(function() {
     });
   };
 
+  function sortTable(key, order) {
+    console.log(key);
+    console.log(order);
+    console.log(server_response);
+    if (key == "id") {
+      server_response.sort(function(a, b) {
+        var x = (order == "down") ? 1 : -1;
+        if (a.id < b.id)
+          return -1 * x;
+        if (a.id > b.id)
+          return 1 * x;
+        return 0;
+      });
+    } else if (key =="df") {
+       server_response.sort(function(a, b) {
+        var x = (order == "down") ? 1 : -1;
+        console.log(x);
+        if (a.trainingDataFrame.id < b.trainingDataFrame.id)
+          return -1 * x;
+        if (a.trainingDataFrame.id > b.trainingDataFrame.id)
+          return 1 * x;
+        return 0;
+      });
+    } {
+      // TODO: write sorting function for metrics
+    }
+    cursor = 0;
+    $('.models').html("");
+    loadTable();
+  };
+
   function loadTable() {
     var start = cursor;
     for (var i=start; i<Math.min(server_response.length, start + MODELS_PER_LOAD); i++) {
@@ -181,7 +241,7 @@ $(function() {
       $('.models').append(html);
       cursor += 1;
     }
-  }
+  };
 
   function selectInit() {
     // add standard keys

@@ -13,6 +13,10 @@ h2 {
   font-size: 16px;
 }
 
+.pointer {
+  cursor: pointer;
+}
+
 .container {
   padding-left: 250px;
   overflow-x: hidden;
@@ -158,7 +162,7 @@ background-color: #d0d8e2;
 }
 
 .summary-chart .vega {
-  overflow: scroll;
+  overflow: hidden;
 }
 
 /*
@@ -323,6 +327,8 @@ background-color: #d0d8e2;
   display: inline-block;
   box-sizing: border-box;
   width: 190px;
+  position: relative;
+  opacity: 0.7;
 }
 
 .models-container .model {
@@ -363,4 +369,29 @@ background-color: #d0d8e2;
 
 .nkv:hover {
   background-color: white;
+}
+
+.triangle-up,
+.triangle-down {
+  position: absolute;
+  right: 4px;
+  top: 5px;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.model-heading.sorted.down .triangle-down {
+  opacity: 1;
+}
+
+.model-heading.sorted.up .triangle-up {
+  opacity: 1;
+}
+
+.model-heading.pointer:hover {
+  opacity: 1;
+}
+
+.model-heading:not(.sorted):hover > .triangle-down {
+  opacity: 0.2;
 }
