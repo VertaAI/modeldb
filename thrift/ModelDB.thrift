@@ -2,6 +2,14 @@
   The thrift file specifies the structs and functions that are shared
   among modeldb projects. Thrift automatically generates classes to manipulate
   the data in each language.
+
+  Currently, we support Java, Python, and Scala clients. You'll notice below that
+  scala is not mentioned. The reason for this is that adding "namespace scala modeldb" causes
+  an error with the Python client. Consequently, the Scala client inserts that line before it
+  compiles.
+
+  For the code below, it is worth pointing out that a "model" is defined as a Transformer that is produced by
+  a FitEvent.
 */
 
 namespace java modeldb
@@ -9,16 +17,18 @@ namespace py modeldb
 
 /* 
   A project is the highest level in the grouping hierarchy. A project can 
-  contain multiple experiments, which in turn can contain experiment runs
+  contain multiple experiments, which in turn can contain experiment runs.
 
   Attributes:
-  id: A unique identifier for this project
-  name: The name of this project - human readable text assigned as a name
-  author: The name of the author, the person who created the project
-  description: A human readable description of the project - i.e. it's goals and methods
+  id: A unique identifier for this project.
+  name: The name of this project.
+  author: The name of the author, the person who created the project.
+  description: A human readable description of the project - i.e. it's goals and methods.
 
   Note that in order to flatten this into tables, the experiments contained within this
   project are not in the project struct.
+
+  // TODO: Maybe we should have an email field instead of a name field. Also, can there be multiple authors?
 */
 struct Project {
   1: i32 id = -1,
@@ -29,14 +39,14 @@ struct Project {
 
 /* 
   Experiments are the second level in the grouping hierarchy. An experiment can contain
-  multiple experiment runs. In order to flatten this into tables, the runs are not stored
-  within the experiment.
+  multiple experiment runs.
 
-  id: A unique experiment identifier
-  projectId: The project that contains this experiment
-  name: The name of this experiment, human readable
-  description: A short description of the experiment and what it contains
-  isDefault: Whether this is the default experiment of this project (a catch-all for runs)
+  id: A unique experiment identifier.
+  projectId: The ID of the project that contains this experiment.
+  name: The name of this experiment.
+  description: A short description of the experiment and what it contains.
+  isDefault: Whether this is the default experiment of its project (a catch-all for runs). A project has
+    exactly one default experiment.
 */
 struct Experiment {
   1: i32 id = -1,
@@ -50,11 +60,11 @@ struct Experiment {
   Experiment runs are contained within experiments. Note that the
   experiment must be specified, even if it is the default experiment.
 
-  id: a unique identifier for this run (unique across all projects)
-  experimentId: The id of the experiment that contains this run
+  id: a unique identifier for this run.
+  experimentId: The id of the experiment that contains this run.
   description: User assigned text to this experiment run. Can be used to summarize
     data, method, etc.
-  sha: Commit hash of the code used in the current run
+  sha: Commit hash of the code used in the current run.
 */
 struct ExperimentRun {
   1: i32 id = -1,
@@ -64,11 +74,10 @@ struct ExperimentRun {
 }
 
 /* 
-  A column in a DataFrame (see below). Stores information about the column,
-  but not the elements.
+  A column in a DataFrame.
 
-  name: The name of this column
-  type: The type of data stored in this column (e.g. Integer, String)
+  name: The name of this column.
+  type: The type of data stored in this column (e.g. Integer, String).
 */
 struct DataFrameColumn {
   1: string name,
@@ -79,9 +88,9 @@ struct DataFrameColumn {
   A MetadataKV is any key-value pair along with the type of the value. 
   It is used to associate arbitrary metadata with ModelDB entities
 
-  key: key
-  value: value
-  valueType: The type of value
+  key: key.
+  value: value.
+  valueType: The type of value.
 */
 struct MetadataKV {
   1: string key,
@@ -91,14 +100,14 @@ struct MetadataKV {
 
 /* 
   A tabular set of data. Contains many columns, each containing a single type
-  of data. Each row in a DataFrame represents a new element.
+  of data. Each row in a DataFrame is a distinct example in the dataset.
 
-  id: A unique identifier for this DataFrame
-  schema: The information about the columns (column headers)
-          that are in this data frame
-  numRows: The number of elements (rows) that this DataFrame contains
-  tag: User assigned human readable text 
-  filepath: The path to the file that contains the data in this DataFrame
+  id: A unique identifier for this DataFrame.
+  schema: The columns in the DataFrame.
+  numRows: The number of elements (rows) that this DataFrame contains.
+  tag: Short, human-readable text to identify this DataFrame.
+  filepath: The path to the file that contains the data in this DataFrame.
+  metadata: Key-value pairs associated with this DataFrame.
 */
 struct DataFrame {
   1: i32 id = -1, // when unknown
@@ -110,14 +119,15 @@ struct DataFrame {
 }
 
 /* 
-  A HyperParameter guides the fitting of a model to a set of data.
-  (e.g. number of trees in a random forest)
+  A HyperParameter guides the fitting of a TransformerSpec to a DataFrame in order to produce a Transformer.
+  Some example hyperparameters include the number of trees in a random forest, the regularization parameter in
+  linear regression, or the value "k" in k-means clustering.
 
-  name: The name of this HyperParameter
-  value: The value assigned to this HyperParameter for fitting
-  type: The type of data stored in the HyperParameter (e.g. Integer, String)
-  min: (for numeric HyperParameters only) The minimum value allowed for this parameter
-  max: (for numeric HyperParameters only) The maximum value allowed for this parameter
+  name: The name of this hyperparameter.
+  value: The value assigned to this hyperparameter.
+  type: The type of data stored in the hyperparameter (e.g. Integer, String).
+  min: (for numeric hyperparameters only) The minimum value allowed for this hyperparameter.
+  max: (for numeric hyperparameters only) The maximum value allowed for this hyperparameter.
 */
 struct HyperParameter {
   1: string name,
@@ -130,7 +140,7 @@ struct HyperParameter {
 /* 
   An event that represents the creation of a project. 
 
-  project: The project to be created by this event
+  project: The project to be created by this event.
 */
 struct ProjectEvent {
   1: Project project
@@ -139,7 +149,7 @@ struct ProjectEvent {
 /* 
   The server's response to creating a project. 
 
-  projectId: The id of the created project
+  projectId: The id of the created project.
 */
 struct ProjectEventResponse {
   1: i32 projectId
@@ -148,7 +158,7 @@ struct ProjectEventResponse {
 /* 
   An event representing the creation of an Experiment.
 
-  experiment: The created Experiment
+  experiment: The created Experiment.
 */
 struct ExperimentEvent {
   1: Experiment experiment
@@ -157,7 +167,7 @@ struct ExperimentEvent {
 /* 
   The response given to the creation of an Experiment.
 
-  experimentId: The id of the experiment created
+  experimentId: The id of the experiment created.
 
 */
 struct ExperimentEventResponse {
@@ -176,23 +186,21 @@ struct ExperimentRunEvent {
 /* 
   The response given to the creation of an Experiment Run.
 
-  experimentRunId: The id of the created ExperimentRun
+  experimentRunId: The id of the created ExperimentRun.
 */
 struct ExperimentRunEventResponse {
   1: i32 experimentRunId
 }
 
-// update this to be model spec?
-
-/* 
+/*
   A TransformerSpec is a machine learning primitive that describes 
   the hyperparameters used to create a model (A Transformer produced
   by fitting a TransformerSpec to a DataFrame).
 
-  id: A unique identifier for this TransformerSpec
-  transformerType: The type of the transformer it guides (e.g. linear regression)
-  hyperparameters: The hyperparameters that guide this spec
-  tag: User assigned content associated with this Spec
+  id: A unique identifier for this TransformerSpec.
+  transformerType: The type of the Transformer that is created by using this TransformerSpec (e.g. linear regression).
+  hyperparameters: The hyperparameters that guide this spec.
+  tag: User assigned content associated with this Spec.
 */
 struct TransformerSpec {
   1: i32 id = -1,
@@ -205,10 +213,10 @@ struct TransformerSpec {
   A transformer is a machine learning primitive that takes in a DataFrame and 
   outputs another DataFrame.
 
-  id: A unique identifier for this transformer
-  transformerType: The type of transformer this is (e.g. linear regression)
-  tag: User assigned content associated with this transformer
-  filepath: The path to the serialized version of this transformer
+  id: A unique identifier for this transformer.
+  transformerType: The type of transformer this is (e.g. linear regression).
+  tag: User assigned content associated with this transformer.
+  filepath: The path to the serialized version of this transformer.
 */
 struct Transformer {
   1: i32 id = -1,
@@ -223,21 +231,27 @@ struct Transformer {
   The types of problems compatible with modeldb
 */
 enum ProblemType {
+  // A catch-all for problem types we haven't anticipated.
   UNDEFINED,
+  // A problem in which a binary label (e.g. 0 or 1) is outputted for each example.
   BINARY_CLASSIFICATION,
+  // A problem in which one of many possible labels is outputted for each example.
   MULTICLASS_CLASSIFICATION,
+  // A problem in which real valued output is produced for each example.
   REGRESSION,
+  // A problem in which examples a grouped together.
   CLUSTERING,
+  // A problem in which a set of items are selected and (possibly) ordered for a given user.
   RECOMMENDATION
 }
 
 /* 
-  A term in a linear regression model.
+  A term in a linear model.
 
-  coefficient: The coefficient of the variable
-  tStat: An optional T-Value to associate with this term
-  stdErr: An optional calculated Standard Error to associate with this term
-  pValue: An optional P-Value to associate with this term
+  coefficient: The coefficient of the feature.
+  tStat: An optional T-Value to associate with this term.
+  stdErr: An optional calculated Standard Error to associate with this term.
+  pValue: An optional P-Value to associate with this term.
 */
 struct LinearModelTerm {
   1: double coefficient,
@@ -247,19 +261,20 @@ struct LinearModelTerm {
 }
 
 /* 
-  Contains information about a linear regression model.
+  Contains information about linear model (e.g. linear regression, logistic regression).
 
-  interceptTerm: An optional term to change the intercept of this model
-  featureTerms: Information about the terms (particularly, coefficients of 
-                each term) for each feature used in this model
+  interceptTerm: An optional term that represents the intercept of the linear model.
+  featureTerms: The non-intercept terms. These are ordered based on their correspondence with
+                the feature vectors. For example, the first term corresponds to the first entry of the
+                feature vector.
   objectiveHistory: An optional history of every value the objective function has
                     obtained while being created, where objectiveHistory[i] is 
                     the value of the objective function on iteration i.
-  rmse: An optional root-mean-square error of this model from the data used to calculate it
-  explainedVariance: (Optional) The calculated explained variance of the data
+  rmse: An optional root-mean-square error of this model from the training set.
+  explainedVariance: An optional explained variance of the training set.
       --Explained Variance measures the proportion to which a mathematical model 
       -- accounts for the variation (dispersion) of a given data set (Wikipedia)
-  r2: (Optional) The r^2 value that measures how well fitted the model is
+  r2: The optional r^2 value that measures how well fitted the model is with respect to its training set.
 */
 struct LinearModel {
   1: optional LinearModelTerm interceptTerm
@@ -270,21 +285,18 @@ struct LinearModel {
   6: optional double r2
 }
 
-// this needs to be updated to resemble
-// type, params, features
 /*
-  Contains information related to a single event that fits a Transformer Spec 
-  to a DataFrame
+  Represents the fitting of a DataFrame with a TransformerSpec to produce a Transformer.
 
-  df: The DataFrame that is being fitted to
-  spec: The transformerSpec guiding the fitting
-  model: The model (fitted Transformer) produced by the fitting
-  featureColumns: The names of the features in the data frame
-  predictionColumns: The names of the columns produced by the transformer
-  labelColumns: The columns the the prediction columns are supposed to 
-    predict in the original DataFrame
-  experimentRunId: The id of the ExperimentRun which contains this event
-  problemType: The type of problem this event is solving e.g. regression
+  df: The DataFrame that is being fitted.
+  spec: The TransformerSpec guiding the fitting.
+  model: The model (fitted Transformer) produced by the fitting.
+  featureColumns: The names of the features (i.e. columns of the DataFrame) used by the Transformer.
+  predictionColumns: The names of the columns that the Transformer will put its predictions into.
+  labelColumns: The columns of the DataFrame that contains the label (i.e. true prediction value) associated with
+    each example.
+  experimentRunId: The id of the ExperimentRun which contains this event.
+  problemType: The type of problem that the produced Transformer solves.
 */
 struct FitEvent {
   1: DataFrame df,
@@ -298,13 +310,13 @@ struct FitEvent {
 }
 
 /*
-  The response given after the creation of a fit event
+  The response created after a FitEvent occurs.
 
-  dfId: The id of the DataFrame referenced by the fit event
-  specId: The id of the TransformerSpec that guided the fit
-  modelId: The id of the outputted Transformer
-  eventId: The generic event id of this fit event (unique among all events)
-  fitEventId: The specific FitEvent id of the created fit event (unique among fit events)
+  dfId: The id of the DataFrame referenced by the fit event.
+  specId: The id of the TransformerSpec that guided the fit.
+  modelId: The id of the outputted Transformer.
+  eventId: The generic event id of this fit event (unique among all events).
+  fitEventId: The specific FitEvent id of the created fit event (unique among fit events).
 */
 struct FitEventResponse {
   1: i32 dfId,
@@ -315,13 +327,13 @@ struct FitEventResponse {
 }
 
 /*
-  An event containing information regarding the evaluation of a model
+  This event indicates that a metric (e.g. accuracy) was evaluated on a DataFrame using a given Transformer.
 
-  df: The DataFrame used for evaluation
-  model: The model being evaluated
-  metricType: The type of the calculated metric (e.g. Squared Error, Accuracy)
-  labelCol: The column in the original DataFrame that this metric is calculated for
-  predictionCol: The column from the predicted columns that this metric is calculated for
+  df: The DataFrame used for evaluation.
+  model: The model (a Transformer) being evaluated.
+  metricType: The kind of metric being evaluated (e.g. accuracy, squared error).
+  labelCol: The column in the original DataFrame that this metric is calculated for.
+  predictionCol: The column from the predicted columns that this metric is calculated for.
   experimentRunId: The id of the Experiment Run that contains this event.
 */
 struct MetricEvent {
@@ -335,12 +347,12 @@ struct MetricEvent {
 }
 
 /*
-  The response given after creating a MetricEvent
+  The response given after creating a MetricEvent.
 
-  modelId: The id of the Transformer for which this metric was calculated for
-  dfId: The id of the DataFrame used for this calculation
-  eventId: The generic event id of the created event (unique across all events)
-  metricEventId: The id of the MetricEvent (unique across all MetricEvents)
+  modelId: The id of the Transformer for which this metric was calculated for.
+  dfId: The id of the DataFrame used for this calculation.
+  eventId: The generic event id of the created event (unique across all events).
+  metricEventId: The id of the MetricEvent (unique across all MetricEvents).
 */
 struct MetricEventResponse {
   1: i32 modelId,
@@ -350,15 +362,14 @@ struct MetricEventResponse {
 }
 
 /*
-  A Transform event records using a transformer to generate an output DataFrame from
-  an input DataFrame.
+  This event indicates that an output DataFrame was created from an input DataFrame using a Transformer.
 
-  oldDataFrame: The input DataFrame
-  newDataFrame: The output DataFrame
-  transformer: The transformer to perform the transformation
-  inputColumns: The columns from the input DataFrame for the transformer to use
-  outputColumns: The columns that the transformer should output to in the new DataFrame
-  experimentRunId: The id of the Experiment Run that contains this event
+  oldDataFrame: The input DataFrame.
+  newDataFrame: The output DataFrame.
+  transformer: The transformer that produced the output DataFrame from the input DataFrame.
+  inputColumns: The columns of the input DataFrame that the Transformer depends on.
+  outputColumns: The columns that the Transformer outputs in the new DataFrame.
+  experimentRunId: The id of the Experiment Run that contains this event.
 */
 struct TransformEvent {
   1: DataFrame oldDataFrame,
@@ -370,12 +381,14 @@ struct TransformEvent {
 }
 
 /* 
-  The response given to the creation of a Transform.
+  The response given to the creation of a TransformEvent.
 
-  oldDataFrameId: The id of the input DataFrame of the transform
-  newDataFrameId: The id of the output DataFrame of the transform
-  transformerId: The id of the transformer used to apply this transformation
-  eventId: The id of this 
+  oldDataFrameId: The id of the input DataFrame of the transformation.
+  newDataFrameId: The id of the output DataFrame of the transformation.
+  transformerId: The id of the Transformer that performed the transformation.
+  eventId: The generic event id of this transform event (unique among all events).
+  filepath: The filepath to which the serialized Transformer should be written.
+  // TODO: I think we can remove the filepath field. It may not be used.
 */
 struct TransformEventResponse {
   1: i32 oldDataFrameId,
@@ -390,11 +403,11 @@ struct TransformEventResponse {
   smaller DataFrames randomly according to a weight vector that
   specifies the relative sizes of the smaller DataFrames.
 
-  oldDataFrame: The DataFrame to splitIds
-  weights: The weight vector to split the DataFrame by (weights of pieces)
-  seed: A psuedo-random number generator seed
-  splitDataFrames: The output DataFrames (pieces)
-  experimentRunId: The Experiment Run that contains this event
+  oldDataFrame: The DataFrame that is being split into pieces.
+  weights: The weight vector to split the DataFrame by (weights of pieces).
+  seed: A psuedo-random number generator seed.
+  splitDataFrames: The output DataFrames (pieces).
+  experimentRunId: The ID of the experiment run that contains this event.
 */
 struct RandomSplitEvent {
   1: DataFrame oldDataFrame,
@@ -405,11 +418,11 @@ struct RandomSplitEvent {
 }
 
 /* 
-  The response to the creation of a Random Split event
+  The response to the creation of a Random Split event.
 
-  oldDataFrameId: The id of the input DataFrame
-  splitIds: A list of ids, to the new smaller DataFrames
-  splitEventId: The id of this split event (unique among split events)
+  oldDataFrameId: The id of the input DataFrame.
+  splitIds: A list of ids of the new smaller DataFrames.
+  splitEventId: The id of this split event (unique among split events).
 */
 struct RandomSplitEventResponse {
   1: i32 oldDataFrameId,
@@ -418,10 +431,10 @@ struct RandomSplitEventResponse {
 }
 
 /*
-  A structure to represent a transformation in a pipeline
+  This represents a transformation that occurs in the fitting of a pipeline.
 
-  stageNumber: Which stage this transformation occurs at in the pipeline
-  te: The Transform to apply at this stage
+  stageNumber: Which stage this transformation occurs at in the pipeline.
+  te: The TransformEvent to apply at this stage.
 */
 struct PipelineTransformStage {
   1: i32 stageNumber,
@@ -429,10 +442,10 @@ struct PipelineTransformStage {
 }
 
 /*
-  A structure to represent a fit in a pipeline
+  This represents a fitting that occurs in the overall fitting of a pipeline.
 
-  stageNumber: Which stage this transformation occurs at in the pipeline
-  fe: The Fitting to do at this stage
+  stageNumber: Which stage this transformation occurs at in the pipeline.
+  fe: The FitEvent to apply at this stage.
 */
 struct PipelineFitStage {
   1: i32 stageNumber,
@@ -440,15 +453,12 @@ struct PipelineFitStage {
 }
 
 /*
-  A pipeline stores several transformations and fits to do in series,
-  that is, it will perform a tranformation, potentially perform a fit, and then
-  pass the transformed data to the next Transformer. This event occurs on the creation
-  of a pipeline.
+  This represents the fitting of a PipelineModel.
 
-  pipelineFit: The final fit to perform at the end of the pipeline
-  transformStages: The transformations to apply in this pipeline
-  fitStages: The fittings to apply in this pipeline
-  experimentRunId: The id of the Experiment Run that contains this event
+  pipelineFit: This is the overall fit of the PipelineModel.
+  transformStages: These are all the transformations that occurred during the fitting of the PipelineModel.
+  fitStages: These are all the fittings that occurred during the fitting of the PipelineModel.
+  experimentRunId: The id of the experiment run that contains this event.
 */
 struct PipelineEvent {
   1: FitEvent pipelineFit,
@@ -460,9 +470,9 @@ struct PipelineEvent {
 /*
   The response given to the creation of a PipelineEvent
 
-  pipelineFitReponse: The response given to the pipelineFit FitEvent
-  transformStagesResponses: The responses given to the each transformation stage
-  fitStagesResponses: The responses given to each fit stage
+  pipelineFitReponse: The response to the fitting of the overall PipelineModel.
+  transformStagesResponses: The responses to each of the transform stages.
+  fitStagesResponses: The responses to each of the fit stages.
 */
 struct PipelineEventResponse {
   1: FitEventResponse pipelineFitResponse,
@@ -473,35 +483,36 @@ struct PipelineEventResponse {
 /*
   Represents an annotation on a DataFrame, TransformerSpec or Transformer
 
-  type: The type of annotation
-  df: (if applicable) the DataFrame this is associated with
+  type: The type of annotation. It must be "dataframe", "spec", "transformer", or "message".
+  df: (if applicable) the DataFrame this is associated with.
   spec: (if applicable) the TransformerSpec this is associated with
   transformer: (if applicable) the DataFrame this is associated with
   message: (if applicable) The text associated with this annotation
 */
 struct AnnotationFragment {
-  1: string type, // Must be "dataframe", "spec", "transformer", or "message".
-  2: DataFrame df, // Fill this in if type = "dataframe".
-  3: TransformerSpec spec, // Fill this in if type = "spec".
-  4: Transformer transformer, // Fill this in if type = "transformer".
-  5: string message // Fill this in if type = "message".
+  1: string type,
+  2: DataFrame df,
+  3: TransformerSpec spec,
+  4: Transformer transformer,
+  5: string message
 }
 
 /*
-  The response given to the creation of an Annotation fragments
-  type: The type of the Fragment created
-  id: The id of the target of the Annotation Fragment (null if "Message")
+  The response given to the creation of an annotation fragment.
+
+  type: The type of the fragment created.  It must be "dataframe", "spec", "transformer", or "message".
+  id: The id of the target of the annotation fragment (null if "message").
 */
 struct AnnotationFragmentResponse {
   1: string type,
-  2: i32 id // The ID of the DataFrame, Transformer, or TransformerSpec. Null if type = "message".
+  2: i32 id
 }
 
 /*
-  Represents the set of annotations in an experimentRun
+  Represents an annotation that describes a number of primitives in an experiment run.
 
-  fragments: The Annotation Fragments to add to the run
-  experimentRunId: The Experiment Run this is associated with
+  fragments: The annotation fragments.
+  experimentRunId: The ID of the experiment run that should contain this annotation.
 */
 struct AnnotationEvent {
   1: list<AnnotationFragment> fragments,
@@ -509,10 +520,10 @@ struct AnnotationEvent {
 }
 
 /*
-  The response given to the creation of an AnnotationEvent
+  The response given to the creation of an AnnotationEvent.
 
-  annotationId: The id of the event
-  fragmentResponses: The responses given to the creation of each fragment
+  annotationId: The generic event id of this annotation event (unique among all events).
+  fragmentResponses: The responses given to the creation of each fragment.
 */
 struct AnnotationEventResponse {
   1: i32 annotationId,
@@ -1125,3 +1136,4 @@ service ModelDBService {
 
   ExtractedPipelineResponse extractPipeline(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 }
+
