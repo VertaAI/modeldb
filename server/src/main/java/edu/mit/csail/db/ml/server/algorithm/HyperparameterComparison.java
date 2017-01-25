@@ -53,7 +53,7 @@ public class HyperparameterComparison {
       .fetch()
       .map(rec -> new Pair<>(rec.value1(), rec.value2()))
       .stream()
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+      .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
 
     Map<String, String> params2 = ctx
       .select(Tables.HYPERPARAMETER.PARAMNAME, Tables.HYPERPARAMETER.PARAMVALUE)
@@ -62,7 +62,7 @@ public class HyperparameterComparison {
       .fetch()
       .map(rec -> new Pair<>(rec.value1(), rec.value2()))
       .stream()
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue));;
+      .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));;
 
     // Find the hyperparameters that are common to both specs.
     Set<String> commonHyperParameters = new HashSet<String>(params1.keySet()) ;
@@ -71,7 +71,7 @@ public class HyperparameterComparison {
     Map<String, StringPair> commonHyperparameterMap = commonHyperParameters
       .stream()
       .map(name -> new Pair<>(name, new StringPair(params1.get(name), params2.get(name))))
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+      .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
 
     // Get the hyperparameter maps for the models.
     Map<String, String> model1Hyperparameters = params1

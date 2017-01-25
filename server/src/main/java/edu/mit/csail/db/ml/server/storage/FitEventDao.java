@@ -4,7 +4,6 @@ import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.*;
 import modeldb.*;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 
@@ -280,7 +279,7 @@ public class FitEventDao {
     Map<Integer, Integer> indexForId =
       IntStream.range(0, modelIds.size())
       .mapToObj(i -> new Pair<>(modelIds.get(i), i))
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+      .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
 
     // Rather than making the call fail if we can't find one of the models, we instead say it has -1 rows.
     List<Integer> numRows = modelIds.stream().map(mid -> -1).collect(Collectors.toList());

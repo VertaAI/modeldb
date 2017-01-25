@@ -45,7 +45,7 @@ public class ExperimentRunDao {
    * @return The ID of the project that contains the experiment run with ID eRunId.
    */
   public static int getProjectId(int eRunId, DSLContext ctx) {
-    return getExperimentAndProjectIds(eRunId, ctx).getValue();
+    return getExperimentAndProjectIds(eRunId, ctx).getSecond();
   }
 
   /**
@@ -142,7 +142,7 @@ public class ExperimentRunDao {
 
     // Fetch all the experiments in the project.
     List<Integer> experimentIds = runExpPairs.stream()
-      .map(Pair::getValue).collect(Collectors.toList());
+      .map(Pair::getSecond).collect(Collectors.toList());
     int defaultExp = experimentIds.stream()
       .mapToInt(s -> s.intValue()).min().orElse(0);
     List<Experiment> experiments = ctx
@@ -154,7 +154,7 @@ public class ExperimentRunDao {
         rec.getDescription(), rec.getId() == defaultExp));
 
     // Fetch all the experiment runs in the project.
-    List<Integer> experimentRunIds = runExpPairs.stream().map(Pair::getKey)
+    List<Integer> experimentRunIds = runExpPairs.stream().map(Pair::getFirst)
       .collect(Collectors.toList());
     List<ExperimentRun> experimentRuns = ctx
       .selectFrom(Tables.EXPERIMENTRUN)

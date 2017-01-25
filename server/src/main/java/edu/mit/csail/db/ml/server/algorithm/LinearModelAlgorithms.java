@@ -171,8 +171,8 @@ public class LinearModelAlgorithms {
       .stream()
       .map(pair -> {
         int featureIndex = pair.getKey();
-        double coeff = pair.getValue().getKey();
-        double stderr = pair.getValue().getValue();
+        double coeff = pair.getValue().getFirst();
+        double stderr = pair.getValue().getSecond();
         double t = 0;
         try {
           t = dist.inverseCumulativeProbability(1 - significanceLevel);
@@ -247,7 +247,7 @@ public class LinearModelAlgorithms {
       .entrySet()
       .stream()
       .map(entry -> new Pair<>(entry.getKey(), iterationsUntilConvergence(entry.getValue(), tolerance)))
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+      .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
 
     return modelIds
       .stream()

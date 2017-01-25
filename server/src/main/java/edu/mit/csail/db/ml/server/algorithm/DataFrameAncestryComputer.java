@@ -88,8 +88,8 @@ public class DataFrameAncestryComputer {
 
     // Read TransformEvent maps.
     Pair<Map<Integer, Integer>, Map<Integer, Integer>> pair = getTransformEventMaps(ctx, fitEvent.experimentRunId);
-    Map<Integer, Integer> parentIdForDfId = pair.getKey();
-    Map<Integer, Integer> transformEventIdForDfId = pair.getValue();
+    Map<Integer, Integer> parentIdForDfId = pair.getFirst();
+    Map<Integer, Integer> transformEventIdForDfId = pair.getSecond();
 
     // Compute the TransformEvents involved in the ancestry chain.
     List<Integer> ancestorChain = getAncestorChain(fitEvent.df.id, parentIdForDfId);
@@ -240,8 +240,8 @@ public class DataFrameAncestryComputer {
 
     // Read TransformEvent maps.
     Pair<Map<Integer, Integer>, Map<Integer, Integer>> pair = getTransformEventMaps(ctx, fitEvent.experimentRunId);
-    Map<Integer, Integer> parentIdForDfId = pair.getKey();
-    Map<Integer, Integer> transformEventIdForDfId = pair.getValue();
+    Map<Integer, Integer> parentIdForDfId = pair.getFirst();
+    Map<Integer, Integer> transformEventIdForDfId = pair.getSecond();
 
     // Compute the TransformEvents involved in the ancestry chain.
     List<Integer> ancestorChain = getAncestorChain(fitEvent.df.id, parentIdForDfId);
@@ -283,7 +283,7 @@ public class DataFrameAncestryComputer {
       .fetchOne();
     Map<Integer, Integer> parentIdForDfId = new HashMap<>();
     if (expRunIdRec != null) {
-      parentIdForDfId = getTransformEventMaps(ctx, expRunIdRec.value1()).getKey();
+      parentIdForDfId = getTransformEventMaps(ctx, expRunIdRec.value1()).getFirst();
     }
     List<Integer> ancestorChain = getAncestorChain(dfId, parentIdForDfId);
 
@@ -291,7 +291,7 @@ public class DataFrameAncestryComputer {
     Map<Integer, Integer> indexForId = IntStream
       .range(0, ancestorChain.size())
       .mapToObj(i -> new Pair<>(ancestorChain.get(i), i))
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+      .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
 
     // Get the Schemas for each DataFrame
     Map<Integer, List<DataFrameColumn>> schemaForDfId = new HashMap<>();
@@ -335,8 +335,8 @@ public class DataFrameAncestryComputer {
                                                   int chainNum) {
     if (dfForId.containsKey(df.id)) {
       CommonAncestor resp = new modeldb.CommonAncestor(
-        (chainNum == 1) ? index : dfForId.get(df.id).getKey(),
-        (chainNum == 2) ? index : dfForId.get(df.id).getKey()
+        (chainNum == 1) ? index : dfForId.get(df.id).getFirst(),
+        (chainNum == 2) ? index : dfForId.get(df.id).getFirst()
       );
       resp.setAncestor(df);
       return resp;

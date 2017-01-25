@@ -76,8 +76,8 @@ public class TreeModelDao {
 
         // Verify that the parent does not already have this child.
         Integer childInd = link.isLeft ?
-          leftRightIndicesForIndex.get(link.parentIndex).getKey() :
-          leftRightIndicesForIndex.get(link.parentIndex).getValue();
+          leftRightIndicesForIndex.get(link.parentIndex).getFirst() :
+          leftRightIndicesForIndex.get(link.parentIndex).getSecond();
         if (childInd != null && childInd != link.childIndex) {
           throw new InvalidFieldException(String.format(
             "Invalid tree component - parent %d has two %s children, %d and %d",
@@ -94,8 +94,8 @@ public class TreeModelDao {
         // Store the child for the parent.
         Pair<Integer, Integer> oldPair = leftRightIndicesForIndex.get(link.parentIndex);
         Pair<Integer, Integer> newPair = link.isLeft ?
-          new Pair<>(link.childIndex, oldPair.getValue()) :
-          new Pair<>(oldPair.getKey(), link.childIndex);
+          new Pair<>(link.childIndex, oldPair.getSecond()) :
+          new Pair<>(oldPair.getFirst(), link.childIndex);
         leftRightIndicesForIndex.put(link.parentIndex, newPair);
       }
 
@@ -110,7 +110,7 @@ public class TreeModelDao {
      * @return Whether the node has a left child.
      */
     public boolean hasLeftChild(int i) {
-      return leftRightIndicesForIndex.get(i).getKey() != null;
+      return leftRightIndicesForIndex.get(i).getFirst() != null;
     }
 
     /**
@@ -118,7 +118,7 @@ public class TreeModelDao {
      * @return Whether the node has a right child.
      */
     public boolean hasRightChild(int i) {
-      return leftRightIndicesForIndex.get(i).getValue() != null;
+      return leftRightIndicesForIndex.get(i).getSecond() != null;
     }
 
     /**
@@ -126,7 +126,7 @@ public class TreeModelDao {
      * @return The ID of the node's left child.
      */
     public int leftChild(int i) {
-      return leftRightIndicesForIndex.get(i).getKey();
+      return leftRightIndicesForIndex.get(i).getFirst();
     }
 
     /**
@@ -134,7 +134,7 @@ public class TreeModelDao {
      * @return The ID of the node's right child.
      */
     public int rightChild(int i) {
-      return leftRightIndicesForIndex.get(i).getValue();
+      return leftRightIndicesForIndex.get(i).getSecond();
     }
 
     /**
@@ -260,11 +260,11 @@ public class TreeModelDao {
     while (!toProcess.empty()) {
       // Get the index and node of the next item in the stack.
       parentChildPair = toProcess.pop();
-      processIndex = parentChildPair.getValue();
+      processIndex = parentChildPair.getSecond();
       processNode = tree.get(processIndex);
 
       // Store the node.
-      processId = storeNode(processNode, parentChildPair.getKey(), rootId, tree.isLeaf(processIndex), ctx);
+      processId = storeNode(processNode, parentChildPair.getFirst(), rootId, tree.isLeaf(processIndex), ctx);
 
       // Set the root if necessary.
       if (rootId == null) {

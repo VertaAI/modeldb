@@ -322,8 +322,8 @@ public class TransformerDao {
     return new ModelResponse(
       rec.getId(),
       rec.getExperimentrun(),
-      experimentAndProjectId.getKey(),
-      experimentAndProjectId.getValue(),
+      experimentAndProjectId.getFirst(),
+      experimentAndProjectId.getSecond(),
       trainingDf,
       spec,
       ProblemTypeConverter.fromString(feRec.getProblemtype()),
