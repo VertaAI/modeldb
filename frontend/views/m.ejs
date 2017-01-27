@@ -24,6 +24,8 @@
 
     <script src="/js/lib/ejs_production.js"></script>
     <script src="/js/m.js"></script>
+    <script src="/js/m2.js"></script>
+
   </head>
   <body data-id=<%= id %>>
     <%- include partials/nav.ejs %>
@@ -51,7 +53,19 @@
           </div>
         </div>
 
-        <div class="filters-container">
+        <div class="menu-section-container group-container menu1">
+          <div class="group-info">
+            <h2>Group</h2>
+            Choose field to group data table by
+            <div class="select-container">
+              <select class="group-by">
+                <option selected value="None">None</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-section-container filters-container menu0 menu1">
             <div class="filters-info">
                 <h2>Filter</h2>
                 Drag configs or metrics into this section to filter models based on key - value pairs.
@@ -59,22 +73,24 @@
             <div class="filter-area"></div>
         </div>
 
-        <div class="sort-container">
-          <div class="sort-info">
-            <h2>Sort</h2>
-            Drag configs or metrics into this section to sort by a certain key.
-          </div>
-          <div class="select-container">
-            <div class="select-label">
-              order:
+        <% if (false) { %>
+          <div class="menu-section-container sort-container">
+            <div class="sort-info">
+              <h2>Sort</h2>
+              Drag configs or metrics into this section to sort by a certain key.
             </div>
-            <select class="sort-order">
-              <option selected value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </select>
+            <div class="select-container">
+              <div class="select-label">
+                order:
+              </div>
+              <select class="sort-order">
+                <option selected value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+            </div>
+            <div class="sort-area"></div>
           </div>
-          <div class="sort-area"></div>
-        </div>
+        <% } %>
 
       </div>
 
@@ -114,7 +130,7 @@
               <div class="select-label">
                 group by:
               </div>
-              <select class="group-by">
+              <select class="z-axis">
                 <option>None</option>
               </select>
             </div>
@@ -140,36 +156,43 @@
 
       <div class="tab" data-id="1">
 
-        <div class="model-headings">
-          <div
-            class="model-heading model-ids pointer down sorted"
-            data-key="id"
-            data-order="down"
-          >
-            IDs
-            <div class="triangle-up">&#9650;</div>
-            <div class="triangle-down">&#9660;</div>
+        <div class="groups-bar-container">
+          <div class="groups-bar"></div>
+        </div>
+
+        <div class="data-table">
+          <div class="model-headings">
+            <div
+              class="model-heading model-ids pointer down sorted"
+              data-key="id"
+              data-order="down"
+            >
+              IDs
+              <div class="triangle-up">&#9650;</div>
+              <div class="triangle-down">&#9660;</div>
+            </div>
+            <div class="model-heading model-dataframe pointer" data-key="df">
+              DataFrame
+              <div class="triangle-up">&#9650;</div>
+              <div class="triangle-down">&#9660;</div>
+            </div>
+            <div class="model-heading model-spec">
+              Specifications
+            </div>
+            <div class="model-heading model-metrics pointer" data-key="metrics">
+              Metrics
+              <div class="triangle-up">&#9650;</div>
+              <div class="triangle-down">&#9660;</div>
+            </div>
+            <div class="model-heading model-misc">
+              Misc.
+            </div>
           </div>
-          <div class="model-heading model-dataframe pointer" data-key="df">
-            DataFrame
-            <div class="triangle-up">&#9650;</div>
-            <div class="triangle-down">&#9660;</div>
-          </div>
-          <div class="model-heading model-spec">
-            Specifications
-          </div>
-          <div class="model-heading model-metrics pointer" data-key="metrics">
-            Metrics
-            <div class="triangle-up">&#9650;</div>
-            <div class="triangle-down">&#9660;</div>
-          </div>
-          <div class="model-heading model-misc">
-            Misc.
+          <div class="models-container">
+            <div class="models"></div>
           </div>
         </div>
-        <div class="models-container">
-          <div class="models"></div>
-        </div>
+
       </div> <!-- end tab1 -->
 
     </div>

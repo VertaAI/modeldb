@@ -1,10 +1,11 @@
 const MODELS_PER_LOAD = 10;
+const DEFAULT_X = "Type";
+const DEFAULT_Z = "Experiment Run ID";
 
 var models = [];
 var summarySpecs;
 var exploreSpecs;
 var vlSpec;
-var numModels = 0;
 var min_id = null;
 var max_id = null;
 var hyperparamKeys = {};
@@ -13,11 +14,12 @@ var keys = ["Experiment Run ID", "Experiment ID", "Project ID",
             "DataFrame ID", "DF numRows", "DF Tag", "DF Filepath",
             "Type", "Spec Tag", "Problem Type",
             "Code SHA", "Filepath"];
-var defaultX = "Type";
-var defaultZ = "Experiment Run ID";
-
-var server_response = [];
 var cursor = 0;
+var groups = {};
+var group = null;
+var groupTable;
+var category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                  '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
 
 
 $(function() {
@@ -36,6 +38,11 @@ $(function() {
       vegaUpdate();
     });
 
+    $(document).on('change', '.group-by', function(event) {
+      var key = event.target.value;
+      groupTable(key);
+    });
+
     // change tabs
     $(document).on('click', '.menu-tab', function(event) {
       var tabId = $(this).data('id');
@@ -52,6 +59,15 @@ $(function() {
 
       // scroll to proper tab
       tab.animate({'margin-left': margin + 'px'});
+
+      var sections = $('.menu-section-container');
+      for (var i=0; i<sections.length; i++) {
+        if ($(sections[i]).hasClass('menu' + tabId)) {
+          $(sections[i]).slideDown();
+        } else {
+          $(sections[i]).slideUp();
+        }
+      }
     });
 
     $('.models-container').scroll(function(event) {
@@ -111,10 +127,9 @@ $(function() {
       type: "GET",
       success: function(response) {
         values = [];
-        server_response = response;
 
         // set number of models
-        numModels = response.length;
+        var numModels = response.length;
         var text = numModels + (numModels == 1 ? " model" : " models");
         $('.project-num-models').html(text);
 
@@ -203,10 +218,81 @@ $(function() {
     });
   };
 
+  groupTable = function(key) {
+    var container = $('.groups-bar-container');
+    var bar = $('.groups-bar')[0];
+    var $bar = $(bar);
+
+    // reset values
+    group = key;
+    groups = {};
+    $bar.html("");
+    $bar.removeClass('overflow');
+    $('.overflow-caret').remove();
+
+    if (key == "None") {
+      // remove groups
+      $('.groups-open').removeClass('groups-open');
+      $('.groups-bar').hide();
+      return;
+    } else {
+      // get group counts
+      for (var i=0; i<models.length; i++) {
+        var value = models[i][key];
+        if (groups.hasOwnProperty(value)) {
+          groups[value] += 1;
+        } else {
+          groups[value] = 1;
+        }
+      }
+
+      var groupCursor = 0;
+      var numModels = Object.values(groups).reduce((a, b) => a + b, 0);
+      var numGroups = Object.values(groups).length;
+      var totalHeight = $bar.height() - 2*numGroups;
+
+      // add blocks to groups bar
+      for (var value in groups) {
+        if (groups.hasOwnProperty(value)) {
+          // create group block and append to bar
+          var height = (totalHeight * groups[value] / numModels );
+          var block = $('<div class="group-block"></div>');
+          block.data('key', key);
+          block.data('value', value)
+          block.data('num', groups[value]);
+          block.css({
+            'background-color': category10[groupCursor],
+            'height': height + 'px'
+          });
+          $bar.append(block);
+
+          // next color
+          groupCursor = (groupCursor + 1) % category10.length;
+        }
+      }
+
+
+      $('.groups-bar').css({'display': 'inline-block'});
+
+      // apparently this must be done after display
+      // inline-block, otherwise heights will be 0
+      if (bar.scrollHeight > bar.clientHeight) {
+        $bar.addClass('overflow');
+        container.append('<div class="overflow-caret overflow-up"><img src="/images/caret-up.png"></div>');
+        container.append('<div class="overflow-caret overflow-down"><img src="/images/caret-down.png"></div>');
+      }
+
+      // show groups bar and shrink data table
+      $('.model-heading').addClass('groups-open');
+      $('.model-section').addClass('groups-open');
+      $('.data-table').addClass('groups-open');
+    }
+  };
+
   function sortTable(key, order) {
     console.log(order);
     if (key == "id") {
-      server_response.sort(function(a, b) {
+      models.sort(function(a, b) {
         var x = (order == "down") ? 1 : -1;
         if (a.id < b.id)
           return -1 * x;
@@ -215,11 +301,11 @@ $(function() {
         return 0;
       });
     } else if (key =="df") {
-       server_response.sort(function(a, b) {
+       models.sort(function(a, b) {
         var x = (order == "down") ? 1 : -1;
-        if (a.trainingDataFrame.id < b.trainingDataFrame.id)
+        if (a["DataFrame ID"] < b["DataFrame ID"])
           return -1 * x;
-        if (a.trainingDataFrame.id > b.trainingDataFrame.id)
+        if (a["DataFrame ID"] > b["DataFrame ID"])
           return 1 * x;
         return 0;
       });
@@ -233,8 +319,8 @@ $(function() {
 
   function loadTable() {
     var start = cursor;
-    for (var i=start; i<Math.min(server_response.length, start + MODELS_PER_LOAD); i++) {
-      var html = getModelDiv(server_response[i]);
+    for (var i=start; i<Math.min(models.length, start + MODELS_PER_LOAD); i++) {
+      var html = getModelDiv(models[i]);
       $('.models').append(html);
       cursor += 1;
     }
@@ -244,13 +330,14 @@ $(function() {
     // add standard keys
     for (var i=0; i<keys.length; i++) {
       $('.x-axis').append(new Option(keys[i], keys[i]));
+      $('.z-axis').append(new Option(keys[i], keys[i]));
       $('.group-by').append(new Option(keys[i], keys[i]));
     }
 
     // add hyperparam keys
     for (var i=0; i<hyperparamKeys.length; i++) {
       $('.x-axis').append(new Option(hyperparamKeys[i], hyperparamKeys[i]));
-      $('.group-by').append(new Option(hyperparamKeys[i], hyperparamKeys[i]));
+      $('.z-axis').append(new Option(hyperparamKeys[i], hyperparamKeys[i]));
     }
 
     // add metric keys
@@ -258,8 +345,8 @@ $(function() {
       $('.y-axis').append(new Option(metricKeys[i], metricKeys[i]));
     }
 
-    $('.x-axis').val(defaultX);
-    $('.group-by').val(defaultZ);
+    $('.x-axis').val(DEFAULT_X);
+    $('.z-axis').val(DEFAULT_Z);
   };
 
   function vegaInit() {
@@ -301,14 +388,14 @@ $(function() {
       "data": [
         {
           "name": "table",
-          "values": models,
+          "values": Object.values(models),
           "transform": [
             {"type": "fold", "fields": metricKeys}
           ]
         },
         {
           "name": "filtered",
-          "values": models,
+          "values": Object.values(models),
           "transform": [
             {"type": "filter", "test": "datum.id >= min_id && datum.id <= max_id"},
             {"type": "fold", "fields": metricKeys}
@@ -586,7 +673,7 @@ $(function() {
 
     vlSpec = {
       "data": {
-        "values": models
+        "values": Object.values(models)
       },
       "mark": "bar",
       "encoding": {
@@ -612,8 +699,8 @@ $(function() {
     };
 
     var y = metricKeys[0];
-    var x = defaultX;
-    var z = defaultZ;
+    var x = DEFAULT_X;
+    var z = DEFAULT_Z;
 
     vlSpec.encoding.column.field  = x;
     vlSpec.encoding.y.field = y;
@@ -633,10 +720,9 @@ $(function() {
   function vegaUpdate() {
     var x = $('.x-axis').val();
     var y = $('.y-axis').val();
-    var z = $('.group-by').val();
+    var z = $('.z-axis').val();
     var aggregate = $('.aggregate').val();
 
-    console.log(vlSpec);
     var specs = jQuery.extend(true, {}, vlSpec);
 
     specs.encoding.column.field  = x;
@@ -658,7 +744,6 @@ $(function() {
       specs.encoding.x.axis = {"title": x};
     }
 
-    console.log(vlSpec);
     exploreSpecs = vl.compile(specs);
 
     vg.embed(".explore-chart", exploreSpecs, function(error, result) {

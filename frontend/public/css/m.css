@@ -93,8 +93,7 @@ background-color: #d0d8e2;
   vertical-align: top;
 }
 
-.filters-container,
-.sort-container {
+.menu-section-container {
   padding: 10px;
 }
 
@@ -121,6 +120,14 @@ background-color: #d0d8e2;
 .select-container select {
   font-size: 13px;
   width:175px;
+}
+
+.group-container {
+  display: none;
+}
+
+.group-container select {
+  width: 100%;
 }
 
 /*
@@ -305,6 +312,12 @@ background-color: #d0d8e2;
  * Models table
  */
 
+.data-table {
+  display: inline-block;
+  vertical-align: top;
+  width: 100%;
+}
+
 .models-container {
   margin: 0 10px;
   height: calc(100vh - 104px);
@@ -394,4 +407,82 @@ background-color: #d0d8e2;
 
 .model-heading:not(.sorted):hover > .triangle-down {
   opacity: 0.2;
+}
+
+/*
+ *  Groups
+ */
+
+.groups-bar-container {
+  display: inline-block;
+  position: relative;
+}
+
+.groups-bar {
+  height: calc(100vh - 69px);
+  width: 25px;
+  display: inline-block;
+  vertical-align: top;
+  margin: 10px 0px 10px 15px;
+  display: none;
+  overflow-y: hidden;
+}
+
+.groups-bar.overflow {
+  height: calc(100vh - 109px);
+  margin: 30px 0px 30px 15px;
+}
+
+.data-table.groups-open {
+  width: calc(100% - 40px);
+}
+
+.model .groups-open,
+.groups-open {
+  width: 182px;
+}
+
+.group-block {
+  min-height: 10px;
+  margin-bottom: 2px;
+  width: 100%;
+  opacity: 0.3;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.group-block:hover {
+  opacity: 0.5;
+}
+
+.group-tooltip {
+  padding: 10px;
+  background-color: rgba(64, 64, 64, 0.95);
+  position: absolute;
+  left: 46px;
+  color: white;
+}
+
+.overflow-caret {
+  position: absolute;
+  opacity: 0.3;
+  right: 0px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.overflow-caret:hover {
+  opacity: 0.7;
+}
+
+.overflow-caret img{
+  width: 25px;
+}
+
+.overflow-up {
+  top: 5px;
+}
+
+.overflow-down {
+  bottom: 2px;
 }
