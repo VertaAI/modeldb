@@ -534,7 +534,8 @@ struct AnnotationEventResponse {
   Represents the ancestry of a DataFrame, that is, the DataFrame it derived
   from, and the one its parent derived from, etc.
   
-  ancestors: The list of ancestors of this frame, starting from its oldest
+  ancestors: The list of ancestors of this frame, starting from the oldest DataFrame (i.e. the one DataFrame from which
+    the successive DataFrames derive from).
 */
 struct DataFrameAncestry {
   1: list<DataFrame> ancestors
@@ -543,9 +544,10 @@ struct DataFrameAncestry {
 /*
   Represents a common ancestor DataFrame used between two models.
   
-  ancestor: The common ancestor
-  chainIndexModel1: The first model
-  chainIndexModel2: The second model
+  ancestor: The common ancestor.
+  chainIndexModel1: The number of steps to get from the first model to the common ancestor (e.g. 1 step = parent,
+    2 steps = grandparent).
+  chainIndexModel2: The number of steps to get from the second model to the common ancestor.
 */
 struct CommonAncestor {
   1: optional DataFrame ancestor,
@@ -555,9 +557,6 @@ struct CommonAncestor {
 
 /*
   A pair of strings.
-
-  first: One string
-  second: Another string
 */
 struct StringPair {
   1: string first,
@@ -567,9 +566,12 @@ struct StringPair {
 /*
   The response to a comparison of HyperParameters
 
-  model1OnlyHyperparams: The HyperParameters of model 1
-  model2OnlyHyperparams: The HyperParameters of model 2
-  sharedHyperparams: The HyperParameters shared between both models
+  model1OnlyHyperparams: The hyperparameters found only in the first model. This maps from hyperparameter name to
+    value.
+  model2OnlyHyperparams: The hyperparameters found only in the second model. This maps from hyperparameter name to
+    value.
+  sharedHyperparams: The hyperparameters shared between both models. This maps from hyperparameter name from
+    (value in model 1, value in model 2).
 */
 struct CompareHyperParametersResponse {
   1: map<string, string> model1OnlyHyperparams,
@@ -580,9 +582,9 @@ struct CompareHyperParametersResponse {
 /*
   The response to a comparison of features
 
-  model1OnlyFeatures: The features of model 1
-  model2OnlyFeatures: The features of model 2
-  sharedFeatures: The features shared between both models
+  model1OnlyFeatures: The names of the features that appear only in model 1.
+  model2OnlyFeatures: The names of the features that appear only in model 2.
+  sharedFeatures: The names of the features that appear in both models.
 */
 struct CompareFeaturesResponse {
   1: list<string> model1OnlyFeatures,
@@ -592,6 +594,14 @@ struct CompareFeaturesResponse {
 
 /*
   An enum for model comparison metric types
+
+  PROJECT: Search for models that appear in the same project.
+  EXPERIMENT_RUN: Search for models that appear in the same experiment run.
+  MODEL_TYPE: Search for models with the same transformerType.
+  PROBLEM_TYPE: Search for models with the same problem type.
+  RMSE: Search for models with similar root-mean-squared-error values.
+  EXPLAINED_VARIANCE: Search for models with similar explained variance values.
+  R2: Search for models with similar R^2 values.
 */
 enum ModelCompMetric {
   PROJECT,
@@ -606,18 +616,22 @@ enum ModelCompMetric {
 /*
   A comparison between the importance of a feature in each of two models
 
-  featureName: The name of the feature
-  percentileRankInModel1: (optional) The importance in model 1, if it appears in model 1
-  percentileRankInModel2: (optional) The importance in model 2, if it appears in model 2
+  featureName: The name of the feature.
+  percentileRankInModel1: (optional) The importance (expressed as percentile rank) in model 1, if it appears in model 1.
+  percentileRankInModel2: (optional) The importance (expressed as percentile rank) in model 2, if it appears in model 2.
 */
 struct FeatureImportanceComparison {
   1: string featureName,
-  2: optional double percentileRankInModel1, // Defined if feature is in model 1.
-  3: optional double percentileRankInModel2  // Defined if feature is in model 2.
+  2: optional double percentileRankInModel1,
+  3: optional double percentileRankInModel2
 }
 
 /*
-  The different types of metrics used to rank models
+  The different types of metrics used to rank models.
+
+  RMSE: Rank by root-mean-squared-error.
+  EXPAINED_VARIANCE: Rank by explained variance.
+  R2: Rank by R^2.
 */
 enum ModelRankMetric {
   RMSE,
@@ -626,11 +640,11 @@ enum ModelRankMetric {
 }
 
 /*
-  Represents a confidence interval of a feature 
+  Represents a confidence interval around a coefficient (or term) in a linear model.
 
-  featureIndex: The feature which has this interval of confidence
-  low: The interval lower than the value
-  high: the interval higher than the value
+  featureIndex: The index in the feature vector that that the coefficient corresponds to.
+  low: The confidence interval lower bound.
+  high: The confidence interval upper bound.
 */
 struct ConfidenceInterval {
   1: i32 featureIndex,
@@ -639,11 +653,11 @@ struct ConfidenceInterval {
 }
 
 /*
-  Stores all the Experiment Runs and Experiments for a project
+  The response that indicates all the experiment runs and experiments for a project.
 
-  projId: The id of the project
-  experiments: The list of Experiments in the project
-  experimentRuns: The list of runs in the project
+  projId: The id of the project.
+  experiments: The list of experiments in the project.
+  experimentRuns: The list of experiment runs in the project.
 */
 struct ProjectExperimentsAndRuns {
   1: i32 projId,
@@ -652,12 +666,11 @@ struct ProjectExperimentsAndRuns {
 }
 
 /*
-  The response given when the user requests the overview of a project
+  The response given when the user requests the overview of a project.
 
-  project: The project
-  numExperiments: The number of Experiments contained in the project
-  numExperimentRuns: The nuber of Experiment Runs 
-    contained within the Experiments of the project
+  project: The project.
+  numExperiments: The number of experiments contained in the project.
+  numExperimentRuns: The number of experiment runs contained in the experiments contained in the project.
 */
 struct ProjectOverviewResponse {
   1: Project project,
@@ -668,22 +681,23 @@ struct ProjectOverviewResponse {
 /*
   The response given when the user requests information about a model.
 
-  id: The id of this response
-  experimentRunId: The id of the Experiment Run in which this model is contained
-  experimentId: The id of the Experiment that run is contained in
-  projectId: The id of the Project under which this model is 
-  trainingDataFrame: The DataFrame used to train the model
-  specification: The TransformerSpec used to guide the training of the model
-  problemType: The type of problem this model solves (e.g. regression)
-  featureColumns: The important features of the data (columns in input DataFrame)
-  labelColumns: The columns from the input Data Frame that this model is supposed to predict
-  predictionColumns: The columns from the output of the model that are supposed
-    to predict the label columns
-  metrics: The calculated metrics of this model
-  annotations: The annotations on this model
-  sha: A hash of this model
-  filepath: The path to the serialized model (transformer)
-  linearModelData: If this is a Linear Model, information specific to Linear models
+  id: The id of the model (i.e. its primary key in the Transformer table).
+  experimentRunId: The id of the experiment run in which this model is contained.
+  experimentId: The id of the experiment that run is contained in.
+  projectId: The id of the project under which this model is.
+  trainingDataFrame: The DataFrame used to train the model.
+  specification: The TransformerSpec used to guide the training of the model.
+  problemType: The type of problem this model solves (e.g. regression).
+  featureColumns: The important features of the data (columns in input DataFrame).
+  labelColumns: The columns from the input DataFrame that were used to guide fitting (e.g. true class, true target).
+  predictionColumns: The columns of the output DataFrame that will contain this model's predictions.
+  metrics: The calculated metrics of this model. The map goes from metric name to DataFrame ID to metric value. For
+    example, if metrics["accuracy"][12] has the value 0.95, then that means that the model achieves an accuracy
+    of 95% on the DataFrame with ID 12.
+  annotations: The annotations that mention this model.
+  sha: A hash of this model.
+  filepath: The path to the serialized model (transformer).
+  linearModelData: If this is a Linear Model, information specific to Linear models.
 */
 struct ModelResponse {
   1: i32 id,
@@ -696,11 +710,7 @@ struct ModelResponse {
   8: list<string> featureColumns,
   9: list<string> labelColumns,
   10: list<string> predictionColumns,
-  // Map from metric name to evaluation DataFrame ID to metric value.
-  // We need the evaluation DataFrame ID because we could compute the same
-  // metric on multiple DataFrames.
   11: map<string, map<i32, double>> metrics,
-  // Turn each annotation into a string.
   12: list<string> annotations,
   13: string sha,
   14: string filepath,
@@ -708,12 +718,12 @@ struct ModelResponse {
 }
 
 /*
-  The response when a user requests information about an Experiment Run
+  The response when a user requests information about an experiment run.
 
-  project: The project this is contained in
-  experiment: The experiment this is contained in
-  experimentRun: The basic information about this run
-  modelResponses: The detailed information for each model in this ExperimentRun
+  project: The project this is contained in.
+  experiment: The experiment this is contained in.
+  experimentRun: The basic information about this run.
+  modelResponses: The detailed information for each model in this ExperimentRun.
 */
 struct ExperimentRunDetailsResponse {
   1: Project project,
@@ -723,12 +733,12 @@ struct ExperimentRunDetailsResponse {
 }
 
 /*
-  A test of how accurate a model is
+  Represents one fold of cross validation.
 
-  model: The model to use
-  trainingDf: A DataFrame that the model is allowed to use to train itself
-  validationDf: A DataFrame which the model must try and predict
-  score: The score of this test
+  model: The model that was trained from the trainingDf in this cross validation fold.
+  trainingDf: The DataFrame that trained the model.
+  validationDf: The DataFrame used to compute the score.
+  score: The score (e.g. accuracy, RMSE, F1 score) computed for this model.
 */
 struct CrossValidationFold {
   1: Transformer model,
@@ -738,11 +748,11 @@ struct CrossValidationFold {
 }
 
 /*
-  The response to the creation of a CrossValidationFold
+  The response to the creation of a CrossValidationFold.
 
-  modelId: The model being tested
-  validationId: The id of the DataFrame being used for validationDf
-  trainingId: The id of the DataFrame being used to train the model
+  modelId: The ID of the model trained for the fold.
+  validationId: The ID of the DataFrame being used for evaluating the score.
+  trainingId: The ID of the DataFrame that trained the model.
 */
 struct CrossValidationFoldResponse {
   1: i32 modelId,
@@ -751,18 +761,20 @@ struct CrossValidationFoldResponse {
 }
 
 /*
-  Evaluates a model given 2 data frames
+  Represents an event where a TransformerSpec (i.e. configuration of hyperparameters) is evaluated by doing cross
+  validation on an input DataFrame. The DataFrame is split into pieces. Then, for each of pieces (or folds), a model
+  is trained using all the other folds and finally evaluated on the given fold to compute a score.
 
-  df: The DataFrame to use to initiate the model
+  df: The overall DataFrame that is broken into pieces (or folds).
   spec: The TransformerSpec to guide the fitting
-  seed: A seed to use in random number generation
-  evaluator: --TODO--
-  labelColumns: The columns of the DataFrame that the model is supposed to predict
-  predictionColumns: The columns of the DataFrame that the model outputs as predictions
-  featureColumns: The columns of the DataFrame that are features
-  folds: The cross validation folds to use (see above)
-  experimentRunId: The Experiment Run in which this event is contained
-  problemType: The type of problem this model is solving (e.g. regression)
+  seed: A seed for the random number generation that breaks the DataFrame into pieces.
+  evaluator: A string representation of the score computation (e.g. accuracy).
+  labelColumns: The columns of the DataFrame that contain the true labels/targets to use to guide training.
+  predictionColumns: The columns that will contains the predictions of the produced model.
+  featureColumns: The columns of the input DataFrame that are used as features in the model.
+  folds: The cross validation folds to use (see above).
+  experimentRunId: The ID of the experiment run that contains this event.
+  problemType: The type of problem that the model solves (e.g. regression, classification).
 */
 struct CrossValidationEvent {
   1: DataFrame df,
@@ -796,13 +808,16 @@ struct CrossValidationEventResponse {
 }
 
 /*
-  A Cross Validation evaluation 
+  Represents a search over hyperparameter configurations (where each hyperparameter configuration is evaluated with
+  a cross validation event). Note that while the name mentions grid search, this event can be used to capture other
+  searches over different hyperparameter configurations (e.g. random search).
 
-  numFolds: The number of folds
-  bestFit: The fit event that produces the best fit model
-  crossValidations: Every cross validation conducted in this GridSearch model
-  experimentRunId: The Experiment Run that contains this CrossValidationFold
-  problemType: The type of problem this is trying to solves
+  numFolds: The number of folds to use for each cross validation event.
+  bestFit: After evaluating each hyperparameter configuration via cross validation, the best one is chosen and used
+    to train a model on the overall dataset. This is reflected by the given FitEvent.
+  crossValidations: There is one cross validation event for each hyperparameter configuration being evaluated.
+  experimentRunId: The ID of the experiment run that contains this event.
+  problemType: The type of problem (e.g. regression) that the trained models solve.
 */
 struct GridSearchCrossValidationEvent {
   1: i32 numFolds,
@@ -813,12 +828,12 @@ struct GridSearchCrossValidationEvent {
 }
 
 /*
-  The reponse given to the creation of a GridSearchCrossValidationEvent
+  The reponse given to the creation of a GridSearchCrossValidationEvent.
 
-  gscveId: The id of the created GridSearchCrossValidationEvent
-  eventId: The id of the event (unique across all events)
-  fitEventResponse: The response to the best fit FitEvent used to create the GSCVE
-  crossValidationEventResponses: The responses to all CrossValidationEvents in this GSCVE
+  gscveId: The id of the created GridSearchCrossValidationEvent.
+  eventId: The id of the event (unique across all events).
+  fitEventResponse: The response to the best fit FitEvent used to create the GSCVE.
+  crossValidationEventResponses: The responses to all CrossValidationEvents in this GSCVE.
 */
 struct GridSearchCrossValidationEventResponse {
   1: i32 gscveId,
@@ -828,12 +843,13 @@ struct GridSearchCrossValidationEventResponse {
 }
 
 /*
-  A node in a tree from a tree model --TODO--
+  Represents a node in a decision tree.
 
-  prediction:
-  impurity:
-  gain:
-  splitIndex: 
+  //TODO: There should be a field for internal nodes that says what value the feature is split on.
+  prediction: The prediction made by node (regression target or class label).
+  impurity: Represents the impurity measure (e.g. entropy, Gini coefficient) at the given node.
+  gain: The information gain acheived by the split at this node.
+  splitIndex: The index of the feature (in the feature vector) that is being split at the given node.
 */
 struct TreeNode {
   1: double prediction,
@@ -849,11 +865,11 @@ struct TreeNode {
 // containing all the nodes is known.
 
 /*
-  A Link between a parent Node in a tree, and a child
+  A link between a parent and child TreeNode in a decision tree.
   
-  parentIndex: The index of the parent in this relation
-  childIndex: The index of the child in this relation
-  isLeft: Whether or not the child is the left child of the parent (True = Left, False = Right)
+  parentIndex: The index of the parent in this relation.
+  childIndex: The index of the child in this relation.
+  isLeft: Whether or not the child is the left child of the parent (true = Left, false = Right).
 */
 struct TreeLink {
   1: i32 parentIndex,
@@ -862,11 +878,14 @@ struct TreeLink {
 }
 
 /*
-  A component of a tree after a RandomSplitEvent
+  Represents a component of a tree model. Each component is a decision tree with a weight indicating how important
+  it is in the overall tree model. A regular decision tree model can be viewed as a single TreeComponent that has
+  all the weight.
 
-  weight: The weight of this component
-  nodes: All of the nodes contained in this tree
-  links: The links that describe the relationship between the nodes
+  weight: The weight of this component. The relative values of all the weights for a given TreeComponent indicate
+    their relative importances in the overall TreeModel.
+  nodes: All of the nodes contained in this tree.
+  links: The links that describe the relationship between the nodes.
 */
 struct TreeComponent {
   1: double weight,
@@ -875,11 +894,12 @@ struct TreeComponent {
 }
 
 /*
-  A tree model (decision tree, GBT, Random Forest)
+  Represents a tree model.
   
-  modelType: The type of model this represents
-  components: The components of the tree (sections of nodes and links)
-  featureImportances: How important each feature is relative to each other
+  modelType: The type of model this represents (e.g. decision tree, gradient boosted trees, random forest).
+  components: The components of the model. There should be one for each tree in the ensemble. You can view a decision
+    tree model as having exactly one component.
+  featureImportances: How important each feature is relative to each other.
 */
 struct TreeModel {
   1: string modelType, // Should be "Decision Tree", "GBT", or "Random Forest".
@@ -909,52 +929,73 @@ struct ModelAncestryResponse {
   3: list<TransformEvent> transformEvents
 }
 
+/*
+ Represents an extracted pipeline (i.e. sequence of Transformers and TransformerSpecs) that produced the DataFrame
+ used to train a particular model.
+
+ transformers: Represents the Transformers that transformed DataFrames to yield the final DataFrame.
+ specs: Represents the TransformerSpecs that were used to train the models involved in transforming DataFrames.
+ */
 struct ExtractedPipelineResponse {
   1: list<Transformer> transformers;
   2: list<TransformerSpec> specs;
 }
 
-// Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
-// For example, if you try to read Transformer with ID 1, then we throw this
-// exception if that Transformer does not exist.
+/*
+ Thrown when a specified resource (e.g. DataFrame, Transformer) is not found.
+ For example, if you try to read Transformer with ID 1, then we throw this
+ exception if that Transformer does not exist.
+ */
 exception ResourceNotFoundException {
   1: string message
 }
 
-// Thrown when field of a structure is empty or incorrect.
-// For example, if you try to get the path for a Transformer, but the server
-// finds that the path is empty, then this exception gets thrown.
+/*
+ Thrown when field of a structure is empty or incorrect.
+ For example, if you try to get the path for a Transformer, but the server
+ finds that the path is empty, then this exception gets thrown.
+ */
 exception InvalidFieldException {
   1: string message
 }
 
-// Thrown when the request is not properly constructed.
-// For example, if you say that you want to find -3 similar models, then this
-// exception gets thrown.
+/*
+ Thrown when the request is not properly constructed.
+ For example, if you say that you want to find -3 similar models, then this
+ exception gets thrown.
+ */
 exception BadRequestException {
   1: string message
 }
 
-// Thrown when the server is told to perform an operation that it cannot do.
-// For example, if you try to compute feature importances for a linear model
-// that isn't standardized, then it is not possible to compute feature 
-// importance, so this exception gets thrown.
+/*
+ Thrown when the server is told to perform an operation that it cannot do.
+ For example, if you try to compute feature importances for a linear model
+ that isn't standardized, then it is not possible to compute feature
+ importance, so this exception gets thrown.
+ */
 exception IllegalOperationException {
   1: string message
 }
 
-// Thrown when the server has thrown an exception that we did not think of.
+/*
+ Thrown when the server has thrown an exception that we did not think of.
+ */
 exception ServerLogicException {
   1: string message
 }
 
-// Thrown when an Experiment Run ID is not defined.
+/*
+ Thrown when an Experiment Run ID is not defined.
+ */
 exception InvalidExperimentRunException {
   1: string message
 }
 
 service ModelDBService {
-  // This is just a method to test connection to the server. It returns 200.
+  /*
+   Tests connection to the server. This just returns 200.
+   */
   i32 testConnection(), 
 
   i32 storeDataFrame(1: DataFrame df, 2: i32 experimentRunId) 
