@@ -16,7 +16,8 @@ var keys = ["Experiment Run ID", "Experiment ID", "Project ID",
             "Code SHA", "Filepath"];
 var cursor = 0;
 var groups = {};
-var group = null;
+var groupKey = "None";
+var groupValue = null;
 var groupTable;
 var category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
                   '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
@@ -41,6 +42,15 @@ $(function() {
     $(document).on('change', '.group-by', function(event) {
       var key = event.target.value;
       groupTable(key);
+    });
+
+    $(document).on('click', '.group-block', function(event) {
+      $('.group-selected').removeClass('group-selected');
+      var block = $(event.target);
+      block.addClass('group-selected');
+      groupKey = block.data('key');
+      groupValue = block.data('value');
+      reloadTable();
     });
 
     // change tabs
@@ -201,7 +211,7 @@ $(function() {
         hyperparamKeys = Object.values(hyperparamKeys);
         selectInit();
         vegaInit();
-        loadTable();
+        reloadTable();
         $('.loader').hide();
       }
     });
@@ -224,7 +234,8 @@ $(function() {
     var $bar = $(bar);
 
     // reset values
-    group = key;
+    groupKey = key;
+    groupValue = null;
     groups = {};
     $bar.html("");
     $bar.removeClass('overflow');
@@ -234,7 +245,6 @@ $(function() {
       // remove groups
       $('.groups-open').removeClass('groups-open');
       $('.groups-bar').hide();
-      return;
     } else {
       // get group counts
       for (var i=0; i<models.length; i++) {
@@ -287,6 +297,7 @@ $(function() {
       $('.model-section').addClass('groups-open');
       $('.data-table').addClass('groups-open');
     }
+    reloadTable();
   };
 
   function sortTable(key, order) {
@@ -312,17 +323,59 @@ $(function() {
     } {
       // TODO: write sorting function for metrics
     }
-    cursor = 0;
-    $('.models').html("");
-    loadTable();
+    reloadTable();
   };
 
+  /*
   function loadTable() {
     var start = cursor;
     for (var i=start; i<Math.min(models.length, start + MODELS_PER_LOAD); i++) {
       var html = getModelDiv(models[i]);
       $('.models').append(html);
       cursor += 1;
+    }
+  };
+  */
+
+  function reloadTable() {
+    cursor = 0;
+    $('.models').html("");
+    loadTable();
+    $('.models-container').scrollTop(0);
+  }
+
+  function loadTable() {
+    var index = cursor;
+    var i=0;
+    while (i < MODELS_PER_LOAD) {
+      if (index >= models.length) {
+        return;
+      }
+
+      // groups bar closed or
+      // groups bar open but no group is selected
+      if (groupKey == "None" || groupValue == null) {
+        var html = getModelDiv(models[index]);
+
+        // no group is selected
+        if (groupValue == null) {
+          html.find('.model-section').addClass('groups-open');
+        }
+
+        $('.models').append(html);
+        i += 1;
+      };
+
+      // groups bar open and group is selected
+      if (models[index][groupKey] == groupValue ||
+        models[index][groupKey] == null && groupValue == "null") {
+        var html = getModelDiv(models[index]);
+        html.find('.model-section').addClass('groups-open');
+        $('.models').append(html);
+        i += 1;
+      };
+    cursor += 1;
+    index += 1;
     }
   };
 

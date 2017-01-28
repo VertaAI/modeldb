@@ -37,9 +37,15 @@ $(document).on('mouseenter', '.group-block', function(event) {
   var num = block.data('num');
 
   var top = block.offset().top - $($('.groups-bar-container')[0]).offset().top;
-  top += block.height() / 2;
-  var tooltip = $('<div class="group-tooltip"></div>');
-  tooltip.html(key + ': ' + value);
+  top += (block.height() / 2 - 20);
+
+  var obj = {
+    'key': key,
+    'value': value,
+    'num': num
+  };
+
+  var tooltip = $(new EJS({url: '/ejs/group-tooltip.ejs'}).render(obj));
   tooltip.css({'top': top + 'px'});
   $('.groups-bar-container').append(tooltip);
 });

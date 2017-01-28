@@ -451,8 +451,12 @@ background-color: #d0d8e2;
   transition: all 0.3s ease;
 }
 
-.group-block:hover {
+.group-block:not(.group-selected):hover {
   opacity: 0.5;
+}
+
+.group-selected {
+  opacity:0.7;
 }
 
 .group-tooltip {
@@ -460,7 +464,25 @@ background-color: #d0d8e2;
   background-color: rgba(64, 64, 64, 0.95);
   position: absolute;
   left: 46px;
+}
+
+.group-tooltip-keys,
+.group-tooltip-values {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.group-tooltip-key {
+  color: #aaa;
+  max-width: 150px;
+  text-align: right;
+  padding-right: 1px;
+  margin-bottom: 1px;
+}
+
+.group-tooltip-value {
   color: white;
+  margin-bottom: 1px;
 }
 
 .overflow-caret {
