@@ -66,7 +66,7 @@ nav .nav-link:hover {
 
 
 select {
-  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50px' height='50px'><polyline points='46.139,15.518 25.166,36.49 4.193,15.519'/></svg>");
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50px' height='50px'><polyline points='40.139,10.518 25.166,36.49 10.193,10.519'/></svg>");
   background-color:#AEBDCD;
   background-repeat:no-repeat;
   background-position: right 10px top 7px;

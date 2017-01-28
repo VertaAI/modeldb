@@ -162,27 +162,32 @@
 
         <div class="data-table">
           <div class="model-headings">
-            <div
-              class="model-heading model-ids pointer down sorted"
-              data-key="id"
-              data-order="down"
-            >
+            <div class="model-heading model-ids">
               IDs
-              <div class="triangle-up">&#9650;</div>
-              <div class="triangle-down">&#9660;</div>
+              <div
+                class="triangle-container down sorted"
+                data-key="id"
+                data-order="down"
+              >
+                <div class="triangle-up">&#9650;</div>
+                <div class="triangle-down">&#9660;</div>
+              </div>
             </div>
-            <div class="model-heading model-dataframe pointer" data-key="df">
+            <div class="model-heading model-dataframe">
               DataFrame
-              <div class="triangle-up">&#9650;</div>
-              <div class="triangle-down">&#9660;</div>
+              <div class="triangle-container" data-key="DataFrame ID">
+                <div class="triangle-up">&#9650;</div>
+                <div class="triangle-down">&#9660;</div>
+              </div>
             </div>
             <div class="model-heading model-spec">
               Specifications
             </div>
-            <div class="model-heading model-metrics pointer" data-key="metrics">
+            <div class="model-heading model-metrics">
               Metrics
-              <div class="triangle-up">&#9650;</div>
-              <div class="triangle-down">&#9660;</div>
+              <select class="metrics-sort">
+                <option value="" disabled selected>None</option>
+              </select>
             </div>
             <div class="model-heading model-misc">
               Misc.

@@ -13,10 +13,6 @@ h2 {
   font-size: 16px;
 }
 
-.pointer {
-  cursor: pointer;
-}
-
 .container {
   padding-left: 250px;
   overflow-x: hidden;
@@ -341,7 +337,7 @@ background-color: #d0d8e2;
   box-sizing: border-box;
   width: 190px;
   position: relative;
-  opacity: 0.7;
+  opacity: 1;
 }
 
 .models-container .model {
@@ -387,27 +383,54 @@ background-color: #d0d8e2;
 .triangle-up,
 .triangle-down {
   position: absolute;
-  right: 4px;
-  top: 5px;
+  right: 0;
+  top: 0;
   opacity: 0;
+  padding: 5px;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.model-heading.sorted.down .triangle-down {
+.triangle-container.sorted.down .triangle-down,
+.triangle-container.sorted.up .triangle-up {
   opacity: 1;
 }
 
-.model-heading.sorted.up .triangle-up {
+.triangle-container:not(.sorted) > .triangle-down {
+  opacity: 0.15;
+}
+
+.triangle-container:not(.sorted):hover > .triangle-down {
+  opacity: 0.4;
+}
+
+.metrics-sort {
+  color: rgba(0, 0, 0, 0);
+  text-shadow: none;
+  cursor: pointer;
+  opacity: 0.15;
+  background-size: 19px 22px;
+  background-position: right 0px top 3px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 20px;
+}
+
+.metrics-sort:not(.sorted):hover {
+  opacity: 0.4;
+}
+
+.metrics-sort.sorted {
   opacity: 1;
 }
 
-.model-heading.pointer:hover {
-  opacity: 1;
+.metrics-sort.dsc {
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50px' height='50px'><polyline points='40.139,39.482 25.166,13.51 10.193,39.481'/></svg>");
+  background-size: 19px 22px;
+  background-position: right 0px top 3px;
 }
 
-.model-heading:not(.sorted):hover > .triangle-down {
-  opacity: 0.2;
-}
 
 /*
  *  Groups
@@ -446,7 +469,7 @@ background-color: #d0d8e2;
   min-height: 10px;
   margin-bottom: 2px;
   width: 100%;
-  opacity: 0.3;
+  opacity: 0.2;
   cursor: pointer;
   transition: all 0.3s ease;
 }

@@ -87,11 +87,17 @@ $(function() {
       }
     });
 
-    $(document).on('click', '.model-heading.pointer', function() {
+    $(document).on('click', '.triangle-container', function() {
       var el = $(this);
       var sorted = el.hasClass('sorted');
       var order = el.data('order');
       var key = el.data('key');
+
+      // reset metrics sort
+      $('.metrics-sort')[0].selectedIndex = -1;
+      $('.metrics-sort').removeClass('asc');
+      $('.metrics-sort').removeClass('dsc');
+
       if (!sorted) {
         // default to ascending
         $('.sorted').removeClass('sorted');
@@ -115,6 +121,22 @@ $(function() {
 
       sortTable(key, order);
     });
+
+    $(document).on('change', '.metrics-sort', function(event){
+      var key = event.target.value;
+      var order = key.substring(0,3);
+      key = key.substring(4, key.length);
+
+      // update classes
+      $('.sorted').removeClass('sorted');
+      $(this).removeClass('asc');
+      $(this).removeClass('dsc');
+      $(this).addClass('sorted');
+      $(this).addClass(order);
+
+      sortTable(key, order);
+    });
+
   };
 
   function fetchData(projectId) {
@@ -301,28 +323,23 @@ $(function() {
   };
 
   function sortTable(key, order) {
-    console.log(order);
-    if (key == "id") {
-      models.sort(function(a, b) {
-        var x = (order == "down") ? 1 : -1;
-        if (a.id < b.id)
-          return -1 * x;
-        if (a.id > b.id)
-          return 1 * x;
+    models.sort(function(a, b) {
+      var x = (order == "asc" || order == "down") ? 1 : -1;
+      if (a[key] == null && b[key] == null) {
+        return (a.id > b.id);
+      } else if (a[key] == null) {
+        return 1;
+      } else if (b[key] == null) {
+        return -1;
+      } else if (a[key] < b[key]) {
+        return -1 * x;
+      } else if (a[key] > b[key]) {
+        return 1 * x;
+      } else {
         return 0;
-      });
-    } else if (key =="df") {
-       models.sort(function(a, b) {
-        var x = (order == "down") ? 1 : -1;
-        if (a["DataFrame ID"] < b["DataFrame ID"])
-          return -1 * x;
-        if (a["DataFrame ID"] > b["DataFrame ID"])
-          return 1 * x;
-        return 0;
-      });
-    } {
-      // TODO: write sorting function for metrics
-    }
+      }
+    });
+
     reloadTable();
   };
 
@@ -345,6 +362,8 @@ $(function() {
   }
 
   function loadTable() {
+    //console.log('groupKey: ' + groupKey);
+    //console.log('groupValue: ' + groupValue);
     var index = cursor;
     var i=0;
     while (i < MODELS_PER_LOAD) {
@@ -358,17 +377,15 @@ $(function() {
         var html = getModelDiv(models[index]);
 
         // no group is selected
-        if (groupValue == null) {
+        if (!(groupKey == "None" && groupValue == null)) {
           html.find('.model-section').addClass('groups-open');
         }
 
         $('.models').append(html);
         i += 1;
-      };
-
-      // groups bar open and group is selected
-      if (models[index][groupKey] == groupValue ||
+      } else if (models[index][groupKey] == groupValue ||
         models[index][groupKey] == null && groupValue == "null") {
+        // groups bar open and group is selected
         var html = getModelDiv(models[index]);
         html.find('.model-section').addClass('groups-open');
         $('.models').append(html);
@@ -380,6 +397,9 @@ $(function() {
   };
 
   function selectInit() {
+    var asc = $('<optgroup label="Ascending"/>');
+    var dsc = $('<optgroup label="Descending"/>');
+
     // add standard keys
     for (var i=0; i<keys.length; i++) {
       $('.x-axis').append(new Option(keys[i], keys[i]));
@@ -396,7 +416,12 @@ $(function() {
     // add metric keys
     for (var i=0; i<metricKeys.length; i++) {
       $('.y-axis').append(new Option(metricKeys[i], metricKeys[i]));
+      asc.append(new Option(metricKeys[i], 'asc_' + metricKeys[i]));
+      dsc.append(new Option(metricKeys[i], 'dsc_' + metricKeys[i]));
     }
+
+    $('.metrics-sort').append(asc);
+    $('.metrics-sort').append(dsc);
 
     $('.x-axis').val(DEFAULT_X);
     $('.z-axis').val(DEFAULT_Z);
