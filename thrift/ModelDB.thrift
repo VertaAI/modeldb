@@ -998,158 +998,365 @@ service ModelDBService {
    */
   i32 testConnection(), 
 
+  /*
+   Stores a DataFrame in the database.
+
+   df: The DataFrame.
+   experimentRunId: The ID of the experiment run that contains this given DataFrame.
+   */
   i32 storeDataFrame(1: DataFrame df, 2: i32 experimentRunId) 
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
+  /*
+   Get the path to the file that contains a serialized version of the Transformer with the given ID.
+   // TODO: This seems unnecessary because there's another method called getFilePath. Perhaps we should get rid of it.
+
+   transformerId: The ID of a Transformer.
+   */
   string pathForTransformer(1: i32 transformerId) 
     throws (1: ResourceNotFoundException rnfEx, 2: InvalidFieldException efEx, 3: ServerLogicException svEx),
 
+  /*
+   Stores a FitEvent in the database. This indicates that a TransformerSpec has been fit to a DataFrame to produce
+   a Transformer.
+
+   fe: The FitEvent.
+   */
   FitEventResponse storeFitEvent(1: FitEvent fe)
    throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
+  /*
+   Stores a MetricEvent in the database. This indicates that a Transformer was used to compute an evaluation metric
+   on a DataFrame.
+   */
   MetricEventResponse storeMetricEvent(1: MetricEvent me)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
-  // Gets the filepath associated with the given Transformer.
-  //
-  // If the Transformer exists (t.id > 0 and there's a Transformer with the 
-  // given ID), then we will generate a filepath for it (unless a filepath
-  // already exists) and return the filepath. In this case, we only access the
-  // t.id field, so you can leave the other fields and the experimentRunId empty.
-  //
-  // If the Transformer does not exist (t.id > 0 and there's no Transformer
-  // with the given ID), then we will throw a ResourceNotFoundException. In
-  // this case, we only access the t.id field, so you can leave the other
-  // fields and the experimentRunId empty.
-  //
-  // If the Transformer has t.id < 0, then a new Transformer will be created,
-  // given a filepath, and that filepath will be returned.
-  //
-  // You can specify a filename as well. This will be ignored if the Transformer
-  // already has a filename. Otherwise, your Transformer will be saved at this
-  // filename. If there's already a Transformer at the given filename, some
-  // random characters will be added to your filename to prevent conflict. Set
-  // filename to the empty string if you want a randomly generated filename.
+  /*
+   Gets the filepath associated with the given Transformer.
+
+   If the Transformer exists (t.id > 0 and there's a Transformer with the
+   given ID), then we will generate a filepath for it (unless a filepath
+   already exists) and return the filepath. In this case, we only access the
+   t.id field, so you can leave the other fields and the experimentRunId empty.
+
+   If the Transformer does not exist (t.id > 0 and there's no Transformer
+   with the given ID), then we will throw a ResourceNotFoundException. In
+   this case, we only access the t.id field, so you can leave the other
+   fields and the experimentRunId empty.
+
+   If the Transformer has t.id < 0, then a new Transformer will be created,
+   given a filepath, and that filepath will be returned.
+
+   You can specify a filename as well. This will be ignored if the Transformer
+   already has a filename. Otherwise, your Transformer will be saved at this
+   filename. If there's already a Transformer at the given filename, some
+   random characters will be added to your filename to prevent conflict. Set
+   filename to the empty string if you want a randomly generated filename.
+   */
   string getFilePath(1: Transformer t, 2: i32 experimentRunId, 3: string filename)
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
+  /*
+   Stores a TransformEvent in the database. This indicates that a Transformer was used to create an output DataFrame
+   from an input DataFrame.
+
+   te: The TransformEvent.
+   */
   TransformEventResponse storeTransformEvent(1: TransformEvent te)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
+  /*
+   Stores a RandomSplitEvent in the database. This indicates that a DataFrame was randomly split into many pieces.
+
+   rse: The RandomSplitEvent.
+   */
   RandomSplitEventResponse storeRandomSplitEvent(1: RandomSplitEvent rse)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Stores a PipelineEvent in the database. This indicates that a pipeline model was created by passing through
+   a linear chain of Transformers and TransformerSpecs, where Transformers transform their input and feed it to the next
+   step of the pipeline and where TransformerSpecs are trained on their input DataFrame and their resulting output
+   Transformer transforms the input DataFrame and passes it through.
+
+   pipelineEvent: The PipelineEvent.
+   */
   PipelineEventResponse storePipelineEvent(1: PipelineEvent pipelineEvent)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Stores a CrossValidationEvent in the database. This indicates that a hyperparameter configuration was evaluated
+   on a given input DataFrame using cross validation.
+
+   cve: The CrossValidationEvent.
+   */
   CrossValidationEventResponse storeCrossValidationEvent(1: CrossValidationEvent cve)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Stores a GridSearchCrossValidationEvent in the database. This indicates that a number of hyperparameter
+   configurations were evaluated on a given input DataFrame using cross validation and the best one was used to
+   train a Transformer on the input DataFrame.
+
+    gscve: The GridSearchCrossValidationEvent.
+   */
   GridSearchCrossValidationEventResponse storeGridSearchCrossValidationEvent(1: GridSearchCrossValidationEvent gscve)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Stores an AnnotationEvent in the database. This indicates that some primitives (i.e. DataFrame, Transformer, or
+   TransformerSpec) have been marked (perhaps with text messages) with an annotation.
+
+   ae: The AnnotationEvent.
+   */
   AnnotationEventResponse storeAnnotationEvent(1: AnnotationEvent ae)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Stores a ProjectEvent in the database. This indicates that a new project was created and stored in the database.
+
+   pr: The ProjectEvent.
+   */
   ProjectEventResponse storeProjectEvent(1: ProjectEvent pr)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Stores an ExperimentEvent in the database. This indicates that a new experiment was created and stored under a
+   given project.
+
+   er: The ExperimentEvent.
+   */
   ExperimentEventResponse storeExperimentEvent(1: ExperimentEvent er)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Stores an ExperimentRunEvent in the database. This indicates that a new experiment run was created and stored under
+   a given experiment.
+
+   er: The ExperimentRunEvent.
+   */
   ExperimentRunEventResponse storeExperimentRunEvent(1: ExperimentRunEvent er)
     throws (1: ServerLogicException svEx),
 
-  // Associate LinearModel metadata with an already stored model
-  // (i.e. Transformer) with the given id. Returns a boolean indicating
-  // whether the metadata was correctly stored.
+  /*
+   Associate LinearModel metadata with a Transformer with the given ID. Returns a boolean indicating whether the
+   metadata was correctly stored.
+
+   modelId: The ID of a Transformer.
+   model: The LinearModel metadata to associate with the Transformer with ID modelId.
+   */
   bool storeLinearModel(1: i32 modelId, 2: LinearModel model) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
+  /*
+   Retrieves the ancestry of a given DataFrame. This is the ordered sequence of DataFrames such that the (i+1)^st
+   DataFrame is derived, via TransformEvent, from the i^th DataFrame.
+
+   dataFrameId: The ID of the DataFrame whose ancestry we seek.
+   */
   DataFrameAncestry getDataFrameAncestry(1: i32 dataFrameId) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
+  /*
+   Retrieves the common ancestor DataFrame from which the two given DataFrames are derived. That is, we compute the
+   ancestry of the DataFrames with IDs dfId1 and dfId2. Then, we find the first (in terms of order in the ancestries)
+   DataFrame that appears in both the ancestries and return that.
+
+   dfId1: The ID of a DataFrame.
+   dfId2: The ID of another DataFrame.
+   */
   CommonAncestor getCommonAncestor(1: i32 dfId1, 2: i32 dfId2) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
+  /*
+   Get the common ancestor DataFrame for two models. This basically find the DataFrames that were used (in FitEvents)
+   to create the Transformers with IDs modelId1 and modelId2 and then calls getCommonAncestor on those two DataFrames.
+
+   modelId1: The ID of a model.
+   modelId2: The ID of another model.
+   */
   CommonAncestor getCommonAncestorForModels(1: i32 modelId1, 2: i32 modelId2) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
+  /*
+   Get the number of rows in the DataFrame used to produce the Transformer with the given ID.
+
+   modelId: The ID of a model.
+   */
   i32 getTrainingRowsCount(1: i32 modelId) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
-  // Returns the number of training rows in each model. If a model cannot be found,
-  // we mark that it has -1 training rows.
+  /*
+   Returns the number of training rows in each model. If a model cannot be found, we mark that it has -1 training rows.
+
+   modelIds: The IDs of models.
+   */
   list<i32> getTrainingRowsCounts(1: list<i32> modelIds) 
     throws (1: ServerLogicException svEx),
 
+  /*
+   Compares the hyperparameters of the TransformerSpecs that trained the two given models.
+
+   modelId1: The ID of a model.
+   modelId2: The ID of another model.
+   */
   CompareHyperParametersResponse compareHyperparameters(1: i32 modelId1, 2: i32 modelId2) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
+  /*
+   Compares the features used by the two given models.
+
+   modelId1: The ID of a model.
+   modelId2: The ID of another model.
+   */
   CompareFeaturesResponse compareFeatures(1: i32 modelId1, 2: i32 modelId2) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
-  // Maps from ProblemType to the list of models with that problem type.
-  // If any of the model IDs cannot be found, it will be left out of the map.
+  /*
+   Given a list of model IDs, group them by problem type. Returns a map that goes from problem type to the list of IDs
+   of the models that have the given problem type. If any of the given model IDs do not appear in the database, then
+   they will be left out of the returned map.
+
+   modelIds: The IDs of models.
+   */
   map<ProblemType, list<i32>> groupByProblemType(1: list<i32> modelIds)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Gets the list of IDs of models (with the most similar first) that are similar to the given model according to the
+   given comparison metrics.
+
+   modelId: The ID of a model.
+   compMetrics: The comparison metrics for similarity. The first comparison metric will be applied to select and rank
+    similar models. The successive metrics will be applied after that to break ties.
+   numModels: The maximum number of similar models to find.
+   */
   list<i32> similarModels(1: i32 modelId, 2: list<ModelCompMetric> compMetrics, 3: i32 numModels) 
     throws (1: ResourceNotFoundException rnfEx, 2: BadRequestException brEx, 3: ServerLogicException svEx),
 
-  // Return the features, ordered by importance, for a linear model.
-  // The returned list will be empty if the model does not exist, is not 
-  // linear, or if its features are not standardized (i.e. it must have been
-  // trained with a hyperparameter called "standardization" set to "true").
+  /*
+   Get the names of the features, ordered by importance (most important first), for the model with the given ID.
+   The model must be a linear model and its features must be standardized (i.e. it must have been trained with
+   a hyperparameter called "standardization" set to "true").
+
+   modelId: The ID of a model.
+   */
   list<string> linearModelFeatureImportances(1: i32 modelId) 
     throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx, 3: ServerLogicException svEx),
 
-  // Compares the feature importances of the two models.
+  /*
+   Compare the feature importances of two given models. Returns a list of comparisons (one for each feature).
+
+   modelId1: The ID of a model.
+   modelId2: The ID of another model.
+   */
   list<FeatureImportanceComparison> compareLinearModelFeatureImportances(1: i32 model1Id, 2: i32 model2Id) 
     throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx, 3: ServerLogicException svEx),
 
-  // Given the a list model IDs, return the number of iterations that each
-  // took to converge (convergence specified via tolerance). 
-  // If any model does not exist or does not have an objective history, 
-  // we give it -1 iterations.
+  /*
+   Count the number of iterations that each model took to converge to its parameter values during training. The value -1
+   is used if the number of iterations until convergence is unknown.
+
+   modelIds: The IDs of the models.
+   tolerance: The tolerance level used to measure convergence. If the objective function takes on value v1 in iteration
+   i and takes on value v2 in iteration i+1, then we say that the model has converged if abs(v1 - v2) <= tolerance.
+   This API method returns the smallest i for which each model has converged.
+   */
   list<i32> iterationsUntilConvergence(1: list<i32> modelIds, 2: double tolerance)
     throws (1: ServerLogicException svEx),
 
-  // Rank the given models by some metric. The returned list will contain
-  // the models ordered by highest metric to lowest metric. If we cannot
-  // find the corresponding metric value for a given model, its id will be
-  // omitted from the returned list.
+  /*
+   Rank the given models according to some metric. The returned list will contain
+   the models ordered by highest metric to lowest metric. If we cannot
+   find the corresponding metric value for a given model, its id will be
+   omitted from the returned list.
+
+   modelIds: The IDs of models.
+   metric: The metric used to rank the models.
+   */
   list<i32> rankModels(1: list<i32> modelIds, 2: ModelRankMetric metric)
     throws (1: ServerLogicException svEx),
 
+  /*
+   Compute the t-statistic based confidence interval, at the given significance level, for the model with the given ID.
+
+   modelId: The ID of the model for which we would like to compute confidence intervals.
+   sigLevel: The significance level for which we would like to compute confidence intervals.
+   */
   list<ConfidenceInterval> confidenceIntervals(1: i32 modelId, 2: double sigLevel) 
     throws (1: ResourceNotFoundException rnfEx, 2: IllegalOperationException ioEx, 3: BadRequestException brEx, 4: ServerLogicException svEx),
 
-  // Get the IDs of the models that use the given set of features.
+  /*
+   Find the IDs of the models that use all of the given features.
+
+   featureNames: The names of features.
+   */
   list<i32> modelsWithFeatures(1: list<string> featureNames)
     throws (1: ServerLogicException svEx),
 
   // Get the IDs of the models that are derived from the DataFrame with the 
   // given ID, or one of its descendent DataFrames. This will only consider
   // models and DataFrames in the same project as the given dfId.
+  /*
+   Get the IDs of all models derived from the DataFrame with the given ID.
+
+   dfId: The ID of a DataFrame.
+   */
   list<i32> modelsDerivedFromDataFrame(1: i32 dfId) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 
+  /*
+   Get information about the model with the given ID.
+
+   modelId: The ID of a model.
+   */
   ModelResponse getModel(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
+  /*
+   Get information about all the experiment runs in a given experiment.
+
+   experimentId: The ID of an experiment.
+   */
   list<ExperimentRun> getRunsInExperiment(1: i32 experimentId) throws (1: ServerLogicException svEx),
 
+  /*
+   Get information about a project and the experiments/experiment runs that it contains.
+
+   projId: The ID of a project.
+   */
   ProjectExperimentsAndRuns getRunsAndExperimentsInProject(1: i32 projId) throws (1: ServerLogicException svEx),
 
+  /*
+   Get information about of all the projects in the database.
+   */
   list<ProjectOverviewResponse> getProjectOverviews() throws (1: ServerLogicException svEx),
 
+  /*
+   Get information about a given experiment run.
+
+   experimentRunId: The ID of an experiment run.
+   */
   ExperimentRunDetailsResponse getExperimentRunDetails(1: i32 experimentRunId) throws (1: ServerLogicException svEx, 2: ResourceNotFoundException rnfEx),
 
+  /*
+   Get the list of the original features used by the model with the given ID.
+   The list of original feature names. For example, suppose we begin with a DataFrame that has a column "age"
+   and do a TransformEvent to produce a DataFrame with column "ageInDays". Then, suppose we train a model on the
+   "ageInDays" column. Then, the original feature-set of the model is simply "age".
+
+   modelId: The ID of a model.
+   */
   list<string> originalFeatures(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
-  // Associate TreeModel metadata with an already stored model
-  // (i.e. Transformer) with the given id. Returns a boolean indicating
-  // whether the metadata was correctly stored.
+  /*
+   Associate TreeModel metadata with an already stored model
+   (i.e. Transformer) with the given id. Returns a boolean indicating
+   whether the metadata was correctly stored.
+
+   modelId: The ID of a model.
+   mode: The TreeModel information to associate with the model with the given ID.
+   */
   bool storeTreeModel(1: i32 modelId, 2: TreeModel model) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
@@ -1169,12 +1376,26 @@ service ModelDBService {
     To mitigate the performance issue described above, 
     storePipelineTransformEvent allows the client to store all N stages of 
     transformation at once.
+
+    te: The transform events that are involved in this overall pipeline transform event.
   */
   list<TransformEventResponse> storePipelineTransformEvent(1: list<TransformEvent> te)
     throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
+  /*
+   Compute the ancestry (i.e. the FitEvent that created the model and the DataFrame ancestry of the DataFrame that the
+   model was trained on) for the model with the given ID.
+
+   modelId: The ID of a model.
+   */
   ModelAncestryResponse computeModelAncestry(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
+  /*
+   Extract a pipeline (i.e. seqeuence of Transformers and TransformerSpecs that were used to generate the DataFrame
+   used to train a given model) for a given model.
+
+   modelId: The ID of a model.
+   */
   ExtractedPipelineResponse extractPipeline(1: i32 modelId) throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
 }
 
