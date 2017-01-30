@@ -48,7 +48,7 @@ except:
 data = open(src_path, "r").read()
 
 # Open the output file (where to copy to)
-f = open(dest_path + "/ModelDB.thrift", "wb")
+f = open(dest_path + "/ModelDB.thrift", "w")
 
 # If it's in scala, write the namespace first, else do nothing
 if lang == "scala":
