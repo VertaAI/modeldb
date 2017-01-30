@@ -5,7 +5,16 @@ import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.classification.LogisticRegressionModel
 import org.apache.spark.ml.regression.LinearRegressionModel
 
+/**
+  * This contains logic for converting a Spark linear model (LinearRegressionModel and LogisticRegressionModel)
+  * into a Thrift LinearModel.
+  */
 object SyncableLinearModel {
+  /**
+    * Convert the given Spark object into a Thrift structure.
+    * @param lrm - The LinearRegressionModel.
+    * @return The Thrift structure representing lrm.
+    */
   private def toLinearModel(lrm: LinearRegressionModel): LinearModel = {
     val normal = lrm.getSolver == "normal"
 
@@ -53,6 +62,9 @@ object SyncableLinearModel {
     }
   }
 
+  /**
+    * Like the above, but for a LogisticRegression
+    */
   private def toLinearModel(lrm: LogisticRegressionModel): LinearModel = {
     // Get the training summary.
     val trainingSummary = if (lrm.hasSummary) Some(lrm.summary) else None
@@ -73,6 +85,14 @@ object SyncableLinearModel {
     }
   }
 
+  // TODO: Maybe we should just replace this and the above methods with apply(lrm: LogisticRegressionModel) and
+  // apply(lrm: LinearRegressionModel).
+  /**
+    * Convert the given Transformer into a LinearModel.
+    * @param x - The Transformer. It must be a LogisticRegressionModel or LinearRegressionModel.
+    * @return The LinearModel representation of the given Transformer. It's None if the
+    *         Transformer is not a LinearRegressionModel or LogisticRegressionModel.
+    */
   def apply(x: Transformer): Option[LinearModel] = {
     x match {
       case linReg: LinearRegressionModel => Some(toLinearModel(linReg))
