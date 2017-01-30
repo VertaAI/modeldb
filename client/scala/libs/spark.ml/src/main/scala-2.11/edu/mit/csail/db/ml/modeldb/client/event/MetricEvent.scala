@@ -22,6 +22,14 @@ case class MetricEvent(dataframe: DataFrame,
                        predictionCol: String,
                        metricType: String,
                        metricValue: Float) extends ModelDbEvent {
+
+  /**
+    * Store the metric event on the server and do object-ID mappings.
+    * @param client - The client that exposes the functions that we
+    *               call to store objects in the ModelDB.
+    * @param mdbs - The ModelDbSyncer, included so we can update the ID
+    *             mappings after syncing.
+    */
   override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
     val res = Await.result(client.storeMetricEvent(
       modeldb.MetricEvent(
@@ -35,7 +43,7 @@ case class MetricEvent(dataframe: DataFrame,
       )
     ))
 
-    // Update ID mappings.
+    // Update object-ID mappings.
     mdbs.get.associateObjectAndId(dataframe, res.dfId)
       .associateObjectAndId(model, res.modelId)
       .associateObjectAndId(this, res.eventId)

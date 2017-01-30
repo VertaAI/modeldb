@@ -19,6 +19,8 @@ import scala.collection.mutable.ArrayBuffer
 trait SyncableCrossValidator {
   /**
     * Implicit class for storing Cross validation results.
+    *
+    * cv: The cross validator object.
     */
   implicit class CrossValidatorFitSync(cv: CrossValidator) extends HasFitSync[CrossValidatorModel] {
     // The original Spark code uses this object.
@@ -116,6 +118,9 @@ trait SyncableCrossValidator {
       cvModel
     }
 
+    /**
+      * Overrides fitSync and calls the customFit method above.
+      */
     override def fitSync(df: DataFrame, pms: Array[ParamMap], featureVectorNames: Seq[String])
                         (implicit mdbs: Option[ModelDbSyncer]): Seq[CrossValidatorModel] = {
       mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)

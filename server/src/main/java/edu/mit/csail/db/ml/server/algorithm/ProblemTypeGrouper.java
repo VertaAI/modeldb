@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 public class ProblemTypeGrouper {
+  /**
+   * Given a list of model IDs, group them by problem type.
+   * @param modelIds - The IDs of models.
+   * @param ctx - The database context.
+   * @return A map from ProblemType to a list of the IDs of the models of that given problem type.
+   */
   public static Map<ProblemType, List<Integer>> groupByProblemType(List<Integer> modelIds, DSLContext ctx) {
     Map<ProblemType, List<Integer>> modelIdsForType = new HashMap<>();
 

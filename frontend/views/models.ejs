@@ -25,6 +25,20 @@
   <body>
     <%- include partials/nav.ejs %>
     <div class="container">
+
+      <div class="loader">
+        <img src="/images/loading.gif">
+      </div>
+
+      <div class="group-table-container select-container">
+        <div class="select-label">
+          group by:
+        </div>
+        <select class="group-table">
+          <option value="None" selected="selected">None</option>
+        </select>
+      </div>
+
       <div class="model-headings">
         <div class="model-heading model-ids">
           IDs
@@ -45,174 +59,179 @@
 
       <div class="models-container">
         <div class="models">
-          <% for(var i=0; i<models.length; i++) { %>
-            <div class="model">
+          <div class="models-group" data-groupkey="none" data-groupval="none">
+            <% for(var i=0; i<models.length; i++) { %>
+              <div class="model" data-show="true">
 
+                <div class="model-section model-ids">
+                  <a href="/models/<%= models[i].id %>">
+                    <div class="kv nkv"
+                      data-key="Model ID"
+                      data-val="<%= models[i].id %>"
+                    >
+                      Model ID: <%= models[i].id %>
+                    </div>
+                  </a>
 
-              <div class="model-section model-ids">
-                <a href="/models/<%= models[i].id %>">
-                  <div class="kv nkv"
-                    data-key="Model ID"
-                    data-val="<%= models[i].id %>"
-                  >
-                    Model ID: <%= models[i].id %>
-                  </div>
-                </a>
-
-                <div class="kv"
-                  data-key="Experiment Run ID"
-                  data-val="<%= models[i].experimentRunId %>"
-                >
-                  Experiment Run ID: <%= models[i].experimentRunId %>
-                </div>
-
-                <div class="kv"
-                  data-key="Experiment ID"
-                  data-val="<%= models[i].experimentId %>"
-                >
-                  Experiment ID: <%= models[i].experimentId %>
-                </div>
-
-                <div class="kv"
-                  data-key="Project ID"
-                  data-val="<%= models[i].projectId %>"
-                >
-                  Project ID: <%= models[i].projectId %>
-                </div>
-              </div>
-
-
-              <div class="model-section model-dataframe">
-                <div class="kv"
-                  data-key="DataFrame ID"
-                  data-val="<%= models[i].trainingDataFrame.id %>"
-                >
-                  DataFrame ID: <%= models[i].trainingDataFrame.id %>
-                </div>
-
-                <div class="kv"
-                  data-key="DF numRows"
-                  data-val="<%= models[i].trainingDataFrame.numRows %>"
-                >
-                  DF numRows: <%= models[i].trainingDataFrame.numRows %>
-                </div>
-
-                <% if (models[i].trainingDataFrame.tag) { %>
                   <div class="kv"
-                    data-key="DF Tag"
-                    data-val="<%= models[i].trainingDataFrame.tag %>"
+                    data-key="Experiment Run ID"
+                    data-val="<%= models[i].experimentRunId %>"
                   >
-                    DF Tag: <%= models[i].trainingDataFrame.tag %>
+                    Experiment Run ID: <%= models[i].experimentRunId %>
                   </div>
-                <% } %>
 
-                <% if (models[i].trainingDataFrame.filepath) { %>
-                  <div class="nkv"
-                    data-key="DF Filepath"
-                    data-val="<%= models[i].trainingDataFrame.filepath %>"
-                  >
-                    DF Filepath: <%= models[i].trainingDataFrame.filepath %>
-                  </div>
-                <% } %>
-
-                <div class="nkv dfmetadata-container popup-container">
-                  Metadata
-                  <div class="dfmetadata">
-                    <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
-                      <div class="kv"
-                        data-key="<%= models[i].trainingDataFrame.metadata[j].key %>"
-                        data-val="<%= models[i].trainingDataFrame.metadata[j].value %>"
-                      >
-                        <%= models[i].trainingDataFrame.metadata[j].key %>: <%= models[i].trainingDataFrame.metadata[j].value %>
-                      </div>
-                    <% } %>
-                  </div>
-                </div>
-              </div>
-
-
-              <div class="model-section model-spec">
-                <div class="kv"
-                  data-key="Specification ID"
-                  data-val="<%= models[i].specification.id %>"
-                >
-                  Specification ID: <%= models[i].specification.id %>
-                </div>
-
-                <div class="kv"
-                  data-key="Type"
-                  data-val="<%= models[i].specification.transformerType %>"
-                >
-                  Type: <%= models[i].specification.transformerType %>
-                </div>
-
-                <% if (models[i].specification.tag) { %>
                   <div class="kv"
-                    data-key="Spec Tag"
-                    data-val="<%= models[i].specification.tag %>"
+                    data-key="Experiment ID"
+                    data-val="<%= models[i].experimentId %>"
                   >
-                    Spec Tag: <%= models[i].specification.tag %>
+                    Experiment ID: <%= models[i].experimentId %>
                   </div>
-                <% } %>
 
-                <div class="kv"
-                  data-key="Problem Type"
-                  data-val="<%= models[i].problemType %>"
-                >
-                  Problem Type: <%= models[i].problemType %>
+                  <div class="kv"
+                    data-key="Project ID"
+                    data-val="<%= models[i].projectId %>"
+                  >
+                    Project ID: <%= models[i].projectId %>
+                  </div>
                 </div>
 
-                <div class="nkv hyperparams-container popup-container">
-                  Hyperparameters
-                  <div class="hyperparams">
-                    <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
-                      <div class="kv"
-                        data-key="<%= models[i].specification.hyperparameters[j].name %>"
-                        data-val="<%= models[i].specification.hyperparameters[j].value %>"
-                      >
-                        <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
+
+                <div class="model-section model-dataframe">
+                  <div class="kv"
+                    data-key="DataFrame ID"
+                    data-val="<%= models[i].trainingDataFrame.id %>"
+                  >
+                    DataFrame ID: <%= models[i].trainingDataFrame.id %>
+                  </div>
+
+                  <div class="kv"
+                    data-key="DF numRows"
+                    data-val="<%= models[i].trainingDataFrame.numRows %>"
+                  >
+                    DF numRows: <%= models[i].trainingDataFrame.numRows %>
+                  </div>
+
+                  <% if (models[i].trainingDataFrame.tag) { %>
+                    <div class="kv"
+                      data-key="DF Tag"
+                      data-val="<%= models[i].trainingDataFrame.tag %>"
+                    >
+                      DF Tag: <%= models[i].trainingDataFrame.tag %>
+                    </div>
+                  <% } %>
+
+                  <% if (models[i].trainingDataFrame.filepath) { %>
+                    <div class="nkv"
+                      data-key="DF Filepath"
+                      data-val="<%= models[i].trainingDataFrame.filepath %>"
+                    >
+                      DF Filepath: <%= models[i].trainingDataFrame.filepath %>
+                    </div>
+                  <% } %>
+
+                  <% if (models[i].trainingDataFrame.metadata.length > 0) { %>
+                    <div class="nkv dfmetadata-container popup-container">
+                      Metadata
+                      <div class="dfmetadata">
+                        <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
+                          <div class="kv"
+                            data-src="metadata"
+                            data-key="<%= models[i].trainingDataFrame.metadata[j].key %>"
+                            data-val="<%= models[i].trainingDataFrame.metadata[j].value %>"
+                          >
+                            <%= models[i].trainingDataFrame.metadata[j].key %>: <%= models[i].trainingDataFrame.metadata[j].value %>
+                          </div>
+                        <% } %>
                       </div>
-                    <% } %>
+                    </div>
+                  <% } %>
+                </div>
+
+
+                <div class="model-section model-spec">
+                  <div class="kv"
+                    data-key="Specification ID"
+                    data-val="<%= models[i].specification.id %>"
+                  >
+                    Specification ID: <%= models[i].specification.id %>
+                  </div>
+
+                  <div class="kv"
+                    data-key="Type"
+                    data-val="<%= models[i].specification.transformerType %>"
+                  >
+                    Type: <%= models[i].specification.transformerType %>
+                  </div>
+
+                  <% if (models[i].specification.tag) { %>
+                    <div class="kv"
+                      data-key="Spec Tag"
+                      data-val="<%= models[i].specification.tag %>"
+                    >
+                      Spec Tag: <%= models[i].specification.tag %>
+                    </div>
+                  <% } %>
+
+                  <div class="kv"
+                    data-key="Problem Type"
+                    data-val="<%= models[i].problemType %>"
+                  >
+                    Problem Type: <%= models[i].problemType %>
+                  </div>
+
+                  <div class="nkv hyperparams-container popup-container">
+                    Hyperparameters
+                    <div class="hyperparams">
+                      <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
+                        <div class="kv"
+                          data-src="hyperparameters"
+                          data-key="<%= models[i].specification.hyperparameters[j].name %>"
+                          data-val="<%= models[i].specification.hyperparameters[j].value %>"
+                        >
+                          <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
+                        </div>
+                      <% } %>
+                    </div>
                   </div>
                 </div>
+
+
+                <div class="model-section model-metrics">
+                  <% for (var j=0; j<models[i].metrics.length; j++) { %>
+                    <div class="model-metric kv"
+                      data-key="<%=models[i].metrics[j].key %>"
+                      data-val="<%=models[i].metrics[j].val %>"
+                      data-num="true"
+                    >
+                      <%= models[i].metrics[j].key %>: <%= models[i].metrics[j].val %>
+                    </div>
+                  <% } %>
+                </div>
+
+
+                <div class="model-section model-misc">
+                  <% if (models[i].sha) { %>
+                    <div class="nkv"
+                      data-key="Code SHA"
+                      data-val="<%= models[i].sha %>"
+                    >
+                      Code SHA: <%= models[i].sha %>
+                    </div>
+                  <% } %>
+
+                  <% if (models[i].filepath) { %>
+                    <div class="nkv"
+                      data-key="Filepath"
+                      data-val="<%= models[i].filepath %>"
+                    >
+                      Filepath: <%= models[i].filepath %>
+                    </div>
+                  <% } %>
+                </div>
+
               </div>
-
-
-              <div class="model-section model-metrics">
-                <% for (var j=0; j<models[i].metrics.length; j++) { %>
-                  <div class="model-metric kv"
-                    data-key="<%=models[i].metrics[j].key %>"
-                    data-val="<%=models[i].metrics[j].val %>"
-                    data-num="true"
-                  >
-                    <%= models[i].metrics[j].key %>: <%= models[i].metrics[j].val %>
-                  </div>
-                <% } %>
-              </div>
-
-
-              <div class="model-section model-misc">
-                <% if (models[i].sha) { %>
-                  <div class="nkv"
-                    data-key="Code SHA"
-                    data-val="<%= models[i].sha %>"
-                  >
-                    Code SHA: N/A <%= models[i].sha %>
-                  </div>
-                <% } %>
-
-                <% if (models[i].filepath) { %>
-                  <div class="nkv"
-                    data-key="Filepath"
-                    data-val="<%= models[i].filepath %>"
-                  >
-                    Filepath: <%= models[i].filepath %>
-                  </div>
-                <% } %>
-              </div>
-
-            </div>
-          <% } %>
+            <% } %>
+          </div>
         </div>
       </div>
 
@@ -269,6 +288,8 @@
         </div>
         <div class="model-chart"></div>
       </div>
+
+
 
     </div>
   </body>

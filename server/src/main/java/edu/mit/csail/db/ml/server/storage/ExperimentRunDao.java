@@ -14,10 +14,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * This class contains logic for reading and storing experiment runs.
+ */
 public class ExperimentRunDao {
+  /**
+   * Store an experiment run in the database.
+   * @param erun - The experiment run.
+   * @param ctx - The database context.
+   * @return A response containing information about the stored experiment run.
+   */
+  public static ExperimentRunEventResponse store(ExperimentRunEvent erun, DSLContext ctx) {
     // TODO: should we do a check here if experiment run exists?
-  public static ExperimentRunEventResponse store(
-    ExperimentRunEvent erun, DSLContext ctx) {
     ExperimentRun er = erun.experimentRun;
     ExperimentrunRecord erRec = ctx.newRecord(Tables.EXPERIMENTRUN);
     erRec.setId(er.id < 0 ? null : er.id);
@@ -31,44 +39,76 @@ public class ExperimentRunDao {
     return new ExperimentRunEventResponse(erRec.getId());
   }
 
+  /**
+   * @param eRunId - The ID of an experiment run.
+   * @param ctx - The database context.
+   * @return The ID of the project that contains the experiment run with ID eRunId.
+   */
   public static int getProjectId(int eRunId, DSLContext ctx) {
-    return getExperimentAndProjectIds(eRunId, ctx).getValue();
+    return getExperimentAndProjectIds(eRunId, ctx).getSecond();
   }
 
+  /**
+   * Converts a row of the ExperimentRun table into a modeldb.ExperimentRun object.
+   * @param erRec - The row of the table.
+   * @return The modeldb.ExperimentRun object.
+   */
   public static ExperimentRun recordToThrift(ExperimentrunRecord erRec) {
-    ExperimentRun er = new ExperimentRun(erRec.getId(), erRec.getExperiment(), 
-      erRec.getDescription());
+    ExperimentRun er = new ExperimentRun(
+      erRec.getId(),
+      erRec.getExperiment(),
+      erRec.getDescription()
+    );
     er.setSha(erRec.getSha());
     return er;
   }
 
-  public static Pair<Integer, Integer> getExperimentAndProjectIds(int eRunId, 
-    DSLContext ctx) {
-    Record2<Integer, Integer> rec = ctx.select(
-      Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTID, 
-      Tables.EXPERIMENT_RUN_VIEW.PROJECTID)
+  /**
+   * Get the experiment and project that contain the given experiment run.
+   * @param eRunId - The ID of an experiment run.
+   * @param ctx - The database context.
+   * @return A (experimentId, projectId) pair indicating the IDs of the project and experiment that contain
+   * the experiment run with ID eRunId. If the ExperimentRun with ID eRunId does not exist, then the pair (-1, -1) is
+   * returned.
+   */
+  public static Pair<Integer, Integer> getExperimentAndProjectIds(int eRunId, DSLContext ctx) {
+    // Read the experiment and project.
+    Record2<Integer, Integer> rec = ctx
+      .select(
+        Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTID,
+        Tables.EXPERIMENT_RUN_VIEW.PROJECTID
+      )
       .from(Tables.EXPERIMENT_RUN_VIEW)
       .where(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID.eq(eRunId))
       .fetchOne();
     if (rec == null) {
+      // TODO: Should we throw a ResourceNotFoundException here instead?
       return new Pair<>(-1, -1);
     }
     return new Pair<>(rec.value1(), rec.value2());
   }
 
-  public static void validateExperimentRunId(
-    int id, DSLContext ctx) throws InvalidExperimentRunException {
-    if (ctx.selectFrom(Tables.EXPERIMENTRUN).where(
-      Tables.EXPERIMENTRUN.ID.eq(id)).fetchOne() == null) {
-      throw new InvalidExperimentRunException(String.format(
-        "Can't find experiment run ID %d",
-        id
-      ));
+  /**
+   * Verifies that there exists an experiment run in the ExperimentRun table with the given ID.
+   * @param id - The ID of an experiment run.
+   * @param ctx - The database context.
+   * @throws InvalidExperimentRunException - Thrown if there is no ExperimentRun with the given ID.
+   * No exception is thrown otherwise.
+   */
+  public static void validateExperimentRunId(int id, DSLContext ctx) throws InvalidExperimentRunException {
+    if (ctx.selectFrom(Tables.EXPERIMENTRUN).where(Tables.EXPERIMENTRUN.ID.eq(id)).fetchOne() == null) {
+      throw new InvalidExperimentRunException(String.format("Can't find experiment run ID %d", id));
     }
   }
 
-  public static ExperimentRun read(
-    int experimentRunId, DSLContext ctx) throws ResourceNotFoundException {
+  /**
+   * Read the ExperimentRun with the given ID.
+   * @param experimentRunId - The ID of an experiment run.
+   * @param ctx - The database context.
+   * @return The ExperimentRun with ID experimentRunId.
+   * @throws ResourceNotFoundException - Thrown if there is no ExperimentRun with ID experimentRunId.
+   */
+  public static ExperimentRun read(int experimentRunId, DSLContext ctx) throws ResourceNotFoundException {
     ExperimentrunRecord rec = ctx
       .selectFrom(Tables.EXPERIMENTRUN)
       .where(Tables.EXPERIMENTRUN.ID.eq(experimentRunId))
@@ -82,13 +122,19 @@ public class ExperimentRunDao {
     return recordToThrift(rec);
   }
 
-  public static ProjectExperimentsAndRuns readExperimentsAndRunsInProject(
-    int projId, DSLContext ctx) {
+  /**
+   * Read all the experiments and experiment runs in a given project.
+   * @param projId - The ID of a project.
+   * @param ctx - The database context.
+   * @return The experiment runs (with their corresponding experiments) in the project with ID projId.
+   */
+  public static ProjectExperimentsAndRuns readExperimentsAndRunsInProject(int projId, DSLContext ctx) {
     // Get all the (experiment run ID, experiment ID) pairs in the project.
     List<Pair<Integer, Integer>> runExpPairs = ctx
       .select(
         Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID, 
-        Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTID)
+        Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTID
+      )
       .from(Tables.EXPERIMENT_RUN_VIEW)
       .where(Tables.EXPERIMENT_RUN_VIEW.PROJECTID.eq(projId))
       .fetch()
@@ -96,7 +142,7 @@ public class ExperimentRunDao {
 
     // Fetch all the experiments in the project.
     List<Integer> experimentIds = runExpPairs.stream()
-      .map(Pair::getValue).collect(Collectors.toList());
+      .map(Pair::getSecond).collect(Collectors.toList());
     int defaultExp = experimentIds.stream()
       .mapToInt(s -> s.intValue()).min().orElse(0);
     List<Experiment> experiments = ctx
@@ -108,7 +154,7 @@ public class ExperimentRunDao {
         rec.getDescription(), rec.getId() == defaultExp));
 
     // Fetch all the experiment runs in the project.
-    List<Integer> experimentRunIds = runExpPairs.stream().map(Pair::getKey)
+    List<Integer> experimentRunIds = runExpPairs.stream().map(Pair::getFirst)
       .collect(Collectors.toList());
     List<ExperimentRun> experimentRuns = ctx
       .selectFrom(Tables.EXPERIMENTRUN)
@@ -120,8 +166,14 @@ public class ExperimentRunDao {
     return new ProjectExperimentsAndRuns(projId, experiments, experimentRuns);
   }
 
-  public static List<ExperimentRun> readExperimentRunsInExperiment(
-    int experimentId, DSLContext ctx) {
+  /**
+   * Get all the experiment runs in a given experiment.
+   * @param experimentId - The ID of an experiment.
+   * @param ctx - The database context.
+   * @return The experiment runs inside the Experiment with ID experimentId.
+   */
+  public static List<ExperimentRun> readExperimentRunsInExperiment(int experimentId, DSLContext ctx) {
+    // Get the IDs of all the experiment runs in the given experiment.
     List<Integer> experimentRunIds = ctx
       .select(Tables.EXPERIMENT_RUN_VIEW.EXPERIMENTRUNID)
       .from(Tables.EXPERIMENT_RUN_VIEW)
@@ -129,6 +181,7 @@ public class ExperimentRunDao {
       .fetch()
       .map(Record1::value1);
 
+    // Turn the experiment run IDs into ExperimentRun objects.
     return ctx
       .selectFrom(Tables.EXPERIMENTRUN)
       .where(Tables.EXPERIMENTRUN.EXPERIMENT.in(experimentRunIds))
@@ -136,8 +189,14 @@ public class ExperimentRunDao {
       .map(r -> recordToThrift(r));
   }
 
-  public static ExperimentRunDetailsResponse readExperimentRunDetails(
-    int experimentRunId, DSLContext ctx)
+  /**
+   * Read details about a given experiment run.
+   * @param experimentRunId - The ID of an experiment run.
+   * @param ctx - The database context.
+   * @return The details (e.g. Transformers) in the ExperimentRun with ID experimentRunId.
+   * @throws ResourceNotFoundException - Thrown if there is no ExperimentRun with ID experimentRunId.
+   */
+  public static ExperimentRunDetailsResponse readExperimentRunDetails(int experimentRunId, DSLContext ctx)
     throws ResourceNotFoundException {
     // Read the experiment run, experiment, and project.
     ExperimentRun expRun = read(experimentRunId, ctx);

@@ -12,6 +12,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This class exposes methods that operate on the DataFrame ancestry forest. The DataFrame ancestry forest is defined
+ * as follows. Let each DataFrame have a node in the forest. Let each TransformEvent have a directed edge that points
+ * from its input DataFrame to its output DataFrame. Running computations on this DataFrame ancestry forest can
+ * produce some useful insights.
+ */
 public class DataFrameAncestryComputer {
   /**
    * Scans all the TransformEvents and returns two maps. The first maps from newDf ID to oldDf ID. The second maps from
@@ -65,16 +71,25 @@ public class DataFrameAncestryComputer {
     return ancestorChain;
   }
 
+  /**
+   * Find the pipeline (i.e. list of Transformers and TransformerSpecs) that were used to create the model with
+   * the given ID. The pipeline is determined by observing that TransformEvents that occured to produce the
+   * DataFrame that was used to train the given model. Then, the Transformers involved in those TransformerEvents (and
+   * their TransformerSpecs, if applicable) are extracted and returned.
+   * @param modelId - The ID of a model.
+   * @param ctx - The database context.
+   * @return The extracted pipeline.
+   */
   public static ExtractedPipelineResponse extractPipeline(int modelId, DSLContext ctx)
     throws ResourceNotFoundException {
-    // First read the FitEvent.
+    // First read the FitEvent that produced the given model.
     int fitEventId = FitEventDao.getFitEventIdForModelId(modelId, ctx);
     FitEvent fitEvent = FitEventDao.read(fitEventId, ctx);
 
     // Read TransformEvent maps.
     Pair<Map<Integer, Integer>, Map<Integer, Integer>> pair = getTransformEventMaps(ctx, fitEvent.experimentRunId);
-    Map<Integer, Integer> parentIdForDfId = pair.getKey();
-    Map<Integer, Integer> transformEventIdForDfId = pair.getValue();
+    Map<Integer, Integer> parentIdForDfId = pair.getFirst();
+    Map<Integer, Integer> transformEventIdForDfId = pair.getSecond();
 
     // Compute the TransformEvents involved in the ancestry chain.
     List<Integer> ancestorChain = getAncestorChain(fitEvent.df.id, parentIdForDfId);
@@ -179,6 +194,7 @@ public class DataFrameAncestryComputer {
         return spec;
       }));
 
+    // Get the hyperparameters for the specs.
     ctx
       .selectFrom(Tables.HYPERPARAMETER)
       .where(
@@ -209,6 +225,13 @@ public class DataFrameAncestryComputer {
     return new ExtractedPipelineResponse(transformerChain, specs);
   }
 
+  /**
+   * Finds the ancestry of a given model. This includes the FitEvent that created the model as well as the
+   * TransformEvents that produced the DataFrame used in the model's FitEvent.
+   * @param modelId - The ID of the model.
+   * @param ctx - The database context.
+   * @return The ancestry of the model.
+   */
   public static ModelAncestryResponse computeModelAncestry(int modelId, DSLContext ctx)
     throws ResourceNotFoundException {
     // First read the FitEvent.
@@ -217,8 +240,8 @@ public class DataFrameAncestryComputer {
 
     // Read TransformEvent maps.
     Pair<Map<Integer, Integer>, Map<Integer, Integer>> pair = getTransformEventMaps(ctx, fitEvent.experimentRunId);
-    Map<Integer, Integer> parentIdForDfId = pair.getKey();
-    Map<Integer, Integer> transformEventIdForDfId = pair.getValue();
+    Map<Integer, Integer> parentIdForDfId = pair.getFirst();
+    Map<Integer, Integer> transformEventIdForDfId = pair.getSecond();
 
     // Compute the TransformEvents involved in the ancestry chain.
     List<Integer> ancestorChain = getAncestorChain(fitEvent.df.id, parentIdForDfId);
@@ -233,6 +256,14 @@ public class DataFrameAncestryComputer {
     return new ModelAncestryResponse(modelId, fitEvent, transformEvents);
   }
 
+  /**
+   * Computes the ancestry of a DataFrame. The ancestry is an ordered list of DataFrames such that the parent DataFrame
+   * is last and the earliest DataFrame is first. The ancestry is computed only among DataFrames and TransformEvents
+   * that exist in the same ExperimentRun.
+   * @param dfId - The ID of the DataFrame.
+   * @param ctx - The database context.
+   * @return The ancestry of the DataFrame with ID dfId.
+   */
   public static modeldb.DataFrameAncestry compute(int dfId, DSLContext ctx) throws ResourceNotFoundException {
     // Fetch the DataFrame wth the given ID.
     DataframeRecord rec = ctx.selectFrom(Tables.DATAFRAME).where(Tables.DATAFRAME.ID.eq(dfId)).fetchOne();
@@ -244,6 +275,7 @@ public class DataFrameAncestryComputer {
       );
     }
 
+    // Find the TransformEvent in the same experiment run as the DataFrame dfId that produced DataFrame dfId.
     Record1<Integer> expRunIdRec = ctx
       .select(Tables.TRANSFORMEVENT.EXPERIMENTRUN)
       .from(Tables.TRANSFORMEVENT)
@@ -251,7 +283,7 @@ public class DataFrameAncestryComputer {
       .fetchOne();
     Map<Integer, Integer> parentIdForDfId = new HashMap<>();
     if (expRunIdRec != null) {
-      parentIdForDfId = getTransformEventMaps(ctx, expRunIdRec.value1()).getKey();
+      parentIdForDfId = getTransformEventMaps(ctx, expRunIdRec.value1()).getFirst();
     }
     List<Integer> ancestorChain = getAncestorChain(dfId, parentIdForDfId);
 
@@ -259,7 +291,7 @@ public class DataFrameAncestryComputer {
     Map<Integer, Integer> indexForId = IntStream
       .range(0, ancestorChain.size())
       .mapToObj(i -> new Pair<>(ancestorChain.get(i), i))
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+      .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
 
     // Get the Schemas for each DataFrame
     Map<Integer, List<DataFrameColumn>> schemaForDfId = new HashMap<>();
@@ -295,7 +327,7 @@ public class DataFrameAncestryComputer {
    * @param df - The DataFrame to look up.
    * @param index - The index of this DataFrame in chain chainNum
    * @param chainNum - The number of the chain (either 1 or 2).
-   * @return
+   * @return The CommonAncestor response.
    */
   private static modeldb.CommonAncestor updateMap(Map<Integer, Pair<Integer, DataFrame>> dfForId,
                                                   DataFrame df,
@@ -303,8 +335,8 @@ public class DataFrameAncestryComputer {
                                                   int chainNum) {
     if (dfForId.containsKey(df.id)) {
       CommonAncestor resp = new modeldb.CommonAncestor(
-        (chainNum == 1) ? index : dfForId.get(df.id).getKey(),
-        (chainNum == 2) ? index : dfForId.get(df.id).getKey()
+        (chainNum == 1) ? index : dfForId.get(df.id).getFirst(),
+        (chainNum == 2) ? index : dfForId.get(df.id).getFirst()
       );
       resp.setAncestor(df);
       return resp;
@@ -314,6 +346,14 @@ public class DataFrameAncestryComputer {
     }
   }
 
+  /**
+   * Find the common ancestor DataFrame of two models. This basically finds the common ancestor DataFrame of the
+   * DataFrames that produced the two given models.
+   * @param modelId1 - The ID of the first model.
+   * @param modelId2 - The ID of the second model.
+   * @param ctx - The database context.
+   * @return The common ancestor of the two models.
+   */
   public static modeldb.CommonAncestor computeCommonAncestorForModels(int modelId1, int modelId2, DSLContext ctx)
     throws ResourceNotFoundException {
     int dfId1 = FitEventDao.getParentDfId(modelId1, ctx);
@@ -321,6 +361,14 @@ public class DataFrameAncestryComputer {
     return computeCommonAncestor(dfId1, dfId2, ctx);
   }
 
+  /**
+   * Find the common ancestor DataFrame of two DataFrames. The common ancestor DataFrame is the DataFrame that, through
+   * a sequence of TransformEvents, produces the first and second DataFrames.
+   * @param dfId1 - The ID of the first DataFrame.
+   * @param dfId2 - The ID of the second DataFrame.
+   * @param ctx - The database context.
+   * @return The common ancestor of the two DataFrame.
+   */
   public static modeldb.CommonAncestor computeCommonAncestor(int dfId1, int dfId2, DSLContext ctx)
     throws ResourceNotFoundException {
     // Compute the ancestries of each DataFrame.
@@ -354,6 +402,13 @@ public class DataFrameAncestryComputer {
     return response;
   }
 
+  /**
+   * Find the IDs of models that descended from a given DataFrame. A descendent model is one that is produced by fitting
+   * a DataFrame that is produced by applying a number of TransformEvents to the DataFrame with ID dfId.
+   * @param dfId - The ID of the given DataFrame.
+   * @param ctx - The database context.
+   * @return The list of IDs of models that descend from the DataFrame with ID dfId.
+   */
   public static List<Integer> descendentModels(int dfId, DSLContext ctx) throws ResourceNotFoundException {
     if (!DataFrameDao.exists(dfId, ctx)) {
       throw new ResourceNotFoundException(String.format(

@@ -9,7 +9,21 @@ import org.apache.spark.ml.tree.{InternalNode, LeafNode, Node}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
+/**
+  * This contains logic for converting a Spark tree model (e.g. DecisionTreeClassificationModel, GBTRegressionModel)
+  * into a Thrift TreeModel.
+  */
 object SyncableTreeModel {
+  /**
+    * Recursively walk the tree at the given TreeNode and update the nodes, links, and indexForNode
+    * structures.
+    * @param node - A Spark Node (i.e. a Node in a decision tree).
+    * @param nodes - An array of Thrift TreeNodes.
+    * @param links - An array of Thrift TreeLinks.
+    * @param indexForNode - Maps from a Thrift TreeNode to a number indicating its index in the list of TreeNodes.
+    * @param parent - The parent of the node "node". If None, then the node "node" is taken to be the root of the tree.
+    * @param isLeft - If the parent is not null, this indicates whether the node "node" is the left child of its parent.
+    */
   private def updateState(node: Node,
                           nodes: ArrayBuffer[TreeNode],
                           links: ArrayBuffer[TreeLink],
@@ -40,6 +54,13 @@ object SyncableTreeModel {
     }
   }
 
+  /**
+    * Create a Thrift TreeComponent from the tree rooted at the given Spark Node.
+    * @param rootNode - The root node of the tree. This is a Spark Node.
+    * @param weight - The weight of the resulting TreeComponent in the ensemble that it belongs
+    *               to.
+    * @return The Thrift TreeComponent.
+    */
   private def toTreeComponent(rootNode: Node, weight: Double = 1.0): TreeComponent = {
     val indexForNode = mutable.HashMap[TreeNode, Int]()
     val nodes = ArrayBuffer[TreeNode]()
@@ -49,6 +70,7 @@ object SyncableTreeModel {
     TreeComponent(weight, nodes, links)
   }
 
+  // The functions below convert various Spark tree models into Thrift TreeModels.
   private def toTreeModel(dt: DecisionTreeRegressionModel): TreeModel =
     TreeModel("Decision Tree", Seq(toTreeComponent(dt.rootNode)), dt.featureImportances.toArray)
 
@@ -79,6 +101,13 @@ object SyncableTreeModel {
     gbt.featureImportances.toArray
   )
 
+  // TODO: Rather than having the methods above, we could just overload the apply method.
+  /**
+    * Given a Spark tree model, create a Thrift TreeModel.
+    * @param x - The Transformer.
+    * @return The Thrift TreeModel associated with the Transformer. This is None if the
+    *         Transformer is not a valid Spark tree model.
+    */
   def apply(x: Transformer): Option[TreeModel] = x match {
     case m: DecisionTreeClassificationModel => Some(toTreeModel(m))
     case m: DecisionTreeRegressionModel => Some(toTreeModel(m))
