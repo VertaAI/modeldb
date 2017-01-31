@@ -1,5 +1,15 @@
 package edu.mit.csail.db.ml.modeldb.evaluation
 
+// TODO: The minNumRows and associated duplication logic should be removed.
+/**
+  * Represents the configuration used to run the evaluation script.
+  * @param pathToData - The path to the CSV file that contains the data.
+  * @param dataset - The dataset. This should be "housing", "animal", or "imdb".
+  * @param workflow - The workflow. This should be "simple", "full", or "exploratory".
+  * @param outfile - The path to the file that the output will be written to.
+  * @param syncer - Whether the program should be run with the ModelDB Syncer enabled.
+  * @param minNumRows - [Deprecated] The minimum number of rows to use in the dataset.
+  */
 case class Config(pathToData: String = "",
                   dataset: String = "",
                   workflow: String = "",
@@ -7,8 +17,12 @@ case class Config(pathToData: String = "",
                   syncer: Boolean = true,
                   minNumRows: Int = 1)
 
+/**
+  * Runs a program to evaluate the running time of ModelDB Server and Spark Client.
+  */
 object Evaluate {
   def main(args: Array[String]): Unit = {
+    // Set up the command line argument parser.
     val parser = new scopt.OptionParser[Config]("ModelDB Evaluation Program") {
       head("ModelDB Evaluation")
 
@@ -48,6 +62,7 @@ object Evaluate {
           "and vertically concatenated with itself until the resulting row count exceeds the minimum number of rows")
     }
 
+    // Parse the arguments and run the appropriate workflow.
     parser.parse(args, Config()) match {
       case Some(config) =>
         if (config.dataset == "imdb" && config.workflow == "simple")
