@@ -5,6 +5,9 @@ import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.regression.LinearRegression
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
+/**
+  * Like the AnimalSimple workflow, but for the IMDB data.
+  */
 object IMDBSimple {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()

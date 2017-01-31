@@ -7,6 +7,9 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 import org.apache.spark.sql.DataFrame
 
+/**
+  * Like the AnimalExploratory workflow, but for the housing data.
+  */
 object HousingExploratory {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
