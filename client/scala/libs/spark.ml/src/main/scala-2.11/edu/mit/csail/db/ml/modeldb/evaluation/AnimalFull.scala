@@ -5,6 +5,7 @@ import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+
 /**
   * This workflow runs a preprocessing pipeline, trains a cross-validated one vs. rest logistic regression model on
   * the animal shelter data, and evaluates it. It measures the time required to perform various operations.
