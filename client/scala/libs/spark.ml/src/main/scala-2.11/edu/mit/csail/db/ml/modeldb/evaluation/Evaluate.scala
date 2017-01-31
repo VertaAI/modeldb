@@ -3,7 +3,12 @@ package edu.mit.csail.db.ml.modeldb.evaluation
 // TODO: The minNumRows and associated duplication logic should be removed.
 /**
   * Represents the configuration used to run the evaluation script.
-  * @param pathToData - The path to the CSV file that contains the data.
+  * @param pathToData - The path to the CSV file that contains the data. You can get the IMDB data at
+  *                   https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset
+  *                   You can get the animal shelter data at
+  *                   https://www.kaggle.com/c/shelter-animal-outcomes/data
+  *                   You can get the housing data at
+  *                   https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data
   * @param dataset - The dataset. This should be "housing", "animal", or "imdb".
   * @param workflow - The workflow. This should be "simple", "full", or "exploratory".
   * @param outfile - The path to the file that the output will be written to.

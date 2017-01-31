@@ -8,7 +8,15 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.util.Try
 
+/**
+  * This object contains convenience functions that are useful in various places in the evaluation code.
+  */
 object Common {
+  /**
+    * Create a SparkSession with the given app name.
+    * @param appName - The app name.
+    * @return The SparkSession.
+    */
   def makeSession(appName: String = "default app name"): SparkSession = {
     val conf = new SparkConf().setAppName(appName)
     val sc = new SparkContext(conf)
@@ -19,6 +27,14 @@ object Common {
     spark
   }
 
+  /**
+    * Ensure that the given DataFrame has at least minNumRows. If not, append all the
+    * rows of origDf to itself until the size matches or exceeds minNumRows.
+    * @param origDf - The original DataFrame.
+    * @param minNumRows - The minimum number of rows.
+    * @return origDf, with some rows possibly copied multiple times to ensure that that total
+    *         row count matches or exceeds minNumRows.
+    */
   def ensureMinSize(origDf: DataFrame, minNumRows: Int): DataFrame = {
     val numRows = origDf.count
 
@@ -34,6 +50,19 @@ object Common {
     }
   }
 
+  /**
+    * Create a ModelDbSyncer object.
+    * @param appName - The name of the app.
+    * @param appDesc - The description of the app.
+    * @param shouldCountRows - Whether the number of rows in a DataFrame should be counted and stored in the database
+    *                        (false improves performance).
+    * @param shouldStoreGSCVE - Whether intermediate FitEvents, TransformEvents, and MetricEvents of a
+    *                         GridSearchCrossValidationEvent should be stored in the database (false improves
+    *                         performance).
+    * @param shouldStoreSpecificModels - Whether specific (e.g. TreeModel, LinearModel) models should be stored
+    *                                  in the database (false improves performance and storage usage).
+    * @return The ModelDbSyncer.
+    */
   def makeSyncer(appName: String = "default app name",
                  appDesc: String = "default description",
                  shouldCountRows: Boolean = false,
@@ -55,6 +84,13 @@ object Common {
     syncer
   }
 
+  /**
+    * Read the IMDB dataset.
+    * @param pathToData - Path to the IMDB CSV.
+    * @param spark - The Spark session.
+    * @return A DataFrame representing the IMDB data. It also includes columns called first_genre and
+    *         second_genre.
+    */
   def readImdb(pathToData: String, spark: SparkSession): DataFrame = {
     import spark.implicits._
     // Extract the genres from the genre column, which looks like this:
@@ -81,6 +117,14 @@ object Common {
       .na.fill(0)
   }
 
+  /**
+    * Read the animal shelter data into a DataFrame.
+    * @param pathToData - The path to the CSV file.
+    * @param spark - The Spark session.
+    * @return A DataFrame representing the data. It includes a column called "AgeInYears", a "SimpleBreed" column that
+    *         groups some of the least common breeds into a category called "other", and a "SimpleColor" column that
+    *         groups some of the least common colors into a category called "other".
+    */
   def readAnimalShelter(pathToData: String, spark: SparkSession): DataFrame = {
     import spark.implicits._
     // We'll read the AgeUponOutcome and convert that to the number of years.
@@ -144,6 +188,12 @@ object Common {
       .withColumn("SimpleColor", groupColor($"Color"))
   }
 
+  /**
+    * Read the housing regression dataset.
+    * @param pathToData - The path to the CSV file.
+    * @param spark - The Spark session.
+    * @return A DataFrame representing the data.
+    */
   def readHousingPrices(pathToData: String, spark: SparkSession): DataFrame = {
     import spark.implicits._
     // Read the data.
