@@ -23,7 +23,7 @@ router.get('/:id', function(req, res, next) {
 });
 
 /* get all models for specific project */
-router.get('/:id/models', function(req, res, next) {
+router.get('/:id/m', function(req, res, next) {
   var projectId = req.params.id;
   api.getProjectModels(projectId, function(response) {
     res.render('models', {
@@ -35,7 +35,7 @@ router.get('/:id/models', function(req, res, next) {
   });
 });
 
-router.get('/:id/m', function(req, res, next) {
+router.get('/:id/models', function(req, res, next) {
   var id = req.params.id;
   res.render('m', {
     title: 'Models',
