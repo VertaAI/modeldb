@@ -22,6 +22,13 @@ var groupTable;
 var category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
                   '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
 
+// filter variables
+var filterKey = null;
+var filterVal = null;
+var supportsRange;
+var filters = {};
+var ranges = {};
+var rangeId = 0;
 
 $(function() {
 
@@ -137,6 +144,69 @@ $(function() {
       sortTable(key, order);
     });
 
+    $(document).on("mouseenter", '.kv:not(.nkv)', function(event){
+     var item = $(this);
+     //check if the item is already draggable
+     if (!item.is('.ui-draggable')) {
+        item.draggable({
+          helper: 'clone',
+          appendTo: 'body',
+          revert: true,
+          revertDuration: 0,
+          start: dragStart,
+          stop: dragStop
+        });
+      }
+    });
+
+    $(document).on('mouseup', '.filter-area', function() {
+      if (filterKey != null && filterVal != null) {
+        if (supportsRange) {
+          addRange(filterKey);
+        } else {
+          addFilter(filterKey, filterVal);
+        }
+        $('.filter-button').removeClass('filter-button-disabled');
+      }
+      filterKey = null;
+      filterVal = null;
+    });
+
+    $(document).on('change', '.range-options select, .range-options input', function(event) {
+      var range = $(this).closest('.range');
+      var id = range.data('id');
+      var key = range.data('key');
+      var val = range.find('input').val();
+      var type = range.find('select').val();
+      updateRange(id, key, val, type);
+      $('.filter-button').removeClass('filter-button-disabled');
+    });
+
+    $(document).on('click', '.filter-close', function(event) {
+      var filter = $(event.target).parent('.filter');
+      var key = filter.data('key');
+      filter.remove();
+      removeFilter(key);
+      $('.filter-button').removeClass('filter-button-disabled');
+    });
+
+    $(document).on('click', '.range-close', function(event) {
+      var range = $(event.target).parent('.range');
+      var id = range.data('id');
+      range.remove();
+      removeRange(id);
+      $('.filter-button').removeClass('filter-button-disabled');
+    });
+
+    $(document).on('click', '.filter-button', function(event) {
+      if (!$(this).hasClass('filter-button-disabled')) {
+        filter();
+        $(this).addClass('filter-button-disabled');
+        hideModelCard();
+        vegaInit();
+        vegaUpdate();
+      }
+    });
   };
 
   function fetchData(projectId) {
@@ -227,6 +297,9 @@ $(function() {
           obj["Code SHA"] = model.sha;
           obj["Filepath"] = model.filepath;
 
+          // show
+          obj["show"] = true;
+
           models.push(obj);
         }
         metricKeys = Object.values(metricKeys);
@@ -270,6 +343,9 @@ $(function() {
     } else {
       // get group counts
       for (var i=0; i<models.length; i++) {
+        if (!models[i].show) {
+          continue;
+        }
         var value = models[i][key];
         if (groups.hasOwnProperty(value)) {
           groups[value] += 1;
@@ -362,8 +438,6 @@ $(function() {
   }
 
   function loadTable() {
-    //console.log('groupKey: ' + groupKey);
-    //console.log('groupValue: ' + groupValue);
     var index = cursor;
     var i=0;
     while (i < MODELS_PER_LOAD) {
@@ -371,28 +445,34 @@ $(function() {
         return;
       }
 
-      // groups bar closed or
-      // groups bar open but no group is selected
-      if (groupKey == "None" || groupValue == null) {
-        var html = getModelDiv(models[index]);
+      // check filters
+      if (models[index].show) {
 
-        // no group is selected
-        if (!(groupKey == "None" && groupValue == null)) {
+        // groups bar closed or
+        // groups bar open but no group is selected
+        if (groupKey == "None" || groupValue == null) {
+          var html = getModelDiv(models[index]);
+
+          // no group is selected
+          if (!(groupKey == "None" && groupValue == null)) {
+            html.find('.model-section').addClass('groups-open');
+          }
+
+          $('.models').append(html);
+          i += 1;
+        } else if (models[index][groupKey] == groupValue ||
+          models[index][groupKey] == null && groupValue == "null") {
+          // groups bar open and group is selected
+          var html = getModelDiv(models[index]);
           html.find('.model-section').addClass('groups-open');
+          $('.models').append(html);
+          i += 1;
         }
 
-        $('.models').append(html);
-        i += 1;
-      } else if (models[index][groupKey] == groupValue ||
-        models[index][groupKey] == null && groupValue == "null") {
-        // groups bar open and group is selected
-        var html = getModelDiv(models[index]);
-        html.find('.model-section').addClass('groups-open');
-        $('.models').append(html);
-        i += 1;
-      };
-    cursor += 1;
-    index += 1;
+      }
+
+      cursor += 1;
+      index += 1;
     }
   };
 
@@ -468,6 +548,7 @@ $(function() {
           "name": "table",
           "values": Object.values(models),
           "transform": [
+            {"type": "filter", "test": "datum.show == true"},
             {"type": "fold", "fields": metricKeys}
           ]
         },
@@ -475,6 +556,7 @@ $(function() {
           "name": "filtered",
           "values": Object.values(models),
           "transform": [
+            {"type": "filter", "test": "datum.show == true"},
             {"type": "filter", "test": "datum.id >= min_id && datum.id <= max_id"},
             {"type": "fold", "fields": metricKeys}
           ]
@@ -753,6 +835,7 @@ $(function() {
       "data": {
         "values": Object.values(models)
       },
+      "transform": {"filter": "datum.show == true"},
       "mark": "bar",
       "encoding": {
         "column": {
@@ -834,6 +917,122 @@ $(function() {
     var html = new EJS({url: '/ejs/model.ejs'}).render({"models": [model]});
     return $(html);
   };
+
+  function dragStart(event, ui) {
+    filterKey = ui.helper.data('key');
+    filterVal = ui.helper.data('val');
+    supportsRange = ui.helper.data('num');
+    $(ui.helper.context).css({opacity: 0});
+    $('.filter-area').addClass('filter-area-highlight');
+  };
+
+  function dragStop(event, ui) {
+    $(ui.helper.context).css({opacity: 1});
+    $('.filter-area').removeClass('filter-area-highlight');
+  };
+
+  function addFilter(key, val) {
+    if (filters.hasOwnProperty(key)) {
+      // update existing filter
+      filters[key] = val;
+      var filterDiv = $('.filter').findByData('key', key);
+      filterDiv.find('.filter-val').html(val);
+    } else {
+      // add new filter
+      filters[key] = val;
+      obj = {key: key, val: val};
+      var filterDiv = $(new EJS({url: '/ejs/filter.ejs'}).render(obj));
+      $('.filter-area').append(filterDiv);
+    }
+  }
+
+  function removeFilter(key) {
+    delete filters[key];
+  }
+
+  function addRange(key) {
+    var rangeDiv = $(new EJS({url: '/ejs/range.ejs'}).render({key: key}));
+    rangeDiv.data('key', key);
+    rangeDiv.data('id', rangeId);
+    rangeId += 1;
+    $('.filter-area').append(rangeDiv);
+  }
+
+  function updateRange(id, key, val, type) {
+    ranges[id] = {
+      "key": key,
+      "val": val,
+      "type": type
+    };
+  }
+
+  function removeRange(id) {
+    delete ranges[id];
+  }
+
+  function filter() {
+    var show = Array(models.length).fill(true);
+    for (var key in filters) {
+      if (filters.hasOwnProperty(key)) {
+        filterByKey(key, filters[key], show);
+      }
+    }
+
+    for (var id in ranges) {
+      if (ranges.hasOwnProperty(id)) {
+        var key = ranges[id].key;
+        var val = ranges[id].val;
+        var type = ranges[id].type;
+        filterByRange(key, val, type, show);
+      }
+    }
+
+    min_id = null;
+    max_id = null;
+    for (var i=0; i<show.length; i++) {
+      models[i].show = show[i];
+
+      // update min and max id to set new
+      // chart xscale properly
+      if (models[i].show) {
+        if (min_id == null || models[i].id < min_id) {
+          min_id = models[i].id;
+        }
+        if (max_id == null || models[i].id > max_id) {
+          max_id = models[i].id;
+        }
+      }
+    }
+
+    reloadTable();
+  };
+
+  function filterByKey(key, val, show) {
+    for (var i=0; i<models.length; i++) {
+      if (models[i][key] == val) {
+      } else {
+        show[i] = false;
+      }
+    }
+  };
+
+  function filterByRange(key, val, type, show) {
+    if (isNaN(parseFloat(val))) {
+      return;
+    } else {
+      for (var i=0; i<models.length; i++) {
+        var field = models[i][key];
+        if (field) {
+          if (type === "<") {
+            show[i] = show[i] && (field < parseFloat(val));
+          } else if (type === ">") {
+            show[i] = show[i] && (field > parseFloat(val));
+          }
+        } else {
+        }
+      }
+    }
+  }
 
   init();
 });

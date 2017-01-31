@@ -23,6 +23,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinysort/2.3.6/tinysort.min.js"></script>
 
     <script src="/js/lib/ejs_production.js"></script>
+    <script src="/js/util.js"></script>
     <script src="/js/m.js"></script>
     <script src="/js/m2.js"></script>
 
@@ -53,6 +54,15 @@
           </div>
         </div>
 
+        <div class="menu-section-container filters-container menu0 menu1">
+            <div class="filters-info">
+                <h2>Filter</h2>
+                Drag configs or metrics into this section to filter models based on key - value pairs.
+            </div>
+            <div class="filter-area"></div>
+            <button class="filter-button filter-button-disabled">Filter</button>
+        </div>
+
         <div class="menu-section-container group-container menu1">
           <div class="group-info">
             <h2>Group</h2>
@@ -63,14 +73,6 @@
               </select>
             </div>
           </div>
-        </div>
-
-        <div class="menu-section-container filters-container menu0 menu1">
-            <div class="filters-info">
-                <h2>Filter</h2>
-                Drag configs or metrics into this section to filter models based on key - value pairs.
-            </div>
-            <div class="filter-area"></div>
         </div>
 
         <% if (false) { %>

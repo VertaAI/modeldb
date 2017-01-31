@@ -23,8 +23,8 @@ h2 {
 width: 100%;
 display: inline-block;
 vertical-align: top;
-overflow-x: hidden;
 height: calc(100vh - 49px);
+overflow-x: hidden;
 overflow-y: scroll;
 }
 
@@ -96,6 +96,11 @@ background-color: #d0d8e2;
 .filter-area {
   height: 200px;
   overflow-y: scroll;
+  margin-top: 5px;
+  transition: all 0.5s ease;
+  border: 1px solid #D9E0E8;
+  border-bottom: none;
+  padding: 0 10px;
 }
 
 .select-label {
@@ -191,7 +196,7 @@ background-color: #d0d8e2;
   cursor: move;
   transition: background-color 0.3s ease;
   border-radius: 2px;
-  max-width: 200px;
+  width: 176px;
 }
 
 .model-card .nkv {
@@ -199,12 +204,8 @@ background-color: #d0d8e2;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  max-width: 200px;
+  width: 176px;
   cursor: inherit;
-}
-
-.model-card .kv:hover {
-  background-color: #AEBDCD;
 }
 
 .model-card .nkv:hover {
@@ -215,7 +216,11 @@ background-color: #d0d8e2;
   color: #00B7FF;
   height: 14px;
   margin-bottom: 2px;
+}
+
+.model-card .popup-container {
   cursor: pointer;
+
 }
 
 .popup-contents {
@@ -530,4 +535,90 @@ background-color: #d0d8e2;
 
 .overflow-down {
   bottom: 2px;
+}
+
+/*
+ * Filters
+ */
+
+.filter-area-highlight {
+  background-color: rgba(130,130,130, 0.2);
+  border: 1px solid #AEBDCD;
+  border-bottom: none;
+}
+
+.filter-button {
+  width: 100%;
+  padding: 5px;
+  background-color: #AEBDCD;
+  font-size: 14px;
+  color: white;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-button:hover {
+  background-color: #a0b2c5;
+}
+
+.filter-button-disabled {
+  opacity: 0.3;
+}
+
+.kv.ui-draggable-dragging {
+  background-color: #AEBDCD;
+  z-index: 3;
+  width: 176px;
+  padding: 4px 7px;
+  border-radius: 2px;
+  pointer-events:none;
+}
+
+.groups-open .kv.ui-draggable-dragging {
+  width: 166px;
+}
+
+.filter, .range, .sort {
+  margin: 10px 0;
+  padding: 5px;
+  background-color: #AEBDCD;
+  border-radius: 2px;
+  color: white;
+}
+
+.filter-key, .filter-val, .range-key {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 5px;
+}
+
+.filter-close,
+.range-close,
+.sort-close {
+  float: right;
+  color: #D9E0E8;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 2px;
+}
+
+.filter-close:hover,
+.range-close:hover,
+.sort-close:hover {
+  color: #000;
+}
+
+.range-options {
+  margin: 5px 0;
+}
+
+.range-options select {
+  width: 45px;
+  color: black;
+}
+
+.range-input {
+  text-align: right;
+  width: calc(100% - 60px);
 }
