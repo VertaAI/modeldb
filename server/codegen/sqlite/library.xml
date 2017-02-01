@@ -49,7 +49,7 @@
            This cannot be combined with the schemata element.
 
            If left empty, jOOQ will generate all available schemata. See the
-           manual's next section to learn how to generate several schemata -->
+           manual'second next section to learn how to generate several schemata -->
       <inputSchema></inputSchema>
     </database>
 

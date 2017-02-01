@@ -1,6 +1,5 @@
 package edu.mit.csail.db.ml;
 
-import edu.mit.csail.db.ml.client.StructFactory;
 import edu.mit.csail.db.ml.server.storage.TransformEventDao;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.EventRecord;

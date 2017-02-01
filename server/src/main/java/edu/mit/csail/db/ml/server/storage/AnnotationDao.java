@@ -17,19 +17,45 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This class contains logic for storing and reading annotations.
+ */
 public class AnnotationDao {
+  /**
+   * Type for DataFrame annotation fragments.
+   */
   private static final String DATAFRAME_TYPE = "dataframe";
+
+  /**
+   * Type for TransformerSpec annotation fragments.
+   */
   private static final String SPEC_TYPE = "spec";
+
+  /**
+   * Type for Transformer annotation fragments.
+   */
   private static final String TRANSFORMER_TYPE = "transformer";
+
+  /**
+   * Type for message (i.e. free-form text string) annotation fragments.
+   */
   private static final String MESSAGE_TYPE = "message";
 
+  /**
+   * Store an annotation event in the database.
+   * @param ae - The AnnotationEvent.
+   * @param ctx - The database context.
+   * @return The response after storing the annotation event.
+   */
   public static AnnotationEventResponse store(AnnotationEvent ae, DSLContext ctx) {
+    // Store an entry in the Annotation table.
     AnnotationRecord aRec = ctx.newRecord(Tables.ANNOTATION);
     aRec.setId(null);
     aRec.setPosted(new Timestamp((new Date()).getTime()));
     aRec.setExperimentrun(ae.experimentRunId);
     aRec.store();
 
+    // Store the underlying primitives (i.e. DataFrame, TransformerSpec, or Transformer) for each AnnotationFragment.
     List<Integer> fragmentIds = ae
       .fragments
       .stream()
@@ -47,6 +73,7 @@ public class AnnotationDao {
       })
       .collect(Collectors.toList());
 
+    // Store the AnnotationFragments.
     List<AnnotationFragmentResponse> fragResp = IntStream
       .range(0, fragmentIds.size())
       .mapToObj(ind -> {
@@ -67,9 +94,17 @@ public class AnnotationDao {
       })
       .collect(Collectors.toList());
 
+    // Return the response.
     return new AnnotationEventResponse(aRec.getId(), fragResp);
   }
 
+  /**
+   * Convert a row of the AnnotationFragment table into a string.
+   * @param rec - The row of the AnnotationFragment table.
+   * @return A string representation of the row. Basically, the message AnnotationFragments are preserved
+   * as is, the Transformer/DataFrame/TransformerSpec fragments indicate their type and ID, and all the strings are
+   * then concatenated together.
+   */
   public static String fragmentToString(AnnotationfragmentRecord rec) {
     switch (rec.getType()) {
       case TRANSFORMER_TYPE: return String.format("Transformer(%d)", rec.getTransformer());
@@ -79,8 +114,15 @@ public class AnnotationDao {
     }
   }
 
-  // Read the given annotation Ids as an list of string. If any of them does not exist,
-  // we will put an empty string in their place.
+  /**
+   * Read the given Annotation IDs as a list of strings. If any of them do not exist, then an
+   * empty string will be put in their place.
+   * @param annotationIds - The IDs of the Annotations that should be read.
+   * @param ctx - The database context.
+   * @return - The string representation for each of the given Annotation IDs. If the ID is not found in
+   * the database, the string representation will be the empty string. The value at the i^th index of this
+   * list is the string representation for annotationIds.get(i).
+   */
   public static List<String> readStrings(List<Integer> annotationIds, DSLContext ctx) {
     List<String> result = new ArrayList<>();
     annotationIds.forEach(aId -> result.add(""));
@@ -99,6 +141,10 @@ public class AnnotationDao {
   }
 
   // Like the above, but for one ID.
+
+  /**
+   * This is like readStrings(List<Integer> annotationIds, DSLContext ctx), but operates on only one annotation ID.
+   */
   public static String readString(int annotationId, DSLContext ctx) {
     return readStrings(Collections.singletonList(annotationId), ctx).get(0);
   }

@@ -1,6 +1,5 @@
 package edu.mit.csail.db.ml;
 
-import edu.mit.csail.db.ml.client.StructFactory;
 import edu.mit.csail.db.ml.server.storage.GridSearchCrossValidationEventDao;
 import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
@@ -199,8 +198,8 @@ public class TestGridSearchCrossValidation {
       .collect(Collectors.toList());
     Assert.assertEquals(pairs1.size(), pairs2.size());
     IntStream.range(0, pairs1.size()).forEach(i -> {
-      Assert.assertEquals(pairs1.get(i).getKey(), pairs2.get(i).getKey());
-      Assert.assertEquals(pairs1.get(i).getValue(), pairs2.get(i).getValue());
+      Assert.assertEquals(pairs1.get(i).getFirst(), pairs2.get(i).getFirst());
+      Assert.assertEquals(pairs1.get(i).getSecond(), pairs2.get(i).getSecond());
     });
 
     // Verify the MetricEvents.
@@ -235,8 +234,8 @@ public class TestGridSearchCrossValidation {
     float[] metricVals1 = new float[]{ 0.5f, 0.8f, 0.7f };
     float[] metricVals2 = new float[]{ 0.3f, 0.4f, 0.9f };
     IntStream.range(0, metricEvents1.size()).forEach(i -> {
-      Assert.assertEquals(pairs1.get(i).getValue(), metricEvents1.get(i).getDf());
-      Assert.assertEquals(pairs1.get(i).getValue(), metricEvents2.get(i).getDf());
+      Assert.assertEquals(pairs1.get(i).getSecond(), metricEvents1.get(i).getDf());
+      Assert.assertEquals(pairs1.get(i).getSecond(), metricEvents2.get(i).getDf());
       Assert.assertEquals(metricVals1[i], metricEvents1.get(i).getMetricvalue(), 0.01);
       Assert.assertEquals(metricVals2[i], metricEvents2.get(i).getMetricvalue(), 0.01);
       Assert.assertEquals("precision", metricEvents1.get(i).getMetrictype());

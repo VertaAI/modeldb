@@ -14,9 +14,27 @@ import org.jooq.DSLContext;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class represents the processors that handles the requests that the ModelDB service can receive.
+ *
+ * Try to make the handlers in this class very short. Ideally, each one should be just a single line. The advantage in
+ * keeping them short is that it is easier to test the codebase.
+ *
+ * For documentation on the API methods, see the ModelDB.thrift file.
+ */
 public class ModelDbServer implements ModelDBService.Iface {
+  /**
+   * The database context.
+   */
   private DSLContext ctx;
 
+  /**
+   * Create the service and connect to the database.
+   * @param username - The username to connect to the database.
+   * @param password - The password to connect to the database.
+   * @param jdbcUrl - The JDBC URL that points to the database.
+   * @param dbType - The type of the database (only SQLite is supported for now).
+   */
   public ModelDbServer(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType) {
     try {
       ctx = ContextFactory.create(username, password, jdbcUrl, dbType);

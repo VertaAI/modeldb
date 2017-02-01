@@ -9,7 +9,20 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * This class contains logic for connecting to the database.
+ */
 public class ContextFactory {
+  /**
+   * Create a database context that reflects a connection to a database.
+   * @param username - The username to connect to the database.
+   * @param password - The password to connect to the database.
+   * @param jdbcUrl - The JDBC URL of the database.
+   * @param dbType - The database type.
+   * @return The database context.
+   * @throws SQLException - Thrown if there are problems connecting to the database.
+   * @throws IllegalArgumentException - Thrown if the dbType is unsupported.
+   */
   public static DSLContext create(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType)
     throws SQLException, IllegalArgumentException {
     Connection conn = DriverManager.getConnection(jdbcUrl, username, password);

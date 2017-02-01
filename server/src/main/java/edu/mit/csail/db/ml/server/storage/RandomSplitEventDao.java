@@ -13,9 +13,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This class contains logic for storing and reading information about random split events.
+ * A random split event is when the rows of a DataFrame are randomly divided to create two or more new DataFrames.
+ */
 public class RandomSplitEventDao {
+  /**
+   * Store a random split event in the database.
+   * @param rse - The RandomSplitEvent.
+   * @param ctx - The database context.
+   * @return A response indicating that the event has been stored.
+   */
   public static RandomSplitEventResponse store(RandomSplitEvent rse, DSLContext ctx) {
-    // Store the old DataFrame.
+    // Store the old DataFrame. That is, store the DataFrame that was split into pieces.
     DataframeRecord oldDf = DataFrameDao.store(rse.oldDataFrame, rse.experimentRunId, ctx);
 
     // Store the RandomSplitEvent.
@@ -26,7 +36,7 @@ public class RandomSplitEventDao {
     rseRec.setExperimentrun(rse.experimentRunId);
     rseRec.store();
 
-    // Store the associated Event.
+    // Store an entry in the Event table.
     EventRecord ev = EventDao.store(rseRec.getId(), "random split", rse.experimentRunId, ctx);
 
     // Store a DataFrame for each split.

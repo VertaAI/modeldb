@@ -1,19 +1,24 @@
 package edu.mit.csail.db.ml.util;
 
-public class Pair<K, V> {
-  private final K k;
-  private final V v;
+/**
+ * A simple utility class for representing a pair.
+ * @param <F> - The type of the first entry in the pair.
+ * @param <S> - The type of the second entry in the pair.
+ */
+public class Pair<F, S> {
+  private final F first;
+  private final S second;
 
-  public Pair(K k, V v) {
-    this.k = k;
-    this.v = v;
+  public Pair(F first, S second) {
+    this.first = first;
+    this.second = second;
   }
 
-  public K getKey() {
-    return k;
+  public F getFirst() {
+    return first;
   }
 
-  public V getValue() {
-    return v;
+  public S getSecond() {
+    return second;
   }
 }
