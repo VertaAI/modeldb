@@ -60,6 +60,7 @@ public class ExperimentRunDao {
       erRec.getDescription()
     );
     er.setSha(erRec.getSha());
+    er.setCreated(erRec.getCreated().toString());
     return er;
   }
 

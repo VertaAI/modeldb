@@ -65,12 +65,14 @@ struct Experiment {
   description: User assigned text to this experiment run. Can be used to summarize
     data, method, etc.
   sha: Commit hash of the code used in the current run.
+  created: Timestamp for when the ExperimentRun was created.
 */
 struct ExperimentRun {
   1: i32 id = -1,
   2: i32 experimentId,
   3: string description,
-  4: optional string sha
+  4: optional string sha,
+  5: optional string created
 }
 
 /* 
@@ -697,6 +699,7 @@ struct ProjectOverviewResponse {
   annotations: The annotations that mention this model.
   sha: A hash of this model.
   filepath: The path to the serialized model (transformer).
+  timestamp: Timestamp of the experimentrun that created this model.
   linearModelData: If this is a Linear Model, information specific to Linear models.
 */
 struct ModelResponse {
@@ -714,7 +717,8 @@ struct ModelResponse {
   12: list<string> annotations,
   13: string sha,
   14: string filepath,
-  15: optional LinearModel linearModelData
+  15: string timestamp,
+  16: optional LinearModel linearModelData,
 }
 
 /*

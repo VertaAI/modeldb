@@ -58,6 +58,7 @@ public class TestExperimentRun {
     ExperimentRun er = ExperimentRunDao.read(triple.expRunId, TestBase.ctx());
     Assert.assertEquals(triple.expId, er.getExperimentId());
     Assert.assertEquals("Test experiment run", er.getDescription());
+    Assert.assertNotEquals(null, er.getCreated());
     Assert.assertEquals(null, er.getSha());
 
     triple = TestBase.createExperimentRunWithSha();
@@ -66,6 +67,7 @@ public class TestExperimentRun {
     er = ExperimentRunDao.read(triple.expRunId, TestBase.ctx());
     Assert.assertEquals(triple.expId, er.getExperimentId());
     Assert.assertEquals("Test experiment run", er.getDescription());
+    Assert.assertNotEquals(null, er.getCreated());
     Assert.assertEquals("A1B2C3D4E5", er.getSha());
   }
 }
