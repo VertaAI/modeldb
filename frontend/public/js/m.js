@@ -18,7 +18,6 @@ var cursor = 0;
 var groups = {};
 var groupKey = "None";
 var groupValue = null;
-var groupTable;
 var category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
                   '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
 
@@ -207,6 +206,7 @@ $(function() {
         vegaUpdate();
       }
     });
+
   };
 
   function fetchData(projectId) {
@@ -323,7 +323,7 @@ $(function() {
     });
   };
 
-  groupTable = function(key) {
+  function groupTable(key) {
     var container = $('.groups-bar-container');
     var bar = $('.groups-bar')[0];
     var $bar = $(bar);
@@ -378,7 +378,6 @@ $(function() {
           groupCursor = (groupCursor + 1) % category10.length;
         }
       }
-
 
       $('.groups-bar').css({'display': 'inline-block'});
 

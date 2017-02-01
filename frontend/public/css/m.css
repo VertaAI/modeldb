@@ -622,3 +622,29 @@ background-color: #d0d8e2;
   text-align: right;
   width: calc(100% - 60px);
 }
+
+/*
+ *  Experiments
+ */
+
+.tab[data-id="1"] {
+  position: relative;
+}
+
+.experiments-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 49px);
+  background-color: rgba(236,240,241, 0.9);
+}
+
+.experiments-container .kv {
+  padding: 4px 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: move;
+  width: 176px;
+}

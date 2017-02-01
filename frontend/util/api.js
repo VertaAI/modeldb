@@ -3,6 +3,12 @@ var Thrift = require('./thrift.js');
 
 module.exports = {
 
+  getExperimentsAndRuns: function(projectId, callback) {
+    Thrift.client.getRunsAndExperimentsInProject(projectId, function(err, response) {
+      callback(response);
+    });
+  },
+
   getModel: function(modelId, callback) {
     Thrift.client.getModel(modelId, function(err, response) {
       var model_metrics = response.metrics;
