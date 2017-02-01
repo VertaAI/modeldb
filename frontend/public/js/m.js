@@ -1004,6 +1004,7 @@ $(function() {
       }
     }
 
+    groupTable($('.group-by').val());
     reloadTable();
   };
 
