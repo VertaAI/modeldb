@@ -13,16 +13,67 @@ You can see the full code for this project in the samples directory [here].
 
 The first step is to get ModelDB on your system, as well as its dependencies. In this tutorial, because our workflow is in Apache Spark,
 we will use the spark.ml ModelDB client, the ModelDB server, and the frontend. In addition to this, we will need various other software packages
-in order for ModelDB to run. Please see [Required Software]("../RequiredSoftware.md") for instructions on how to download the
-dependencies. Then, refer to [Running the Client and Server]("../RunningTheClientAndServer.md") for instructions on how to run the server, and package
-the client into a JAR file.
+in order for ModelDB to run.
 
-## Step 2: Create a Project
+You will need the following packages:
+
+*Server*
+* [SQLite](http://sqlite.org/) (3.15.1): To store the models
+* [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (1.8): To run the server
+* [Apache Thrift](http://thrift.apache.org/) (0.9.3): To interface with the different clients
+* [Maven](http://maven.apache.org/download.cgi) (3.3.9): To build the project
+
+*Client*
+* [SBT](http://www.scala-sbt.org/) (0.13.12): In order to build the Scala project (comes with Scala)
+* [Apache Thrift](http://thrift.apache.org/) (0.9.3): To interface with the server
+* [Apache Spark](https://spark.apache.org/downloads.html) (2.0.0 - NOT LATEST): To train and run machine learning models
+
+*Frontend*
+* [node.js]("https://nodejs.org/en/"): In order to run the front end
+
+**NOTE**: On some systems, nodejs will install itself as `nodejs`, on others, it will install as `node`.
+ModelDB searches for the filename `node`. Therefore, you should go to the binary directory in which you install node.js,
+and if you have `nodejs`, then make a symbolic link named `node` that points to it. *IF YOU DO NOT DO THIS,
+YOU WILL BE UNABLE TO START THE FRONTEND*
+
+Once all the dependencies are downloaded, make sure that the bin/ directory of each is in your PATH variable.
+
+## Step 2: Build the project
+
+Now that you have the dependencies for modeldb, and presumably the repository, you'll need to build it.
+This is mostly automated through `sh` scripts. These instructions assume you are in the `modeldb` directory.
+
+*Server* (from `modeldb`)
+```bash
+cd server
+cd codegen
+./gen_sqlite.sh
+cd ..
+./start_server &
+```
+
+*Client* (from `modeldb`)
+```bash
+cd client
+cd scala/libs/spark.ml
+./build_client.sh
+```
+
+*Frontend* (from `modeldb`)
+```bash
+cd frontend
+./start_frontend.sh &
+```
+
+Building the client will create a jar located at `target/scala-2.11/ml.jar`.
+
+
+## Step 3: Create a Project
 
 Create a new project, and import the ModelDB spark.ml 
 client (Found in `target/scala-2.11/ml.jar`). 
 
-## Interlude 2.5: ModelDB Project Organization
+## Interlude 3.5: ModelDB Project Organization
 
 Before we begin writing code, let's take a look at how you can organize your work in ModelDB. 
 
@@ -38,7 +89,7 @@ a single run of your program.
 For this project, we will not be concerned with the organization of our project,
 and make multiple `ExperimentRuns` in the `DefaultExperiment` of the `Project`.
 
-## Step 3: Import Necessary Libraries
+## Step 4: Import Necessary Libraries
 For this project, we'll need to import the following libraries:
 
 ```scala
@@ -46,11 +97,11 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 import edu.mit.csail.db.ml.modeldb.client.{ModelDbSyncer, NewOrExistingProject, SyncableMetrics, DefaultExperiment, NewExperimentRun}
 ```
 
-## Step 4: Make your program in Spark
+## Step 5: Make your program in Spark
 
 For this tutorial, we assume you know how to use Spark.ml, and therefore can take advantage of the full features of ModelDB.
 
-## Step 5: Create a Syncer
+## Step 6: Create a Syncer
 
 ModelDB is very easy to integrate into a Spark program. First, you make a syncer at the beginning of your program:
 
@@ -79,7 +130,7 @@ And that's all! Now we can integrate ModelDB into our current code. ModelDB is a
 extension methods on many spark.ml methods. Once the syncer is created, as you perform operations,
 ModelDB will automatically save them for you before computing them.
 
-## Step 6: Call the syncer extension methods when performing operations
+## Step 7: Call the syncer extension methods when performing operations
 
 Now that we have a syncer, ModelDB will add numerous extension methods onto the pre-existing spark.ml 
 functions that you are used to. All you have to do is add "Sync" to the end of the method name.
@@ -93,7 +144,7 @@ val data = preprocessingPipeline
 val predictions = models.map(_.transformSync(testing))
 ```
 
-## Step 7 (Optional): Annotate your work
+## Step 87 (Optional): Annotate your work
 
 ModelDB also provides the ability to annotate your work as your program runs. To add an annotation,
 just call the `annotate` method on your syncer. This will add an annotation, and remember
@@ -105,7 +156,7 @@ including data frames and other machine learning primitives, much like a print m
 ModelDbSyncer.annotate("I'm going to compare", dt, rf, " and ", lr)
 ```
 
-## Step 8 (Optional): Compute metrics about your models
+## Step 9 (Optional): Compute metrics about your models
 
 ModelDB is also packaged with the ability to compute metrics on how well your models perform.
 See the documentation for more details on what metrics it can compute, but for this example, we'll
@@ -119,13 +170,14 @@ val metrics = (models zip predictions).map { case (model, prediction) =>
 
 This will compute <INSERT HERE>, and add this to your database.
 
-## Step 9: Running the ModelDB Server
+## Step 10: Running the ModelDB Server
+*Note*: If you have your server running from Step 2, then you can skip this step.
 
 Okay - now you have a spark program, which accesses the ModelDB client. Now you want to run your 
 program.
 
 Before we run the program, however, we need to start up the ModelDB server, so that it can collect and save the data
-that the client provides.
+that the client provides. 
 
 Change to the `modeldb/server` directory. From there, run `codegen/gen_sqlite.sh` to generate the SQLite tables that ModelDB uses,
 and then start the server using `start_server.sh`. You will most likely want to start the server as a background process.
@@ -139,7 +191,7 @@ cd ..
 start_server.sh &
 ```
 
-## Step 10: Run the program
+## Step 11: Run the program
 
 Run your program as you would normally, using spark-submit (example given for the `CompareModelsSample` in the samples directory):
 
@@ -147,7 +199,8 @@ Run your program as you would normally, using spark-submit (example given for th
 spark-submit --master local[*] --class "edu.mit.csail.db.ml.modeldb.sample.CompareModelsSample" target/scala-2.11/ml.jar <path_to_adult.data>
 ```
 
-## Step 11: Start Front-end
+## Step 12: Start Front-end
+*Note: If you have your frontend running from Step 2, you can skip this step*
 
 Great! Now you've ran your program, and behind the scenes, the ModelDB client has recorded the ML events, your annotations, and your metrics
 in the ModelDB server with little overhead. However, having data in SQLite tables isn't very user-friendly, is it?
@@ -156,7 +209,12 @@ So, we'll use the ModelDB front-end to view the data in an intuitive way. The Mo
 Change to the `modeldb` directory again. From there, go to `frontend`. Then, simply run `start_frontend.sh`, which will generate the necessary 
 files that it needs, install all dependencies from npm, and then start the front-end.
 
-## Step 12: View the results
+```bash
+cd frontend
+./start_frontend.sh &
+```
+
+## Step 13: View the results
 
 Now, you can view the modeldb frontend from `localhost:3000`.
 
