@@ -119,14 +119,44 @@ case class NewExperimentRun(description: String="") extends ExperimentRunConfig(
   * @param shouldStoreSpecificModels - Whether specific models (e.g. TreeModel, LinearModel) should be stored wherever
   *                                  applicable. Disabling this improves performance.
   */
-class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543),
-                    syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
-                    projectConfig: ProjectConfig = new UnspecifiedProject,
-                    experimentConfig: ExperimentConfig = new UnspecifiedExperiment,
-                    experimentRunConfig: ExperimentRunConfig,
-                    val shouldCountRows: Boolean = false,
-                    val shouldStoreGSCVE: Boolean = false,
-                    val shouldStoreSpecificModels: Boolean = false) {
+class ModelDbSyncer(var hostPortPair: Option[(String, Int)] = Some("localhost", 6543),
+                    var syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
+                    var projectConfig: ProjectConfig = new UnspecifiedProject,
+                    var experimentConfig: ExperimentConfig = new UnspecifiedExperiment,
+                    var experimentRunConfig: ExperimentRunConfig,
+                    var shouldCountRows: Boolean = false,
+                    var shouldStoreGSCVE: Boolean = false,
+                    var shouldStoreSpecificModels: Boolean = false) {
+
+  /**
+    * Configure this syncer with the configuration from JSON.
+    * @param conf - The JSON configuration. You can create this by doing SyncerConfig(pathToFile).
+    */
+  def this(conf: SyncerConfigJson) {
+    this(
+      hostPortPair = Some(conf.thrift.host, conf.thrift.port),
+      syncingStrategy = conf.syncingStrategy.strategy match {
+        case "eager" => SyncingStrategy.Eager
+        case "manual" => SyncingStrategy.Manual
+        case _ => SyncingStrategy.Eager
+      },
+      projectConfig = NewOrExistingProject(
+        conf.project.name,
+        conf.project.author,
+        conf.project.description
+      ),
+      experimentConfig = NewOrExistingExperiment(
+        conf.experiment.name,
+        conf.experiment.description
+      ),
+      experimentRunConfig = NewExperimentRun(
+        conf.experimentRun.description
+      ),
+      shouldCountRows = conf.shouldCountRows,
+      shouldStoreGSCVE = conf.shouldStoreGSCVE,
+      shouldStoreSpecificModels = conf.shouldStoreSpecificModels
+    )
+  }
 
   /**
     * This is a helper class that will constitute the entries in the buffer.
