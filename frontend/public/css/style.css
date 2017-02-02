@@ -12,6 +12,17 @@ a {
 
 button {
   border: none;
+  background-color: #AEBDCD;
+  font-size: 14px;
+  color: white;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 5px;
+}
+
+button:hover {
+  background-color: #a0b2c5;
 }
 
 button:focus {
@@ -93,6 +104,18 @@ select {
 select:focus, select:active {
   border:0;
   outline:0;
+}
+
+input {
+  border: none;
+  border-bottom: solid 2px #c9c9c9;
+  transition: border 0.3s;
+  outline: none;
+}
+
+input:focus {
+  border-bottom: solid 2px #969696;
+  outline: none;
 }
 
 .loader {

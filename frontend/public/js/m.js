@@ -296,6 +296,7 @@ $(function() {
           // misc
           obj["Code SHA"] = model.sha;
           obj["Filepath"] = model.filepath;
+          obj["annotations"] = model.annotations;
 
           // show
           obj["show"] = true;

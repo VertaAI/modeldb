@@ -3,6 +3,12 @@ var Thrift = require('./thrift.js');
 
 module.exports = {
 
+  getAnnotations: function(modelId, callback) {
+    Thrift.client.getModel(modelId, function(err, response) {
+      callback(response.annotations);
+    });
+  },
+
   getExperimentsAndRuns: function(projectId, callback) {
     Thrift.client.getRunsAndExperimentsInProject(projectId, function(err, response) {
       callback(response);
@@ -26,7 +32,7 @@ module.exports = {
         }
       }
       response.metrics = metrics;
-      //console.log(response.trainingDataFrame);
+      console.log(response);
       callback(response);
     });
   },
@@ -98,6 +104,41 @@ module.exports = {
     });
   },
 
+  storeAnnotation: function(modelId, experimentRunId, string, callback) {
+    var transformer = new Transformer({id: modelId});
+    var fragment1 = new AnnotationFragment({
+      type: "transformer",
+      df: null,
+      spec: null,
+      transformer: transformer,
+      message: null
+    });
+
+    var fragment2 = new AnnotationFragment({
+      type: "message",
+      df: null,
+      spec: null,
+      transformer: null,
+      message: string
+    });
+
+    var annotationEvent = new AnnotationEvent({
+      fragments: [fragment1, fragment2],
+      experimentRunId: experimentRunId
+    });
+
+    console.log(fragment1);
+    console.log(fragment2);
+    console.log(annotationEvent);
+
+    Thrift.client.storeAnnotationEvent(annotationEvent, function(err, response) {
+      console.log('error: ');
+      console.log(err);
+      console.log('response: ');
+      console.log(response);
+      callback(err);
+    });
+  },
 
   testConnection: function() {
     console.log("hello");

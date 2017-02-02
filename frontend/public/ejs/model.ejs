@@ -123,6 +123,24 @@
 
 
     <div class="model-section model-misc">
+      <div class="nkv annotation">
+        Notes:
+        <span class="annotation-message" data-id="<%= models[i].id %>">
+          <% if (models[i].annotations.length > 0) { %>
+            <%= models[i].annotations[models[i].annotations.length - 1].replace(/Transformer\([0-9]*\)\s/, "") %>
+          <% } %>
+        </span>
+        <div class="annotation-create md-trigger"
+          data-modal="modal-1"
+          data-id="<%= models[i].id %>"
+          data-experimentRunId="<%= models[i]["Experiment Run ID"] %>"
+        >
+          <img src="/images/pencil2.png"/>
+        </div>
+        <div class="annotations-container">
+        </div>
+      </div>
+
       <% if (models[i]["Code SHA"]) { %>
         <div class="nkv"
           data-key="Code SHA"
