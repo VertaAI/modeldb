@@ -75,9 +75,7 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 ```
 
 #### b. Create a ModelDB syncer
-ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the syncer either from a config file or via explicitly via arguments.
-
-See more about ModelDB project organization [here. TODO](). 
+ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the syncer either from a config file (we provide a sample config at [modeldb/client/scala/libs/spark.ml/syncer.json](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/syncer.json)) or explicitly via arguments.
 
 ```scala
 // initialize syncer from config file
@@ -87,12 +85,14 @@ OR
 ```scala
 // initialize syncer explicitly
 ModelDbSyncer.setSyncer(
+      // what project are you working on
       new ModelDbSyncer(projectConfig = NewOrExistingProject(
         "compare models", // project name
         "some_name", // user name
         "we use the UCI Adult Census dataset to compare random forests, " // project description
           + "decision trees, and logistic regression"
       ),
+      // is this model part of a specific experiment? e.g. "testing how well CNNs work". Otherwise we provide a default experiment
       experimentConfig = new DefaultExperiment,
       experimentRunConfig = new NewExperimentRun
       )
@@ -115,7 +115,7 @@ val predictions = lrModel.transformSync(test)
 ```
 
 #### d. Log metrics
-Use the ModelDB metrics class (**SyncableMetrics**) or use the spark Evaluator classes with the **evaluateSync** method. These are thin wrappers around the spark.ml classes.
+Use the ModelDB metrics class (**SyncableMetrics**) or use the spark Evaluator classes with the **evaluateSync** method. 
 
 ```scala
 val metrics = SyncableMetrics.ComputeMulticlassMetrics(lrModel, predictions, labelCol, predictionCol)
