@@ -66,7 +66,7 @@ cd path_to_modeldb/frontend
 
 ## 4. Incorporate ModelDB into an ML workflow
 
-First, import the ModelDB client library classes.
+#### a. Import the ModelDB client library classes.
 
 ```scala
 import edu.mit.csail.db.ml.modeldb.client._
@@ -74,7 +74,8 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
 ```
 
-Create a ModelDB syncer to track models and operations. You can provide ModelDB arguments through a config file or provide them in code.
+#### b. Create a ModelDB syncer
+ModelDBSyncer is the object that logs models and operations to the database. You can set up the syncer either from a config file or via explicit arguments in code.
 
 See more about ModelDB project organization [here]().
 
@@ -99,6 +100,7 @@ ModelDbSyncer.setSyncer(
 
 ```
 
+#### c. Log models and pre-processing operations
 Next use the ModelDB **sync** functions in your code. For example:
 
 ```Java
@@ -111,7 +113,8 @@ val predictions = models.map(_.transformSync(testing))
 lrModel.saveSync("imdb_simple_lr")
 ```
 
-For logging metrics, use the ModelDB metrics class (SyncableMetrics) or use the spark Evaluator classes with the evaluate*Sync* method. These are thin wrappers around the spark.ml classes.
+#### d. Log metrics
+Use the ModelDB metrics class (SyncableMetrics) or use the spark Evaluator classes with the evaluate*Sync* method. These are thin wrappers around the spark.ml classes.
 
 ```scala
 val metric = SyncableMetrics.ComputeMulticlassMetrics(model, predictions, labelCol, predictionCol)
@@ -129,7 +132,7 @@ val metric = evaluator.evaluateSync(predictions, model)
  ModelDbSyncer.sync()
 ```
 -->
-_Run your program._
+#### e. _Run your program._
 
 Be sure to link the client library built above to your code (e.g. by adding to your classpath).
 
