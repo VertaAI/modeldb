@@ -6,15 +6,8 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.DataFrame
 
 /**
-  * This trait augments a model with fitSync functions that log a FitEvent on the
-  * ModelDB after fitting the model. The functions are:
-  *
-  * fitSync(DataFrame)
-  * fitSync(DataFrame, ParamMap)
-  * fitSync(DataFrame, Array[ParamMap])
-  *
-  * functions for an estimator.
-  * These functions will fit models and record a FitEvent to the ModelDbSyncer.
+  * This trait augments a model with fitSync methods that log a FitEvent on the
+  * ModelDB after fitting the model. The methods resemble the fit method on a Spark Estimator.
   *
   * @tparam T - The type of the model.
   */
@@ -27,7 +20,9 @@ trait HasFitSync[T <: Model[T]] {
     * @param df - The DataFrame being fit.
     * @param pms - The ParamMaps (may be empty) to use for fitting.
     * @param mdbs - The Model DB syncer.
-    * @return The trained models
+    * @param featureVectorNames - The names of the features in the feature vector. The ith entry of the sequence is
+    *                           the name of the (i+1)st feature in the feature vector.
+    * @return The trained models.
     */
   def fitSync(estimator: Estimator[T],
               df: DataFrame,

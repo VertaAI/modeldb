@@ -54,6 +54,12 @@ trait SyncableDataFrame {
 }
 
 object SyncableDataFrame extends SyncableDataFrame {
+  /**
+    * Caches the number of rows in a given DataFrame. A cache is used because counting the number of rows in a DataFrame
+    * requires a sequential scan of the DataFrame, which can be expensive.
+    *
+    * The key is the DataFrame and the value is the number of rows in the DataFrame.
+    */
   private def rowCountForDf =  mutable.Map[DataFrame, Long]()
 
   /**

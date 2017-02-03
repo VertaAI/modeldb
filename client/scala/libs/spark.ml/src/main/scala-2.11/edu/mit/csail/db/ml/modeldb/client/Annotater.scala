@@ -10,7 +10,7 @@ trait Annotater {
 
   /**
     * Create an annotation in ModelDB with the given items.
- *
+    *
     * @param items - The items that make up the annotation. They should be
     *              either Strings, Transformers, DataFrames, or PipelineStages.
     */

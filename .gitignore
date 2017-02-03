@@ -16,4 +16,4 @@ metastore_db/
 derby.log
 dataset_tmp.csv
 duplicator.sh
-.vscode/
+_site/

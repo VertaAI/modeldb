@@ -8,12 +8,27 @@ import org.apache.spark.ml.recommendation.ALSModel
 import org.apache.spark.ml.regression._
 import org.apache.spark.ml.tuning.CrossValidatorModel
 
+/**
+  * This object exposes methods for computing the problem type of a given Transformer.
+  */
 object SyncableProblemType {
+  /**
+    * Determine the problem type for a classification problem.
+    * @param numClasses - The number of classes.
+    * @return binary classification if there are two classes, and multi-class classification otherwise.
+    */
   private def classification(numClasses: Int) = if (numClasses == 2)
     ProblemType.BinaryClassification
   else
     ProblemType.MulticlassClassification
 
+  /**
+    * Get the problem type of a pipeline model.
+    * @param pm - The pipeline model.
+    * @return This will be problem type of the latest Transformer in the pipeline model that
+    * has a problem type other than undefined. If all the Transformers in the pipeline model have a problem type of
+    * undefined, then the whole pipeline model has problem type = undefined.
+    */
   private def pipelineType(pm: PipelineModel): ProblemType =
     pm.stages.map(apply).foldLeft[ProblemType](ProblemType.Undefined)((oldProblemType, probType) => {
       if (probType.getValue() != ProblemType.Undefined.getValue())
@@ -23,6 +38,11 @@ object SyncableProblemType {
     })
 
 
+  /**
+    * Get the problem type of the given Spark object.
+    * @param obj - The Spark object.
+    * @return The problem type of the given Spark object.
+    */
   def apply(obj: Object): modeldb.ProblemType = obj match {
     case x: CrossValidatorModel => apply(x.bestModel)
     case x: PipelineModel => pipelineType(x)

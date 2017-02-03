@@ -5,6 +5,9 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.regression.LinearRegression
 
+/**
+  * Like the AnimalSimple workflow, but for the housing data.
+  */
 object HousingSimple {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()

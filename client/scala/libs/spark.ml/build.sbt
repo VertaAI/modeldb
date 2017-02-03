@@ -18,6 +18,8 @@ libraryDependencies += "com.twitter" %% "finagle-thrift" % "6.36.0"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0"
 
+libraryDependencies += "io.spray" %%  "spray-json" % "1.3.3"
+
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 parallelExecution in test := false

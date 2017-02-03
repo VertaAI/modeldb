@@ -5,6 +5,9 @@ import org.apache.spark.ml.{Model, Transformer}
 import org.apache.spark.mllib.evaluation.MulticlassMetrics
 import org.apache.spark.sql.DataFrame
 
+// TODO: We should see if this is still necessary. We may be able to remove it because proper MetricEvent
+// logging happens with evaluateSync. Also, The MulticlassMetrics class is part of the old Spark RDD API, rather than
+// the new Spark DataFrame API.
 /**
   * Represents metrics that can be computed and synced to the ModelDB.
   */
