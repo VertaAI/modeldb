@@ -139,4 +139,6 @@ Be sure to link the client library built above to your code (e.g. by adding to y
 ## 5. Explore models
 That's it! Explore the models you built in your workflow at [http://localhost:3000](http://localhost:3000).
 
+_TODO:_ Add picture here
+
 _Sample spark.ml workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) and [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation)_
