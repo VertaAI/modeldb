@@ -929,6 +929,8 @@ $(function() {
   };
 
   function dragStop(event, ui) {
+    filterKey = null;
+    filterVal = null;
     $(ui.helper.context).css({opacity: 1});
     $('.filter-area').removeClass('filter-area-highlight');
   };

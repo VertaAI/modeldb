@@ -115,10 +115,11 @@ input {
   border-bottom: solid 2px #c9c9c9;
   transition: border 0.3s;
   outline: none;
+  border-radius: 5px;
 }
 
 input:focus {
-  border-bottom: solid 2px #969696;
+  border-bottom: solid 2px #2c3e50;
   outline: none;
 }
 
