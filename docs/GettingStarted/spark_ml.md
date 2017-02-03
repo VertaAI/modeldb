@@ -83,4 +83,4 @@ _Run your program._
 Be sure to link the client library built above to your code (e.g. by adding to your classpath).
 
 ## 5. Explore models!
-That's it! Explore the models you built in your workflow at [http://localhost:3000].
+That's it! Explore the models you built in your workflow at [http://localhost:3000](http://localhost:3000).
