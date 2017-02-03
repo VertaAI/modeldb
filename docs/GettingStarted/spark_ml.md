@@ -9,22 +9,23 @@ git clone https://github.com/mitdbg/modeldb
 ## 2. Install dependencies
 We assume that you have Java 1.8+ installed. We also assume that you have Spark 2.0 installed.
 
-_Note: ModelDB has been tested with Spark 2.0_
+_Note: ModelDB has been tested with Spark 2.0. It may not be compatible with subsequent versions._
+
+On Mac OSX:
 
 ```bash
 brew install sqlite
-brew install java
 brew install thrift
 brew install maven
 brew install sbt
-brew install nodejs
+brew install node
 
 ```
 
 
 ## 3. Build
 
-ModelDB is composed of three components: the ModelDB server, ModelDB client libraries and the ModelDB frontend. We build these components and start the ModelDB server + ModelDB frontend.
+ModelDB is composed of three components: the ModelDB server, the ModelDB client libraries, and the ModelDB frontend.
 
 In the following, **modeldb_dir** refers to the directory into which you have cloned the modeldb repo.
 
@@ -64,6 +65,7 @@ val predictions = models.map(_.transformSync(testing))
 ```
 
 For logging metrics, use the ModelDB metric classes. These are thin wrappers around the spark.ml classes.
+_TODO: Simplify code below_
 
 ```scala
 val metrics = (models zip predictions).map { case (model, prediction) =>
