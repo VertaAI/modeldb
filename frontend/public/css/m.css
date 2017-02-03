@@ -661,20 +661,21 @@ background-color: #d0d8e2;
   position: absolute;
   top: 3px;
   right: -1px;
-  height: 16px;
+  line-height: 16px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.3s ease;
-  opacity: 0.5;
-  margin-top: -1px;
+  opacity: 0.2;
+  font-weight: 600;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 
 .annotation-create:hover {
   opacity: 1;
-}
-
-.annotation-create img {
-  width: 20px;
-  display: block;
 }
 
 .md-input-container {

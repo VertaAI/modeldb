@@ -127,16 +127,10 @@ module.exports = {
       experimentRunId: experimentRunId
     });
 
-    console.log(fragment1);
-    console.log(fragment2);
     console.log(annotationEvent);
 
     Thrift.client.storeAnnotationEvent(annotationEvent, function(err, response) {
-      console.log('error: ');
-      console.log(err);
-      console.log('response: ');
-      console.log(response);
-      callback(err);
+      callback(response);
     });
   },
 
