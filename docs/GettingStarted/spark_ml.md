@@ -31,36 +31,35 @@ sudo apt-get install maven
 sudo apt-get install sbt
 sudo apt-get install nodejs # may need to symlink node to nodejs. "cd /usr/bin; ln nodejs node"
 
-# install thrift
-cd ~
-mkdir mdbDependencies
+# install thrift. path_to_thrift is the installation directory
+cd path_to_thrift
 wget
 http://mirror.cc.columbia.edu/pub/software/apache/thrift/0.9.3/thrift-0.9.3.tar.gz
 tar -xvzf thrift-0.9.3.tar.gz
 cd thrift-0.9.3
 ./configure
 make
-cd ..
+export PATH=path_to_thrift/:$PATH
 ```
 
 ## 3. Build
 
 ModelDB is composed of three components: the ModelDB server, the ModelDB client libraries, and the ModelDB frontend.
 
-In the following, **modeldb_dir** refers to the directory into which you have cloned the modeldb repo.
+In the following, **path_to_modeldb** refers to the directory into which you have cloned the modeldb repo.
 
 ```bash
 # build and start the server
-cd modeldb_dir/server
+cd path_to_modeldb/server
 ./codegen/gen_sqlite.sh
 ./start_server &
 
 # build spark.ml client library
-cd modeldb_dir/client/scala/libs/spark.ml
+cd path_to_modeldb/client/scala/libs/spark.ml
 ./build_client.sh
 
 # start the frontend
-cd modeldb_dir/frontend
+cd path_to_modeldb/frontend
 ./start_frontend.sh &
 
 ```
