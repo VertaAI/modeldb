@@ -13,11 +13,11 @@ You can see the full code for this project in the samples directory [here].
 
 Before anything, you'll need to clone the modeldb repo.
 
-```git
-https://github.com/mitdbg/modeldb
+```git 
+git clone https://github.com/mitdbg/modeldb
 ```
 
-## Step 1: Downloading ModelDB and its Dependencies
+## Step 1: Install dependencies
 
 The first step is to get ModelDB on your system, as well as its dependencies. In this tutorial, because our workflow is in Apache Spark,
 we will use the spark.ml ModelDB client, the ModelDB server, and the frontend. In addition to this, we will need various other software packages
