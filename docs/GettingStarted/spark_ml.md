@@ -79,12 +79,12 @@ Create a ModelDB syncer to track models and operations. You can provide ModelDB 
 _TODO: add example of config reader here_
 
 See more about ModelDB project organization [here]().
-```scala
+```java
 ModelDbSyncer.setSyncer(
       new ModelDbSyncer(projectConfig = NewOrExistingProject(
-        "compare models", # project name
-        "your name", # user name
-        "we use the UCI Adult Census dataset to compare random forests, " # project description
+        "compare models", // project name
+        "your name", // user name
+        "we use the UCI Adult Census dataset to compare random forests, " // project description
           + "decision trees, and logistic regression"
       ),
       experimentConfig = new DefaultExperiment,
@@ -96,7 +96,7 @@ ModelDbSyncer.setSyncer(
 
 Next use the ModelDB **sync** functions in your code. For example:
 
-```scala
+```Java
 val data = preprocessingPipeline
       .fitSync(rawData)
       .transformSync(rawData)
@@ -120,9 +120,9 @@ val evaluator = new MulticlassClassificationEvaluator()
 val metric = evaluator.evaluateSync(predictions, model)
 ```
 
-At the end of your workflow, be sure to sync all the data with ModelDB.
-```scala
-ModelDbSyncer.sync()
+// At the end of your workflow, be sure to sync all the data with ModelDB.
+// ```scala
+// ModelDbSyncer.sync()
 ```
 _Run your program._
 
