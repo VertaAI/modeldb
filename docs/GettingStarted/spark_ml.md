@@ -66,7 +66,7 @@ cd path_to_modeldb/frontend
 
 ## 4. Incorporate ModelDB into an ML workflow
 
-#### a. Import the ModelDB client library classes.
+#### a. Import the ModelDB client library classes
 
 ```scala
 import edu.mit.csail.db.ml.modeldb.client._
@@ -75,21 +75,21 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 ```
 
 #### b. Create a ModelDB syncer
-ModelDBSyncer is the object that logs models and operations to the database. You can set up the syncer either from a config file or via explicit arguments in code.
+ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the syncer either from a config file or via explicitly via arguments.
 
-See more about ModelDB project organization [here]().
+See more about ModelDB project organization [here. TODO](). 
 
 ```scala
-// config file example
+// initialize syncer from config file
 ModelDbSyncer.setSyncer(new ModelDBSyncer(SyncerConfig(path_to_config)))
 ```
 OR
 ```scala
-// explicitly setting up the syncer object
+// initialize syncer explicitly
 ModelDbSyncer.setSyncer(
       new ModelDbSyncer(projectConfig = NewOrExistingProject(
         "compare models", // project name
-        "your name", // user name
+        "some_name", // user name
         "we use the UCI Adult Census dataset to compare random forests, " // project description
           + "decision trees, and logistic regression"
       ),
@@ -101,38 +101,38 @@ ModelDbSyncer.setSyncer(
 ```
 
 #### c. Log models and pre-processing operations
-Next use the ModelDB **sync** functions in your code. For example:
+Next use the ModelDB **sync** variants of functions. So _fit_ calls would turn into **fitSync**, _save_ calls would turn into **saveSync** and so on.
 
-```Java
-val data = preprocessingPipeline
-      .fitSync(rawData)
-      .transformSync(rawData)
+```scala
+val lr = new LogisticRegression()
 
-val predictions = models.map(_.transformSync(testing))
+var lrModel = lr.fitSync(data)
 
-lrModel.saveSync("imdb_simple_lr")
+lrModel.saveSync("simple_lr")
+
+val predictions = lrModel.transformSync(test)
+
 ```
 
 #### d. Log metrics
-Use the ModelDB metrics class (SyncableMetrics) or use the spark Evaluator classes with the evaluate*Sync* method. These are thin wrappers around the spark.ml classes.
+Use the ModelDB metrics class (**SyncableMetrics**) or use the spark Evaluator classes with the **evaluateSync** method. These are thin wrappers around the spark.ml classes.
 
 ```scala
-val metric = SyncableMetrics.ComputeMulticlassMetrics(model, predictions, labelCol, predictionCol)
+val metrics = SyncableMetrics.ComputeMulticlassMetrics(lrModel, predictions, labelCol, predictionCol)
 
 ```
 OR
 ```scala
-val model = ...
 val evaluator = new MulticlassClassificationEvaluator()
   .setMetricName(...)
-val metric = evaluator.evaluateSync(predictions, model)
+val metric = evaluator.evaluateSync(predictions, lrModel)
 ```
 <!-- At the end of your workflow, be sure to sync all the data with ModelDB.
 ```scala
  ModelDbSyncer.sync()
 ```
 -->
-#### e. _Run your program._
+#### e. _Run your program!_
 
 Be sure to link the client library built above to your code (e.g. by adding to your classpath).
 
