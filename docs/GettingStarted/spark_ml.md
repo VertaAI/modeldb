@@ -74,12 +74,17 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
 ```
 
-Create a ModelDB syncer to track models and operations. You can provide ModelDB arguments through a config file or provide them in code. We do the latter below.
-
-_TODO: add example of config reader here_
+Create a ModelDB syncer to track models and operations. You can provide ModelDB arguments through a config file or provide them in code.
 
 See more about ModelDB project organization [here]().
-```java
+
+```scala
+// config file example
+ModelDbSyncer.setSyncer(new ModelDBSyncer(SyncerConfig(path_to_config)))
+```
+OR
+```scala
+// explicitly setting up the syncer object
 ModelDbSyncer.setSyncer(
       new ModelDbSyncer(projectConfig = NewOrExistingProject(
         "compare models", // project name
@@ -112,18 +117,18 @@ For logging metrics, use the ModelDB metrics class (SyncableMetrics) or use the 
 val metric = SyncableMetrics.ComputeMulticlassMetrics(model, predictions, labelCol, predictionCol)
 
 ```
-
+OR
 ```scala
 val model = ...
 val evaluator = new MulticlassClassificationEvaluator()
   .setMetricName(...)
 val metric = evaluator.evaluateSync(predictions, model)
 ```
-
-// At the end of your workflow, be sure to sync all the data with ModelDB.
-// ```scala
-// ModelDbSyncer.sync()
+<!-- At the end of your workflow, be sure to sync all the data with ModelDB.
+```scala
+ ModelDbSyncer.sync()
 ```
+-->
 _Run your program._
 
 Be sure to link the client library built above to your code (e.g. by adding to your classpath).
