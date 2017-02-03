@@ -75,7 +75,7 @@ import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 ```
 
 #### b. Create a ModelDB syncer
-ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the syncer either from a config file (we provide a sample config at [modeldb/client/scala/libs/spark.ml/syncer.json](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/syncer.json)) or explicitly via arguments.
+ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the syncer either from a config file (e.g. [modeldb/client/scala/libs/spark.ml/syncer.json](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/syncer.json)) or explicitly via arguments.
 
 ```scala
 // initialize syncer from config file
