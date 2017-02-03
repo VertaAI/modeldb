@@ -508,10 +508,12 @@ $(function() {
   };
 
   function vegaInit() {
-    summarySpecs = {
-      "height": 300,
-      "width": 820,
+    var width = $('.container').width() - 206;
+    height = width / 2.73333;
 
+    summarySpecs = {
+      "height": height,
+      "width": width,
       "signals": [
         {
           "name": "brush_start",
@@ -585,7 +587,7 @@ $(function() {
         },
         {
           "name": "yDetail",
-          "range": [300,0],
+          "range": [height,0],
           "nice": true,
           "domain": {"data": "filtered", "field": "value"}
         },
@@ -634,8 +636,8 @@ $(function() {
           "name": "detail",
           "properties": {
             "enter": {
-              "height": {"value": 300},
-              "width": {"value": 820}
+              "height": {"value": height},
+              "width": {"value": width}
             }
           },
           "axes": [
@@ -649,7 +651,7 @@ $(function() {
                 "enter": {
                   "height": {"field": {"group": "height"}},
                   "width": {"field": {"group": "width"}},
-                  "clip": {"value": true}
+                  "clip": {"value": false}
                 }
               },
               "marks": [
@@ -686,9 +688,9 @@ $(function() {
           "properties": {
             "enter": {
               "x": {"value": 0},
-              "y": {"value": 340},
+              "y": {"value": height + 40},
               "height": {"value": 70},
-              "width": {"value": 820},
+              "width": {"value": width},
               "fill": {"value": "transparent"}
             },
             "hover": {

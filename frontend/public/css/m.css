@@ -334,6 +334,7 @@ background-color: #d0d8e2;
   font-weight: bold;
   border-radius: 7px 7px 0 0;
   border-bottom: 0px;
+  overflow: hidden;
 }
 
 .model-heading {
@@ -350,6 +351,9 @@ background-color: #d0d8e2;
   background-color: white;
   padding: 10px 20px;
   border: 1px solid #D9E0E8;
+  display: inline-block;
+  min-width: 100%;
+  box-sizing: border-box;
 }
 
 .models-container .model-section {
