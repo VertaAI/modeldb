@@ -144,6 +144,15 @@ $(function() {
     }
   });
 
+  $(document).on('click', '.md-send.enabled', function(event) {
+    var input = $('.md-input');
+    var modelId = input.data('id');
+    var experimentRunId = input.data('experimentRunId');
+    var val = input.val();
+    storeAnnotation(modelId, experimentRunId, val);
+    input.val("");
+  });
+
   function storeAnnotation(modelId, experimentRunId, string) {
     var data = []
     data.push({name:"string", value:string});

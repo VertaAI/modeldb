@@ -51,6 +51,10 @@ nav .logo {
   display: inline-block;
 }
 
+nav .logo a {
+  color: white;
+}
+
 nav .path {
   display: inline-block;
   color: #95a5a6;
