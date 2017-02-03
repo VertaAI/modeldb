@@ -9,6 +9,14 @@ Our model should predict whether the income of a given adult exceeds $50000/year
 
 You can see the full code for this project in the samples directory [here].
 
+## Step 0: Clone the repo
+
+Before anything, you'll need to clone the modeldb repo.
+
+```git
+https://github.com/mitdbg/modeldb
+```
+
 ## Step 1: Downloading ModelDB and its Dependencies
 
 The first step is to get ModelDB on your system, as well as its dependencies. In this tutorial, because our workflow is in Apache Spark,
@@ -31,10 +39,34 @@ You will need the following packages:
 *Frontend*
 * [node.js]("https://nodejs.org/en/"): In order to run the front end
 
+For Linux (You'll still have to add the binaries in mdbDependencies to your PATH):
+```bash
+apt-get update
+sudo apt-get install sqlite
+sudo apt-get install maven
+sudo apt-get install nodejs
+cd ~
+mkdir mdbDependencies
+wget http://apache.mesi.com.ar/thrift/0.9.3/thrift-0.9.3.tar.gz
+wget http://d3kbcqa49mib13.cloudfront.net/spark-2.0.1-bin-hadoop2.7.tgz
+wget https://dl.bintray.com/sbt/native-packages/sbt/0.13.13/sbt-0.13.13.tgz
+tar -xvzf thrift-0.9.3.tar.gz
+tar -xvzf spark-2.0.1-bin-hadoop2.7.tgz
+tar -xvzf sbt-0.13.13.tgz
+cd thrift-0.9.3
+./configure
+make
+cd ..
+
+
+cd /usr/bin
+ln nodejs node
+```
+
 **NOTE**: On some systems, nodejs will install itself as `nodejs`, on others, it will install as `node`.
 ModelDB searches for the filename `node`. Therefore, you should go to the binary directory in which you install node.js,
-and if you have `nodejs`, then make a symbolic link named `node` that points to it. *IF YOU DO NOT DO THIS,
-YOU WILL BE UNABLE TO START THE FRONTEND*
+and if you have `nodejs`, then make a symbolic link named `node` that points to it. *If you do not do this, the frontend
+will not run*
 
 Once all the dependencies are downloaded, make sure that the bin/ directory of each is in your PATH variable.
 
@@ -65,7 +97,9 @@ cd frontend
 ./start_frontend.sh &
 ```
 
-Building the client will create a jar located at `target/scala-2.11/ml.jar`.
+Building the client will create a jar located at 
+
+**target/scala-2.11/ml.jar**
 
 
 ## Step 3: Create a Project
@@ -144,7 +178,7 @@ val data = preprocessingPipeline
 val predictions = models.map(_.transformSync(testing))
 ```
 
-## Step 87 (Optional): Annotate your work
+## Step 8 (Optional): Annotate your work
 
 ModelDB also provides the ability to annotate your work as your program runs. To add an annotation,
 just call the `annotate` method on your syncer. This will add an annotation, and remember
@@ -171,25 +205,8 @@ val metrics = (models zip predictions).map { case (model, prediction) =>
 This will compute <INSERT HERE>, and add this to your database.
 
 ## Step 10: Running the ModelDB Server
-*Note*: If you have your server running from Step 2, then you can skip this step.
-
-Okay - now you have a spark program, which accesses the ModelDB client. Now you want to run your 
-program.
-
-Before we run the program, however, we need to start up the ModelDB server, so that it can collect and save the data
-that the client provides. 
-
-Change to the `modeldb/server` directory. From there, run `codegen/gen_sqlite.sh` to generate the SQLite tables that ModelDB uses,
-and then start the server using `start_server.sh`. You will most likely want to start the server as a background process.
-So, run the following (from the `modeldb` directory):
-
-```bash
-cd server
-cd codegen
-./gen_sqlite.sh
-cd ..
-start_server.sh &
-```
+Okay - now you have a spark program, which accesses the ModelDB client. Make sure that the server
+is still running from Step 2.
 
 ## Step 11: Run the program
 
@@ -200,19 +217,11 @@ spark-submit --master local[*] --class "edu.mit.csail.db.ml.modeldb.sample.Compa
 ```
 
 ## Step 12: Start Front-end
-*Note: If you have your frontend running from Step 2, you can skip this step*
-
 Great! Now you've ran your program, and behind the scenes, the ModelDB client has recorded the ML events, your annotations, and your metrics
 in the ModelDB server with little overhead. However, having data in SQLite tables isn't very user-friendly, is it?
 
 So, we'll use the ModelDB front-end to view the data in an intuitive way. The ModelDB front-end is written in node.js, and is run like any other node application.
-Change to the `modeldb` directory again. From there, go to `frontend`. Then, simply run `start_frontend.sh`, which will generate the necessary 
-files that it needs, install all dependencies from npm, and then start the front-end.
-
-```bash
-cd frontend
-./start_frontend.sh &
-```
+Make sure you have the frontend started from Step 2.
 
 ## Step 13: View the results
 
