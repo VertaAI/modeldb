@@ -218,7 +218,7 @@ background-color: #d0d8e2;
   margin-bottom: 2px;
 }
 
-.model-card .popup-container {
+.model-card .popup-label {
   cursor: pointer;
 
 }
@@ -362,7 +362,7 @@ background-color: #d0d8e2;
   vertical-align: top;
 }
 
-.models-container .model-section .popup-container {
+.models-container .model-section .popup-label {
   cursor: pointer;
 }
 

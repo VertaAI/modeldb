@@ -916,7 +916,7 @@ $(function() {
   };
 
   function getModelDiv(model) {
-    var html = new EJS({url: '/ejs/model.ejs'}).render({"models": [model]});
+    var html = new EJS({url: '/ejs/model.ejs'}).render({"model": model});
     return $(html);
   };
 
