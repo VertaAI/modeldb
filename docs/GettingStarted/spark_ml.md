@@ -73,6 +73,27 @@ import edu.mit.csail.db.ml.modeldb.client._
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
 ```
+
+Create a ModelDB syncer to track models and operations. You can provide ModelDB arguments through a config file or provide them in code. We do the latter below.
+
+_TODO: add example of config reader here_
+
+See more about ModelDB project organization [here]().
+```scala
+ModelDbSyncer.setSyncer(
+      new ModelDbSyncer(projectConfig = NewOrExistingProject(
+        "compare models", # project name
+        "your name", # user name
+        "we use the UCI Adult Census dataset to compare random forests, " # project description
+          + "decision trees, and logistic regression"
+      ),
+      experimentConfig = new DefaultExperiment,
+      experimentRunConfig = new NewExperimentRun
+      )
+    )
+
+```
+
 Next use the ModelDB **sync** functions in your code. For example:
 
 ```scala
@@ -81,16 +102,22 @@ val data = preprocessingPipeline
       .transformSync(rawData)
 
 val predictions = models.map(_.transformSync(testing))
+
+lrModel.saveSync("imdb_simple_lr")
 ```
 
-For logging metrics, use the ModelDB metric classes. These are thin wrappers around the spark.ml classes.
-
-_TODO: Simplify code below_
+For logging metrics, use the ModelDB metrics class (SyncableMetrics) or use the spark Evaluator classes with the evaluate*Sync* method. These are thin wrappers around the spark.ml classes.
 
 ```scala
-val metrics = (models zip predictions).map { case (model, prediction) =>
-      SyncableMetrics.ComputeMulticlassMetrics(model, prediction, labelCol, predictionCol)
-    }
+val metric = SyncableMetrics.ComputeMulticlassMetrics(model, predictions, labelCol, predictionCol)
+
+```
+
+```scala
+val model = ...
+val evaluator = new MulticlassClassificationEvaluator()
+  .setMetricName(...)
+val metric = evaluator.evaluateSync(predictions, model)
 ```
 
 At the end of your workflow, be sure to sync all the data with ModelDB.
@@ -101,5 +128,5 @@ _Run your program._
 
 Be sure to link the client library built above to your code (e.g. by adding to your classpath).
 
-## 5. Explore models!
+## 5. Explore models
 That's it! Explore the models you built in your workflow at [http://localhost:3000](http://localhost:3000).
