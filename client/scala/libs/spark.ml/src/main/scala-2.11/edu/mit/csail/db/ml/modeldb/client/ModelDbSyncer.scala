@@ -135,7 +135,7 @@ class ModelDbSyncer(var hostPortPair: Option[(String, Int)] = Some("localhost", 
   def this(conf: SyncerConfigJson) {
     this(
       hostPortPair = Some(conf.thrift.host, conf.thrift.port),
-      syncingStrategy = conf.syncingStrategy.strategy match {
+      syncingStrategy = conf.syncingStrategy match {
         case "eager" => SyncingStrategy.Eager
         case "manual" => SyncingStrategy.Manual
         case _ => SyncingStrategy.Eager
