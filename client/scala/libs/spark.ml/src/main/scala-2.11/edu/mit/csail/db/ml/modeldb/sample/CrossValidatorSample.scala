@@ -34,7 +34,6 @@ object CrossValidatorSample {
       experimentConfig = new DefaultExperiment,
       experimentRunConfig = new NewExperimentRun)
     )
-    println("here1")
 
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))
     Logger.getLogger("org").setLevel(Level.OFF);
