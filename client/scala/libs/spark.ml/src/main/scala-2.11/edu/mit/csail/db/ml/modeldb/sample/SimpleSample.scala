@@ -42,8 +42,6 @@ object SimpleSample {
 
     val logReg = new LogisticRegression()
       .setLabelCol("DEFAULT")
-      // .setFeaturesCol() --> already set as features
-
 
     val logRegModel = logReg.fit(trainDf)
     System.out.println(s"Coefficients: ${logRegModel.coefficients}")
