@@ -31,10 +31,21 @@
       <div class="projects default-list">
         <% for(var i=0; i<projects.length; i++) { %>
           <a href="projects/<%= projects[i].project.id %>/models">
-            <div class="project">
+            <div class="project" data-id=<%=projects[i].project.id %>>
               <div class="project-name"><%= projects[i].project.name %></div>
-              <div class="project-author"><%= projects[i].project.author %></div>
-              <div class="project-desc"><%= projects[i].project.description %></div>
+              <div class="project-num-models"></div>
+              <div class="project-info-container">
+                <div class="project-date"></div>
+                <div class="project-author"><%= projects[i].project.author %></div>
+                <div class="project-desc"><%= projects[i].project.description %></div>
+              </div>
+              <div class="project-info-container">
+                <div class="project-metrics-container">
+                  <div class="project-metric-names project-metrics-column"></div>
+                  <div class="project-min-models project-metrics-column"></div>
+                  <div class="project-max-models project-metrics-column"></div>
+                </div>
+              </div>
             </div>
           </a>
         <% } %>

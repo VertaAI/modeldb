@@ -642,7 +642,7 @@ $(function() {
           },
           "axes": [
             {"type": "x", "scale": "xDetail", "title": "Model ID"},
-            {"type": "y", "scale": "yDetail", "title": "Metrics"}
+            {"type": "y", "scale": "yDetail", "title": "Metric Values"}
           ],
           "marks": [
             {

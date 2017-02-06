@@ -21,6 +21,11 @@ a {
   margin: 10px;
 }
 
+.project h2 {
+  font-size: 16px;
+  font-weight: 300;
+}
+
 .project {
   border: 1px solid #D9E0E8;
   background-color: white;
@@ -28,6 +33,7 @@ a {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 20px;
+  position: relative;
 }
 
 .project:hover {
@@ -38,9 +44,23 @@ a {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 4px;
+  line-height: 22px;
 }
 
-.project-time {
+.project-num-models {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  line-height: 22px;
+}
+
+.project-info-container {
+  display: inline-block;
+  vertical-align: top;
+  width: 49%;
+}
+
+.project-date {
   color: #aaa;
 }
 
@@ -54,4 +74,33 @@ a {
 
 .project-model:last-child::after {
   content: '';
+}
+
+.project-metrics-column {
+  display: inline-block;
+  vertical-align: top;
+  width: 100px;
+}
+
+.project-min-models,
+.project-max-models {
+  text-align: right;
+}
+
+.project-metrics-column h2 {
+  padding: 4px 7px;
+  box-sizing: border-box;
+  margin: 2px 0;
+  font-weight: 400;
+}
+
+.project-metric-name,
+.project-min-model,
+.project-max-model {
+  padding: 2px 7px;
+}
+
+.project-min-model,
+.project-max-model {
+  cursor: pointer;
 }

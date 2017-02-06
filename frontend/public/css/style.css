@@ -3,6 +3,7 @@ body {
   font-family: 'Lato', sans-serif;
   font-weight: 300;
   background-color: #ecf0f1;
+  font-size: 13px;
 }
 
 a {
@@ -119,7 +120,7 @@ input {
 }
 
 input:focus {
-  border-bottom: solid 2px #2c3e50;
+  border-bottom: solid 2px rgba(44,62,80,0.5);
   outline: none;
 }
 
