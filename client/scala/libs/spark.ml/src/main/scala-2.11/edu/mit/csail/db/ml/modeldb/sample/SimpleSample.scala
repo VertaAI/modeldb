@@ -37,11 +37,11 @@ object SimpleSample {
 
     val transformedDf = assembler.transform(df)
 
-    // create train and test sets
-    val Array(trainDf, testDf) = transformedDf.randomSplit(Array(0.7, 0.3))
-
     val logReg = new LogisticRegression()
       .setLabelCol("DEFAULT")
+
+    // create train and test sets
+    val Array(trainDf, testDf) = transformedDf.randomSplit(Array(0.7, 0.3))
 
     val logRegModel = logReg.fit(trainDf)
     System.out.println(s"Coefficients: ${logRegModel.coefficients}")
