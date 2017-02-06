@@ -32,7 +32,8 @@ object SimpleSample {
       .csv(path)
 
     val assembler = new VectorAssembler()
-      .setInputCols(Array("LIMIT_BAL", "SEX", "EDUCATION", "MARRIAGE", "AGE"))
+      .setInputCols(Array("LIMIT_BAL", "SEX", 
+        "EDUCATION", "MARRIAGE", "AGE"))
       .setOutputCol("features")
 
     val transformedDf = assembler.transform(df)
