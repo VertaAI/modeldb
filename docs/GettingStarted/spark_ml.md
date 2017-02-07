@@ -89,12 +89,10 @@ OR
 ModelDbSyncer.setSyncer(
       // what project are you working on
       new ModelDbSyncer(projectConfig = NewOrExistingProject(
-        "compare models", // project name
-        "some_name", // user name
-        "we use the UCI Adult Census dataset to compare random forests, " // project description
-          + "decision trees, and logistic regression"
+        "Demo", // project name
+        "modeldbuser", // user name
+        "Project to hold all models from the demo" // project description
       ),
-      // is this model part of a specific experiment? e.g. "testing how well CNNs work". Otherwise we provide a default experiment
       experimentConfig = new DefaultExperiment,
       experimentRunConfig = new NewExperimentRun
       )
@@ -106,13 +104,10 @@ ModelDbSyncer.setSyncer(
 Next use the ModelDB **sync** variants of functions. So _fit_ calls would turn into **fitSync**, _save_ calls would turn into **saveSync** and so on.
 
 ```scala
-val lr = new LogisticRegression()
-
-var lrModel = lr.fitSync(data)
-
-lrModel.saveSync("simple_lr")
-
-val predictions = lrModel.transformSync(test)
+val logReg = new LogisticRegression()
+val logRegModel = logReg.fitSync(trainDf)
+logRegModel.saveSync("simple_lr")
+val predictions = logRegModel.transformSync(test)
 
 ```
 
@@ -125,9 +120,8 @@ val metrics = SyncableMetrics.ComputeMulticlassMetrics(lrModel, predictions, lab
 ```
 OR
 ```scala
-val evaluator = new MulticlassClassificationEvaluator()
-  .setMetricName(...)
-val metric = evaluator.evaluateSync(predictions, lrModel)
+val evaluator = new BinaryClassificationEvaluator()
+val metric = evaluator.evaluateSync(predictions, logRegModel)
 ```
 <!-- At the end of your workflow, be sure to sync all the data with ModelDB.
 ```scala
