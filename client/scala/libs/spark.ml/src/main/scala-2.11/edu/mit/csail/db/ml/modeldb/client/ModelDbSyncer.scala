@@ -123,7 +123,7 @@ class ModelDbSyncer(var hostPortPair: Option[(String, Int)] = Some("localhost", 
                     var syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
                     var projectConfig: ProjectConfig = new UnspecifiedProject,
                     var experimentConfig: ExperimentConfig = new UnspecifiedExperiment,
-                    var experimentRunConfig: ExperimentRunConfig,
+                    var experimentRunConfig: ExperimentRunConfig = new NewExperimentRun,
                     var shouldCountRows: Boolean = false,
                     var shouldStoreGSCVE: Boolean = false,
                     var shouldStoreSpecificModels: Boolean = false) {

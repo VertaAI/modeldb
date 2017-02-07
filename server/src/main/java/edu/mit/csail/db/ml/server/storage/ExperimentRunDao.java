@@ -25,7 +25,9 @@ public class ExperimentRunDao {
    * @return A response containing information about the stored experiment run.
    */
   public static ExperimentRunEventResponse store(ExperimentRunEvent erun, DSLContext ctx) {
-    // TODO: should we do a check here if experiment run exists?
+    // ExperimentRun description is not necessarily unique and therefore we 
+    // don't look for it
+    // ExperimentRun ID is unique however and so we use that unique id.
     ExperimentRun er = erun.experimentRun;
     ExperimentrunRecord erRec = ctx.newRecord(Tables.EXPERIMENTRUN);
     erRec.setId(er.id < 0 ? null : er.id);
