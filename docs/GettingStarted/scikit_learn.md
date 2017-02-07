@@ -118,7 +118,7 @@ SyncableMetrics.compute_metrics(model, scoring_function, labels, predictions, da
 
 Be sure to add the modeldb python client folder to your path.
 
-```python
+```
 export PYTHONPATH=path_to_modedb_dir/client/python:$PYTHONPATH
 ```
 
