@@ -154,3 +154,39 @@ input:focus {
   width: 100%;
   line-height: 30px;
 }
+
+.tooltip {
+  padding: 10px;
+  background-color: rgba(64, 64, 64, 0.95);
+  position: absolute;
+}
+
+.tooltip:after {
+  content: '';
+  position: absolute;
+  left:50%;
+  bottom: -10px;
+  width: 0;
+  height: 0;
+  border-right: 10px solid transparent;
+  border-left: 0px solid transparent;
+  border-top: 10px solid rgba(64, 64, 64, 0.95);
+}
+
+.tooltip-keys,
+.tooltip-values {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.tooltip-key {
+  color: #aaa;
+  text-align: right;
+  padding-right: 1px;
+  margin-bottom: 1px;
+}
+
+.tooltip-value {
+  color: white;
+  margin-bottom: 1px;
+}
