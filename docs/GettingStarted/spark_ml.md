@@ -106,8 +106,9 @@ Next use the ModelDB **sync** variants of functions. So _fit_ calls would turn i
 ```scala
 val logReg = new LogisticRegression()
 val logRegModel = logReg.fitSync(trainDf)
-logRegModel.saveSync("simple_lr")
 val predictions = logRegModel.transformSync(test)
+
+logRegModel.saveSync("simple_lr")
 
 ```
 
