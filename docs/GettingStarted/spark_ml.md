@@ -51,8 +51,10 @@ In the following, **path_to_modeldb** refers to the directory into which you hav
 ```bash
 # build and start the server
 cd path_to_modeldb/server
-./codegen/gen_sqlite.sh
-./start_server &
+cd codegen
+./gen_sqlite.sh
+cd ..
+./start_server.sh &
 
 # build spark.ml client library
 cd path_to_modeldb/client/scala/libs/spark.ml
