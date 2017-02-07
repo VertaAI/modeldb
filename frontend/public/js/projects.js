@@ -115,6 +115,7 @@ $(function() {
               var block = $('<div></div>');
               block.addClass('project-model-type');
               block.addClass('tooltip-trigger');
+              block.addClass('disable-click');
               block.data('keys', [key]);
               block.data('values', [types[key] + " models"]);
               var width = 100 * types[key] / response.length;
