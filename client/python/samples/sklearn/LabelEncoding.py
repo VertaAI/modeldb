@@ -11,6 +11,8 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableRandomSplit
 from modeldb.sklearn_native import SyncableMetrics
 
+DATA_PATH = '../../../../data/'
+
 name = "logistic-test"
 author = "srinidhi"
 description = "income-level logistic regression"
@@ -19,7 +21,7 @@ syncer_obj = Syncer(
     DefaultExperiment(),
     NewExperimentRun("Abc"))
 
-df = pd.read_csv("../data/adult.data.csv")
+df = pd.read_csv(DATA_PATH + 'adult.data.csv')
 new_df = pd.DataFrame()
 df.columns = ['age', 'workclass', 'fnlwgt', 'education','education_num',
     'marital_status', 'occupation', 'relationship','race', 'sex','capital_gain',
