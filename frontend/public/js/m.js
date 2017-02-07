@@ -171,7 +171,7 @@ $(function() {
       filterVal = null;
     });
 
-    $(document).on('change', '.range-options select, .range-options input', function(event) {
+    $(document).on('keyup', '.range-options select, .range-options input', function(event) {
       var range = $(this).closest('.range');
       var id = range.data('id');
       var key = range.data('key');
@@ -179,6 +179,11 @@ $(function() {
       var type = range.find('select').val();
       updateRange(id, key, val, type);
       $('.filter-button').removeClass('filter-button-disabled');
+
+      // enable press enter to filter
+      if (event.which == 13) {
+        $('.filter-button').click();
+      }
     });
 
     $(document).on('click', '.filter-close', function(event) {
