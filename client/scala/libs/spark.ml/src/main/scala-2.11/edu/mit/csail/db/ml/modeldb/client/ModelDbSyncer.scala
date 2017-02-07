@@ -321,26 +321,6 @@ class ModelDbSyncer(var hostPortPair: Option[(String, Int)] = Some("localhost", 
       sync()
   }
 
-  /**
-    * Set the experiment for this model
-    * @param experimentConfig - Config for the experiment
-    */
-  def setExperiment(experimentConfig: ExperimentConfig): void = {
-    experiment = experimentConfig match {
-      case ExistingExperiment(id) => modeldb.Experiment(id, -1, "", "")
-      case de: DefaultExperiment => modeldb.Experiment(-1, project.id, "", "", true)
-      case ne: NewOrExistingExperiment => modeldb.Experiment(ne.id, project.id, ne.name, ne.description)
-      case UnspecifiedExperiment() => modeldb.Experiment(-1, -1, "", "")
-    }
-
-    // If it's a new experiment, buffer an ExperimentEvent.
-    experimentConfig match {
-      case NewOrExistingExperiment(_, _) | DefaultExperiment() =>
-        this.buffer(ExperimentEvent(experiment))
-        this.sync()
-    }   
-  }
-
   // Set up the project.
   var project = projectConfig match {
     case ExistingProject(id) => modeldb.Project(id, "", "", "")

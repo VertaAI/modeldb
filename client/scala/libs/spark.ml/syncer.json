@@ -5,16 +5,16 @@
   },
   "syncingStrategy": "eager",
   "project": {
-    "name": "projectName",
-    "author": "projectAuthor",
-    "description": "projectDescription"
+    "name": "Demo",
+    "author": "modeldb_users",
+    "description": "Project to hold all models from the demo"
   },
   "experiment": {
-    "name": "experimentName",
-    "description": "experimentDescription"
+    "name": "Default Experiment",
+    "description": "Default Experiment"
   },
   "experimentRun": {
-    "description": "experimentRunDescription"
+    "description": "Default Run Description"
   },
   "shouldCountRows": false,
   "shouldStoreGSCVE": false,

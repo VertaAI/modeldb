@@ -18,6 +18,7 @@ import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 
 object SimpleSample {
   def main(args: Array[String]) {
+    val MODELDB_ROOT = ""
     // spark setup
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))
     Logger.getLogger("org").setLevel(Level.OFF);
@@ -29,9 +30,9 @@ object SimpleSample {
 
     // // modeldb start
     // ModelDbSyncer.setSyncer(
-    //   new ModelDbSyncer(projectConfig = NewOrExistingProject("simple sample",
-    //     "mvartak",
-    //     "simple LR for credit default prediction"
+    //   new ModelDbSyncer(projectConfig = NewOrExistingProject("Demo",
+    //     "modeldbuser",
+    //     "Project to hold all models from the demo"
     //   ),
     //   experimentConfig = new DefaultExperiment,
     //   experimentRunConfig = new NewExperimentRun)
@@ -40,16 +41,17 @@ object SimpleSample {
 
     // modeldb start
     ModelDbSyncer.setSyncer(new ModelDbSyncer(SyncerConfig(
-      "/Users/mvartak/Projects/modeldb/client/scala/libs/spark.ml/syncer.json")))
+      MODELDB_ROOT + "/client/scala/libs/spark.ml/syncer.json")))
     // modeldb end
 
     // read in the data
-    val path = "/Users/mvartak/Projects/modeldb/data/credit-default.csv"
+    
+    val path = MODELDB_ROOT + "/data/credit-default.csv"
     val df = spark
       .read
       .option("header", true)
       .option("inferSchema", true)
-      // .csv(path)
+      .csv(path)
     // // modeldb start
     //   .csvSync(path)
     // // modeldb end
@@ -95,8 +97,5 @@ object SimpleSample {
     //   .evaluateSync(predictions, logRegModel)
     // // modeldb end
     System.out.println(s"Metric: ${metric}")
-
-    // TODO: need to add something that produces multiple models so we can graph
-
   }
 }
