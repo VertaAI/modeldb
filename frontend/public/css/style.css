@@ -3,19 +3,35 @@ body {
   font-family: 'Lato', sans-serif;
   font-weight: 300;
   background-color: #ecf0f1;
+  font-size: 13px;
 }
 
 a {
   text-decoration: none;
-  color: black;
+  color: #00B7FF;
 }
 
 button {
   border: none;
+  background-color: #AEBDCD;
+  font-size: 14px;
+  color: white;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 5px;
+}
+
+button:hover {
+  background-color: #a0b2c5;
 }
 
 button:focus {
   outline: none;
+}
+
+h2 {
+  margin: 0 0 5px 0;
 }
 
 nav {
@@ -34,6 +50,10 @@ nav {
 
 nav .logo {
   display: inline-block;
+}
+
+nav .logo a {
+  color: white;
 }
 
 nav .path {
@@ -62,7 +82,7 @@ nav .nav-link:hover {
 
 
 select {
-  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50px' height='50px'><polyline points='46.139,15.518 25.166,36.49 4.193,15.519'/></svg>");
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50px' height='50px'><polyline points='40.139,10.518 25.166,36.49 10.193,10.519'/></svg>");
   background-color:#AEBDCD;
   background-repeat:no-repeat;
   background-position: right 10px top 7px;
@@ -91,20 +111,45 @@ select:focus, select:active {
   outline:0;
 }
 
+input {
+  border: none;
+  border-bottom: solid 2px #c9c9c9;
+  transition: border 0.3s;
+  outline: none;
+  border-radius: 5px;
+}
+
+input:focus {
+  border-bottom: solid 2px rgba(44,62,80,0.5);
+  outline: none;
+}
+
 .loader {
-  background-color: white;
-  background-color: #ecf0f1;
+  display: none;
+  background-color: rgb(103, 110, 129);
   width: 100%;
   height: calc(100vh - 49px);
   line-height: calc(100vh - 49px);
-  position: absolute;
+  position: fixed;
+  left: 0;
   top: 49px;
   text-align: center;
-  opacity: 0.7;
+  opacity: 0.95;
+  z-index: 5;
 }
 
 .loader img {
   vertical-align: middle;
-  height: 200px;
-  width: 200px;
+  height: 450px;
+  width: 600px;
+}
+
+.loader-text {
+  color: white;
+  font-size: 25px;
+  position: absolute;
+  font-weight: 100;
+  top: 40px;
+  width: 100%;
+  line-height: 30px;
 }

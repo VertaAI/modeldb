@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/lib/vis-tooltip.css">
+    <link rel="stylesheet" type="text/css" href="/css/lib/component.css">
+    <link rel='stylesheet' href='/css/style.css' />
+    <link rel='stylesheet' href='/css/m.css' />
+
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- d3 and vega -->
+    <script src="//vega.github.io/vega-editor/vendor/d3.min.js" charset="utf-8"></script>
+    <script src="//vega.github.io/vega-editor/vendor/vega.js" charset="utf-8"></script>
+    <script src="//vega.github.io/vega-lite/vega-lite.js"></script>
+    <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
+    <script src="//vega.github.io/datalib/datalib.min.js"></script>
+    <script src="/js/lib/vg-tooltip.js"></script>
+
+    <!-- tinysort -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinysort/2.3.6/tinysort.min.js"></script>
+
+    <!-- lib js files -->
+    <script src="/js/lib/ejs_production.js"></script>
+
+    <script src="/js/util.js"></script>
+    <script src="/js/m.js"></script>
+    <script src="/js/m2.js"></script>
+    <script src="/js/annotations.js"></script>
+  </head>
+  <body data-id=<%= id %>>
+    <%- include partials/nav.ejs %>
+    <div class="container">
+
+      <div class="loader">
+        <img src="/images/loading.gif">
+        <div class="loader-text">
+          LOADING MODELS...
+        </div>
+      </div>
+
+      <div class="menu">
+        <div class="menu-tabs-container">
+          <div class="menu-tab selected" data-id="0">
+            <div class="selected-arrow"></div>
+            <img src="/images/charts.png">
+            <div class="menu-tab-label">
+              Overview and Charts
+            </div>
+          </div>
+          <div class="menu-tab" data-id="1">
+            <img src="/images/data.png">
+            <div class="menu-tab-label">
+              Models
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-section-container filters-container menu0 menu1">
+            <div class="filters-info">
+                <h2>Filter</h2>
+                Drag configs or metrics into this section to filter models based on key - value pairs.
+            </div>
+            <div class="filter-area"></div>
+            <button class="filter-button filter-button-disabled">Filter</button>
+        </div>
+
+        <div class="menu-section-container group-container menu1">
+          <div class="group-info">
+            <h2>Group</h2>
+            Choose field to group data table by
+            <div class="select-container">
+              <select class="group-by">
+                <option selected value="None">None</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <% if (false) { %>
+          <div class="menu-section-container sort-container">
+            <div class="sort-info">
+              <h2>Sort</h2>
+              Drag configs or metrics into this section to sort by a certain key.
+            </div>
+            <div class="select-container">
+              <div class="select-label">
+                order:
+              </div>
+              <select class="sort-order">
+                <option selected value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+            </div>
+            <div class="sort-area"></div>
+          </div>
+        <% } %>
+
+      </div>
+
+      <div class="tab" data-id="0">
+
+        <div class="project-info-container">
+          <h1 class="project-name"></h1>
+          <div class="project-num-models"></div>
+          <div class="project-author"></div>
+          <div class="project-description"></div>
+        </div>
+
+        <div class="summary-chart-container">
+          <div class="summary-chart"></div>
+          <div class="model-card"></div>
+        </div>
+
+        <div class="visualizations-container">
+          <h1>Explore Visualizations</h1>
+          <div class="visualizations-description">
+            Generate charts to visualize trends in data by selecting fields to plot as x and y values. Optionally pick fields to group by and specify what type of aggregation to use.
+          </div>
+          <div class="visualization-options">
+            <div class="select-container">
+              <div class="select-label">
+                y-axis:
+              </div>
+              <select class="y-axis"></select>
+            </div>
+            <div class="select-container">
+              <div class="select-label">
+                x-axis:
+              </div>
+              <select class="x-axis"></select>
+            </div>
+            <div class="select-container">
+              <div class="select-label">
+                group by:
+              </div>
+              <select class="z-axis">
+                <option>None</option>
+              </select>
+            </div>
+            <div class="select-container">
+              <div class="select-label">
+                aggregate:
+              </div>
+              <select class="aggregate">
+                <option selected>average</option>
+                <option>sum</option>
+                <option>median</option>
+                <option>variance</option>
+                <option>stdev</option>
+                <option>count</option>
+              </select>
+            </div>
+            <button class="compare-button">Compare</button>
+          </div>
+          <div class="explore-chart"></div>
+        </div>
+
+      </div> <!-- end tab0 -->
+
+      <div class="tab" data-id="1">
+
+        <div class="groups-bar-container">
+          <div class="groups-bar"></div>
+        </div>
+
+        <div class="data-table">
+          <div class="model-headings">
+            <div class="model-heading model-ids">
+              IDs
+              <div
+                class="triangle-container down sorted"
+                data-key="id"
+                data-order="down"
+              >
+                <div class="triangle-up">&#9650;</div>
+                <div class="triangle-down">&#9660;</div>
+              </div>
+            </div>
+            <div class="model-heading model-dataframe">
+              DataFrame
+              <div class="triangle-container" data-key="DataFrame ID">
+                <div class="triangle-up">&#9650;</div>
+                <div class="triangle-down">&#9660;</div>
+              </div>
+            </div>
+            <div class="model-heading model-spec">
+              Specifications
+            </div>
+            <div class="model-heading model-metrics">
+              Metrics
+              <select class="metrics-sort">
+                <option value="" disabled selected>None</option>
+              </select>
+            </div>
+            <div class="model-heading model-misc">
+              Misc.
+            </div>
+          </div>
+          <div class="models-container">
+            <div class="models"></div>
+          </div>
+        </div>
+
+      </div> <!-- end tab1 -->
+
+    </div>
+
+    <div class="md-modal md-effect-1" id="modal-1">
+      <div class="md-content">
+        <div class="md-header">
+          Model <div class="md-model-id"></div> Annotations
+        </div>
+        <div class="md-body">
+          <div class="md-annotations">
+          </div>
+          <div class="md-input-container">
+            <input class="md-input" placeholder="Add annotation..."></input>
+            <img class="md-send" src='/images/send.png'/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="md-overlay"></div>
+
+  </body>
+</html>

@@ -3,10 +3,11 @@
   <head>
     <title><%= title %></title>
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
-    <link rel='stylesheet' href='/css/vis.min.css' />
-    <link rel='stylesheet' href='/css/style.css' />
-    <link rel='stylesheet' href='/css/models.css' />
-    <link rel='stylesheet' href='/css/pipeline.css' />
+    <link rel='stylesheet' type="text/css" href='/css/lib/vis.min.css' />
+    <link rel="stylesheet" type="text/css" href="/css/lib/component.css">
+    <link rel='stylesheet' type="text/css" href='/css/style.css' />
+    <link rel='stylesheet' type="text/css" href='/css/model.css' />
+    <link rel='stylesheet' type="text/css" href='/css/pipeline.css' />
 
     <!-- JQuery -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
@@ -21,11 +22,14 @@
     <!-- Load vis.js -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/vis/4.15.1/vis.min.js"></script>
 
-    <script src='/js/models.js'></script>
-    <script src='/js/charts.js'></script>
-    <script src='/js/pipeline.js'></script>
+    <!-- lib js files -->
+    <script src="/js/lib/ejs_production.js"></script>
+
+    <script src="/js/model.js"></script>
+    <script src="/js/annotations.js"></script>
+    <script src="/js/pipeline.js"></script>
   </head>
-  <body>
+  <body data-id=<%= modelId %>>
     <%- include partials/nav.ejs %>
     <div class="container">
       <div class="model-headings">
@@ -48,181 +52,30 @@
 
       <div class="models-container">
         <div class="models">
-          <% for(var i=0; i<models.length; i++) { %>
-            <div class="model">
-
-
-              <div class="model-section model-ids">
-                <div class="nkv"
-                  data-key="Model ID"
-                  data-val="<%= models[i].id %>"
-                >
-                  Model ID: <%= models[i].id %>
-                </div>
-
-                <div class="nkv"
-                  data-key="Experiment Run ID"
-                  data-val="<%= models[i].experimentRunId %>"
-                >
-                  Experiment Run ID: <%= models[i].experimentRunId %>
-                </div>
-
-                <div class="nkv"
-                  data-key="Experiment ID"
-                  data-val="<%= models[i].experimentId %>"
-                >
-                  Experiment ID: <%= models[i].experimentId %>
-                </div>
-
-
-                <a href="/projects/<%= models[i].projectId %>/models">
-                  <div class="nkv"
-                    data-key="Project ID"
-                    data-val="<%= models[i].projectId %>"
-                  >
-                    Project ID: <%= models[i].projectId %>
-                  </div>
-                </a>
-              </div>
-
-
-              <div class="model-section model-dataframe">
-                <div class="nkv"
-                  data-key="DataFrame ID"
-                  data-val="<%= models[i].trainingDataFrame.id %>"
-                >
-                  DataFrame ID: <%= models[i].trainingDataFrame.id %>
-                </div>
-
-                <div class="nkv"
-                  data-key="DF numRows"
-                  data-val="<%= models[i].trainingDataFrame.numRows %>"
-                >
-                  DF numRows: <%= models[i].trainingDataFrame.numRows %>
-                </div>
-
-                <% if (models[i].trainingDataFrame.tag) { %>
-                  <div class="nkv"
-                    data-key="DF Tag"
-                    data-val="<%= models[i].trainingDataFrame.tag %>"
-                  >
-                    DF Tag: <%= models[i].trainingDataFrame.tag %>
-                  </div>
-                <% } %>
-
-                <% if (models[i].trainingDataFrame.filepath) { %>
-                  <div class="nkv"
-                    data-key="DF Filepath"
-                    data-val="<%= models[i].trainingDataFrame.filepath %>"
-                  >
-                    DF Filepath: <%= models[i].trainingDataFrame.filepath %>
-                  </div>
-                <% } %>
-
-                <div class="nkv dfmetadata-container popup-container">
-                  Metadata
-                  <div class="dfmetadata">
-                    <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
-                      <div class="kv nkv"
-                        data-key="<%= models[i].trainingDataFrame.metadata[j].key %>"
-                        data-val="<%= models[i].trainingDataFrame.metadata[j].value %>"
-                      >
-                        <%= models[i].trainingDataFrame.metadata[j].key %>: <%= models[i].trainingDataFrame.metadata[j].value %>
-                      </div>
-                    <% } %>
-                  </div>
-                </div>
-              </div>
-
-
-              <div class="model-section model-spec">
-                <div class="nkv"
-                  data-key="Specification ID"
-                  data-val="<%= models[i].specification.id %>"
-                >
-                  Specification ID: <%= models[i].specification.id %>
-                </div>
-
-                <div class="nkv"
-                  data-key="Type"
-                  data-val="<%= models[i].specification.transformerType %>"
-                >
-                  Type: <%= models[i].specification.transformerType %>
-                </div>
-
-                <% if (models[i].specification.tag) { %>
-                  <div class="nkv"
-                    data-key="Spec Tag"
-                    data-val="<%= models[i].specification.tag %>"
-                  >
-                    Spec Tag: <%= models[i].specification.tag %>
-                  </div>
-                <% } %>
-
-                <div class="nkv"
-                  data-key="Problem Type"
-                  data-val="<%= models[i].problemType %>"
-                >
-                  Problem Type: <%= models[i].problemType %>
-                </div>
-
-                <div class="nkv hyperparams-container popup-container">
-                  Hyperparameters
-                  <div class="hyperparams">
-                    <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
-                      <div class="kv nkv"
-                        data-key="<%= models[i].specification.hyperparameters[j].name %>"
-                        data-val="<%= models[i].specification.hyperparameters[j].value %>"
-                      >
-                        <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
-                      </div>
-                    <% } %>
-                  </div>
-                </div>
-              </div>
-
-
-              <div class="model-section model-metrics">
-                <% for (var j=0; j<models[i].metrics.length; j++) { %>
-                  <div class="model-metric kv"
-                    data-key="<%=models[i].metrics[j].key %>"
-                    data-val="<%=models[i].metrics[j].val %>"
-                    data-num="true"
-                  >
-                    <%= models[i].metrics[j].key %>: <%= models[i].metrics[j].val %>
-                  </div>
-                <% } %>
-              </div>
-
-
-              <div class="model-section model-misc">
-                <% if (models[i].sha) { %>
-                  <div class="nkv"
-                    data-key="Code SHA"
-                    data-val="<%= models[i].sha %>"
-                  >
-                    Code SHA: N/A <%= models[i].sha %>
-                  </div>
-                <% } %>
-
-                <% if (models[i].filepath) { %>
-                  <div class="nkv"
-                    data-key="Filepath"
-                    data-val="<%= models[i].filepath %>"
-                  >
-                    Filepath: <%= models[i].filepath %>
-                  </div>
-                <% } %>
-              </div>
-
-            </div>
-          <% } %>
         </div>
       </div>
 
-      <div id="network" data-id=<%= models[0].id %>>
+      <div id="network">
       </div>
 
     </div>
+
+    <div class="md-modal md-effect-1" id="modal-1">
+      <div class="md-content">
+        <div class="md-header">
+          Model <div class="md-model-id"></div> Annotations
+        </div>
+        <div class="md-body">
+          <div class="md-annotations">
+          </div>
+          <div class="md-input-container">
+            <input class="md-input" placeholder="Add annotation..."></input>
+            <img class="md-send" src='/images/send.png'/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="md-overlay"></div>
   </body>
 </html>

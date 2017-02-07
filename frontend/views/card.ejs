@@ -1,68 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
-    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://vega.github.io/vega-tooltip/vg-tooltip.css">
-    <link rel='stylesheet' href='/css/style.css' />
-    <link rel='stylesheet' href='/css/models.css' />
-
-    <!-- JQuery -->
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-
-    <!-- d3 and vega -->
-    <script src="//d3js.org/d3.v3.min.js"></script>
-    <script src="//vega.github.io/vega/vega.js"></script>
-    <script src="//vega.github.io/vega-lite/vega-lite.js"></script>
-    <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
-    <script src="//vega.github.io/datalib/datalib.min.js"></script>
-    <script src="//vega.github.io/vega-tooltip/vg-tooltip.min.js"></script>
-
-    <!-- tinysort -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinysort/2.3.6/tinysort.min.js"></script>
-
-    <script src='/js/models.js'></script>
-    <script src='/js/charts.js'></script>
   </head>
   <body>
-    <%- include partials/nav.ejs %>
-    <div class="container">
 
-      <div class="loader">
-        <img src="/images/loading.gif">
-      </div>
-
-      <div class="group-table-container select-container">
-        <div class="select-label">
-          group by:
-        </div>
-        <select class="group-table">
-          <option value="None" selected="selected">None</option>
-        </select>
-      </div>
-
-      <div class="model-headings">
-        <div class="model-heading model-ids">
-          IDs
-        </div>
-        <div class="model-heading model-dataframe">
-          DataFrame
-        </div>
-        <div class="model-heading model-spec">
-          Specifications
-        </div>
-        <div class="model-heading model-metrics">
-          Metrics
-        </div>
-        <div class="model-heading model-misc">
-          Misc.
-        </div>
-      </div>
-
-      <div class="models-container">
-        <div class="models">
-          <div class="models-group" data-groupkey="none" data-groupval="none">
             <% for(var i=0; i<models.length; i++) { %>
               <div class="model" data-show="true">
 
@@ -100,19 +41,6 @@
 
 
                 <div class="model-section model-dataframe">
-                  <div class="kv"
-                    data-key="DataFrame ID"
-                    data-val="<%= models[i].trainingDataFrame.id %>"
-                  >
-                    DataFrame ID: <%= models[i].trainingDataFrame.id %>
-                  </div>
-
-                  <div class="kv"
-                    data-key="DF numRows"
-                    data-val="<%= models[i].trainingDataFrame.numRows %>"
-                  >
-                    DF numRows: <%= models[i].trainingDataFrame.numRows %>
-                  </div>
 
                   <% if (models[i].trainingDataFrame.tag) { %>
                     <div class="kv"
@@ -134,8 +62,8 @@
 
                   <% if (models[i].trainingDataFrame.metadata.length > 0) { %>
                     <div class="nkv dfmetadata-container popup-container">
-                      Metadata
-                      <div class="dfmetadata">
+                      <div class="popup-label">Metadata</div>
+                      <div class="dfmetadata popup-contents">
                         <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
                           <div class="kv"
                             data-src="metadata"
@@ -152,12 +80,6 @@
 
 
                 <div class="model-section model-spec">
-                  <div class="kv"
-                    data-key="Specification ID"
-                    data-val="<%= models[i].specification.id %>"
-                  >
-                    Specification ID: <%= models[i].specification.id %>
-                  </div>
 
                   <div class="kv"
                     data-key="Type"
@@ -175,16 +97,9 @@
                     </div>
                   <% } %>
 
-                  <div class="kv"
-                    data-key="Problem Type"
-                    data-val="<%= models[i].problemType %>"
-                  >
-                    Problem Type: <%= models[i].problemType %>
-                  </div>
-
                   <div class="nkv hyperparams-container popup-container">
-                    Hyperparameters
-                    <div class="hyperparams">
+                    <div class="popup-label">Hyperparameters</div>
+                    <div class="hyperparams popup-contents">
                       <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
                         <div class="kv"
                           data-src="hyperparameters"
@@ -234,66 +149,7 @@
 
               </div>
             <% } %>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu">
-        <div class="filters-container">
-            <div class="filters-info">
-                <h2>Filter</h2>
-                Drag configs or metrics into this section to filter models based on key - value pairs.
-            </div>
-            <div class="filter-area"></div>
-        </div>
-
-        <div class="sort-container">
-          <div class="sort-info">
-            <h2>Sort</h2>
-            Drag configs or metrics into this section to sort by a certain key.
-          </div>
-          <div class="select-container">
-            <div class="select-label">
-              order:
-            </div>
-            <select class="sort-order">
-              <option selected value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </select>
-          </div>
-          <div class="sort-area"></div>
-        </div>
-      </div>
-
-      <div class="chart-container">
-        <div class="charts-container">
-          <h2>Compare</h2>
-          <h2 class="chart-toggle" data-show="false">&#9650;</h2>
-          <div class="select-container">
-            <div class="select-label">
-              y-axis:
-            </div>
-            <select class="y-axis"></select>
-          </div>
-          <div class="select-container">
-            <div class="select-label">
-              x-axis:
-            </div>
-            <select class="x-axis"></select>
-          </div>
-          <div class="select-container">
-            <div class="select-label">
-              group by:
-            </div>
-            <select class="group-by"></select>
-          </div>
-          <button class="compare-button">Compare</button>
-        </div>
-        <div class="model-chart"></div>
-      </div>
 
 
-
-    </div>
   </body>
 </html>

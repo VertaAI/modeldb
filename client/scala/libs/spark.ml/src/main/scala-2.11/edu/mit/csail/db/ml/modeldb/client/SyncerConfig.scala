@@ -10,10 +10,8 @@ case class ExperimentRunJson(description: String)
 
 case class ThriftJson(host: String = "localhost", port: Int = 6543)
 
-case class StrategyJson(strategy: String)
-
 case class SyncerConfigJson(thrift: ThriftJson,
-                            syncingStrategy: StrategyJson,
+                            syncingStrategy: String,
                             project: ProjectJson,
                             experiment: ExperimentJson,
                             experimentRun: ExperimentRunJson,
@@ -26,7 +24,6 @@ object SyncerConfigJsonProtocol extends DefaultJsonProtocol {
   implicit val experimentFormat = jsonFormat(ExperimentJson, "name", "description")
   implicit val experimentRunFormat = jsonFormat(ExperimentRunJson, "description")
   implicit val thriftFormat = jsonFormat(ThriftJson, "host", "port")
-  implicit val strategyFormat = jsonFormat(StrategyJson, "strategy")
   implicit val syncerConfigFormat = jsonFormat(
     SyncerConfigJson,
     "thrift",
