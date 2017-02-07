@@ -146,3 +146,23 @@ input:focus {
     margin-top: 20px;
   }
 }
+
+.projects-loader {
+  border: 1px solid #D9E0E8;
+  padding: 10px;
+  margin: 10px;
+  position: relative;
+  border-radius: 5px;
+  height: 100px;
+  color: white;
+  font-size: 20px;
+  background-color: rgb(103, 110, 129);
+  display: none;
+  font-weight: 100;
+}
+
+.projects-loader img {
+  float: right;
+  width: 150px;
+  height: 100px;
+}

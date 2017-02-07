@@ -1,5 +1,7 @@
 var category10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
                   '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+var numLoading = 0;
+
 
 $(function() {
   $('#search').appendTo($('nav'));
@@ -10,6 +12,8 @@ $(function() {
 
 
   function fetchData(projectId) {
+    $('.projects-loader').slideDown();
+    numLoading += 1;
     $.ajax({
       url: '/projects/' + projectId + '/ms',
       type: "GET",
@@ -118,6 +122,11 @@ $(function() {
               bar.append(block);
             }
           }
+        }
+
+        numLoading -= 1;
+        if (numLoading == 0) {
+          $('.projects-loader').slideUp();
         }
       }
     });

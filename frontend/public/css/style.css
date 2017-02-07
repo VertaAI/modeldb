@@ -125,8 +125,8 @@ input:focus {
 }
 
 .loader {
-  background-color: white;
-  background-color: #ecf0f1;
+  display: none;
+  background-color: rgb(103, 110, 129);
   width: 100%;
   height: calc(100vh - 49px);
   line-height: calc(100vh - 49px);
@@ -134,12 +134,22 @@ input:focus {
   left: 0;
   top: 49px;
   text-align: center;
-  opacity: 0.7;
+  opacity: 0.95;
   z-index: 5;
 }
 
 .loader img {
   vertical-align: middle;
-  height: 200px;
-  width: 200px;
+  height: 450px;
+  width: 600px;
+}
+
+.loader-text {
+  color: white;
+  font-size: 25px;
+  position: absolute;
+  font-weight: 100;
+  top: 40px;
+  width: 100%;
+  line-height: 30px;
 }

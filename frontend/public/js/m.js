@@ -222,7 +222,7 @@ $(function() {
       }
     });
 
-    $('.loader').show();
+    $('.loader').fadeIn();
     // get models
     $.ajax({
       url: '/projects/' + projectId + '/ms',
