@@ -1,9 +1,9 @@
 package edu.mit.csail.db.ml.modeldb.sample
 
-// // modeldb start
-// import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-// import edu.mit.csail.db.ml.modeldb.client.{DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
-// // modeldb end
+// modeldb start
+import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
+import edu.mit.csail.db.ml.modeldb.client.{SyncerConfig, DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
+// modeldb end
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
@@ -21,7 +21,6 @@ object SimpleSample {
     // spark setup
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))
     Logger.getLogger("org").setLevel(Level.OFF);
-    System.out.println("*******************")
     
     val spark = SparkSession
       .builder()
@@ -39,6 +38,10 @@ object SimpleSample {
     // )
     // // modeldb end
 
+    // modeldb start
+    ModelDbSyncer.setSyncer(new ModelDbSyncer(SyncerConfig(
+      "/Users/mvartak/Projects/modeldb/client/scala/libs/spark.ml/syncer.json")))
+    // modeldb end
 
     // read in the data
     val path = "/Users/mvartak/Projects/modeldb/data/credit-default.csv"
@@ -46,7 +49,7 @@ object SimpleSample {
       .read
       .option("header", true)
       .option("inferSchema", true)
-      .csv(path)
+      // .csv(path)
     // // modeldb start
     //   .csvSync(path)
     // // modeldb end
