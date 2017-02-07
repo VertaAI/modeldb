@@ -46,6 +46,7 @@ nav {
   opacity: 0.95;
   z-index: 2;
   position: fixed;
+  height: 49px;
 }
 
 nav .logo {
@@ -141,7 +142,7 @@ input:focus {
 .loader img {
   vertical-align: middle;
   height: 450px;
-  width: 600px;
+  width: 650px;
 }
 
 .loader-text {

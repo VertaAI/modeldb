@@ -87,7 +87,7 @@ $(function() {
     });
 
     $('.models-container').scroll(function(event) {
-      if (this.scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
+      if (this.scrollHeight - $(this).scrollTop() <= $(this).outerHeight() + 10) {
         // reached bottom of table, so load more
         loadTable();
       }
