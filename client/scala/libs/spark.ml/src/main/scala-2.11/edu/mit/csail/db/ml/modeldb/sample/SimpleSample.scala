@@ -1,8 +1,8 @@
 package edu.mit.csail.db.ml.modeldb.sample
 
-// modeldb start
-import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-import edu.mit.csail.db.ml.modeldb.client.{SyncerConfig, DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
+// // modeldb start
+// import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
+// import edu.mit.csail.db.ml.modeldb.client.{SyncerConfig, DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
 // modeldb end
 
 import org.apache.log4j.{Level, Logger}
