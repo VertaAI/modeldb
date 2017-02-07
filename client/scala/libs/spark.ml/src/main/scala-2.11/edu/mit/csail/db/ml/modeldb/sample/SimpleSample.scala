@@ -71,7 +71,11 @@ object SimpleSample {
       .setLabelCol("DEFAULT")
 
     // create train and test sets
-    val Array(trainDf, testDf) = transformedDf.randomSplit(Array(0.7, 0.3))
+    val Array(trainDf, testDf) = transformedDf
+      .randomSplit(Array(0.7, 0.3))
+    // // modeldb start
+    //   .randomSplitSync(Array(0.7, 0.3))
+    // // modeldb end
 
     val logRegModel = logReg
       .fit(trainDf)
