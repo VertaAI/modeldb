@@ -39,10 +39,10 @@ object SimpleSample {
     // )
     // // modeldb end
 
-    // modeldb start
-    ModelDbSyncer.setSyncer(new ModelDbSyncer(SyncerConfig(
-      MODELDB_ROOT + "/client/scala/libs/spark.ml/syncer.json")))
-    // modeldb end
+    // // modeldb start
+    // ModelDbSyncer.setSyncer(new ModelDbSyncer(SyncerConfig(
+    //   MODELDB_ROOT + "/client/scala/libs/spark.ml/syncer.json")))
+    // // modeldb end
 
     // read in the data
     
