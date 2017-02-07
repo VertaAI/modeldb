@@ -18,16 +18,14 @@
   <body>
     <%- include partials/nav.ejs %>
     <div class="container">
-      <div class="input-container">
-        <input
-          autocomplete="off"
-          data-list=".default-list"
-          id="search"
-          placeholder="Search for project"
-          type="text"
-        >
-        </input>
-      </div>
+      <input
+        autocomplete="off"
+        data-list=".default-list"
+        id="search"
+        placeholder="Search for project"
+        type="text"
+      >
+      </input>
       <div class="projects default-list">
         <% for(var i=0; i<projects.length; i++) { %>
           <a href="projects/<%= projects[i].project.id %>/models">
@@ -38,12 +36,14 @@
                 <div class="project-date"></div>
                 <div class="project-author"><%= projects[i].project.author %></div>
                 <div class="project-desc"><%= projects[i].project.description %></div>
+                <div class="project-model-types-bar"></div>
               </div>
               <div class="project-info-container">
                 <div class="project-metrics-container">
                   <div class="project-metric-names project-metrics-column"></div>
                   <div class="project-min-models project-metrics-column"></div>
                   <div class="project-max-models project-metrics-column"></div>
+                  <div class="project-avg-models project-metrics-column"></div>
                 </div>
               </div>
             </div>

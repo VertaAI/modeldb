@@ -2,18 +2,17 @@ a {
   color: black;
 }
 
-.input-container {
-  margin: 10px;
-}
-
-.input-container input {
+input {
   padding: 5px;
   font-size: 15px;
   font-weight: 100;
-  width: 325px;
+  vertical-align: top;
+  height: 17px;
+  margin: 1px 0 -1px 10px;
+  width: 300px;
 }
 
-.input-container input:focus {
+input:focus {
   outline: none;
 }
 
@@ -32,12 +31,14 @@ a {
   padding: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   position: relative;
+  border-radius: 5px;
 }
 
 .project:hover {
-  box-shadow: 5px 5px 10px #AEBDCD;
+  box-shadow: 1px 1px 10px #AEBDCD;
+  background-color: #f4f4f4;
 }
 
 .project-name {
@@ -57,11 +58,16 @@ a {
 .project-info-container {
   display: inline-block;
   vertical-align: top;
-  width: 49%;
+  width: 48%;
+  margin-right: 1%;
 }
 
 .project-date {
   color: #aaa;
+}
+
+.project-desc {
+  margin-bottom: 20px;
 }
 
 .project-model {
@@ -76,14 +82,20 @@ a {
   content: '';
 }
 
+.project-metrics-container {
+  margin-top: -26px;
+}
+
 .project-metrics-column {
   display: inline-block;
   vertical-align: top;
   width: 100px;
+  margin-right: -3px;
 }
 
 .project-min-models,
-.project-max-models {
+.project-max-models,
+.project-avg-models {
   text-align: right;
 }
 
@@ -92,15 +104,45 @@ a {
   box-sizing: border-box;
   margin: 2px 0;
   font-weight: 400;
+  border-bottom: 1px solid #AEBDCD;;
 }
 
-.project-metric-name,
-.project-min-model,
-.project-max-model {
+.project-metric-name {
   padding: 2px 7px;
 }
 
 .project-min-model,
-.project-max-model {
+.project-max-model,
+.project-avg-model {
   cursor: pointer;
+  padding: 2px 7px;
+}
+
+.project-model-types-bar {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.project-model-type {
+  height: 25px;
+  opacity: 0.2;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 2px;
+  display: inline-block;
+}
+
+.project-model-type:hover {
+  opacity: 0.5;
+}
+
+@media (max-width: 1000px) {
+  .project-info-container {
+    width: 100%;
+    display: block;
+  }
+
+  .project-metrics-container {
+    margin-top: 20px;
+  }
 }
