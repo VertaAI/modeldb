@@ -91,7 +91,7 @@ syncer_obj = Syncer(
 ```
 
 #### c. Log models and pre-processing operations
-Next use the ModelDB **sync** variants of functions. So _fit_ calls would turn into **fitSync**, _save_ calls would turn into **saveSync** and so on.
+Next use the ModelDB **sync** variants of functions. So _fit_ calls would turn into **fit_sync**, _save_ calls would turn into **save_sync** and so on.
 
 ```python
 lr = LogisticRegression()
