@@ -79,7 +79,7 @@ ModelDBSyncer is the object that logs models and operations to the ModelDB backe
 
 ```scala
 // initialize syncer from config file
-ModelDbSyncer.setSyncer(new ModelDBSyncer(SyncerConfig(path_to_config)))
+ModelDbSyncer.setSyncer(new ModelDbSyncer(SyncerConfig(path_to_config)))
 ```
 OR
 ```scala
