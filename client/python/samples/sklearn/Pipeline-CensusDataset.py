@@ -13,6 +13,7 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableMetrics
 from modeldb.sklearn_native import SyncableRandomSplit
 
+DATA_PATH = '../../../../data/'
 #Pipelining: This chains a PCA and logistic regression, and uses the UCI Census Adult dataset.
 
 name = "pipeline census"
@@ -23,7 +24,7 @@ syncer_obj = Syncer(
     DefaultExperiment(),
     NewExperimentRun("Abc"))
 
-df = pd.read_csv_sync("../data/adult.data.csv")
+df = pd.read_csv_sync(DATA_PATH + 'adult.data.csv')
 new_df = pd.DataFrame()
 df.columns = ['age', 'workclass', 'fnlwgt', 'education','education_num',
     'marital_status', 'occupation', 'relationship','race', 'sex','capital_gain',

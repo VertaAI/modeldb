@@ -10,6 +10,8 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableRandomSplit 
 from modeldb.sklearn_native import SyncableMetrics 
 
+DATA_PATH = '../../../../data/'
+
 name = "logistic regression - one hot encoding"
 author = "srinidhi"
 description = "predicting income"
@@ -31,7 +33,7 @@ def oneHotEncoding(lb, feature, df):
     df = df.join(feature_df)
     return [lb, df]
 
-orig = pd.read_csv_sync("../data/adult_with_colnames.csv", index_col=0)
+orig = pd.read_csv_sync(DATA_PATH + 'adult_with_colnames.csv', index_col=0)
 [train, test] = cross_validation.train_test_split_sync(orig, test_size=0.3, random_state=501)
 
 
