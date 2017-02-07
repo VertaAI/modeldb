@@ -50,6 +50,11 @@ case class ExistingProject(override val id: Int) extends ProjectConfig(id)
 case class NewOrExistingProject(name: String, author: String, description: String) extends ProjectConfig(-1)
 
 /**
+  * Indicates that the project is unspecified.
+  */
+private case class UnspecifiedProject() extends ProjectConfig(-1)
+
+/**
   * Represents an experiment configuration for the syncer to use.
   * @param id - The ID of an experiment.
   */
@@ -60,6 +65,11 @@ abstract class ExperimentConfig(val id: Int)
   * @param id - The ID of an experiment.
   */
 case class ExistingExperiment(override val id: Int) extends ExperimentConfig(-1)
+
+/**
+  * Indicates that the experiment is not specified.
+  */
+private case class UnspecifiedExperiment() extends ExperimentConfig(-1)
 
 /**
   * Indicates that the syncer use the default experiment in its project.
@@ -109,14 +119,45 @@ case class NewExperimentRun(description: String="") extends ExperimentRunConfig(
   * @param shouldStoreSpecificModels - Whether specific models (e.g. TreeModel, LinearModel) should be stored wherever
   *                                  applicable. Disabling this improves performance.
   */
-class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543),
-                    syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
-                    projectConfig: ProjectConfig,
-                    experimentConfig: ExperimentConfig = new DefaultExperiment,
-                    experimentRunConfig: ExperimentRunConfig,
-                    val shouldCountRows: Boolean = false,
-                    val shouldStoreGSCVE: Boolean = false,
-                    val shouldStoreSpecificModels: Boolean = false) {
+class ModelDbSyncer(var hostPortPair: Option[(String, Int)] = Some("localhost", 6543),
+                    var syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
+                    var projectConfig: ProjectConfig = new UnspecifiedProject,
+                    var experimentConfig: ExperimentConfig = new UnspecifiedExperiment,
+                    var experimentRunConfig: ExperimentRunConfig,
+                    var shouldCountRows: Boolean = false,
+                    var shouldStoreGSCVE: Boolean = false,
+                    var shouldStoreSpecificModels: Boolean = false) {
+
+  /**
+    * Configure this syncer with the configuration from JSON.
+    * @param conf - The JSON configuration. You can create this by doing SyncerConfig(pathToFile).
+    */
+  def this(conf: SyncerConfigJson) {
+    this(
+      hostPortPair = Some(conf.thrift.host, conf.thrift.port),
+      syncingStrategy = conf.syncingStrategy match {
+        case "eager" => SyncingStrategy.Eager
+        case "manual" => SyncingStrategy.Manual
+        case _ => SyncingStrategy.Eager
+      },
+      projectConfig = NewOrExistingProject(
+        conf.project.name,
+        conf.project.author,
+        conf.project.description
+      ),
+      experimentConfig = NewOrExistingExperiment(
+        conf.experiment.name,
+        conf.experiment.description
+      ),
+      experimentRunConfig = NewExperimentRun(
+        conf.experimentRun.description
+      ),
+      shouldCountRows = conf.shouldCountRows,
+      shouldStoreGSCVE = conf.shouldStoreGSCVE,
+      shouldStoreSpecificModels = conf.shouldStoreSpecificModels
+    )
+  }
+
   /**
     * This is a helper class that will constitute the entries in the buffer.
     * @param event - The event in the buffer.
@@ -170,7 +211,7 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
     * @param obj - The object.
     * @return The syncer.
     */
-  def associateObjectAndId(id: Int, obj: Any): ModelDbSyncer = associateObjectAndId(id, obj)
+  def associateObjectAndId(id: Int, obj: Any): ModelDbSyncer = associateObjectAndId(obj, id)
 
   /**
     * Get the ID of a given object.
@@ -284,6 +325,7 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
   var project = projectConfig match {
     case ExistingProject(id) => modeldb.Project(id, "", "", "")
     case np: NewOrExistingProject => modeldb.Project(np.id, np.name, np.author, np.description)
+    case UnspecifiedProject() => modeldb.Project(-1, "", "", "")
   }
 
   // If it's a new project, buffer a ProjectEvent.
@@ -294,10 +336,11 @@ class ModelDbSyncer(hostPortPair: Option[(String, Int)] = Some("localhost", 6543
   }
 
   // Set up the experiment.
-  var experiment = experimentConfig match {.
+  var experiment = experimentConfig match {
     case ExistingExperiment(id) => modeldb.Experiment(id, -1, "", "")
     case de: DefaultExperiment => modeldb.Experiment(-1, project.id, "", "", true)
     case ne: NewOrExistingExperiment => modeldb.Experiment(ne.id, project.id, ne.name, ne.description)
+    case UnspecifiedExperiment() => modeldb.Experiment(-1, -1, "", "")
   }
 
   // If it's a new experiment, buffer an ExperimentEvent.

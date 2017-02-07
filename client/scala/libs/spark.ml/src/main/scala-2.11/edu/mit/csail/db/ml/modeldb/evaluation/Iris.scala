@@ -5,10 +5,21 @@ import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 import org.apache.spark.ml.Transformer
 
+/**
+  * A configuration object that is created by reading the command line arguments.
+  * @param pathToData - The path to the Iris CSV file (https://archive.ics.uci.edu/ml/datasets/Iris).
+  * @param randomForest - Whether a random forest should be trained. If false, a one-vs-rest logistic regression model
+  *                     will be trained.
+  * @param outfile - The path of the output file that should contain the serialized trained model.
+  */
 case class IrisConfig(pathToData: String = "",
                       randomForest: Boolean = true,
                       outfile: String = "")
 
+/**
+  * This workflow trains a model, either a random forest or one vs. rest logistic regression model, on the Iris dataset
+  * and writes the output into a given file.
+  */
 object Iris {
   def runIris(config: IrisConfig): Unit = {
     val spark = Common.makeSession()
@@ -55,10 +66,14 @@ object Iris {
       ovr.fitSync(dfFinal)
     }
 
+    // Write model to file and show the predictions.
     model.saveSync("IrisModel" + (if (config.randomForest) "RandomForest" else "LogReg"))
     dfFinal.show()
   }
 
+  /**
+    * Runs the Iris workflow from the command line.
+    */
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[IrisConfig]("Iris Program") {
       head("Iris Program")

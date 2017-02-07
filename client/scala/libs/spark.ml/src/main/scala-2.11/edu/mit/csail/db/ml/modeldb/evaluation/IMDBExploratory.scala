@@ -7,6 +7,9 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql._
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
+/**
+  * Like the AnimalExploratory workflow, but for the IMDB data.
+  */
 object IMDBExploratory {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()

@@ -3,6 +3,18 @@ var Thrift = require('./thrift.js');
 
 module.exports = {
 
+  getAnnotations: function(modelId, callback) {
+    Thrift.client.getModel(modelId, function(err, response) {
+      callback(response.annotations);
+    });
+  },
+
+  getExperimentsAndRuns: function(projectId, callback) {
+    Thrift.client.getRunsAndExperimentsInProject(projectId, function(err, response) {
+      callback(response);
+    });
+  },
+
   getModel: function(modelId, callback) {
     Thrift.client.getModel(modelId, function(err, response) {
       var model_metrics = response.metrics;
@@ -20,8 +32,7 @@ module.exports = {
         }
       }
       response.metrics = metrics;
-      console.log('test');
-      console.log(response.trainingDataFrame);
+      console.log(response);
       callback(response);
     });
   },
@@ -68,9 +79,21 @@ module.exports = {
         models = models.filter(function(model) {
           return model.show;
         });
-        console.log(models);
         callback(models);
       });
+    });
+  },
+
+  getProject: function(projectId, callback) {
+    Thrift.client.getProjectOverviews(function(err, response) {
+      for (var i=0; i<response.length; i++) {
+        var project = response[i].project;
+        if (project.id == projectId) {
+          callback(project);
+          return;
+        }
+      }
+      callback(null);
     });
   },
 
@@ -81,6 +104,35 @@ module.exports = {
     });
   },
 
+  storeAnnotation: function(modelId, experimentRunId, string, callback) {
+    var transformer = new Transformer({id: modelId});
+    var fragment1 = new AnnotationFragment({
+      type: "transformer",
+      df: null,
+      spec: null,
+      transformer: transformer,
+      message: null
+    });
+
+    var fragment2 = new AnnotationFragment({
+      type: "message",
+      df: null,
+      spec: null,
+      transformer: null,
+      message: string
+    });
+
+    var annotationEvent = new AnnotationEvent({
+      fragments: [fragment1, fragment2],
+      experimentRunId: experimentRunId
+    });
+
+    console.log(annotationEvent);
+
+    Thrift.client.storeAnnotationEvent(annotationEvent, function(err, response) {
+      callback(response);
+    });
+  },
 
   testConnection: function() {
     console.log("hello");

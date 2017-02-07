@@ -9,10 +9,17 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql.DataFrame
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
+/**
+  * This workflow creates a preprocessing pipeline, trains multiple cross-validated models with various feature-sets,
+  * and evaluates each of them.
+  */
 object AnimalExploratory {
   def run(config: Config): Unit = {
+    // Read the dataset.
     val spark = Common.makeSession()
     val df = Common.ensureMinSize(Common.readAnimalShelter(config.pathToData, spark), config.minNumRows)
+
+    // Start timing operations and create the syncer if applicable.
     Timer.activate()
     if (config.syncer) Common.makeSyncer(
       appName = "Animal Shelter Outcomes",
@@ -23,6 +30,7 @@ object AnimalExploratory {
     val featuresCol = "features"
     val predictionCol = "prediction"
 
+    // Helper function for creating and evaluating a cross-validated one vs. rest logistic regression model.
     def makeLrModel(preprocData: DataFrame,
                     labelConverter: IndexToString,
                     featureVectorNames: Option[Array[String]] = None): Unit = {
@@ -67,6 +75,7 @@ object AnimalExploratory {
       println("Evaluated LR model: " + score)
     }
 
+    // Helper function to create and evaluate a cross-validated random forest model.
     def makeRfModel(preprocData: DataFrame,
                     labelConverter: IndexToString,
                     featureVectorNames: Option[Array[String]] = None): Unit = {
@@ -105,6 +114,7 @@ object AnimalExploratory {
       println("Evaluated RF model: " + score)
     }
 
+    // For three feature-sets, create LR and RF models.
     val (preprocessedData, featureVectorNames, labelConverterOpt) = FeatureVectorizer(
       df.toDF(),
       Array("AnimalType", "SexuponOutcome", "SimpleBreed", "SimpleColor"),

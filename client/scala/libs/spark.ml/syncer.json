@@ -1,0 +1,22 @@
+{
+  "thrift": {
+    "host": "localhost",
+    "port": 6543
+  },
+  "syncingStrategy": "eager",
+  "project": {
+    "name": "projectName",
+    "author": "projectAuthor",
+    "description": "projectDescription"
+  },
+  "experiment": {
+    "name": "experimentName",
+    "description": "experimentDescription"
+  },
+  "experimentRun": {
+    "description": "experimentRunDescription"
+  },
+  "shouldCountRows": false,
+  "shouldStoreGSCVE": false,
+  "shouldStoreSpecificModels": false
+}

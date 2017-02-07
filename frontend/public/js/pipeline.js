@@ -32,7 +32,7 @@ $(function() {
   function init() {
     // create a network
     container = document.getElementById('network');
-    var modelId = $(container).data('id');
+    var modelId = $('body').data('id');
 
     // initialize your network!
     network = new vis.Network(container, vis_data, options);

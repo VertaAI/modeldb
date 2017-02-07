@@ -333,6 +333,7 @@ public class TransformerDao {
       metricMap,
       annotations,
       sha,
+      er.getCreated(),
       rec.getFilepath()
     );
   }

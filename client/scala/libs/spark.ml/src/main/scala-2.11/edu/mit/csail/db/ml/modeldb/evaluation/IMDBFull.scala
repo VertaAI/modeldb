@@ -6,6 +6,9 @@ import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.regression.LinearRegression
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 
+/**
+  * Like the AnimalFull workflow, but for the IMDB data.
+  */
 object IMDBFull {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
