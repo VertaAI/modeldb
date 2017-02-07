@@ -101,7 +101,7 @@ lr.fit_sync(x_train, y_train)
 y_pred = lr.predict(x_test)
 ```
 
-A simple workflow containing this code can be found [here](../client/python/samples/sklearn/SimpleSample.py)
+A simple workflow containing this code can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).
 
 #### d. Log metrics
 Use the ModelDB metrics class (**SyncableMetrics**).
