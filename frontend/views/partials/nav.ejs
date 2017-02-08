@@ -2,7 +2,14 @@
   <nav class="nav">
     <div class="logo">
       <a href="/">ModelDB</a>
-      <div class="path"><%= path %></div>
+      <% for (var i=0; i<path.labels.length; i++) { %>
+        <div class="path">></div>
+        <a href="<%= path.links[i] %>">
+          <div class="path">
+            <%= path.labels[i] %>
+          </div>
+        </a>
+      <% } %>
     </div>
     <% if (menu) { %>
       <div class="nav-link menu-icon">

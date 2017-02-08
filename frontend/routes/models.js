@@ -7,7 +7,10 @@ router.get('/:id', function(req, res, next) {
   var modelId = req.params.id;
   res.render('model', {
     title: 'Model',
-    path: ' > Model',
+    path: {
+      'labels': ['Model'],
+      'links': ['/models/' + modelId]
+    },
     menu: false,
     modelId: modelId
   });
