@@ -1,16 +1,18 @@
 useradd -d /home/testuser -m testuser
 apt-get update
-apt-get install wget
-apt-get install unzip zip
-apt-get install git
-apt-get install software-properties-common
+apt-get install commons-lang3
+apt-get install -y wget
+apt-get install -y unzip zip
+apt-get install -y git
+apt-get install -y software-properties-common
 add-apt-repository ppa:webupd8team/java
 apt-get update
-apt-get install openjdk-8-jdk
-apt-get install sqlite
-apt-get install maven
-apt-get install bzip2
-apt-get install automake bison flex g++ git libevent-dev libssl-dev libtool make pkg-config
+apt-get install -y openjdk-8-jdk
+apt-get install -y sqlite
+apt-get install -y maven
+apt-get install -y bzip2
+apt-get install -y automake bison flex g++ git libevent-dev libssl-dev libtool make pkg-config
+apt-get install nodejs
 
 cd home
 cd testuser
@@ -20,11 +22,20 @@ wget http://apache.mesi.com.ar/thrift/0.9.3/thrift-0.9.3.tar.gz
 wget https://repo.continuum.io/archive/Anaconda2-4.2.0-Linux-x86_64.sh
 wget https://dl.bintray.com/sbt/native-packages/sbt/0.13.13/sbt-0.13.13.tgz
 wget http://d3kbcqa49mib13.cloudfront.net/spark-2.0.1-bin-hadoop2.7.tgz
-./Anaconda2-4.2.0-Linux-x86_64.sh
+wget http://shinyfeather.com/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz
+chmod 777 ./Anaconda2-4.2.0-Linux-x86_64.sh
 tar -xvzf sbt-0.13.13.tgz
 tar -xvzf spark-2.0.1-bin-hadoop2.7.tgz
+tar -xvzf zeppelin-0.6.2-bin-all.tgz
+mv zeppelin-0.6.2-bin-all zeppelin
+cp ./zeppelin/conf/zeppelin-site.xml.template ./zeppelin/conf/zeppelin-site.xml
+sed -i -e 's/  <value>8080<\/value>/  <value>8082<\/value>/g' ./zeppelin/conf/zeppelin-site.xml
+wget https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
+mkdir ./zeppelin/notebook/2C44QSZC4
+wget https://raw.githubusercontent.com/mitdbg/modeldb-notebooks/master/scala/ModelDBSample.json -O ./zeppelin/notebook/2C44QSZC4/note.json
 cd thrift-0.9.3
 ./configure
+cd ..
 cd ..
 
 
@@ -43,3 +54,5 @@ cd ..
 cd ..
 cd client/scala/libs/spark.ml 
 ./build_client.sh
+
+cd ../../../../../mdbDependencies

@@ -5,6 +5,9 @@ PATH=/home/testuser/mdbDependencies/thrift-0.9.3:$PATH
 PATH=/home/testuser/mdbDependencies/thrift-0.9.3/compiler/cpp:$PATH
 
 cd /home/testuser/modeldb/server
+cd codegen
+./gen_sqlite.sh
+cd ..
 ./start_server.sh &
 cd ../frontend
 ./start_frontend.sh &
