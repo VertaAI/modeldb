@@ -1,9 +1,9 @@
 FROM ubuntu
 COPY installer.sh /
-COPY quietInstaller.sh /
-COPY interactiveInstaller.sh /
-COPY addDependenciesToPath.sh /
-COPY startModelDB.sh /
-RUN /quietInstaller.sh
+COPY quiet_installer.sh /
+COPY interactive_installer.sh /
+COPY add_dependencies_to_path.sh /
+COPY start_modeldb.sh /
+RUN /quiet_installer.sh
 RUN echo "Please run /interactiveInstaller.sh"
 CMD /bin/bash

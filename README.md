@@ -22,7 +22,7 @@ Once machine learning workflows and models have been logged to ModelDB, they can
 
 To setup ModelDB, follow these steps:
 
-1. ModelDB has various dependencies. See [Required Software](docs/RequiredSoftware.md). Install the relevant ones.
+1. ModelDB has various dependencies. See [Required Software](docs/required_software.md). Install the relevant ones.
 2. Configure and start the [server](server).
 3. Build modeldb clients as described in for [spark.ml](client/scala/libs/spark.ml) and [scikit-learn](client/python).
 4. Update your ML code to use the client libraries to log workflows and models to ModelDB, as in [here](client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample), [here](client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation), and [here](client/python/samples).
