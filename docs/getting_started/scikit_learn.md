@@ -58,7 +58,7 @@ cd codegen
 cd ..
 ./start_server.sh &
 
-# build spark.ml client library
+# build scikit-learn client library
 cd path_to_modeldb/client/python
 ./build_client.sh
 
