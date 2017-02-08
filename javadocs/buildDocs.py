@@ -4,4 +4,6 @@ import glob
 vals = glob.glob("..\client\scala\libs\spark.ml\src\main\scala-2.11\edu\mit\csail\db\ml\modeldb\*\*.scala")
 files = reduce(lambda s,t: s+ " " + t,vals)
 
+print "Running:\n"
 print "javadoc -private " + files
+os.system("javadoc -private " + files)
