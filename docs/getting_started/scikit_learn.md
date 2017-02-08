@@ -7,19 +7,23 @@ git clone https://github.com/mitdbg/modeldb
 ```
 
 ## 2. Install dependencies
-We assume that you have Python 2.7+ and scikit-learn installed.
+We assume that you have Python and scikit-learn installed.
 
-_Note: ModelDB has been tested with Python 2.7 and scikit-learn 0.17. It may not be compatible with subsequent versions._
+**Versions**: ModelDB currently requires **Thrift 0.9.3**, **Python 2.7**, and **scikit-learn 0.17**.
 
 On Mac OSX:
 
 ```bash
 brew install sqlite
-brew install thrift
 brew install maven
 brew install node
 
+# we require Thrift 0.9.3 at the moment (brew install will give you 0.10.1)
+Download 0.9.3 from: http://archive.apache.org/dist/thrift/0.9.3/
+Follow build instructions at: https://thrift.apache.org/docs/install/os_x
 ```
+
+
 
 On Linux:
 
@@ -39,6 +43,7 @@ cd thrift-0.9.3
 make
 export PATH=path_to_thrift/:$PATH
 ```
+Further instructions for installing dependencies are [here](https://github.com/mitdbg/modeldb/blob/master/docs/required_software.md).
 
 ## 3. Build
 
@@ -76,19 +81,22 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 ```
 
 #### b. Create a ModelDB syncer
-ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the syncer either from a config file (e.g. [FIX](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/syncer.json)) or explicitly via arguments.
+ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the Syncer as shown below.
+
+<!-- You can initialize the syncer either from a config file (e.g. [FIX](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/syncer.json)) or explicitly via arguments.
 
 ```python
 # initialize syncer from config file
 FIX.
 ModelDbSyncer.setSyncer(new ModelDBSyncer(SyncerConfig(path_to_config)))
 ```
-OR
+OR-->
+
 ```python
 # initialize syncer explicitly
 syncer_obj = Syncer(
-        NewOrExistingProject(name, author, description),
-        NewOrExistingExperiment("expName", "expDesc"),
+        NewOrExistingProject("proj_name", "username", "proj_description"),
+        NewOrExistingExperiment("exp_name", "exp_desc"),
         NewExperimentRun("simple sample test"))
 ```
 
@@ -127,6 +135,6 @@ export PYTHONPATH=path_to_modedb_dir/client/python:$PYTHONPATH
 ## 5. Explore models
 That's it! Explore the models you built in your workflow at [http://localhost:3000](http://localhost:3000).
 
-_TODO:_ Add picture here
+<img src="images/frontend-1.png">
 
 _Sample spark.ml workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/sklearn) and [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/kaggle)._
