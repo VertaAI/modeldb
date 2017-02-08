@@ -10,6 +10,7 @@ git clone https://github.com/mitdbg/modeldb
 We assume that you have Java 1.8+ and Spark 2.0 installed.
 
 _Note: ModelDB has been tested with Spark 2.0. It may not be compatible with subsequent versions._
+_Note 2: ModelDB has known incompatibilities with Thrift 0.9.0 and 0.10.0. Please use version 0.9.3_
 
 On Mac OSX:
 

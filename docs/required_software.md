@@ -8,7 +8,7 @@ ModelDB depends on the following:
 *Server*
 * [SQLite](http://sqlite.org/) (3.15.1): To store the models
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (1.8): To run the server
-* [Apache Thrift](http://thrift.apache.org/) (0.9.3): To interface with the different clients
+* [Apache Thrift](http://thrift.apache.org/) (0.9.3): To interface with the different clients *ModelDB is incompatible with other versions of Thrift*
 * [Maven](http://maven.apache.org/download.cgi) (3.3.9): To build the project
 
 *Client (Python)*
