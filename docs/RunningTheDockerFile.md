@@ -4,7 +4,7 @@ Use the following command to download the image from dockerhub:
 docker run -it -p 8082:8082 -p 8081:3000 sanjayganeshan/mdgmodeldb:latest
 ```
 
-OR build it from the dockerfile. 
+OR build it from the dockerfile. Note that is is **HIGHLY** recommended to use the version from dockerhub.
 
 *from the dockerbuild directory*
 

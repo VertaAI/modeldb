@@ -14,7 +14,7 @@ apt-get install -y bzip2
 apt-get install -y automake bison flex g++ git libevent-dev libssl-dev libtool make pkg-config
 apt-get install nodejs
 
-cd home
+cd /home
 cd testuser
 mkdir mdbDependencies
 cd mdbDependencies
@@ -27,6 +27,7 @@ chmod 777 ./Anaconda2-4.2.0-Linux-x86_64.sh
 tar -xvzf sbt-0.13.13.tgz
 tar -xvzf spark-2.0.1-bin-hadoop2.7.tgz
 tar -xvzf zeppelin-0.6.2-bin-all.tgz
+tar -xvzf thrift-0.9.3.tar.gz
 mv zeppelin-0.6.2-bin-all zeppelin
 cp ./zeppelin/conf/zeppelin-site.xml.template ./zeppelin/conf/zeppelin-site.xml
 sed -i -e 's/  <value>8080<\/value>/  <value>8082<\/value>/g' ./zeppelin/conf/zeppelin-site.xml
@@ -35,6 +36,7 @@ mkdir ./zeppelin/notebook/2C44QSZC4
 wget https://raw.githubusercontent.com/mitdbg/modeldb-notebooks/master/scala/ModelDBSample.json -O ./zeppelin/notebook/2C44QSZC4/note.json
 cd thrift-0.9.3
 ./configure
+make
 cd ..
 cd ..
 
