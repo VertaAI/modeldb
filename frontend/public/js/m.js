@@ -912,6 +912,7 @@ $(function() {
     specs.encoding.x.field = z;
     specs.encoding.color.field = z;
     specs.encoding.y.aggregate = aggregate;
+    specs.encoding.column.axis.labelMaxLength = 8;
 
     if (aggregate == "count") {
       specs.encoding.y.axis.title = aggregate;
