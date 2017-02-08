@@ -10,8 +10,8 @@ there is a python utility that will generate the command and run it for you:
 
 *(from the modeldb directory)*
 ```bash
-cd javadocs
-python buildDocs.py
+cd docs/server
+python build_docs.py
 ```
 
-This will build the documentation to the *javadocs* directory.
+This will build the documentation to the *docs/server* directory.
