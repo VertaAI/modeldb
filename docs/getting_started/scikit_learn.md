@@ -35,15 +35,14 @@ sudo apt-get install nodejs # may need to symlink node to nodejs. "cd /usr/bin; 
 
 # install thrift. path_to_thrift is the installation directory
 cd path_to_thrift
-wget
-http://mirror.cc.columbia.edu/pub/software/apache/thrift/0.9.3/thrift-0.9.3.tar.gz
+wget http://mirror.cc.columbia.edu/pub/software/apache/thrift/0.9.3/thrift-0.9.3.tar.gz
 tar -xvzf thrift-0.9.3.tar.gz
 cd thrift-0.9.3
 ./configure
 make
 export PATH=path_to_thrift/:$PATH
 ```
-Further instructions for installing dependencies are [here](https://github.com/mitdbg/modeldb/blob/master/docs/required_software.md).
+For more help on installing dependencies see [here](https://github.com/mitdbg/modeldb/blob/master/docs/required_software.md).
 
 ## 3. Build
 
@@ -111,8 +110,6 @@ lr.fit_sync(x_train, y_train)
 y_pred = lr.predict(x_test)
 ```
 
-The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).
-
 #### d. Log metrics
 Use the ModelDB metrics class (**SyncableMetrics**).
 
@@ -124,6 +121,9 @@ SyncableMetrics.compute_metrics(model, scoring_function, labels, predictions, da
  ModelDbSyncer.sync()
 ```
 -->
+
+The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).
+
 #### e. _Run your program!_
 
 Be sure to add the modeldb python client folder to your path.
@@ -138,4 +138,5 @@ That's it! Explore the models you built in your workflow at [http://localhost:30
 <img src="images/frontend-1.png">
 
 
-_Sample scikit-learn workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/sklearn) and [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/kaggle)._
+
+**More complex scikit-learn workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/sklearn).**
