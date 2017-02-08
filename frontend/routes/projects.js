@@ -7,7 +7,10 @@ router.get('/', function(req, res, next) {
   api.getProjects(function(response) {
     res.render('projects', {
       title: 'Projects',
-      path: ' > Projects',
+      path: {
+        'labels': ['Projects'],
+        'links': ['/projects']
+      },
       menu: false,
       projects: response
     });
@@ -36,7 +39,10 @@ router.get('/:id/m', function(req, res, next) {
   api.getProjectModels(projectId, function(response) {
     res.render('models', {
       title: 'Models',
-      path: ' > Projects > Models',
+      path: {
+        'labels': ['Projects', 'Models'],
+        'links': ['/projects', '/projects/' + projectId + '/m']
+      },
       menu: true,
       models: response
     });
@@ -47,7 +53,10 @@ router.get('/:id/models', function(req, res, next) {
   var id = req.params.id;
   res.render('m', {
     title: 'Models',
-    path: ' > Projects > Models',
+    path: {
+      'labels': ['Projects', 'Models'],
+      'links': ['/projects', '/projects/' + id + '/models']
+    },
     menu: false,
     id: id
   });
