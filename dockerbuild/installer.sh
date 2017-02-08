@@ -36,6 +36,7 @@ wget https://raw.githubusercontent.com/mitdbg/modeldb-notebooks/master/scala/Mod
 cd thrift-0.9.3
 ./configure
 make
+ln -s /home/testuser/mdbDependencies/thrift-0.9.3/compiler/cpp/thrift /usr/local/bin/thrift
 cd ..
 cd ..
 
