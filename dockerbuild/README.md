@@ -23,9 +23,14 @@ to add the dependencies to your PATH first).
 ##Summary of Files
 
 `installer.sh`: A full-fledged installer that installs ModelDB. You shouldn't have to run this.
+
 `interactive_installer.sh`: An installer that installs the components of ModelDB that require the user to accept an agreement,
 then starts ModelDB.
+
 `quiet_installer.sh`: An installer that installs all it can without user input
+
 `start_modeldb.sh`: A script that adds the dependencies to the PATH, then starts ModelDB.
+
 `add_dependencies_to_path.sh`: A script that adds the dependencies to the PATH.
+
 `Dockerfile`: A script that tells Docker how to build the image.
