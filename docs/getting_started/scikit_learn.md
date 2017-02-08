@@ -111,7 +111,7 @@ lr.fit_sync(x_train, y_train)
 y_pred = lr.predict(x_test)
 ```
 
-A simple workflow containing this code can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).
+The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).
 
 #### d. Log metrics
 Use the ModelDB metrics class (**SyncableMetrics**).
@@ -137,4 +137,5 @@ That's it! Explore the models you built in your workflow at [http://localhost:30
 
 <img src="images/frontend-1.png">
 
-_Sample spark.ml workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/sklearn) and [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/kaggle)._
+
+_Sample scikit-learn workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/sklearn) and [here](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/kaggle)._
