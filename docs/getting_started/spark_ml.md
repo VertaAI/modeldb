@@ -9,18 +9,19 @@ git clone https://github.com/mitdbg/modeldb
 ## 2. Install dependencies
 We assume that you have Java 1.8+ and Spark 2.0 installed.
 
-_Note: ModelDB has been tested with Spark 2.0. It may not be compatible with subsequent versions._
-_Note 2: ModelDB has known incompatibilities with Thrift 0.9.0 and 0.10.0. Please use version 0.9.3_
+**Versions**: ModelDB currently requires **Thrift 0.9.3** and **Spark 2.0**.
 
 On Mac OSX:
 
 ```bash
 brew install sqlite
-brew install thrift
 brew install maven
-brew install sbt
 brew install node
+brew install sbt
 
+# we require Thrift 0.9.3 at the moment (brew install will give you 0.10.1)
+Download 0.9.3 from: http://archive.apache.org/dist/thrift/0.9.3/
+Follow build instructions at: https://thrift.apache.org/docs/install/os_x
 ```
 
 On Linux:
@@ -34,14 +35,14 @@ sudo apt-get install nodejs # may need to symlink node to nodejs. "cd /usr/bin; 
 
 # install thrift. path_to_thrift is the installation directory
 cd path_to_thrift
-wget
-http://mirror.cc.columbia.edu/pub/software/apache/thrift/0.9.3/thrift-0.9.3.tar.gz
+wget http://mirror.cc.columbia.edu/pub/software/apache/thrift/0.9.3/thrift-0.9.3.tar.gz
 tar -xvzf thrift-0.9.3.tar.gz
 cd thrift-0.9.3
 ./configure
 make
 export PATH=path_to_thrift/:$PATH
 ```
+For more help on installing dependencies see [here](https://github.com/mitdbg/modeldb/blob/master/docs/required_software.md).
 
 ## 3. Build
 
@@ -130,6 +131,9 @@ val metric = evaluator.evaluateSync(predictions, logRegModel)
  ModelDbSyncer.sync()
 ```
 -->
+
+The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample/SimpleSample.scala).
+
 #### e. _Run your program!_
 
 Be sure to link the client library built above to your code (e.g. by adding to your classpath).
@@ -137,6 +141,6 @@ Be sure to link the client library built above to your code (e.g. by adding to y
 ## 5. Explore models
 That's it! Explore the models you built in your workflow at [http://localhost:3000](http://localhost:3000).
 
-_TODO:_ Add picture here
+<img src="images/frontend-1.png">
 
-_Sample spark.ml workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) and [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation)_
+**More complex spark.ml workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) and [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation)**
