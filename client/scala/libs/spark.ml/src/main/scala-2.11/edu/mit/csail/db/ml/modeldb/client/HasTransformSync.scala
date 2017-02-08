@@ -8,6 +8,8 @@ import org.apache.spark.sql.DataFrame
 /**
   * This trait augments a Transformer with the transformSync functions that log a
   * TransformEvent to the ModelDB after transforming a DataFrame.
+  *
+  * The trait exposes methods that resemble the transform method of a Spark Transformer.
   */
 trait HasTransformSync {
 

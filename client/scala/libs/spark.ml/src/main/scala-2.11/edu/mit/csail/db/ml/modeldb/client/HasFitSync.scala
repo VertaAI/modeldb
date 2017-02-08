@@ -6,15 +6,8 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.DataFrame
 
 /**
-  * This trait augments a model with fitSync functions that log a FitEvent on the
-  * ModelDB after fitting the model. The functions are:
-  *
-  * fitSync(DataFrame)
-  * fitSync(DataFrame, ParamMap)
-  * fitSync(DataFrame, Array[ParamMap])
-  *
-  * functions for an estimator.
-  * These functions will fit models and record a FitEvent to the ModelDbSyncer.
+  * This trait augments a model with fitSync methods that log a FitEvent on the
+  * ModelDB after fitting the model. The methods resemble the fit method on a Spark Estimator.
   *
   * @tparam T - The type of the model.
   */
@@ -27,27 +20,30 @@ trait HasFitSync[T <: Model[T]] {
     * @param df - The DataFrame being fit.
     * @param pms - The ParamMaps (may be empty) to use for fitting.
     * @param mdbs - The Model DB syncer.
-    * @return The trained models
+    * @param featureVectorNames - The names of the features in the feature vector. The ith entry of the sequence is
+    *                           the name of the (i+1)st feature in the feature vector.
+    * @return The trained models.
     */
   def fitSync(estimator: Estimator[T],
               df: DataFrame,
               pms: Array[ParamMap],
               mdbs: Option[ModelDbSyncer],
-              featureVectorNames: Seq[String]) = {
-    // Associate the feature vector names with the dataframe.
-    if (mdbs.isDefined) mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
+              featureVectorNames: Seq[String]): Seq[T] = {
+    if (pms.nonEmpty) {
+      pms.flatMap(pm => fitSync(estimator.copy(pm), df, Array[ParamMap](), mdbs, featureVectorNames))
+    } else {
+      // Associate the feature vector names with the dataframe.
+      if (mdbs.isDefined) mdbs.get.featureTracker.setFeaturesForDf(df, featureVectorNames)
 
-    // Train the models.
-    val models = if (pms.length == 0) Seq(estimator.fit(df)) else estimator.fit(df, pms)
+      // Train the models.
+      val model = estimator.fit(df)
 
-    // Turn the ParamMaps into Syncables.
-    val pmsSync = if (pms.length == 0) Seq() else pms
+      // Record a FitEvent in the event syncer.
+      if (mdbs.isDefined) mdbs.get.buffer(FitEvent(estimator, df, model))
 
-    // Record a FitEvent in the event syncer.
-    if (mdbs.isDefined) models.foreach((model) => mdbs.get.buffer(FitEvent(estimator, df, model)))
-
-    // Return the models.
-    models
+      // Return the models.
+      Seq(model)
+    }
   }
 
   // Define the fitSync methods.

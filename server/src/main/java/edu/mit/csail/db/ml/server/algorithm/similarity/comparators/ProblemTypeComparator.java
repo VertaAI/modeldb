@@ -9,7 +9,20 @@ import org.jooq.Record1;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * This comparator finds models with the same problem type (e.g. regression, classification) as the given model.
+ */
 public class ProblemTypeComparator implements ModelComparator {
+  /**
+   * @param modelId - We seek models that are similar to the model with the given ID.
+   * @param similarModels - If this is an empty list, then we will read the database and
+   *                      find similar models there. Otherwise, the given list of model IDs
+   *                      will be re-ordered such that the most similar model is first and
+   *                      the least similar model will be last.
+   * @param limit - The maximum number of model IDs to return.
+   * @param ctx - The context for interacting with the database.
+   * @return Similar models are the ones whose problem type matches the problem type of the model with ID modelID.
+   */
   @Override
   public List<Integer> similarModels(int modelId, List<Integer> similarModels, int limit, DSLContext ctx) {
     // Fetch the problem type of the model.

@@ -9,11 +9,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This class contains logic for storing and reading CrossValidationEvents.
+ */
 public class CrossValidationEventDao {
+  /**
+   * Store the given CrossValidationEvent in the database.
+   * @param cve - The CrossValidationEvent.
+   * @param ctx - The database context.
+   * @return The response after storing the CrossValidationEvent.
+   */
   public static CrossValidationEventResponse store(CrossValidationEvent cve, DSLContext ctx) {
+    // Store the training DataFrame that is used for CrossValidationEvent.
     DataframeRecord df = DataFrameDao.store(cve.df, cve.experimentRunId, ctx);
+
+    // Store the TransformerSpec that is being evaluated for cross validation.
     TransformerspecRecord spec = TransformerSpecDao.store(cve.spec, cve.experimentRunId, ctx);
 
+    // Store an entry in the CrossValidationEvent table.
     CrossvalidationeventRecord cveRec = ctx.newRecord(Tables.CROSSVALIDATIONEVENT);
     cveRec.setId(null);
     cveRec.setDf(df.getId());
@@ -24,8 +37,10 @@ public class CrossValidationEventDao {
     cveRec.setExperimentrun(cve.experimentRunId);
     cveRec.store();
 
+    // Store an entry in the Event table.
     EventRecord ev = EventDao.store(cveRec.getId(), "cross validation", cve.experimentRunId, ctx);
 
+    // Store a FitEvent for each fold.
     List<FitEventResponse> fers = cve
       .folds
       .stream()
@@ -41,6 +56,7 @@ public class CrossValidationEventDao {
       .map(fe -> FitEventDao.store(fe, ctx))
       .collect(Collectors.toList());
 
+    // Store a MetricEvent for each fold.
     List<MetricEventResponse> mers = IntStream
       .range(0, cve.folds.size())
       .mapToObj(ind -> new MetricEvent(
@@ -55,7 +71,7 @@ public class CrossValidationEventDao {
       .map(me -> MetricEventDao.store(me, ctx))
       .collect(Collectors.toList());
 
-
+    // Prepare the responses that will be returned (one for each fold).
     List<CrossValidationFoldResponse> foldResponses = IntStream
       .range(0, cve.folds.size())
       .mapToObj(ind -> new CrossValidationFoldResponse(
@@ -65,6 +81,7 @@ public class CrossValidationEventDao {
       ))
       .collect(Collectors.toList());
 
+    // Store a CrossValidationFold for each fold.
     mers.forEach(me -> {
       CrossvalidationfoldRecord rec = ctx.newRecord(Tables.CROSSVALIDATIONFOLD);
       rec.setId(null);
@@ -75,6 +92,7 @@ public class CrossValidationEventDao {
       rec.getId();
     });
 
+    // Return the response containing the IDs of the stored rows.
     return new CrossValidationEventResponse(df.getId(), spec.getId(), ev.getId(), foldResponses, cveRec.getId());
   }
 }

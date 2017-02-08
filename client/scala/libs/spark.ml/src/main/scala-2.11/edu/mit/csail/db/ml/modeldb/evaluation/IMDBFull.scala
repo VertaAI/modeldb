@@ -6,6 +6,9 @@ import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.regression.LinearRegression
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 
+/**
+  * Like the AnimalFull workflow, but for the IMDB data.
+  */
 object IMDBFull {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
@@ -59,6 +62,7 @@ object IMDBFull {
 
     // Select a model with cross validation.
     val model = cv.fitSync(train)
+    model.saveSync("imdb_full_model")
 
     // Evaluate the resulting model.
     val predictions = model.transformSync(test)

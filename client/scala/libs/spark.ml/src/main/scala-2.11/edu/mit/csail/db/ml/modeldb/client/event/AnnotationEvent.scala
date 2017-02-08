@@ -21,8 +21,11 @@ case class AnnotationEvent(items: Any*) extends ModelDbEvent {
     val TRANSFORMER = "transformer"
   }
 
-  // AnnotationEvents are made from AnnotationFragments. This is a convenience
-  // function that creates an empty AnnotationFragment that we can override below.
+  /**
+    * AnnotationEvents are made from AnnotationFragments. This is a convenience
+    * function that creates an empty AnnotationFragment whose fields we can modify.
+    * @return An empty annotation fragment with sensible defaults.
+    */
   private def makeEmptyFragment = modeldb.AnnotationFragment(
     "",
     modeldb.DataFrame(numRows=1),
@@ -31,6 +34,13 @@ case class AnnotationEvent(items: Any*) extends ModelDbEvent {
     ""
   )
 
+  /**
+    * Stores the AnnotationEvent on the server.
+    * @param client - The client that exposes the functions that we
+    *               call to store objects in the ModelDB.
+    * @param mdbs - The ModelDbSyncer, included so we can update the ID
+    *             mappings after syncing.
+    */
   override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
     // Create the fragments.
     val fragments = items.map {
@@ -44,11 +54,13 @@ case class AnnotationEvent(items: Any*) extends ModelDbEvent {
         makeEmptyFragment.copy(`type`=AnnotationTypes.SPEC, spec=SyncableEstimator(estimator))
     }
 
+    // Store the annotation event.
     val res = Await.result(client.storeAnnotationEvent(modeldb.AnnotationEvent(
       fragments,
       experimentRunId = mdbs.get.experimentRun.id
     )))
 
+    // Associate objects and IDs.
     (items zip res.fragmentResponses).foreach { case (item, response) =>
       if (!item.isInstanceOf[String]) {
         mdbs.get.associateObjectAndId(item, response.id)

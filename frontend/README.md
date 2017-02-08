@@ -1,21 +1,10 @@
 ## Setup
 
-Follow setup instructions in ../server directory
+Make sure the ModelDB server is running, following the instructions in the server/ directory. 
 
-Start server in one terminal
+Start the frontend from the frontend dir with:
 
-    $ cd modeldb/server/
-    $ ./start_server.sh
+    $ ./start_frontend.sh
 
-Generate thrift files
 
-    $ cd modeldb/frontend/
-    $ mkdir thrift
-    $ thrift -r -out thrift/ --gen js:node ../thrift/ModelDB.thrift 
-        
-Start up node server
-
-    $ npm install
-    $ npm start
-
-Visit application at localhost:3000
+Visit application at http://localhost:3000/projects

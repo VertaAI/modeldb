@@ -1,0 +1,164 @@
+<div>
+  <div class="model" data-show="true">
+
+    <div class="model-section model-ids">
+      <a href="/models/<%= model["id"] %>">
+        <div class="kv nkv"
+          data-key="Model ID"
+          data-val="<%= model["id"] %>"
+        >
+          Model ID: <%= model["id"] %>
+        </div>
+      </a>
+
+      <div class="kv"
+        data-key="Experiment Run ID"
+        data-val="<%= model["Experiment Run ID"] %>"
+      >
+        Experiment Run ID: <%= model["Experiment Run ID"] %>
+      </div>
+
+      <div class="kv"
+        data-key="Experiment ID"
+        data-val="<%= model["Experiment ID"] %>"
+      >
+        Experiment ID: <%= model["Experiment ID"] %>
+      </div>
+
+    </div>
+
+
+    <div class="model-section model-dataframe">
+
+      <div class="kv"
+        data-key="DataFrame ID"
+        data-val="<%= model["DataFrame ID"] %>"
+      >
+        DataFrame ID: <%= model["DataFrame ID"] %>
+      </div>
+
+      <% if (model["DF Tag"]) { %>
+        <div class="kv"
+          data-key="DF Tag"
+          data-val="<%= model["DF Tag"] %>"
+        >
+          DF Tag: <%= model["DF Tag"] %>
+        </div>
+      <% } %>
+
+      <% if (model["DF Filepath"]) { %>
+        <div class="nkv tooltip-trigger"
+          data-key="DF Filepath"
+          data-val="<%= model["DF Filepath"] %>"
+        >
+          DF Filepath: <%= model["DF Filepath"] %>
+        </div>
+      <% } %>
+
+      <% if (model["metadata"].length > 0) { %>
+        <div class="nkv dfmetadata-container popup-container">
+          <div class="popup-label">Metadata</div>
+          <div class="dfmetadata popup-contents">
+            <% for (var j=0; j<model["metadata"].length; j++) { %>
+              <div class="kv"
+                data-src="metadata"
+                data-key="<%= model["metadata"][j].key %>"
+                data-val="<%= model["metadata"][j].value %>"
+              >
+                <%= model["metadata"][j].key %>: <%= model["metadata"][j].value %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+
+    <div class="model-section model-spec">
+
+      <div class="kv"
+        data-key="Type"
+        data-val="<%= model["Type"] %>"
+      >
+        Type: <%= model["Type"] %>
+      </div>
+
+      <% if (model["Spec Tag"]) { %>
+        <div class="kv"
+          data-key="Spec Tag"
+          data-val="<%= model["Spec Tag"] %>"
+        >
+          Spec Tag: <%= model["Spec Tag"] %>
+        </div>
+      <% } %>
+
+      <div class="nkv hyperparams-container popup-container">
+        <div class="popup-label">Hyperparameters</div>
+        <div class="hyperparams popup-contents">
+          <% for (var j=0; j<model["hyperparams"].length; j++) { %>
+            <div class="kv"
+              data-src="hyperparameters"
+              data-key="<%= model["hyperparams"][j].name %>"
+              data-val="<%= model["hyperparams"][j].value %>"
+            >
+              <%= model["hyperparams"][j].name %>: <%= model["hyperparams"][j].value %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="model-section model-metrics">
+      <% for (var j=0; j<model.metrics.length; j++) { %>
+        <div class="model-metric kv"
+          data-key="<%=model.metrics[j].key %>"
+          data-val="<%=model.metrics[j].val %>"
+          data-num="true"
+        >
+          <%= model.metrics[j].key %>: <%= model.metrics[j].val %>
+        </div>
+      <% } %>
+    </div>
+
+
+    <div class="model-section model-misc">
+      <div class="nkv annotation">
+        Notes:
+        <span class="annotation-message" data-id="<%= model.id %>">
+          <% if (model.annotations.length > 0) { %>
+            <%= model.annotations[model.annotations.length - 1].replace(/Transformer\([0-9]*\)\s/, "") %>
+          <% } %>
+        </span>
+        <div class="annotation-create md-trigger"
+          data-modal="modal-1"
+          data-id="<%= model.id %>"
+          data-experimentRunId="<%= model["Experiment Run ID"] %>"
+        >
+          [+]
+        </div>
+        <div class="annotations-container">
+        </div>
+      </div>
+
+      <% if (model["Code SHA"]) { %>
+        <div class="nkv"
+          data-key="Code SHA"
+          data-val="<%= model["Code SHA"] %>"
+        >
+          Code SHA: <%= model["Code SHA"] %>
+        </div>
+      <% } %>
+
+      <% if (model["Filepath"]) { %>
+        <div class="nkv tooltip-trigger"
+          data-key="Filepath"
+          data-val="<%= model["Filepath"] %>"
+        >
+          Filepath: <%= model["Filepath"] %>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+</div>

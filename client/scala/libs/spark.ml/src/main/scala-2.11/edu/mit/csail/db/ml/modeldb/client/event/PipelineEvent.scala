@@ -49,8 +49,18 @@ case class PipelineEvent(pipeline: Pipeline,
                          pipelineModel: PipelineModel,
                          inputDataFrame: DataFrame,
                          stages: Seq[PipelineStageEvent]) extends ModelDbEvent {
+  /**
+    * @return The FitEvent representing the fitting of the overall PipelineModel.
+    */
   def makePipelineFit = FitEvent(pipeline, inputDataFrame, pipelineModel)
 
+  /**
+    * Use the constructor arguments to create information about the stages.
+    * @param mdbs - The syncer.
+    * @return A tuple of the form (transform stages, fit stages, label columns, feature columns, prediction columns).
+    *         The transform stages map goes from stage index to TransformEvent. The fit stages map goes from
+    *         stage index to FitEvent.
+    */
   def makeStages(mdbs: ModelDbSyncer):
   (Seq[(Int, TransformEvent)], Seq[(Int, FitEvent)], Seq[String], Seq[String], Seq[String]) = {
     val transformStages = ArrayBuffer[(Int, TransformEvent)]()
@@ -78,6 +88,17 @@ case class PipelineEvent(pipeline: Pipeline,
     (transformStages, fitStages, labelCols.distinct, featureCols.distinct, predictionCols.distinct)
   }
 
+  /**
+    * Create the PipelineEvent.
+    * @param pipelineFit - The FitEvent representing the overall fitting of the PipelineEvent.
+    * @param labelCols - The label columns (input the pipeline).
+    * @param featureCols - The feature columns (used by any models in the pipeline).
+    * @param predictionCols - The prediction columns (the outputs of the pipeline).
+    * @param transformStages - A map that goes from stage index to TransformEvent.
+    * @param fitStages - A map that goes from stage index to FitEvent.
+    * @param mdbs - The syncer.
+    * @return A PipelineEvent.
+    */
   def makeEvent(pipelineFit: FitEvent,
                 labelCols: Seq[String],
                 featureCols: Seq[String],
@@ -97,6 +118,15 @@ case class PipelineEvent(pipeline: Pipeline,
     )
   }
 
+  /**
+    * Update the object-ID mappings based on responses to the stored pipeline event.
+    * @param res - The response to storing the PipelineEvent.
+    * @param pipelineFit - The FitEvent representing the fit of the overall PipelineModel.
+    * @param transformStages - The mapping from stage index to TransformEvent.
+    * @param fitStages - The mapping from stage index to FitEvent.
+    * @param mdbs - The syncer.
+    * @param client - The client for interacting for server.
+    */
   def associate(res: PipelineEventResponse,
                 pipelineFit: FitEvent,
                 transformStages: Seq[(Int, TransformEvent)],
@@ -108,11 +138,18 @@ case class PipelineEvent(pipeline: Pipeline,
       te.associate(ter, mdbs)
     }
     (res.fitStagesResponses zip fitStages).foreach { case (fer, (index, fe)) =>
-      SyncableSpecificModel(fer.modelId, pipelineModel.stages(index), client)
+      SyncableSpecificModel(fer.modelId, pipelineModel.stages(index), client, mdbs.shouldStoreSpecificModels)
       fe.associate(fer, mdbs)
     }
   }
 
+  /**
+    * Store the PipelineEvent in the database.
+    * @param client - The client that exposes the functions that we
+    *               call to store objects in the ModelDB.
+    * @param mdbs - The ModelDbSyncer, included so we can update the ID
+    *             mappings after syncing.
+    */
   override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
     // First make the fit event for the overall pipeline.
     val pipelineFit = makePipelineFit

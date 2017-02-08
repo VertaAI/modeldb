@@ -2,8 +2,11 @@
 <html>
   <head>
     <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://vega.github.io/vega-tooltip/vg-tooltip.css">
+    <link rel='stylesheet' href='/css/style.css' />
     <link rel='stylesheet' href='/css/models.css' />
-    
+
     <!-- JQuery -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -13,98 +16,284 @@
     <script src="//vega.github.io/vega/vega.js"></script>
     <script src="//vega.github.io/vega-lite/vega-lite.js"></script>
     <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
+    <script src="//vega.github.io/datalib/datalib.min.js"></script>
+    <script src="//vega.github.io/vega-tooltip/vg-tooltip.min.js"></script>
+
+    <!-- tinysort -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinysort/2.3.6/tinysort.min.js"></script>
 
     <script src='/js/models.js'></script>
     <script src='/js/charts.js'></script>
   </head>
   <body>
-    <h1><%= title %></h1>
-    <div class="filters-container">
-        <div class="filters-info">
-            <h2>Filter</h2>
-            Drag configs or metrics into this section to filter models based on key - value pairs.
+    <%- include partials/nav.ejs %>
+    <div class="container">
+
+      <div class="loader">
+        <img src="/images/loading.gif">
+      </div>
+
+      <div class="group-table-container select-container">
+        <div class="select-label">
+          group by:
         </div>
-        <div class="filters"></div>
-    </div>
-    <div class="models inline-block">
-      <% for(var i=0; i<models.length; i++) { %>
-        <div class="model">
+        <select class="group-table">
+          <option value="None" selected="selected">None</option>
+        </select>
+      </div>
 
-          <div class="inline-block model-info">
-            <div class="kv"
-              data-key="Model ID"
-              data-val="<%= models[i].id %>"
-            >
-              Model ID: <%= models[i].id %>
-            </div>
-            <div class="kv"
-              data-key="Project ID"
-              data-val="<%= models[i].projectId %>"
-            >
-              Project ID: <%= models[i].projectId %>
-            </div>
-            <div class="kv"
-              data-key="Type"
-              data-val="<%= models[i].specification.transformerType %>"
-            >
-              Type: <%= models[i].specification.transformerType %>
-            </div>
-          </div>
-          
-          <div class="inline-block model-configs">
-            <div class="kv"
-              data-key="Experiment ID"
-              data-val="<%= models[i].experimentId %>"
-            >
-              Experiment ID: <%= models[i].experimentId %>
-            </div>
-            <div class="kv"
-              data-key="Experiment Run ID"
-              data-val="<%= models[i].experimentRunId %>"
-            >
-              Experiment Run ID: <%= models[i].experimentRunId %>
-            </div>
-            <div class="kv"
-              data-key="Problem Type"
-              data-val="<%= models[i].problemType %>"
-            >
-              Problem Type: <%= models[i].problemType %>
-            </div>
-          </div>
+      <div class="model-headings">
+        <div class="model-heading model-ids">
+          IDs
+        </div>
+        <div class="model-heading model-dataframe">
+          DataFrame
+        </div>
+        <div class="model-heading model-spec">
+          Specifications
+        </div>
+        <div class="model-heading model-metrics">
+          Metrics
+        </div>
+        <div class="model-heading model-misc">
+          Misc.
+        </div>
+      </div>
 
-          <div class="inline-block model-metrics">
-            <% for (var j=0; j<models[i].metrics.length; j++) { %>
-              <div class="model-metric kv"
-                data-key="<%=models[i].metrics[j].key %>"
-                data-val="<%=models[i].metrics[j].val %>"
-                data-num="true"
-              >
-                <%= models[i].metrics[j].key %>: <%= models[i].metrics[j].val %>
+      <div class="models-container">
+        <div class="models">
+          <div class="models-group" data-groupkey="none" data-groupval="none">
+            <% for(var i=0; i<models.length; i++) { %>
+              <div class="model" data-show="true">
+
+                <div class="model-section model-ids">
+                  <a href="/models/<%= models[i].id %>">
+                    <div class="kv nkv"
+                      data-key="Model ID"
+                      data-val="<%= models[i].id %>"
+                    >
+                      Model ID: <%= models[i].id %>
+                    </div>
+                  </a>
+
+                  <div class="kv"
+                    data-key="Experiment Run ID"
+                    data-val="<%= models[i].experimentRunId %>"
+                  >
+                    Experiment Run ID: <%= models[i].experimentRunId %>
+                  </div>
+
+                  <div class="kv"
+                    data-key="Experiment ID"
+                    data-val="<%= models[i].experimentId %>"
+                  >
+                    Experiment ID: <%= models[i].experimentId %>
+                  </div>
+
+                  <div class="kv"
+                    data-key="Project ID"
+                    data-val="<%= models[i].projectId %>"
+                  >
+                    Project ID: <%= models[i].projectId %>
+                  </div>
+                </div>
+
+
+                <div class="model-section model-dataframe">
+                  <div class="kv"
+                    data-key="DataFrame ID"
+                    data-val="<%= models[i].trainingDataFrame.id %>"
+                  >
+                    DataFrame ID: <%= models[i].trainingDataFrame.id %>
+                  </div>
+
+                  <div class="kv"
+                    data-key="DF numRows"
+                    data-val="<%= models[i].trainingDataFrame.numRows %>"
+                  >
+                    DF numRows: <%= models[i].trainingDataFrame.numRows %>
+                  </div>
+
+                  <% if (models[i].trainingDataFrame.tag) { %>
+                    <div class="kv"
+                      data-key="DF Tag"
+                      data-val="<%= models[i].trainingDataFrame.tag %>"
+                    >
+                      DF Tag: <%= models[i].trainingDataFrame.tag %>
+                    </div>
+                  <% } %>
+
+                  <% if (models[i].trainingDataFrame.filepath) { %>
+                    <div class="nkv"
+                      data-key="DF Filepath"
+                      data-val="<%= models[i].trainingDataFrame.filepath %>"
+                    >
+                      DF Filepath: <%= models[i].trainingDataFrame.filepath %>
+                    </div>
+                  <% } %>
+
+                  <% if (models[i].trainingDataFrame.metadata.length > 0) { %>
+                    <div class="nkv dfmetadata-container popup-container">
+                      Metadata
+                      <div class="dfmetadata">
+                        <% for (var j=0; j<models[i].trainingDataFrame.metadata.length; j++) { %>
+                          <div class="kv"
+                            data-src="metadata"
+                            data-key="<%= models[i].trainingDataFrame.metadata[j].key %>"
+                            data-val="<%= models[i].trainingDataFrame.metadata[j].value %>"
+                          >
+                            <%= models[i].trainingDataFrame.metadata[j].key %>: <%= models[i].trainingDataFrame.metadata[j].value %>
+                          </div>
+                        <% } %>
+                      </div>
+                    </div>
+                  <% } %>
+                </div>
+
+
+                <div class="model-section model-spec">
+                  <div class="kv"
+                    data-key="Specification ID"
+                    data-val="<%= models[i].specification.id %>"
+                  >
+                    Specification ID: <%= models[i].specification.id %>
+                  </div>
+
+                  <div class="kv"
+                    data-key="Type"
+                    data-val="<%= models[i].specification.transformerType %>"
+                  >
+                    Type: <%= models[i].specification.transformerType %>
+                  </div>
+
+                  <% if (models[i].specification.tag) { %>
+                    <div class="kv"
+                      data-key="Spec Tag"
+                      data-val="<%= models[i].specification.tag %>"
+                    >
+                      Spec Tag: <%= models[i].specification.tag %>
+                    </div>
+                  <% } %>
+
+                  <div class="kv"
+                    data-key="Problem Type"
+                    data-val="<%= models[i].problemType %>"
+                  >
+                    Problem Type: <%= models[i].problemType %>
+                  </div>
+
+                  <div class="nkv hyperparams-container popup-container">
+                    Hyperparameters
+                    <div class="hyperparams">
+                      <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
+                        <div class="kv"
+                          data-src="hyperparameters"
+                          data-key="<%= models[i].specification.hyperparameters[j].name %>"
+                          data-val="<%= models[i].specification.hyperparameters[j].value %>"
+                        >
+                          <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+
+
+                <div class="model-section model-metrics">
+                  <% for (var j=0; j<models[i].metrics.length; j++) { %>
+                    <div class="model-metric kv"
+                      data-key="<%=models[i].metrics[j].key %>"
+                      data-val="<%=models[i].metrics[j].val %>"
+                      data-num="true"
+                    >
+                      <%= models[i].metrics[j].key %>: <%= models[i].metrics[j].val %>
+                    </div>
+                  <% } %>
+                </div>
+
+
+                <div class="model-section model-misc">
+                  <% if (models[i].sha) { %>
+                    <div class="nkv"
+                      data-key="Code SHA"
+                      data-val="<%= models[i].sha %>"
+                    >
+                      Code SHA: <%= models[i].sha %>
+                    </div>
+                  <% } %>
+
+                  <% if (models[i].filepath) { %>
+                    <div class="nkv"
+                      data-key="Filepath"
+                      data-val="<%= models[i].filepath %>"
+                    >
+                      Filepath: <%= models[i].filepath %>
+                    </div>
+                  <% } %>
+                </div>
+
               </div>
             <% } %>
           </div>
+        </div>
+      </div>
 
-          <div class="inline-block model-annotation">
-            <%= models[i].annotations %>
+      <div class="menu">
+        <div class="filters-container">
+            <div class="filters-info">
+                <h2>Filter</h2>
+                Drag configs or metrics into this section to filter models based on key - value pairs.
+            </div>
+            <div class="filter-area"></div>
+        </div>
+
+        <div class="sort-container">
+          <div class="sort-info">
+            <h2>Sort</h2>
+            Drag configs or metrics into this section to sort by a certain key.
           </div>
-
-          <div class="inline-block model-code">
-              <%= models[i].sha %>
+          <div class="select-container">
+            <div class="select-label">
+              order:
+            </div>
+            <select class="sort-order">
+              <option selected value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
           </div>
+          <div class="sort-area"></div>
+        </div>
+      </div>
 
+      <div class="chart-container">
+        <div class="charts-container">
+          <h2>Compare</h2>
+          <h2 class="chart-toggle" data-show="false">&#9650;</h2>
+          <div class="select-container">
+            <div class="select-label">
+              y-axis:
+            </div>
+            <select class="y-axis"></select>
+          </div>
+          <div class="select-container">
+            <div class="select-label">
+              x-axis:
+            </div>
+            <select class="x-axis"></select>
+          </div>
+          <div class="select-container">
+            <div class="select-label">
+              group by:
+            </div>
+            <select class="group-by"></select>
+          </div>
+          <button class="compare-button">Compare</button>
         </div>
-      <% } %>
-    </div>
+        <div class="model-chart"></div>
+      </div>
 
-    <div class="charts-container">
-        <div class="select-container">
-            x-axis: <select class="x-axis"></select>
-        </div>
-        <div class="select-container">
-            y-axis: <select class="y-axis"></select>
-        </div>
+
+
     </div>
-    <button class="compare-button">Compare</button>
-    <div class="model-chart"></div>
   </body>
 </html>

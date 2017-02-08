@@ -6,6 +6,9 @@ import org.apache.spark.ml.regression.LinearRegression
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 
+/**
+  * Like the AnimalFull workflow, but for the housing data.
+  */
 object HousingFull {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
@@ -73,6 +76,7 @@ object HousingFull {
       .setNumFolds(3)
 
     val model = cv.fitSync(train)
+    model.saveSync("housing_full_model")
     val predictions = model.transformSync(test)
 
     val score = eval.evaluateSync(predictions, model)

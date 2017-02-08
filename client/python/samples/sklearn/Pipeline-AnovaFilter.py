@@ -28,13 +28,13 @@ def run_pipeline_anova_workflow():
     author = "srinidhi"
     description = "anova filter pipeline"
     syncer_obj = Syncer(
-	    NewOrExistingProject(name, author, description),
-	    DefaultExperiment(),
-	    NewExperimentRun("Abc"))
+        NewOrExistingProject(name, author, description),
+        DefaultExperiment(),
+        NewExperimentRun("Abc"))
 
-	#import some data to play with
+    #import some data to play with
     X, y = samples_generator.make_classification(
-	    n_informative=5, n_redundant=0, random_state=42)
+        n_informative=5, n_redundant=0, random_state=42)
 
     x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
     X, y, test_size=0.3, random_state=0)
@@ -42,8 +42,8 @@ def run_pipeline_anova_workflow():
     syncer_obj.add_tag(x_train, "training data")
     syncer_obj.add_tag(x_test, "testing data")
 
-	# ANOVA SVM-C
-	# 1) anova filter, take 5 best ranked features
+    # ANOVA SVM-C
+    # 1) anova filter, take 5 best ranked features
     anova_filter = SelectKBest(f_regression, k=5)
     syncer_obj.add_tag(anova_filter, "Anova filter, with k=5")
     # 2) svm
@@ -53,10 +53,10 @@ def run_pipeline_anova_workflow():
 
     syncer_obj.add_tag(anova_svm, "Pipeline with anova_filter and SVC")
 
-	#Fit the pipeline on the training set
+    #Fit the pipeline on the training set
     anova_svm.fit_sync(x_train, y_train)
     y_pred = anova_svm.predict(x_test)
-	#Compute metrics for the model on the testing set
+    #Compute metrics for the model on the testing set
     f1 = SyncableMetrics.compute_metrics(anova_svm, f1_score, y_test, y_pred, x_test, "predictionCol", 'label_col')
     precision = SyncableMetrics.compute_metrics(anova_svm, precision_score, y_test, y_pred, x_test, "predictionCol", 'label_col')
     syncer_obj.sync()
@@ -133,23 +133,28 @@ class TestPipelineEndToEnd(unittest.TestCase):
         self.assertEqual(len(hyperparams3), 14)
 
     def test_dataframe_ancestry(self):
-		"""
-		Tests if dataframe ancestry is stored correctly.
-		"""
-		# Check ancestry for x_test and x_train.
-		# The data the models were trained and tested on.
-		for df in [self.x_train, self.x_test]:
-			dataframe_id = self.syncer_obj.id_for_object[id(df)]
-			ancestry = self.syncer_obj.client.getDataFrameAncestry(dataframe_id).ancestors
-			self.assertEqual(len(ancestry), 2)
-			df_1 = ancestry[0]
-			df_2 = ancestry[1]
-			if df is self.x_train:
-				self.assertEqual(df_1.tag, 'training data')
-			if df is self.x_test:
-				self.assertEqual(df_1.tag, 'testing data')
-			# Ancestor is the original dataframe
-			self.assertEqual(df_2.tag, 'samples generated data')
+        """
+        Tests if dataframe ancestry is stored correctly.
+        """
+        # Check ancestry for x_test and x_train.
+        # The data the models were trained and tested on.
+        print "x_train_id", self.syncer_obj.get_modeldb_id_for_object(self.x_train)
+        print "x_test_id", self.syncer_obj.get_modeldb_id_for_object(self.x_test)
+
+        for df in [self.x_train, self.x_test]:
+            dataframe_id = self.syncer_obj.get_modeldb_id_for_object(df)
+            print(dataframe_id)
+            
+            ancestry = self.syncer_obj.client.getDataFrameAncestry(dataframe_id).ancestors
+            self.assertEqual(len(ancestry), 2)
+            df_1 = ancestry[0]
+            df_2 = ancestry[1]
+            if df is self.x_train:
+                self.assertEqual(df_1.tag, 'training data')
+            if df is self.x_test:
+                self.assertEqual(df_1.tag, 'testing data')
+            # Ancestor is the original dataframe
+            self.assertEqual(df_2.tag, 'samples generated data')
 
     def test_metrics(self):
         """
@@ -174,7 +179,7 @@ class TestPipelineEndToEnd(unittest.TestCase):
         self.assertIn('precision_score', model1.metrics)
 
         # Metrics are mapped to their associated dataframe.
-        dataframe_id = self.syncer_obj.id_for_object[id(self.x_test)]
+        dataframe_id = self.syncer_obj.get_modeldb_id_for_object(self.x_test)
         self.assertAlmostEqual(self.f1,
                                model1.metrics['f1_score'][dataframe_id], places=4)
         self.assertAlmostEqual(self.precision,

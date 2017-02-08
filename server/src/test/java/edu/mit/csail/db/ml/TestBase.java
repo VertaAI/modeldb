@@ -7,6 +7,7 @@ import jooq.sqlite.gen.tables.records.*;
 import org.apache.commons.cli.ParseException;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
+import org.jooq.Query;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -17,6 +18,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -38,11 +40,16 @@ public class TestBase {
 
   private static DSLContext context = null;
   private static ModelDbServer server = null;
+  private static ModelDbConfig config = null;
 
   private static void createSqliteDb() throws IOException {
     ProcessBuilder pb = new ProcessBuilder("sh", "gen_sqlite.sh");
     pb.directory(new File("codegen/"));
     pb.start();
+  }
+
+  public static ModelDbConfig getConfig() {
+    return config;
   }
 
   public static DSLContext ctx() throws SQLException, IOException, ParseException {
@@ -51,7 +58,7 @@ public class TestBase {
     }
 
     createSqliteDb();
-    ModelDbConfig config = ModelDbConfig.parse(new String[] {});
+    config = ModelDbConfig.parse(new String[] {});
     Connection conn = DriverManager.getConnection(config.jbdcTestUrl, "", "");
     context = DSL.using(conn, SQLDialect.SQLITE);
 
@@ -93,7 +100,8 @@ public class TestBase {
     return createExperiment(createProject().projId);
   }
 
-  public static ProjExpRunTriple createExperimentRun() throws Exception {
+  public static ProjExpRunTriple createExperimentRunHelper(
+    boolean hasSha) throws Exception {
     ProjExpRunTriple triple = createExperiment();
 
     ExperimentrunRecord expRunRec = ctx().newRecord(Tables.EXPERIMENTRUN);
@@ -101,9 +109,20 @@ public class TestBase {
     expRunRec.setExperiment(triple.expId);
     expRunRec.setDescription("Test experiment run");
     expRunRec.setCreated(now());
+    if (hasSha) {
+      expRunRec.setSha("A1B2C3D4E5");
+    }
     expRunRec.store();
 
     return new ProjExpRunTriple(triple.projId, triple.expId, expRunRec.getId());
+  }
+
+  public static ProjExpRunTriple createExperimentRun() throws Exception {
+    return createExperimentRunHelper(false);
+  }
+
+  public static ProjExpRunTriple createExperimentRunWithSha() throws Exception {
+    return createExperimentRunHelper(true);
   }
 
   public static int createDataFrame(int expRunId, int numRows) throws Exception {
@@ -288,8 +307,10 @@ public class TestBase {
       TREEMODELCOMPONENT,
       TREENODE
     );
+    List<Query> queries = new ArrayList<>();
     for (Table table : tables) {
-      ctx().deleteFrom(table).where("1 = 1").execute();
+      queries.add(ctx().deleteFrom(table).where("1 = 1"));
     }
+    ctx().batch(queries).execute();
   }
 }

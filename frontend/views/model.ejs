@@ -2,66 +2,80 @@
 <html>
   <head>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/css/models.css' />
-    
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
+    <link rel='stylesheet' type="text/css" href='/css/lib/vis.min.css' />
+    <link rel="stylesheet" type="text/css" href="/css/lib/component.css">
+    <link rel='stylesheet' type="text/css" href='/css/style.css' />
+    <link rel='stylesheet' type="text/css" href='/css/model.css' />
+    <link rel='stylesheet' type="text/css" href='/css/pipeline.css' />
+
     <!-- JQuery -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
+    <!-- d3 and vega -->
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//vega.github.io/vega/vega.js"></script>
+    <script src="//vega.github.io/vega-lite/vega-lite.js"></script>
+    <script src="//vega.github.io/vega-editor/vendor/vega-embed.js" charset="utf-8"></script>
+
+    <!-- Load vis.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vis/4.15.1/vis.min.js"></script>
+
+    <!-- lib js files -->
+    <script src="/js/lib/ejs_production.js"></script>
+
+    <script src="/js/model.js"></script>
+    <script src="/js/annotations.js"></script>
+    <script src="/js/pipeline.js"></script>
   </head>
-  <body>
-    <h1><%= title %></h1>
-    <div class="models inline-block">
-      <div class="model">
-        <div class="inline-block model-info">
-          <div class="kv"
-            data-key="id"
-            data-val="<%= model.model_id %>"
-          >
-            ID: <%= model.model_id %>
+  <body data-id=<%= modelId %>>
+    <%- include partials/nav.ejs %>
+    <div class="container">
+      <div class="model-headings">
+        <div class="model-heading model-ids">
+          IDs
+        </div>
+        <div class="model-heading model-dataframe">
+          DataFrame
+        </div>
+        <div class="model-heading model-spec">
+          Specifications
+        </div>
+        <div class="model-heading model-metrics">
+          Metrics
+        </div>
+        <div class="model-heading model-misc">
+          Misc.
+        </div>
+      </div>
+
+      <div class="models-container">
+        <div class="models">
+        </div>
+      </div>
+
+      <div id="network">
+      </div>
+
+    </div>
+
+    <div class="md-modal md-effect-1" id="modal-1">
+      <div class="md-content">
+        <div class="md-header">
+          Model <div class="md-model-id"></div> Annotations
+        </div>
+        <div class="md-body">
+          <div class="md-annotations">
           </div>
-          <div class="kv"
-            data-key="type"
-            data-val="<%= model.type %>"
-          >
-           Type: <%= model.type %>
+          <div class="md-input-container">
+            <input class="md-input" placeholder="Add annotation..."></input>
+            <img class="md-send" src='/images/send.png'/>
           </div>
-          <div class="kv"
-            data-key="date"
-            data-val="<%= model.created_at %>"
-          >
-            Date: <%= model.created_at %>
-          </div>
-        </div>
-        <div class="inline-block model-configs">
-          <% for (var j=0; j<model.configs.length; j++) { %>
-            <div class="model-config kv" 
-              data-key="<%=model.configs[j].key %>"
-              data-val="<%=model.configs[j].value %>"
-            >
-              <%= model.configs[j].key %>: <%= model.configs[j].value %>
-            </div>
-          <% } %>
-        </div>
-        <div class="inline-block model-metrics">
-          <% for (var j=0; j<model.metrics.length; j++) { %>
-            <div class="model-metric kv"
-              data-key="<%=model.metrics[j].key %>"
-              data-val="<%=model.metrics[j].value %>"
-                          data-num="true"
-            >
-              <%= model.metrics[j].key %>: <%= model.metrics[j].value %>
-            </div>
-          <% } %>
-        </div>
-        <div class="inline-block model-annotation">
-          <%= model.annotation %>
-        </div>
-        <div class="inline-block model-code">
-            <%= model.code %>
         </div>
       </div>
     </div>
 
+    <div class="md-overlay"></div>
   </body>
 </html>

@@ -25,7 +25,7 @@ object AnimalShelterOutcomes {
   def main(args: Array[String]): Unit = {
     val pathToData = args(0)
     val spark = Common.makeSession()
-    val syncer = Common.makeSyncer()
+    val syncer = Common.makeSyncer(shouldCountRows = true, shouldStoreGSCVE = true, shouldStoreSpecificModels = true)
     val df = Common.readAnimalShelter(pathToData, spark)
 
     val categoricalCols = Array[String]("AnimalType", "SexuponOutcome", 
@@ -53,7 +53,7 @@ object AnimalShelterOutcomes {
         .setLabelCol(FeatureVectorizer.indexed(labelCol))
         .setPredictionCol(predictionCol)
         .setFeaturesCol(featuresCol)
-        .setNumTrees(200)
+        .setNumTrees(20)
         
     val rfPipeline = new Pipeline()
         .setStages(Array(rf, labelConverter))

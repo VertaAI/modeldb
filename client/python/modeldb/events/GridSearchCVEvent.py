@@ -73,10 +73,9 @@ class GridSearchCVEvent(Event):
         Stores the server response ids for each of the events into dictionary.
         """
         #First store the fit event
-        df_id = id(self.input_dataframe)
         syncer.store_object(self, res.eventId)
         syncer.store_object(self.best_estimator, res.fitEventResponse.specId)
-        syncer.store_object(df_id, res.fitEventResponse.dfId)
+        syncer.store_object(self.input_dataframe, res.fitEventResponse.dfId)
         syncer.store_object(self.best_model, res.fitEventResponse.modelId)
 
         #Store each cross validation from the grid

@@ -48,7 +48,14 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
                                           bestEstimator: PipelineStage,
                                           numFolds: Int)  extends ModelDbEvent {
 
-  def makeCrossValidationEvents(mdbs: ModelDbSyncer): Seq[CrossValidationEvent] = crossValidations.keys.map { (estimator) =>
+  /**
+    * Create a sequence of CrossValidationEvent objects based on the constructor arguments. These can be used to compose
+    * the GridSearchCrossValidationEvent.
+    * @param mdbs - The syncer.
+    * @return The sequence of CrossValidationEvent objects.
+    */
+  def makeCrossValidationEvents(mdbs: ModelDbSyncer): Seq[CrossValidationEvent] =
+  crossValidations.keys.map { (estimator) =>
     val folds = crossValidations(estimator).map { (fold) =>
       modeldb.CrossValidationFold(SyncableTransformer(fold.model),
         SyncableDataFrame(fold.validationDf),
@@ -60,7 +67,6 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       SyncableEstimator(estimator),
       seed,
       SyncableEvaluator.getMetricNameLabelColPredictionCol(evaluator)._1,
-
       mdbs.featureTracker.getLabelColumns(bestModel),
       mdbs.featureTracker.getOutputCols(bestModel),
       mdbs.featureTracker.getFeatureCols(inputDataFrame, bestModel),
@@ -70,6 +76,14 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
     )
   }.toSeq
 
+  /**
+    * Create a GridSearchCrossValidationEvent.
+    * @param mdbs - The syncer.
+    * @param crossValidationEvents - A sequence of CrossValidationEvents (should be one per hyperparameter configuration
+    *                              considered in the search). You can create these using the makeCrossValidationEvents
+    *                              function.
+    * @return The GridSearchCrossValidationEvent.
+    */
   def makeGscve(mdbs: ModelDbSyncer,
                 crossValidationEvents: Seq[CrossValidationEvent]): modeldb.GridSearchCrossValidationEvent =
     modeldb.GridSearchCrossValidationEvent(
@@ -89,6 +103,17 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
       problemType = SyncableProblemType(bestModel)
     )
 
+  /**
+    * Update the object-ID mappings of the syncer based on the response to the GridSearchCrossValidationEvent.
+    * @param mdbs - The syncer that contains the object-ID mappings.
+    * @param res - The response for the GridSearchCrossValidationEvent.
+    * @param client - The client for communicating with the server. This will be used to sync any specific models
+    *               (e.g. LinearModel, TreeModel) that are indicated in the response. We can do this only when
+    *               we have the response because the specific model must be associated with the ID of a Transformer. We
+    *               can get this ID from the response. Currently, however, the code to store the specific models is
+    *               commented out. This is done for performance reason. If we don't do it, then the size of the
+    *               TreeLink and TreeNode tables gets huge.
+    */
   def associate(mdbs: ModelDbSyncer, res: GridSearchCrossValidationEventResponse, client: Option[FutureIface]): Unit = {
     // First associate the fit event.
     mdbs.associateObjectAndId(this, res.eventId)
@@ -117,15 +142,27 @@ case class GridSearchCrossValidationEvent(inputDataFrame: DataFrame,
     }
   }
 
+  /**
+    * Store the GridSearchCrossValidationEvent on the server.
+    * @param client - The client that exposes the functions that we
+    *               call to store objects in the ModelDB.
+    * @param mdbs - The ModelDbSyncer, included so we can update the ID
+    *             mappings after syncing.
+    */
   override def sync(client: FutureIface, mdbs: Option[ModelDbSyncer]): Unit = {
-
     val crossValidationEvents = makeCrossValidationEvents(mdbs.get)
 
     val gscve = makeGscve(mdbs.get, crossValidationEvents)
 
     val res = Await.result(client.storeGridSearchCrossValidationEvent(gscve))
 
-    SyncableSpecificModel(res.fitEventResponse.modelId, bestModel, Some(client))
+    // Store a specific model (e.g. TreeModel, LinearModel) if applicable.
+    SyncableSpecificModel(
+      res.fitEventResponse.modelId,
+      bestModel,
+      Some(client),
+      mdbs.get.shouldStoreSpecificModels
+    )
 
     associate(mdbs.get, res, Some(client))
   }

@@ -7,13 +7,19 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql._
 import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
 
+/**
+  * Like the AnimalExploratory workflow, but for the IMDB data.
+  */
 object IMDBExploratory {
   def run(config: Config): Unit = {
     val spark = Common.makeSession()
     val df = Common.ensureMinSize(Common.readImdb(config.pathToData, spark), config.minNumRows)
 
     Timer.activate()
-    if (config.syncer) Common.makeSyncer()
+    if (config.syncer) Common.makeSyncer(
+      appName = "IMDB",
+      appDesc = "Predict IMDB score for movies."
+    )
 
     // So, we will use the following features in our model.
     // Color, Number of Critics, Gross, Number of User Reviews,
@@ -83,6 +89,7 @@ object IMDBExploratory {
         .setNumFolds(3)
 
       val lrCvModel = lrCv.fitSync(train)
+      lrCvModel.saveSync("imdb_exploratory_lr")
       val lrPredictions = lrCvModel.transformSync(test)
 
       /*
@@ -119,6 +126,7 @@ object IMDBExploratory {
         .setNumFolds(3)
 
       val rfCvModel = rfCv.fitSync(train)
+      rfCvModel.saveSync("imdb_exploratory_rf")
       val rfPredictions = rfCvModel.transformSync(test)
 
       (rfCvModel.bestModel.asInstanceOf[RandomForestRegressionModel], rfPredictions)
@@ -144,6 +152,7 @@ object IMDBExploratory {
         .setNumFolds(3)
 
       val gbtCvModel = gbtCv.fitSync(train)
+      gbtCvModel.saveSync("imdb_exploratory_gbt")
       val gbtPredictions = gbtCvModel.transformSync(test)
 
       (gbtCvModel.bestModel.asInstanceOf[GBTRegressionModel], gbtPredictions)
