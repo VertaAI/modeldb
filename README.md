@@ -1,15 +1,13 @@
 # ModelDB: A system to manage ML models.
+ModelDB is an end-to-end system to manage machine learning models. It can ingest models and metadata as they are built, store this data in a structured format, and surface it through a web-frontend for rich querying.
+
+**Website**: [http://modeldb.csail.mit.edu](http://modeldb.csail.mit.edu)
 
 ## News
 2017.02.08: ModelDB publicly available! Try it out and contribute.
 
 ## Setup
 
-To setup ModelDB, follow these steps:
+ModelDB currently works with machine learning worklows in ```spark.ml``` and ```scikit-learn```.
 
-1. ModelDB has various dependencies. See [Required Software](docs/required_software.md). Install the relevant ones.
-2. Configure and start the [server](server).
-3. Build modeldb clients as described in for [spark.ml](client/scala/libs/spark.ml) and [scikit-learn](client/python).
-4. Update your ML code to use the client libraries to log workflows and models to ModelDB, as in [here](client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample), [here](client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation), and [here](client/python/samples).
-5. Run your ML code normally.
-6. Start the ModelDB [frontend](frontend) and explore models in ModelDB.
+See instructions for setup with [spark.ml](https://github.com/mitdbg/modeldb/blob/master/docs/getting_started/spark_ml.md) and [scikit-learn](https://github.com/mitdbg/modeldb/blob/master/docs/getting_started/scikit_learn.md).
