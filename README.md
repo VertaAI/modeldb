@@ -20,4 +20,4 @@ ModelDB currently works with machine learning worklows in ```spark.ml``` and ```
 These guides include instructions on setup, building ModelDB, and incorporating ModelDB into ML workflows. Start there!
 
 ## Questions?
-We're happy to help with all things ModelDB! Reach out to modeldb\_@\_csail.mit.edu or post in the ModelDB [Google Group](https://groups.google.com/forum/#!forum/modeldb).
+We're happy to help with all things ModelDB! Reach out to modeldb\_@\_lists.csail.mit.edu or post in the ModelDB [Google Group](https://groups.google.com/forum/#!forum/modeldb).
