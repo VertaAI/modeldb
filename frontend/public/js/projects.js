@@ -112,7 +112,12 @@ $(function() {
 
           for (var key in types) {
             if (types.hasOwnProperty(key)) {
-              var block = $('<div class="project-model-type"></div>');
+              var block = $('<div></div>');
+              block.addClass('project-model-type');
+              block.addClass('tooltip-trigger');
+              block.addClass('disable-click');
+              block.data('keys', [key]);
+              block.data('values', [types[key] + " models"]);
               var width = 100 * types[key] / response.length;
               block.css({
                 'background-color': category10[cursor],

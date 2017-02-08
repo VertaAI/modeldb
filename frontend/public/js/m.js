@@ -10,6 +10,7 @@ var min_id = null;
 var max_id = null;
 var hyperparamKeys = {};
 var metricKeys = {};
+var modelTypes = {};
 var keys = ["Experiment Run ID", "Experiment ID", "Project ID",
             "DataFrame ID", "DF numRows", "DF Tag", "DF Filepath",
             "Type", "Spec Tag", "Problem Type",
@@ -87,7 +88,7 @@ $(function() {
     });
 
     $('.models-container').scroll(function(event) {
-      if (this.scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
+      if (this.scrollHeight - $(this).scrollTop() <= $(this).outerHeight() + 10) {
         // reached bottom of table, so load more
         loadTable();
       }
@@ -171,7 +172,7 @@ $(function() {
       filterVal = null;
     });
 
-    $(document).on('change', '.range-options select, .range-options input', function(event) {
+    $(document).on('keyup', '.range-options select, .range-options input', function(event) {
       var range = $(this).closest('.range');
       var id = range.data('id');
       var key = range.data('key');
@@ -179,6 +180,11 @@ $(function() {
       var type = range.find('select').val();
       updateRange(id, key, val, type);
       $('.filter-button').removeClass('filter-button-disabled');
+
+      // enable press enter to filter
+      if (event.which == 13) {
+        $('.filter-button').click();
+      }
     });
 
     $(document).on('click', '.filter-close', function(event) {
@@ -268,6 +274,9 @@ $(function() {
           // specifications
           obj["Specification ID"] = model.specification.id;
           obj["Type"] = model.specification.transformerType;
+          if (!modelTypes.hasOwnProperty(model.specification.transformerType)) {
+            modelTypes[model.specification.transformerType] = true;
+          }
           obj["Spec Tag"] = model.specification.tag;
           obj["Problem Type"] = model.problemType;
           var hyperparameters = model.specification.hyperparameters;
@@ -508,7 +517,15 @@ $(function() {
   };
 
   function vegaInit() {
-    var width = $('.container').width() - 206;
+    var legendWidth = 0;
+    for (var i=0; i<Object.keys(modelTypes).length; i++) {
+      legendWidth = Math.max(legendWidth, Object.keys(modelTypes)[i].length);
+    }
+    for (var i=0; i<metricKeys.length; i++) {
+      legendWidth = Math.max(legendWidth, metricKeys[i].length);
+    }
+
+    var width = $('.container').width() - (180 + 4 * legendWidth);
     height = width / 2.73333;
 
     summarySpecs = {
