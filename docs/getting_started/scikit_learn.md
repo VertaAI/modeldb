@@ -9,7 +9,7 @@ git clone https://github.com/mitdbg/modeldb
 ## 2. Install dependencies
 We assume that you have Python and scikit-learn installed.
 
-**Versions**: ModelDB currently requires **Thrift 0.9.3**, **Python 2.7**, and **scikit-learn 0.17**.
+**Versions**: ModelDB currently requires **Python 2.7**, and **scikit-learn 0.17**.
 
 On Mac OSX:
 
@@ -17,13 +17,8 @@ On Mac OSX:
 brew install sqlite
 brew install maven
 brew install node
-
-# we require Thrift 0.9.3 at the moment (brew install will give you 0.10.1)
-Download 0.9.3 from: http://archive.apache.org/dist/thrift/0.9.3/
-Follow build instructions at: https://thrift.apache.org/docs/install/os_x
+brew install thrift
 ```
-
-
 
 On Linux:
 
