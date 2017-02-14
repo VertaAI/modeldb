@@ -9,7 +9,7 @@ git clone https://github.com/mitdbg/modeldb
 ## 2. Install dependencies
 We assume that you have Java 1.8+ and Spark 2.0 installed.
 
-**Versions**: ModelDB currently requires **Spark 2.0**.
+**Versions**: ModelDB currently requires **Thrift 0.9.3** and **Spark 2.0**.
 
 On Mac OSX:
 
@@ -18,8 +18,10 @@ brew install sqlite
 brew install maven
 brew install node
 brew install sbt
-brew install thrift
 
+# we require Thrift 0.9.3 at the moment (brew install will give you 0.10.1)
+Download 0.9.3 from: http://archive.apache.org/dist/thrift/0.9.3/
+Follow build instructions at: https://thrift.apache.org/docs/install/os_x
 ```
 
 On Linux:
