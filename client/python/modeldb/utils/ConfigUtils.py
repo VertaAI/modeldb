@@ -33,7 +33,7 @@ class ConfigReader(object):
             return None
         
         experiment = None
-        experiments = config[constants.EXPT_KEY]
+        experiments = self.config[constants.EXPT_KEY]
         for _experiment in experiments:
             if _experiment[constants.NAME_KEY] == expt_name:
                 experiment = _experiment
