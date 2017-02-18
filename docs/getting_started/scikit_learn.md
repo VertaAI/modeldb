@@ -9,7 +9,7 @@ git clone https://github.com/mitdbg/modeldb
 ## 2. Install dependencies
 We assume that you have Python and scikit-learn installed.
 
-**Versions**: ModelDB currently requires **Thrift 0.9.3**, **Python 2.7**, and **scikit-learn 0.17**.
+**Versions**: ModelDB currently requires **Thrift 0.9.3 or 0.10.0**, **Python 2.7**, and **scikit-learn 0.17**.
 
 On Mac OSX:
 
@@ -18,9 +18,9 @@ brew install sqlite
 brew install maven
 brew install node
 
-# we require Thrift 0.9.3 at the moment (brew install will give you 0.10.1)
-Download 0.9.3 from: http://archive.apache.org/dist/thrift/0.9.3/
-Follow build instructions at: https://thrift.apache.org/docs/install/os_x
+# ModelDB works with Thrift 0.9.3 and 0.10.0. If you do not have thrift installed, install via brew.
+
+brew install thrift
 ```
 
 
@@ -48,7 +48,7 @@ For more help on installing dependencies see [here](https://github.com/mitdbg/mo
 
 ModelDB is composed of three components: the ModelDB server, the ModelDB client libraries, and the ModelDB frontend.
 
-In the following, **path_to_modeldb** refers to the directory into which you have cloned the modeldb repo.
+In the following, **path_to_modeldb** refers to the directory into which you have cloned the modeldb repo and **thrift_version** is 0.9.3 or 0.10.0 depending on your thrift version (check by running ```thrift -version```).
 
 ```bash
 # build and start the server
@@ -56,7 +56,7 @@ cd path_to_modeldb/server
 cd codegen
 ./gen_sqlite.sh
 cd ..
-./start_server.sh &
+./start_server.sh thrift_version &
 
 # build scikit-learn client library
 cd path_to_modeldb/client/python
@@ -122,7 +122,7 @@ SyncableMetrics.compute_metrics(model, scoring_function, labels, predictions, da
 ```
 -->
 
-The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).
+**The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).**
 
 #### e. _Run your program!_
 
