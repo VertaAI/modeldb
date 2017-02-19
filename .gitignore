@@ -17,3 +17,5 @@ derby.log
 dataset_tmp.csv
 duplicator.sh
 _site/
+.idea/
+.sass-cache/
