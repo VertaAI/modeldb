@@ -7,4 +7,5 @@ statsmodels
 matplotlib
 patsy
 sklearn
+thrift
 
