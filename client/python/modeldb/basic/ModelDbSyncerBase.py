@@ -371,4 +371,11 @@ class Syncer(object):
             data_tag = "default"
         return self.datasets[data_tag]
 
-    # TODO: do we want a sync all?
+    def sync_all(self, metadata):
+        # TODO: add extractor of model information from metadata
+        filename = "filename"
+        model_type = "model_type"
+        model = "model"
+        config = {}
+        fit_event = FitEvent(Model(model_type, model), ModelConfig(model_type, config), Dataset(filename))
+        Syncer.instance.add_to_buffer(fit_event)
