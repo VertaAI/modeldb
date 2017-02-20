@@ -68,10 +68,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-        	<groupId>org.mongodb</groupId>
-        	<artifactId>mongo-driver</artifactId>
-        	<version>3.4.2</version>
-    	</dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>
