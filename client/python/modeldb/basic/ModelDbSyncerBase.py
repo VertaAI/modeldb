@@ -1,4 +1,5 @@
 import sys
+import yaml
 from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
@@ -371,11 +372,29 @@ class Syncer(object):
             data_tag = "default"
         return self.datasets[data_tag]
 
-    def sync_all(self, metadata):
-        # TODO: add extractor of model information from metadata
-        filename = "filename"
-        model_type = "model_type"
-        model = "model"
-        config = {}
-        fit_event = FitEvent(Model(model_type, model), ModelConfig(model_type, config), Dataset(filename))
+    def sync_all(self, metadata_path):
+        with open(metadata_path) as data_file:
+            metadata = yaml.load(data_file)
+
+        model_data = metadata["model"]
+        model_type = model_data["type"]
+        model_name = model_data["name"]
+        model = Model(model_type, model_name)
+        config = model_data["config"]
+
+        dataset_data = model_data["dataset"]
+        filename = dataset_data["filename"]
+        dataset_metadata = dataset_data["metadata"] if "metadata" in dataset_data else {}
+        dataset = Dataset(filename, dataset_metadata)
+
+        fit_event = FitEvent(model, ModelConfig(model_type, config), 
+            dataset, metadata)
         Syncer.instance.add_to_buffer(fit_event)
+
+        metrics_data = model_data["metrics"]
+        for metric in metrics_data:
+            metric_type = metric["type"]
+            metric_value = metric["value"]
+            metric_event = MetricEvent(dataset, model, "label_col", \
+                "prediction_col", metric_type, metric_value)
+            Syncer.instance.add_to_buffer(metric_event)

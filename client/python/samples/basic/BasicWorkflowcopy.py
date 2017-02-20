@@ -1,5 +1,6 @@
 from modeldb.basic.ModelDbSyncerBase import *
 import sys
+import yaml
 
 # Create a syncer using a convenience API
 syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
@@ -21,8 +22,7 @@ syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
 # syncer_obj = Syncer.create_syncer_for_experiment_run(experiment_run_id)
 
 print "I'm training some model"
-metadata = ""
-syncer_obj.sync_all(metadata)
+syncer_obj.sync_all("BasicMetadata.json") #can also be a yaml file
 
 syncer_obj.sync()
 

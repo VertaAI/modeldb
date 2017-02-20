@@ -1,0 +1,18 @@
+{"model":
+    {
+      "name": "model",
+      "type": "model_type",
+      "config": {
+        "some_parameter": "some_value",
+        "test": "value"
+      },
+      "dataset": {
+        "filename": "filename",
+        "metadata": {"optional": 1, "metadata": "string"}
+      },
+      "metrics": [
+        {"type": "type", "value": 0.5},
+        {"type" : "type 2", "value": 1.5}
+      ]
+    }
+}
