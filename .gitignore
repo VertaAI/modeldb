@@ -19,3 +19,5 @@ duplicator.sh
 _site/
 .idea/
 .sass-cache/
+/target/
+/bin/
