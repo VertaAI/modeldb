@@ -4,6 +4,9 @@ import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
+import com.mongodb.MongoClientURI;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -11,8 +14,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.DBCursor;
 
-import com.mongodb.ServerAddress;
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * This class contains logic for connecting to the MongoDB database.
@@ -24,34 +27,57 @@ public class MongoDBContext {
      * @param username - The username to connect to the database.
      * @param password - The password to connect to the database.
      * @param jdbcUrl - The JDBC URL of the database.
-     * @param dbType - The database type.
+     * @param userDB - The database where the user is defined.
      * @return The database context.
+     * @throws IllegalArgumentException - Thrown if the dbType is unsupported.
      */
-    public static void create(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType) {
-        // TODO: use the arguments instead of the hardcoded ones
-    }
+	public static MongoClient create(String username, String password, String jdbcUrl, String userDB) throws IllegalArgumentException {
+		try {
+			// To connect to mongodb server
+			MongoCredential credential = MongoCredential.createCredential(username, userDB, password.toCharArray());
+			
+			// commented out since we don't yet a have db filled with user credential so we cannot authenticate ourselves
+//			MongoClient mongoClient = new MongoClient(new ServerAddress(jdbUrl), Arrays.asList(credential));
+			MongoClient mongoClient = new MongoClient(new ServerAddress("localhost", 27017));
+			
+			System.out.println("Connect to database successfully");
+			return mongoClient;
+		} catch (Exception e) {                                                                                                                                                                                                                                                                                                   
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			throw new IllegalArgumentException("Cannot connect to the MongoDB server at" + jdbcUrl);
+		}
+	}
     
     
     public static void main( String args[] ) {
+    	// an example of how the method above will be used
         try {
-
-            // To connect to mongodb server
-            MongoClient mongoClient = new MongoClient("localhost", 27017);
-
-            // Now connect to your databases
-            DB db = mongoClient.getDB("test");
-            System.out.println("Connect to database successfully");
-
-//            boolean auth = db.authenticate("cmao18", "1111");
-//            System.out.println("Authentication: " + auth);
-            DBCollection coll = db.getCollection("mycol");
-            System.out.println("Collection mycol selected successfully");
-
+        	
+        	MongoClient mongoClient = MongoDBContext.create("testuser", "testpwd", "mongodb://localhost:27017", "users");
+        	
+        	// Now connect to the databases
+        	DB mongoDB = mongoClient.getDB("testDB");
+            DBCollection testCollection = mongoDB.getCollection("testCollection");
+            System.out.println("Collection testCollection selected successfully");
+            
+            // create a db object and insert it to the database
             BasicDBObject doc = new BasicDBObject("title", "MongoDB").append("description", "database")
-                    .append("likes", 100).append("url", "test_url");
-
-            coll.insert(doc);
+                    .append("size", 100).append("url", "test_url");
+            testCollection.insert(doc);
             System.out.println("Document inserted successfully");
+            
+            // find the document that just got inserted
+            DBCursor cursor = testCollection.find();
+            int i = 1;
+            while (cursor.hasNext()) { 
+               System.out.println("Inserted Document: "+ i); 
+               System.out.println(cursor.next()); 
+               i++;
+            }
+            
+            // close the connection
+            mongoClient.close();
+            
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         }
