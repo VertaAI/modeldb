@@ -1,4 +1,5 @@
 package edu.mit.csail.db.ml.util;
+import edu.mit.csail.db.ml.conf.ModelDbConfig;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
@@ -41,8 +42,8 @@ public class MongoDBContext {
             DB db = mongoClient.getDB("test");
             System.out.println("Connect to database successfully");
 
-            boolean auth = db.authenticate(myUserName, myPassword);
-            System.out.println("Authentication: " + auth);
+//            boolean auth = db.authenticate("cmao18", "1111");
+//            System.out.println("Authentication: " + auth);
             DBCollection coll = db.getCollection("mycol");
             System.out.println("Collection mycol selected successfully");
 
