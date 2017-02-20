@@ -128,7 +128,7 @@
                             </executions>
                         </plugin>
                     </plugins>
-                <pluginManagement>
+                </pluginManagement>
             </build>
         </profile>
         <profile>
