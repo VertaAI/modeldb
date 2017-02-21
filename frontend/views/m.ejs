@@ -173,27 +173,39 @@
             <div class="model-heading model-ids">
               IDs
               <div
-                class="triangle-container down sorted"
+                class="triangle-container asc sorted"
                 data-key="id"
-                data-order="down"
+                data-order="asc"
               >
-                <div class="triangle-up">&#9650;</div>
-                <div class="triangle-down">&#9660;</div>
+                <div class="triangle-up">&#8593;</div>
+                <div class="triangle-down">&#8595;</div>
               </div>
+              <select class="dropdown-sort">
+                <option value="" disabled>None</option>
+                <option value="id" selected>id</option>
+              </select>
             </div>
             <div class="model-heading model-dataframe">
               DataFrame
-              <div class="triangle-container" data-key="DataFrame ID">
-                <div class="triangle-up">&#9650;</div>
-                <div class="triangle-down">&#9660;</div>
+              <div class="triangle-container">
+                <div class="triangle-up">&#8593;</div>
+                <div class="triangle-down">&#8595;</div>
               </div>
+              <select class="dropdown-sort">
+                <option value="" disabled selected>None</option>
+                <option value="DataFrame ID">DataFrame ID</option>
+              </select>
             </div>
             <div class="model-heading model-spec">
               Specifications
             </div>
             <div class="model-heading model-metrics">
               Metrics
-              <select class="metrics-sort">
+              <div class="triangle-container">
+                <div class="triangle-up">&#8593;</div>
+                <div class="triangle-down">&#8595;</div>
+              </div>
+              <select class="dropdown-sort metrics-sort">
                 <option value="" disabled selected>None</option>
               </select>
             </div>

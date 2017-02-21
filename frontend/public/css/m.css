@@ -386,6 +386,12 @@ background-color: #d0d8e2;
   background-color: white;
 }
 
+.triangle-container {
+  position: absolute;
+  right: 20px;
+  top: 0;
+}
+
 .triangle-up,
 .triangle-down {
   position: absolute;
@@ -397,8 +403,8 @@ background-color: #d0d8e2;
   cursor: pointer;
 }
 
-.triangle-container.sorted.down .triangle-down,
-.triangle-container.sorted.up .triangle-up {
+.triangle-container.sorted.asc .triangle-down,
+.triangle-container.sorted.dsc .triangle-up {
   opacity: 1;
 }
 
@@ -410,7 +416,7 @@ background-color: #d0d8e2;
   opacity: 0.4;
 }
 
-.metrics-sort {
+.dropdown-sort {
   color: rgba(0, 0, 0, 0);
   text-shadow: none;
   cursor: pointer;
@@ -423,15 +429,15 @@ background-color: #d0d8e2;
   width: 20px;
 }
 
-.metrics-sort:not(.sorted):hover {
+.dropdown-sort:not(.sorted):hover {
   opacity: 0.4;
 }
 
-.metrics-sort.sorted {
+.dropdown-sort.sorted {
   opacity: 1;
 }
 
-.metrics-sort.dsc {
+.dropdown-sort.dsc {
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50px' height='50px'><polyline points='40.139,39.482 25.166,13.51 10.193,39.481'/></svg>");
   background-size: 19px 22px;
   background-position: right 0px top 3px;
