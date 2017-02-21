@@ -14,6 +14,9 @@ $(function() {
         var projectId = $('<a href="/projects/' + model["Project ID"] + '/models"></a>');
         projectId.append($('<div class="kv">Project ID: ' + model["Project ID"] + '</div>'));
         $('.model-section.model-ids').append(projectId);
+
+        // update link in breadcrumb to point to project models
+        $('.logo a')[2].href += '/' + model["Project ID"] + "/models";
       }
     });
 

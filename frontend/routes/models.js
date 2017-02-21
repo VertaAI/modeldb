@@ -8,8 +8,8 @@ router.get('/:id', function(req, res, next) {
   res.render('model', {
     title: 'Model',
     path: {
-      'labels': ['Model'],
-      'links': ['/models/' + modelId]
+      'labels': ['Projects', 'Models', 'Model'],
+      'links': ['/projects', '/projects', '/models/' + modelId]
     },
     menu: false,
     modelId: modelId
