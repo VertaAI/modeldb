@@ -100,46 +100,46 @@ $(function() {
       var order = el.data('order');
       var key = el.data('key');
 
-      // reset metrics sort
-      $('.metrics-sort')[0].selectedIndex = -1;
-      $('.metrics-sort').removeClass('asc');
-      $('.metrics-sort').removeClass('dsc');
+      var dropdown = el.next('.dropdown-sort');
 
-      if (!sorted) {
-        // default to ascending
-        $('.sorted').removeClass('sorted');
-        $('.down').removeClass('down');
-        $('.up').removeClass('up');
-        el.addClass('sorted');
-        el.data('order', 'down');
-        el.addClass('down');
-        order = 'down';
-      } else {
-        // flip sorting order
-        el.removeClass(el.data('order'));
-        if (order == 'up') {
-          order = 'down';
-        } else {
-          order = 'up';
-        }
-        el.data('order', order);
-        el.addClass(order);
+      if (key == null) {
+        // use 1st key by default
+        key = dropdown.find('option')[1].value // 1 because index 0 is None
+        el.data('key', key);
+        dropdown.val(key);
       }
+
+      order = (order == 'asc') ? 'dsc' : 'asc';
+
+      $('.sorted').data('order', null);
+      el.data('order', order);
+      $('.sorted').removeClass('sorted');
+      $('.asc').removeClass('asc');
+      $('.dsc').removeClass('dsc');
+      el.addClass('sorted');
+      el.addClass(order);
 
       sortTable(key, order);
     });
 
-    $(document).on('change', '.metrics-sort', function(event){
+    $(document).on('change', '.dropdown-sort', function(event){
       var key = event.target.value;
-      var order = key.substring(0,3);
-      key = key.substring(4, key.length);
+      var triangleContainer = $(event.target).prev('.triangle-container');
+      triangleContainer.data('key', key);
+
+      var order = triangleContainer.data('order');
+      if (order == null) {
+        order = 'asc';
+      }
 
       // update classes
+      $('.sorted').data('order', null);
+      triangleContainer.data('order', order);
       $('.sorted').removeClass('sorted');
-      $(this).removeClass('asc');
-      $(this).removeClass('dsc');
-      $(this).addClass('sorted');
-      $(this).addClass(order);
+      $('.asc').removeClass('asc');
+      $('.dsc').removeClass('dsc');
+      triangleContainer.addClass('sorted');
+      triangleContainer.addClass(order);
 
       sortTable(key, order);
     });
@@ -486,9 +486,6 @@ $(function() {
   };
 
   function selectInit() {
-    var asc = $('<optgroup label="Ascending"/>');
-    var dsc = $('<optgroup label="Descending"/>');
-
     // add standard keys
     for (var i=0; i<keys.length; i++) {
       $('.x-axis').append(new Option(keys[i], keys[i]));
@@ -505,12 +502,8 @@ $(function() {
     // add metric keys
     for (var i=0; i<metricKeys.length; i++) {
       $('.y-axis').append(new Option(metricKeys[i], metricKeys[i]));
-      asc.append(new Option(metricKeys[i], 'asc_' + metricKeys[i]));
-      dsc.append(new Option(metricKeys[i], 'dsc_' + metricKeys[i]));
+      $('.metrics-sort').append(new Option(metricKeys[i], metricKeys[i]));
     }
-
-    $('.metrics-sort').append(asc);
-    $('.metrics-sort').append(dsc);
 
     $('.x-axis').val(DEFAULT_X);
     $('.z-axis').val(DEFAULT_Z);

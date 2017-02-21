@@ -97,20 +97,22 @@
                     </div>
                   <% } %>
 
-                  <div class="nkv hyperparams-container popup-container">
-                    <div class="popup-label">Hyperparameters</div>
-                    <div class="hyperparams popup-contents">
-                      <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
-                        <div class="kv"
-                          data-src="hyperparameters"
-                          data-key="<%= models[i].specification.hyperparameters[j].name %>"
-                          data-val="<%= models[i].specification.hyperparameters[j].value %>"
-                        >
-                          <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
-                        </div>
-                      <% } %>
+                  <% if (models[i].specification.hyperparameters.length > 0) { %>
+                    <div class="nkv hyperparams-container popup-container">
+                      <div class="popup-label">Hyperparameters</div>
+                      <div class="hyperparams popup-contents">
+                        <% for (var j=0; j<models[i].specification.hyperparameters.length; j++) { %>
+                          <div class="kv"
+                            data-src="hyperparameters"
+                            data-key="<%= models[i].specification.hyperparameters[j].name %>"
+                            data-val="<%= models[i].specification.hyperparameters[j].value %>"
+                          >
+                            <%= models[i].specification.hyperparameters[j].name %>: <%= models[i].specification.hyperparameters[j].value %>
+                          </div>
+                        <% } %>
+                      </div>
                     </div>
-                  </div>
+                  <% } %>
                 </div>
 
 
