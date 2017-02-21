@@ -92,4 +92,28 @@ $(function() {
   $(document).on('mouseleave', '.group-block', function() {
     $('.group-tooltip').remove();
   });
+
+  // Model see more listener
+  $(document).on('click', '.model-see-more', function(event) {
+    var elt = $(event.target);
+    var info = elt.parent().find('.model-additional-info');
+    var show = elt.data('show');
+    if (show) {
+      elt.data('show', false);
+      elt.html("See More");
+      info.slideUp();
+      info.animate(
+        { opacity: 0 },
+        { queue: false, duration: 'slow' }
+      );
+    } else {
+      elt.data('show', true);
+      elt.html("See Less");
+      info.slideDown();
+      info.animate(
+        { opacity: 1 },
+        { queue: false, duration: 'slow' }
+      );
+    }
+  });
 });

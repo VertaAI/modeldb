@@ -152,13 +152,41 @@
 
       <% if (model["Filepath"]) { %>
         <div class="nkv tooltip-trigger"
-          data-key="Filepath"
+          data-key="Model Filepath"
           data-val="<%= model["Filepath"] %>"
         >
-          Filepath: <%= model["Filepath"] %>
+          Model Filepath: <%= model["Filepath"] %>
         </div>
       <% } %>
     </div>
 
+    <div class="model-see-more" data-show="false">
+      See More
+    </div>
+
+    <div class="model-additional-info">
+      <h3>Additional Info</h3>
+
+      <div class="kv"
+        data-key="DataFrame ID"
+        data-val="<%= model["DataFrame ID"] %>"
+      >
+        DataFrame ID: <%= model["DataFrame ID"] %>
+      </div>
+
+      <div class="kv"
+        data-key="Experiment Run ID"
+        data-val="<%= model["Experiment Run ID"] %>"
+      >
+        Experiment Run ID: <%= model["Experiment Run ID"] %>
+      </div>
+
+      <div class="kv"
+        data-key="Experiment ID"
+        data-val="<%= model["Experiment ID"] %>"
+      >
+        Experiment ID: <%= model["Experiment ID"] %>
+      </div>
+    </div> <!-- end model-addition-info -->
   </div>
 </div>
