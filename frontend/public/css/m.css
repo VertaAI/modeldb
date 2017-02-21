@@ -345,11 +345,12 @@ background-color: #d0d8e2;
 .models-container .model {
   margin: 0 0 10px 0;
   background-color: white;
-  padding: 10px 20px;
+  padding: 10px 20px 25px 20px;
   border: 1px solid #D9E0E8;
   display: inline-block;
   min-width: 100%;
   box-sizing: border-box;
+  position: relative;
 }
 
 .models-container .model-section {
@@ -436,6 +437,33 @@ background-color: #d0d8e2;
   background-position: right 0px top 3px;
 }
 
+.model-see-more {
+  position: absolute;
+  right: 10px;
+  bottom: 5px;
+  color: #00B7FF;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.model-additional-info {
+  display: none;
+  border-top: 1px solid #eee;
+  margin-top: 15px;
+  opacity: 0;
+}
+
+.model-additional-info h3 {
+  font-size: 18px;
+  margin: 10px 0;
+  font-weight: 300;
+}
+
+.model-additional-info .kv {
+  display: inline-block;
+  vertical-align: top;
+  width: 176px;
+}
 
 /*
  *  Groups
