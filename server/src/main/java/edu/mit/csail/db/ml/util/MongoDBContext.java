@@ -22,41 +22,14 @@ import java.util.concurrent.CountDownLatch;
  */
 public class MongoDBContext {
     
-    /**
-     * Create a MongoDB database context that reflects a connection to a database.
-     * @param username - The username to connect to the database.
-     * @param password - The password to connect to the database.
-     * @param jdbcUrl - The JDBC URL of the database.
-     * @param userDB - The database where the user is defined.
-     * @return The database context.
-     * @throws IllegalArgumentException - Thrown if the dbType is unsupported.
-     */
-	public static MongoClient create(String username, String password, String jdbcUrl, String userDB) throws IllegalArgumentException {
-		try {
-			// To connect to mongodb server
-			MongoCredential credential = MongoCredential.createCredential(username, userDB, password.toCharArray());
-			
-			// commented out since we don't yet a have db filled with user credential so we cannot authenticate ourselves
-//			MongoClient mongoClient = new MongoClient(new ServerAddress(jdbUrl), Arrays.asList(credential));
-			MongoClient mongoClient = new MongoClient(new ServerAddress("localhost", 27017));
-			
-			System.out.println("Connect to database successfully");
-			return mongoClient;
-		} catch (Exception e) {                                                                                                                                                                                                                                                                                                   
-			System.err.println(e.getClass().getName() + ": " + e.getMessage());
-			throw new IllegalArgumentException("Cannot connect to the MongoDB server at" + jdbcUrl);
-		}
-	}
-    
-    
     public static void main( String args[] ) {
-    	// an example of how the method above will be used
-        try {
+    	try {
         	
-        	MongoClient mongoClient = MongoDBContext.create("testuser", "testpwd", "mongodb://localhost:27017", "users");
-        	
+        	// MongoClient mongoClient = MongoDBContext.create("testuser", "testpwd", "mongodb://localhost:27017", "users");
+        	MongoClient mongoClient = new MongoClient();
+
         	// Now connect to the databases
-        	DB mongoDB = mongoClient.getDB("testDB");
+        	DB mongoDB = mongoClient.getDB("modeldb_mongodb");
             DBCollection testCollection = mongoDB.getCollection("testCollection");
             System.out.println("Collection testCollection selected successfully");
             
