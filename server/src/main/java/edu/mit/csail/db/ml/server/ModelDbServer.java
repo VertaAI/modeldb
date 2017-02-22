@@ -10,6 +10,9 @@ import jooq.sqlite.gen.tables.records.DataframeRecord;
 import modeldb.*;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
+import com.mongodb.MongoClient;
+import com.mongodb.DB;
+import com.mongodb.MongoException;
 
 import java.util.List;
 import java.util.Map;
@@ -28,16 +31,27 @@ public class ModelDbServer implements ModelDBService.Iface {
    */
   private DSLContext ctx;
 
+  private MongoClient mongoClient;
+  private DB metadataDb;
+
   /**
    * Create the service and connect to the database.
    * @param username - The username to connect to the database.
    * @param password - The password to connect to the database.
    * @param jdbcUrl - The JDBC URL that points to the database.
    * @param dbType - The type of the database (only SQLite is supported for now).
+   * @param mongoDbHost - Host for mongodb
+   * @param mongoDbPort - Port for mongodb
    */
-  public ModelDbServer(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType) {
+  public ModelDbServer(String username, String password, String jdbcUrl, 
+    ModelDbConfig.DatabaseType dbType, String mongoDbHost, String mongoDbPort,
+    String mongoDbDbName) {
     try {
-      ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
+      this.ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
+      this.mongoClient = new MongoClient(mongoDbHost, mongoDbPort);
+      this.metadataDb = this.mongoClient.getDB(mongoDbDbName)
+    } catch(MongoException e) {
+      e.printStackTrace();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -58,8 +72,14 @@ public class ModelDbServer implements ModelDBService.Iface {
     });
   }
 
-  public FitEventResponse storeFitEvent(FitEvent fe) throws TException {
-    return ExceptionWrapper.run(fe.experimentRunId, ctx, () -> FitEventDao.store(fe, ctx));
+  public FitEventResponse storeFitEvent(FitEvent fe) throws TException {    
+    return ExceptionWrapper.run(fe.experimentRunId, ctx, () -> {
+      // write to relational DB, get an id
+      FitEventResponse fer = FitEventDao.store(fe, ctx);
+      // write to mongodb
+      MongoDBContext.store(fer.modelId, fe)
+      // TODO: should we return metadata ID in fit event response?
+    });
   }
 
   public MetricEventResponse storeMetricEvent(MetricEvent me) throws TException {

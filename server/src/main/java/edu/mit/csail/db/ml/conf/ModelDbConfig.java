@@ -69,6 +69,21 @@ public class ModelDbConfig {
    */
   public final int thriftPort;
 
+  /* *
+   * Host for MongoDB
+   */
+  public final String mongoDbHost;
+
+  /**
+   * Port on which mongodb is running
+   */
+  public final int mongoDbPort;
+
+  /**
+   * Name of database inside MongoDB
+   */
+  public final String mongoDbDbName;
+
   /**
    * ModelDB Server allows the user to store models in a filesystem. ModelDB Server generates
    * filepaths at which the user can store their models. Each filename is prefixed with the given
@@ -87,6 +102,9 @@ public class ModelDbConfig {
     String databaseType,
     String thriftHost,
     String thriftPort,
+    String mongoDbHost,
+    String mongoDbPort,
+    String mongoDbDbName,
     String fsPrefix
   ) {
     this.dbUser = dbUser;
@@ -95,6 +113,9 @@ public class ModelDbConfig {
     this.jbdcTestUrl = jdbcTestUrl;
     this.thriftHost = thriftHost;
     this.thriftPort = Integer.parseInt(thriftPort);
+    this.mongoDbHost = mongoDbHost;
+    this.mongoDbPort = Integer.parseInt(mongoDbPort);
+    this.mongoDbDbName = mongoDbDbName,
     this.fsPrefix = fsPrefix;
 
     switch (databaseType) {
@@ -150,6 +171,9 @@ public class ModelDbConfig {
       getProp(config, "db.databaseType"),
       getProp(config, "thrift.host"),
       getProp(config, "thrift.port"),
+      getProp(config, "mongodb.host"),
+      getProp(config, "mongodb.port"),
+      getProp(config, "mongodb.dbName"),
       getProp(config, "fs.prefix")
     );
 
