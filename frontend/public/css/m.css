@@ -526,6 +526,7 @@ background-color: #d0d8e2;
   background-color: rgba(64, 64, 64, 0.95);
   position: absolute;
   left: 46px;
+  z-index: 1;
 }
 
 .group-tooltip-keys,
