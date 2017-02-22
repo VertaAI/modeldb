@@ -719,6 +719,7 @@ struct ModelResponse {
   14: string filepath,
   15: string timestamp,
   16: optional LinearModel linearModelData,
+  17: optional string metadata
 }
 
 /*
