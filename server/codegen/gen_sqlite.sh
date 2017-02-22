@@ -13,3 +13,6 @@ mv modeldb.db ../
 mv modeldb_test.db ../
 chmod a+wrx ../modeldb.db
 chmod a+wrx ../modeldb_test.db
+
+# also start mongodb server
+mongod --dbpath mongodb
