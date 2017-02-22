@@ -28,6 +28,7 @@ var filterVal = null;
 var supportsRange;
 var filters = {};
 var ranges = {};
+var filterId = 0;
 var rangeId = 0;
 
 $(function() {
@@ -190,8 +191,9 @@ $(function() {
     $(document).on('click', '.filter-close', function(event) {
       var filter = $(event.target).parent('.filter');
       var key = filter.data('key');
+      var val = filter.data('val');
       filter.remove();
-      removeFilter(key);
+      removeFilter(key, val);
       $('.filter-button').removeClass('filter-button-disabled');
     });
 
@@ -947,22 +949,34 @@ $(function() {
   };
 
   function addFilter(key, val) {
-    if (filters.hasOwnProperty(key)) {
-      // update existing filter
-      filters[key] = val;
-      var filterDiv = $('.filter').findByData('key', key);
-      filterDiv.find('.filter-val').html(val);
-    } else {
-      // add new filter
-      filters[key] = val;
-      obj = {key: key, val: val};
-      var filterDiv = $(new EJS({url: '/ejs/filter.ejs'}).render(obj));
-      $('.filter-area').append(filterDiv);
+    // check if filter with same key and val already exists
+    var filterDivs = $('.filter').findByData('key', key);
+    for (var i=0; i<filterDivs.length; i++) {
+      if ($(filterDivs[i]).data('val') == val) {
+        return;
+      }
     }
+
+    if (!filters.hasOwnProperty(key)) {
+      filters[key] = {
+        "vals": {}
+      };
+    }
+    filters[key].vals[val] = {
+      "val": val,
+      "invert": false
+    }
+
+    var obj = {key: key, val: val};
+    var filterDiv = $(new EJS({url: '/ejs/filter.ejs'}).render(obj));
+    $('.filter-area').append(filterDiv);
   }
 
-  function removeFilter(key) {
-    delete filters[key];
+  function removeFilter(key, val) {
+    delete filters[key].vals[val];
+    if (Object.keys(filters[key].vals).length === 0) {
+      delete filters[key];
+    }
   }
 
   function addRange(key) {
@@ -987,9 +1001,10 @@ $(function() {
 
   function filter() {
     var show = Array(models.length).fill(true);
+
     for (var key in filters) {
       if (filters.hasOwnProperty(key)) {
-        filterByKey(key, filters[key], show);
+        filterByKey(key, filters[key].vals, show);
       }
     }
 
@@ -1023,10 +1038,10 @@ $(function() {
     reloadTable();
   };
 
-  function filterByKey(key, val, show) {
+  function filterByKey(key, vals, show) {
     for (var i=0; i<models.length; i++) {
-      if (models[i][key] == val) {
-      } else {
+      var field = models[i][key];
+      if (vals[field] == null || vals[field].invert) {
         show[i] = false;
       }
     }
