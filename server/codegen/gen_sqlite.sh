@@ -15,4 +15,5 @@ chmod a+wrx ../modeldb.db
 chmod a+wrx ../modeldb_test.db
 
 # also start mongodb server
+mkdir -p mongodb
 mongod --dbpath mongodb
