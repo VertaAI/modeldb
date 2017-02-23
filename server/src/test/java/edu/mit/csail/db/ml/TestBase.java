@@ -11,6 +11,10 @@ import org.jooq.Query;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import com.mongodb.MongoClient;
+import com.mongodb.DB;
+import com.mongodb.MongoException;
+import com.mongodb.BasicDBObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +45,8 @@ public class TestBase {
   private static DSLContext context = null;
   private static ModelDbServer server = null;
   private static ModelDbConfig config = null;
+  private static MongoClient client = null;
+  private static DB metadataDb = null;
 
   private static void createSqliteDb() throws IOException {
     ProcessBuilder pb = new ProcessBuilder("sh", "gen_sqlite.sh");
@@ -50,6 +56,19 @@ public class TestBase {
 
   public static ModelDbConfig getConfig() {
     return config;
+  }
+
+  public static DB getMetadataDb() throws MongoException, ParseException {
+    if (metadataDb != null) {
+      return metadataDb;
+    }
+
+    // assumes that 'gen_sqlite.sh' has been run (which starts mongodb too)
+    config = ModelDbConfig.parse(new String[] {});
+    client = new MongoClient(config.mongoDbHost, config.mongoDbPort);
+    metadataDb = client.getDB(config.mongoDbTestDbName);
+
+    return metadataDb;
   }
 
   public static DSLContext ctx() throws SQLException, IOException, ParseException {
@@ -67,7 +86,18 @@ public class TestBase {
 
   public static ProjExpRunTriple reset() throws Exception {
     clearTables();
+    // clear the mongoDB test database
+    resetMetadataDb();
+    // this is required. other tests use the generated experiment run
     return createExperimentRun();
+  }
+
+  public static void resetMetadataDb() throws MongoException, ParseException {
+    for (String collectionName : getMetadataDb().getCollectionNames()) {
+      if (collectionName.indexOf("system.") == -1) {
+        getMetadataDb().getCollection(collectionName).drop();
+      }
+    }
   }
 
   public static Timestamp now() {

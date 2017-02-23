@@ -31,6 +31,9 @@ public class ModelDbServer implements ModelDBService.Iface {
    */
   private DSLContext ctx;
 
+  /**
+   * MongoDB connections
+   */
   private MongoClient mongoClient;
   private DB metadataDb;
 
@@ -44,12 +47,12 @@ public class ModelDbServer implements ModelDBService.Iface {
    * @param mongoDbPort - Port for mongodb
    */
   public ModelDbServer(String username, String password, String jdbcUrl, 
-    ModelDbConfig.DatabaseType dbType, String mongoDbHost, String mongoDbPort,
+    ModelDbConfig.DatabaseType dbType, String mongoDbHost, int mongoDbPort,
     String mongoDbDbName) {
     try {
       this.ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
       this.mongoClient = new MongoClient(mongoDbHost, mongoDbPort);
-      this.metadataDb = this.mongoClient.getDB(mongoDbDbName)
+      this.metadataDb = this.mongoClient.getDB(mongoDbDbName);
     } catch(MongoException e) {
       e.printStackTrace();
     } catch (Exception e) {
@@ -73,12 +76,13 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public FitEventResponse storeFitEvent(FitEvent fe) throws TException {    
-    return ExceptionWrapper.run(fe.experimentRunId, ctx, () -> {
-      // write to relational DB, get an id
+    return ExceptionWrapper.run(fe.experimentRunId, ctx, metadataDb, () -> {
+      // write to relational DB
       FitEventResponse fer = FitEventDao.store(fe, ctx);
-      // write to mongodb
-      MongoDBContext.store(fer.modelId, fe)
+      // write metadata to mongodb
+      MetadataDao.store(fer, fe, metadataDb);
       // TODO: should we return metadata ID in fit event response?
+      return fer;
     });
   }
 
