@@ -66,6 +66,8 @@ cd path_to_modeldb/client/scala/libs/spark.ml
 cd path_to_modeldb/frontend
 ./start_frontend.sh &
 
+# shutdown mongodb server after killing the server
+mongo --eval "db.getSiblingDB('admin').shutdownServer()" # for Mac OSX and Linux
 ```
 
 ## 4. Incorporate ModelDB into an ML workflow
