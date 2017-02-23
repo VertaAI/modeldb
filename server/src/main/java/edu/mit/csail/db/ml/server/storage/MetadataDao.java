@@ -11,8 +11,10 @@ public class MetadataDao {
     public static final String COLLECTION_NAME = "model_metadata";
     public static final String MODELID_KEY = "MODELDB_model_id";
 
-    // TODO: what should be the return type?
     public static void store(FitEventResponse fer, FitEvent fe, DB metdataDb) {
+        if (!fe.isSetMetadata()) {
+            return;
+        }
         DBCollection collection = metdataDb.getCollection(MetadataDao.COLLECTION_NAME);
         DBObject metadataObject = (DBObject) JSON.parse(fe.metadata);
         metadataObject.put(MODELID_KEY, fer.modelId);
