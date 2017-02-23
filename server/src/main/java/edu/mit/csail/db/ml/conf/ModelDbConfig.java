@@ -85,6 +85,11 @@ public class ModelDbConfig {
   public final String mongoDbDbName;
 
   /**
+   * Name of database inside MongoDB
+   */
+  public final String mongoDbTestDbName;
+
+  /**
    * ModelDB Server allows the user to store models in a filesystem. ModelDB Server generates
    * filepaths at which the user can store their models. Each filename is prefixed with the given
    * prefix string to create the filepath.
@@ -105,6 +110,7 @@ public class ModelDbConfig {
     String mongoDbHost,
     String mongoDbPort,
     String mongoDbDbName,
+    String mongoDbTestDbName,
     String fsPrefix
   ) {
     this.dbUser = dbUser;
@@ -115,7 +121,8 @@ public class ModelDbConfig {
     this.thriftPort = Integer.parseInt(thriftPort);
     this.mongoDbHost = mongoDbHost;
     this.mongoDbPort = Integer.parseInt(mongoDbPort);
-    this.mongoDbDbName = mongoDbDbName,
+    this.mongoDbDbName = mongoDbDbName;
+    this.mongoDbTestDbName = mongoDbTestDbName;
     this.fsPrefix = fsPrefix;
 
     switch (databaseType) {
@@ -174,6 +181,7 @@ public class ModelDbConfig {
       getProp(config, "mongodb.host"),
       getProp(config, "mongodb.port"),
       getProp(config, "mongodb.dbName"),
+      getProp(config, "mongodb.testDbName"),
       getProp(config, "fs.prefix")
     );
 

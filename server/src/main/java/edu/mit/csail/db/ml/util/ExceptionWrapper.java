@@ -4,6 +4,7 @@ import edu.mit.csail.db.ml.server.storage.ExperimentRunDao;
 import modeldb.ServerLogicException;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
+import com.mongodb.DB;
 
 /**
  * This class contains logic for running code and wrapping any thrown exceptions.
@@ -53,6 +54,14 @@ public class ExceptionWrapper {
    * This is like run(CheckedSupplier<T> fn), but it first ensures that the given experiment run ID is valid.
    */
   public static <T> T run(int expRunId, DSLContext ctx, CheckedSupplier<T> fn) throws TException {
+    return run(() -> {
+      ExperimentRunDao.validateExperimentRunId(expRunId, ctx);
+      return fn.get();
+    });
+  }
+
+  public static <T> T run(int expRunId, DSLContext ctx, DB mongoDb, 
+    CheckedSupplier<T> fn) throws TException {
     return run(() -> {
       ExperimentRunDao.validateExperimentRunId(expRunId, ctx);
       return fn.get();

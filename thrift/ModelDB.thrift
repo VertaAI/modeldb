@@ -308,7 +308,8 @@ struct FitEvent {
   5: list<string> predictionColumns,
   6: list<string> labelColumns,
   7: i32 experimentRunId,
-  8: optional ProblemType problemType = ProblemType.UNDEFINED
+  8: optional ProblemType problemType = ProblemType.UNDEFINED,
+  9: optional string metadata
 }
 
 /*
