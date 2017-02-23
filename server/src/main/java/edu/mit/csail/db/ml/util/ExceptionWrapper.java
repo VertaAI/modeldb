@@ -67,4 +67,10 @@ public class ExceptionWrapper {
       return fn.get();
     });
   }
+
+  public static <T> T run(DB mongoDb, CheckedSupplier<T> fn) throws TException {
+    return run(() -> {
+      return fn.get();
+    });
+  }
 }
