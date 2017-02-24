@@ -271,6 +271,7 @@ $(function() {
             obj[metadata[j].key] = metadata[j].value;
           }
 
+          // TODO: remove this once visualization for model metadata is done
           console.log("Printing model metadata...");
           console.log(model["metadata"]);
           console.log(JSON.parse(model["metadata"]));

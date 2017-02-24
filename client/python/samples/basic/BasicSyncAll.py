@@ -1,8 +1,9 @@
 from modeldb.basic.ModelDbSyncerBase import *
 import yaml
 
-# Create a syncer from a config file
-syncer_obj = Syncer.create_syncer_from_config("YamlSample.yaml", None, None)
+# Create a syncer using a convenience API
+syncer_obj = Syncer.create_syncer("Sample Project", "test_user", \
+    "use sync_all")
 
 # sync_all can use both yaml and json files
 filename = "YamlSample.yaml"
@@ -12,4 +13,3 @@ print "Syncing all data from file..."
 syncer_obj.sync_all(filename)
 
 syncer_obj.sync()
-

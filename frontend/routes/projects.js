@@ -65,7 +65,6 @@ router.get('/:id/models', function(req, res, next) {
 router.get('/:id/ms', function(req, res, next) {
   var projectId = req.params.id;
   api.getProjectModels(projectId, function(response) {
-    console.log(response);
     res.json(response);
   });
 });

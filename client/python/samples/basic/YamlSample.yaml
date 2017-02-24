@@ -1,28 +1,4 @@
 ---
-VERSION_CODE: yes # whether to version code
-GIT_USERNAME: # git username
-GIT_REPO: # name of github repo
-ACCESS_TOKEN: # insert access token
-
-# experiment code location that will be the git repo
-EXPT_DIR: # directory where the real code lives
-GIT_REPO_DIR: # directory where the new git repo for experiments will be create
-# modeldb server information
-MDB_SERVER_HOST: localhost
-MDB_SERVER_PORT: 6543
-
-# project information. You must specify a project
-PROJECT:
-   NAME:            Sample Project
-   DESCRIPTION:     test sync all
-
-# define experiment here. If none specified, then default experiment used
-# EXPERIMENTS:
-#     - NAME:
-#       DESCRIPTION:
-#     - NAME:
-#       DESCRIPTION:
-
 DATASETS:
     - FILENAME: /path/to/train_file.csv
       METADATA:
