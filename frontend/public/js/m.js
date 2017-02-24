@@ -271,6 +271,10 @@ $(function() {
             obj[metadata[j].key] = metadata[j].value;
           }
 
+          console.log("Printing model metadata...");
+          console.log(model["metadata"]);
+          console.log(JSON.parse(model["metadata"]));
+
           // specifications
           obj["Specification ID"] = model.specification.id;
           obj["Type"] = model.specification.transformerType;
