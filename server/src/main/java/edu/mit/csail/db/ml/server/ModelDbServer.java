@@ -219,7 +219,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public ExperimentRunDetailsResponse getExperimentRunDetails(int experimentRunId) throws TException {
-    return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentRunDetails(experimentRunId, ctx));
+    return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentRunDetails(experimentRunId, ctx, metadataDb));
   }
 
   public List<String> originalFeatures(int modelId) throws TException {
