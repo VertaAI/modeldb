@@ -10,14 +10,14 @@
     background-color:#fff;
 }
 .node-content-wrapper ul{
-    border-left:1px dotted #ccc;
+    border-left:1px dotted #aaa;
     list-style:none;
     padding-left:25px;
     margin:0px;
 }
 .node-content-wrapper ul li{
     list-style:none;
-    border-bottom:0; 
+    border-bottom:0;
     padding-bottom:0
 }
 .node-hgl-path{
