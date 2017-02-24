@@ -116,4 +116,19 @@ $(function() {
       );
     }
   });
+
+  // show json modal
+  $(document).on('click', '.json-md-trigger', function(event) {
+    $.getJSON('/json/config.json', function(response) {
+      var node = new PrettyJSON.view.Node({
+        el:$('#md-json'),
+        data:response
+      });
+      $('#modal-2').addClass('md-show');
+    });
+  });
+
+  $(document).on('click', '.md-close, .md-overlay', function(event) {
+    $('.md-modal').removeClass('md-show');
+  });
 });

@@ -18,7 +18,7 @@ $(function() {
             '</div></div>'));
         }
         $('.md-annotations')[0].scrollTop = $('.md-annotations')[0].scrollHeight;
-        $('.md-modal').addClass('md-show');
+        $('#modal-1').addClass('md-show');
         setTimeout(function(){
           // wasn't working without the timeout
           $('.md-input').focus();
