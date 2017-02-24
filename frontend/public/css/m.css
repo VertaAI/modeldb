@@ -471,6 +471,17 @@ background-color: #d0d8e2;
   width: 176px;
 }
 
+.nkv.json-md-trigger {
+  color: #00B7FF;
+  cursor: pointer;
+}
+
+#md-json {
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
 /*
  *  Groups
  */
