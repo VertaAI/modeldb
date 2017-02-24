@@ -2,15 +2,17 @@
 Event indicating estimator was used to fit model.
 """
 from modeldb.events.Event import *
+import json
 
 class FitEvent(Event):
     """
     Class for creating and storing FitEvents
     """
-    def __init__(self, model, spec, df):
+    def __init__(self, model, spec, df, metadata={}):
         self.model = model
         self.spec = spec
         self.df = df
+        self.metadata = metadata
 
     def make_event(self, syncer):
         """
@@ -23,6 +25,7 @@ class FitEvent(Event):
         fe = modeldb_types.FitEvent(syncable_dataframe, model_spec,
                                     syncable_transformer, columns,
                                     [], [], syncer.experiment_run.id)
+        fe.metadata = json.dumps(self.metadata, default=str)
         return fe
 
     def associate(self, res, syncer):
