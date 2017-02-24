@@ -82,6 +82,11 @@
             <artifactId>bson</artifactId>
             <version>3.4.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.24</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
