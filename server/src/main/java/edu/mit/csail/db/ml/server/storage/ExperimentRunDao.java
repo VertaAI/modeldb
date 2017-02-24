@@ -7,6 +7,7 @@ import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Record2;
+import com.mongodb.DB;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -199,7 +200,10 @@ public class ExperimentRunDao {
    * @return The details (e.g. Transformers) in the ExperimentRun with ID experimentRunId.
    * @throws ResourceNotFoundException - Thrown if there is no ExperimentRun with ID experimentRunId.
    */
-  public static ExperimentRunDetailsResponse readExperimentRunDetails(int experimentRunId, DSLContext ctx)
+  public static ExperimentRunDetailsResponse readExperimentRunDetails(
+    int experimentRunId, 
+    DSLContext ctx,
+    DB metadataDb)
     throws ResourceNotFoundException {
     // Read the experiment run, experiment, and project.
     ExperimentRun expRun = read(experimentRunId, ctx);
@@ -225,7 +229,7 @@ public class ExperimentRunDao {
     // method can throw an exception, which isn't allowed in a map().
     List<ModelResponse> responses = new ArrayList<>();
     for (int modelId : modelIds) {
-      responses.add(TransformerDao.readInfo(modelId, ctx));
+      responses.add(TransformerDao.readInfo(modelId, ctx, metadataDb));
     }
 
     return new ExperimentRunDetailsResponse(proj, exp, expRun, responses);
