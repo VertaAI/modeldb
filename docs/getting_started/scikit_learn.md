@@ -66,6 +66,9 @@ cd path_to_modeldb/client/python
 cd path_to_modeldb/frontend
 ./start_frontend.sh &
 
+# shutdown mongodb server after killing the server
+# on Mac OSX and Linux
+mongo --eval "db.getSiblingDB('admin').shutdownServer()" 
 ```
 
 ## 4. Incorporate ModelDB into an ML workflow

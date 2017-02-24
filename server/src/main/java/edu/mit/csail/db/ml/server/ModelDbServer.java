@@ -203,7 +203,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public ModelResponse getModel(int modelId) throws TException {
-    return ExceptionWrapper.run(() -> TransformerDao.readInfo(modelId, ctx));
+    return ExceptionWrapper.run(metadataDb, () -> TransformerDao.readInfo(modelId, ctx, metadataDb));
   }
 
   public List<ExperimentRun> getRunsInExperiment(int experimentId) throws TException {
