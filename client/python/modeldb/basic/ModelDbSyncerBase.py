@@ -373,7 +373,6 @@ class Syncer(object):
             data_tag = "default"
         return self.datasets[data_tag]
 
-<<<<<<< HEAD
     def dataset_from_dict(self, dataset_dict):
         filename = dataset_dict[metadata_constants.DATASET_FILENAME_KEY]
         metadata = dataset_dict[metadata_constants.DATASET_METADATA_KEY] \
@@ -382,13 +381,10 @@ class Syncer(object):
             if metadata_constants.DATASET_TAG_KEY in dataset_dict else 'default'
         return Dataset(filename, metadata, tag)
 
-=======
->>>>>>> b6660ef4bd237489ec4cd0dbc93d8a158e86eda6
     def sync_all(self, metadata_path):
         with open(metadata_path) as data_file:
             metadata = yaml.load(data_file)
 
-<<<<<<< HEAD
         # sync datasets
         datasets = {}
         for dataset_dict in metadata[metadata_constants.DATASETS_KEY]:
@@ -418,27 +414,5 @@ class Syncer(object):
             metric_type = metric[metadata_constants.METRIC_TYPE_KEY]
             metric_value = metric[metadata_constants.METRIC_VALUE_KEY]
             metric_event = MetricEvent(model_dataset, model, "label_col", \
-=======
-        model_data = metadata["model"]
-        model_type = model_data["type"]
-        model_name = model_data["name"]
-        model = Model(model_type, model_name)
-        config = model_data["config"]
-
-        dataset_data = model_data["dataset"]
-        filename = dataset_data["filename"]
-        dataset_metadata = dataset_data["metadata"] if "metadata" in dataset_data else {}
-        dataset = Dataset(filename, dataset_metadata)
-
-        fit_event = FitEvent(model, ModelConfig(model_type, config), 
-            dataset, metadata)
-        Syncer.instance.add_to_buffer(fit_event)
-
-        metrics_data = model_data["metrics"]
-        for metric in metrics_data:
-            metric_type = metric["type"]
-            metric_value = metric["value"]
-            metric_event = MetricEvent(dataset, model, "label_col", \
->>>>>>> b6660ef4bd237489ec4cd0dbc93d8a158e86eda6
                 "prediction_col", metric_type, metric_value)
             Syncer.instance.add_to_buffer(metric_event)
