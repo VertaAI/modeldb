@@ -154,6 +154,7 @@ module.exports = {
       });
     });
     */
+    /*
     Thrift.client.computeModelAncestry(22, function(err, response) {
       console.log("error: ");
       console.log(err);
@@ -161,5 +162,6 @@ module.exports = {
       console.log("response: ");
       console.log(response);
     });
+    */
   }
 };
