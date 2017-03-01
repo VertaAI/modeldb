@@ -324,7 +324,7 @@ $(function() {
           obj["DF Tag"] = model.trainingDataFrame.tag;
           obj["DF Filepath"] = model.trainingDataFrame.filepath;
           var metadata = model.trainingDataFrame.metadata;
-          obj["metadata"] = metadata;
+          obj["df_metadata"] = metadata;
           for (var j=0; j<metadata.length; j++) {
             obj[metadata[j].key] = metadata[j].value;
           }

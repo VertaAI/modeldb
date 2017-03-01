@@ -55,17 +55,17 @@
         </div>
       <% } %>
 
-      <% if (model["metadata"].length > 0) { %>
+      <% if (model["df_metadata"].length > 0) { %>
         <div class="nkv dfmetadata-container popup-container">
           <div class="popup-label">Metadata</div>
           <div class="dfmetadata popup-contents">
-            <% for (var j=0; j<model["metadata"].length; j++) { %>
+            <% for (var j=0; j<model["df_metadata"].length; j++) { %>
               <div class="kv"
                 data-src="metadata"
-                data-key="<%= model["metadata"][j].key %>"
-                data-val="<%= model["metadata"][j].value %>"
+                data-key="<%= model["df_metadata"][j].key %>"
+                data-val="<%= model["df_metadata"][j].value %>"
               >
-                <%= model["metadata"][j].key %>: <%= model["metadata"][j].value %>
+                <%= model["df_metadata"][j].key %>: <%= model["df_metadata"][j].value %>
               </div>
             <% } %>
           </div>
@@ -159,8 +159,11 @@
         </div>
       <% } %>
 
-      <% if (true) { %>
-        <div class="nkv json-md-trigger">
+      <% if (model["metadata"]) { %>
+        <div
+          class="nkv json-md-trigger"
+          data-id="<%= model["id"] %>""
+        >
           Metadata
         </div>
       <% } %>
