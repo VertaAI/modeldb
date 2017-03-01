@@ -169,6 +169,19 @@ background-color: #d0d8e2;
   overflow: hidden;
 }
 
+.summary-toggle-radio {
+  margin: 2px 0;
+}
+
+.summary-toggle-radio:first-of-type {
+  margin-top: 8px;
+}
+
+.summary-toggle-radio input,
+.summary-toggle-radio label {
+  cursor: pointer;
+}
+
 /*
  * Model card
  */

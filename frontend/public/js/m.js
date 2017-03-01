@@ -4,10 +4,14 @@ const DEFAULT_Z = "Experiment Run ID";
 
 var models = [];
 var summarySpecs;
+var summarySpecsWithTimestamps;
+var useTimestamps = false;
 var exploreSpecs;
 var vlSpec;
 var min_id = null;
 var max_id = null;
+var min_date = null;
+var max_date = null;
 var hyperparamKeys = {};
 var metricKeys = {};
 var modelTypes = {};
@@ -249,6 +253,14 @@ $(function() {
       }
     });
 
+    $(document).on('click', '.summary-toggle-radio', function(event) {
+      var prev = useTimestamps;
+      useTimestamps = (event.target.value == "timestamp");
+      if (prev != useTimestamps) {
+        vegaInit();
+      }
+    });
+
   };
 
   function fetchData(projectId) {
@@ -288,6 +300,16 @@ $(function() {
 
           if (max_id == null || id > max_id) {
             max_id = id;
+          }
+
+          var timestamp = new Date(model.filepath);
+
+          if (min_date == null || timestamp < min_date) {
+            min_date = timestamp;
+          }
+
+          if (max_date == null || timestamp > max_date) {
+            max_date = timestamp;
           }
 
           // id
@@ -342,6 +364,9 @@ $(function() {
           obj["Code SHA"] = model.sha;
           obj["Filepath"] = model.filepath;
           obj["annotations"] = model.annotations;
+
+          // TODO: update this once api is fixed
+          obj["timestamp"] = timestamp;
 
           // show
           obj["show"] = true;
@@ -789,58 +814,242 @@ $(function() {
       ]
     };
 
-    /*
-    exploreSpecs = {
-      "height": 200,
-      "width": 600,
+    summarySpecsWithTimestamps = {
+      "height": height,
+      "width": width,
+      "signals": [
+        {
+          "name": "brush_start",
+          "streams": [{
+            "type": "@overview:mousedown",
+            "expr": "eventX()",
+            "scale": {"name": "xOverview", "invert": true}
+          }]
+        },
+        {
+          "name": "brush_end",
+          "init": {"expr": "datetime('" + min_date + "')"},
+          "streams": [{
+            "type": "@overview:mousedown, [@overview:mousedown, window:mouseup] > window:mousemove, @overview:mouseup",
+            "expr": "clamp(eventX(), 0," + width + ")",
+            "scale": {"name": "xOverview", "invert": true}
+          }]
+        },
+        {
+          "name": "min_date",
+          "init": {"expr": "datetime('" + min_date + "')"},
+          "expr": "time(brush_start) == time(brush_end) ? datetime('" + min_date + "') : min(brush_start, brush_end)"
+        },
+        {
+          "name": "max_date",
+          "init": {"expr": "datetime('" + max_date + "')"},
+          "expr": "time(brush_start) == time(brush_end) ? datetime('" + max_date + "') : max(brush_start, brush_end)"
+        }
+      ],
+
 
       "data": [
         {
           "name": "table",
-          "values": models
-        }
-      ],
-
-      "scales": [
-        {
-          "name": "x",
-          "range": "width",
-          "type": "ordinal",
-          "domain": {"data": "table", "field": "Experiment Run ID"}
+          "values": Object.values(models),
+          "transform": [
+            {"type": "filter", "test": "datum.show == true"},
+            {"type": "fold", "fields": metricKeys},
+            {"type": "formula", "field": "date", "expr": "datetime(datum.timestamp)"}
+          ]
         },
         {
-          "name": "y",
-          "range": "height",
-          "type": "linear",
-          "nice": true,
-          "domain": {"data": "table", "field": "accuracy"}
+          "name": "filtered",
+          "values": Object.values(models),
+          "transform": [
+            {"type": "filter", "test": "datum.show == true"},
+            {"type": "formula", "field": "date", "expr": "datetime(datum.timestamp)"},
+            {"type": "filter", "test": "datum.date >= min_date && datum.date <= max_date"},
+            {"type": "fold", "fields": metricKeys}
+          ]
         }
       ],
-      "axes": [
-        {"type": "x", "scale": "x"},
-        {"type": "y", "scale": "y"}
-      ],
-      "marks": [
+      "scales": [
         {
-          "type": "rect",
-          "from": {
-            "data": "table",
-          },
+          "name": "xOverview",
+          "range": "width",
+          "type": "time",
+          "domain": {"data": "table", "field": "date"},
+        },
+        {
+          "name": "yOverview",
+          "range": [70, 0],
+          "nice": true,
+          "domain": {"data": "table", "field": "value"}
+        },
+        {
+          "name": "xDetail",
+          "range": "width",
+          "type": "time",
+          "domainMin": {"signal": "min_date"},
+          "domainMax": {"signal": "max_date"},
+        },
+        {
+          "name": "yDetail",
+          "range": [height,0],
+          "nice": true,
+          "domain": {"data": "filtered", "field": "value"}
+        },
+        {
+          "name": "color",
+          "type": "ordinal",
+          "domain": {"data": "table", "field": "Type"},
+          "range": "category10"
+        },
+        {
+          "name": "shape",
+          "type": "ordinal",
+          "domain": {"data": "table", "field": "key"},
+          "range": "shapes"
+        }
+      ],
+
+      "legends": [
+        {
+          "fill": "color",
+          "title": "Model Type",
+          "offset": 20,
           "properties": {
-            "enter": {
-              "x": {"scale": "x", "field": "Experiment Run ID"},
-              "width": {"scale": "x", "band": true, "offset": -10},
-              "y": {"scale": "y", "field": "accuracy"},
-              "y2": {"scale": "y", "value": 0},
-              "fill": {"value": "steelblue"}
-            },
+            "symbols": {
+              "fillOpacity": {"value": 0.5},
+              "stroke": {"value": "transparent"}
+            }
+          }
+        },
+        {
+          "shape": "shape",
+          "title": "Metric Name",
+          "offset": 20,
+          "properties": {
+            "symbols": {
+              "fillOpacity": {"value": 0.5},
+              "fill": "#3182bd"
+            }
           }
         }
+      ],
+
+      "marks": [
+        {
+          "type": "group",
+          "name": "detail",
+          "properties": {
+            "enter": {
+              "height": {"value": height},
+              "width": {"value": width}
+            }
+          },
+          "axes": [
+            {"type": "x", "scale": "xDetail", "title": "Time"},
+            {"type": "y", "scale": "yDetail", "title": "Metric Values"}
+          ],
+          "marks": [
+            {
+              "type": "group",
+              "properties": {
+                "enter": {
+                  "height": {"field": {"group": "height"}},
+                  "width": {"field": {"group": "width"}},
+                  "clip": {"value": false}
+                }
+              },
+              "marks": [
+                {
+                  "type": "symbol",
+                  "from": {
+                    "data": "filtered"
+                  },
+                  "properties": {
+                    "update": {
+                      "x": {"scale": "xDetail", "field": "date"},
+                      "y": {"scale": "yDetail", "field": "value"},
+                      "y2": {"scale": "yDetail", "value": 0},
+                      "size": {"value": 70},
+                      "opacity": {"value": 0.5},
+                      "fill": {"scale": "color", "field": "Type"},
+                      "shape": {"scale": "shape", "field": "key"}
+                    },
+                    "hover": {
+                      "fill": {"value": "#de2d26"},
+                      "size": {"value": 150},
+                      "cursor": {"value": "pointer"}
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "type": "group",
+          "name": "overview",
+          "properties": {
+            "enter": {
+              "x": {"value": 0},
+              "y": {"value": height + 40},
+              "height": {"value": 70},
+              "width": {"value": width},
+              "fill": {"value": "transparent"}
+            },
+            "hover": {
+              "cursor": {"value": "ew-resize"}
+            }
+          },
+          "axes": [
+            {"type": "x", "scale": "xOverview"}
+          ],
+          "marks": [
+            {
+              "type": "symbol",
+              "from": {
+                "data": "table",
+                "transform": [{"type": "formula", "field": "hidetooltip", "expr": "true"}]
+              },
+              "properties": {
+                "update": {
+                  "x": {"scale": "xOverview", "field": "date"},
+                  "y": {"scale": "yOverview", "field": "value"},
+                  "y2": {"scale": "yOverview", "value": 0},
+                  "fill": {"value": "steelblue"}
+                },
+                "hover": {
+                  "cursor": {"value": "ew-resize"}
+                },
+              }
+            },
+            {
+              "type": "rect",
+              "properties":{
+                "enter":{
+                  "y": {"value": 0},
+                  "height": {"value":70},
+                  "fill": {"value": "#333"},
+                  "fillOpacity": {"value":0.2}
+                },
+                "hover": {
+                  "cursor": {"value": "ew-resize"}
+                },
+                "update":{
+                  "x": {"scale": "xOverview", "signal": "brush_start"},
+                  "x2": {"scale": "xOverview", "signal": "brush_end"}
+                }
+              }
+            }
+          ]
+        }
+
       ]
     };
-    */
 
-    vg.embed(".summary-chart", summarySpecs, function(error, result) {
+    var specs = useTimestamps ? summarySpecsWithTimestamps : summarySpecs;
+
+    vg.embed(".summary-chart", specs, function(error, result) {
       // Callback receiving the View instance and parsed Vega spec
       // result.view is the View, which resides under the '.summary-chart' element
       options = {
