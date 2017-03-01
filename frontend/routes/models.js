@@ -55,4 +55,11 @@ router.get('/ancestry/:id', function(req, res, next) {
   });
 });
 
+router.get('/:id/metadata', function(req, res, next) {
+  var modelId = req.params.id;
+  api.getModel(modelId, function(response) {
+    res.json(response.metadata);
+  });
+});
+
 module.exports = router;
