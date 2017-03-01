@@ -188,12 +188,46 @@ $(function() {
       }
     });
 
+    $(document).on('keyup', '.filter-options input[type="text"]', function(event) {
+      var elt = $(event.target);
+      var filter = $(this).closest('.filter');
+      var key = filter.data('key');
+      var vals = elt.val().trim().split(/\s*,\s*/).filter(v=>v!='');
+      var invert = filter.find('input[type="checkbox"]')[0].checked;
+
+      // update filter
+      updateFilter(key, vals, invert);
+      filter.find('.filter-val').html(vals.join(', '));
+      filter.data('val', vals);
+      $('.filter-button').removeClass('filter-button-disabled');
+
+      // enable press enter to filter
+      if (event.which == 13) {
+        $('.filter-button').click();
+      }
+    });
+
+    $(document).on('change', '.filter-invert', function(event) {
+      var filter = $(this).closest('.filter');
+      var key = filter.data('key');
+      var vals = filter.data('val');
+      var invert = event.target.checked;
+      updateFilter(key, vals, invert);
+
+      if (invert) {
+        filter.find('.filter-val').addClass('invert');
+      } else {
+        filter.find('.filter-val').removeClass('invert');
+      }
+      $('.filter-button').removeClass('filter-button-disabled');
+    });
+
     $(document).on('click', '.filter-close', function(event) {
       var filter = $(event.target).parent('.filter');
       var key = filter.data('key');
       var val = filter.data('val');
       filter.remove();
-      removeFilter(key, val);
+      removeFilter(key);
       $('.filter-button').removeClass('filter-button-disabled');
     });
 
@@ -887,7 +921,7 @@ $(function() {
     exploreSpecs = vl.compile(vlSpec);
 
     vg.embed(".explore-chart", exploreSpecs, function(error, result) {
-      console.log(error);
+      //console.log(error);
       vg.tooltip(result.view, {showAllFields: true, colorTheme: "dark"});
     });
   };
@@ -923,7 +957,7 @@ $(function() {
     exploreSpecs = vl.compile(specs);
 
     vg.embed(".explore-chart", exploreSpecs, function(error, result) {
-      console.log(error);
+      //console.log(error);
       vg.tooltip(result.view, {showAllFields: true, colorTheme: "dark"});
     });
   };
@@ -949,22 +983,17 @@ $(function() {
   };
 
   function addFilter(key, val) {
-    // check if filter with same key and val already exists
-    var filterDivs = $('.filter').findByData('key', key);
-    for (var i=0; i<filterDivs.length; i++) {
-      if ($(filterDivs[i]).data('val') == val) {
-        return;
-      }
+    // check if filter with same key already exists
+    if (filters[key] != null) {
+      return;
     }
 
     if (!filters.hasOwnProperty(key)) {
       filters[key] = {
-        "vals": {}
+        "vals": {},
+        "invert": false
       };
-    }
-    filters[key].vals[val] = {
-      "val": val,
-      "invert": false
+      filters[key].vals[val] = true;
     }
 
     var obj = {key: key, val: val};
@@ -972,11 +1001,8 @@ $(function() {
     $('.filter-area').append(filterDiv);
   }
 
-  function removeFilter(key, val) {
-    delete filters[key].vals[val];
-    if (Object.keys(filters[key].vals).length === 0) {
-      delete filters[key];
-    }
+  function removeFilter(key) {
+    delete filters[key];
   }
 
   function addRange(key) {
@@ -995,6 +1021,16 @@ $(function() {
     };
   }
 
+  function updateFilter(key, vals, invert) {
+    if (filters.hasOwnProperty(key)) {
+      filters[key].vals = {};
+      for (var i=0; i<vals.length; i++) {
+        filters[key].vals[vals[i]] = true;
+      }
+      filters[key].invert = invert;
+    }
+  }
+
   function removeRange(id) {
     delete ranges[id];
   }
@@ -1004,7 +1040,7 @@ $(function() {
 
     for (var key in filters) {
       if (filters.hasOwnProperty(key)) {
-        filterByKey(key, filters[key].vals, show);
+        filterByKey(key, show);
       }
     }
 
@@ -1038,11 +1074,21 @@ $(function() {
     reloadTable();
   };
 
-  function filterByKey(key, vals, show) {
+  function filterByKey(key, show) {
+    var vals = filters[key].vals;
+    if (jQuery.isEmptyObject(vals)) {
+      return;
+    }
+    var invert = filters[key].invert;
+
     for (var i=0; i<models.length; i++) {
       var field = models[i][key];
-      if (vals[field] == null || vals[field].invert) {
-        show[i] = false;
+      if (invert) {
+        // check to see that field is not one of specified values
+        show[i] = show[i] && (vals[field] == null);
+      } else {
+        // check to see that field is one of specified values
+        show[i] = show[i] && (vals[field] != null);
       }
     }
   };

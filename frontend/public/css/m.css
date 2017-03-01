@@ -631,6 +631,7 @@ background-color: #d0d8e2;
   background-color: #AEBDCD;
   border-radius: 2px;
   color: white;
+  position: relative;
 }
 
 .filter-key, .filter-val, .range-key {
@@ -642,11 +643,12 @@ background-color: #d0d8e2;
 .filter-close,
 .range-close,
 .sort-close {
-  float: right;
   color: #D9E0E8;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-right: 2px;
+  position: absolute;
+  right: 6px;
+  top: 5px;
 }
 
 .filter-close:hover,
@@ -667,6 +669,56 @@ background-color: #d0d8e2;
 .range-input {
   text-align: right;
   width: calc(100% - 60px);
+}
+
+.filter-expand {
+  color: #D9E0E8;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 11px;
+  line-height: 18px;
+  opacity: 0.7;
+  position: absolute;
+  top: 4px;
+  right: 16px;
+}
+
+.filter-expand:hover {
+  color: #2c3e50;
+  opacity: 0.5;
+}
+
+.filter-options {
+  padding: 4px 0;
+  margin: 6px 0 -2px 0;
+  display: none;
+}
+
+.filter-options input[type=text] {
+  width: 129px;
+  padding: 2px 4px;
+  font-weight: 100;
+  margin: 0 2px;
+}
+
+.filter-val {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-val.invert:before {
+  content: "NOT( ";
+}
+
+.filter-val.invert:after {
+  content: " )";
+}
+
+.filter-kv-container {
+  width: calc(100% - 25px);
+  white-space: nowrap;
+  display: flex;
 }
 
 /*

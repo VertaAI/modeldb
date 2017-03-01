@@ -117,6 +117,26 @@ $(function() {
     }
   });
 
+  // filter toggle options
+  $(document).on('click', '.filter-expand', function(event) {
+    var elt = $(event.target);
+    var filter = elt.closest('.filter');
+    var options = elt.next('.filter-options');
+    if (elt.data('show')) {
+      // hide options
+      options.slideUp();
+      elt.html("&#9660;");
+      elt.data('show', false);
+    } else {
+      // show options
+      options.slideDown();
+      options.find('input[type="text"]').val(filter.data('val').join(', '));
+      options.find('input[type="text"]').focus();
+      elt.html("&#9650;");
+      elt.data('show', true);
+    }
+  });
+
   // show json modal
   $(document).on('click', '.json-md-trigger', function(event) {
     $.getJSON('/json/config.json', function(response) {
