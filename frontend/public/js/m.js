@@ -4,10 +4,14 @@ const DEFAULT_Z = "Experiment Run ID";
 
 var models = [];
 var summarySpecs;
+var summarySpecsWithTimestamps;
+var useTimestamps = false;
 var exploreSpecs;
 var vlSpec;
 var min_id = null;
 var max_id = null;
+var min_date = null;
+var max_date = null;
 var hyperparamKeys = {};
 var metricKeys = {};
 var modelTypes = {};
@@ -28,6 +32,7 @@ var filterVal = null;
 var supportsRange;
 var filters = {};
 var ranges = {};
+var filterId = 0;
 var rangeId = 0;
 
 $(function() {
@@ -100,46 +105,46 @@ $(function() {
       var order = el.data('order');
       var key = el.data('key');
 
-      // reset metrics sort
-      $('.metrics-sort')[0].selectedIndex = -1;
-      $('.metrics-sort').removeClass('asc');
-      $('.metrics-sort').removeClass('dsc');
+      var dropdown = el.next('.dropdown-sort');
 
-      if (!sorted) {
-        // default to ascending
-        $('.sorted').removeClass('sorted');
-        $('.down').removeClass('down');
-        $('.up').removeClass('up');
-        el.addClass('sorted');
-        el.data('order', 'down');
-        el.addClass('down');
-        order = 'down';
-      } else {
-        // flip sorting order
-        el.removeClass(el.data('order'));
-        if (order == 'up') {
-          order = 'down';
-        } else {
-          order = 'up';
-        }
-        el.data('order', order);
-        el.addClass(order);
+      if (key == null) {
+        // use 1st key by default
+        key = dropdown.find('option')[1].value // 1 because index 0 is None
+        el.data('key', key);
+        dropdown.val(key);
       }
+
+      order = (order == 'asc') ? 'dsc' : 'asc';
+
+      $('.sorted').data('order', null);
+      el.data('order', order);
+      $('.sorted').removeClass('sorted');
+      $('.asc').removeClass('asc');
+      $('.dsc').removeClass('dsc');
+      el.addClass('sorted');
+      el.addClass(order);
 
       sortTable(key, order);
     });
 
-    $(document).on('change', '.metrics-sort', function(event){
+    $(document).on('change', '.dropdown-sort', function(event){
       var key = event.target.value;
-      var order = key.substring(0,3);
-      key = key.substring(4, key.length);
+      var triangleContainer = $(event.target).prev('.triangle-container');
+      triangleContainer.data('key', key);
+
+      var order = triangleContainer.data('order');
+      if (order == null) {
+        order = 'asc';
+      }
 
       // update classes
+      $('.sorted').data('order', null);
+      triangleContainer.data('order', order);
       $('.sorted').removeClass('sorted');
-      $(this).removeClass('asc');
-      $(this).removeClass('dsc');
-      $(this).addClass('sorted');
-      $(this).addClass(order);
+      $('.asc').removeClass('asc');
+      $('.dsc').removeClass('dsc');
+      triangleContainer.addClass('sorted');
+      triangleContainer.addClass(order);
 
       sortTable(key, order);
     });
@@ -187,9 +192,44 @@ $(function() {
       }
     });
 
+    $(document).on('keyup', '.filter-options input[type="text"]', function(event) {
+      var elt = $(event.target);
+      var filter = $(this).closest('.filter');
+      var key = filter.data('key');
+      var vals = elt.val().trim().split(/\s*,\s*/).filter(v=>v!='');
+      var invert = filter.find('input[type="checkbox"]')[0].checked;
+
+      // update filter
+      updateFilter(key, vals, invert);
+      filter.find('.filter-val').html(vals.join(', '));
+      filter.data('val', vals);
+      $('.filter-button').removeClass('filter-button-disabled');
+
+      // enable press enter to filter
+      if (event.which == 13) {
+        $('.filter-button').click();
+      }
+    });
+
+    $(document).on('change', '.filter-invert', function(event) {
+      var filter = $(this).closest('.filter');
+      var key = filter.data('key');
+      var vals = filter.data('val');
+      var invert = event.target.checked;
+      updateFilter(key, vals, invert);
+
+      if (invert) {
+        filter.find('.filter-val').addClass('invert');
+      } else {
+        filter.find('.filter-val').removeClass('invert');
+      }
+      $('.filter-button').removeClass('filter-button-disabled');
+    });
+
     $(document).on('click', '.filter-close', function(event) {
       var filter = $(event.target).parent('.filter');
       var key = filter.data('key');
+      var val = filter.data('val');
       filter.remove();
       removeFilter(key);
       $('.filter-button').removeClass('filter-button-disabled');
@@ -210,6 +250,14 @@ $(function() {
         hideModelCard();
         vegaInit();
         vegaUpdate();
+      }
+    });
+
+    $(document).on('click', '.summary-toggle-radio', function(event) {
+      var prev = useTimestamps;
+      useTimestamps = (event.target.value == "timestamp");
+      if (prev != useTimestamps) {
+        vegaInit();
       }
     });
 
@@ -254,6 +302,16 @@ $(function() {
             max_id = id;
           }
 
+          var timestamp = new Date(model.filepath);
+
+          if (min_date == null || timestamp < min_date) {
+            min_date = timestamp;
+          }
+
+          if (max_date == null || timestamp > max_date) {
+            max_date = timestamp;
+          }
+
           // id
           obj["id"] = id;
           obj["Experiment Run ID"] = model.experimentRunId;
@@ -266,7 +324,7 @@ $(function() {
           obj["DF Tag"] = model.trainingDataFrame.tag;
           obj["DF Filepath"] = model.trainingDataFrame.filepath;
           var metadata = model.trainingDataFrame.metadata;
-          obj["metadata"] = metadata;
+          obj["df_metadata"] = metadata;
           for (var j=0; j<metadata.length; j++) {
             obj[metadata[j].key] = metadata[j].value;
           }
@@ -306,6 +364,9 @@ $(function() {
           obj["Code SHA"] = model.sha;
           obj["Filepath"] = model.filepath;
           obj["annotations"] = model.annotations;
+
+          // TODO: update this once api is fixed
+          obj["timestamp"] = timestamp;
 
           // show
           obj["show"] = true;
@@ -486,9 +547,6 @@ $(function() {
   };
 
   function selectInit() {
-    var asc = $('<optgroup label="Ascending"/>');
-    var dsc = $('<optgroup label="Descending"/>');
-
     // add standard keys
     for (var i=0; i<keys.length; i++) {
       $('.x-axis').append(new Option(keys[i], keys[i]));
@@ -505,12 +563,8 @@ $(function() {
     // add metric keys
     for (var i=0; i<metricKeys.length; i++) {
       $('.y-axis').append(new Option(metricKeys[i], metricKeys[i]));
-      asc.append(new Option(metricKeys[i], 'asc_' + metricKeys[i]));
-      dsc.append(new Option(metricKeys[i], 'dsc_' + metricKeys[i]));
+      $('.metrics-sort').append(new Option(metricKeys[i], metricKeys[i]));
     }
-
-    $('.metrics-sort').append(asc);
-    $('.metrics-sort').append(dsc);
 
     $('.x-axis').val(DEFAULT_X);
     $('.z-axis').val(DEFAULT_Z);
@@ -760,58 +814,242 @@ $(function() {
       ]
     };
 
-    /*
-    exploreSpecs = {
-      "height": 200,
-      "width": 600,
+    summarySpecsWithTimestamps = {
+      "height": height,
+      "width": width,
+      "signals": [
+        {
+          "name": "brush_start",
+          "streams": [{
+            "type": "@overview:mousedown",
+            "expr": "eventX()",
+            "scale": {"name": "xOverview", "invert": true}
+          }]
+        },
+        {
+          "name": "brush_end",
+          "init": {"expr": "datetime('" + min_date + "')"},
+          "streams": [{
+            "type": "@overview:mousedown, [@overview:mousedown, window:mouseup] > window:mousemove, @overview:mouseup",
+            "expr": "clamp(eventX(), 0," + width + ")",
+            "scale": {"name": "xOverview", "invert": true}
+          }]
+        },
+        {
+          "name": "min_date",
+          "init": {"expr": "datetime('" + min_date + "')"},
+          "expr": "time(brush_start) == time(brush_end) ? datetime('" + min_date + "') : min(brush_start, brush_end)"
+        },
+        {
+          "name": "max_date",
+          "init": {"expr": "datetime('" + max_date + "')"},
+          "expr": "time(brush_start) == time(brush_end) ? datetime('" + max_date + "') : max(brush_start, brush_end)"
+        }
+      ],
+
 
       "data": [
         {
           "name": "table",
-          "values": models
-        }
-      ],
-
-      "scales": [
-        {
-          "name": "x",
-          "range": "width",
-          "type": "ordinal",
-          "domain": {"data": "table", "field": "Experiment Run ID"}
+          "values": Object.values(models),
+          "transform": [
+            {"type": "filter", "test": "datum.show == true"},
+            {"type": "fold", "fields": metricKeys},
+            {"type": "formula", "field": "date", "expr": "datetime(datum.timestamp)"}
+          ]
         },
         {
-          "name": "y",
-          "range": "height",
-          "type": "linear",
-          "nice": true,
-          "domain": {"data": "table", "field": "accuracy"}
+          "name": "filtered",
+          "values": Object.values(models),
+          "transform": [
+            {"type": "filter", "test": "datum.show == true"},
+            {"type": "formula", "field": "date", "expr": "datetime(datum.timestamp)"},
+            {"type": "filter", "test": "datum.date >= min_date && datum.date <= max_date"},
+            {"type": "fold", "fields": metricKeys}
+          ]
         }
       ],
-      "axes": [
-        {"type": "x", "scale": "x"},
-        {"type": "y", "scale": "y"}
-      ],
-      "marks": [
+      "scales": [
         {
-          "type": "rect",
-          "from": {
-            "data": "table",
-          },
+          "name": "xOverview",
+          "range": "width",
+          "type": "time",
+          "domain": {"data": "table", "field": "date"},
+        },
+        {
+          "name": "yOverview",
+          "range": [70, 0],
+          "nice": true,
+          "domain": {"data": "table", "field": "value"}
+        },
+        {
+          "name": "xDetail",
+          "range": "width",
+          "type": "time",
+          "domainMin": {"signal": "min_date"},
+          "domainMax": {"signal": "max_date"},
+        },
+        {
+          "name": "yDetail",
+          "range": [height,0],
+          "nice": true,
+          "domain": {"data": "filtered", "field": "value"}
+        },
+        {
+          "name": "color",
+          "type": "ordinal",
+          "domain": {"data": "table", "field": "Type"},
+          "range": "category10"
+        },
+        {
+          "name": "shape",
+          "type": "ordinal",
+          "domain": {"data": "table", "field": "key"},
+          "range": "shapes"
+        }
+      ],
+
+      "legends": [
+        {
+          "fill": "color",
+          "title": "Model Type",
+          "offset": 20,
           "properties": {
-            "enter": {
-              "x": {"scale": "x", "field": "Experiment Run ID"},
-              "width": {"scale": "x", "band": true, "offset": -10},
-              "y": {"scale": "y", "field": "accuracy"},
-              "y2": {"scale": "y", "value": 0},
-              "fill": {"value": "steelblue"}
-            },
+            "symbols": {
+              "fillOpacity": {"value": 0.5},
+              "stroke": {"value": "transparent"}
+            }
+          }
+        },
+        {
+          "shape": "shape",
+          "title": "Metric Name",
+          "offset": 20,
+          "properties": {
+            "symbols": {
+              "fillOpacity": {"value": 0.5},
+              "fill": "#3182bd"
+            }
           }
         }
+      ],
+
+      "marks": [
+        {
+          "type": "group",
+          "name": "detail",
+          "properties": {
+            "enter": {
+              "height": {"value": height},
+              "width": {"value": width}
+            }
+          },
+          "axes": [
+            {"type": "x", "scale": "xDetail", "title": "Time"},
+            {"type": "y", "scale": "yDetail", "title": "Metric Values"}
+          ],
+          "marks": [
+            {
+              "type": "group",
+              "properties": {
+                "enter": {
+                  "height": {"field": {"group": "height"}},
+                  "width": {"field": {"group": "width"}},
+                  "clip": {"value": false}
+                }
+              },
+              "marks": [
+                {
+                  "type": "symbol",
+                  "from": {
+                    "data": "filtered"
+                  },
+                  "properties": {
+                    "update": {
+                      "x": {"scale": "xDetail", "field": "date"},
+                      "y": {"scale": "yDetail", "field": "value"},
+                      "y2": {"scale": "yDetail", "value": 0},
+                      "size": {"value": 70},
+                      "opacity": {"value": 0.5},
+                      "fill": {"scale": "color", "field": "Type"},
+                      "shape": {"scale": "shape", "field": "key"}
+                    },
+                    "hover": {
+                      "fill": {"value": "#de2d26"},
+                      "size": {"value": 150},
+                      "cursor": {"value": "pointer"}
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "type": "group",
+          "name": "overview",
+          "properties": {
+            "enter": {
+              "x": {"value": 0},
+              "y": {"value": height + 40},
+              "height": {"value": 70},
+              "width": {"value": width},
+              "fill": {"value": "transparent"}
+            },
+            "hover": {
+              "cursor": {"value": "ew-resize"}
+            }
+          },
+          "axes": [
+            {"type": "x", "scale": "xOverview"}
+          ],
+          "marks": [
+            {
+              "type": "symbol",
+              "from": {
+                "data": "table",
+                "transform": [{"type": "formula", "field": "hidetooltip", "expr": "true"}]
+              },
+              "properties": {
+                "update": {
+                  "x": {"scale": "xOverview", "field": "date"},
+                  "y": {"scale": "yOverview", "field": "value"},
+                  "y2": {"scale": "yOverview", "value": 0},
+                  "fill": {"value": "steelblue"}
+                },
+                "hover": {
+                  "cursor": {"value": "ew-resize"}
+                },
+              }
+            },
+            {
+              "type": "rect",
+              "properties":{
+                "enter":{
+                  "y": {"value": 0},
+                  "height": {"value":70},
+                  "fill": {"value": "#333"},
+                  "fillOpacity": {"value":0.2}
+                },
+                "hover": {
+                  "cursor": {"value": "ew-resize"}
+                },
+                "update":{
+                  "x": {"scale": "xOverview", "signal": "brush_start"},
+                  "x2": {"scale": "xOverview", "signal": "brush_end"}
+                }
+              }
+            }
+          ]
+        }
+
       ]
     };
-    */
 
-    vg.embed(".summary-chart", summarySpecs, function(error, result) {
+    var specs = useTimestamps ? summarySpecsWithTimestamps : summarySpecs;
+
+    vg.embed(".summary-chart", specs, function(error, result) {
       // Callback receiving the View instance and parsed Vega spec
       // result.view is the View, which resides under the '.summary-chart' element
       options = {
@@ -892,7 +1130,7 @@ $(function() {
     exploreSpecs = vl.compile(vlSpec);
 
     vg.embed(".explore-chart", exploreSpecs, function(error, result) {
-      console.log(error);
+      //console.log(error);
       vg.tooltip(result.view, {showAllFields: true, colorTheme: "dark"});
     });
   };
@@ -928,7 +1166,7 @@ $(function() {
     exploreSpecs = vl.compile(specs);
 
     vg.embed(".explore-chart", exploreSpecs, function(error, result) {
-      console.log(error);
+      //console.log(error);
       vg.tooltip(result.view, {showAllFields: true, colorTheme: "dark"});
     });
   };
@@ -954,18 +1192,22 @@ $(function() {
   };
 
   function addFilter(key, val) {
-    if (filters.hasOwnProperty(key)) {
-      // update existing filter
-      filters[key] = val;
-      var filterDiv = $('.filter').findByData('key', key);
-      filterDiv.find('.filter-val').html(val);
-    } else {
-      // add new filter
-      filters[key] = val;
-      obj = {key: key, val: val};
-      var filterDiv = $(new EJS({url: '/ejs/filter.ejs'}).render(obj));
-      $('.filter-area').append(filterDiv);
+    // check if filter with same key already exists
+    if (filters[key] != null) {
+      return;
     }
+
+    if (!filters.hasOwnProperty(key)) {
+      filters[key] = {
+        "vals": {},
+        "invert": false
+      };
+      filters[key].vals[val] = true;
+    }
+
+    var obj = {key: key, val: val};
+    var filterDiv = $(new EJS({url: '/ejs/filter.ejs'}).render(obj));
+    $('.filter-area').append(filterDiv);
   }
 
   function removeFilter(key) {
@@ -988,15 +1230,26 @@ $(function() {
     };
   }
 
+  function updateFilter(key, vals, invert) {
+    if (filters.hasOwnProperty(key)) {
+      filters[key].vals = {};
+      for (var i=0; i<vals.length; i++) {
+        filters[key].vals[vals[i]] = true;
+      }
+      filters[key].invert = invert;
+    }
+  }
+
   function removeRange(id) {
     delete ranges[id];
   }
 
   function filter() {
     var show = Array(models.length).fill(true);
+
     for (var key in filters) {
       if (filters.hasOwnProperty(key)) {
-        filterByKey(key, filters[key], show);
+        filterByKey(key, show);
       }
     }
 
@@ -1030,11 +1283,21 @@ $(function() {
     reloadTable();
   };
 
-  function filterByKey(key, val, show) {
+  function filterByKey(key, show) {
+    var vals = filters[key].vals;
+    if (jQuery.isEmptyObject(vals)) {
+      return;
+    }
+    var invert = filters[key].invert;
+
     for (var i=0; i<models.length; i++) {
-      if (models[i][key] == val) {
+      var field = models[i][key];
+      if (invert) {
+        // check to see that field is not one of specified values
+        show[i] = show[i] && (vals[field] == null);
       } else {
-        show[i] = false;
+        // check to see that field is one of specified values
+        show[i] = show[i] && (vals[field] != null);
       }
     }
   };

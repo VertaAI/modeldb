@@ -8,8 +8,8 @@ router.get('/:id', function(req, res, next) {
   res.render('model', {
     title: 'Model',
     path: {
-      'labels': ['Model'],
-      'links': ['/models/' + modelId]
+      'labels': ['Projects', 'Models', 'Model'],
+      'links': ['/projects', '/projects', '/models/' + modelId]
     },
     menu: false,
     modelId: modelId
@@ -52,6 +52,13 @@ router.get('/ancestry/:id', function(req, res, next) {
   var modelId = req.params.id;
   api.getModelAncestry(modelId, function(response) {
     res.json(response);
+  });
+});
+
+router.get('/:id/metadata', function(req, res, next) {
+  var modelId = req.params.id;
+  api.getModel(modelId, function(response) {
+    res.json(response.metadata);
   });
 });
 
