@@ -132,36 +132,6 @@ module.exports = {
     Thrift.client.storeAnnotationEvent(annotationEvent, function(err, response) {
       callback(response);
     });
-  },
-
-  testConnection: function() {
-    console.log("hello");
-    var models = []
-
-    /*
-    Thrift.client.getRunsAndExperimentsInProject(1, function(err, response) {
-      var runs = response.experimentRuns;
-
-      async.each(runs, function(item, finish) {
-        Thrift.client.getExperimentRunDetails(item.id, function(err, response) {
-          Array.prototype.push.apply(models,response.modelResponses);
-          finish();
-        });
-      }, function(err) {
-        for (var i=0; i<models.length; i++) {
-          console.log(models[i].metrics);
-        }
-      });
-    });
-    */
-    /*
-    Thrift.client.computeModelAncestry(22, function(err, response) {
-      console.log("error: ");
-      console.log(err);
-
-      console.log("response: ");
-      console.log(response);
-    });
-    */
   }
+
 };
