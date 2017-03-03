@@ -134,12 +134,13 @@ public class TestFitEvent {
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
     Assert.assertEquals(TestBase.getMetadataDb().getCollection(
-      MetadataDao.COLLECTION_NAME).getCount(), 1);
+      MongoMetadataDb.COLLECTION_NAME).getCount(), 1);
 
     String actualDbContents = MetadataDao.get(resp.modelId, TestBase.getMetadataDb());
     DBObject parsedDbContents = (DBObject) JSON.parse(actualDbContents);
     Assert.assertEquals(parsedDbContents.get("key1"), "value1");
     Assert.assertEquals(parsedDbContents.get("key2"), 30);
-    Assert.assertEquals(parsedDbContents.get(MetadataDao.MODELID_KEY), resp.modelId);
+    Assert.assertEquals(parsedDbContents.get(
+      MongoMetadataDb.MODELID_KEY), resp.modelId);
   }
 }

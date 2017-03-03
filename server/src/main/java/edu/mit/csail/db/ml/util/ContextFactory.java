@@ -4,6 +4,8 @@ import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import edu.mit.csail.db.ml.server.storage.metadata.MongoMetadataDb;
+import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,14 +25,31 @@ public class ContextFactory {
    * @throws SQLException - Thrown if there are problems connecting to the database.
    * @throws IllegalArgumentException - Thrown if the dbType is unsupported.
    */
-  public static DSLContext create(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType)
-    throws SQLException, IllegalArgumentException {
+  public static DSLContext create(
+    String username, 
+    String password, 
+    String jdbcUrl, 
+    ModelDbConfig.DatabaseType dbType
+    ) throws SQLException, IllegalArgumentException {
     Connection conn = DriverManager.getConnection(jdbcUrl, username, password);
 
     switch (dbType) {
       case SQLITE: return DSL.using(conn, SQLDialect.SQLITE);
     }
 
-    throw new IllegalArgumentException("Cannot connect to DatabaseType: " + dbType);
+    throw new IllegalArgumentException(
+      "Cannot connect to DatabaseType: " + dbType);
+  }
+
+  public static MetadataDb createMetadataDb(
+    String host, 
+    int port, 
+    String name, 
+    ModelDbConfig.MetadataDbType dbType) {
+    switch (dbType) {
+      case MONGODB: return new MongoMetadataDb(host, port, name); 
+    }
+    throw new IllegalArgumentException("Only MONGODB currently supported for " +
+      "metadata");
   }
 }
