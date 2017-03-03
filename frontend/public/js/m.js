@@ -364,6 +364,7 @@ $(function() {
           obj["Code SHA"] = model.sha;
           obj["Filepath"] = model.filepath;
           obj["annotations"] = model.annotations;
+          obj["metadata"] = model.metadata;
 
           // TODO: update this once api is fixed
           obj["timestamp"] = timestamp;
