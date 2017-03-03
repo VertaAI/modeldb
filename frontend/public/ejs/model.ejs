@@ -55,17 +55,17 @@
         </div>
       <% } %>
 
-      <% if (model["metadata"].length > 0) { %>
+      <% if (model["df_metadata"].length > 0) { %>
         <div class="nkv dfmetadata-container popup-container">
           <div class="popup-label">Metadata</div>
           <div class="dfmetadata popup-contents">
-            <% for (var j=0; j<model["metadata"].length; j++) { %>
+            <% for (var j=0; j<model["df_metadata"].length; j++) { %>
               <div class="kv"
                 data-src="metadata"
-                data-key="<%= model["metadata"][j].key %>"
-                data-val="<%= model["metadata"][j].value %>"
+                data-key="<%= model["df_metadata"][j].key %>"
+                data-val="<%= model["df_metadata"][j].value %>"
               >
-                <%= model["metadata"][j].key %>: <%= model["metadata"][j].value %>
+                <%= model["df_metadata"][j].key %>: <%= model["df_metadata"][j].value %>
               </div>
             <% } %>
           </div>
@@ -152,13 +152,50 @@
 
       <% if (model["Filepath"]) { %>
         <div class="nkv tooltip-trigger"
-          data-key="Filepath"
+          data-key="Model Filepath"
           data-val="<%= model["Filepath"] %>"
         >
-          Filepath: <%= model["Filepath"] %>
+          Model Filepath: <%= model["Filepath"] %>
+        </div>
+      <% } %>
+
+      <% if (model["metadata"]) { %>
+        <div
+          class="nkv json-md-trigger"
+          data-id="<%= model["id"] %>""
+        >
+          Metadata
         </div>
       <% } %>
     </div>
 
+    <div class="model-see-more" data-show="false">
+      See More
+    </div>
+
+    <div class="model-additional-info">
+      <h3>Additional Info</h3>
+
+      <div class="kv"
+        data-key="DataFrame ID"
+        data-val="<%= model["DataFrame ID"] %>"
+      >
+        DataFrame ID: <%= model["DataFrame ID"] %>
+      </div>
+
+      <div class="kv"
+        data-key="Experiment Run ID"
+        data-val="<%= model["Experiment Run ID"] %>"
+      >
+        Experiment Run ID: <%= model["Experiment Run ID"] %>
+      </div>
+
+      <div class="kv"
+        data-key="Experiment ID"
+        data-val="<%= model["Experiment ID"] %>"
+      >
+        Experiment ID: <%= model["Experiment ID"] %>
+      </div>
+    </div> <!-- end model-addition-info -->
   </div>
 </div>

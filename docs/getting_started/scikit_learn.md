@@ -7,7 +7,9 @@ git clone https://github.com/mitdbg/modeldb
 ```
 
 ## 2. Install dependencies
-We assume that you have Python and scikit-learn installed.
+We assume that you have Python, [pip](https://pip.pypa.io/en/stable/installing/), and [scikit-learn](http://scikit-learn.org/stable/install.html) installed.
+
+On OSX, we assume that you have [homebrew](https://brew.sh/) installed.
 
 **Versions**: ModelDB currently requires **Thrift 0.9.3 or 0.10.0**, **Python 2.7**, and **scikit-learn 0.17**.
 
@@ -60,6 +62,7 @@ cd ..
 
 # build scikit-learn client library
 cd path_to_modeldb/client/python
+pip install -r requirements.txt
 ./build_client.sh
 
 # start the frontend

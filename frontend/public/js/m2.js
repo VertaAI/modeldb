@@ -92,4 +92,78 @@ $(function() {
   $(document).on('mouseleave', '.group-block', function() {
     $('.group-tooltip').remove();
   });
+
+  // Model see more listener
+  $(document).on('click', '.model-see-more', function(event) {
+    var elt = $(event.target);
+    var info = elt.parent().find('.model-additional-info');
+    var show = elt.data('show');
+    if (show) {
+      elt.data('show', false);
+      elt.html("See More");
+      info.slideUp();
+      info.animate(
+        { opacity: 0 },
+        { queue: false, duration: 'slow' }
+      );
+    } else {
+      elt.data('show', true);
+      elt.html("See Less");
+      info.slideDown();
+      info.animate(
+        { opacity: 1 },
+        { queue: false, duration: 'slow' }
+      );
+    }
+  });
+
+  // filter toggle options
+  $(document).on('click', '.filter-expand', function(event) {
+    var elt = $(event.target);
+    var filter = elt.closest('.filter');
+    var options = elt.next('.filter-options');
+    if (elt.data('show')) {
+      // hide options
+      options.slideUp();
+      elt.html("&#9660;");
+      elt.data('show', false);
+    } else {
+      // show options
+      options.slideDown();
+      options.find('input[type="text"]').val(filter.data('val').join(', '));
+      options.find('input[type="text"]').focus();
+      elt.html("&#9650;");
+      elt.data('show', true);
+    }
+  });
+
+  // show json modal
+  $(document).on('click', '.json-md-trigger', function(event) {
+    /*
+    // dummy data for testing
+    $.getJSON('/json/config.json', function(response) {
+      var node = new PrettyJSON.view.Node({
+        el:$('#md-json'),
+        data:response
+      });
+      $('#modal-2').addClass('md-show');
+    });
+    */
+    var modelId = $(event.target).data('id');
+    $.ajax({
+      url: '/models/' + modelId + '/metadata',
+      type: "GET",
+      success: function(response) {
+        var node = new PrettyJSON.view.Node({
+          el:$('#md-json'),
+          data:response
+        });
+        $('#modal-2').addClass('md-show');
+      }
+    });
+  });
+
+  $(document).on('click', '.md-close, .md-overlay', function(event) {
+    $('.md-modal').removeClass('md-show');
+  });
 });
