@@ -14,12 +14,39 @@ $(function() {
         var projectId = $('<a href="/projects/' + model["Project ID"] + '/models"></a>');
         projectId.append($('<div class="kv">Project ID: ' + model["Project ID"] + '</div>'));
         $('.model-section.model-ids').append(projectId);
+
+        // update link in breadcrumb to point to project models
+        $('.logo a')[2].href += '/' + model["Project ID"] + "/models";
       }
     });
 
     // set up listeners
     $(document).on('click', '.popup-label', function(event) {
       $(this).parent().toggleClass('open');
+    });
+
+    // Model see more listener
+    $(document).on('click', '.model-see-more', function(event) {
+      var elt = $(event.target);
+      var info = elt.parent().find('.model-additional-info');
+      var show = elt.data('show');
+      if (show) {
+        elt.data('show', false);
+        elt.html("See More");
+        info.slideUp();
+        info.animate(
+          { opacity: 0 },
+          { queue: false, duration: 'slow' }
+        );
+      } else {
+        elt.data('show', true);
+        elt.html("See Less");
+        info.slideDown();
+        info.animate(
+          { opacity: 1 },
+          { queue: false, duration: 'slow' }
+        );
+      }
     });
   };
 

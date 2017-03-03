@@ -93,7 +93,7 @@ perspective effects (not including the modals and the overlay).
 
 .md-content > div ul {
 	margin: 0;
-	padding: 0 0 30px 20px;
+	/* padding: 0 0 30px 20px; */
 }
 
 .md-content > div ul li {
