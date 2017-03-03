@@ -48,7 +48,7 @@ public class ModelDbServer implements ModelDBService.Iface {
    */
   public ModelDbServer(String username, String password, String jdbcUrl, 
     ModelDbConfig.DatabaseType dbType, String mongoDbHost, int mongoDbPort,
-    String mongoDbDbName) {
+    String mongoDbDbName, ModelDbConfig.MetadatDbType metadataDbType) {
     try {
       this.ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
       this.mongoClient = new MongoClient(mongoDbHost, mongoDbPort);

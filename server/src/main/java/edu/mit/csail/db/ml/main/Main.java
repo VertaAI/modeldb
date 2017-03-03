@@ -39,9 +39,10 @@ public class Main {
           config.dbPassword,
           config.jbdcUrl,
           config.dbType,
-          config.mongoDbHost,
-          config.mongoDbPort,
-          config.mongoDbDbName
+          config.metadataDbHost,
+          config.metadataDbPort,
+          config.metadataDbName,
+          config.metadataDbType
         )))
         .protocolFactory(protocolFactory)
         .transportFactory(transportFactory)
