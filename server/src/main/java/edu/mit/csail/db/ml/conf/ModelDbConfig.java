@@ -24,7 +24,7 @@ public class ModelDbConfig {
     SQLITE
   }
 
-  public enum MetadatDbType {
+  public enum MetadataDbType {
     MONGODB
   }
 
@@ -96,7 +96,7 @@ public class ModelDbConfig {
   /**
    * Type of metadata database
    */
-  public final MetadatDbType metadataDbType;
+  public final MetadataDbType metadataDbType;
 
   /**
    * ModelDB Server allows the user to store models in a filesystem. ModelDB Server generates
@@ -141,7 +141,7 @@ public class ModelDbConfig {
     }
 
     switch (metadataDbType) {
-      case "mongodb": this.metadataDbType = MetadatDbType.MONGODB; break;
+      case "mongodb": this.metadataDbType = MetadataDbType.MONGODB; break;
       default: throw new IllegalArgumentException("Not a value metadataDbType");
     }
   }
