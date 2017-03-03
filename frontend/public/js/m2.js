@@ -149,6 +149,7 @@ $(function() {
       $('#modal-2').addClass('md-show');
     });
     */
+    // TODO: duplicate call; avoid
     var modelId = $(event.target).data('id');
     $.ajax({
       url: '/models/' + modelId + '/metadata',
@@ -156,7 +157,7 @@ $(function() {
       success: function(response) {
         var node = new PrettyJSON.view.Node({
           el:$('#md-json'),
-          data:response
+          data:JSON.parse(response)
         });
         $('#modal-2').addClass('md-show');
       }
