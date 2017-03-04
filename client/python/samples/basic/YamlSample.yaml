@@ -1,4 +1,3 @@
----
 DATASETS:
     - FILENAME: /path/to/train_file.csv
       METADATA:
@@ -23,4 +22,3 @@ MODEL:
     # extra kv pairs
     owner:       bob
     date-created:    2016-02-23
-...
