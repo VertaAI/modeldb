@@ -82,7 +82,7 @@ public class TestBase {
 
   public static ProjExpRunTriple reset() throws Exception {
     clearTables();
-    // clear the mongoDB test database
+    // clear the metadata test database
     resetMetadataDb();
     // this is required. other tests use the generated experiment run
     return createExperimentRun();

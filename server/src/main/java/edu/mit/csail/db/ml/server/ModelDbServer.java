@@ -43,6 +43,7 @@ public class ModelDbServer implements ModelDBService.Iface {
    * @param metadataDbHost - Host for metadataDb
    * @param metadataDbPort - Port for metadataDb
    * @param metadataDbName - Name of DB in metadataDB
+   * @param metadataDbType - type of DB used for metadata
    */
   public ModelDbServer(
     String username, 
