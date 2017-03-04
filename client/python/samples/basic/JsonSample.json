@@ -1,0 +1,28 @@
+{
+  "MODEL":
+    {
+      "NAME": "model",
+      "TYPE": "model_type",
+      "CONFIG": {
+        "l1": "20"
+      },
+      "METRICS": [
+        {"TYPE": "accuracy", "VALUE": 0.5},
+        {"TYPE" : "score", "VALUE": 0.9}
+      ],
+      "TAG": "train",
+      "extra-metadata-field": "this is an example extra key value pair for model metadata",
+      "notes": {
+        "owner": "bob",
+        "description": "basic model"
+      },
+    },
+    
+  "DATASETS": [
+        {
+          "FILENAME": "filename",
+          "METADATA": {"num_cols" : 15, "dist" : "gaussian"},
+          "TAG": "train"
+        }
+    ]
+}

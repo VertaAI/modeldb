@@ -19,6 +19,7 @@ On Mac OSX:
 brew install sqlite
 brew install maven
 brew install node
+brew install mongodb
 
 # ModelDB works with Thrift 0.9.3 and 0.10.0. If you do not have thrift installed, install via brew.
 
@@ -34,6 +35,7 @@ apt-get update
 sudo apt-get install sqlite
 sudo apt-get install maven
 sudo apt-get install nodejs # may need to symlink node to nodejs. "cd /usr/bin; ln nodejs node"
+sudo apt-get install -y mongodb-org # further instructions here: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
 
 # install thrift. path_to_thrift is the installation directory
 cd path_to_thrift

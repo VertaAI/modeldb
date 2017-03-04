@@ -88,7 +88,6 @@
             <version>1.7.24</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -101,7 +100,6 @@
             </plugin>
         </plugins>
     </build>
-
     <profiles>
         <profile>
             <id>thrift-0.9.3</id>
