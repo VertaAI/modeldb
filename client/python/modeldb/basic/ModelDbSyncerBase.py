@@ -375,10 +375,8 @@ class Syncer(object):
 
     def dataset_from_dict(self, dataset_dict):
         filename = dataset_dict[metadata_constants.DATASET_FILENAME_KEY]
-        metadata = dataset_dict[metadata_constants.DATASET_METADATA_KEY] \
-            if metadata_constants.DATASET_METADATA_KEY in dataset_dict else {}
-        tag = dataset_dict[metadata_constants.DATASET_TAG_KEY] \
-            if metadata_constants.DATASET_TAG_KEY in dataset_dict else 'default'
+        metadata = dataset_dict.get(metadata_constants.DATASET_METADATA_KEY, {})
+        tag = dataset_dict.get(metadata_constants.DATASET_TAG_KEY, 'default')
         return Dataset(filename, metadata, tag)
 
     def sync_all(self, metadata_path):
@@ -396,10 +394,8 @@ class Syncer(object):
         model_data = metadata[metadata_constants.MODEL_KEY]
         model_type = model_data[metadata_constants.TYPE_KEY]
         model_name = model_data[metadata_constants.NAME_KEY]
-        model_path = model_data[metadata_constants.PATH_KEY] \
-            if metadata_constants.PATH_KEY in model_data else None
-        model_tag = model_data[metadata_constants.TAG_KEY] \
-            if metadata_constants.TAG_KEY in model_data else None
+        model_path = model_data.get(metadata_constants.PATH_KEY, None)
+        model_tag = model_data.get(metadata_constants.TAG_KEY, None)
         model = Model(model_type, model_name, model_path, model_tag)
 
         model_dataset = self.get_dataset_for_tag(model_tag)
@@ -409,7 +405,7 @@ class Syncer(object):
         Syncer.instance.add_to_buffer(fit_event)
 
         # sync metrics
-        metrics_data = model_data[metadata_constants.METRICS_KEY]
+        metrics_data = model_data.get(metadata_constants.METRICS_KEY, [])
         for metric in metrics_data:
             metric_type = metric[metadata_constants.METRIC_TYPE_KEY]
             metric_value = metric[metadata_constants.METRIC_VALUE_KEY]
