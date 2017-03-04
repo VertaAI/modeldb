@@ -6,7 +6,6 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import edu.mit.csail.db.ml.server.storage.metadata.MongoMetadataDb;
 import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -47,7 +46,10 @@ public class ContextFactory {
     String name, 
     ModelDbConfig.MetadataDbType dbType) {
     switch (dbType) {
-      case MONGODB: return new MongoMetadataDb(host, port, name); 
+      case MONGODB: 
+        MetadataDb db = new MongoMetadataDb(host, port, name);
+        db.open();
+        return db;
     }
     throw new IllegalArgumentException("Only MONGODB currently supported for " +
       "metadata");

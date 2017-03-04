@@ -55,14 +55,15 @@ public class TestBase {
     return config;
   }
 
-  public static MetadataDb getMetadataDb() throws MongoException, ParseException {
+  public static MetadataDb getMetadataDb() throws ParseException {
     if (metadataDb != null) {
       return metadataDb;
     }
 
     config = ModelDbConfig.parse(new String[] {});
-    metadataDb = MongoMetadataDb.create(config.mongoDbHost, 
-      config.mongoDbPort, config.mongoDbTestDbName);
+    metadataDb = new MongoMetadataDb(config.metadataDbHost, 
+      config.metadataDbPort, config.metadataDbName);
+    metadataDb.open();
     return metadataDb;
   }
 
@@ -88,7 +89,9 @@ public class TestBase {
   }
 
   public static void resetMetadataDb() {
-    metadataDb.reset();
+    if (metadataDb != null) {
+      metadataDb.reset();
+    }
   }
 
   public static Timestamp now() {

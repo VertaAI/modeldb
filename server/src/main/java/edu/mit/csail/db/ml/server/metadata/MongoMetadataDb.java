@@ -14,19 +14,24 @@ public class MongoMetadataDb implements MetadataDb {
 
   private MongoClient mongoClient;
   private DB metadataDb;
+  private String host;
+  private int port;
+  private String dbName;
   public static final String COLLECTION_NAME = "model_metadata";
   public static final String MODELID_KEY = "MODELDB_model_id";
 
   public MongoMetadataDb(String host, int port, String dbName) {
-    mongoClient = new MongoClient(host, port);
-    metadataDb = mongoClient.getDB(dbName);
+    this.host = host;
+    this.port = port;
+    this.dbName = dbName;
   }
 
   /**
-   * Initialize connections to the underlying database
+   * Open connections to the underlying database
    */
-  public MetadataDb getDb() {
-    return this;
+  public void open() {
+    mongoClient = new MongoClient(host, port);
+    metadataDb = mongoClient.getDB(dbName);
   }
 
   /**
