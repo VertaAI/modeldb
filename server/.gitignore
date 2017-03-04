@@ -4,3 +4,4 @@ target/
 *.jar
 src/main/java/jooq/
 *.db
+codegen/mongodb/

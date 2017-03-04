@@ -5,6 +5,7 @@ import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.FiteventRecord;
 import jooq.sqlite.gen.tables.records.TransformerRecord;
+import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
 import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
@@ -284,10 +285,12 @@ public class TransformerDao {
    * @throws ResourceNotFoundException - Thrown if there's no Transformer with ID modelId or if there's no FitEvent
    * that created the Transformer with ID modelId.
    */
-  public static ModelResponse readInfo(int modelId, DSLContext ctx)
+  public static ModelResponse readInfo(int modelId, DSLContext ctx, MetadataDb metadataDb)
     throws ResourceNotFoundException {
     // First read the Transformer record.
     TransformerRecord rec = read(modelId, ctx);
+
+    String metadata = MetadataDao.get(modelId, metadataDb);
 
     // get experiment run associated with the transformer
     ExperimentRun er = ExperimentRunDao.read(rec.getExperimentrun(), ctx);
@@ -318,8 +321,7 @@ public class TransformerDao {
 
 
     // TODO: Read the LinearModel data if applicable.
-
-    return new ModelResponse(
+    ModelResponse response = new ModelResponse(
       rec.getId(),
       rec.getExperimentrun(),
       experimentAndProjectId.getFirst(),
@@ -336,5 +338,8 @@ public class TransformerDao {
       er.getCreated(),
       rec.getFilepath()
     );
+
+    response.setMetadata(metadata);
+    return response;
   }
 }

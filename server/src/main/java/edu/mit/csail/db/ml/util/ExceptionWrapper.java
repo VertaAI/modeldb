@@ -1,6 +1,7 @@
 package edu.mit.csail.db.ml.util;
 
 import edu.mit.csail.db.ml.server.storage.ExperimentRunDao;
+import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
 import modeldb.ServerLogicException;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
@@ -55,6 +56,22 @@ public class ExceptionWrapper {
   public static <T> T run(int expRunId, DSLContext ctx, CheckedSupplier<T> fn) throws TException {
     return run(() -> {
       ExperimentRunDao.validateExperimentRunId(expRunId, ctx);
+      return fn.get();
+    });
+  }
+
+  public static <T> T run(int expRunId, DSLContext ctx, MetadataDb metadataDb, 
+    CheckedSupplier<T> fn) throws TException {
+    return run(() -> {
+      ExperimentRunDao.validateExperimentRunId(expRunId, ctx);
+      return fn.get();
+    });
+  }
+
+  public static <T> T run(
+    MetadataDb metadataDb, 
+    CheckedSupplier<T> fn) throws TException {
+    return run(() -> {
       return fn.get();
     });
   }

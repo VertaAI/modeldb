@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
+import edu.mit.csail.db.ml.server.storage.metadata.MongoMetadataDb;
 
 import static jooq.sqlite.gen.Tables.*;
 
@@ -41,6 +43,7 @@ public class TestBase {
   private static DSLContext context = null;
   private static ModelDbServer server = null;
   private static ModelDbConfig config = null;
+  private static MetadataDb metadataDb = null;
 
   private static void createSqliteDb() throws IOException {
     ProcessBuilder pb = new ProcessBuilder("sh", "gen_sqlite.sh");
@@ -50,6 +53,18 @@ public class TestBase {
 
   public static ModelDbConfig getConfig() {
     return config;
+  }
+
+  public static MetadataDb getMetadataDb() throws ParseException {
+    if (metadataDb != null) {
+      return metadataDb;
+    }
+
+    config = ModelDbConfig.parse(new String[] {});
+    metadataDb = new MongoMetadataDb(config.metadataDbHost, 
+      config.metadataDbPort, config.metadataDbName);
+    metadataDb.open();
+    return metadataDb;
   }
 
   public static DSLContext ctx() throws SQLException, IOException, ParseException {
@@ -67,7 +82,16 @@ public class TestBase {
 
   public static ProjExpRunTriple reset() throws Exception {
     clearTables();
+    // clear the metadata test database
+    resetMetadataDb();
+    // this is required. other tests use the generated experiment run
     return createExperimentRun();
+  }
+
+  public static void resetMetadataDb() {
+    if (metadataDb != null) {
+      metadataDb.reset();
+    }
   }
 
   public static Timestamp now() {

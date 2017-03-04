@@ -4,6 +4,7 @@ import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.algorithm.*;
 import edu.mit.csail.db.ml.server.algorithm.similarity.SimilarModels;
 import edu.mit.csail.db.ml.server.storage.*;
+import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
 import edu.mit.csail.db.ml.util.ContextFactory;
 import edu.mit.csail.db.ml.util.ExceptionWrapper;
 import jooq.sqlite.gen.tables.records.DataframeRecord;
@@ -29,15 +30,34 @@ public class ModelDbServer implements ModelDBService.Iface {
   private DSLContext ctx;
 
   /**
+   * Metadata connections
+   */
+  private MetadataDb metadataDb;
+
+  /**
    * Create the service and connect to the database.
    * @param username - The username to connect to the database.
    * @param password - The password to connect to the database.
    * @param jdbcUrl - The JDBC URL that points to the database.
    * @param dbType - The type of the database (only SQLite is supported for now).
+   * @param metadataDbHost - Host for metadataDb
+   * @param metadataDbPort - Port for metadataDb
+   * @param metadataDbName - Name of DB in metadataDB
+   * @param metadataDbType - type of DB used for metadata
    */
-  public ModelDbServer(String username, String password, String jdbcUrl, ModelDbConfig.DatabaseType dbType) {
+  public ModelDbServer(
+    String username, 
+    String password, 
+    String jdbcUrl, 
+    ModelDbConfig.DatabaseType dbType, 
+    String metadataDbHost, 
+    int metadataDbPort, 
+    String metadataDbName, 
+    ModelDbConfig.MetadataDbType metadataDbType) {
     try {
-      ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
+      this.ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
+      this.metadataDb = ContextFactory.createMetadataDb(metadataDbHost, 
+        metadataDbPort, metadataDbName, metadataDbType);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -58,8 +78,12 @@ public class ModelDbServer implements ModelDBService.Iface {
     });
   }
 
-  public FitEventResponse storeFitEvent(FitEvent fe) throws TException {
-    return ExceptionWrapper.run(fe.experimentRunId, ctx, () -> FitEventDao.store(fe, ctx));
+  public FitEventResponse storeFitEvent(FitEvent fe) throws TException {    
+    return ExceptionWrapper.run(fe.experimentRunId, ctx, metadataDb, () -> {
+      FitEventResponse fer = FitEventDao.store(fe, ctx);
+      MetadataDao.store(fer, fe, metadataDb);
+      return fer;
+    });
   }
 
   public MetricEventResponse storeMetricEvent(MetricEvent me) throws TException {
@@ -179,7 +203,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public ModelResponse getModel(int modelId) throws TException {
-    return ExceptionWrapper.run(() -> TransformerDao.readInfo(modelId, ctx));
+    return ExceptionWrapper.run(metadataDb, () -> TransformerDao.readInfo(modelId, ctx, metadataDb));
   }
 
   public List<ExperimentRun> getRunsInExperiment(int experimentId) throws TException {
@@ -195,7 +219,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public ExperimentRunDetailsResponse getExperimentRunDetails(int experimentRunId) throws TException {
-    return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentRunDetails(experimentRunId, ctx));
+    return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentRunDetails(experimentRunId, ctx, metadataDb));
   }
 
   public List<String> originalFeatures(int modelId) throws TException {

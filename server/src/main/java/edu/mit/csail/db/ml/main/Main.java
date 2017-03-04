@@ -38,7 +38,11 @@ public class Main {
           config.dbUser,
           config.dbPassword,
           config.jbdcUrl,
-          config.dbType
+          config.dbType,
+          config.metadataDbHost,
+          config.metadataDbPort,
+          config.metadataDbName,
+          config.metadataDbType
         )))
         .protocolFactory(protocolFactory)
         .transportFactory(transportFactory)
