@@ -7,7 +7,7 @@ import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Record2;
-import com.mongodb.DB;
+import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -203,7 +203,7 @@ public class ExperimentRunDao {
   public static ExperimentRunDetailsResponse readExperimentRunDetails(
     int experimentRunId, 
     DSLContext ctx,
-    DB metadataDb)
+    MetadataDb metadataDb)
     throws ResourceNotFoundException {
     // Read the experiment run, experiment, and project.
     ExperimentRun expRun = read(experimentRunId, ctx);

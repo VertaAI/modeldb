@@ -11,10 +11,6 @@ import org.jooq.Query;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import com.mongodb.MongoClient;
-import com.mongodb.DB;
-import com.mongodb.MongoException;
-import com.mongodb.BasicDBObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
+import edu.mit.csail.db.ml.server.storage.metadata.MongoMetadataDb;
 
 import static jooq.sqlite.gen.Tables.*;
 
@@ -45,8 +43,7 @@ public class TestBase {
   private static DSLContext context = null;
   private static ModelDbServer server = null;
   private static ModelDbConfig config = null;
-  private static MongoClient client = null;
-  private static DB metadataDb = null;
+  private static MetadataDb metadataDb = null;
 
   private static void createSqliteDb() throws IOException {
     ProcessBuilder pb = new ProcessBuilder("sh", "gen_sqlite.sh");
@@ -58,16 +55,15 @@ public class TestBase {
     return config;
   }
 
-  public static DB getMetadataDb() throws MongoException, ParseException {
+  public static MetadataDb getMetadataDb() throws ParseException {
     if (metadataDb != null) {
       return metadataDb;
     }
 
-    // assumes that 'gen_sqlite.sh' has been run (which starts mongodb too)
     config = ModelDbConfig.parse(new String[] {});
-    client = new MongoClient(config.mongoDbHost, config.mongoDbPort);
-    metadataDb = client.getDB(config.mongoDbTestDbName);
-
+    metadataDb = new MongoMetadataDb(config.metadataDbHost, 
+      config.metadataDbPort, config.metadataDbName);
+    metadataDb.open();
     return metadataDb;
   }
 
@@ -86,17 +82,15 @@ public class TestBase {
 
   public static ProjExpRunTriple reset() throws Exception {
     clearTables();
-    // clear the mongoDB test database
+    // clear the metadata test database
     resetMetadataDb();
     // this is required. other tests use the generated experiment run
     return createExperimentRun();
   }
 
-  public static void resetMetadataDb() throws MongoException, ParseException {
-    for (String collectionName : getMetadataDb().getCollectionNames()) {
-      if (collectionName.indexOf("system.") == -1) {
-        getMetadataDb().getCollection(collectionName).drop();
-      }
+  public static void resetMetadataDb() {
+    if (metadataDb != null) {
+      metadataDb.reset();
     }
   }
 

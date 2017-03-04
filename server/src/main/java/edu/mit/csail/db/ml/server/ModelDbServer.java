@@ -4,15 +4,13 @@ import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.algorithm.*;
 import edu.mit.csail.db.ml.server.algorithm.similarity.SimilarModels;
 import edu.mit.csail.db.ml.server.storage.*;
+import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
 import edu.mit.csail.db.ml.util.ContextFactory;
 import edu.mit.csail.db.ml.util.ExceptionWrapper;
 import jooq.sqlite.gen.tables.records.DataframeRecord;
 import modeldb.*;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
-import com.mongodb.MongoClient;
-import com.mongodb.DB;
-import com.mongodb.MongoException;
 
 import java.util.List;
 import java.util.Map;
@@ -32,10 +30,9 @@ public class ModelDbServer implements ModelDBService.Iface {
   private DSLContext ctx;
 
   /**
-   * MongoDB connections
+   * Metadata connections
    */
-  private MongoClient mongoClient;
-  private DB metadataDb;
+  private MetadataDb metadataDb;
 
   /**
    * Create the service and connect to the database.
@@ -43,18 +40,24 @@ public class ModelDbServer implements ModelDBService.Iface {
    * @param password - The password to connect to the database.
    * @param jdbcUrl - The JDBC URL that points to the database.
    * @param dbType - The type of the database (only SQLite is supported for now).
-   * @param mongoDbHost - Host for mongodb
-   * @param mongoDbPort - Port for mongodb
+   * @param metadataDbHost - Host for metadataDb
+   * @param metadataDbPort - Port for metadataDb
+   * @param metadataDbName - Name of DB in metadataDB
+   * @param metadataDbType - type of DB used for metadata
    */
-  public ModelDbServer(String username, String password, String jdbcUrl, 
-    ModelDbConfig.DatabaseType dbType, String mongoDbHost, int mongoDbPort,
-    String mongoDbDbName) {
+  public ModelDbServer(
+    String username, 
+    String password, 
+    String jdbcUrl, 
+    ModelDbConfig.DatabaseType dbType, 
+    String metadataDbHost, 
+    int metadataDbPort, 
+    String metadataDbName, 
+    ModelDbConfig.MetadataDbType metadataDbType) {
     try {
       this.ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
-      this.mongoClient = new MongoClient(mongoDbHost, mongoDbPort);
-      this.metadataDb = this.mongoClient.getDB(mongoDbDbName);
-    } catch(MongoException e) {
-      e.printStackTrace();
+      this.metadataDb = ContextFactory.createMetadataDb(metadataDbHost, 
+        metadataDbPort, metadataDbName, metadataDbType);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -77,11 +80,8 @@ public class ModelDbServer implements ModelDBService.Iface {
 
   public FitEventResponse storeFitEvent(FitEvent fe) throws TException {    
     return ExceptionWrapper.run(fe.experimentRunId, ctx, metadataDb, () -> {
-      // write to relational DB
       FitEventResponse fer = FitEventDao.store(fe, ctx);
-      // write metadata to mongodb
       MetadataDao.store(fer, fe, metadataDb);
-      // TODO: should we return metadata ID in fit event response?
       return fer;
     });
   }

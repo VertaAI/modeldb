@@ -24,6 +24,10 @@ public class ModelDbConfig {
     SQLITE
   }
 
+  public enum MetadataDbType {
+    MONGODB
+  }
+
   /**
    * This is the name of the command line argument that will be parsed to read the path of the configuration file.
    */
@@ -70,24 +74,29 @@ public class ModelDbConfig {
   public final int thriftPort;
 
   /* *
-   * Host for MongoDB
+   * Host for metadataDb
    */
-  public final String mongoDbHost;
+  public final String metadataDbHost;
 
   /**
-   * Port on which mongodb is running
+   * Port on which metadataDb is running
    */
-  public final int mongoDbPort;
+  public final int metadataDbPort;
 
   /**
-   * Name of database inside MongoDB
+   * Name of database inside metadataDb
    */
-  public final String mongoDbDbName;
+  public final String metadataDbName;
 
   /**
-   * Name of database inside MongoDB
+   * Name of database inside metadataDb
    */
-  public final String mongoDbTestDbName;
+  public final String metadataDbTestDbName;
+
+  /**
+   * Type of metadata database
+   */
+  public final MetadataDbType metadataDbType;
 
   /**
    * ModelDB Server allows the user to store models in a filesystem. ModelDB Server generates
@@ -107,10 +116,11 @@ public class ModelDbConfig {
     String databaseType,
     String thriftHost,
     String thriftPort,
-    String mongoDbHost,
-    String mongoDbPort,
-    String mongoDbDbName,
-    String mongoDbTestDbName,
+    String metadataDbHost,
+    String metadataDbPort,
+    String metadataDbName,
+    String metadataDbTestDbName,
+    String metadataDbType,
     String fsPrefix
   ) {
     this.dbUser = dbUser;
@@ -119,15 +129,20 @@ public class ModelDbConfig {
     this.jbdcTestUrl = jdbcTestUrl;
     this.thriftHost = thriftHost;
     this.thriftPort = Integer.parseInt(thriftPort);
-    this.mongoDbHost = mongoDbHost;
-    this.mongoDbPort = Integer.parseInt(mongoDbPort);
-    this.mongoDbDbName = mongoDbDbName;
-    this.mongoDbTestDbName = mongoDbTestDbName;
+    this.metadataDbHost = metadataDbHost;
+    this.metadataDbPort = Integer.parseInt(metadataDbPort);
+    this.metadataDbName = metadataDbName;
+    this.metadataDbTestDbName = metadataDbTestDbName;
     this.fsPrefix = fsPrefix;
 
     switch (databaseType) {
       case "sqlite": this.dbType = DatabaseType.SQLITE; break;
       default: throw new IllegalArgumentException("Not a value databaseType");
+    }
+
+    switch (metadataDbType) {
+      case "mongodb": this.metadataDbType = MetadataDbType.MONGODB; break;
+      default: throw new IllegalArgumentException("Not a value metadataDbType");
     }
   }
 
@@ -178,10 +193,11 @@ public class ModelDbConfig {
       getProp(config, "db.databaseType"),
       getProp(config, "thrift.host"),
       getProp(config, "thrift.port"),
-      getProp(config, "mongodb.host"),
-      getProp(config, "mongodb.port"),
-      getProp(config, "mongodb.dbName"),
-      getProp(config, "mongodb.testDbName"),
+      getProp(config, "metadataDb.host"),
+      getProp(config, "metadataDb.port"),
+      getProp(config, "metadataDb.dbName"),
+      getProp(config, "metadataDb.testDbName"),
+      getProp(config, "metadataDb.type"),
       getProp(config, "fs.prefix")
     );
 

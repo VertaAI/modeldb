@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import com.mongodb.util.JSON;
 import com.mongodb.DBObject;
+import edu.mit.csail.db.ml.server.storage.metadata.MongoMetadataDb;
 
 import java.util.Arrays;
 import java.util.List;
@@ -133,13 +134,12 @@ public class TestFitEvent {
     FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
-    Assert.assertEquals(TestBase.getMetadataDb().getCollection(
-      MetadataDao.COLLECTION_NAME).getCount(), 1);
-
-    String actualDbContents = MetadataDao.get(resp.modelId, TestBase.getMetadataDb());
+    String actualDbContents = MetadataDao.get(resp.modelId, 
+      TestBase.getMetadataDb());
     DBObject parsedDbContents = (DBObject) JSON.parse(actualDbContents);
     Assert.assertEquals(parsedDbContents.get("key1"), "value1");
     Assert.assertEquals(parsedDbContents.get("key2"), 30);
-    Assert.assertEquals(parsedDbContents.get(MetadataDao.MODELID_KEY), resp.modelId);
+    Assert.assertEquals(parsedDbContents.get(
+      MongoMetadataDb.MODELID_KEY), resp.modelId);
   }
 }
