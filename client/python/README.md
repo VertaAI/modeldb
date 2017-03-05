@@ -6,9 +6,15 @@ for ModelDB.
 This library is responsible for storing machine learning operations in scikit-learn,
 like `LogisticRegression().fit(x_train, y_train)`, in ModelDB. You can explore the [modeldb](modeldb) folder and look through the library.
 
+# Contents
+
+- [Usage](#usage)
+<!--     - [Incorporate ModelDB into an existing ML workflow](#incorporate-modeldb-into-an-existing-ml-workflow) -->
+- [Samples](#samples)
+
 # Usage
 Run:
-```
+```bash
 ./build_client.sh
 ``` 
 
@@ -16,11 +22,12 @@ Put the python client on your PYTHONPATH:
 ```
 export PYTHONPATH=[path_to_modedb_dir]/client/python:$PYTHONPATH
 ```
-You can also permanently put it on your PYTHONPATH by putting the following in your .bashrc:
+You can also permanently put it on your PYTHONPATH by putting the above line in your `~/.bashrc`. Afterwards, run:
+```bash
+source ~/.bashrc
 ```
-TODO
-```
-Or you can put the following lines in the beginning of your Python files:
+
+Or, you can put the following lines in the beginning of your Python files:
 ```python
 import os
 import sys
@@ -92,25 +99,24 @@ SyncableMetrics.compute_metrics(model, scoring_function, labels, predictions, da
 
 **The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSampleWithModelDB.py).** You can also compare it with the code with the original workflow without ModelDB [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).
 
-### e. _Run your program!_
+### e. Run your program
 
 
 ## Samples
 
-The [samples](samples) folder contains samples specific to scikit-learn in the [sklearn](samples/sklearn) subfolder and sample workflows in the [basic](samples/basic) subfolder.
+The [samples](samples) folder contains an [sklearn](samples/sklearn) subfolder and a [basic](samples/basic) subfolder.
 
-The scikit-learn examples include common models obtained from online with the ModelDB workflow incorporated into them.
+The scikit-learn examples include common models with the ModelDB workflow incorporated into them. In the basic subfolder, `BasicWorkflow.py` shows ... (TODO) while `BasicWorkflowSyncAll.py` shows how model metadata from a JSON or YAML file can be loaded into ModelDB.
 
-TODO: finish this
 
 Try running the unittests as:
-```
+```bash
 python -m unittest discover modeldb/tests/sklearn/
 ```
 
 Note: unittests have been run with scikit-learn version 0.17.
 
 Try running samples as in:
-```
+```bash
 python samples/basic/BasicWorkflow.py
 ```

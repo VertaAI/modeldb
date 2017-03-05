@@ -30,9 +30,10 @@ ModelDB currently works with machine learning worklows in ```spark.ml``` and ```
 ## Setup and Installation
 
 1. **Clone the repo**
-```git
-git clone https://github.com/mitdbg/modeldb
-```
+
+    ```git
+    git clone https://github.com/mitdbg/modeldb
+    ```
 
 2. **Install dependencies**
 
