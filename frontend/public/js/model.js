@@ -64,7 +64,7 @@ $(function() {
     obj["DF numRows"] = model.trainingDataFrame.numRows;
     obj["DF Tag"] = model.trainingDataFrame.tag;
     obj["DF Filepath"] = model.trainingDataFrame.filepath;
-    obj["metadata"] = model.trainingDataFrame.metadata;
+    obj["df_metadata"] = model.trainingDataFrame.metadata;
 
     // specifications
     obj["Specification ID"] = model.specification.id;
@@ -80,6 +80,7 @@ $(function() {
     obj["Code SHA"] = model.sha;
     obj["Filepath"] = model.filepath;
     obj["annotations"] = model.annotations;
+    obj["metadata"] = model.metadata;
 
     // show
     obj["show"] = true;

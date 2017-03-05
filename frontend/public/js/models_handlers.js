@@ -139,16 +139,6 @@ $(function() {
 
   // show json modal
   $(document).on('click', '.json-md-trigger', function(event) {
-    /*
-    // dummy data for testing
-    $.getJSON('/json/config.json', function(response) {
-      var node = new PrettyJSON.view.Node({
-        el:$('#md-json'),
-        data:response
-      });
-      $('#modal-2').addClass('md-show');
-    });
-    */
     // TODO: duplicate call; avoid
     var modelId = $(event.target).data('id');
     $.ajax({

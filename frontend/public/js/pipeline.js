@@ -51,6 +51,7 @@ $(function() {
       success: function(response) {
         if (response.transformEvents.length === 0) {
           $('#network').hide();
+          return;
         }
 
         // add start node
