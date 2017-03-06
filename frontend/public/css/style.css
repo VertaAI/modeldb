@@ -159,6 +159,7 @@ input:focus {
   padding: 10px;
   background-color: rgba(64, 64, 64, 0.95);
   position: absolute;
+  z-index: 2;
 }
 
 .tooltip:after {

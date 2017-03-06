@@ -495,6 +495,26 @@ background-color: #d0d8e2;
   overflow-y: scroll;
 }
 
+#md-json .kv {
+  display: table;
+  cursor: move;
+  padding: 4px 7px;
+}
+
+#md-json .nkv {
+  cursor: initial;
+}
+
+#md-json .nkv:hover {
+  background-color: #D9E0E8;
+}
+
+li.json-kv.ui-draggable-dragging {
+  z-index: 2001;
+  width: auto;
+  list-style-type: none;
+}
+
 /*
  *  Groups
  */
@@ -643,7 +663,7 @@ background-color: #d0d8e2;
   padding: 5px;
   background-color: #AEBDCD;
   border-radius: 2px;
-  color: white;
+  color: #2c3e50;
   position: relative;
 }
 
@@ -651,6 +671,18 @@ background-color: #d0d8e2;
   display: inline-block;
   vertical-align: top;
   margin-left: 5px;
+  cursor: default;
+}
+
+.filter-key {
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-val {
+  color: white;
 }
 
 .filter-close,

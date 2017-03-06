@@ -150,9 +150,9 @@ $(function() {
     });
 
     $(document).on("mouseenter", '.kv:not(.nkv)', function(event){
-     var item = $(this);
-     //check if the item is already draggable
-     if (!item.is('.ui-draggable')) {
+      var item = $(this);
+      //check if the item is already draggable
+      if (!item.is('.ui-draggable')) {
         item.draggable({
           helper: 'clone',
           appendTo: 'body',
@@ -202,6 +202,7 @@ $(function() {
       // update filter
       updateFilter(key, vals, invert);
       filter.find('.filter-val').html(vals.join(', '));
+      filter.find('.filter-val').data('val', vals.join(', '));
       filter.data('val', vals);
       $('.filter-button').removeClass('filter-button-disabled');
 
@@ -365,6 +366,16 @@ $(function() {
           obj["Filepath"] = model.filepath;
           obj["annotations"] = model.annotations;
           obj["metadata"] = model.metadata;
+
+          // add flattened json metadata data
+          if (model.metadata) {
+            var flattened = JSON.flatten(JSON.parse(model.metadata));
+            for (var flatKey in flattened) {
+              if (flattened.hasOwnProperty(flatKey)) {
+                obj["md." + flatKey] = flattened[flatKey];
+              }
+            }
+          }
 
           // TODO: update this once api is fixed
           obj["timestamp"] = timestamp;
@@ -1178,17 +1189,29 @@ $(function() {
   };
 
   function dragStart(event, ui) {
-    filterKey = ui.helper.data('key');
-    filterVal = ui.helper.data('val');
+    filterKey = $(ui.helper.context).data('key');
+    filterVal = $(ui.helper.context).data('val');
+    $('.filter-area').addClass('filter-area-highlight');
+    if ($(ui.helper.context).data('json')) {
+      $('.md-overlay').css({
+        '-webkit-transition': 'none',
+        'transition': 'none'
+      })
+      $('.md-overlay').fadeOut(200);
+    }
     supportsRange = ui.helper.data('num');
     $(ui.helper.context).css({opacity: 0});
-    $('.filter-area').addClass('filter-area-highlight');
   };
 
   function dragStop(event, ui) {
     filterKey = null;
     filterVal = null;
     $(ui.helper.context).css({opacity: 1});
+    if ($(ui.helper.context).data('json')) {
+      $('.md-overlay').fadeIn(200, function() {
+        $('.md-overlay').removeAttr("style");
+      });
+    }
     $('.filter-area').removeClass('filter-area-highlight');
   };
 
