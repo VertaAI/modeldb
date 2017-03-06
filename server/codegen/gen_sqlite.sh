@@ -14,6 +14,7 @@ mv modeldb_test.db ../
 chmod a+wrx ../modeldb.db
 chmod a+wrx ../modeldb_test.db
 
-# also start mongodb server
+# clear old modeldb mongodb data and start mongodb server
+mongo modeldb_metadata --eval "db.dropDatabase()"
 mkdir -p mongodb
 mongod --dbpath mongodb &
