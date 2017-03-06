@@ -17,11 +17,12 @@
 ## Overview
 ModelDB is an end-to-end system to manage machine learning models. It can ingest models and metadata as they are built, store this data in a structured format, and surface it through a web-frontend for rich querying.
 
+ModelDB's frontend shows summaries and graphs of metrics where users can filter on configurations and metrics, configure the x- and y- axes, group by certain configurations, among others. The visualizations and filtering allow for a better experience with comparing models.
 <!-- TODO: add a list of its features, e.g. graphs, filtering, with better screenshots -->
 <!-- <img src="docs/getting_started/images/frontend-1.png" width="70%"><br>
 ModelDB frontend -->
 
-ModelDB currently works with machine learning worklows in ```spark.ml``` and ```scikit-learn```. View some samples for [spark.ml](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml#samples) and [scikit-learn](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/sklearn) to see how ModelDB is integrated and used in the code.
+ModelDB currently works with machine learning worklows in ```spark.ml``` and ```scikit-learn```. View some samples for [spark.ml](client/scala/libs/spark.ml#samples) and [scikit-learn](client/python#samples) to see how ModelDB is integrated and used in the code.
 
 ## News
 
@@ -37,7 +38,7 @@ ModelDB currently works with machine learning worklows in ```spark.ml``` and ```
 
 2. **Install dependencies**
 
-    ModelDB requires Linux or MacOS. The code below shows how you can install the dependencies on each of them. A detailed list of all the dependencies with the recommended and required versions can be found [here](https://github.com/mitdbg/modeldb/blob/master/docs/required_software.md).
+    ModelDB requires Linux or MacOS. The code below shows how you can install the dependencies on each of them. A detailed list of all the dependencies with the recommended and required versions can be found [here](docs/required_software.md).
     
     Depending on the client you're using, we assume you have the following already installed:
     - scikit-learn client:
@@ -111,6 +112,10 @@ ModelDB currently works with machine learning worklows in ```spark.ml``` and ```
     pip install -r requirements.txt
     ./build_client.sh
 
+    # build spark.ml client library
+    cd [path_to_modeldb]/client/scala/libs/spark.ml
+    ./build_client.sh
+
     # start the frontend
     cd [path_to_modeldb]/frontend
     ./start_frontend.sh & # the frontend will now be available in http://localhost:3000/
@@ -123,8 +128,8 @@ ModelDB currently works with machine learning worklows in ```spark.ml``` and ```
 ## Usage and Samples
 
 ### Incorporate ModelDB into your ML workflow
-- [scikit-learn](https://github.com/mitdbg/modeldb/tree/master/client/python) \([samples](https://github.com/mitdbg/modeldb/tree/master/client/python/samples/sklearn)\)
-- [spark.ml](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml) \([samples](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml#samples)\)
+- [scikit-learn](client/python) \([samples](client/python#samples)\)
+- [spark.ml](client/scala/libs/spark.ml) \([samples](client/scala/libs/spark.ml#samples)\)
 
 ### View your models in ModelDB
 After incorporating ModelDB into your models, follow these steps to run and view them in ModelDB.
@@ -156,7 +161,7 @@ After incorporating ModelDB into your models, follow these steps to run and view
     ```
 
 ## Documention
-More comprehensive documentation on ModelDB, including answers to FAQ, can be found in [the wiki](https://github.com/mitdbg/modeldb/wiki).
+More comprehensive documentation on ModelDB, including answers to FAQ, will be available soon in [the wiki](https://github.com/mitdbg/modeldb/wiki). For now, don't hesitate to contact us.
 
 ## Contact Us
 Questions? Bugs? Want to contribute? We're happy to talk about all things ModelDB! Reach out to modeldb\_@\_lists.csail.mit.edu or post in the ModelDB [Google Group](https://groups.google.com/forum/#!forum/modeldb).

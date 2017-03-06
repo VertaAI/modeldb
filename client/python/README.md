@@ -13,7 +13,9 @@ like `LogisticRegression().fit(x_train, y_train)`, in ModelDB. You can explore t
 - [Samples](#samples)
 
 # Usage
-Run:
+
+## Setup
+First, make sure you have followed the [setup instructions for ModelDB](../../#setup-and-installation) and have built the client.
 ```bash
 ./build_client.sh
 ``` 
@@ -53,7 +55,8 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 ```
 
 ### b. Create a ModelDB syncer
-ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the Syncer as shown below.
+ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the Syncer with your specified configurations as shown below. 
+Explore the [ModelDBSyncer](modeldb/basic/ModelDbSyncerBase.py) here for more details on the Syncer object and the different ways to initialize it.
 
 <!-- You can initialize the syncer either from a config file (e.g. [FIX](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/syncer.json)) or explicitly via arguments.
 
@@ -72,21 +75,18 @@ syncer_obj = Syncer(
         NewExperimentRun("simple sample test"))
 ```
 
-Explore [ModelDBSyncer](https://github.com/mitdbg/modeldb/blob/master/client/python/modeldb/basic/ModelDbSyncerBase.py) here.
-
 ### c. Log models and pre-processing operations
-Next use the ModelDB **sync** variants of functions. So _fit_ calls would turn into **fit_sync**, _save_ calls would turn into **save_sync** and so on.
-
+Next, when you want to log an operation to ModelDB, use the ModelDB **sync** variants of functions by appending `_sync` to the method call. So the original _fit_ calls from scikit-learn would turn into **fit_sync**, _save_ calls would turn into **save_sync** and so on.
 
 ```python
 x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(df, target, test_size=0.3)
 lr = LogisticRegression()
-lr.fit_sync(x_train, y_train)
+lr.fit_sync(x_train, y_train) # instead of the usual lr.fit(x_train, y_train)
 y_pred = lr.predict(x_test)
 ```
 
 ### d. Log metrics
-Use the ModelDB metrics class (**SyncableMetrics**).
+Use the ModelDB metrics class [**SyncableMetrics**](modeldb/sklearn_native/SyncableMetrics.py).
 
 ```python
 SyncableMetrics.compute_metrics(model, scoring_function, labels, predictions, dataframe, predictionCol, labelCol)
@@ -97,7 +97,7 @@ SyncableMetrics.compute_metrics(model, scoring_function, labels, predictions, da
 ```
 -->
 
-**The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSampleWithModelDB.py).** You can also compare it with the code with the original workflow without ModelDB [here](https://github.com/mitdbg/modeldb/blob/master/client/python/samples/sklearn/SimpleSample.py).
+**The full code for this example can be found [here](samples/sklearn/SimpleSampleWithModelDB.py).** You can also compare it with the code with the original workflow without ModelDB [here](samples/sklearn/SimpleSample.py).
 
 ### e. Run your program
 
@@ -106,8 +106,12 @@ SyncableMetrics.compute_metrics(model, scoring_function, labels, predictions, da
 
 The [samples](samples) folder contains an [sklearn](samples/sklearn) subfolder and a [basic](samples/basic) subfolder.
 
-The scikit-learn examples include common models with the ModelDB workflow incorporated into them. In the basic subfolder, `BasicWorkflow.py` shows ... (TODO) while `BasicWorkflowSyncAll.py` shows how model metadata from a JSON or YAML file can be loaded into ModelDB.
+The scikit-learn examples include common models with the ModelDB workflow incorporated into them. In the basic subfolder, `BasicWorkflow.py` shows ... (TODO) while `BasicWorkflowSyncAll.py` shows how model metadata from a JSON or YAML file can be loaded into ModelDB. You may need to install any missing external Python modules used in the samples.
 
+Try running samples as in:
+```bash
+python samples/basic/BasicWorkflow.py
+```
 
 Try running the unittests as:
 ```bash
@@ -115,8 +119,3 @@ python -m unittest discover modeldb/tests/sklearn/
 ```
 
 Note: unittests have been run with scikit-learn version 0.17.
-
-Try running samples as in:
-```bash
-python samples/basic/BasicWorkflow.py
-```
