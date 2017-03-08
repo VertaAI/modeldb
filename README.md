@@ -19,10 +19,14 @@ ModelDB is an end-to-end system to manage machine learning models. It can ingest
 
 ModelDB's frontend shows summaries and graphs of metrics where users can filter on configurations and metrics, configure the x- and y- axes, group by certain configurations, among others. The visualizations and filtering allow for a better experience with comparing models.
 <!-- TODO: add a list of its features, e.g. graphs, filtering, with better screenshots -->
-<!-- <img src="docs/getting_started/images/frontend-1.png" width="70%"><br>
-ModelDB frontend -->
+<img src="docs/getting_started/images/frontend-1.png" width="80%"><br>
+<img src="docs/getting_started/images/frontend-2.png" width="80%"><br>
+<img src="docs/getting_started/images/frontend-4.png" width="80%"><br>
+ModelDB frontend
 
-ModelDB currently works with machine learning worklows in ```spark.ml``` and ```scikit-learn```. View some samples for [spark.ml](client/scala/libs/spark.ml#samples) and [scikit-learn](client/python#samples) to see how ModelDB is integrated and used in the code.
+ModelDB **works any machine learning workflow** with ModelDB's light logging API. Model metrics and metadata can be synced by calling a few functions just like in [this sample basic workflow](client/python/samples/basic/BasicWorkflow.py). The information can also be synced all at once from a JSON or a YAML file as shown in [this sample](client/python/samples/basic/BasicSyncAll.py).
+
+ModelDB also provides native clients for  ```spark.ml``` and ```scikit-learn```. Incorporating ModelDB into the ML workflow is as simple as appending `Sync` or `_sync` to each method name from spark.ml and scikit-learn, respectively, apart from importing modules and initialization. ModelDB then tracks the model as it is built and the collected information can be queried directly from SQL or from the frontend. View some samples for [spark.ml](client/scala/libs/spark.ml#samples) and [scikit-learn](client/python#incorporate-modeldb-into-an-existing-ml-workflow).
 
 ## News
 
@@ -128,8 +132,9 @@ ModelDB currently works with machine learning worklows in ```spark.ml``` and ```
 ## Usage and Samples
 
 ### Incorporate ModelDB into your ML workflow
-- [scikit-learn](client/python) \([samples](client/python#samples)\)
-- [spark.ml](client/scala/libs/spark.ml) \([samples](client/scala/libs/spark.ml#samples)\)
+- [scikit-learn](client/python)
+- [spark.ml](client/scala/libs/spark.ml)
+- [others](client/python/samples/basic)
 
 ### View your models in ModelDB
 After incorporating ModelDB into your models, follow these steps to run and view them in ModelDB.
