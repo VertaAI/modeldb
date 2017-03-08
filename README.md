@@ -1,7 +1,7 @@
 # ModelDB: A system to manage ML models
 **Website**: [http://modeldb.csail.mit.edu](http://modeldb.csail.mit.edu)
 
-**See ModelDB in action**: <!-- TODO: put link to video -->
+**See the ModelDB frontend in action**: [Watch the video](https://youtu.be/m2PhgEkx8-E)
 
 ## Contents
 
@@ -32,6 +32,8 @@ ModelDB also provides native clients for  ```spark.ml``` and ```scikit-learn```.
 2017.02.08: ModelDB publicly available! Try it out and contribute.
 
 ## Setup and Installation
+
+Watch a video of the setup and installation process [here](https://youtu.be/rmNnG3-bd6s).
 
 1. **Clone the repo**
 
