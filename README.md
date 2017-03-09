@@ -24,8 +24,10 @@ ModelDB's frontend shows summaries and graphs of metrics where users can filter 
 
 <img src="docs/getting_started/images/frontend-1.png" width="75%"><br>
 ModelDB Frontend Projects Summary Page
+
 <img src="docs/getting_started/images/frontend-2.png" width="75%"><br>
 ModelDB Graph for Model Metrics
+
 <img src="docs/getting_started/images/frontend-4.png" width="75%"><br>
 ModelDB Configurable Graph Parameters
 
