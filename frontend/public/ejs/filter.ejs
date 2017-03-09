@@ -4,8 +4,16 @@
   data-val='["<%= val %>"]'
 >
   <div class="filter-kv-container">
-    <div class="filter-key"><%= key %></div>:
-    <div class="filter-val"><%= val %></div>
+    <div class="filter-key tooltip-trigger show-on-overflow"
+      data-val="<%= key %>"
+    >
+      <%= key %>
+    </div>:
+    <div class="filter-val tooltip-trigger show-on-overflow"
+      data-val='["<%= val %>"]'
+    >
+      <%= val %>
+    </div>
   </div>
   <div class="filter-close">X</div>
   <div class="filter-expand" data-show="false">&#9660;</div>

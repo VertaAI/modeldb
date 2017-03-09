@@ -34,24 +34,9 @@ router.get('/:id/experiments', function(req, res, next) {
 });
 
 /* get all models for specific project */
-router.get('/:id/m', function(req, res, next) {
-  var projectId = req.params.id;
-  api.getProjectModels(projectId, function(response) {
-    res.render('models', {
-      title: 'Models',
-      path: {
-        'labels': ['Projects', 'Models'],
-        'links': ['/projects', '/projects/' + projectId + '/m']
-      },
-      menu: true,
-      models: response
-    });
-  });
-});
-
 router.get('/:id/models', function(req, res, next) {
   var id = req.params.id;
-  res.render('m', {
+  res.render('models', {
     title: 'Models',
     path: {
       'labels': ['Projects', 'Models'],

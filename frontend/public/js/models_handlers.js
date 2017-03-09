@@ -139,16 +139,6 @@ $(function() {
 
   // show json modal
   $(document).on('click', '.json-md-trigger', function(event) {
-    /*
-    // dummy data for testing
-    $.getJSON('/json/config.json', function(response) {
-      var node = new PrettyJSON.view.Node({
-        el:$('#md-json'),
-        data:response
-      });
-      $('#modal-2').addClass('md-show');
-    });
-    */
     // TODO: duplicate call; avoid
     var modelId = $(event.target).data('id');
     $.ajax({
@@ -159,7 +149,10 @@ $(function() {
           el:$('#md-json'),
           data:JSON.parse(response)
         });
+        node.expandAll();
         $('#modal-2').addClass('md-show');
+        attachModalListeners();
+        node.collapseAll();
       }
     });
   });
@@ -167,4 +160,47 @@ $(function() {
   $(document).on('click', '.md-close, .md-overlay', function(event) {
     $('.md-modal').removeClass('md-show');
   });
+
+  // close modal with escape key
+  $(document).keyup(function(event) {
+    if (event.which == 27) {
+      $('.md-modal').removeClass('md-show');
+    }
+  });
+
+  function attachModalListeners() {
+    var json = $('#md-json');
+    var leaves = $('#md-json .leaf-container');
+    for (var i=0; i<leaves.length; i++) {
+      leaves[i] = leaves[i].closest('li');
+      var leaf = $(leaves[i]);
+      leaf.data('json', true);
+
+      // figure out key value
+      var key = leaf.children().html().split("&nbsp;")[0];
+      var value = leaf.find('.leaf-container span').html().trim();
+      var valueWithoutQuotes = value.replace(/"/g,"");
+      value = (valueWithoutQuotes == value) ? parseFloat(value) : valueWithoutQuotes;
+
+      var parent = leaf.parent().closest('li');
+
+      while (parent.length != 0) {
+        var split = parent.children().html().split("&nbsp;");
+
+        // can't flatten arrays well
+        if (split[0].match("node-top node-bracket")) {
+          leaf.addClass('nkv');
+          parent.length = 0;
+        } else {
+          key = split[0] + "." + key;
+          parent = parent.parent().closest('li');
+        }
+      }
+      leaf.data('key', "md." + key);
+      leaf.data('val', value);
+    }
+
+    leaves.addClass('kv');
+    leaves.addClass('json-kv');
+  }
 });
