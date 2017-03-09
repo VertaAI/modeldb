@@ -13,6 +13,7 @@ apt-get install -y maven
 apt-get install -y bzip2
 apt-get install -y automake bison flex g++ git libevent-dev libssl-dev libtool make pkg-config
 apt-get install nodejs
+apt-get install -y mongodb-org
 
 cd /home
 cd testuser
