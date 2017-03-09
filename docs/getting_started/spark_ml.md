@@ -1,79 +1,10 @@
 # Getting Started with ModelDB on spark.ml
 
-## 1. Clone the repo
+## 1. Setup
 
-```git
-git clone https://github.com/mitdbg/modeldb
-```
+First, make sure you have followed the [setup instructions for ModelDB](../../#setup-and-installation) and have built the client.
 
-## 2. Install dependencies
-We assume that you have Java 1.8+ and Spark 2.0 installed.
-
-**Versions**: ModelDB currently requires **Thrift 0.9.3 or 0.10.0** and **Spark 2.0**.
-
-On Mac OSX:
-
-```bash
-brew install sqlite
-brew install maven
-brew install node
-brew install sbt
-brew install mongodb
-
-# ModelDB works with Thrift 0.9.3 and 0.10.0. If you do not have thrift installed, install via brew.
-
-brew install thrift
-```
-
-On Linux:
-
-```bash
-apt-get update
-sudo apt-get install sqlite
-sudo apt-get install maven
-sudo apt-get install sbt
-sudo apt-get install nodejs # may need to symlink node to nodejs. "cd /usr/bin; ln nodejs node"
-sudo apt-get install -y mongodb-org # further instructions here: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
-
-# install thrift. path_to_thrift is the installation directory
-cd path_to_thrift
-wget http://mirror.cc.columbia.edu/pub/software/apache/thrift/0.9.3/thrift-0.9.3.tar.gz
-tar -xvzf thrift-0.9.3.tar.gz
-cd thrift-0.9.3
-./configure
-make
-export PATH=path_to_thrift/:$PATH
-```
-For more help on installing dependencies see [here](https://github.com/mitdbg/modeldb/blob/master/docs/required_software.md).
-
-## 3. Build
-
-ModelDB is composed of three components: the ModelDB server, the ModelDB client libraries, and the ModelDB frontend.
-
-In the following, **path_to_modeldb** refers to the directory into which you have cloned the modeldb repo and **thrift_version** is 0.9.3 or 0.10.0 depending on your thrift version (check by running ```thrift -version```).
-
-```bash
-# build and start the server
-cd path_to_modeldb/server
-cd codegen
-./gen_sqlite.sh
-cd ..
-./start_server.sh thrift_version &
-
-# build spark.ml client library
-cd path_to_modeldb/client/scala/libs/spark.ml
-./build_client.sh
-
-# start the frontend
-cd path_to_modeldb/frontend
-./start_frontend.sh &
-
-# shutdown mongodb server after killing the server
-# on Mac OSX and Linux
-mongo --eval "db.getSiblingDB('admin').shutdownServer()" 
-```
-
-## 4. Incorporate ModelDB into an ML workflow
+## 2. Incorporate ModelDB into an ML workflow
 
 #### a. Import the ModelDB client library classes
 
@@ -108,7 +39,7 @@ ModelDbSyncer.setSyncer(
 ```
 
 #### c. Log models and pre-processing operations
-Next use the ModelDB **sync** variants of functions. So _fit_ calls would turn into **fitSync**, _save_ calls would turn into **saveSync** and so on.
+Next, when you want to log an operation to ModelDB, use the ModelDB **sync** variants of functions. So the original _fit_ calls from spark.ml would turn into **fitSync**, _save_ calls would turn into **saveSync** and so on.
 
 ```scala
 val logReg = new LogisticRegression()
@@ -139,13 +70,12 @@ val metric = evaluator.evaluateSync(predictions, logRegModel)
 
 **The full code for this example can be found [here](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample/SimpleSample.scala).**
 
-#### e. _Run your program!_
-
+#### e. _Run your model!_
 Be sure to link the client library built above to your code (e.g. by adding to your classpath).
 
-## 5. Explore models
+## 3. Explore models
 That's it! Explore the models you built in your workflow at [http://localhost:3000](http://localhost:3000).
 
 <img src="images/frontend-1.png">
 
-**More complex spark.ml workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) and [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation)**
+**More complex spark.ml workflows using ModelDB are located [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) and [here](https://github.com/mitdbg/modeldb/tree/master/client/scala/libs/spark.ml/src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation).**
