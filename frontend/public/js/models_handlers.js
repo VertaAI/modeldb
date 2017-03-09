@@ -161,6 +161,13 @@ $(function() {
     $('.md-modal').removeClass('md-show');
   });
 
+  // close modal with escape key
+  $(document).keyup(function(event) {
+    if (event.which == 27) {
+      $('.md-modal').removeClass('md-show');
+    }
+  });
+
   function attachModalListeners() {
     var json = $('#md-json');
     var leaves = $('#md-json .leaf-container');
