@@ -3,7 +3,7 @@
 
 **See the ModelDB frontend in action**:
 
-[![ModelDB frontend in action video](http://img.youtube.com/vi/m2PhgEkx8-E/0.jpg)](https://youtu.be/m2PhgEkx8-E "Watch the ModelDB frontend in action")
+[![ModelDB frontend in action video](http://img.youtube.com/vi/gxBb4CjJcxQ/0.jpg)](https://youtu.be/gxBb4CjJcxQ "Watch the ModelDB frontend in action")
 
 ## Contents
 
