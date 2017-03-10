@@ -60,16 +60,43 @@ syncer_obj = Syncer(
 
 ### c. Sync Information
 - **Method 1**:
-Initialize the `Dataset`, `Model`, `ModelConfig`, `ModelMetrics` classes with the needed information as arguments then call the methods `sync_datasets`, `sync_model`, and `sync_metrics` on the Syncer object. Finally, call `syncer_obj.sync()`.
+
+    Load all model infromation from a JSON or a YAML file. The expected key names can be found [here](modeldb/utils/MetadataConstants.py). There are also samples JSON and YAML files in [samples/basic](samples/basic).
+    ```python
+    syncer_obj.sync_all(filepath)
+    syncer_obj.sync()
+    ```
+
 
 - **Method 2**:
-Load all model infromation from a JSON or a YAML file. The expected key names can be found [here](modeldb/utils/MetadataConstants.py). There are also samples JSON and YAML files in [samples/basic](samples/basic).
-```python
-syncer_obj.sync_all(filepath)
-syncer_obj.sync()
-```
 
-The code for the API can be found in [ModelDbSyncerBase.py](modeldb/basic/ModelDbSyncerBase.py), where the `Syncer`, `Dataset`, `Model`, `ModelConfig`, `
+    Initialize the `Dataset`, `Model`, `ModelConfig`, `ModelMetrics` classes with the needed information as arguments then call the methods `sync_datasets`, `sync_model`, and `sync_metrics` on the Syncer object. Finally, call `syncer_obj.sync()`.
+    ```python
+    # create Datasets by specifying their filepaths and optional metadata
+    # associate a tag (key) for each Dataset (value)
+    datasets = {
+        "train" : Dataset("/path/to/train", {"num_cols" : 15, "dist" : "random"}),
+        "test" : Dataset("/path/to/test", {"num_cols" : 15, "dist" : "gaussian"})
+    }
+
+    # create the Model, ModelConfig, and ModelMetrics instances
+    model = "model_obj"
+    model_type = "NN"
+    mdb_model1 = Model(model_type, model, "/path/to/model1")
+    model_config1 = ModelConfig(model_type, {"l1" : 10})
+    model_metrics1 = ModelMetrics({"accuracy" : 0.8})
+
+    # sync the datasets to modeldb
+    syncer_obj.sync_datasets(datasets)
+
+    # sync the model with its model config and specify which dataset tag to use for it
+    syncer_obj.sync_model("train", model_config1, mdb_model1)
+
+    # sync the metrics to the model and also specify which dataset tag to use for it
+    syncer_obj.sync_metrics("test", mdb_model1, model_metrics1)
+    ```
+
+The code for the API can be found in [ModelDbSyncerBase.py](modeldb/basic/ModelDbSyncerBase.py), where the `Syncer`, `Dataset`, `Model`, `ModelConfig`, `ModelMetrics` classes and their methods are declared.
 
 ### d. Run your model
 You should now be able to [view the model in ModelDB](../../#view-your-models-in-modeldb).
