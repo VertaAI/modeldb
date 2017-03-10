@@ -70,7 +70,7 @@ syncer_obj = Syncer(
 
 - **Method 2**:
 
-    Initialize the `Dataset`, `Model`, `ModelConfig`, `ModelMetrics` classes with the needed information as arguments then call the methods `sync_datasets`, `sync_model`, and `sync_metrics` on the Syncer object. Finally, call `syncer_obj.sync()`.
+    Initialize the `Dataset`, `Model`, `ModelConfig`, `ModelMetrics` classes with the needed information as arguments then call the sync methods on the Syncer object. Finally, call `syncer_obj.sync()`.
     ```python
     # create Datasets by specifying their filepaths and optional metadata
     # associate a tag (key) for each Dataset (value)
@@ -94,6 +94,8 @@ syncer_obj = Syncer(
 
     # sync the metrics to the model and also specify which dataset tag to use for it
     syncer_obj.sync_metrics("test", mdb_model1, model_metrics1)
+
+    syncer_obj.sync()
     ```
 
 The code for the API can be found in [ModelDbSyncerBase.py](modeldb/basic/ModelDbSyncerBase.py), where the `Syncer`, `Dataset`, `Model`, `ModelConfig`, `ModelMetrics` classes and their methods are declared.
