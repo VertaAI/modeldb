@@ -19,7 +19,7 @@
 - [Contributing](#contributing)
 
 ## Overview
-ModelDB is an end-to-end system to manage machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying. ModelDB can be used with **any ML environment** via the ModelDB Light API whereas the ModelDB native clients can be used for advanced support in `spark.ml` and `scikit-learn`.
+ModelDB is an end-to-end system to manage machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying. ModelDB can be used with **any ML environment** via the ModelDB Light API. ModelDB native clients can be used for advanced support in `spark.ml` and `scikit-learn`.
 
 The ModelDB frontend provides rich summaries and graphs showing model data. The frontend provides functionality to slice and dice this data along various attributes (e.g. operations like filter by hyperparameter, group by datasets) and to build custom charts showing model performance.
 
