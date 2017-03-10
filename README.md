@@ -34,9 +34,9 @@ ModelDB Configurable Graph Parameters
 
 ### How does it work?
 
-[ModelDB's Light API](client/python/light_api.md) can be used to sync model metrics and metadata by calling a few functions as shown in [this sample basic workflow](client/python/samples/basic/BasicWorkflow.py). ModelDB also provides functionality to log entire config files (JSON or a YAML) associated with a model as shown in [this sample](client/python/samples/basic/BasicSyncAll.py).
+[ModelDB's Light API](client/python/light_api.md) can be used with any ML environment to sync model metrics and metadata or even entire config files by calling a few functions (e.g. see [here](client/python/samples/basic/BasicWorkflow.py) and [here](client/python/samples/basic/BasicSyncAll.py) respectively).
 
-For fine-grained logging, ModelDB provides native clients for  ```spark.ml``` and ```scikit-learn```. Unlike the Light API, with fine-grained logging, the user does not need to explicitly provide model metadata to ModelDB. The ModelDB native clients can automatically extract relevant pieces of model data *as the model is being built* and sync them with ModelDB. Incorporating ModelDB into a scikit-learn / spark.ml workflow is as simple as appending `Sync` or `_sync` to relevant methods in the respective libraries. See samples for spark.ml [here](client/scala/libs/spark.ml#samples) and those for scikit-learn [here](client/python/scikit_learn.md).
+Alternatively, ModelDB native clients for  ```spark.ml``` and ```scikit-learn``` can be used to perform automatic, fine-grained logging. Unlike the Light API, native clients do not require the user to explicitly provide model data to ModelDB. The native clients can automatically extract relevant pieces of model data *as the model is being built* and sync them with ModelDB. Incorporating ModelDB into a scikit-learn / spark.ml workflow is as simple as appending `Sync` or `_sync` to relevant methods in the respective libraries. See samples for spark.ml [here](client/scala/libs/spark.ml#samples) and those for scikit-learn [here](client/python/scikit_learn.md).
 
 ## News
 
