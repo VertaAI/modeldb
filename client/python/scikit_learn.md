@@ -71,7 +71,7 @@ Next, when you want to log an operation to ModelDB, use the ModelDB **sync** var
 x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(df, target, test_size=0.3)
 lr = LogisticRegression()
 lr.fit_sync(x_train, y_train) # instead of the usual lr.fit(x_train, y_train)
-y_pred = lr.predict(x_test)
+y_pred = lr.predict_sync(x_test)
 ```
 
 ### d. Log metrics
@@ -80,13 +80,12 @@ Use the ModelDB metrics class [**SyncableMetrics**](modeldb/sklearn_native/Synca
 ```python
 SyncableMetrics.compute_metrics(model, scoring_function, labels, predictions, dataframe, predictionCol, labelCol)
 ```
-<!-- At the end of your workflow, be sure to sync all the data with ModelDB.
-```scala
- ModelDbSyncer.sync()
+### e. At the end of your workflow, be sure to sync all the data with ModelDB.
+```python
+ syncer_obj.sync()
 ```
--->
 
-### e. Run your model
+### f. Run your model
 The full code for this example can be found [here](samples/sklearn/SimpleSampleWithModelDB.py). You can also compare it with the code with the original workflow without ModelDB [here](samples/sklearn/SimpleSample.py). Run the sample model and all the model information will be stored in ModelDB.
 
 ```bash
