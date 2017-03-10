@@ -8,6 +8,7 @@
 ## Contents
 
 - [Overview](#overview)
+    - [How Does it Work?](#how-does-it-work)
 - [News](#news)
 - [Setup and Installation](#setup-and-installation)
 - [Usage and Samples](#usage-and-samples)
@@ -18,9 +19,9 @@
 - [Contributing](#contributing)
 
 ## Overview
-ModelDB is an end-to-end system to manage machine learning models. It can ingest models and metadata as they are built, store this data in a structured format, and surface it through a web-frontend for rich querying. It **supports any environment** via the Light API, with advanced support for `spark.ml` and `scikit-learn`.
+ModelDB is an end-to-end system to manage machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying. ModelDB can be used with **any ML environment** via the ModelDB Light API whereas the ModelDB native clients can be used for advanced support in `spark.ml` and `scikit-learn`.
 
-ModelDB's frontend shows summaries and graphs of metrics where users can filter on configurations and metrics, configure the x- and y- axes, group by certain configurations, among others. The visualizations and filtering allow for a better experience when comparing models.
+The ModelDB frontend provides rich summaries and graphs showing model data. The frontend provides functionality to slice and dice this data along various attributes (e.g. operations like filter by hyperparameter, group by datasets) and to build custom charts showing model performance.
 
 <img src="docs/getting_started/images/frontend-1.png" width="75%"><br>
 ModelDB Frontend Projects Summary Page
@@ -31,9 +32,11 @@ ModelDB Graph for Model Metrics
 <img src="docs/getting_started/images/frontend-4.png" width="75%"><br>
 ModelDB Configurable Graph Parameters
 
-In [ModelDB's Light API](client/python/light_api.md), model metrics and metadata can be synced by calling a few functions just like in [this sample basic workflow](client/python/samples/basic/BasicWorkflow.py). The information can also be synced all at once from a JSON or a YAML file as shown in [this sample](client/python/samples/basic/BasicSyncAll.py).
+### How does it work?
 
-ModelDB also provides native clients for  ```spark.ml``` and ```scikit-learn```. Incorporating ModelDB into the ML workflow is as simple as appending `Sync` or `_sync` to each method name from spark.ml and scikit-learn, respectively, apart from importing modules and initialization. ModelDB then tracks the model as it is built and the collected information can be queried directly from SQL or from the frontend. View some samples for [spark.ml](client/scala/libs/spark.ml#samples) and [scikit-learn](client/python/scikit_learn.md).
+[ModelDB's Light API](client/python/light_api.md) can be used to sync model metrics and metadata by calling a few functions as shown in [this sample basic workflow](client/python/samples/basic/BasicWorkflow.py). ModelDB also provides functionality to log entire config files (JSON or a YAML) associated with a model as shown in [this sample](client/python/samples/basic/BasicSyncAll.py).
+
+For fine-grained logging, ModelDB provides native clients for  ```spark.ml``` and ```scikit-learn```. Unlike the Light API, with fine-grained logging, the user does not need to explicitly provide model metadata to ModelDB. The ModelDB native clients can automatically extract relevant pieces of model data *as the model is being built* and sync them with ModelDB. Incorporating ModelDB into a scikit-learn / spark.ml workflow is as simple as appending `Sync` or `_sync` to relevant methods in the respective libraries. See samples for spark.ml [here](client/scala/libs/spark.ml#samples) and those for scikit-learn [here](client/python/scikit_learn.md).
 
 ## News
 
@@ -112,12 +115,10 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
 
     In the following, **[path_to_modeldb]** refers to the directory into which you have cloned the modeldb repo and **[thrift_version]** is 0.9.3 or 0.10.0 depending on your thrift version (check by running ```thrift -version```).
 
-    Start by setting up the database. **NOTE: The command to generate the database will clean out any previous data on ModelDB. It should only be done ONCE.**
-
     ```bash
     # run the script to set up the sqlite and the mongodb databases that modeldb will use
     # this also starts mongodb
-    # IMPORTANT NOTE: This clears any previous modeldb databases. This should only be done once.
+    # ***IMPORTANT NOTE: This clears any previous modeldb databases. This should only be done once.***
     cd [path_to_modeldb]/server/codegen
     ./gen_sqlite.sh
 
@@ -145,9 +146,9 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
 ## Usage and Samples
 
 ### Incorporate ModelDB into your ML workflow
+- [Light API](client/python/light_api.md)
 - [scikit-learn](client/python/scikit_learn.md)
 - [spark.ml](docs/getting_started/spark_ml.md)
-- [others](client/python/light_api.md)
 
 ### View your models in ModelDB
 After incorporating ModelDB into your models, follow these steps to run and view them in ModelDB.
@@ -161,10 +162,10 @@ After incorporating ModelDB into your models, follow these steps to run and view
     cd [path_to_modeldb]/server
     ./start_server.sh [thrift_version] &
 
-    # make sure mongodb is running
-    cd codegen
-    mkdir -p mongodb
-    mongod --dbpath mongodb
+    # make sure mongodb is running. if not running, execute the commands below
+    # cd codegen
+    # mkdir -p mongodb
+    # mongod --dbpath mongodb
     ```
 
 2. **Run your models instrumented with ModelDB as shown [above](#incorporate-modeldb-into-your-ml-workflow).**
