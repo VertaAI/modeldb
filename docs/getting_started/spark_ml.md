@@ -2,7 +2,7 @@
 
 ## 1. Setup
 
-First, make sure you have followed the [setup instructions for ModelDB](../../#setup-and-installation) and have built the client.
+First, make sure you have followed the [setup instructions for ModelDB](../../README.md#setup-and-installation) and have built the client.
 
 ## 2. Incorporate ModelDB into an ML workflow
 

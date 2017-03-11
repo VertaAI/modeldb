@@ -12,7 +12,7 @@ The Light API is a way for users to incorporate any ML workflow with ModelDB. Th
 # Usage
 
 ## Setup
-First, make sure you have followed the [setup instructions for ModelDB](../../#setup-and-installation) and have built the client.
+First, make sure you have followed the [setup instructions for ModelDB](../../README.md#setup-and-installation) and have built the client.
 
 Next, put the python client on your PYTHONPATH:
 ```bash

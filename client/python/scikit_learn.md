@@ -13,7 +13,7 @@ like `LogisticRegression().fit(x_train, y_train)`, in ModelDB. You can explore t
 # Usage
 
 ## Setup
-First, make sure you have followed the [setup instructions for ModelDB](../../#setup-and-installation) and have built the client.
+First, make sure you have followed the [setup instructions for ModelDB](../../README.md#setup-and-installation) and have built the client.
 
 Next, put the python client on your PYTHONPATH:
 ```bash
