@@ -125,6 +125,7 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
     # build and start the server
     cd ..
     ./start_server.sh [thrift_version] &
+    # NOTE: if you are building the project in eclipse, you may need to uncomment the pluginManagement tags in pom.xml located in the server directory
 
     # build scikit-learn client library
     cd [path_to_modeldb]/client/python
