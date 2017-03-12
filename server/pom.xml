@@ -111,7 +111,8 @@
                 </property>
             </activation>
             <build>
-                <pluginManagement>
+                <!-- uncomment for eclipse -->
+                <!-- <pluginManagement> -->
                     <plugins>
                         <plugin>
                             <groupId>org.apache.thrift.tools</groupId>
@@ -131,7 +132,8 @@
                             </executions>
                         </plugin>
                     </plugins>
-                </pluginManagement>
+                <!-- uncomment for eclipse -->
+                <!-- </pluginManagement> -->
             </build>
         </profile>
         <profile>
