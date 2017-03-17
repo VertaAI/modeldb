@@ -125,7 +125,7 @@ class Syncer(object):
 
     @classmethod
     def create_syncer_from_config(
-        cls, config_file=".mdb_config", expt_name=None, sha=None):
+        cls, config_file="../../../syncer.json", expt_name=None, sha=None):
         """
         Create a syncer based on the modeldb configuration file
         """
@@ -135,7 +135,7 @@ class Syncer(object):
 
         project = NewOrExistingProject(
             project_info[constants.NAME_KEY],
-            project_info[constants.GIT_USERNAME_KEY], 
+            project_info[constants.GIT_USERNAME_KEY],
             project_info[constants.DESCRIPTION_KEY])
         experiment = DefaultExperiment() if experiment_info == None else \
             NewOrExistingExperiment(experiment_info[constants.NAME_KEY],
@@ -153,6 +153,7 @@ class Syncer(object):
         syncer_obj = cls(None, None, ExistingExperimentRun(experiment_run_id))
         return syncer_obj
 
+    # implements singleton Syncer object
     def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
         # This will break if cls is some random class.
         if not cls.instance:
@@ -282,16 +283,16 @@ class Syncer(object):
         self.client = None
 
     '''
-    Functions that convert ModelDBSyncerLight classes into ModelDB 
+    Functions that convert ModelDBSyncerLight classes into ModelDB
     thrift classes
     '''
-    
+
 
     def convert_model_to_thrift(self, model):
         model_id = self.get_modeldb_id_for_object(model)
         if model_id != -1:
             return modeldb_types.Transformer(model_id, "", "", "")
-        return modeldb_types.Transformer(-1, 
+        return modeldb_types.Transformer(-1,
             model.model_type, model.tag, model.path)
 
     def convert_spec_to_thrift(self, spec):
@@ -321,7 +322,7 @@ class Syncer(object):
         return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
             dataset.filename, metadata)
     '''
-    End. Functions that convert ModelDBSyncerLight classes into ModelDB 
+    End. Functions that convert ModelDBSyncerLight classes into ModelDB
     thrift classes
     '''
 
@@ -367,7 +368,7 @@ class Syncer(object):
     def get_dataset_for_tag(self, data_tag):
         if data_tag not in self.datasets:
             if "default" not in self.datasets:
-                self.datasets["default"] = Dataset("", {}) 
+                self.datasets["default"] = Dataset("", {})
             print data_tag, \
                 ' dataset not defined. default dataset will be used.'
             data_tag = "default"
@@ -400,7 +401,7 @@ class Syncer(object):
 
         model_dataset = self.get_dataset_for_tag(model_tag)
         config = model_data[metadata_constants.CONFIG_KEY]
-        fit_event = FitEvent(model, ModelConfig(model_type, config, model_tag), 
+        fit_event = FitEvent(model, ModelConfig(model_type, config, model_tag),
             model_dataset, model_data)
         Syncer.instance.add_to_buffer(fit_event)
 

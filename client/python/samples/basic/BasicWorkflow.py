@@ -2,12 +2,12 @@ from modeldb.basic.ModelDbSyncerBase import *
 import sys
 
 # Create a syncer using a convenience API
-syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
-    "using modeldb light logging")
+# syncer_obj = Syncer.create_syncer("gensim test", "test_user", \
+#     "using modeldb light logging")
 
 # Example: Create a syncer from a config file
-# syncer_obj = Syncer.create_syncer_from_config(
-#     "/Users/mvartak/Projects/modeldb_test_dir/dir/.mdb_config")
+syncer_obj = Syncer.create_syncer_from_config(
+    "/Users/arcarter/code/modeldb/client/syncer.json")
 
 # Example: Create a syncer explicitly
 # syncer_obj = Syncer(
