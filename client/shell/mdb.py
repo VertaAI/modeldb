@@ -10,11 +10,11 @@ from modeldb.utils.ConfigUtils import ConfigReader
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description='ModelDB command line entry point')
-parser.add_argument('--config', nargs='?', default='.mdb_config', 
-    help='Configuration File. Default at .mdb_config')
-parser.add_argument('--expt', nargs='?', 
+parser.add_argument('--config', nargs='?', default='../syncer.json',
+    help='Configuration File. Default at ../syncer.json')
+parser.add_argument('--expt', nargs='?',
     help='Name of an experiment defined in config, otherwise default used')
-parser.add_argument('script', nargs='+', 
+parser.add_argument('script', nargs='+',
     help='Script to be invoked to run the experiment')
 args = parser.parse_args()
 
@@ -34,6 +34,6 @@ args.script.append(str(syncer.experiment_run.id))
 script_cmd = ' '.join(args.script)
 os.system(script_cmd)
 
-sys.exit(0) 
+sys.exit(0)
 
 
