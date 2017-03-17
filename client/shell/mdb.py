@@ -4,7 +4,6 @@ import yaml
 import sys
 import os, os.path
 import mdb_code_versioning
-import modeldb.utils.ConfigConstants as constants
 from modeldb.basic.ModelDbSyncerBase import *
 from modeldb.utils.ConfigUtils import ConfigReader
 
