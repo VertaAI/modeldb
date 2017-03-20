@@ -9,12 +9,10 @@
     "author": "modeldb_users",
     "description": "Project to hold all models from the demo"
   },
-
   "experiment": {
     "name": "Default Experiment",
     "description": "Default Experiment"
   },
-  "experiments": [],
   "experimentRun": {
     "description": "Default Run Description"
   },
@@ -22,7 +20,7 @@
   "shouldStoreGSCVE": false,
   "shouldStoreSpecificModels": false,
   "git": {
-    "versionCode": "yes",
+    "versionCode": "no",
     "username": "default",
     "accessToken": null,
     "repo": null,

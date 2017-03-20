@@ -24,29 +24,14 @@ class ConfigReader(object):
             constants.GIT_USERNAME_KEY : git['username'],
             constants.DESCRIPTION_KEY : project.get('description', '')}
 
-    def get_experiment(self, expt_name=None):
-        if not expt_name:
-            return None
-
-        if 'experiments' not in self.config or len(self.config['experiments']) < 1:
-            print "Experiment '%s' not defined in config file. Using default." \
-                % expt_name
-            return None
-
-        experiment = None
-        experiments = self.config.get('experiments', [])
-        for _experiment in experiments:
-            if _experiment.get('name', None) == expt_name:
-                experiment = _experiment
-
-        if experiment is None:
-            print "Experiment '%s' not defined in config file. Using default " \
-                "and returning None" % expt_name
-            return None
+    def get_experiment(self):
+        experiment = self.config.get('experiment', {})
+        name = experiment.get('name')
+        description = experiment.get('description')
 
         # create an experiment from the config data
-        return {constants.NAME_KEY : experiment['name'],
-            constants.DESCRIPTION_KEY : experiment['description']}
+        return {constants.NAME_KEY : name,
+            constants.DESCRIPTION_KEY : description}
 
     def get_mdb_server_info(self):
         thrift = self.config.get('thrift', False)
