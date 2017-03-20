@@ -40,7 +40,7 @@ import SyncerConfigJsonProtocol._
 
 object SyncerConfig {
   /**
-    * Read from a JSON file and create a SyncerConfigJson. You can see a sample in [spark_client_root]/syncer.json.
+    * Read from a JSON file and create a SyncerConfigJson. You can see a sample in [modeldb_root]/client/syncer.json.
     * @param path - The path to the JSON file.
     * @return The configuration object.
     */

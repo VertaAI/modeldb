@@ -22,7 +22,7 @@ object SimpleSample {
     // spark setup
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("test"))
     Logger.getLogger("org").setLevel(Level.OFF);
-    
+
     val spark = SparkSession
       .builder()
       .appName("Simple Sample")
@@ -41,11 +41,11 @@ object SimpleSample {
 
     // // modeldb start
     // ModelDbSyncer.setSyncer(new ModelDbSyncer(SyncerConfig(
-    //   MODELDB_ROOT + "/client/scala/libs/spark.ml/syncer.json")))
+    //   MODELDB_ROOT + "/client/syncer.json")))
     // // modeldb end
 
     // read in the data
-    
+
     val path = MODELDB_ROOT + "/data/credit-default.csv"
     val df = spark
       .read
@@ -57,7 +57,7 @@ object SimpleSample {
     // // modeldb end
 
     val assembler = new VectorAssembler()
-      .setInputCols(Array("LIMIT_BAL", "SEX", 
+      .setInputCols(Array("LIMIT_BAL", "SEX",
         "EDUCATION", "MARRIAGE", "AGE"))
       .setOutputCol("features")
 

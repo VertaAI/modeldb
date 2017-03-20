@@ -73,7 +73,7 @@ cd path_to_modeldb/frontend
 
 # shutdown mongodb server after killing the server
 # on Mac OSX and Linux
-mongo --eval "db.getSiblingDB('admin').shutdownServer()" 
+mongo --eval "db.getSiblingDB('admin').shutdownServer()"
 ```
 
 ## 4. Incorporate ModelDB into an ML workflow
@@ -90,7 +90,7 @@ from modeldb.sklearn_native.ModelDbSyncer import *
 #### b. Create a ModelDB syncer
 ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the Syncer as shown below.
 
-<!-- You can initialize the syncer either from a config file (e.g. [FIX](https://github.com/mitdbg/modeldb/blob/master/client/scala/libs/spark.ml/syncer.json)) or explicitly via arguments.
+<!-- You can initialize the syncer either from a config file (e.g. [FIX](https://github.com/mitdbg/modeldb/blob/master/client/syncer.json)) or explicitly via arguments.
 
 ```python
 # initialize syncer from config file
