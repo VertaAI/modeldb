@@ -2,6 +2,7 @@
   <div class="model" data-show="true">
 
     <div class="model-section model-ids">
+
       <a href="/models/<%= model["id"] %>">
         <div class="kv nkv"
           data-key="Model ID"
@@ -10,6 +11,15 @@
           Model ID: <%= model["id"] %>
         </div>
       </a>
+
+      <% if (model["md.NAME"]) { %>
+        <div class="kv"
+          data-key="Model Name"
+          data-val="<%= model["md.NAME"] %>"
+        >
+          Model Name: <%= model["md.NAME"] %>
+        </div>
+      <% } %>
 
       <div class="kv"
         data-key="Experiment Run ID"
