@@ -11,8 +11,6 @@ from modeldb.utils.ConfigUtils import ConfigReader
 parser = argparse.ArgumentParser(description='ModelDB command line entry point')
 parser.add_argument('--config', nargs='?', default='../syncer.json',
     help='Configuration File. Default at ../syncer.json')
-parser.add_argument('--expt', nargs='?',
-    help='Name of an experiment defined in config, otherwise default used')
 parser.add_argument('script', nargs='+',
     help='Script to be invoked to run the experiment')
 args = parser.parse_args()
@@ -26,7 +24,7 @@ if versioning_info:
         print "Unable to version code. See errors above."
 
 # connect to modeldb and create an experiment run
-syncer = Syncer.create_syncer_from_config(args.config, args.expt, sha)
+syncer = Syncer.create_syncer_from_config(args.config, sha)
 
 # call the remainder of the script with the additional information
 args.script.append(str(syncer.experiment_run.id))

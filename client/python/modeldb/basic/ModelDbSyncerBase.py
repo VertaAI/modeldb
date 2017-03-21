@@ -39,21 +39,13 @@ class Syncer(object):
 
     @classmethod
     def create_syncer_from_config(
-        cls, config_file="../../../syncer.json", expt_name=None, sha=None):
+        cls, config_file="../../../syncer.json", sha=None):
         """
         Create a syncer based on the modeldb configuration file
         """
         config_reader = ConfigReader(config_file)
-        project_info = config_reader.get_project()
-        experiment_info = config_reader.get_experiment(expt_name)
-
-        project = NewOrExistingProject(
-            project_info[constants.NAME_KEY],
-            project_info[constants.GIT_USERNAME_KEY],
-            project_info[constants.DESCRIPTION_KEY])
-        experiment = DefaultExperiment() if experiment_info == None else \
-            NewOrExistingExperiment(experiment_info[constants.NAME_KEY],
-                experiment_info[constants.DESCRIPTION_KEY])
+        project = config_reader.get_project()
+        experiment = config_reader.get_experiment()
         experiment_run = NewExperimentRun("", sha)
 
         syncer_obj = cls(project, experiment, experiment_run)
