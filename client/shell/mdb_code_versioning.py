@@ -17,10 +17,10 @@ def version(version_config):
     session = requests.Session()
     session.headers['Authorization'] = 'token %s' \
         % version_config[constants.ACCESS_TOKEN_KEY]
-    
+
     # check if the repo exists, if not create it
     repo_exists_url = 'https://api.github.com/repos/%s/%s' % \
-        (version_config[constants.GIT_USERNAME_KEY], 
+        (version_config[constants.GIT_USERNAME_KEY],
             version_config[constants.GIT_REPO_KEY])
     repo_exists = session.get(repo_exists_url)
 
@@ -31,7 +31,7 @@ def version(version_config):
         create_repo_url = 'https://api.github.com/user/repos'
         create_repo_params = {'name' : version_config[constants.GIT_REPO_KEY]}
         print create_repo_params
-        create_repo = session.post(create_repo_url, 
+        create_repo = session.post(create_repo_url,
             json=create_repo_params
             )
         if create_repo.status_code == 201:
@@ -39,10 +39,10 @@ def version(version_config):
             git_init_cmd = 'pushd %s;git init;' \
                 'git remote add origin ' \
                 'git@github.com:%s/%s.git;' \
-                'echo \'.mdb_config\'> .gitignore;' \
+                'echo \'.syncer.json\'> .gitignore;' \
                 'popd;' % \
-                (version_config[constants.GIT_REPO_DIR_KEY], 
-                    version_config[constants.GIT_USERNAME_KEY], 
+                (version_config[constants.GIT_REPO_DIR_KEY],
+                    version_config[constants.GIT_USERNAME_KEY],
                     version_config[constants.GIT_REPO_KEY])
             # TODO: redirect the output to log or screen?
             os.system(git_init_cmd)
@@ -60,7 +60,7 @@ def version(version_config):
 
     # copy code to the experiment dir
     copy_code_cmd = 'rsync -av --progress %s/* %s --exclude .git' \
-    % (version_config[constants.EXPT_DIR_KEY], 
+    % (version_config[constants.EXPT_DIR_KEY],
         version_config[constants.GIT_REPO_DIR_KEY])
     os.system(copy_code_cmd)
 
@@ -75,7 +75,7 @@ def version(version_config):
 
     # get the sha for the lastest commit
     git_commit_url = 'https://api.github.com/repos/%s/%s/commits/master' \
-    % (version_config[constants.GIT_USERNAME_KEY], 
+    % (version_config[constants.GIT_USERNAME_KEY],
         version_config[constants.GIT_REPO_KEY])
     git_commit = session.get(git_commit_url)
 

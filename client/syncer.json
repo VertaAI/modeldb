@@ -18,5 +18,14 @@
   },
   "shouldCountRows": false,
   "shouldStoreGSCVE": false,
-  "shouldStoreSpecificModels": false
+  "shouldStoreSpecificModels": false,
+  "git": {
+    "versionCode": "no",
+    "username": "default",
+    "accessToken": null,
+    "repo": null,
+    "exptDir": null,
+    "repoDir": null
+  }
 }
+

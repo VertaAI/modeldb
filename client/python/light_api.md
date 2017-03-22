@@ -33,15 +33,15 @@ sys.path.append("[path_to_modeldb]/client/python")
 
 ### a. Import the ModelDB client library class
 
-```python 
+```python
 from modeldb.basic.ModelDbSyncerBase import *
 ```
 
 ### b. Create a ModelDB syncer
-ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the Syncer with your specified configurations as shown below. 
+ModelDBSyncer is the object that logs models and operations to the ModelDB backend. You can initialize the Syncer with your specified configurations as shown below.
 Explore the [ModelDBSyncer](modeldb/basic/ModelDbSyncerBase.py) here for more details on the Syncer object and the different ways to initialize it.
 
-You can initialize the syncer either from a config file (see [the sample config file](../scala/libs/spark.ml/syncer.json)) or explicitly via arguments.
+You can initialize the syncer either from a config file (see [the sample config file](../syncer.json)) or explicitly via arguments.
 
 ```python
 # Initialize syncer from a JSON or YAML config file

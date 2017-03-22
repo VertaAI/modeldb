@@ -6,6 +6,10 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 from ..events import *
+from Structs import NewOrExistingProject, ExistingProject, \
+    NewOrExistingExperiment, ExistingExperiment, DefaultExperiment, \
+    NewExperimentRun, ExistingExperimentRun, \
+    Dataset, ModelConfig, Model, ModelMetrics
 
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
@@ -16,96 +20,6 @@ from ..utils import MetadataConstants as metadata_constants
 FMIN = sys.float_info.min
 FMAX = sys.float_info.max
 
-class NewOrExistingProject:
-    def __init__(self, name, author, description):
-        self.name = name
-        self.author = author
-        self.description = description
-
-    def to_thrift(self):
-        return modeldb_types.Project(-1, self.name, self.author, self.description)
-
-class ExistingProject:
-    def __init__(self, id):
-        self.id = id
-
-    def to_thrift(self):
-        return modeldb_types.Project(self.id, "", "", "")
-
-class ExistingExperiment:
-    def __init__(self, id):
-        self.id = id
-
-    def to_thrift(self):
-        return modeldb_types.Experiment(self.id, -1, "", "", False)
-
-class DefaultExperiment:
-    def to_thrift(self):
-        return modeldb_types.Experiment(-1, -1, "", "", True)
-
-class NewOrExistingExperiment:
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
-
-    def to_thrift(self):
-        return modeldb_types.Experiment(
-            -1, -1, self.name, self.description, False)
-
-class NewExperimentRun:
-    def __init__(self, description="", sha=None):
-        self.description = description
-        self.sha = sha
-
-    def to_thrift(self):
-        erun = modeldb_types.ExperimentRun(-1, -1, self.description)
-        if self.sha:
-            erun.sha = self.sha
-        return erun
-
-class ExistingExperimentRun:
-    def __init__(self, id):
-        self.id = id
-
-    def to_thrift(self):
-        return modeldb_types.ExperimentRun(self.id, -1, "")
-
-# TODO: fix the way i'm doing tagging
-class Dataset:
-    def __init__(self, filename, metadata={}, tag=None):
-        self.filename = filename
-        self.metadata = metadata
-        self.tag = tag if tag else ""
-
-    def __str__(self):
-        return self.filename + "," + self.tag
-
-class ModelConfig:
-    def __init__(self, model_type, config, tag=None):
-        self.model_type = model_type
-        self.config = config
-        self.tag = tag if tag else ""
-
-    def __str__(self):
-        return self.model_type + "," + self.tag
-
-class Model:
-    def __init__(self, model_type, model, path=None, tag=None):
-        self.model_type = model_type
-        self.model = model
-        self.path = path
-        self.tag = tag if tag else ""
-
-    def __str__(self):
-        return self.model_type + "," + self.path + "," + self.tag
-
-class ModelMetrics:
-    def __init__(self, metrics, tag=None):
-        self.metrics = metrics
-        self.tag = tag if tag else ""
-
-    def __str__(self):
-        return self.metrics
 
 class Syncer(object):
     instance = None
@@ -125,21 +39,13 @@ class Syncer(object):
 
     @classmethod
     def create_syncer_from_config(
-        cls, config_file=".mdb_config", expt_name=None, sha=None):
+        cls, config_file="../../../syncer.json", sha=None):
         """
         Create a syncer based on the modeldb configuration file
         """
         config_reader = ConfigReader(config_file)
-        project_info = config_reader.get_project()
-        experiment_info = config_reader.get_experiment(expt_name)
-
-        project = NewOrExistingProject(
-            project_info[constants.NAME_KEY],
-            project_info[constants.GIT_USERNAME_KEY], 
-            project_info[constants.DESCRIPTION_KEY])
-        experiment = DefaultExperiment() if experiment_info == None else \
-            NewOrExistingExperiment(experiment_info[constants.NAME_KEY],
-                experiment_info[constants.DESCRIPTION_KEY])
+        project = config_reader.get_project()
+        experiment = config_reader.get_experiment()
         experiment_run = NewExperimentRun("", sha)
 
         syncer_obj = cls(project, experiment, experiment_run)
@@ -153,6 +59,7 @@ class Syncer(object):
         syncer_obj = cls(None, None, ExistingExperimentRun(experiment_run_id))
         return syncer_obj
 
+    # implements singleton Syncer object
     def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
         # This will break if cls is some random class.
         if not cls.instance:
@@ -282,16 +189,16 @@ class Syncer(object):
         self.client = None
 
     '''
-    Functions that convert ModelDBSyncerLight classes into ModelDB 
+    Functions that convert ModelDBSyncerLight classes into ModelDB
     thrift classes
     '''
-    
+
 
     def convert_model_to_thrift(self, model):
         model_id = self.get_modeldb_id_for_object(model)
         if model_id != -1:
             return modeldb_types.Transformer(model_id, "", "", "")
-        return modeldb_types.Transformer(-1, 
+        return modeldb_types.Transformer(-1,
             model.model_type, model.tag, model.path)
 
     def convert_spec_to_thrift(self, spec):
@@ -321,7 +228,7 @@ class Syncer(object):
         return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
             dataset.filename, metadata)
     '''
-    End. Functions that convert ModelDBSyncerLight classes into ModelDB 
+    End. Functions that convert ModelDBSyncerLight classes into ModelDB
     thrift classes
     '''
 
@@ -367,7 +274,7 @@ class Syncer(object):
     def get_dataset_for_tag(self, data_tag):
         if data_tag not in self.datasets:
             if "default" not in self.datasets:
-                self.datasets["default"] = Dataset("", {}) 
+                self.datasets["default"] = Dataset("", {})
             print data_tag, \
                 ' dataset not defined. default dataset will be used.'
             data_tag = "default"
@@ -400,7 +307,7 @@ class Syncer(object):
 
         model_dataset = self.get_dataset_for_tag(model_tag)
         config = model_data[metadata_constants.CONFIG_KEY]
-        fit_event = FitEvent(model, ModelConfig(model_type, config, model_tag), 
+        fit_event = FitEvent(model, ModelConfig(model_type, config, model_tag),
             model_dataset, model_data)
         Syncer.instance.add_to_buffer(fit_event)
 
