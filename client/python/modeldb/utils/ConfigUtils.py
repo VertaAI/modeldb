@@ -20,28 +20,32 @@ class ConfigReader(object):
             raise ValueError(
                 '"project" must be defined in config file. Cannot proceed.')
         elif 'name' not in project:
-            raise ValueError('"project" in config file must contain must contain a key,
-                             '"name". Cannot proceed.')
+            raise ValueError(
+                '"project" in config file must contain must contain a key,'
+                '"name". Cannot proceed.')
         elif 'author' not in project:
-            raise ValueError('"project" in config file must contain must contain a key,
-                             '"author". Cannot proceed.')
+            raise ValueError(
+                '"project" in config file must contain must contain a key,'
+                '"author". Cannot proceed.')
 
         thrift = self.config.get('thrift', {})
-            if thrift == {}:
-                raise ValueError(
-                    '"thrift" must be defined in config file. Cannot proceed.')
+        if thrift == {}:
+            raise ValueError(
+                '"thrift" must be defined in config file. Cannot proceed.')
         elif 'host' not in thrift:
-            raise ValueError('"thrift" in config file must contain must contain a key,
-                             '"host". Cannot proceed.')
+            raise ValueError(
+                '"thrift" in config file must contain must contain a key,'
+                '"host". Cannot proceed.')
         elif 'port' not in thrift:
-            raise ValueError('"thrift" in config file must contain must contain a key,
-                             '"port". Cannot proceed.')
+            raise ValueError(
+                '"thrift" in config file must contain must contain a key,'
+                '"port". Cannot proceed.')
 
     def get_project(self):
         project_name = safe_get(self.config, 'project', 'name')
         project_description = safe_get(
-            self.config, 'project', 'description') | ''
-        git_username = safe_get(self.config, 'git', 'username') | 'defaultuser'
+            self.config, 'project', 'description') or ''
+        git_username = safe_get(self.config, 'git', 'username') or 'defaultuser'
 
         project = NewOrExistingProject(
             name=project_name, author=git_username,
@@ -50,9 +54,9 @@ class ConfigReader(object):
 
     def get_experiment(self):
         experiment_name = safe_get(
-            self.config, 'experiment', 'name') | 'defaultexperiment'
+            self.config, 'experiment', 'name') or 'defaultexperiment'
         experiment_description = safe_get(
-            self.config, 'experiment', 'description') | ''
+            self.config, 'experiment', 'description') or ''
 
         experiment = NewOrExistingExperiment(
             name=experiment_name, description=experiment_description)
