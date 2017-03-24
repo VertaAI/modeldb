@@ -96,6 +96,7 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
     sudo apt-get install -y mongodb-org # further instructions here: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
 
     # install thrift. [path_to_thrift] is the installation directory
+    # ModelDB works with thrift 0.9.3 and 0.10.0. The following instructions are for 0.9.3
     cd [path_to_thrift]
     wget http://mirror.cc.columbia.edu/pub/software/apache/thrift/0.9.3/thrift-0.9.3.tar.gz
     tar -xvzf thrift-0.9.3.tar.gz
@@ -139,8 +140,9 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
     cd [path_to_modeldb]/frontend
     ./start_frontend.sh & # the frontend will now be available in http://localhost:3000/
 
-    # shutdown mongodb server after killing the server
-    # on Mac OSX and Linux
+    # ****** For server shutdown ******
+    # Kill server
+    # Shutdown mongodb server
     mongo --eval "db.getSiblingDB('admin').shutdownServer()" 
     ```
 
