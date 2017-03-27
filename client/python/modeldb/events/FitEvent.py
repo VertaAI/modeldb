@@ -1,13 +1,16 @@
 """
 Event indicating estimator was used to fit model.
 """
-from modeldb.events.Event import *
+from modeldb.events.Event import Event
+from ..thrift.modeldb import ttypes as modeldb_types
 import json
+
 
 class FitEvent(Event):
     """
     Class for creating and storing FitEvents
     """
+
     def __init__(self, model, spec, df, metadata={}):
         self.model = model
         self.spec = spec

@@ -1,12 +1,15 @@
 """
 Store Project on server.
 """
-from modeldb.events.Event import *
+from modeldb.events.Event import Event
+from ..thrift.modeldb import ttypes as modeldb_types
+
 
 class ProjectEvent(Event):
     """
     Class for creating and storing ProjectEvents
     """
+
     def __init__(self, project):
         self.project = project
 

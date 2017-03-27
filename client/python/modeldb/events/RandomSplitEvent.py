@@ -1,12 +1,15 @@
 """
 Event indicating that a dataFrame was split into smaller dataFrames.
 """
-from modeldb.events.Event import *
+from modeldb.events.Event import Event
+from ..thrift.modeldb import ttypes as modeldb_types
+
 
 class RandomSplitEvent(Event):
     """
     Class for creating and storing RandomSplitEvents
     """
+
     def __init__(self, df, weights, seed, result):
         self.df = df
         self.weights = weights
@@ -21,13 +24,15 @@ class RandomSplitEvent(Event):
         all_syncable_frames = []
         for dataframe in self.result:
             all_syncable_frames.append(syncer.convert_df_to_thrift(dataframe))
-        re = modeldb_types.RandomSplitEvent(syncable_dataframe, self.weights, self.seed,
-            all_syncable_frames, syncer.experiment_run.id)
+        re = modeldb_types.RandomSplitEvent(
+            syncable_dataframe, self.weights, self.seed, all_syncable_frames,
+            syncer.experiment_run.id)
         return re
 
     def associate(self, res, syncer):
         """
-        Stores the server response ids for all split dataframes into dictionary.
+        Stores the server response ids for all split dataframes into
+        dictionary.
         """
         syncer.store_object(self.df, res.oldDataFrameId)
         for i in range(0, len(self.result)):
