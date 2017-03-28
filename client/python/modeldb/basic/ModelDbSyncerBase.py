@@ -47,8 +47,9 @@ class Syncer(object):
         project = config_reader.get_project()
         experiment = config_reader.get_experiment()
         experiment_run = NewExperimentRun("", sha)
+        server_info = config_reader.get_mdb_server_info()
 
-        syncer_obj = cls(project, experiment, experiment_run)
+        syncer_obj = cls(project, experiment, experiment_run, host=server_info[constants.MDB_SERVER_HOST_KEY])
         return syncer_obj
 
     @classmethod
@@ -60,20 +61,20 @@ class Syncer(object):
         return syncer_obj
 
     # implements singleton Syncer object
-    def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
+    def __new__(cls, project_config, experiment_config, experiment_run_config, host="localhost"): # __new__ always a classmethod
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(
-                cls, project_config, experiment_config, experiment_run_config)
+                cls, project_config, experiment_config, experiment_run_config, host="localhost")
         return cls.instance
 
     def __init__(
-        self, project_config, experiment_config, experiment_run_config):
+        self, project_config, experiment_config, experiment_run_config, host="localhost"):
         self.buffer_list = []
         self.local_id_to_modeldb_id = {}
         self.local_id_to_object = {}
         self.local_id_to_tag = {}
-        self.initialize_thrift_client()
+        self.initialize_thrift_client(host=host)
         self.setup(project_config, experiment_config, experiment_run_config)
 
     def setup(self, project_config, experiment_config, experiment_run_config):
