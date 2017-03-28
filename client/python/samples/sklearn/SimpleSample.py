@@ -3,11 +3,9 @@ from sklearn.cross_validation import train_test_split
 from sklearn import linear_model
 from sklearn.metrics import accuracy_score
 
-from modeldb.sklearn_native.ModelDbSyncer import *
-from modeldb.sklearn_native import SyncableMetrics
+# from modeldb.sklearn_native import SyncableMetrics
 
 DATA_PATH = '../../../../data/'
-
 '''
 Source: http://archive.ics.uci.edu/ml/datasets/default+of+credit+card+clients
 '''
@@ -33,8 +31,8 @@ df = pd.read_csv(DATA_PATH + 'credit-default.csv', skiprows=[0])
 target = df['default payment next month']
 df = df[["LIMIT_BAL", "SEX", "EDUCATION", "MARRIAGE", "AGE"]]
 
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(
-    df, target, test_size=0.3)
+x_train, x_test, y_train, y_test = train_test_split(
+    df, target, test_size=10)
 
 # modeldb start
 # .train_test_split_sync(df, target, test_size=0.3)
