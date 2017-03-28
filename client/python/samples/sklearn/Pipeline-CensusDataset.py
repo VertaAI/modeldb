@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-import sys
 
 from sklearn import preprocessing
 from sklearn import linear_model
@@ -11,7 +9,6 @@ from sklearn import decomposition
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableMetrics
-from modeldb.sklearn_native import SyncableRandomSplit
 
 DATA_PATH = '../../../../data/'
 # Pipelining: This chains a PCA and logistic regression, and uses the UCI

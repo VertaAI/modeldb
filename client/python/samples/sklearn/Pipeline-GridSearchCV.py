@@ -1,13 +1,7 @@
-import numpy as np
-import pandas as pd
-import sys
-
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.linear_model import SGDClassifier
 from sklearn.grid_search import GridSearchCV
 from sklearn.pipeline import Pipeline
-from sklearn import datasets, linear_model, cross_validation, grid_search
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 

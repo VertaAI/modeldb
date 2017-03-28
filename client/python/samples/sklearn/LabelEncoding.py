@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-import sys
 
 from sklearn import preprocessing
 from sklearn import linear_model
@@ -8,7 +6,6 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 
 from modeldb.sklearn_native.ModelDbSyncer import *
-from modeldb.sklearn_native import SyncableRandomSplit
 from modeldb.sklearn_native import SyncableMetrics
 
 DATA_PATH = '../../../../data/'

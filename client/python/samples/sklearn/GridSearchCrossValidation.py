@@ -1,12 +1,5 @@
-import numpy as np
-import pandas as pd
-import sys
-from sklearn import preprocessing
-from sklearn import linear_model
 from sklearn.grid_search import GridSearchCV
 from sklearn import datasets
-from sklearn.cross_validation import train_test_split
-from sklearn.metrics import classification_report
 from sklearn.metrics import precision_score
 from sklearn.svm import SVC
 

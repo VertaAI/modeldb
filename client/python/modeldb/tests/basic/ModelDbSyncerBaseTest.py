@@ -8,7 +8,7 @@ class SyncerTest(ModelDbSyncerBase.Syncer):
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(cls, project_config, experiment_config, experiment_run_config)
-            ModelDbSyncer.Syncer.instance = cls.instance    
+            ModelDbSyncer.Syncer.instance = cls.instance
         return cls.instance
 
     def sync(self):
@@ -17,7 +17,7 @@ class SyncerTest(ModelDbSyncerBase.Syncer):
             event = b.make_event(self)
             events.append(event)
         return events
-    
+
     def clear_buffer(self):
         self.buffer_list = []
 

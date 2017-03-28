@@ -5,15 +5,12 @@ import os
 import unittest
 import argparse
 import pandas as pd
-import sklearn
 from sklearn.preprocessing import LabelEncoder
-from sklearn.cross_validation import train_test_split
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from sklearn.metrics import log_loss
 from sklearn.calibration import CalibratedClassifierCV
 
 from modeldb.sklearn_native.ModelDbSyncer import *
-from modeldb.sklearn_native import SyncableRandomSplit
 from modeldb.sklearn_native import SyncableMetrics
 
 
