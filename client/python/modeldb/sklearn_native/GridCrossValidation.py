@@ -12,12 +12,20 @@ from sklearn.utils.multiclass import type_of_target
 from sklearn.externals.joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, is_classifier, clone
 
-#This overrides the fit method found in grid_search.py. _fit method has been modified and changes to the original code are described in comments below.
-def fit(self, X, y=None):
-	return _fit(self, X, y, ParameterGrid(self.param_grid))
+# This overrides the fit method found in grid_search.py. _fit method has
+# been modified and changes to the original code are described in comments
+# below.
 
-#This overrides the _fit method typically found in grid_search.py.
-#Changes are clearly marked in comments, but the main change is near the end of the function, creating a new field, grid_cv_event for storing attributes.
+
+def fit(self, X, y=None):
+    return _fit(self, X, y, ParameterGrid(self.param_grid))
+
+# This overrides the _fit method typically found in grid_search.py.
+# Changes are clearly marked in comments, but the main change is near the
+# end of the function, creating a new field, grid_cv_event for storing
+# attributes.
+
+
 def _fit(self, X, y, parameter_iterable):
     """Actual fitting,  performing the search over parameters."""
     estimator = self.estimator
@@ -35,43 +43,50 @@ def _fit(self, X, y, parameter_iterable):
                              'of samples (%i) than data (X: %i samples)'
                              % (len(y), n_samples))
 
-    #Splits the data based on provided cross-validation splitting strategy.
+    # Splits the data based on provided cross-validation splitting strategy.
     cv = check_cv(cv, X, y, classifier=is_classifier(estimator))
     if self.verbose > 0:
         if isinstance(parameter_iterable, Sized):
             n_candidates = len(parameter_iterable)
             print("Fitting {0} folds for each of {1} candidates, totalling \
-                {2} fits".format(len(cv), n_candidates,n_candidates * len(cv)))
+                {2} fits".format(len(cv), n_candidates,
+                                 n_candidates * len(cv)))
 
     base_estimator = clone(self.estimator)
 
     pre_dispatch = self.pre_dispatch
 
-    # Change from original scikit code: adding a new argument, foldsForEstimator, to the _fit_and_score function to track metadata for each estimator, for each fold.
-    # _fit_and_score fits the estimator and computes the score for a given data-split, for given parameters.
+    # Change from original scikit code: adding a new argument,
+    # foldsForEstimator, to the _fit_and_score function to track metadata
+    # for each estimator, for each fold.
+    # _fit_and_score fits the estimator and computes the score for a given
+    # data-split, for given parameters.
     out = Parallel(
         n_jobs=self.n_jobs, verbose=self.verbose,
         pre_dispatch=pre_dispatch
     )(
         delayed(_fit_and_score)(clone(base_estimator), X, y, self.scorer_,
                                 train, test, self.verbose, parameters,
-                                self.fit_params, foldsForEstimator, return_parameters=True,
+                                self.fit_params, foldsForEstimator,
+                                return_parameters=True,
                                 error_score=self.error_score)
-            for parameters in parameter_iterable
-            for train, test in cv)
+        for parameters in parameter_iterable
+        for train, test in cv)
 
     # Out is a list of triplet: score, estimator, n_test_samples
     n_fits = len(out)
     n_folds = len(cv)
 
-    # Computes the scores for each of the folds, for all the possible parameters, and stores them in grid_scores.
+    # Computes the scores for each of the folds, for all the possible
+    # parameters, and stores them in grid_scores.
     scores = list()
     grid_scores = list()
     for grid_start in range(0, n_fits, n_folds):
         n_test_samples = 0
         score = 0
         all_scores = []
-        for this_score, this_n_test_samples, _, parameters in out[grid_start:grid_start + n_folds]:
+        for this_score, this_n_test_samples, _, parameters in out[
+                grid_start:grid_start + n_folds]:
             all_scores.append(this_score)
             if self.iid:
                 this_score *= this_n_test_samples
@@ -93,7 +108,7 @@ def _fit(self, X, y, parameter_iterable):
     # Find the best parameters by comparing on the mean validation score:
     # note that `sorted` is deterministic in the way it breaks ties
     best = sorted(grid_scores, key=lambda x: x.mean_validation_score,
-					reverse=True)[0]
+                  reverse=True)[0]
     self.best_params_ = best.parameters
     self.best_score_ = best.mean_validation_score
 
@@ -108,18 +123,29 @@ def _fit(self, X, y, parameter_iterable):
             best_estimator.fit(X, **self.fit_params)
         self.best_estimator_ = best_estimator
     else:
-        #If refit is false, we cannot _best_estimator_ is unavailable, and further predictions can't be made on instance
-        raise Warning("Note: Refit has been set to false, which makes it impossible to make predictions using this GridSearchCV instance after fitting. Change refit to true to enable this")
+        # If refit is false, we cannot _best_estimator_ is unavailable, and
+        # further predictions can't be made on instance
+        raise Warning(
+            "Note: Refit has been set to false, which makes it impossible to "
+            "make predictions using this GridSearchCV instance after fitting. "
+            "Change refit to true to enable this")
 
     # Change from original scikit code:
-    # Populate new field with necessary attributes for storing cross-validation event
-    self.grid_cv_event = [X, foldsForEstimator, 0, type_of_target(y), self.best_estimator_, self.best_estimator_ , n_folds]
+    # Populate new field with necessary attributes for storing
+    # cross-validation event
+    self.grid_cv_event = [X, foldsForEstimator, 0, type_of_target(
+        y), self.best_estimator_, self.best_estimator_, n_folds]
     return self
 
-#This overrides the behavior of _fit_and_score method in cross_validation.py. Note that a new argument, foldsForEstimator, has been added to the function.
+# This overrides the behavior of _fit_and_score method in
+# cross_validation.py. Note that a new argument, foldsForEstimator, has
+# been added to the function.
+
+
 def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
-                   parameters, fit_params, foldsForEstimator, return_train_score=False,
-                   return_parameters=False, error_score='raise'):
+                   parameters, fit_params, foldsForEstimator,
+                   return_train_score=False, return_parameters=False,
+                   error_score='raise'):
     """Fit estimator and compute scores for a given dataset split.
     Parameters
     ----------
@@ -173,13 +199,13 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
             msg = "no parameters to be set"
         else:
             msg = '%s' % (', '.join('%s=%s' % (k, v)
-                          for k, v in parameters.items()))
+                                    for k, v in parameters.items()))
         print("[CV] %s %s" % (msg, (64 - len(msg)) * '.'))
 
     # Adjust length of sample weights
     fit_params = fit_params if fit_params is not None else {}
     fit_params = dict([(k, _index_param_value(X, v, train))
-                      for k, v in fit_params.items()])
+                       for k, v in fit_params.items()])
 
     if parameters is not None:
         estimator.set_params(**parameters)
@@ -218,9 +244,10 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
 
     scoring_time = time.time() - start_time
 
-    # Change from original scikit: For each estimator, for each fold, we keep track of the fitted estimator, the training/test set, and the score.
+    # Change from original scikit: For each estimator, for each fold, we keep
+    # track of the fitted estimator, the training/test set, and the score.
     if not estimator in foldsForEstimator:
-    	foldsForEstimator[estimator] = []
+        foldsForEstimator[estimator] = []
     foldsForEstimator[estimator].append([(estimator, test, train, test_score)])
 
     if verbose > 2:

@@ -18,19 +18,20 @@ from ..events import FitEvent
 from ..events import MetricEvent
 import ModelDbSyncer
 
+
 def cross_val_score_fn(estimator, X, y=None, scoring=None, cv=None, n_jobs=1,
-                    verbose=0, fit_params=None, pre_dispatch='2*n_jobs'):
+                       verbose=0, fit_params=None, pre_dispatch='2*n_jobs'):
     """
     Evaluate a score by cross-validation.
-    This overrides the cross_val_score method typically found in 
-    cross_validation.py. Changes are clearly marked in comments, but 
+    This overrides the cross_val_score method typically found in
+    cross_validation.py. Changes are clearly marked in comments, but
     the main change is augmenting the function to store Fit and Metric Events
     for each fold.
     """
     X, y = indexable(X, y)
 
     cv = check_cv(cv, X, y, classifier=is_classifier(estimator))
-     
+
     scorer = check_scoring(estimator, scoring=scoring)
 
     # Default scoring scheme is 'accuracy' unless provided by user.
@@ -41,8 +42,9 @@ def cross_val_score_fn(estimator, X, y=None, scoring=None, cv=None, n_jobs=1,
     parallel = Parallel(n_jobs=n_jobs, verbose=verbose,
                         pre_dispatch=pre_dispatch)
 
-    # Change from original scikit code: adding a new argument, scoring, to the 
-    # _fit_and_score function to track scoring function and create MetricEvents.
+    # Change from original scikit code: adding a new argument, scoring, to the
+    # _fit_and_score function to track scoring function and create
+    # MetricEvents.
     scores = parallel(delayed(_fit_and_score)(clone(estimator), X, y, scorer,
                                               train, test, verbose, None,
                                               fit_params, scoring)
@@ -55,7 +57,8 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
                    return_parameters=False, error_score='raise'):
     """
     Fit estimator and compute scores for a given dataset split.
-    This overrides the behavior of _fit_and_score method in cross_validation.py. 
+    This overrides the behavior of _fit_and_score method in
+    cross_validation.py.
     Note that a new argument, scoring, has been added to the function.
 
     Parameters
@@ -110,13 +113,13 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
             msg = "no parameters to be set"
         else:
             msg = '%s' % (', '.join('%s=%s' % (k, v)
-                          for k, v in parameters.items()))
+                                    for k, v in parameters.items()))
         print("[CV] %s %s" % (msg, (64 - len(msg)) * '.'))
 
     # Adjust length of sample weights
     fit_params = fit_params if fit_params is not None else {}
     fit_params = dict([(k, _index_param_value(X, v, train))
-                      for k, v in fit_params.items()])
+                       for k, v in fit_params.items()])
 
     if parameters is not None:
         estimator.set_params(**parameters)
@@ -153,7 +156,7 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
             train_score = _score(estimator, x_train, y_train, scorer)
 
     # Addition to original scikit code:
-    # Create FitEvents for each estimator fit. 
+    # Create FitEvents for each estimator fit.
     fit_event = FitEvent(b, estimator, x_train)
     ModelDbSyncer.Syncer.instance.add_to_buffer(fit_event)
 
