@@ -81,8 +81,8 @@ review. This will send an email to the committers.
    in the PR description
 
 Code Style
-- Ensure that new code conforms to the code around it. Since ModelDB has components written in different languages,
-  be aware of the code style in your particular component
+- Ensure that new code conforms to the code around it. Since ModelDB has components written in different languages, be aware of the code style in your particular component
+- Python: Please conform to the [pep-8](https://www.python.org/dev/peps/pep-0008/) style guide whenever possible. As part of that, please don't `import *` if it is avoidable!
 
 Tests
 - Ensure that existing tests are not broken by the new addition
