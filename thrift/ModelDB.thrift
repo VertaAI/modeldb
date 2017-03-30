@@ -1310,7 +1310,75 @@ service ModelDBService {
    dfId: The ID of a DataFrame.
    */
   list<i32> modelsDerivedFromDataFrame(1: i32 dfId) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
+    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
+  // TODO: write argument descriptions
+
+  /*
+   Get the IDs of all the projects that match the specified key-value pairs.
+
+   keyValuePairs: 
+   */
+  list<string> getProjects(1: map<string, string> keyValuePairs)
+    throws (1: ServerLogicException svEx),
+
+  /*
+   Get the IDs of all the models that match the specified key-value pairs.
+
+   keyValuePairs:
+   */
+  list<string> getModels(1: map<string, string> keyValuePairs)
+    throws (1: ServerLogicException svEx),
+
+  /*
+    Update the given field of the project of the given ID with the given value.
+    If key exists, update it with value. If not, add the key-value pair to the project.
+    Return a boolean indicating if the key previously existed or not.
+
+    projectId:
+    key:
+    value:
+   */
+  bool updateProject(1: string projectId, 2: string key, 3: string value)
+    throws (1: ServerLogicException svEx),
+
+  /*
+    Update the given scalar field of the model of the given ID with the given value.
+    If key exists, update it with value. If not, add the key-value pair to the model.
+    Return a boolean indicating if the key previously existed or not.
+
+    modelId:
+    key:
+    value:
+   */
+  bool updateScalarField(String modelId, String key, String value)
+    throws (1: ServerLogicException svEx),
+
+  /*
+   Create a vector field with the given name inside the model with the given ID.
+   The vector field is configured with the given vector config.
+   Do nothing if the vector field with the given name already exists.
+   Return a boolean indicating if the vector field previously existed.
+
+   modelId:
+   vectorName:
+   vectorConfig:
+   */
+  bool createVector(1: string modelId, 2: string vectorName, 3: map<string, string> vectorConfig)
+    throws (1: ServerLogicException svEx),
+
+  /*
+   Update key-value pair of the vector field with the given name in the model with the given ID.
+   If key exists, update it with value. If not, add the key-value pair to the vector field.
+   Return a boolean indicating if the key previously existed or not.
+
+   modelId:
+   vectorName:
+   key:
+   value:
+   */
+  bool updateVectorField(1: string modelId, 2: string vectorName, 3: string key, 4: string value)
+    throws (1: ServerLogicException svEx),
 
   /*
    Get information about the model with the given ID.
