@@ -1317,7 +1317,7 @@ service ModelDBService {
   /*
    Get the IDs of all the projects that match the specified key-value pairs.
 
-   keyValuePairs: 
+   keyValuePairs: The map containing key-value pairs to match
    */
   list<string> getProjects(1: map<string, string> keyValuePairs)
     throws (1: ServerLogicException svEx),
@@ -1325,7 +1325,7 @@ service ModelDBService {
   /*
    Get the IDs of all the models that match the specified key-value pairs.
 
-   keyValuePairs:
+   keyValuePairs: The map containing key-value pairs to match
    */
   list<string> getModels(1: map<string, string> keyValuePairs)
     throws (1: ServerLogicException svEx),
@@ -1335,9 +1335,9 @@ service ModelDBService {
     If key exists, update it with value. If not, add the key-value pair to the project.
     Return a boolean indicating if the key previously existed or not.
 
-    projectId:
-    key:
-    value:
+    projectId: The ID of the project
+    key: The field to update
+    value: The value for the field
    */
   bool updateProject(1: string projectId, 2: string key, 3: string value)
     throws (1: ServerLogicException svEx),
@@ -1347,9 +1347,9 @@ service ModelDBService {
     If key exists, update it with value. If not, add the key-value pair to the model.
     Return a boolean indicating if the key previously existed or not.
 
-    modelId:
-    key:
-    value:
+    modelId: The ID of the model
+    key: The scalar field to update
+    value: The scalar value for the field
    */
   bool updateScalarField(String modelId, String key, String value)
     throws (1: ServerLogicException svEx),
@@ -1360,9 +1360,9 @@ service ModelDBService {
    Do nothing if the vector field with the given name already exists.
    Return a boolean indicating if the vector field previously existed.
 
-   modelId:
-   vectorName:
-   vectorConfig:
+   modelId: The ID of the model
+   vectorName: The name of the vector field
+   vectorConfig: The map containing config information for the vector field
    */
   bool createVector(1: string modelId, 2: string vectorName, 3: map<string, string> vectorConfig)
     throws (1: ServerLogicException svEx),
@@ -1372,10 +1372,10 @@ service ModelDBService {
    If key exists, update it with value. If not, add the key-value pair to the vector field.
    Return a boolean indicating if the key previously existed or not.
 
-   modelId:
-   vectorName:
-   key:
-   value:
+   modelId: The ID of the model
+   vectorName: The name of the vector field to update
+   key: The key to update
+   value: The value for the key
    */
   bool updateVectorField(1: string modelId, 2: string vectorName, 3: string key, 4: string value)
     throws (1: ServerLogicException svEx),

@@ -206,6 +206,30 @@ public class ModelDbServer implements ModelDBService.Iface {
     return ExceptionWrapper.run(metadataDb, () -> TransformerDao.readInfo(modelId, ctx, metadataDb));
   }
 
+  public List<String> getProjects(Map<String, String> keyValuePairs) throws ServerLogicException {
+
+  }
+
+  public List<String> getModels(Map<String, String> keyValuePairs) throws ServerLogicException {
+
+  }
+
+  Bool updateProject(String projectId, String key, String value) throws ServerLogicException {
+
+  }
+
+  Bool updateScalarField(String modelId, String key, String value) throws ServerLogicException {
+
+  }
+
+  Bool createVector(String modelId, String vectorName, Map<string, string> vectorConfig) throws ServerLogicException {
+
+  }
+
+  Bool updateVectorField(String modelId, String vectorName, String key, String value) throws ServerLogicException {
+
+  }
+
   public List<ExperimentRun> getRunsInExperiment(int experimentId) throws TException {
     return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentRunsInExperiment(experimentId, ctx));
   }
