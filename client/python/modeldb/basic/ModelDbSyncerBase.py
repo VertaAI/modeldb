@@ -6,10 +6,12 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 from ..events import *
-from Structs import NewOrExistingProject, ExistingProject, \
-    NewOrExistingExperiment, ExistingExperiment, DefaultExperiment, \
-    NewExperimentRun, ExistingExperimentRun, \
-    Dataset, ModelConfig, Model, ModelMetrics
+from ..events import *
+from Structs import (
+    NewOrExistingProject, ExistingProject, NewOrExistingExperiment,
+    ExistingExperiment, DefaultExperiment, NewExperimentRun,
+    ExistingExperimentRun, Dataset, ModelConfig, Model, ModelMetrics,
+    ThriftConfig)
 
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
@@ -22,19 +24,26 @@ FMAX = sys.float_info.max
 
 
 class Syncer(object):
+    # used for recording whether there is an instance. Syncer is a singleton.
     instance = None
 
+    # location of the default config file
+    config_file = "../../../syncer.json"
+
     @classmethod
-    def create_syncer(cls, proj_name, user_name, proj_desc=None):
+    def create_syncer(
+            cls, proj_name, user_name, proj_desc=None, host=None, port=None):
         """
         Create a syncer given project information. A default experiment will be
         created and a default experiment run will be used
         """
+        project_config = NewOrExistingProject(
+            proj_name, user_name, proj_desc if proj_desc else "")
         syncer_obj = cls(
-            NewOrExistingProject(proj_name, user_name,
-                                 proj_desc if proj_desc else ""),
-            DefaultExperiment(),
-            NewExperimentRun(""))
+            project_config=project_config,
+            experiment_config=DefaultExperiment(),
+            experiment_run_config=NewExperimentRun(""),
+            thrift_config=ThriftConfig(host, port))
         return syncer_obj
 
     @classmethod
@@ -47,34 +56,50 @@ class Syncer(object):
         project = config_reader.get_project()
         experiment = config_reader.get_experiment()
         experiment_run = NewExperimentRun("", sha)
+        thrift_config = config_reader.get_mdb_server_info()
 
-        syncer_obj = cls(project, experiment, experiment_run)
+        syncer_obj = cls(
+            project_config=project,
+            experiment_config=experiment,
+            experiment_run_config=experiment_run,
+            thrift_config=thrift_config)
         return syncer_obj
 
     @classmethod
-    def create_syncer_for_experiment_run(cls, experiment_run_id):
+    def create_syncer_for_experiment_run(
+            cls, experiment_run_id, host=None, port=None):
         """
         Create a syncer for this experiment run
         """
-        syncer_obj = cls(None, None, ExistingExperimentRun(experiment_run_id))
+        syncer_obj = cls(
+            project_config=None,
+            experiment_config=None,
+            experiment_run_config=ExistingExperimentRun(experiment_run_id),
+            thrift_config=ThriftConfig(host, port))
         return syncer_obj
 
     # implements singleton Syncer object
     # __new__ always a classmethod
-    def __new__(cls, project_config, experiment_config, experiment_run_config):
+    def __new__(cls, project_config, experiment_config, experiment_run_config,
+                thrift_config):
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(
-                cls, project_config, experiment_config, experiment_run_config)
+                cls,
+                project_config=project_config,
+                experiment_config=experiment_config,
+                experiment_run_config=experiment_run_config,
+                thrift_config=thrift_config)
         return cls.instance
 
     def __init__(
-            self, project_config, experiment_config, experiment_run_config):
+            self, project_config, experiment_config, experiment_run_config,
+            thrift_config):
         self.buffer_list = []
         self.local_id_to_modeldb_id = {}
         self.local_id_to_object = {}
         self.local_id_to_tag = {}
-        self.initialize_thrift_client()
+        self.initialize_thrift_client(thrift_config)
         self.setup(project_config, experiment_config, experiment_run_config)
 
     def setup(self, project_config, experiment_config, experiment_run_config):
@@ -174,9 +199,16 @@ class Syncer(object):
         '''
         self.buffer_list = []
 
-    def initialize_thrift_client(self, host="localhost", port=6543):
+    def initialize_thrift_client(self, thrift_config):
+        # use defaults if thrift_config values are empty
+        if not thrift_config.port and thrift_config.host:
+            default_config = ConfigReader.get_mdb_server_info()
+            thrift_config.host = thrift_config.host or default_config.host
+            thrift_config.port = thrift_config.port or default_config.port
+
         # Make socket
-        self.transport = TSocket.TSocket(host, port)
+        self.transport = TSocket.TSocket(
+            thrift_config.host, thrift_config.port)
 
         # Buffering is critical. Raw sockets are very slow
         self.transport = TTransport.TFramedTransport(self.transport)

@@ -69,6 +69,12 @@ class ExistingExperimentRun:
     def to_thrift(self):
         return modeldb_types.ExperimentRun(self.id, -1, "")
 
+
+class ThriftConfig:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+
 # TODO: fix the way i'm doing tagging
 
 
