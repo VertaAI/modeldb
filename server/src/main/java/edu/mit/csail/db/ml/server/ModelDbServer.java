@@ -206,27 +206,27 @@ public class ModelDbServer implements ModelDBService.Iface {
     return ExceptionWrapper.run(metadataDb, () -> TransformerDao.readInfo(modelId, ctx, metadataDb));
   }
 
-  public List<String> getProjects(Map<String, String> keyValuePairs) throws ServerLogicException {
+  public List<Integer> getProjects(Map<String, String> keyValuePairs) throws TException {
+    return ExceptionWrapper.run(() -> ProjectDao.getProjects(keyValuePairs, ctx));
+  }
+
+  public List<Integer> getModels(Map<String, String> keyValuePairs) throws TException {
+    return ExceptionWrapper.run(() -> FitEventDao.getModels(keyValuePairs, ctx));
+  }
+
+  public boolean updateProject(String projectId, String key, String value) throws TException {
 
   }
 
-  public List<String> getModels(Map<String, String> keyValuePairs) throws ServerLogicException {
+  public boolean updateScalarField(String modelId, String key, String value) throws TException {
 
   }
 
-  Bool updateProject(String projectId, String key, String value) throws ServerLogicException {
+  public boolean createVector(String modelId, String vectorName, Map<string, string> vectorConfig) throws TException {
 
   }
 
-  Bool updateScalarField(String modelId, String key, String value) throws ServerLogicException {
-
-  }
-
-  Bool createVector(String modelId, String vectorName, Map<string, string> vectorConfig) throws ServerLogicException {
-
-  }
-
-  Bool updateVectorField(String modelId, String vectorName, String key, String value) throws ServerLogicException {
+  public boolean updateVectorField(String modelId, String vectorName, String key, String value) throws TException {
 
   }
 

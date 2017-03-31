@@ -1319,7 +1319,7 @@ service ModelDBService {
 
    keyValuePairs: The map containing key-value pairs to match
    */
-  list<string> getProjects(1: map<string, string> keyValuePairs)
+  list<i32> getProjects(1: map<string, string> keyValuePairs)
     throws (1: ServerLogicException svEx),
 
   /*
@@ -1327,7 +1327,7 @@ service ModelDBService {
 
    keyValuePairs: The map containing key-value pairs to match
    */
-  list<string> getModels(1: map<string, string> keyValuePairs)
+  list<i32> getModels(1: map<string, string> keyValuePairs)
     throws (1: ServerLogicException svEx),
 
   /*

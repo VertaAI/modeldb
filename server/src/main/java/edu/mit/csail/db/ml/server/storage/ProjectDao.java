@@ -7,6 +7,7 @@ import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Record2;
+import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -148,5 +149,15 @@ public class ProjectDao {
         numExperimentRunsForProjId.get(id)
       ))
       .collect(Collectors.toList());
+  }
+
+  /**
+   * Get the IDs of all the projects that match the specified key-value pairs.
+   * @param  keyValuePairs - The map containing key-value pairs to match.
+   * @param  ctx - The database context.
+   * @return A list of all project IDs that match the given attributes.
+   */
+  public static List<Integer> getProjects(Map<String, String> keyValuePairs, DSLContext ctx) {
+	  throw new RuntimeException("implement me");
   }
 }
