@@ -283,9 +283,10 @@ class Syncer(ModelDbSyncerBase.Syncer):
     """
 
     def __init__(
-            self, project_config, experiment_config, experiment_run_config):
+            self, project_config, experiment_config, experiment_run_config,
+            thrift_config):
         super(Syncer, self).__init__(project_config, experiment_config,
-                                     experiment_run_config)
+                                     experiment_run_config, thrift_config)
         self.local_id_to_path = {}
         self.enable_sklearn_sync_functions()
         self.enable_pandas_sync_functions()

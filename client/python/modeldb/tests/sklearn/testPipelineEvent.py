@@ -26,7 +26,8 @@ class TestPipelineEvent(unittest.TestCase):
         syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
-            NewExperimentRun("Abc"))
+            NewExperimentRun("Abc"),
+            ThriftConfig(None, None))
 
         # Creating the pipeline
         pca = decomposition.PCA()

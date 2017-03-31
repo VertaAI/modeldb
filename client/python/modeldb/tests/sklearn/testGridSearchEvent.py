@@ -19,7 +19,8 @@ class TestGridSearchEvent(unittest.TestCase):
         syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
-            NewExperimentRun("Abc"))
+            NewExperimentRun("Abc"),
+            ThriftConfig(None, None))
         X = pd.DataFrame(np.random.randint(
             0, 100, size=(2000, 4)), columns=list('ABCD'))
         y = pd.DataFrame(np.random.randint(

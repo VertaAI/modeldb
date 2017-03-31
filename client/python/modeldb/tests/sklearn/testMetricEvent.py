@@ -20,7 +20,8 @@ class TestMetricEvent(unittest.TestCase):
         syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
-            NewExperimentRun("Abc"))
+            NewExperimentRun("Abc"),
+            ThriftConfig(None, None))
         model = linear_model.LinearRegression()
         np.random.seed(0)
         X = pd.DataFrame(np.random.randint(

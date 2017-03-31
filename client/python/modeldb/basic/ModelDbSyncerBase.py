@@ -1,4 +1,5 @@
 import sys
+import os
 import yaml
 from thrift import Thrift
 from thrift.transport import TSocket
@@ -201,10 +202,13 @@ class Syncer(object):
 
     def initialize_thrift_client(self, thrift_config):
         # use defaults if thrift_config values are empty
-        if not thrift_config.port and thrift_config.host:
-            default_config = ConfigReader.get_mdb_server_info()
-            thrift_config.host = thrift_config.host or default_config.host
-            thrift_config.port = thrift_config.port or default_config.port
+        if not (thrift_config.port and thrift_config.host):
+            syncer_location = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), self.config_file))
+            config_reader = ConfigReader(syncer_location)
+            default_thrift = config_reader.get_mdb_server_info()
+            thrift_config.host = thrift_config.host or default_thrift.host
+            thrift_config.port = thrift_config.port or default_thrift.port
 
         # Make socket
         self.transport = TSocket.TSocket(
