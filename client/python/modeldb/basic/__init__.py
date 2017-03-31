@@ -1,7 +1,7 @@
 from ModelDbSyncerBase import (
     NewOrExistingProject, ExistingProject, ExistingExperiment,
     DefaultExperiment, NewOrExistingExperiment, NewExperimentRun,
-    ExistingExperimentRun, ThriftConfig)
+    ExistingExperimentRun, ThriftConfig, VersioningConfig)
 
 __all__ = [
     "ModelDbSyncerBase",
@@ -12,4 +12,5 @@ __all__ = [
     "NewOrExistingExperiment",
     "NewExperimentRun",
     "ExistingExperimentRun",
-    "ThriftConfig"]
+    "ThriftConfig",
+    "VersioningConfig"]

@@ -75,6 +75,18 @@ class ThriftConfig:
         self.host = host
         self.port = port
 
+
+class VersioningConfig:
+    def __init__(
+            self, username, repo, access_token, export_directory,
+            repo_directory):
+        self.username = username
+        self.repo = repo
+        self.access_token = access_token
+        self.export_directory = export_directory
+        self.repo_directory = repo_directory
+
+
 # TODO: fix the way i'm doing tagging
 
 

@@ -12,7 +12,7 @@ from Structs import (
     NewOrExistingProject, ExistingProject, NewOrExistingExperiment,
     ExistingExperiment, DefaultExperiment, NewExperimentRun,
     ExistingExperimentRun, Dataset, ModelConfig, Model, ModelMetrics,
-    ThriftConfig)
+    ThriftConfig, VersioningConfig)
 
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
