@@ -152,7 +152,7 @@
       </div>
 
       <% if (model["Code SHA"]) { %>
-        <div class="nkv"
+        <div class="kv tooltip-trigger"
           data-key="Code SHA"
           data-val="<%= model["Code SHA"] %>"
         >
@@ -168,6 +168,17 @@
           Model Filepath: <%= model["Filepath"] %>
         </div>
       <% } %>
+
+      <% if (model["timestamp"]) { %>
+        <% ISO_date = model["timestamp"].toISOString().replace(/T/, ' ').replace(/\..+/, '') %>
+        <div class="kv tooltip-trigger"
+          data-key="Model Timestamp"
+          data-val="<%= ISO_date %>"
+        >
+          Timestamp: <%= ISO_date %>
+        </div>
+      <% } %>
+
 
       <% if (model["metadata"]) { %>
         <div

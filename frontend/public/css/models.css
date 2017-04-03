@@ -381,6 +381,9 @@ background-color: #d0d8e2;
   cursor: move;
   transition: background-color 0.3s ease;
   border-radius: 2px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .models-container .nkv {
