@@ -1,18 +1,14 @@
 """
 Source: https://github.com/rhiever/Data-Analysis-and-Machine-Learning-Projects/blob/master/example-data-science-notebook/Example%20Machine%20Learning%20Notebook.ipynb
 """
-import os
 import pandas as pd
-from sklearn.cross_validation import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.cross_validation import StratifiedKFold
-from sklearn.cross_validation import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn.grid_search import GridSearchCV
 
 from modeldb.sklearn_native.ModelDbSyncer import *
-from modeldb.sklearn_native import SyncableRandomSplit
 from modeldb.sklearn_native import SyncableMetrics
 
 ROOT_DIR = '../../../../server/'

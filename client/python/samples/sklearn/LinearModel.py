@@ -10,11 +10,9 @@ import statsmodels.api as sm
 from sklearn import linear_model
 from sklearn import preprocessing
 from sklearn.metrics import mean_squared_error
-from sklearn.metrics import recall_score
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableMetrics
-from modeldb.sklearn_native import SyncableRandomSplit
 
 ROOT_DIR = '../../../../server/'
 

@@ -5,8 +5,6 @@ import modeldb.tests.utils as utils
 from modeldb.thrift.modeldb import ttypes as modeldb_types
 from modeldb.sklearn_native.ModelDbSyncer import *
 
-from sklearn import linear_model
-import pandas as pd
 
 # Tests default experiment creation within project
 
@@ -107,6 +105,7 @@ class TestNewProjectEvent(unittest.TestCase):
             'expRunDesc')
         utils.is_equal_experiment_run(
             expected_experiment_run, experiment_run, self)
+
 
 if __name__ == '__main__':
     unittest.main()

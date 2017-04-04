@@ -1,14 +1,11 @@
 import unittest
-from sklearn.cross_validation import train_test_split
 from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
 from modeldb.thrift.modeldb import ttypes as modeldb_types
 from modeldb.sklearn_native.ModelDbSyncer import *
-from modeldb.sklearn_native import SyncableRandomSplit
 
 import pandas as pd
-import random
 
 
 class TestRandomSplitEvent(unittest.TestCase):
@@ -33,8 +30,9 @@ class TestRandomSplitEvent(unittest.TestCase):
         seed = 1
         weights = [0.7, 0.3]
         syncer_obj.clear_buffer()
-        x_train, x_test, y_train, y_test = cross_validation.train_test_split_sync(
-            X, y, train_size=0.7)
+        x_train, x_test, y_train, y_test = (
+            cross_validation.train_test_split_sync(
+                X, y, train_size=0.7))
         events = syncer_obj.sync()
         self.random_split_event = events[0]
 
