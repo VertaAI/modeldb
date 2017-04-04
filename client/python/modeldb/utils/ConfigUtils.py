@@ -1,6 +1,5 @@
 import sys
 import json
-import ConfigConstants as constants
 from ..basic.Structs import (
     NewOrExistingProject, ExistingProject,
     NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,

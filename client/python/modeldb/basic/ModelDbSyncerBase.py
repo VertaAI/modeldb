@@ -17,7 +17,6 @@ from Structs import (
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
 from ..utils.ConfigUtils import ConfigReader
-from ..utils import ConfigConstants as constants
 from ..utils import MetadataConstants as metadata_constants
 
 FMIN = sys.float_info.min
