@@ -158,11 +158,13 @@ public class ProjectDao {
    * @return A list of all project IDs that match the given attributes.
    */
   public static List<Integer> getProjectIds(Map<String, String> keyValuePairs, DSLContext ctx) {
-	  return ctx
-		       .select(Tables.PROJECT.ID)
-		       .from(Tables.PROJECT)
-		       .where(keyValuePairs.keySet().stream().allMatch(key -> field(name("Tables", "PROJECT", key).eq(keyValuePairs.get(key)))))
-		       .fetch();
+    return ctx
+          .select(Tables.PROJECT.ID)
+          .from(Tables.PROJECT)
+          .where(keyValuePairs.keySet()
+                              .stream()
+                              .allMatch(key -> field(name("Tables", "PROJECT", key).eq(keyValuePairs.get(key)))))
+          .fetch();
   }
 
   /**
@@ -175,15 +177,15 @@ public class ProjectDao {
    * @return A boolean indicating if the key previously existed or not.
    */
   public static boolean updateProject(int projectId, String key, String value, DSLContext ctx) {
-	boolean existed = ctx
-						.select(Tables.PROJECT)
-						.where(Tables.PROJECT.ID.equ(pojectId))
-						.fetchOne()
-						.into(rec -> rec.field(name("Tables", "PROJECT", key)) != null);
-	ctx
-      .update(Tables.PROJECT)
-      .set(field(name("Tables", "PROJECT", key)), value)
-      .where(Tables.PROJECT.ID.eq(projectId));
-    return existed;
+  boolean existed = ctx
+    .select(Tables.PROJECT)
+    .where(Tables.PROJECT.ID.eq(pojectId))
+    .fetchOne()
+    .into(rec -> rec.field(name("Tables", "PROJECT", key)) != null);
+  ctx
+    .update(Tables.PROJECT)
+    .set(field(name("Tables", "PROJECT", key)), value)
+    .where(Tables.PROJECT.ID.eq(projectId));
+  return existed;
   }
 }
