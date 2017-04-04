@@ -1,5 +1,4 @@
 import unittest
-import sys
 from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
@@ -10,7 +9,9 @@ from sklearn import linear_model
 from sklearn import preprocessing
 import pandas as pd
 
+
 class TestTransformEvent(unittest.TestCase):
+
     @classmethod
     def setUpClass(self):
         name = "logistic-test"
@@ -19,7 +20,8 @@ class TestTransformEvent(unittest.TestCase):
         syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
-            NewExperimentRun("Abc"))
+            NewExperimentRun("Abc"),
+            ThriftConfig(None, None))
         letters = ['A', 'B', 'C', 'D']
         X = np.random.choice(letters, size=(100, 1)).ravel()
         model = preprocessing.LabelEncoder()
@@ -63,12 +65,12 @@ class TestTransformEvent(unittest.TestCase):
         df_column = modeldb_types.DataFrameColumn(
             '0',
             'int64'
-            )
+        )
         expected_new_df = modeldb_types.DataFrame(
             -1,
             [df_column],
             100,
-            '') # fix columns
+            '')  # fix columns
         utils.is_equal_dataframe(expected_new_df, new_df, self)
 
     # Tests TransformerSpec values
@@ -76,10 +78,10 @@ class TestTransformEvent(unittest.TestCase):
         spec = self.fit_event.spec
         utils.validate_transformer_spec_struct(self.fit_event.spec, self)
         expected_spec = modeldb_types.TransformerSpec(
-            -1, 
+            -1,
             'LabelEncoder',
             [],
-            'label encoder') # Fix hyperparams.
+            'label encoder')  # Fix hyperparams.
         utils.is_equal_transformer_spec(expected_spec, spec, self)
 
     # Tests DataFrame values, associated with FitEvent

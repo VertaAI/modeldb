@@ -1,12 +1,15 @@
 """
 Store Experiment on server.
 """
-from modeldb.events.Event import *
+from modeldb.events.Event import Event
+from ..thrift.modeldb import ttypes as modeldb_types
+
 
 class ExperimentEvent(Event):
     """
     Class for creating and storing ExperimentEvents
     """
+
     def __init__(self, experiment):
         self.experiment = experiment
 

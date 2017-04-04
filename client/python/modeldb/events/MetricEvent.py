@@ -1,13 +1,17 @@
 """
 Event indicating that a metric has been computed for a model's prediction.
 """
-from modeldb.events.Event import *
+from modeldb.events.Event import Event
+from ..thrift.modeldb import ttypes as modeldb_types
+
 
 class MetricEvent(Event):
     """
     Class for creating and storing MetricEvents
     """
-    def __init__(self, df, model, labelCol, predictionCol, metricType, metricValue):
+
+    def __init__(
+            self, df, model, labelCol, predictionCol, metricType, metricValue):
         self.df = df
         self.model = model
         self.metric_type = metricType

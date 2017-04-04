@@ -9,3 +9,4 @@ patsy
 sklearn
 thrift
 pyyaml
+requests
