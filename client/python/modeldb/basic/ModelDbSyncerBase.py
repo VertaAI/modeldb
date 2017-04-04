@@ -9,10 +9,11 @@ from thrift.protocol import TBinaryProtocol
 from ..events import (
     Event, ExperimentEvent, ExperimentRunEvent, FitEvent, GridSearchCVEvent,
     MetricEvent, PipelineEvent, ProjectEvent, RandomSplitEvent, TransformEvent)
+
 from Structs import (NewOrExistingProject, ExistingProject,
     NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
-     NewExperimentRun, ExistingExperimentRun, Dataset, ModelConfig, Model,
-     ModelMetrics)
+     NewExperimentRun, ExistingExperimentRun, ThriftConfig, VersioningConfig,
+     Dataset, ModelConfig, Model, ModelMetrics)
 
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
