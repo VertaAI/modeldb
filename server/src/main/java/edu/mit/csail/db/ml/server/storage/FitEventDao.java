@@ -322,7 +322,7 @@ public class FitEventDao {
    * @param  ctx - The database context.
    * @return A list of all model IDs that match the given attributes.
    */
-  public static List<Integer> getModels(Map<String, String> keyValuePairs, DSLContext ctx) {
+  public static List<Integer> getModelIds(Map<String, String> keyValuePairs, DSLContext ctx) {
     throw new RuntimeException("implement me");
   }
 }

@@ -206,28 +206,32 @@ public class ModelDbServer implements ModelDBService.Iface {
     return ExceptionWrapper.run(metadataDb, () -> TransformerDao.readInfo(modelId, ctx, metadataDb));
   }
 
-  public List<Integer> getProjects(Map<String, String> keyValuePairs) throws TException {
-    return ExceptionWrapper.run(() -> ProjectDao.getProjects(keyValuePairs, ctx));
+  public List<Integer> getProjectIds(Map<String, String> keyValuePairs) throws TException {
+    return ExceptionWrapper.run(() -> ProjectDao.getProjectIds(keyValuePairs, ctx));
   }
 
-  public List<Integer> getModels(Map<String, String> keyValuePairs) throws TException {
-    return ExceptionWrapper.run(() -> FitEventDao.getModels(keyValuePairs, ctx));
+  public List<Integer> getModelIds(Map<String, String> keyValuePairs) throws TException {
+    return ExceptionWrapper.run(() -> FitEventDao.getModelIds(keyValuePairs, ctx));
   }
 
-  public boolean updateProject(String projectId, String key, String value) throws TException {
-
+  public boolean updateProject(int projectId, String key, String value) throws TException {
+    return ExceptionWrapper.run(() -> ProjectDao.updateProject(projectId, key, value, ctx));
   }
 
-  public boolean updateScalarField(String modelId, String key, String value) throws TException {
-
+  public boolean updateScalarField(int modelId, String key, String value) throws TException {
+    return ExceptionWrapper.run(() -> MetadataDao.updateScalarField(modelId, key, value, metadataDb));
   }
 
-  public boolean createVector(String modelId, String vectorName, Map<string, string> vectorConfig) throws TException {
-
+  public boolean createVector(int modelId, String vectorName, Map<String, String> vectorConfig) throws TException {
+    return ExceptionWrapper.run(() -> MetadataDao.createVector(modelId, vectorName, vectorConfig, metadataDb));
   }
 
-  public boolean updateVectorField(String modelId, String vectorName, String key, String value) throws TException {
+  public boolean addToVectorField(int modelId, String vectorName, String value) throws TException {
+    return ExceptionWrapper.run(() -> MetadataDao.addToVectorField(modelId, vectorName, value, metadataDb));
+  }
 
+  public boolean updateVectorField(int modelId, String vectorName, int index, String value) throws TException {
+    return ExceptionWrapper.run(() -> MetadataDao.updateVectorField(modelId, vectorName, index, value, metadataDb));
   }
 
   public List<ExperimentRun> getRunsInExperiment(int experimentId) throws TException {

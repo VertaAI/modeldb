@@ -157,7 +157,20 @@ public class ProjectDao {
    * @param  ctx - The database context.
    * @return A list of all project IDs that match the given attributes.
    */
-  public static List<Integer> getProjects(Map<String, String> keyValuePairs, DSLContext ctx) {
-	  throw new RuntimeException("implement me");
+  public static List<Integer> getProjectIds(Map<String, String> keyValuePairs, DSLContext ctx) {
+    throw new RuntimeException("implement me");
+  }
+
+  /**
+   * Update the given field of the project of the given ID with the given value.
+   * If key exists, update it with value. If not, add the key-value pair to the project.
+   * @param  projectId - The ID of the project.
+   * @param  key - The key to update.
+   * @param  value - The value for the key.
+   * @param  ctx - The database context.
+   * @return A boolean indicating if the key previously existed or not.
+   */
+  public static boolean updateProject(int projectId, String key, String value, DSLContext ctx) {
+    throw new RuntimeException("implement me");
   }
 }

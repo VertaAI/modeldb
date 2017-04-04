@@ -1319,7 +1319,7 @@ service ModelDBService {
 
    keyValuePairs: The map containing key-value pairs to match
    */
-  list<i32> getProjects(1: map<string, string> keyValuePairs)
+  list<i32> getProjectIds(1: map<string, string> keyValuePairs)
     throws (1: ServerLogicException svEx),
 
   /*
@@ -1327,7 +1327,7 @@ service ModelDBService {
 
    keyValuePairs: The map containing key-value pairs to match
    */
-  list<i32> getModels(1: map<string, string> keyValuePairs)
+  list<i32> getModelIds(1: map<string, string> keyValuePairs)
     throws (1: ServerLogicException svEx),
 
   /*
@@ -1339,19 +1339,19 @@ service ModelDBService {
     key: The field to update
     value: The value for the field
    */
-  bool updateProject(1: string projectId, 2: string key, 3: string value)
+  bool updateProject(1: i32 projectId, 2: string key, 3: string value)
     throws (1: ServerLogicException svEx),
 
   /*
     Update the given scalar field of the model of the given ID with the given value.
     If key exists, update it with value. If not, add the key-value pair to the model.
-    Return a boolean indicating if the key previously existed or not.
+    Return a boolean indicating if the key was updated or not.
 
     modelId: The ID of the model
     key: The scalar field to update
     value: The scalar value for the field
    */
-  bool updateScalarField(String modelId, String key, String value)
+  bool updateScalarField(i32 modelId, String key, String value)
     throws (1: ServerLogicException svEx),
 
   /*
@@ -1364,20 +1364,30 @@ service ModelDBService {
    vectorName: The name of the vector field
    vectorConfig: The map containing config information for the vector field
    */
-  bool createVector(1: string modelId, 2: string vectorName, 3: map<string, string> vectorConfig)
+  bool createVector(1: i32 modelId, 2: string vectorName, 3: map<string, string> vectorConfig)
     throws (1: ServerLogicException svEx),
 
   /*
-   Update key-value pair of the vector field with the given name in the model with the given ID.
-   If key exists, update it with value. If not, add the key-value pair to the vector field.
-   Return a boolean indicating if the key previously existed or not.
+   Add a new value to the vector field with the given name in the model with the given ID.
+   Return a boolean indicating if the value was added or not.
 
    modelId: The ID of the model
    vectorName: The name of the vector field to update
-   key: The key to update
-   value: The value for the key
+   value: The value to be added
    */
-  bool updateVectorField(1: string modelId, 2: string vectorName, 3: string key, 4: string value)
+  bool addToVectorField(1: i32 modelId, 2: string vectorName, 3: string value)
+    throws (1: ServerLogicException svEx),
+
+  /*
+   Update the value at the given index of the vector field with the given name in the model with the given ID.
+   Return a boolean indicating if the value at the index of the field was updated or not.
+
+   modelId: The ID of the model
+   vectorName: The name of the vector field to update
+   index: The index number of value to update in the vector
+   value: The new value
+   */
+  bool updateVectorField(1: i32 modelId, 2: string vectorName, 3: i32 index, 4: string value)
     throws (1: ServerLogicException svEx),
 
   /*
