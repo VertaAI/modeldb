@@ -18,7 +18,8 @@ class TestTransformEvent(unittest.TestCase):
         syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
-            NewExperimentRun("Abc"))
+            NewExperimentRun("Abc"),
+            ThriftConfig(None, None))
         letters = ['A', 'B', 'C', 'D']
         X = np.random.choice(letters, size=(100, 1)).ravel()
         model = preprocessing.LabelEncoder()

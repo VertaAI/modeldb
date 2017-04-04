@@ -1,9 +1,9 @@
 import sys
 import json
-import ConfigConstants as constants
-from ..basic.Structs import NewOrExistingProject, ExistingProject, \
-    NewOrExistingExperiment, ExistingExperiment, DefaultExperiment, \
-    NewExperimentRun, ExistingExperimentRun
+from ..basic.Structs import (
+    NewOrExistingProject, ExistingProject,
+    NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
+    NewExperimentRun, ExistingExperimentRun, ThriftConfig, VersioningConfig)
 
 
 class ConfigReader(object):
@@ -63,30 +63,26 @@ class ConfigReader(object):
         return experiment
 
     # TODO: Define get_experiment run
-    # TODO: have get_mdb_server_info return a struct
-    # TODO: have get_versioning_info return a struct
 
     def get_mdb_server_info(self):
         thrift = self.config.get('thrift', False)
 
-        host = thrift['host'] or 'localhost'
-        port = int(thrift['port']) or 6432
+        thrift_config = ThriftConfig(
+            host=thrift['host'], port=thrift['port'])
 
-        return {constants.MDB_SERVER_HOST_KEY: host,
-                constants.MDB_SERVER_PORT_KEY: port}
+        return thrift_config
 
     def get_versioning_information(self):
-        git = self.config.get('git', None)
-        if not git.get('versionCode', False):
-            return None
-        else:
-            return {
-                constants.GIT_USERNAME_KEY: git.get('username', None),
-                constants.GIT_REPO_KEY: git.get('repo', None),
-                constants.ACCESS_TOKEN_KEY: git.get('accessToken', None),
-                constants.EXPT_DIR_KEY: git.get('exptDir', None),
-                constants.GIT_REPO_DIR_KEY: git.get('repoDir', None),
-            }
+        git = self.config.get('git', {})
+
+        versioning_config = VersioningConfig(
+            username=git.get('username', None),
+            repo=git.get('repo', None),
+            access_token=git.get('accessToken', None),
+            export_directory=git.get('exptDir', None),
+            repo_directory=git.get('repoDir', None))
+
+        return versioning_config
 
 
 def safe_get(dct, *keys):

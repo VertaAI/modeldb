@@ -19,7 +19,9 @@ class TestProjectEvent(unittest.TestCase):
         syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
-            NewExperimentRun("Abc"))
+            NewExperimentRun("Abc"),
+            ThriftConfig(None, None),
+            )
         events = syncer_obj.sync()
         self.project_event = events[0]
         self.experiment_event = events[1]
@@ -66,7 +68,8 @@ class TestNewProjectEvent(unittest.TestCase):
         syncer_obj = SyncerTest(
             NewOrExistingProject("name", "author", "desc"),
             NewOrExistingExperiment("expName", "expDesc"),
-            NewExperimentRun("expRunDesc"))
+            NewExperimentRun("expRunDesc"),
+            ThriftConfig(None, None))
         events = syncer_obj.sync()
         self.project_event = events[0]
         self.experiment_event = events[1]

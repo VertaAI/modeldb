@@ -5,11 +5,14 @@ class SyncerTest(ModelDbSyncer.Syncer):
     instance = None
 
     # __new__ always a classmethod
-    def __new__(cls, project_config, experiment_config, experiment_run_config):
+    def __new__(
+            cls, project_config, experiment_config, experiment_run_config,
+            thrift_config):
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(
-                cls, project_config, experiment_config, experiment_run_config)
+                cls, project_config, experiment_config, experiment_run_config,
+                thrift_config)
             ModelDbSyncer.Syncer.instance = cls.instance
         return cls.instance
 
