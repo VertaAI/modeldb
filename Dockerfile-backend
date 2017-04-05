@@ -1,0 +1,67 @@
+FROM openjdk:8
+
+EXPOSE 6543
+
+# Maven installs openjdk-7 as the default Java. update-alternatives points java back to 8.
+RUN apt-get update && \
+    apt-get install -y \
+        maven \
+        sqlite \
+        g++ \
+        make \
+        automake \
+        bison \
+        flex \
+        pkg-config \
+        libevent-dev \
+        libssl-dev \
+        libtool && \
+    apt-get clean && \
+    update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+
+WORKDIR /root
+
+# Install Thrift 0.10.0
+RUN wget -q http://archive.apache.org/dist/thrift/0.10.0/thrift-0.10.0.tar.gz && \
+    tar -xzf thrift-0.10.0.tar.gz && \
+    cd thrift-0.10.0 && \
+    ./configure --without-python && \
+    make && \
+    ln -n ~/thrift-0.10.0/compiler/cpp/thrift /usr/local/bin/thrift
+
+# Add ModelDB project
+ADD . /modeldb
+
+# The MongoDB server's hostname is only definable via a config file. It would
+# be good to allow overriding the hostname with a command line argument so
+# users might choose their own hostname.
+ADD server/src/main/resources/reference-docker.conf /modeldb/server/src/main/resources/reference.conf
+
+WORKDIR /modeldb/server/codegen
+
+# Build SQLite convenience methods and create SQLite databases.
+# Snippet from server/codegen/gen_sqlite.sh. This RUN should be removed once
+# SQLite is completely removed from ModelDB.
+RUN rm -rf jars/ && \
+    rm sqlite/*jar && \
+    mkdir -p jars && \
+    wget -q http://central.maven.org/maven2/org/jooq/jooq/3.8.4/jooq-3.8.4.jar -O jars/jooq-3.8.4.jar  && \
+    wget -q http://central.maven.org/maven2/org/jooq/jooq-meta/3.8.4/jooq-meta-3.8.4.jar -O jars/jooq-meta-3.8.4.jar && \
+    wget -q http://central.maven.org/maven2/org/jooq/jooq-codegen/3.8.4/jooq-codegen-3.8.4.jar -O jars/jooq-codegen-3.8.4.jar && \
+    wget -q http://central.maven.org/maven2/org/xerial/sqlite-jdbc/3.15.1/sqlite-jdbc-3.15.1.jar -O sqlite/sqlite-jdbc-3.15.1.jar && \
+    cat ./sqlite/createDb.sql | sqlite3 modeldb.db && \
+    cat ./sqlite/createDb.sql | sqlite3 modeldb_test.db && \
+    java -classpath jars/jooq-3.8.4.jar:jars/jooq-meta-3.8.4.jar:jars/jooq-codegen-3.8.4.jar:sqlite/sqlite-jdbc-3.15.1.jar:. org.jooq.util.GenerationTool sqlite/library.xml && \
+    mv modeldb.db ../ && \
+    mv modeldb_test.db ../ && \
+    chmod a+wrx ../modeldb.db && \
+    chmod a+wrx ../modeldb_test.db
+
+WORKDIR /modeldb/server
+
+ENV THRIFT_VERSION -Dthrift_version=0.10.0
+
+RUN ../scripts/gen_thrift_file.sh java '../thrift/ModelDB.thrift' './src/main/thrift/' && \
+    mvn clean compile $THRIFT_VERSION
+
+CMD /bin/bash -c "mvn exec:java -Dexec.mainClass='edu.mit.csail.db.ml.main.Main' $THRIFT_VERSION"
