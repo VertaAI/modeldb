@@ -2,6 +2,8 @@ package edu.mit.csail.db.ml.server.storage.metadata;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 import com.mongodb.MongoClient;
 import com.mongodb.DB;
 import com.mongodb.MongoException;
@@ -9,6 +11,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
+import com.mongodb.WriteResult;
 
 public class MongoMetadataDb implements MetadataDb {
 
@@ -80,11 +83,22 @@ public class MongoMetadataDb implements MetadataDb {
     return result;
   }
 
-  public boolean updateScalarField(int modelId, String key, String value) {
+  public List<Integer> getModelIds(Map<String, String> keyValuePairs) {
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
-    BasicDBObject updatedField = new BasicDBObject();
-    updatedField.append("$set", new BasicDBObject().append(key, value));
-    BasicDBObject modelQuery = new BasicDBObject().append(MODELID_KEY, modelId);
+    BasicDBObject modelQuery = new BasicDBObject(keyValuePairs).append(MODELID_KEY, 1);
+    return collection.find(modelQuery)
+                    .toArray()
+                    .stream()
+                    .map(dbObj -> (int)dbObj.get(MODELID_KEY))
+                    .collect(Collectors.toList());
+  }
+
+  public boolean updateScalarField(int modelId, String key, String value) {
+    // TODO: how to account for type of value
+    DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
+    BasicDBObject updatedField = new BasicDBObject(
+      "$set", new BasicDBObject(key, value));
+    BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId);
     WriteResult res = collection.update(modelQuery, updatedField);
     if (res.wasAcknowledged()) {
       return res.isUpdateOfExisting();
@@ -95,22 +109,23 @@ public class MongoMetadataDb implements MetadataDb {
   public boolean createVector(int modelId, String vectorName, Map<String, String> vectorConfig) {
     // TODO: use vectorConfig
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
-    BasicDBObject modelQuery = new BasicDBObject().append(MODELID_KEY, modelId);
+    BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId)
+      .append(vectorName, new BasicDBObject("$exists", false));
     DBObject modelDocument = collection.findOne(modelQuery);
-    if (!modelDocument.containsField(vectorName)) {
-      BasicDBObject updatedField = new BasicDBObject();
-      updatedField.append("$set", new BasicDBObject().append(vectorName, new ArrayList<DBObject>()));
-      collection.update(modelQuery, updatedField);
-      return false;
+    BasicDBObject updatedField = new BasicDBObject();
+    updatedField.append("$set", new BasicDBObject(vectorName, new ArrayList<DBObject>()));
+    WriteResult res = collection.update(modelQuery, updatedField);
+    if (res.wasAcknowledged()) {
+      return res.isUpdateOfExisting();
     }
-    return true;
+    return false;
   }
 
   public boolean addToVectorField(int modelId, String vectorName, String value) {
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
-    BasicDBObject updatedField = new BasicDBObject();
-    updatedField.append("$push", new BasicDBObject().append(vectorName, value));
-    BasicDBObject modelQuery = new BasicDBObject().append(MODELID_KEY, modelId);
+    BasicDBObject updatedField = new BasicDBObject(
+      "$push", new BasicDBObject(vectorName, value));
+    BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId);
     WriteResult res = collection.update(modelQuery, updatedField);
     if (res.wasAcknowledged()) {
       return res.isUpdateOfExisting();
@@ -119,11 +134,12 @@ public class MongoMetadataDb implements MetadataDb {
   }
 
   public boolean updateVectorField(int modelId, String vectorName, int index, String value) {
+    // TODO: how to account for type of value
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
-    BasicDBObject updatedField = new BasicDBObject();
-    updatedField.append("$set", new BasicDBObject().append(
-        vectorName.concat(".").concat(index).concat(".content"), value));
-    BasicDBObject modelQuery = new BasicDBObject().append(MODELID_KEY, modelId);
+    BasicDBObject updatedField = new BasicDBObject(
+      "$set", new BasicDBObject(
+        vectorName.concat(".").concat(String.valueOf(index)), value));
+    BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId);
     WriteResult res = collection.update(modelQuery, updatedField);
     if (res.wasAcknowledged()) {
       return res.isUpdateOfExisting();

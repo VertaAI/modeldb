@@ -2,6 +2,8 @@ package edu.mit.csail.db.ml.server.storage;
 
 import modeldb.*;
 import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
+import java.util.List;
+import java.util.Map;
 
 public class MetadataDao {
 
@@ -14,6 +16,10 @@ public class MetadataDao {
 
     public static String get(int modelId, MetadataDb metadataDb) {
         return metadataDb.get(Integer.toString(modelId));
+    }
+
+    public static List<Integer> getModelIds(Map<String, String> keyValuePairs, MetadataDb metadataDb) {
+        return metadataDb.getModelIds(keyValuePairs);
     }
 
     public static boolean updateScalarField(int modelId, String key, String value, MetadataDb metadataDb) {

@@ -161,10 +161,16 @@ public class ProjectDao {
     return ctx
           .select(Tables.PROJECT.ID)
           .from(Tables.PROJECT)
-          .where(keyValuePairs.keySet()
-                              .stream()
-                              .allMatch(key -> field(name("Tables", "PROJECT", key).eq(keyValuePairs.get(key)))))
-          .fetch();
+          .where(DSL.and(keyValuePairs.keySet()
+                                      .stream()
+                                      .map(
+                                        key -> DSL.field(DSL.name("PROJECT", key))
+                                              .eq(keyValuePairs.get(key)))
+                                      .collect(Collectors.toList())))
+          .fetch()
+          .stream()
+          .map(rec -> rec.value1())
+          .collect(Collectors.toList());
   }
 
   /**
@@ -174,18 +180,15 @@ public class ProjectDao {
    * @param  key - The key to update.
    * @param  value - The value for the key.
    * @param  ctx - The database context.
-   * @return A boolean indicating if the key previously existed or not.
+   * @return whether field was successfully updated or not
    */
   public static boolean updateProject(int projectId, String key, String value, DSLContext ctx) {
-  boolean existed = ctx
-    .select(Tables.PROJECT)
-    .where(Tables.PROJECT.ID.eq(pojectId))
-    .fetchOne()
-    .into(rec -> rec.field(name("Tables", "PROJECT", key)) != null);
-  ctx
-    .update(Tables.PROJECT)
-    .set(field(name("Tables", "PROJECT", key)), value)
-    .where(Tables.PROJECT.ID.eq(projectId));
-  return existed;
+    // FIXME: implementation currently only works if key exists
+    int recordsUpdated = ctx
+      .update(Tables.PROJECT)
+      .set(DSL.field(DSL.name("PROJECT", key)), value)
+      .where(Tables.PROJECT.ID.eq(projectId))
+      .execute();
+    return recordsUpdated > 0;
   }
 }

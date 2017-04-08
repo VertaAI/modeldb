@@ -1312,12 +1312,11 @@ service ModelDBService {
   list<i32> modelsDerivedFromDataFrame(1: i32 dfId) 
     throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
-  // TODO: write argument descriptions
-
   /*
    Get the IDs of all the projects that match the specified key-value pairs.
 
-   keyValuePairs: The map containing key-value pairs to match
+   keyValuePairs: The map containing key-value pairs to match,
+    where key is not case-sensitive and value is case-sensitive
    */
   list<i32> getProjectIds(1: map<string, string> keyValuePairs)
     throws (1: ServerLogicException svEx),
@@ -1333,11 +1332,10 @@ service ModelDBService {
   /*
     Update the given field of the project of the given ID with the given value.
     If key exists, update it with value. If not, add the key-value pair to the project.
-    Return a boolean indicating if the key previously existed or not.
 
     projectId: The ID of the project
-    key: The field to update
-    value: The value for the field
+    key: The field to update (not case-sensitive)
+    value: The value for the field (case-sensitive)
    */
   bool updateProject(1: i32 projectId, 2: string key, 3: string value)
     throws (1: ServerLogicException svEx),
@@ -1348,20 +1346,20 @@ service ModelDBService {
     Return a boolean indicating if the key was updated or not.
 
     modelId: The ID of the model
-    key: The scalar field to update
+    key: The scalar field to update, which follows MongoDB's dot notation
     value: The scalar value for the field
    */
-  bool updateScalarField(i32 modelId, String key, String value)
+  bool updateScalarField(1: i32 modelId, 2: string key, 3: string value)
     throws (1: ServerLogicException svEx),
 
   /*
    Create a vector field with the given name inside the model with the given ID.
    The vector field is configured with the given vector config.
    Do nothing if the vector field with the given name already exists.
-   Return a boolean indicating if the vector field previously existed.
+   Return a boolean indicating if the vector was created or not.
 
    modelId: The ID of the model
-   vectorName: The name of the vector field
+   vectorName: The name of the vector field, which follows MongoDB's dot notation
    vectorConfig: The map containing config information for the vector field
    */
   bool createVector(1: i32 modelId, 2: string vectorName, 3: map<string, string> vectorConfig)
@@ -1372,7 +1370,7 @@ service ModelDBService {
    Return a boolean indicating if the value was added or not.
 
    modelId: The ID of the model
-   vectorName: The name of the vector field to update
+   vectorName: The name of the vector field to update, which follows MongoDB's dot notation
    value: The value to be added
    */
   bool addToVectorField(1: i32 modelId, 2: string vectorName, 3: string value)
@@ -1383,7 +1381,7 @@ service ModelDBService {
    Return a boolean indicating if the value at the index of the field was updated or not.
 
    modelId: The ID of the model
-   vectorName: The name of the vector field to update
+   vectorName: The name of the vector field to update, which follows MongoDB's dot notation
    index: The index number of value to update in the vector
    value: The new value
    */

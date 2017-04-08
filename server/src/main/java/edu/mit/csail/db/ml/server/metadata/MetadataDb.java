@@ -1,6 +1,7 @@
 package edu.mit.csail.db.ml.server.storage.metadata;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MetadataDb {
 
@@ -30,6 +31,13 @@ public interface MetadataDb {
   public String get(String key);
 
   /**
+   * Get the IDs of all the models that match the specified key-value pairs.
+   * @param  keyValuePairs The map containing key-value pairs to match
+   * @return The model IDs that matched
+   */
+  public List<Integer> getModelIds(Map<String, String> keyValuePairs);
+
+  /**
    * Write a key-value pair for the model with ID modelId to the database.
    * @param  modelId - The ID of the model
    * @param  key - The key to update
@@ -43,7 +51,7 @@ public interface MetadataDb {
    * @param  modelId - The ID of the model
    * @param  vectorName - The name of the vector key to create
    * @param  vectorConfig - The provided configuration for the vector being created
-   * @return A boolean indicating if the vector field previously existed
+   * @return A boolean indicating if the vector was created of not
    */
   public boolean createVector(int modelId, String vectorName, Map<String, String> vectorConfig);
 

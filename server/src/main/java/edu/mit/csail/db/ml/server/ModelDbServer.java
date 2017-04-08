@@ -211,7 +211,7 @@ public class ModelDbServer implements ModelDBService.Iface {
   }
 
   public List<Integer> getModelIds(Map<String, String> keyValuePairs) throws TException {
-    return ExceptionWrapper.run(() -> FitEventDao.getModelIds(keyValuePairs, ctx));
+    return ExceptionWrapper.run(() -> MetadataDao.getModelIds(keyValuePairs, metadataDb));
   }
 
   public boolean updateProject(int projectId, String key, String value) throws TException {
