@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:3.4
+    networks:
+      default:
+        aliases:
+          - mongo
+    ports:
+      - "27017:27017"
+  backend:
+    image: backend:latest
+    networks:
+      default:
+        aliases:
+          - backend
+    ports:
+      - "6543:6543"
+    # The classpath isn't set if command is passed in the exec style, so do the shell style for now.
+    # command: ["sh", "/modeldb/dockerbuild/wait_for_mongodb.sh", "mongo", "mvn", "exec:java", "-Dexec.mainClass='edu.mit.csail.db.ml.main.Main'", "-Dthrift_version=0.10.0"]
+    command: sh /modeldb/dockerbuild/wait_for_mongodb.sh mongo mvn exec:java -Dexec.mainClass='edu.mit.csail.db.ml.main.Main' -Dthrift_version=0.10.0
+  frontend:
+    image: frontend:latest
+    networks:
+      default:
+        aliases:
+          - frontend
+    ports:
+      - "80:3000"
+    command: ["sh", "/modeldb/dockerbuild/wait_for_backend.sh", "backend"]
