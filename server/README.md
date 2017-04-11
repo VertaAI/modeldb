@@ -22,7 +22,7 @@ To launch the server, make sure you have installed Maven 3.
 
 # Tests
 
-You can run server tests with `mvn test [thirft_vserion]`
+You can run server tests with `mvn test -Dthrift_version=[thirft_vserion]`
 
 # Configuration
 Edit the server [configuration file](server/src/main/resources/reference.conf) to your liking.
