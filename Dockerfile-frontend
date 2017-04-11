@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM node:latest
 
 EXPOSE 3000
 
@@ -6,10 +6,7 @@ RUN apt-get update \
     && apt-get install -y \
         g++ \
         make \
-        nodejs \
-        npm \
         wget \
-    && ln -s /usr/bin/nodejs /usr/bin/node \
     && apt-get clean
 
 WORKDIR /root
@@ -35,4 +32,4 @@ RUN mkdir -p './thrift' && \
     thrift -r -out './thrift' -gen js:node '../thrift/ModelDB.thrift' && \
     npm install
 
-CMD /bin/bash -c "npm start"
+CMD ["npm", "start"]
