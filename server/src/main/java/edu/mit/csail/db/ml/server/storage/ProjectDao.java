@@ -175,7 +175,7 @@ public class ProjectDao {
 
   /**
    * Update the given field of the project of the given ID with the given value.
-   * If key exists, update it with value. If not, add the key-value pair to the project.
+   * The field must be an existing field of the project.
    * @param  projectId - The ID of the project.
    * @param  key - The key to update.
    * @param  value - The value for the key.
@@ -183,7 +183,7 @@ public class ProjectDao {
    * @return whether field was successfully updated or not
    */
   public static boolean updateProject(int projectId, String key, String value, DSLContext ctx) {
-    // FIXME: implementation currently only works if key exists
+    // TODO: throw some kind of exception when key doesn't exist
     int recordsUpdated = ctx
       .update(Tables.PROJECT)
       .set(DSL.field(DSL.name("PROJECT", key)), value)
