@@ -74,9 +74,9 @@ before_script:
 script:
 
   # scala sbt tests
-  - echo =================== SEVER TESTS ===================
-  - cd $TRAVIS_BUILD_DIR/server
-  - mvn test -Dthrift_version=0.9.3
+  # - echo =================== SEVER TESTS ===================
+  # - cd $TRAVIS_BUILD_DIR/server
+  # - mvn test -Dthrift_version=0.9.3
 
   - echo =================== CLIENT TESTS ===================
   - echo ------------------- SCALA  TESTS -------------------
