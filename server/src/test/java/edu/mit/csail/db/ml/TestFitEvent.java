@@ -1,7 +1,6 @@
 package edu.mit.csail.db.ml;
 
 import edu.mit.csail.db.ml.server.storage.FitEventDao;
-import edu.mit.csail.db.ml.server.storage.MetadataDao;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.EventRecord;
 import jooq.sqlite.gen.tables.records.FeatureRecord;
@@ -12,9 +11,7 @@ import modeldb.ResourceNotFoundException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import com.mongodb.util.JSON;
 import com.mongodb.DBObject;
-import edu.mit.csail.db.ml.server.storage.metadata.MongoMetadataDb;
 
 import java.util.Arrays;
 import java.util.List;
@@ -124,22 +121,5 @@ public class TestFitEvent {
     TestBase.createFitEvent(triple.expRunId, dfId, specId, modelId);
 
     Assert.assertEquals(dfId, FitEventDao.getParentDfId(modelId, TestBase.ctx()));
-  }
-
-  @Test
-  public void testMetadata() throws Exception {
-    FitEvent fe = StructFactory.makeFitEvent();
-    String serializedMetadata = "{'key1':'value1', 'key2':30}";
-    fe.setMetadata(serializedMetadata);
-    FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
-    MetadataDao.store(resp, fe, TestBase.getMetadataDb());
-
-    String actualDbContents = MetadataDao.get(resp.modelId, 
-      TestBase.getMetadataDb());
-    DBObject parsedDbContents = (DBObject) JSON.parse(actualDbContents);
-    Assert.assertEquals(parsedDbContents.get("key1"), "value1");
-    Assert.assertEquals(parsedDbContents.get("key2"), 30);
-    Assert.assertEquals(parsedDbContents.get(
-      MongoMetadataDb.MODELID_KEY), resp.modelId);
   }
 }

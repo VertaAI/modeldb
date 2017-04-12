@@ -1331,7 +1331,7 @@ service ModelDBService {
 
   /*
     Update the given field of the project of the given ID with the given value.
-    If key exists, update it with value. If not, add the key-value pair to the project.
+    The field must be an existing field of the project.
 
     projectId: The ID of the project
     key: The field to update (not case-sensitive)

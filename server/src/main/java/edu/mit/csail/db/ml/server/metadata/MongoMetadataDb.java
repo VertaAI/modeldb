@@ -12,6 +12,7 @@ import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
 import com.mongodb.WriteResult;
+import com.mongodb.WriteConcernException;
 
 public class MongoMetadataDb implements MetadataDb {
 
@@ -85,7 +86,7 @@ public class MongoMetadataDb implements MetadataDb {
 
   public List<Integer> getModelIds(Map<String, String> keyValuePairs) {
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
-    BasicDBObject modelQuery = new BasicDBObject(keyValuePairs).append(MODELID_KEY, 1);
+    BasicDBObject modelQuery = new BasicDBObject(keyValuePairs);
     return collection.find(modelQuery)
                     .toArray()
                     .stream()
@@ -126,9 +127,14 @@ public class MongoMetadataDb implements MetadataDb {
     BasicDBObject updatedField = new BasicDBObject(
       "$push", new BasicDBObject(vectorName, value));
     BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId);
-    WriteResult res = collection.update(modelQuery, updatedField);
-    if (res.wasAcknowledged()) {
-      return res.isUpdateOfExisting();
+    WriteResult res;
+    try {
+      res = collection.update(modelQuery, updatedField);
+      if (res.wasAcknowledged()) {
+        return res.isUpdateOfExisting();
+      }
+    } catch (MongoException e) {
+      return false;
     }
     return false;
   }

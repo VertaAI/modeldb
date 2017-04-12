@@ -8,7 +8,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestProject {
   @Before
@@ -22,6 +26,15 @@ public class TestProject {
       .columns(Tables.PROJECT.ID, Tables.PROJECT.NAME,
         Tables.PROJECT.AUTHOR, Tables.PROJECT.DESCRIPTION, Tables.PROJECT.CREATED)
       .values(1, "name", "author", "description", TestBase.now())
+      .execute();
+  }
+
+  public void storeProject2() throws Exception {
+    TestBase.ctx()
+      .insertInto(Tables.PROJECT)
+      .columns(Tables.PROJECT.ID, Tables.PROJECT.NAME,
+        Tables.PROJECT.AUTHOR, Tables.PROJECT.DESCRIPTION, Tables.PROJECT.CREATED)
+      .values(2, "name2", "author", "description", TestBase.now())
       .execute();
   }
 
@@ -113,5 +126,64 @@ public class TestProject {
     Assert.assertEquals("Test project", overview.get(0).getProject().getName());
     Assert.assertEquals(1, overview.get(0).numExperimentRuns);
     Assert.assertEquals(1, overview.get(0).numExperiments);
+  }
+
+  @Test
+  public void testGetProjectIdsSingle() throws Exception {
+    storeProject();
+
+    Map<String, String> kvToMatch = new HashMap<>();
+    List<Integer> noMatch = Collections.emptyList();
+    List<Integer> oneMatch = Arrays.asList(1);
+
+    // Test when there are no kv pairs
+    Assert.assertEquals(oneMatch, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
+    // Test with 1 kv pair that matches
+    kvToMatch.put("name", "name");
+    Assert.assertEquals(oneMatch, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
+    // Test with 2 kv pairs where 1 doesn't match
+    kvToMatch.put("author", "wrong author");
+    Assert.assertEquals(noMatch, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
+  }
+
+  @Test
+  public void testGetProjectIdsMultiple() throws Exception {
+    storeProject();
+    storeProject2();
+
+    Map<String, String> kvToMatch = new HashMap<>();
+    List<Integer> noMatch = Collections.emptyList();
+    List<Integer> oneMatch = Arrays.asList(2);
+    List<Integer> allMatch = Arrays.asList(1, 2);
+
+    // Test when there are no kv pairs
+    Assert.assertEquals(allMatch, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
+    // Test with 1 kv pair that matches all
+    kvToMatch.put("author", "author");
+    Assert.assertEquals(allMatch, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
+    // Test with kv pair that matches 1
+    kvToMatch.put("name", "name2");
+    Assert.assertEquals(oneMatch, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
+    // Test with 2 kv pairs where 1 doesn't match
+    kvToMatch.put("author", "wrong author");
+    Assert.assertEquals(noMatch, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
+  }
+
+  @Test
+  public void testUpdateProject() throws Exception {
+    storeProject();
+
+    Assert.assertTrue(ProjectDao.updateProject(1, "name", "new name", TestBase.ctx()));
+    // check that the project is updated
+    Map<String, String> kvToMatch = new HashMap<>();
+    List<Integer> noMatches = Collections.emptyList();
+    List<Integer> oneMatch = Arrays.asList(1);
+
+    // Test with old name
+    kvToMatch.put("name", "name");
+    Assert.assertEquals(noMatches, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
+    // Test with new name
+    kvToMatch.put("name", "new name");
+    Assert.assertEquals(oneMatch, ProjectDao.getProjectIds(kvToMatch, TestBase.ctx()));
   }
 }
