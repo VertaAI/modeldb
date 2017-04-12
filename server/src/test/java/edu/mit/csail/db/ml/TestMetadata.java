@@ -104,7 +104,7 @@ public class TestMetadata {
     FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
-    Assert.assertTrue(MetadataDao.updateScalarField(resp.modelId, "key1", 
+    Assert.assertTrue(MetadataDao.updateField(resp.modelId, "key1", 
       "new value", TestBase.getMetadataDb()));
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());
@@ -123,7 +123,7 @@ public class TestMetadata {
     FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
-    Assert.assertTrue(MetadataDao.updateScalarField(resp.modelId, "key2", 
+    Assert.assertTrue(MetadataDao.updateField(resp.modelId, "key2", 
       "value2", TestBase.getMetadataDb()));
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());
@@ -142,7 +142,7 @@ public class TestMetadata {
     FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
-    Assert.assertTrue(MetadataDao.updateScalarField(resp.modelId, "key1.nested_key_1", 
+    Assert.assertTrue(MetadataDao.updateField(resp.modelId, "key1.nested_key_1", 
       "new value", TestBase.getMetadataDb()));
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());
@@ -164,7 +164,7 @@ public class TestMetadata {
     FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
-    Assert.assertTrue(MetadataDao.updateScalarField(resp.modelId, "key1.0", 
+    Assert.assertTrue(MetadataDao.updateField(resp.modelId, "key1.0", 
       "new value",
       TestBase.getMetadataDb()));
     String actualDbContents = MetadataDao.get(resp.modelId, 
@@ -187,7 +187,7 @@ public class TestMetadata {
     FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
-    Assert.assertTrue(MetadataDao.updateScalarField(resp.modelId, "key1.2", 
+    Assert.assertTrue(MetadataDao.updateField(resp.modelId, "key1.2", 
       "new value", TestBase.getMetadataDb()));
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());
@@ -210,7 +210,7 @@ public class TestMetadata {
     FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
-    Assert.assertTrue(MetadataDao.updateScalarField(resp.modelId, "key1.1.nested_key_1", 
+    Assert.assertTrue(MetadataDao.updateField(resp.modelId, "key1.1.nested_key_1", 
       "new value", TestBase.getMetadataDb()));
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());

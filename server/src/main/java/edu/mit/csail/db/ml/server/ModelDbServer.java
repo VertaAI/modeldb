@@ -218,8 +218,8 @@ public class ModelDbServer implements ModelDBService.Iface {
     return ExceptionWrapper.run(() -> ProjectDao.updateProject(projectId, key, value, ctx));
   }
 
-  public boolean updateScalarField(int modelId, String key, String value) throws TException {
-    return ExceptionWrapper.run(() -> MetadataDao.updateScalarField(modelId, key, value, metadataDb));
+  public boolean updateField(int modelId, String key, String value) throws TException {
+    return ExceptionWrapper.run(() -> MetadataDao.updateField(modelId, key, value, metadataDb));
   }
 
   public boolean createVector(int modelId, String vectorName, Map<String, String> vectorConfig) throws TException {
@@ -228,10 +228,6 @@ public class ModelDbServer implements ModelDBService.Iface {
 
   public boolean addToVectorField(int modelId, String vectorName, String value) throws TException {
     return ExceptionWrapper.run(() -> MetadataDao.addToVectorField(modelId, vectorName, value, metadataDb));
-  }
-
-  public boolean updateVectorField(int modelId, String vectorName, int index, String value) throws TException {
-    return ExceptionWrapper.run(() -> MetadataDao.updateVectorField(modelId, vectorName, index, value, metadataDb));
   }
 
   public List<ExperimentRun> getRunsInExperiment(int experimentId) throws TException {

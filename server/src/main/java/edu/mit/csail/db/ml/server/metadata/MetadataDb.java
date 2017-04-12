@@ -41,10 +41,10 @@ public interface MetadataDb {
    * Write a key-value pair for the model with ID modelId to the database.
    * @param  modelId - The ID of the model
    * @param  key - The key to update
-   * @param  value - The sclar value for the field
+   * @param  value - The value for the field
    * @return A boolean indicating if the key was updated or not
    */
-  public boolean updateScalarField(int modelId, String key, String value);
+  public boolean updateField(int modelId, String key, String value);
 
   /**
    * Create a vector value for the key with name vectorName based on the provided configuration.
@@ -63,15 +63,4 @@ public interface MetadataDb {
    * @return A boolean indicating if the value was added or not
    */
   public boolean addToVectorField(int modelId, String vectorName, String value);
-
-  /**
-   * Update the value at the given index of the vector field with the given name
-   * in the model with the given ID.
-   * @param  modelId - The ID of the model
-   * @param  vectorName - The name of the vector to update
-   * @param  index - The index in the vector to update
-   * @param  value - The new value
-   * @return A boolean indicating if the value at the index of the field was updated or not
-   */
-  public boolean updateVectorField(int modelId, String vectorName, int index, String value);
 }

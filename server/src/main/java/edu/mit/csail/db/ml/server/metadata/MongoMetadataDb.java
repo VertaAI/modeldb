@@ -94,7 +94,7 @@ public class MongoMetadataDb implements MetadataDb {
                     .collect(Collectors.toList());
   }
 
-  public boolean updateScalarField(int modelId, String key, String value) {
+  public boolean updateField(int modelId, String key, String value) {
     // TODO: how to account for type of value
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
     BasicDBObject updatedField = new BasicDBObject(
@@ -135,20 +135,6 @@ public class MongoMetadataDb implements MetadataDb {
       }
     } catch (MongoException e) {
       return false;
-    }
-    return false;
-  }
-
-  public boolean updateVectorField(int modelId, String vectorName, int index, String value) {
-    // TODO: how to account for type of value
-    DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
-    BasicDBObject updatedField = new BasicDBObject(
-      "$set", new BasicDBObject(
-        vectorName.concat(".").concat(String.valueOf(index)), value));
-    BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId);
-    WriteResult res = collection.update(modelQuery, updatedField);
-    if (res.wasAcknowledged()) {
-      return res.isUpdateOfExisting();
     }
     return false;
   }

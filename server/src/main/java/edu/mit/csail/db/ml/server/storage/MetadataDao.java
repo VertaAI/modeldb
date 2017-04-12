@@ -22,8 +22,8 @@ public class MetadataDao {
         return metadataDb.getModelIds(keyValuePairs);
     }
 
-    public static boolean updateScalarField(int modelId, String key, String value, MetadataDb metadataDb) {
-        return metadataDb.updateScalarField(modelId, key, value);
+    public static boolean updateField(int modelId, String key, String value, MetadataDb metadataDb) {
+        return metadataDb.updateField(modelId, key, value);
     }
 
     public static boolean createVector(int modelId, String vectorName, Map<String, String> vectorConfig, MetadataDb metadataDb) {
@@ -32,9 +32,5 @@ public class MetadataDao {
 
     public static boolean addToVectorField(int modelId, String vectorName, String value, MetadataDb metadataDb) {
         return metadataDb.addToVectorField(modelId, vectorName, value);
-    }
-
-    public static boolean updateVectorField(int modelId, String vectorName, int index, String value, MetadataDb metadataDb) {
-        return metadataDb.updateVectorField(modelId, vectorName, index, value);
     }
 }
