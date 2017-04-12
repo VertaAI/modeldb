@@ -6,6 +6,7 @@ pandas
 statsmodels
 matplotlib
 patsy
+scikit-learn==0.17.1
 sklearn
 thrift
 pyyaml
