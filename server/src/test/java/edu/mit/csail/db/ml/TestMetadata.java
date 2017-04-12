@@ -97,7 +97,7 @@ public class TestMetadata {
   }
 
   @Test
-  public void testUpdateFieldSimple() throws Exception {
+  public void testUpdateFieldSimpleExisting() throws Exception {
     FitEvent fe = StructFactory.makeFitEvent();
     String serializedMetadata = "{'key1':'value1', 'key2':'30'}";
     fe.setMetadata(serializedMetadata);
@@ -111,6 +111,25 @@ public class TestMetadata {
     DBObject parsedDbContents = (DBObject) JSON.parse(actualDbContents);
     Assert.assertEquals("new value", parsedDbContents.get("key1"));
     Assert.assertEquals("30", parsedDbContents.get("key2"));
+    Assert.assertEquals(resp.modelId,
+      parsedDbContents.get(MongoMetadataDb.MODELID_KEY));
+  }
+
+  @Test
+  public void testUpdateFieldSimpleNew() throws Exception {
+    FitEvent fe = StructFactory.makeFitEvent();
+    String serializedMetadata = "{'key1':'value1'}";
+    fe.setMetadata(serializedMetadata);
+    FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
+    MetadataDao.store(resp, fe, TestBase.getMetadataDb());
+
+    Assert.assertTrue(MetadataDao.updateScalarField(resp.modelId, "key2", 
+      "value2", TestBase.getMetadataDb()));
+    String actualDbContents = MetadataDao.get(resp.modelId, 
+      TestBase.getMetadataDb());
+    DBObject parsedDbContents = (DBObject) JSON.parse(actualDbContents);
+    Assert.assertEquals("value1", parsedDbContents.get("key1"));
+    Assert.assertEquals("value2", parsedDbContents.get("key2"));
     Assert.assertEquals(resp.modelId,
       parsedDbContents.get(MongoMetadataDb.MODELID_KEY));
   }
