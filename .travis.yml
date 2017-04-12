@@ -42,11 +42,6 @@ install:
   - cd $TRAVIS_BUILD_DIR/server/codegen
   - sh ./gen_sqlite.sh
 
-  # clear old modeldb mongodb data and start mongodb server
-  - mongo modeldb_metadata --eval "db.dropDatabase()"
-  - mkdir -p mongodb
-  - mongod --dbpath mongodb &
-
   # build python client
   - cd $TRAVIS_BUILD_DIR/client/python
   - ./build_client.sh
