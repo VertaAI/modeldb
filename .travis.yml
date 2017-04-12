@@ -74,10 +74,15 @@ before_script:
 script:
 
   # scala sbt tests
-  - echo =================== SCALA  TESTS ===================
+  - echo =================== SEVER TESTS ===================
+  - cd $TRAVIS_BUILD_DIR/server
+  - mvn test -Dthrift_version=0.9.3
+
+  - echo =================== CLIENT TESTS ===================
+  - echo ------------------- SCALA  TESTS -------------------
   - cd $TRAVIS_BUILD_DIR/client/scala/libs/spark.ml
   - sbt test
-  - echo =================== PYTHON TESTS ===================
+  - echo ------------------- PYTHON TESTS -------------------
   # python tests
   - cd $TRAVIS_BUILD_DIR/client/python/modeldb/tests/sklearn
   - python -m unittest discover .

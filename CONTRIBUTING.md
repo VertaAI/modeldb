@@ -85,11 +85,13 @@ Code Style
 - Python: Please conform to the [pep-8](https://www.python.org/dev/peps/pep-0008/) style guide whenever possible. As part of that, please don't `import *` if it is avoidable!
 
 Tests
-- Ensure that existing tests are not broken by the new addition
+- Ensure that existing tests are not broken by the new addition.
+   - [Travis-CI](https://travis-ci.org/mitdbg/modeldb) automatically runs tests on branches and pull requests
 - Add unit tests for every fix or feature
 - Add end-to-end tests where appropriate
-
-To run tests, `python -m unittest discover /MODELDB_DIR/client/python/modeldb/tests/sklearn`
+- python: `python -m unittest discover MODELDB_DIR/client/python/modeldb/tests/sklearn`
+- scala: `cd MODELDB_DIR/client/scala/libs/spark.ml && sbt test`
+- server (mvn): `cd MODELDB_DIR/server && mvn test -Dthrift_version=THRIFT_VERSION` where `THRIFT_VERSION` is the version of thrift you are using. i.e. `0.10.0` or `0.9.3`
 
 
 Documentation
