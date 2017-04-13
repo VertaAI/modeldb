@@ -1,19 +1,10 @@
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
-from modeldb.thrift.modeldb import ModelDBService
+from modeldb.basic.ModelDbSyncerBase import *
 
-# create connection to thrift client
-host = "localhost"
-port = 6543
-transport = TSocket.TSocket(host, port)
-# Buffering is critical. Raw sockets are very slow
-transport = TTransport.TFramedTransport(transport)
-# Wrap in a protocol
-protocol = TBinaryProtocol.TBinaryProtocol(transport)
-# Create a client to use the protocol encoder
-client = ModelDBService.Client(protocol)
-transport.open()
+# Create a syncer using a convenience API
+syncer_obj = Syncer.create_syncer("Sample Project", "test_user", \
+    "using modeldb logging functions")
+
+client = syncer_obj.client
 
 
 # get relevant project ids with case insensitive keys and case sensitive values
@@ -45,4 +36,4 @@ for modelId in modelIds:
 
 
 # close thrift client
-transport.close()
+syncer_obj.closeThriftClient()
