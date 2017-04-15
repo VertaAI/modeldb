@@ -10,6 +10,9 @@ services:
     ports:
       - "27017:27017"
   backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-backend
     image: backend:latest
     networks:
       default:
@@ -21,6 +24,9 @@ services:
     # command: ["sh", "/modeldb/dockerbuild/wait_for_mongodb.sh", "mongo", "mvn", "exec:java", "-Dexec.mainClass='edu.mit.csail.db.ml.main.Main'", "-Dthrift_version=0.10.0"]
     command: sh /modeldb/dockerbuild/wait_for_mongodb.sh mongo mvn exec:java -Dexec.mainClass='edu.mit.csail.db.ml.main.Main' -Dthrift_version=0.10.0
   frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile-frontend
     image: frontend:latest
     networks:
       default:
