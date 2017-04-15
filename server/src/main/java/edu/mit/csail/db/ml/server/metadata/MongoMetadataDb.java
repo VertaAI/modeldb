@@ -13,6 +13,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
 import com.mongodb.WriteResult;
 import com.mongodb.WriteConcernException;
+import org.joda.time.DateTime;
 
 public class MongoMetadataDb implements MetadataDb {
 
@@ -94,11 +95,34 @@ public class MongoMetadataDb implements MetadataDb {
                     .collect(Collectors.toList());
   }
 
-  public boolean updateField(int modelId, String key, String value) {
-    // TODO: how to account for type of value
+  public boolean createOrUpdateScalarField(int modelId, String key, String value,
+   String valueType) {
+    BasicDBObject keyValuePair = new BasicDBObject();
+    switch(valueType) {
+      case "string":
+        keyValuePair.append(key, value);
+        break;
+      case "int":
+        keyValuePair.append(key, Integer.parseInt(value));
+        break;
+      case "double":
+        keyValuePair.append(key, Double.parseDouble(value));
+        break;
+      case "long":
+        keyValuePair.append(key, Long.parseLong(value));
+        break;
+      case "datetime":
+        keyValuePair.append(key, DateTime.parse(value).toDate());
+        break;
+      case "bool":
+        keyValuePair.append(key, Boolean.parseBoolean(value));
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported value type: " + valueType);
+    }
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
     BasicDBObject updatedField = new BasicDBObject(
-      "$set", new BasicDBObject(key, value));
+      "$set", keyValuePair);
     BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId);
     WriteResult res = collection.update(modelQuery, updatedField);
     if (res.wasAcknowledged()) {
@@ -107,7 +131,7 @@ public class MongoMetadataDb implements MetadataDb {
     return false;
   }
 
-  public boolean createVector(int modelId, String vectorName, Map<String, String> vectorConfig) {
+  public boolean createVectorField(int modelId, String vectorName, Map<String, String> vectorConfig) {
     // TODO: use vectorConfig
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
     BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId)
@@ -122,7 +146,13 @@ public class MongoMetadataDb implements MetadataDb {
     return false;
   }
 
-  public boolean addToVectorField(int modelId, String vectorName, String value) {
+  public boolean updateVectorField(int modelId, String vectorName, int valueIndex, 
+    String value, String valueType) {
+    String indexDotNotation = vectorName.concat(".").concat(String.valueOf(valueIndex));
+    return createOrUpdateScalarField(modelId, indexDotNotation, value, valueType);
+  }
+
+  public boolean appendToVectorField(int modelId, String vectorName, String value) {
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
     BasicDBObject updatedField = new BasicDBObject(
       "$push", new BasicDBObject(vectorName, value));
