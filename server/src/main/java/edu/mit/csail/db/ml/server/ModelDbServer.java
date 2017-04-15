@@ -230,8 +230,8 @@ public class ModelDbServer implements ModelDBService.Iface {
     return ExceptionWrapper.run(() -> MetadataDao.updateVectorField(modelId, key, valueIndex, value, valueType, metadataDb));
   }
 
-  public boolean appendToVectorField(int modelId, String vectorName, String value) throws TException {
-    return ExceptionWrapper.run(() -> MetadataDao.appendToVectorField(modelId, vectorName, value, metadataDb));
+  public boolean appendToVectorField(int modelId, String vectorName, String value, String valueType) throws TException {
+    return ExceptionWrapper.run(() -> MetadataDao.appendToVectorField(modelId, vectorName, value, valueType, metadataDb));
   }
 
   public List<ExperimentRun> getRunsInExperiment(int experimentId) throws TException {

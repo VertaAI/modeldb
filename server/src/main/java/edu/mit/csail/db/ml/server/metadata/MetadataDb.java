@@ -77,8 +77,11 @@ public interface MetadataDb {
    * Add a new value to the vector field with the given name in the model with the given ID.
    * @param  modelId - The ID of the model
    * @param  vectorName - The name of the vector key to add to
-   * @param  value - The value to be added
+   * @param  value - The value to be added,
+   *  where datetime values follow the format given 
+   *  <a href="http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTimeParser()">here</a>
+   * @param  valueType = The type of the value (string, int, double, long, datetime, or bool)
    * @return A boolean indicating if the value was added or not
    */
-  public boolean appendToVectorField(int modelId, String vectorName, String value);
+  public boolean appendToVectorField(int modelId, String vectorName, String value, String valueType);
 }

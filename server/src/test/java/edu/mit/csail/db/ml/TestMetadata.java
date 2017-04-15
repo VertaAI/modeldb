@@ -39,7 +39,7 @@ public class TestMetadata {
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());
     DBObject parsedDbContents = (DBObject) JSON.parse(actualDbContents);
-    Assert.assertEquals(parsedDbContents.get("key1"), "value1");
+    Assert.assertEquals("value1", parsedDbContents.get("key1"));
     Assert.assertEquals(30, parsedDbContents.get("key2"));
     Assert.assertEquals(resp.modelId,
       parsedDbContents.get(MongoMetadataDb.MODELID_KEY));
@@ -430,7 +430,7 @@ public class TestMetadata {
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
     Assert.assertFalse(MetadataDao.appendToVectorField(resp.modelId, "key1", 
-      "value", TestBase.getMetadataDb()));
+      "value", "string", TestBase.getMetadataDb()));
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());
     DBObject parsedDbContents = (DBObject) JSON.parse(actualDbContents);
@@ -448,7 +448,7 @@ public class TestMetadata {
     MetadataDao.store(resp, fe, TestBase.getMetadataDb());
 
     Assert.assertTrue(MetadataDao.appendToVectorField(resp.modelId, "key1", 
-      "elem2", TestBase.getMetadataDb()));
+      "elem2", "string", TestBase.getMetadataDb()));
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());
     DBObject parsedDbContents = (DBObject) JSON.parse(actualDbContents);

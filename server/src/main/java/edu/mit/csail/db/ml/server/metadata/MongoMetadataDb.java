@@ -95,8 +95,7 @@ public class MongoMetadataDb implements MetadataDb {
                     .collect(Collectors.toList());
   }
 
-  public boolean createOrUpdateScalarField(int modelId, String key, String value,
-   String valueType) {
+  private BasicDBObject getCastedKeyValuePair(String key, String value, String valueType) {
     BasicDBObject keyValuePair = new BasicDBObject();
     switch(valueType) {
       case "string":
@@ -120,6 +119,12 @@ public class MongoMetadataDb implements MetadataDb {
       default:
         throw new IllegalArgumentException("Unsupported value type: " + valueType);
     }
+    return keyValuePair;
+  }
+
+  public boolean createOrUpdateScalarField(int modelId, String key, String value,
+   String valueType) {
+    BasicDBObject keyValuePair = getCastedKeyValuePair(key, value, valueType);
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
     BasicDBObject updatedField = new BasicDBObject(
       "$set", keyValuePair);
@@ -152,10 +157,11 @@ public class MongoMetadataDb implements MetadataDb {
     return createOrUpdateScalarField(modelId, indexDotNotation, value, valueType);
   }
 
-  public boolean appendToVectorField(int modelId, String vectorName, String value) {
+  public boolean appendToVectorField(int modelId, String vectorName, String value,
+    String valueType) {
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
-    BasicDBObject updatedField = new BasicDBObject(
-      "$push", new BasicDBObject(vectorName, value));
+    BasicDBObject keyValuePair = getCastedKeyValuePair(vectorName, value, valueType);
+    BasicDBObject updatedField = new BasicDBObject("$push", keyValuePair);
     BasicDBObject modelQuery = new BasicDBObject(MODELID_KEY, modelId);
     WriteResult res;
     try {

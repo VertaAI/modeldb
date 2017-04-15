@@ -34,7 +34,7 @@ public class MetadataDao {
         return metadataDb.updateVectorField(modelId, key, valueIndex, value, valueType);
     }
 
-    public static boolean appendToVectorField(int modelId, String vectorName, String value, MetadataDb metadataDb) {
-        return metadataDb.appendToVectorField(modelId, vectorName, value);
+    public static boolean appendToVectorField(int modelId, String vectorName, String value, String valueType, MetadataDb metadataDb) {
+        return metadataDb.appendToVectorField(modelId, vectorName, value, valueType);
     }
 }

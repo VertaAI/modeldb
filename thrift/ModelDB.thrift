@@ -1388,9 +1388,11 @@ service ModelDBService {
 
    modelId: The ID of the model
    vectorName: The name of the vector field to update, which follows MongoDB's dot notation
-   value: The value to be added
+   value: The value to be added, where datetime values follow the format given at
+      http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTimeParser()
+    valueType: The type of the value (string, int, double, long, datetime, or bool)
    */
-  bool appendToVectorField(1: i32 modelId, 2: string vectorName, 3: string value)
+  bool appendToVectorField(1: i32 modelId, 2: string vectorName, 3: string value, 4: string valueType)
     throws (1: ServerLogicException svEx),
 
   /*
