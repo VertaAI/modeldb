@@ -1,4 +1,5 @@
 from modeldb.basic.ModelDbSyncerBase import *
+from datetime import datetime
 
 # Create a syncer using a convenience API
 syncer_obj = Syncer.create_syncer("Sample Project", "test_user", \
@@ -19,20 +20,27 @@ allModelIds = client.getModelIds({})
 modelIds = client.getModelIds({'TAG':'train', 'TYPE':'Normal distributions'})
 # create and update fields of models
 for modelId in modelIds:
-    # update scalar fields with string values
-    client.updateField(modelId, 'PATH', 'new/path/to/model')
+    # create or update scalar fields with string values
+    client.createOrUpdateScalarField(modelId, 'PATH', 'new/path/to/model', 'string')
+    # or with dates (use .isoformat() for datetimes)
+    client.createOrUpdateScalarField(modelId, 'date-created', datetime.now().isoformat(), 'datetime')
+    # or with booleans
+    client.createOrUpdateScalarField(modelId, 'is-production', 'false', 'bool')
+    # or with doubles
+    # update fields nested within vectors using mongodb's dot notation
+    client.createOrUpdateScalarField(modelId, 'METRICS.0.VALUE', '0.25', 'double')
+
     # create vector fields in nested locations using mongodb's dot notation
     # e.g. model[CONFIG][values] = []
     vectorConfig = {} # specify configurations for the vector (this is non-functional for now)
-    client.createVector(modelId, 'CONFIG.values', vectorConfig)
+    client.createVectorField(modelId, 'CONFIG.values', vectorConfig)
     # append to vector fields
-    values = ['value1', 'value2', 'value3']
+    values = [150, 20, 300]
     for i in xrange(len(values)):
-        client.addToVectorField(modelId, 'CONFIG.values', values[i])
+        # use int value types
+        client.appendToVectorField(modelId, 'CONFIG.values', str(values[i]), 'int')
     # update vector fields at a specific index
-    client.updateField(modelId, 'CONFIG.values.0', 'new value')
-    # update fields nested within vectors
-    client.updateField(modelId, 'METRICS.0.TYPE', 'accuracy')
+    client.updateVectorField(modelId, 'CONFIG.values', 0, 'new value', 'string')
 
 
 # close thrift client
