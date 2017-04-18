@@ -35,11 +35,6 @@ RUN wget -q http://archive.apache.org/dist/thrift/0.10.0/thrift-0.10.0.tar.gz &&
 # Add ModelDB project
 ADD . /modeldb
 
-# The MongoDB server's hostname is only definable via a config file. It would
-# be good to allow overriding the hostname with a command line argument so
-# users might choose their own hostname.
-ADD server/src/main/resources/reference-docker.conf /modeldb/server/src/main/resources/reference.conf
-
 WORKDIR /modeldb/server/codegen
 
 # Build SQLite convenience methods and create SQLite databases.
