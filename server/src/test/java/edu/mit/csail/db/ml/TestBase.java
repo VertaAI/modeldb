@@ -62,7 +62,7 @@ public class TestBase {
 
     config = ModelDbConfig.parse(new String[] {});
     metadataDb = new MongoMetadataDb(config.metadataDbHost, 
-      config.metadataDbPort, config.metadataDbName);
+      config.metadataDbPort, config.metadataDbTestDbName);
     metadataDb.open();
     return metadataDb;
   }
