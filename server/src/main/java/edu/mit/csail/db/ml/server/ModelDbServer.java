@@ -81,7 +81,9 @@ public class ModelDbServer implements ModelDBService.Iface {
   public FitEventResponse storeFitEvent(FitEvent fe) throws TException {    
     return ExceptionWrapper.run(fe.experimentRunId, ctx, metadataDb, () -> {
       FitEventResponse fer = FitEventDao.store(fe, ctx);
-      MetadataDao.store(fer, fe, metadataDb);
+      if (!MetadataDao.store(fer, fe, metadataDb)) {
+        throw new TException("Metadata was not stored successfully.");
+      }
       return fer;
     });
   }

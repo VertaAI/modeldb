@@ -22,8 +22,9 @@ public interface MetadataDb {
 
   /**
    * Write data to the database, provide a generalized key/value interface
+   * @return  A boolean indicating if the put to database was successful or not
    */
-  public void put(String key, String value);
+  public boolean put(String key, String value);
 
   /**
    * Read data from the database using a key

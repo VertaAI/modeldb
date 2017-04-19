@@ -34,7 +34,7 @@ public class TestMetadata {
     String serializedMetadata = "{'key1':'value1', 'key2':30}";
     fe.setMetadata(serializedMetadata);
     FitEventResponse resp = FitEventDao.store(fe, TestBase.ctx(), false);
-    MetadataDao.store(resp, fe, TestBase.getMetadataDb());
+    Assert.assertTrue(MetadataDao.store(resp, fe, TestBase.getMetadataDb()));
 
     String actualDbContents = MetadataDao.get(resp.modelId, 
       TestBase.getMetadataDb());

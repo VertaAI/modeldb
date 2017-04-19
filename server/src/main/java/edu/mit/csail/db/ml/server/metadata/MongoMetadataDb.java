@@ -60,11 +60,12 @@ public class MongoMetadataDb implements MetadataDb {
   /**
    * Write data to the database, provide a generalized key/value interface
    */
-  public void put(String key, String value) {
+  public boolean put(String key, String value) {
     DBCollection collection = metadataDb.getCollection(COLLECTION_NAME);
     DBObject metadataObject = (DBObject) JSON.parse(value);
     metadataObject.put(MODELID_KEY, Integer.parseInt(key));
-    collection.insert(metadataObject);
+    WriteResult res = collection.insert(metadataObject);
+    return res.wasAcknowledged();
   }
 
   /**
