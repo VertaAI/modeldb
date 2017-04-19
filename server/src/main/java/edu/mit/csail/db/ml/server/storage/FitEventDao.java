@@ -315,14 +315,4 @@ public class FitEventDao {
     }
     return rec.getDf();
   }
-
-    /**
-   * Get the IDs of all the models that match the specified key-value pairs.
-   * @param  keyValuePairs - The map containing key-value pairs to match.
-   * @param  ctx - The database context.
-   * @return A list of all model IDs that match the given attributes.
-   */
-  public static List<Integer> getModelIds(Map<String, String> keyValuePairs, DSLContext ctx) {
-    throw new RuntimeException("implement me");
-  }
 }
