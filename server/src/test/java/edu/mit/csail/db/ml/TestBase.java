@@ -46,7 +46,7 @@ public class TestBase {
   private static MetadataDb metadataDb = null;
 
   private static void createSqliteDb() throws IOException {
-    ProcessBuilder pb = new ProcessBuilder("sh", "gen_sqlite.sh");
+    ProcessBuilder pb = new ProcessBuilder("sh", "gen_sqlite_test.sh");
     pb.directory(new File("codegen/"));
     pb.start();
   }
