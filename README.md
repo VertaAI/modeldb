@@ -44,11 +44,29 @@ Alternatively, ModelDB native clients for  ```spark.ml``` and ```scikit-learn```
 
 ## Setup and Installation
 
+### Automated Setup
+
+If you have [Docker Compose](https://docs.docker.com/compose/install/) installed, you can bring up a ModelDB server with just a couple commands.
+
+2. **Clone the repo**
+
+    ```bash
+    git clone https://github.com/mitdbg/modeldb
+    ```
+
+3. **Build and run ModelDB**
+
+    ```bash
+    $ docker-compose up
+    ```
+
+### Manual Setup
+
 Watch a video of the setup and installation process [here](https://youtu.be/rmNnG3-bd6s).
 
 1. **Clone the repo**
 
-    ```git
+    ```bash
     git clone https://github.com/mitdbg/modeldb
     ```
 

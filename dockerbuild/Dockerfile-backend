@@ -57,9 +57,11 @@ RUN rm -rf jars/ && \
 
 WORKDIR /modeldb/server
 
-ENV THRIFT_VERSION -Dthrift_version=0.10.0
-
 RUN ../scripts/gen_thrift_file.sh java '../thrift/ModelDB.thrift' './src/main/thrift/' && \
-    mvn clean compile $THRIFT_VERSION
+    mvn clean compile -Dthrift_version=0.10.0
 
-CMD /bin/bash -c "mvn exec:java -Dexec.mainClass='edu.mit.csail.db.ml.main.Main' $THRIFT_VERSION"
+# This would be better as an ENTRYPOINT with 'mongo' the CMD param, but
+# `exec mvn exec:java ...` leads to a classpath issue that isn't immediately
+# clear how to handle.
+ENTRYPOINT ["/modeldb/dockerbuild/wait_for_mongodb.sh", "0.10.0"]
+CMD ["mongo"]

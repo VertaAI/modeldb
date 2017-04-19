@@ -25,15 +25,11 @@ RUN cd /modeldb/frontend && \
 
 ADD . /modeldb
 
-# Need to edit server address in /modeldb/frontend/util/thrift.js to replace
-# "localhost" with "modeldb-backend".
-# Better yet, make that something settable on the entrypoint when running this
-# image.
-
 WORKDIR /modeldb/frontend
 
 RUN mkdir -p './thrift' && \
     thrift -r -out './thrift' -gen js:node '../thrift/ModelDB.thrift' && \
     npm install
 
-CMD ["npm", "start"]
+ENTRYPOINT ["/modeldb/dockerbuild/wait_for_backend.sh"]
+CMD ["backend"]

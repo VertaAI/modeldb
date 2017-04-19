@@ -1,36 +1,69 @@
-#Running the docker file
-Use the following command to download the image from dockerhub:
-```bash
-docker run -it -p 8082:8082 -p 8081:3000 sanjayganeshan/mdgmodeldb:latest
-```
+#Running ModelDB with Docker
 
-OR build it from the dockerfile. 
+##Docker Compose
 
-*from the dockerbuild directory*
+The easiest way to get a ModelDB server up and running is with Docker Compose.
 
-```bash
-docker build .
-docker run -it -p 8082:8082 -p 8081:3000 <ID>
-```
+1. **Install Docker Compose**
 
-You should replace *ID* with the ID that is printed after building.
+    [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
 
-Once you have started the built container, please run `interactive_installer.sh` to install the dependencies that require
-accepting license agreements. It will then also build ModelDB. You should commit this as a new tag so that you do not need to wait for
-it to install again. Future runs can then `start_modeldb.sh` to build modelDB (You can also build modelDB manually, just use `add_dependencies_to_path.sh`
-to add the dependencies to your PATH first).
+2. **Run ModelDB server**
 
-##Summary of Files
+    ```bash
+    cd /modeldb/project/root
+    docker-compose up
+    ```
 
-`installer.sh`: A full-fledged installer that installs ModelDB. You shouldn't have to run this.
+`docker-compose up` will download prebuilt ModelDB images from Docker Hub and create and start containers. When it finishes, your ModelDB server should be reachable at [http://localhost/](http://localhost/).
 
-`interactive_installer.sh`: An installer that installs the components of ModelDB that require the user to accept an agreement,
-then starts ModelDB.
+##Manual Docker
 
-`quiet_installer.sh`: An installer that installs all it can without user input
+It is also possiblet to run ModelDB in Docker without Docker Compose.
 
-`start_modeldb.sh`: A script that adds the dependencies to the PATH, then starts ModelDB.
+1. **(Optional) Build images**
 
-`add_dependencies_to_path.sh`: A script that adds the dependencies to the PATH.
+    You can build ModelDB's Docker images locally if you prefer, but prebuilt images are available on [MIT DBg's Docker Hub organization](https://hub.docker.com/r/mitdbg/) and will be downloaded automatically by Docker if you skip this step.
 
-`Dockerfile`: A script that tells Docker how to build the image.
+    ```bash
+    docker build -t mitdbg/modeldb-backend -f dockerbuild/Dockerfile-backend .
+    docker build -t mitdbg/modeldb-frontend -f dockerbuild/Dockerfile-frontend .
+    ```
+
+2. **Set up ModelDB containers**
+
+    ```bash
+    # Create a private network for the services to see each other
+    docker network create modeldb
+
+    # Mongo server
+    docker create \
+        --name mongo \
+        --net modeldb \
+        -p 27017:27017 \
+        mongo:3.4
+
+    # ModelDB backend server ('mongo' tells it the hostname for mongo)
+    docker create \
+        --name backend \
+        --net modeldb \
+        -p 6543:6543 \
+        mitdbg/modeldb-backend \
+        mongo
+
+    # ModelDB frontend server ('backend' tells it the hostname for backend)
+    docker create \
+        --name frontend \
+        --net modeldb \
+        -p 80:3000 \
+        mitdbg/modeldb-frontend \
+        backend
+    ```
+
+3. **Run ModelDB**
+
+    ```bash
+    docker start mongo backend frontend
+    ```
+
+    Shortly after running this command, ModelDB should be reachable at [http://localhost/](http://localhost/).
