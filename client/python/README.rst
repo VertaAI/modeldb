@@ -24,4 +24,4 @@ You can install it using ``pip`` directly from PyPI::
 Configure & Use
 ---------------
 
-This library requires a connection to a ModelDB server to work. You can see the `getting started docs here <https://github.com/mitdbg/modeldb/blob/master/docs/getting_started/scikit_learn.md>_`.
+This library requires a connection to a ModelDB server to work. You can see the `getting started docs here <https://github.com/mitdbg/modeldb/blob/master/docs/getting_started/scikit_learn.md>`_.
