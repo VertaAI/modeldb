@@ -1,6 +1,6 @@
 README.rst
 setup.py
-../syncer.json
+syncer.json
 modeldb/__init__.py
 modeldb.egg-info/PKG-INFO
 modeldb.egg-info/SOURCES.txt
@@ -28,19 +28,6 @@ modeldb/sklearn_native/ModelDbSyncer.py
 modeldb/sklearn_native/SyncableMetrics.py
 modeldb/sklearn_native/SyncableRandomSplit.py
 modeldb/sklearn_native/__init__.py
-modeldb/tests/__init__.py
-modeldb/tests/utils.py
-modeldb/tests/basic/ModelDbSyncerBaseTest.py
-modeldb/tests/basic/__init__.py
-modeldb/tests/sklearn/ModelDbSyncerTest.py
-modeldb/tests/sklearn/__init__.py
-modeldb/tests/sklearn/testFitEvent.py
-modeldb/tests/sklearn/testGridSearchEvent.py
-modeldb/tests/sklearn/testMetricEvent.py
-modeldb/tests/sklearn/testPipelineEvent.py
-modeldb/tests/sklearn/testProjectCreation.py
-modeldb/tests/sklearn/testRandomSplitEvent.py
-modeldb/tests/sklearn/testTransformEvent.py
 modeldb/thrift/__init__.py
 modeldb/thrift/modeldb/ModelDBService.py
 modeldb/thrift/modeldb/__init__.py

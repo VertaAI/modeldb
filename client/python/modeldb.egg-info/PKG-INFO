@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: modeldb
-Version: 0.0.0.dev1
+Version: 0.0.0.dev5
 Summary: A system to manage machine learning models
 Home-page: https://github.com/mitdbg/modeldb/tree/master/client
 Author: Manasi Vartak, MIT DB Group
@@ -9,8 +9,8 @@ License: MIT
 Description: A sample Python project
         =======================
         
-        A sample project that exists as an aid to the `Python Packaging User Guide
-        <https://packaging.python.org>`_'s `Tutorial on Packaging and Distributing
+        A sample project that exists as an aid to the `Python Packaging User Guide's
+        <https://packaging.python.org>`_ `Tutorial on Packaging and Distributing
         Projects <https://packaging.python.org/en/latest/distributing.html>`_.
         
         This projects does not aim to cover best practices for Python project
