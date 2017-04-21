@@ -68,20 +68,47 @@ before_script:
 script:
 
   # scala sbt tests
-  # - echo =================== SEVER TESTS ===================
-  # - cd $TRAVIS_BUILD_DIR/server
-  # - mvn test -Dthrift_version=0.9.3
+  - echo =================== SEVER TESTS ===================
+  - cd $TRAVIS_BUILD_DIR/server
+  - mvn test -Dtest=TestAncestryComputer -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestBasicConnection -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestCrossValidation -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestDataFrame -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestEvent -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestExperiment -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestExperimentRun -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestFeatures -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestFitEvent -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestGridSearchCrossValidation -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestPipelineEvent -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestProject -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestTransformer -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestTransformerSpec -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestTransformEvent -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestTreeModels -Dthrift_version=0.9.3
+  - /bin/sleep 10
+
 
   - echo =================== CLIENT TESTS ===================
   - echo ------------------- SCALA  TESTS -------------------
   - cd $TRAVIS_BUILD_DIR/client/scala/libs/spark.ml
   - sbt test
   - echo ------------------- PYTHON TESTS -------------------
-  # python tests
   - cd $TRAVIS_BUILD_DIR/client/python/modeldb/tests/sklearn
   - python -m unittest discover .
-
-  # - python testProjectCreation.py
-
-
 
