@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: modeldb
-Version: 0.0.1a2
+Version: 0.0.1a3
 Summary: A system to manage machine learning models
 Home-page: https://github.com/mitdbg/modeldb/tree/master/client
 Author: Manasi Vartak, MIT DB Group
@@ -32,7 +32,7 @@ Description: =======
         Configure & Use
         ---------------
         
-        This library requires a connection to a ModelDB server to work. You can see the `getting started docs here <https://github.com/mitdbg/modeldb/blob/master/docs/getting_started/scikit_learn.md>_`.
+        This library requires a connection to a ModelDB server to work. You can see the `getting started docs here <https://github.com/mitdbg/modeldb/blob/master/docs/getting_started/scikit_learn.md>`_.
         
 Keywords: machine learning ML model catalog
 Platform: UNKNOWN
