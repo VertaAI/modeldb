@@ -21,3 +21,4 @@ _site/
 .sass-cache/
 target/
 bin/
+*.pyc
