@@ -1,6 +1,6 @@
-#Running ModelDB with Docker
+# Running ModelDB with Docker
 
-##Docker Compose
+## Docker Compose
 
 The easiest way to get a ModelDB server up and running is with Docker Compose.
 
@@ -17,7 +17,7 @@ The easiest way to get a ModelDB server up and running is with Docker Compose.
 
 `docker-compose up` will download prebuilt ModelDB images from Docker Hub and create and start containers. When it finishes, your ModelDB server should be reachable at [http://localhost/](http://localhost/).
 
-##Manual Docker
+## Manual Docker
 
 It is also possiblet to run ModelDB in Docker without Docker Compose.
 
