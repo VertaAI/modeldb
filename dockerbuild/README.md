@@ -8,7 +8,7 @@ The easiest way to get a ModelDB server up and running is with Docker Compose.
 
     [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
 
-2. **Run ModelDB server**
+2. **Run ModelDB**
 
     ```bash
     cd /modeldb/project/root
