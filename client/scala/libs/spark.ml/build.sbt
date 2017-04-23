@@ -5,7 +5,7 @@ version := "1.0"
 scalaVersion := "2.11.8"
 
 test in assembly := {}
-assemblyJarName in assembly := "modeldb-ml.jar"
+assemblyJarName in assembly := "modeldb-scala-client.jar"
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % "2.1.0" % "provided"
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "2.1.0" % "provided"
