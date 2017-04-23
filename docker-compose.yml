@@ -31,5 +31,5 @@ services:
         aliases:
           - frontend
     ports:
-      - "80:3000"
+      - "3000:3000"
     command: ["backend"]
