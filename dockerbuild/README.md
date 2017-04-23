@@ -66,4 +66,4 @@ It is also possiblet to run ModelDB in Docker without Docker Compose.
     docker start mongo backend frontend
     ```
 
-    Shortly after running this command, ModelDB frontend will be reachable at [http://localhost/3000](http://localhost/3000) and you will be able to log data into ModelDB via ModelDB clients.
+    Shortly after running this command, ModelDB frontend will be reachable at [http://localhost/3000](http://localhost/3000) and you will be able to log data into ModelDB (at port 6543) via ModelDB clients.
