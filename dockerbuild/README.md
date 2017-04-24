@@ -19,7 +19,7 @@ The easiest way to get a ModelDB server up and running is with Docker Compose.
 
 ## Manual Docker
 
-It is also possiblet to run ModelDB in Docker without Docker Compose.
+It is also possible to run ModelDB in Docker without Docker Compose.
 
 1. **(Optional) Build images**
 
@@ -30,21 +30,32 @@ It is also possiblet to run ModelDB in Docker without Docker Compose.
     docker build -t mitdbg/modeldb-frontend -f dockerbuild/Dockerfile-frontend .
     ```
 
-2. **Set up ModelDB containers**
+2. **Create a Docker network for ModelDB**
+
+    Docker containers need a private network in order to find each other by name.
 
     ```bash
-    # Create a private network for the services to see each other
     docker network create modeldb
+    ```
 
-    # Mongo server
-    docker create \
-        --name mongo \
-        --net modeldb \
-        -p 27017:27017 \
-        mongo:3.4
+3. **Run MongoDB**
 
+    ModelDB stores its data in MongoDB. If you have an existing MongoDB server you would like to use, you can skip this part and substitute the hostname or IP of your MongoDB server for 'mongo' in the next step.
+
+    ```bash
+        # Mongo server
+        docker run -d \
+            --name mongo \
+            --net modeldb \
+            -p 27017:27017 \
+            mongo:3.4
+    ```
+
+4. **Run ModelDB**
+
+    ```bash
     # ModelDB backend server ('mongo' tells it the hostname for mongo)
-    docker create \
+    docker run -d \
         --name backend \
         --net modeldb \
         -p 6543:6543 \
@@ -52,7 +63,7 @@ It is also possiblet to run ModelDB in Docker without Docker Compose.
         mongo
 
     # ModelDB frontend server ('backend' tells it the hostname for backend)
-    docker create \
+    docker run -d \
         --name frontend \
         --net modeldb \
         -p 3000:3000 \
@@ -60,10 +71,4 @@ It is also possiblet to run ModelDB in Docker without Docker Compose.
         backend
     ```
 
-3. **Run ModelDB**
-
-    ```bash
-    docker start mongo backend frontend
-    ```
-
-    Shortly after running this command, ModelDB frontend will be reachable at [http://localhost:3000](http://localhost:3000) and you will be able to log data into ModelDB (at port 6543) via ModelDB clients.
+    Shortly after running this command, ModelDB's frontend will be reachable at [http://localhost:3000](http://localhost:3000), and you will be able to log data into ModelDB (at port 6543) via ModelDB clients.
