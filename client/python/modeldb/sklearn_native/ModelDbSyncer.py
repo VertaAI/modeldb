@@ -27,7 +27,7 @@ from thrift.protocol import TBinaryProtocol
 
 # modeldb imports
 import GridCrossValidation
-from  CrossValidationScore import *
+from CrossValidationScore import *
 from ..basic import *
 from ..events import *
 from ..thrift.modeldb import ModelDBService
@@ -38,19 +38,23 @@ from ..thrift.modeldb import ttypes as modeldb_types
 Functions that extract relevant information from scikit-learn, pandas and
 numpy calls
 '''
+
+
 def fit_fn(self, x, y=None, sample_weight=None):
     """
-    Overrides the fit function for all models except for Pipeline and GridSearch
-    Cross Validation, which have their own functions.
+    Overrides the fit function for all models except for
+    Pipeline and GridSearch, and Cross Validation,
+    which have their own functions.
     """
     df = x
-    #Certain fit functions only accept one argument
+    # Certain fit functions only accept one argument
     if y is None:
         model = self.fit(x)
     else:
         model = self.fit(x, y)
     fit_event = FitEvent(model, self, x)
     Syncer.instance.add_to_buffer(fit_event)
+
 
 def convert_prediction_to_event(model, predict_array, x):
     predict_df = pd.DataFrame(predict_array)
@@ -59,7 +63,7 @@ def convert_prediction_to_event(model, predict_array, x):
     num_pred_cols = predict_df.shape[1]
     pred_col_names = []
     for i in range(0, num_pred_cols):
-        pred_col_names.append('pred_'+str(i))
+        pred_col_names.append('pred_' + str(i))
     predict_df.columns = pred_col_names
     if not isinstance(x, pd.DataFrame):
         x_to_df = pd.DataFrame(x)
@@ -70,6 +74,7 @@ def convert_prediction_to_event(model, predict_array, x):
     Syncer.instance.add_to_buffer(predict_event)
     return predict_array
 
+
 def predict_fn(self, x):
     """
     Overrides the predict function for models, provided that the predict
@@ -78,12 +83,14 @@ def predict_fn(self, x):
     predict_array = self.predict(x)
     return convert_prediction_to_event(self, predict_array, x)
 
+
 def predict_proba_fn(self, x):
     """
     Overrides the predict_proba function for models.
     """
     predict_array = self.predict_proba(x)
     return convert_prediction_to_event(self, predict_array, x)
+
 
 def transform_fn(self, x):
     """
@@ -99,13 +106,14 @@ def transform_fn(self, x):
     Syncer.instance.add_to_buffer(transform_event)
     return transformed_output
 
+
 def fit_transform_fn(self, x, y=None, **fit_params):
     """
     Overrides the fit_transform function for models.
     Combines fit and transform functions.
     """
     df = x
-    #Certain fit functions only accept one argument
+    # Certain fit functions only accept one argument
     if y is None:
         fitted_model = self.fit(x, **fit_params)
     else:
@@ -121,19 +129,21 @@ def fit_transform_fn(self, x, y=None, **fit_params):
     Syncer.instance.add_to_buffer(transform_event)
     return transformed_output
 
+
 def fit_fn_pipeline(self, x, y):
     """
     Overrides the Pipeline model's fit function
     """
-    #Check if pipeline contains valid estimators and transformers
+    # Check if pipeline contains valid estimators and transformers
     check_valid_pipeline(self.steps)
 
-    #Make Fit Event for overall pipeline
+    # Make Fit Event for overall pipeline
     pipeline_model = self.fit(x, y)
     pipeline_fit = FitEvent(pipeline_model, self, x)
 
-    #Extract all the estimators from pipeline
-    #All estimators call 'fit' and 'transform' except the last estimator (which only calls 'fit')
+    # Extract all the estimators from pipeline
+    # All estimators call 'fit' and 'transform' except the last estimator
+    # (which only calls 'fit')
     names, sk_estimators = zip(*self.steps)
     estimators = sk_estimators[:-1]
     last_estimator = sk_estimators[-1]
@@ -147,7 +157,7 @@ def fit_fn_pipeline(self, x, y):
         model = estimator.fit(old_df, y)
         transformed_output = model.transform(old_df)
 
-        #Convert transformed output into a proper pandas DataFrame object
+        # Convert transformed output into a proper pandas DataFrame object
         if type(transformed_output) is np.ndarray:
             new_df = pd.DataFrame(transformed_output)
         else:
@@ -155,22 +165,24 @@ def fit_fn_pipeline(self, x, y):
 
         cur_dataset = transformed_output
 
-        #populate the stages
+        # populate the stages
         transform_event = TransformEvent(old_df, new_df, model)
         transform_stages.append((index, transform_event))
         fit_event = FitEvent(model, estimator, old_df)
         fit_stages.append((index, fit_event))
 
-    #Handle last estimator, which has a fit method (and may not have transform)
+    # Handle last estimator, which has a fit method (and may not have
+    # transform)
     old_df = cur_dataset
     model = last_estimator.fit(old_df, y)
     fit_event = FitEvent(model, last_estimator, old_df)
-    fit_stages.append((index+1, fit_event))
+    fit_stages.append((index + 1, fit_event))
 
-    #Create the pipeline event with all components
+    # Create the pipeline event with all components
     pipeline_event = PipelineEvent(pipeline_fit, transform_stages, fit_stages)
 
     Syncer.instance.add_to_buffer(pipeline_event)
+
 
 def check_valid_pipeline(steps):
     """
@@ -183,8 +195,9 @@ def check_valid_pipeline(steps):
     estimator = estimators[-1]
 
     for t in transforms:
-        #Change from original scikit: checking for "fit" and "transform"
-        #methods, rather than "fit_transform" as each event is logged separately to database
+        # Change from original scikit: checking for "fit" and "transform"
+        # methods, rather than "fit_transform" as each event is logged
+        # separately to database
         if not (hasattr(t, "fit")) and hasattr(t, "transform"):
             raise TypeError("All intermediate steps of the chain should "
                             "be transforms and implement fit and transform"
@@ -195,6 +208,7 @@ def check_valid_pipeline(steps):
                         "'%s' (type %s) doesn't)"
                         % (estimator, type(estimator)))
 
+
 def fit_fn_grid_search(self, x, y):
     """
     Overrides GridSearch Cross Validation's fit function
@@ -203,10 +217,11 @@ def fit_fn_grid_search(self, x, y):
     [input_data_frame, cross_validations, seed, evaluator, best_model,
         best_estimator, num_folds] = self.grid_cv_event
 
-    #Calls SyncGridCVEvent and adds to buffer.
+    # Calls SyncGridCVEvent and adds to buffer.
     grid_event = GridSearchCVEvent(input_data_frame, cross_validations,
-        seed, evaluator, best_model, best_estimator, num_folds)
+                                   seed, evaluator, best_model, best_estimator, num_folds)
     Syncer.instance.add_to_buffer(grid_event)
+
 
 def store_df_path(filepath_or_buffer, **kwargs):
     """
@@ -215,6 +230,7 @@ def store_df_path(filepath_or_buffer, **kwargs):
     df = pd.read_csv(filepath_or_buffer, **kwargs)
     Syncer.instance.store_path_for_df(df, str(filepath_or_buffer))
     return df
+
 
 def train_test_split_fn(*arrays, **options):
     """
@@ -237,10 +253,12 @@ def train_test_split_fn(*arrays, **options):
         random_state = 1
     main_df = arrays[0]
     weights = [train_size, test_size]
-    result = split_dfs[:len(split_dfs)/2]
-    random_split_event = RandomSplitEvent(main_df, weights, random_state, result)
+    result = split_dfs[:len(split_dfs) / 2]
+    random_split_event = RandomSplitEvent(
+        main_df, weights, random_state, result)
     Syncer.instance.add_to_buffer(random_split_event)
     return split_dfs
+
 
 def drop_columns(self, labels, **kwargs):
     """
@@ -252,18 +270,23 @@ def drop_columns(self, labels, **kwargs):
     Syncer.instance.add_to_buffer(drop_event)
     return dropped_df
 
+
 '''
 End functions that extract information from scikit-learn, pandas and numpy
 '''
+
 
 class Syncer(ModelDbSyncerBase.Syncer):
     """
     This is the Syncer class for sklearn, responsible for
     storing events in the ModelDB.
     """
-    def __init__(self, project_config, experiment_config, experiment_run_config):
-        super(Syncer, self).__init__(project_config, experiment_config, \
-            experiment_run_config)
+
+    def __init__(
+            self, project_config, experiment_config, experiment_run_config,
+            thrift_config):
+        super(Syncer, self).__init__(project_config, experiment_config,
+                                     experiment_run_config, thrift_config)
         self.local_id_to_path = {}
         self.enable_sklearn_sync_functions()
         self.enable_pandas_sync_functions()
@@ -343,7 +366,8 @@ class Syncer(ModelDbSyncerBase.Syncer):
 
     def convert_spec_to_thrift(self, spec):
         """
-        Converts a TransformerSpec object into a Thrift object with appropriate fields.
+        Converts a TransformerSpec object into a Thrift object with appropriate
+        fields.
         """
         tid = self.get_modeldb_id_for_object(spec)
         tag = self.get_tag_for_object(spec)
@@ -351,14 +375,14 @@ class Syncer(ModelDbSyncerBase.Syncer):
         params = spec.get_params()
         for param in params:
             hp = modeldb_types.HyperParameter(
-                param, 
+                param,
                 str(params[param]),
                 type(params[param]).__name__,
-                sys.float_info.min, 
+                sys.float_info.min,
                 sys.float_info.max)
             hyperparams.append(hp)
-        ts = modeldb_types.TransformerSpec(tid, spec.__class__.__name__, 
-            hyperparams, tag)
+        ts = modeldb_types.TransformerSpec(tid, spec.__class__.__name__,
+                                           hyperparams, tag)
         return ts
 
     '''
@@ -385,28 +409,30 @@ class Syncer(ModelDbSyncerBase.Syncer):
         *Sync versions of methods. (i.e. fit_sync() for fit())
         Users can easily add more models to this function.
         """
-        #Linear Models (transform has been deprecated)
-        for class_name in [LogisticRegression, LinearRegression, \
-            CalibratedClassifierCV, RandomForestClassifier, BaggingClassifier]:
+        # Linear Models (transform has been deprecated)
+        for class_name in [LogisticRegression, LinearRegression,
+                           CalibratedClassifierCV, RandomForestClassifier,
+                           BaggingClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "predict_sync", predict_fn)
             setattr(class_name, "predict_proba_sync", predict_proba_fn)
 
-        #Preprocessing and some Classifier models 
-        for class_name in [LabelEncoder, OneHotEncoder, DecisionTreeClassifier]:
+        # Preprocessing and some Classifier models
+        for class_name in [LabelEncoder, OneHotEncoder,
+                           DecisionTreeClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
             setattr(class_name, "transform_sync", transform_fn)
             setattr(class_name, "fit_transform_sync", fit_transform_fn)
 
-        #Pipeline model
+        # Pipeline model
         for class_name in [Pipeline]:
             setattr(class_name, "fit_sync", fit_fn_pipeline)
 
-        #Grid-Search Cross Validation model
+        # Grid-Search Cross Validation model
         for class_name in [GridSearchCV]:
             setattr(class_name, "fit_sync", fit_fn_grid_search)
             setattr(class_name, "predict_sync", predict_fn)
 
-        #Train-test split for cross_validation
+        # Train-test split for cross_validation
         setattr(cross_validation, "train_test_split_sync", train_test_split_fn)
         setattr(cross_validation, "cross_val_score_sync", cross_val_score_fn)

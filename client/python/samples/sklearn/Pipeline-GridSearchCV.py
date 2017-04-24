@@ -1,17 +1,12 @@
-import numpy as np
-import pandas as pd
-import sys
-
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.linear_model import SGDClassifier
 from sklearn.grid_search import GridSearchCV
 from sklearn.pipeline import Pipeline
-from sklearn import datasets, linear_model, cross_validation, grid_search
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 
-#Uses GridSearch and Pipeline objects in scikit, adapted from http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_text_feature_extraction.html
+# Uses GridSearch and Pipeline objects in scikit, adapted from
+# http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_text_feature_extraction.html
 name = "grid search cross validation"
 author = "srinidhi"
 description = "digits dataset"
@@ -36,8 +31,8 @@ pipeline = Pipeline([
     ('clf', SGDClassifier()),
 ])
 
-clf = GridSearchCV(pipeline, parameters, cv=None,
-                       scoring='%s_weighted' % 'precision')
+clf = GridSearchCV(
+    pipeline, parameters, cv=None, scoring='%s_weighted' % 'precision')
 
-clf.fit_sync(x,y)
+clf.fit_sync(x, y)
 syncer_obj.sync()

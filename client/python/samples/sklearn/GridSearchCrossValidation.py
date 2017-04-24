@@ -1,19 +1,13 @@
-import numpy as np
-import pandas as pd
-import sys
-from sklearn import preprocessing
-from sklearn import linear_model
 from sklearn.grid_search import GridSearchCV
 from sklearn import datasets
-from sklearn.cross_validation import train_test_split
-from sklearn.metrics import classification_report
 from sklearn.metrics import precision_score
 from sklearn.svm import SVC
 
 from modeldb.sklearn_native.ModelDbSyncer import *
 from modeldb.sklearn_native import SyncableMetrics
 
-#This is a sample usage of GridSearch in scikit, adapted from http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_digits.html
+# This is a sample usage of GridSearch in scikit, adapted from
+# http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_digits.html
 name = "grid search"
 author = "srinidhi"
 description = "digits dataset"
@@ -46,6 +40,7 @@ clf.fit_sync(x_train, y_train)
 print("The model is trained on the full development set.")
 print("The scores are computed on the full evaluation set.")
 y_pred = clf.predict_sync(x_test)
-mean_error = SyncableMetrics.compute_metrics(clf, precision_score, y_test, y_pred, x_test, '', '')
+mean_error = SyncableMetrics.compute_metrics(
+    clf, precision_score, y_test, y_pred, x_test, '', '')
 
 syncer_obj.sync()

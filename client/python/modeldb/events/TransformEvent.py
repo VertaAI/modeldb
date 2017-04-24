@@ -1,12 +1,15 @@
 """
 Event indicating a Transformer transformed a dataframe.
 """
-from modeldb.events.Event import *
+from modeldb.events.Event import Event
+from ..thrift.modeldb import ttypes as modeldb_types
+
 
 class TransformEvent(Event):
     """
     Class for creating and storing TransformEvents
     """
+
     def __init__(self, old_df, new_df, transformer):
         self.old_df = old_df
         self.new_df = new_df
@@ -19,8 +22,9 @@ class TransformEvent(Event):
         syncable_transformer = syncer.convert_model_to_thrift(self.transformer)
         syncable_dataframe_old = syncer.convert_df_to_thrift(self.old_df)
         syncable_dataframe_new = syncer.convert_df_to_thrift(self.new_df)
-        te = modeldb_types.TransformEvent(syncable_dataframe_old, 
-            syncable_dataframe_new, syncable_transformer, [], [], 
+        te = modeldb_types.TransformEvent(
+            syncable_dataframe_old, syncable_dataframe_new,
+            syncable_transformer, [], [],
             syncer.experiment_run.id)
         return te
 

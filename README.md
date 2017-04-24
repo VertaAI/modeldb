@@ -1,4 +1,5 @@
 # ModelDB: A system to manage ML models
+[![Build Status](https://travis-ci.org/mitdbg/modeldb.svg?branch=master)](https://travis-ci.org/mitdbg/modeldb)
 **Website**: [http://modeldb.csail.mit.edu](http://modeldb.csail.mit.edu)
 
 **See the ModelDB frontend in action**:
@@ -55,7 +56,7 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
 2. **Install dependencies**
 
     ModelDB requires Linux or MacOS. The code below shows how you can install the dependencies on each of them. A detailed list of all the dependencies with the recommended and required versions can be found [here](docs/required_software.md).
-    
+
     Depending on the client you're using, we assume you have the following already installed:
     - scikit-learn client:
         - Python 2.7\*\*
@@ -108,10 +109,10 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
     pip install -r [path_to_modeldb]/client/python/requirements.txt
     ```
 
-    For Linux, you can also refer to [this script](https://github.com/mitdbg/modeldb/blob/master/docs/install_on_linux.sh). 
+    For Linux, you can also refer to [this script](https://github.com/mitdbg/modeldb/blob/master/docs/install_on_linux.sh).
 
 3. **Build**
-    
+
     ModelDB is composed of three components: the ModelDB **server**, the ModelDB **client libraries**, and the ModelDB **frontend**.
 
     In the following, **[path_to_modeldb]** refers to the directory into which you have cloned the modeldb repo and **[thrift_version]** is 0.9.3 or 0.10.0 depending on your thrift version (check by running ```thrift -version```).
@@ -143,7 +144,7 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
     # ****** For server shutdown ******
     # Kill server
     # Shutdown mongodb server
-    mongo --eval "db.getSiblingDB('admin').shutdownServer()" 
+    mongo --eval "db.getSiblingDB('admin').shutdownServer()"
     ```
 
 ## Usage and Samples

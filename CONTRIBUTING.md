@@ -16,7 +16,7 @@ We welcome and solicit contributions to ModelDB. You can contribute to ModelDB i
 
 - Open an issue with an informative title and label it [BUG] or [FEATURE]
 - Provide a brief summary of what the issue it and why it is important
-- If a bug, provide details on how to reproduce it 
+- If a bug, provide details on how to reproduce it
 - If a feature request, provide details about what you are requesting (e.g. what can ModelDB do to address X?)
 - Include architectural or visual design details, if any
 
@@ -69,7 +69,7 @@ review. This will send an email to the committers.
 
 6. If your pull request addresses an issue, please use the pull request title
    to describe the issue and mention the issue number in the pull request description.
-   
+
 7. Prefix the title of your pull request with `[MRG]` (Ready for
    Merge), if the contribution is complete and ready for a detailed review.
    Prefix incomplete contributions as `[WIP]` (to indicate a work
@@ -81,13 +81,18 @@ review. This will send an email to the committers.
    in the PR description
 
 Code Style
-- Ensure that new code conforms to the code around it. Since ModelDB has components written in different languages, 
-  be aware of the code style in your particular component
+- Ensure that new code conforms to the code around it. Since ModelDB has components written in different languages, be aware of the code style in your particular component
+- Python: Please conform to the [pep-8](https://www.python.org/dev/peps/pep-0008/) style guide whenever possible. As part of that, please don't `import *` if it is avoidable!
 
 Tests
-- Ensure that existing tests are not broken by the new addition
+- Ensure that existing tests are not broken by the new addition.
+   - [Travis-CI](https://travis-ci.org/mitdbg/modeldb) automatically runs tests on branches and pull requests
 - Add unit tests for every fix or feature
 - Add end-to-end tests where appropriate
+- python: `python -m unittest discover MODELDB_DIR/client/python/modeldb/tests/sklearn`
+- scala: `cd MODELDB_DIR/client/scala/libs/spark.ml && sbt test`
+- server (mvn): `cd MODELDB_DIR/server && mvn test -Dthrift_version=THRIFT_VERSION` where `THRIFT_VERSION` is the version of thrift you are using. i.e. `0.10.0` or `0.9.3`
+
 
 Documentation
 - Document every new code addition in the same way as the existing code

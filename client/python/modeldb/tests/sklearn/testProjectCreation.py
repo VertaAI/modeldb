@@ -1,16 +1,16 @@
 import unittest
-import sys
 from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
 from modeldb.thrift.modeldb import ttypes as modeldb_types
 from modeldb.sklearn_native.ModelDbSyncer import *
 
-from sklearn import linear_model
-import pandas as pd
 
 # Tests default experiment creation within project
+
+
 class TestProjectEvent(unittest.TestCase):
+
     @classmethod
     def setUpClass(self):
         name = "logistic-test"
@@ -19,7 +19,9 @@ class TestProjectEvent(unittest.TestCase):
         syncer_obj = SyncerTest(
             NewOrExistingProject(name, author, description),
             DefaultExperiment(),
-            NewExperimentRun("Abc"))
+            NewExperimentRun("Abc"),
+            ThriftConfig(None, None),
+            )
         events = syncer_obj.sync()
         self.project_event = events[0]
         self.experiment_event = events[1]
@@ -42,7 +44,7 @@ class TestProjectEvent(unittest.TestCase):
             -1,
             -1,
             '',
-            '', 
+            '',
             True)
         utils.is_equal_experiment(expected_experiment, experiment, self)
 
@@ -53,16 +55,21 @@ class TestProjectEvent(unittest.TestCase):
             -1,
             -1,
             'Abc')
-        utils.is_equal_experiment_run(expected_experiment_run, experiment_run, self)
+        utils.is_equal_experiment_run(
+            expected_experiment_run, experiment_run, self)
 
 # Tests new experiment creation
+
+
 class TestNewProjectEvent(unittest.TestCase):
+
     @classmethod
     def setUpClass(self):
         syncer_obj = SyncerTest(
             NewOrExistingProject("name", "author", "desc"),
             NewOrExistingExperiment("expName", "expDesc"),
-            NewExperimentRun("expRunDesc"))
+            NewExperimentRun("expRunDesc"),
+            ThriftConfig(None, None))
         events = syncer_obj.sync()
         self.project_event = events[0]
         self.experiment_event = events[1]
@@ -85,7 +92,7 @@ class TestNewProjectEvent(unittest.TestCase):
             -1,
             -1,
             'expName',
-            'expDesc', 
+            'expDesc',
             False)
         utils.is_equal_experiment(expected_experiment, experiment, self)
 
@@ -96,7 +103,9 @@ class TestNewProjectEvent(unittest.TestCase):
             -1,
             -1,
             'expRunDesc')
-        utils.is_equal_experiment_run(expected_experiment_run, experiment_run, self)
+        utils.is_equal_experiment_run(
+            expected_experiment_run, experiment_run, self)
+
 
 if __name__ == '__main__':
     unittest.main()

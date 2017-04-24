@@ -1,20 +1,23 @@
 import sys
+import os
 import yaml
 from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
-from ..events import *
-from Structs import NewOrExistingProject, ExistingProject, \
-    NewOrExistingExperiment, ExistingExperiment, DefaultExperiment, \
-    NewExperimentRun, ExistingExperimentRun, \
-    Dataset, ModelConfig, Model, ModelMetrics
+from ..events import (
+    Event, ExperimentEvent, ExperimentRunEvent, FitEvent, GridSearchCVEvent,
+    MetricEvent, PipelineEvent, ProjectEvent, RandomSplitEvent, TransformEvent)
+
+from Structs import (NewOrExistingProject, ExistingProject,
+    NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
+     NewExperimentRun, ExistingExperimentRun, ThriftConfig, VersioningConfig,
+     Dataset, ModelConfig, Model, ModelMetrics)
 
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
 from ..utils.ConfigUtils import ConfigReader
-from ..utils import ConfigConstants as constants
 from ..utils import MetadataConstants as metadata_constants
 
 FMIN = sys.float_info.min
@@ -22,24 +25,31 @@ FMAX = sys.float_info.max
 
 
 class Syncer(object):
+    # used for recording whether there is an instance. Syncer is a singleton.
     instance = None
 
+    # location of the default config file
+    config_file = "../../../syncer.json"
+
     @classmethod
-    def create_syncer(cls, proj_name, user_name, proj_desc=None):
+    def create_syncer(
+            cls, proj_name, user_name, proj_desc=None, host=None, port=None):
         """
         Create a syncer given project information. A default experiment will be
         created and a default experiment run will be used
         """
+        project_config = NewOrExistingProject(
+            proj_name, user_name, proj_desc if proj_desc else "")
         syncer_obj = cls(
-            NewOrExistingProject(proj_name, user_name, \
-                proj_desc if proj_desc else ""),
-            DefaultExperiment(),
-            NewExperimentRun(""))
+            project_config=project_config,
+            experiment_config=DefaultExperiment(),
+            experiment_run_config=NewExperimentRun(""),
+            thrift_config=ThriftConfig(host, port))
         return syncer_obj
 
     @classmethod
     def create_syncer_from_config(
-        cls, config_file="../../../syncer.json", sha=None):
+            cls, config_file="../../../syncer.json", sha=None):
         """
         Create a syncer based on the modeldb configuration file
         """
@@ -47,33 +57,50 @@ class Syncer(object):
         project = config_reader.get_project()
         experiment = config_reader.get_experiment()
         experiment_run = NewExperimentRun("", sha)
+        thrift_config = config_reader.get_mdb_server_info()
 
-        syncer_obj = cls(project, experiment, experiment_run)
+        syncer_obj = cls(
+            project_config=project,
+            experiment_config=experiment,
+            experiment_run_config=experiment_run,
+            thrift_config=thrift_config)
         return syncer_obj
 
     @classmethod
-    def create_syncer_for_experiment_run(cls, experiment_run_id):
+    def create_syncer_for_experiment_run(
+            cls, experiment_run_id, host=None, port=None):
         """
         Create a syncer for this experiment run
         """
-        syncer_obj = cls(None, None, ExistingExperimentRun(experiment_run_id))
+        syncer_obj = cls(
+            project_config=None,
+            experiment_config=None,
+            experiment_run_config=ExistingExperimentRun(experiment_run_id),
+            thrift_config=ThriftConfig(host, port))
         return syncer_obj
 
     # implements singleton Syncer object
-    def __new__(cls, project_config, experiment_config, experiment_run_config): # __new__ always a classmethod
+    # __new__ always a classmethod
+    def __new__(cls, project_config, experiment_config, experiment_run_config,
+                thrift_config):
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(
-                cls, project_config, experiment_config, experiment_run_config)
+                cls,
+                project_config=project_config,
+                experiment_config=experiment_config,
+                experiment_run_config=experiment_run_config,
+                thrift_config=thrift_config)
         return cls.instance
 
     def __init__(
-        self, project_config, experiment_config, experiment_run_config):
+            self, project_config, experiment_config, experiment_run_config,
+            thrift_config):
         self.buffer_list = []
         self.local_id_to_modeldb_id = {}
         self.local_id_to_object = {}
         self.local_id_to_tag = {}
-        self.initialize_thrift_client()
+        self.initialize_thrift_client(thrift_config)
         self.setup(project_config, experiment_config, experiment_run_config)
 
     def setup(self, project_config, experiment_config, experiment_run_config):
@@ -83,8 +110,10 @@ class Syncer(object):
             self.experiment = None
         elif not project_config or not experiment_config:
             # TODO: fix this error message
-            print "Either (project_config and experiment_config) need to be " \
-                "specified or ExistingExperimentRunConfig needs to be specified"
+            print(
+                "Either (project_config and experiment_config) need to be ",
+                "specified or ExistingExperimentRunConfig needs to be ",
+                "specified")
             sys.exit(-1)
         else:
             self.set_project(project_config)
@@ -158,7 +187,8 @@ class Syncer(object):
 
     def sync(self):
         """
-        When this function is called, all events in the buffer are stored on server.
+        When this function is called,
+        all events in the buffer are stored on server.
         """
         for b in self.buffer_list:
             b.sync(self)
@@ -170,9 +200,19 @@ class Syncer(object):
         '''
         self.buffer_list = []
 
-    def initialize_thrift_client(self, host="localhost", port=6543):
+    def initialize_thrift_client(self, thrift_config):
+        # use defaults if thrift_config values are empty
+        if not (thrift_config.port and thrift_config.host):
+            syncer_location = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), self.config_file))
+            config_reader = ConfigReader(syncer_location)
+            default_thrift = config_reader.get_mdb_server_info()
+            thrift_config.host = thrift_config.host or default_thrift.host
+            thrift_config.port = thrift_config.port or default_thrift.port
+
         # Make socket
-        self.transport = TSocket.TSocket(host, port)
+        self.transport = TSocket.TSocket(
+            thrift_config.host, thrift_config.port)
 
         # Buffering is critical. Raw sockets are very slow
         self.transport = TTransport.TFramedTransport(self.transport)
@@ -193,13 +233,12 @@ class Syncer(object):
     thrift classes
     '''
 
-
     def convert_model_to_thrift(self, model):
         model_id = self.get_modeldb_id_for_object(model)
         if model_id != -1:
             return modeldb_types.Transformer(model_id, "", "", "")
-        return modeldb_types.Transformer(-1,
-            model.model_type, model.tag, model.path)
+        return modeldb_types.Transformer(
+            -1, model.model_type, model.tag, model.path)
 
     def convert_spec_to_thrift(self, spec):
         spec_id = self.get_modeldb_id_for_object(spec)
@@ -207,11 +246,11 @@ class Syncer(object):
             return modeldb_types.TransformerSpec(spec_id, "", [], "")
         hyperparameters = []
         for key, value in spec.config.items():
-            hyperparameter = modeldb_types.HyperParameter(key, \
-                str(value), type(value).__name__, FMIN, FMAX)
+            hyperparameter = modeldb_types.HyperParameter(
+                key, str(value), type(value).__name__, FMIN, FMAX)
             hyperparameters.append(hyperparameter)
-        transformer_spec = modeldb_types.TransformerSpec(-1, spec.model_type, \
-            hyperparameters, spec.tag)
+        transformer_spec = modeldb_types.TransformerSpec(
+            -1, spec.model_type, hyperparameters, spec.tag)
         return transformer_spec
 
     def set_columns(self, df):
@@ -225,8 +264,8 @@ class Syncer(object):
         for key, value in dataset.metadata.items():
             kv = modeldb_types.MetadataKV(key, str(value), str(type(value)))
             metadata.append(kv)
-        return modeldb_types.DataFrame(-1, [], -1, dataset.tag, \
-            dataset.filename, metadata)
+        return modeldb_types.DataFrame(-1, [], -1, dataset.tag,
+                                       dataset.filename, metadata)
     '''
     End. Functions that convert ModelDBSyncerLight classes into ModelDB
     thrift classes
@@ -235,6 +274,7 @@ class Syncer(object):
     '''
     ModelDBSyncerLight API
     '''
+
     def sync_datasets(self, datasets):
         '''
         Registers the datasets used in this experiment run.
@@ -267,8 +307,8 @@ class Syncer(object):
         '''
         dataset = self.get_dataset_for_tag(data_tag)
         for metric, value in metrics.metrics.items():
-            metric_event = MetricEvent(dataset, model, "label_col", \
-                "prediction_col", metric, value)
+            metric_event = MetricEvent(dataset, model, "label_col",
+                                       "prediction_col", metric, value)
             Syncer.instance.add_to_buffer(metric_event)
 
     def get_dataset_for_tag(self, data_tag):
@@ -282,7 +322,8 @@ class Syncer(object):
 
     def dataset_from_dict(self, dataset_dict):
         filename = dataset_dict[metadata_constants.DATASET_FILENAME_KEY]
-        metadata = dataset_dict.get(metadata_constants.DATASET_METADATA_KEY, {})
+        metadata = dataset_dict.get(
+            metadata_constants.DATASET_METADATA_KEY, {})
         tag = dataset_dict.get(metadata_constants.DATASET_TAG_KEY, 'default')
         return Dataset(filename, metadata, tag)
 
@@ -308,7 +349,7 @@ class Syncer(object):
         model_dataset = self.get_dataset_for_tag(model_tag)
         config = model_data[metadata_constants.CONFIG_KEY]
         fit_event = FitEvent(model, ModelConfig(model_type, config, model_tag),
-            model_dataset, model_data)
+                             model_dataset, model_data)
         Syncer.instance.add_to_buffer(fit_event)
 
         # sync metrics
@@ -316,6 +357,7 @@ class Syncer(object):
         for metric in metrics_data:
             metric_type = metric[metadata_constants.METRIC_TYPE_KEY]
             metric_value = metric[metadata_constants.METRIC_VALUE_KEY]
-            metric_event = MetricEvent(model_dataset, model, "label_col", \
-                "prediction_col", metric_type, metric_value)
+            metric_event = MetricEvent(
+                model_dataset, model, "label_col", "prediction_col",
+                metric_type, metric_value)
             Syncer.instance.add_to_buffer(metric_event)
