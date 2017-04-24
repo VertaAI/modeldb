@@ -518,6 +518,10 @@ li.json-kv.ui-draggable-dragging {
   list-style-type: none;
 }
 
+#md-json li.kv.textedit {
+  cursor: text;
+}
+
 /*
  *  Groups
  */

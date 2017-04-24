@@ -145,6 +145,7 @@ $(function() {
       url: '/models/' + modelId + '/metadata',
       type: "GET",
       success: function(response) {
+        console.log(response);
         var node = new PrettyJSON.view.Node({
           el:$('#md-json'),
           data:JSON.parse(response)
@@ -202,5 +203,13 @@ $(function() {
 
     leaves.addClass('kv');
     leaves.addClass('json-kv');
+
+    $(document).on('click', '.leaf-container .string, .leaf-container .number', function(event) {
+      $(this).attr('contenteditable', 'true');
+      var leave = $(this).closest('.ui-draggable');
+      leave.draggable('disable');
+      leave.addClass('textedit');
+    });
+
   }
 });
