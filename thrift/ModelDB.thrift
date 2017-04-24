@@ -1310,7 +1310,90 @@ service ModelDBService {
    dfId: The ID of a DataFrame.
    */
   list<i32> modelsDerivedFromDataFrame(1: i32 dfId) 
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx)
+    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
+  /*
+   Get the IDs of all the projects that match the specified key-value pairs.
+
+   keyValuePairs: The map containing key-value pairs to match,
+    where key is not case-sensitive and value is case-sensitive
+   */
+  list<i32> getProjectIds(1: map<string, string> keyValuePairs)
+    throws (1: ServerLogicException svEx),
+
+  /*
+   Get the IDs of all the models that match the specified key-value pairs.
+
+   keyValuePairs: The map containing key-value pairs to match
+   */
+  list<i32> getModelIds(1: map<string, string> keyValuePairs)
+    throws (1: ServerLogicException svEx),
+
+  /*
+    Update the given field of the project of the given ID with the given value.
+    The field must be an existing field of the project.
+
+    projectId: The ID of the project
+    key: The field to update (not case-sensitive)
+    value: The value for the field (case-sensitive)
+   */
+  bool updateProject(1: i32 projectId, 2: string key, 3: string value)
+    throws (1: ServerLogicException svEx),
+
+  /*
+    Update the given field of the model of the given ID with the given value.
+    If key exists, update it with value. If not, add the key-value pair to the model.
+    Return a boolean indicating if the key was updated or not.
+
+    modelId: The ID of the model
+    key: The field to update, which follows MongoDB's dot notation
+    value: The value for the field, where datetime values follow the format given at
+      http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTimeParser()
+    valueType: The type of the value (string, int, double, long, datetime, or bool)
+   */
+  bool createOrUpdateScalarField(1: i32 modelId, 2: string key, 3: string value, 4: string valueType)
+    throws (1: ServerLogicException svEx),
+
+  /*
+   Create a vector field with the given name inside the model with the given ID.
+   The vector field is configured with the given vector config.
+   Do nothing if the vector field with the given name already exists.
+   Return a boolean indicating if the vector was created or not.
+
+   modelId: The ID of the model
+   vectorName: The name of the vector field, which follows MongoDB's dot notation
+   vectorConfig: The map containing config information for the vector field
+   */
+  bool createVectorField(1: i32 modelId, 2: string vectorName, 3: map<string, string> vectorConfig)
+    throws (1: ServerLogicException svEx),
+
+  /*
+    Update the given vector field of the model of the given ID with the given value at the specified index.
+    The specified field must exist and must be a vector.
+    Return a boolean indicating if the value was updated or not.
+
+    modelId: The ID of the model
+    key: The field to update, which follows MongoDB's dot notation
+    valueIndex: The index of the value to update (0-indexed)
+    value: The value for the field, where datetime values follow the format given at
+      http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTimeParser()
+    valueType: The type of the value (string, int, double, long, datetime, or bool)
+   */
+  bool updateVectorField(1: i32 modelId, 2: string key, 3: i32 valueIndex, 4: string value, 5: string valueType)
+    throws (1: ServerLogicException svEx),
+
+  /*
+   Add a new value to the vector field with the given name in the model with the given ID.
+   Return a boolean indicating if the value was added or not.
+
+   modelId: The ID of the model
+   vectorName: The name of the vector field to update, which follows MongoDB's dot notation
+   value: The value to be added, where datetime values follow the format given at
+      http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTimeParser()
+    valueType: The type of the value (string, int, double, long, datetime, or bool)
+   */
+  bool appendToVectorField(1: i32 modelId, 2: string vectorName, 3: string value, 4: string valueType)
+    throws (1: ServerLogicException svEx),
 
   /*
    Get information about the model with the given ID.
