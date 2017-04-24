@@ -145,12 +145,13 @@ $(function() {
       url: '/models/' + modelId + '/metadata',
       type: "GET",
       success: function(response) {
-        console.log(response);
         var node = new PrettyJSON.view.Node({
           el:$('#md-json'),
           data:JSON.parse(response)
         });
         node.expandAll();
+        var saveButton = $('<button class="save-button" disabled>Save Changes</button>');
+        $('#md-json').append(saveButton);
         $('#modal-2').addClass('md-show');
         attachModalListeners();
         node.collapseAll();
@@ -209,6 +210,11 @@ $(function() {
       var leave = $(this).closest('.ui-draggable');
       leave.draggable('disable');
       leave.addClass('textedit');
+      $('.save-button').removeAttr('disabled');
+    });
+
+    $(document).on('click', '.save-button', function(event) {
+      
     });
 
   }

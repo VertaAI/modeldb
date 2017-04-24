@@ -522,6 +522,14 @@ li.json-kv.ui-draggable-dragging {
   cursor: text;
 }
 
+.save-button {
+  float:right;
+}
+
+.save-button:disabled {
+  cursor: not-allowed;
+}
+
 /*
  *  Groups
  */
