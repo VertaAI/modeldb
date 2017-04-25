@@ -137,36 +137,33 @@ module.exports = {
 
   editMetadata: function(modelId, kvPairs, callback) {
     for (var key in kvPairs) {
-      var value = kvPairs[key];
-      if (value.constructor === Array) {
+      var valueString = kvPairs[key];
+      if (valueString === Array) {
         // var valueIndex = ??
         Thrift.client.updateVectorField(modelId, key, valueIndex, value, valueType, function(err, response) {
           callback(response);
         });
       } else {
         var valueType;
-        switch (value.constructor) {
-          case (String):
-            valueType = moment(value).isValid() ? 'datetime': 'string';
-            break;
-          case (Boolean):
+        if (isNaN(valueString)) {
+          if (valueString === 'true' || valueString === 'false') {
+            value = valueString === 'true';
             valueType = 'bool';
-            break;
-          case (Number):
-            if (value === +value && value !== (value|0)) {
-              valueType = 'double';
-            } else if (value > 2**31 - 1) {
-              valueType = 'long';
-            } else {
-              valueType = 'int';
-            }
-            break;
-          default:
-            throw TypeError('Unsupported value type:' + typeof(value));
-            break;
+          } else {
+            valueType = moment(valueString).isValid() ? 'datetime': 'string';
+            value = valueString;
+          }
+        } else {
+          if (valueString.indexOf('.') != -1) {
+            value = parseFloat(valueString);
+            valueType = 'double';
+          } else {
+            value = parseInt(valueString);
+            valueType = value > 2**31 - 1 ? 'long': 'int';
+          }
         }
         Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {
-          callback(response);
+            callback(response);  
         });
       }
     }

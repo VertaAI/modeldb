@@ -251,9 +251,6 @@ $(function() {
       success: function(response) {
         alert('Succeeded', response);
       },
-      error: function(response) {
-        alert('Failed', response);
-      }
     });
   };
 });
