@@ -166,7 +166,6 @@ module.exports = {
         }
         Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  
           count += 1;
-          console.log(count, numKvPairs, count === numKvPairs);
           if (count === numKvPairs) {
             callback(response);
           }

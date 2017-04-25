@@ -209,6 +209,7 @@ $(function() {
     leaves.addClass('kv');
     leaves.addClass('json-kv');
 
+    // make metadata field editable
     $(document).on('click', '.leaf-container .string, .leaf-container .number', function(event) {
       var leaf = $(this).closest('.ui-draggable');
       if (leaf.data('key') !== 'md.MODELDB_model_id') {
@@ -222,6 +223,8 @@ $(function() {
 
     $(document).on('click', '.save-button', function(event) {
       event.stopImmediatePropagation();
+
+      // update the data for each edited field
       $('.editable-content').each(function () {
         $(this).addClass('edited-content');
         var value = $(this).find('.leaf-container span').html().trim();
