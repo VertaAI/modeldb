@@ -21,7 +21,19 @@ You can install it using ``pip`` directly from PyPI::
     pip install modeldb
 
 
-Configure & Use
----------------
+Custom Configuration
+--------------------
+
+Once installed, you can create a custom syncing scheme setup by typing::
+
+    python -m modeldb
+
+Unless an alternative syncing scheme is specialized, modeldb will use the packaged `syncer.json` defaults.
+
+
+Use
+---
 
 This library requires a connection to a ModelDB server to work. You can see the `getting started docs here <https://github.com/mitdbg/modeldb/blob/master/docs/getting_started/scikit_learn.md>`_.
+
+Additional documentation on the `light_api <light_api.md>`_ and `scikit-learn client <scikit_learn.md>`_ is also available.
