@@ -210,13 +210,11 @@ $(function() {
     leaves.addClass('json-kv');
 
     // make metadata field editable
-    $(document).on('click', '.leaf-container .string, .leaf-container .number', function(event) {
-      var leaf = $(this).closest('.json-kv');
+    $(document).on('click', '.leaf-container', function(event) {
+      var leaf = $(this).closest('.ui-draggable');
       if (leaf.data('key') !== 'md.MODELDB_model_id') {
         $(this).attr('contenteditable', 'true');
-        if (leaf.hasClass('ui-draggable')) {
-          leaf.draggable('disable');
-        }
+        leaf.draggable('disable');
         leaf.addClass('editable-content');
         $('.save-button').removeAttr('disabled');
         $('.save-button').text('Save Changes')
@@ -226,7 +224,7 @@ $(function() {
     $(document).on('click', '.save-button', function(event) {
       event.stopImmediatePropagation();
 
-      // update the data for each edited field
+      // update the data for each edited fields
       $('.editable-content').each(function () {
         $(this).addClass('edited-content');
         var value = $(this).find('.leaf-container span').html().trim();
@@ -238,10 +236,10 @@ $(function() {
       var modelId = $('#md-json').data('modelId');
       var kvPairs = {};
       $('.edited-content').each(function () {
-        var key = $(this).data('key').replace('md.', '');
-        kvPairs[key] = $(this).data('val');
+        var key = $(this).data('key').replace('md.', '').replace('$.date', '');
+        var value = $(this).data('val');
+        kvPairs[key] = typeof(value) == String ? value.trim(): value;
       });
-      console.log('kvPairs', kvPairs)
       editMetadata(modelId, kvPairs);     
     });
 
@@ -250,6 +248,7 @@ $(function() {
   function editMetadata(modelId, kvPairs) {
     var data = [];
     data.push({name: 'kvPairs', value: JSON.stringify(kvPairs)});
+    console.log('data', data)
     $.ajax({
       url: '/models/' + modelId + '/metadata',
       type: "POST",

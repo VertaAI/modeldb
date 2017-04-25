@@ -1195,6 +1195,9 @@ $(function() {
   function dragStart(event, ui) {
     filterKey = $(ui.helper.context).data('key');
     filterVal = $(ui.helper.context).data('val');
+    console.log('context', ui.helper.context);
+    console.log('filterKey', filterKey);
+    console.log('filterVal', filterVal);
     $('.filter-area').addClass('filter-area-highlight');
     if ($(ui.helper.context).data('json')) {
       $('.md-overlay').css({

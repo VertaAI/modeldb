@@ -136,35 +136,39 @@ module.exports = {
   },
 
   editMetadata: function(modelId, kvPairs, callback) {
+    console.log('inside editMetadata')
     var count = 0;
     var numKvPairs = Object.keys(kvPairs).length;
+    console.log('got length')
     for (var key in kvPairs) {
-      var valueString = kvPairs[key];
-      if (valueString === Array) {
+      console.log('get key')
+      var value = kvPairs[key];
+      if (value === Array) {
         // var valueIndex = ??
         Thrift.client.updateVectorField(modelId, key, valueIndex, value, valueType, function(err, response) {
           callback(response);
         });
       } else {
         var valueType;
-        if (isNaN(valueString)) {
-          if (valueString === 'true' || valueString === 'false') {
-            value = valueString === 'true';
+        if (isNaN(value)) {
+          if (value === 'true' || value === 'false') {
             valueType = 'bool';
           } else {
-            valueType = moment(valueString).isValid() ? 'datetime': 'string';
-            value = valueString;
+            valueType = moment(value).isValid() ? 'datetime': 'string';
           }
         } else {
-          if (valueString.indexOf('.') != -1) {
-            value = parseFloat(valueString);
+          var value = value.toString(); // thrift api takes in strings only
+          if (value.indexOf('.') != -1) {
             valueType = 'double';
           } else {
-            value = parseInt(valueString);
-            valueType = value > 2**31 - 1 ? 'long': 'int';
+            valueType = parseInt(value) > 2**31 - 1 ? 'long': 'int';
           }
         }
+        console.log(key, value, valueType)
         Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  
+          if (err) {
+            console.log('err', err);
+          }
           count += 1;
           if (count === numKvPairs) {
             callback(response);
