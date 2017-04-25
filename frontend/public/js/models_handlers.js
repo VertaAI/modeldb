@@ -152,6 +152,7 @@ $(function() {
         node.expandAll();
         var saveButton = $('<button class="save-button" disabled>Save Changes</button>');
         $('#md-json').append(saveButton);
+        $('#md-json').data('modelId', modelId);
         $('#modal-2').addClass('md-show');
         attachModalListeners();
         node.collapseAll();
@@ -198,6 +199,9 @@ $(function() {
           parent = parent.parent().closest('li');
         }
       }
+      if (key === '_id.$oid') {
+        leaf.parent().closest('li').remove();
+      }
       leaf.data('key', "md." + key);
       leaf.data('val', value);
     }
@@ -206,16 +210,50 @@ $(function() {
     leaves.addClass('json-kv');
 
     $(document).on('click', '.leaf-container .string, .leaf-container .number', function(event) {
-      $(this).attr('contenteditable', 'true');
-      var leave = $(this).closest('.ui-draggable');
-      leave.draggable('disable');
-      leave.addClass('textedit');
-      $('.save-button').removeAttr('disabled');
+      var leaf = $(this).closest('.ui-draggable');
+      if (leaf.data('key') !== 'md.MODELDB_model_id') {
+        $(this).attr('contenteditable', 'true');
+        leaf.draggable('disable');
+        leaf.addClass('editable-content');
+        $('.save-button').removeAttr('disabled');
+      }     
     });
 
     $(document).on('click', '.save-button', function(event) {
-      
+      event.stopImmediatePropagation();
+      $('.editable-content').each(function () {
+        $(this).addClass('edited-content');
+        var value = $(this).find('.leaf-container span').html().trim();
+        var valueWithoutQuotes = value.replace(/"/g,'').replace('&nbsp;', ' ');
+        value = (valueWithoutQuotes == value) ? parseFloat(value) : valueWithoutQuotes;
+        $(this).data('val', value);
+      });
+
+      var modelId = $('#md-json').data('modelId');
+      var kvPairs = {};
+      $('.edited-content').each(function () {
+        var key = $(this).data('key').replace('md.', '');
+        kvPairs[key] = $(this).data('val');
+      });
+      editMetadata(modelId, kvPairs);     
     });
 
   }
+
+  function editMetadata(modelId, kvPairs) {
+    var data = [];
+    data.push({name: 'kvPairs', value: JSON.stringify(kvPairs)});
+    $.ajax({
+      url: '/models/' + modelId + '/metadata',
+      type: "POST",
+      data: data,
+      dataType: "json",
+      success: function(response) {
+        alert('Succeeded', response);
+      },
+      error: function(response) {
+        alert('Failed', response);
+      }
+    });
+  };
 });

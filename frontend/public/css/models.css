@@ -518,7 +518,7 @@ li.json-kv.ui-draggable-dragging {
   list-style-type: none;
 }
 
-#md-json li.kv.textedit {
+#md-json li.kv.editable-content {
   cursor: text;
 }
 

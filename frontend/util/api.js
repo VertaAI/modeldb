@@ -1,5 +1,6 @@
 var async = require('async');
 var Thrift = require('./thrift.js');
+var moment = require('moment')
 
 module.exports = {
 
@@ -132,6 +133,43 @@ module.exports = {
     Thrift.client.storeAnnotationEvent(annotationEvent, function(err, response) {
       callback(response);
     });
+  },
+
+  editMetadata: function(modelId, kvPairs, callback) {
+    for (var key in kvPairs) {
+      var value = kvPairs[key];
+      if (value.constructor === Array) {
+        // var valueIndex = ??
+        Thrift.client.updateVectorField(modelId, key, valueIndex, value, valueType, function(err, response) {
+          callback(response);
+        });
+      } else {
+        var valueType;
+        switch (value.constructor) {
+          case (String):
+            valueType = moment(value).isValid() ? 'datetime': 'string';
+            break;
+          case (Boolean):
+            valueType = 'bool';
+            break;
+          case (Number):
+            if (value === +value && value !== (value|0)) {
+              valueType = 'double';
+            } else if (value > 2**31 - 1) {
+              valueType = 'long';
+            } else {
+              valueType = 'int';
+            }
+            break;
+          default:
+            throw TypeError('Unsupported value type:' + typeof(value));
+            break;
+        }
+        Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {
+          callback(response);
+        });
+      }
+    }
   }
 
 };
