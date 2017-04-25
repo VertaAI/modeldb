@@ -136,6 +136,8 @@ module.exports = {
   },
 
   editMetadata: function(modelId, kvPairs, callback) {
+    var count = 0;
+    var numKvPairs = Object.keys(kvPairs).length;
     for (var key in kvPairs) {
       var valueString = kvPairs[key];
       if (valueString === Array) {
@@ -162,11 +164,15 @@ module.exports = {
             valueType = value > 2**31 - 1 ? 'long': 'int';
           }
         }
-        Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {
-            callback(response);  
+        Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  
+          count += 1;
+          console.log(count, numKvPairs, count === numKvPairs);
+          if (count === numKvPairs) {
+            callback(response);
+          }
         });
       }
-    }
+    }    
   }
 
 };

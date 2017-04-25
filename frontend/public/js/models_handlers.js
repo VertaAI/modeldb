@@ -216,6 +216,7 @@ $(function() {
         leaf.draggable('disable');
         leaf.addClass('editable-content');
         $('.save-button').removeAttr('disabled');
+        $('.save-button').text('Save Changes')
       }     
     });
 
@@ -249,7 +250,7 @@ $(function() {
       data: data,
       dataType: "json",
       success: function(response) {
-        alert('Succeeded', response);
+        $('.save-button').text('Saved');
       },
     });
   };
