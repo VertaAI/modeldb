@@ -29,7 +29,7 @@ class Syncer(object):
     instance = None
 
     # location of the default config file
-    config_file = "../../../syncer.json"
+    config_file = "../syncer.json"
 
     @classmethod
     def create_syncer(
@@ -49,7 +49,7 @@ class Syncer(object):
 
     @classmethod
     def create_syncer_from_config(
-            cls, config_file="../../../syncer.json", sha=None):
+            cls, config_file="../syncer.json", sha=None):
         """
         Create a syncer based on the modeldb configuration file
         """

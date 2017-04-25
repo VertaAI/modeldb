@@ -1,6 +1,3 @@
-from sys import argv, exit, stderr
-from runpy import run_path
-
 import os
 import json
 
@@ -42,7 +39,7 @@ if __name__ == '__main__':
     prompt = 'output filename (default=custom_syncer.json): '
     output_filename = str(raw_input(prompt))
     if output_filename == '':
-        output_filename = 'syncer.json'
+        output_filename = 'custom_syncer.json'
 
     print('\n== Thrift ==')
 
@@ -179,3 +176,7 @@ if __name__ == '__main__':
     file = open(output_filename, 'w')
     file.write(str(json.dumps(new_config, sort_keys=True, indent=4)))
     file.close()
+
+    print('\n== RESULT ==')
+    print(
+        'New syncer file, %s, created at %s') % (output_filename, os.getcwd())

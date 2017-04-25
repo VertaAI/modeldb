@@ -1,2 +1,0 @@
-modeldb
-samples
