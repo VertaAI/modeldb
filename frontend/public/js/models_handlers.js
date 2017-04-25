@@ -211,10 +211,12 @@ $(function() {
 
     // make metadata field editable
     $(document).on('click', '.leaf-container .string, .leaf-container .number', function(event) {
-      var leaf = $(this).closest('.ui-draggable');
+      var leaf = $(this).closest('.json-kv');
       if (leaf.data('key') !== 'md.MODELDB_model_id') {
         $(this).attr('contenteditable', 'true');
-        leaf.draggable('disable');
+        if (leaf.hasClass('ui-draggable')) {
+          leaf.draggable('disable');
+        }
         leaf.addClass('editable-content');
         $('.save-button').removeAttr('disabled');
         $('.save-button').text('Save Changes')
@@ -239,6 +241,7 @@ $(function() {
         var key = $(this).data('key').replace('md.', '');
         kvPairs[key] = $(this).data('val');
       });
+      console.log('kvPairs', kvPairs)
       editMetadata(modelId, kvPairs);     
     });
 
