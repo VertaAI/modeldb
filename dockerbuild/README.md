@@ -40,7 +40,11 @@ It is also possible to run ModelDB in Docker without Docker Compose.
 
 3. **Run MongoDB**
 
-    ModelDB stores its data in MongoDB. If you have an existing MongoDB server you would like to use, you can skip this part and substitute the hostname or IP of your MongoDB server for 'mongo' in the next step.
+    ModelDB stores its data in MongoDB.
+
+    *Note: If you have an existing MongoDB server you would like to use, you can skip this part and substitute the hostname or IP of your MongoDB server for `mongo` in the next step.*
+
+    *If you would like to host ModelDB from the same host as MongoDB, we recommend you switch to running MongoDB as a Docker container as detailed in this step or [install ModelDB without Docker](../README.md#manualsetup). Reaching localhost from inside of a Docker container is an advanced Docker networking topic and is especially complicated on non-Linux hosts.*
 
     ```bash
         # Mongo server
@@ -54,7 +58,7 @@ It is also possible to run ModelDB in Docker without Docker Compose.
 4. **Run ModelDB**
 
     ```bash
-    # ModelDB backend server ('mongo' tells it the hostname for mongo)
+    # ModelDB backend server ('mongo' being the hostname for the mongo server)
     docker run -d \
         --name backend \
         --net modeldb \
@@ -62,7 +66,7 @@ It is also possible to run ModelDB in Docker without Docker Compose.
         mitdbg/modeldb-backend \
         mongo
 
-    # ModelDB frontend server ('backend' tells it the hostname for backend)
+    # ModelDB frontend server ('backend' being hostname for backend)
     docker run -d \
         --name frontend \
         --net modeldb \

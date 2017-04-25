@@ -48,6 +48,8 @@ Alternatively, ModelDB native clients for  ```spark.ml``` and ```scikit-learn```
 
 If you have [Docker Compose](https://docs.docker.com/compose/install/) installed, you can bring up a ModelDB server with just a couple commands.
 
+If you want to run ModelDB with Docker without Docker Compose, see the [detailed instructions](dockerbuild/README.md).
+
 1. **Clone the repo**
 
     ```bash
