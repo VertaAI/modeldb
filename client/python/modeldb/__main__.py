@@ -32,13 +32,17 @@ if __name__ == '__main__':
 
     prompt = '> '
 
-    print(
+    raw_input(
         'This utility helps you create a modeldb configuration file.\n'
         'The file is used by the modeldb python and/or scala clients to '
         'connect to the modeldb server.\n\n'
         'Press <ENTER> to use defaults')
 
-    raw_input('OK')
+    print('\n== Output Filename ==')
+    prompt = 'output filename (default=custom_syncer.json): '
+    output_filename = str(raw_input(prompt))
+    if output_filename == '':
+        output_filename = 'syncer.json'
 
     print('\n== Thrift ==')
 
@@ -170,5 +174,8 @@ if __name__ == '__main__':
         git_repo_dir = config['git']['repoDir']
     new_config['git']['repoDir'] = git_repo_dir
 
-    import pdb
-    pdb.set_trace()
+    # create file in the current directory
+    # execution_dir
+    file = open(output_filename, 'w')
+    file.write(str(json.dumps(new_config, sort_keys=True, indent=4)))
+    file.close()
