@@ -41,7 +41,7 @@ WORKDIR /modeldb/server/codegen
 # Snippet from server/codegen/gen_sqlite.sh. This RUN should be removed once
 # SQLite is completely removed from ModelDB.
 RUN rm -rf jars/ && \
-    rm sqlite/*jar && \
+    rm -f sqlite/*jar && \
     mkdir -p jars && \
     wget -q http://central.maven.org/maven2/org/jooq/jooq/3.8.4/jooq-3.8.4.jar -O jars/jooq-3.8.4.jar  && \
     wget -q http://central.maven.org/maven2/org/jooq/jooq-meta/3.8.4/jooq-meta-3.8.4.jar -O jars/jooq-meta-3.8.4.jar && \
