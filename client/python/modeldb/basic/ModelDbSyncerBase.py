@@ -204,7 +204,7 @@ class Syncer(object):
     def initialize_thrift_client(self, thrift_config):
         # use defaults if thrift_config values are empty
         if not (thrift_config.port and thrift_config.host):
-            config_reader = ConfigReader(self.config_path)
+            config_reader = ConfigReader(Syncer.config_path)
             default_thrift = config_reader.get_mdb_server_info()
             thrift_config.host = thrift_config.host or default_thrift.host
             thrift_config.port = thrift_config.port or default_thrift.port

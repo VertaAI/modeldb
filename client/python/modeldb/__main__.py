@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 
 
 def to_bool(value):
@@ -20,8 +21,8 @@ def to_bool(value):
         raise ValueError('invalid literal for boolean: "%s"' % value)
 
 
-if __name__ == '__main__':
-    execution_dir = os.getcwd()
+def setup_config():
+    # execution_dir = os.getcwd()
     file_dir = os.path.dirname(__file__)
     filename = file_dir + '/syncer.json'
     config = json.load(file(filename, 'r'))
@@ -106,77 +107,82 @@ if __name__ == '__main__':
         experiment_run_description = config['experimentRun']
     new_config['experimentRun'] = experiment_run_description
 
-    print('\n== ShouldCountRows ==')
-    prompt = 'Should Count Rows (default=%s): ' % (config['shouldCountRows'])
-    should_count_rows = raw_input(prompt)
-    if should_count_rows == '':
-        should_count_rows = config['shouldCountRows']
-    should_count_rows = to_bool(should_count_rows)
-    new_config['shouldCountRows'] = should_count_rows
+    # print('\n== ShouldCountRows ==')
+    # prompt = 'Should Count Rows (default=%s): ' % (config['shouldCountRows'])
+    # should_count_rows = raw_input(prompt)
+    # if should_count_rows == '':
+    #     should_count_rows = config['shouldCountRows']
+    # should_count_rows = to_bool(should_count_rows)
+    # new_config['shouldCountRows'] = should_count_rows
 
-    print('\n== shouldStoreGSCVE ==')
-    prompt = 'Should store GSCVE (default=%s): ' % (config['shouldStoreGSCVE'])
-    should_store_gscve = raw_input(prompt)
-    if should_store_gscve == '':
-        should_store_gscve = config['shouldStoreGSCVE']
-    should_store_gscve = to_bool(should_store_gscve)
-    new_config['shouldStoreGSCVE'] = should_store_gscve
+    # print('\n== shouldStoreGSCVE ==')
+    # prompt = 'Should store GSCVE (default=%s): ' % (config['shouldStoreGSCVE'])
+    # should_store_gscve = raw_input(prompt)
+    # if should_store_gscve == '':
+    #     should_store_gscve = config['shouldStoreGSCVE']
+    # should_store_gscve = to_bool(should_store_gscve)
+    # new_config['shouldStoreGSCVE'] = should_store_gscve
 
-    print('\n== shouldStoreSpecificModels ==')
-    prompt = ('Should store specific models (default=%s): '
-              % (config['shouldStoreSpecificModels']))
-    should_store_specific_models = raw_input(prompt)
-    if should_store_specific_models == '':
-        should_store_specific_models = config['shouldStoreSpecificModels']
-    should_store_specific_models = to_bool(should_store_specific_models)
-    new_config[
-        'shouldStoreSpecificModels'] = should_store_specific_models
+    # print('\n== shouldStoreSpecificModels ==')
+    # prompt = ('Should store specific models (default=%s): '
+    #           % (config['shouldStoreSpecificModels']))
+    # should_store_specific_models = raw_input(prompt)
+    # if should_store_specific_models == '':
+    #     should_store_specific_models = config['shouldStoreSpecificModels']
+    # should_store_specific_models = to_bool(should_store_specific_models)
+    # new_config[
+    #     'shouldStoreSpecificModels'] = should_store_specific_models
 
-    print('\n== Git ==')
-    prompt = 'version_code (default=%s): ' % (config['git']['versionCode'])
-    git_version_code = raw_input(prompt)
-    if git_version_code == '':
-        git_version_code = config['git']['versionCode']
-    new_config['git']['versionCode'] = git_version_code
+    # print('\n== Git ==')
+    # prompt = 'version_code (default=%s): ' % (config['git']['versionCode'])
+    # git_version_code = raw_input(prompt)
+    # if git_version_code == '':
+    #     git_version_code = config['git']['versionCode']
+    # new_config['git']['versionCode'] = git_version_code
 
-    prompt = 'username (default=%s): ' % (config['git']['username'])
-    git_username = raw_input(prompt)
-    if git_username == '':
-        git_username = config['git']['username']
-    new_config['git']['username'] = git_username
+    # prompt = 'username (default=%s): ' % (config['git']['username'])
+    # git_username = raw_input(prompt)
+    # if git_username == '':
+    #     git_username = config['git']['username']
+    # new_config['git']['username'] = git_username
 
-    prompt = 'access token (default=%s): ' % (
-        str(config['git']['accessToken']))
-    git_access_token = raw_input(prompt)
-    if git_access_token == '':
-        git_access_token = config['git']['accessToken']
-    new_config['git']['accessToken'] = git_access_token
+    # prompt = 'access token (default=%s): ' % (
+    #     str(config['git']['accessToken']))
+    # git_access_token = raw_input(prompt)
+    # if git_access_token == '':
+    #     git_access_token = config['git']['accessToken']
+    # new_config['git']['accessToken'] = git_access_token
 
-    prompt = 'repo (default=%s): ' % (str(config['git']['repo']))
-    git_repo = raw_input(prompt)
-    if git_repo == '':
-        git_repo = config['git']['repo']
-    new_config['git']['repo'] = git_repo
+    # prompt = 'repo (default=%s): ' % (str(config['git']['repo']))
+    # git_repo = raw_input(prompt)
+    # if git_repo == '':
+    #     git_repo = config['git']['repo']
+    # new_config['git']['repo'] = git_repo
 
-    prompt = 'export directory (default=%s): ' % (
-        str(config['git']['exptDir']))
-    git_export_dir = raw_input(prompt)
-    if git_export_dir == '':
-        git_export_dir = config['git']['exptDir']
-    new_config['git']['exptDir'] = git_export_dir
+    # prompt = 'export directory (default=%s): ' % (
+    #     str(config['git']['exptDir']))
+    # git_export_dir = raw_input(prompt)
+    # if git_export_dir == '':
+    #     git_export_dir = config['git']['exptDir']
+    # new_config['git']['exptDir'] = git_export_dir
 
-    prompt = 'repo directory (default=%s): ' % (str(config['git']['repoDir']))
-    git_repo_dir = raw_input(prompt)
-    if git_repo_dir == '':
-        git_repo_dir = config['git']['repoDir']
-    new_config['git']['repoDir'] = git_repo_dir
+    # prompt = 'repo directory (default=%s): ' % (str(config['git']['repoDir']))
+    # git_repo_dir = raw_input(prompt)
+    # if git_repo_dir == '':
+    #     git_repo_dir = config['git']['repoDir']
+    # new_config['git']['repoDir'] = git_repo_dir
 
     # create file in the current directory
     # execution_dir
-    file = open(output_filename, 'w')
-    file.write(str(json.dumps(new_config, sort_keys=True, indent=4)))
-    file.close()
+    new_file = open(output_filename, 'w')
+    new_file.write(str(json.dumps(new_config, sort_keys=True, indent=4)))
+    new_file.close()
 
     print('\n== RESULT ==')
     print(
         'New syncer file, %s, created at %s') % (output_filename, os.getcwd())
+
+
+if __name__ == '__main__':
+    if sys.argv[1] == 'setup_config':
+        setup_config()
