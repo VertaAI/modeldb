@@ -217,12 +217,12 @@ $(function() {
 
     // make metadata field editable
     $(document).on('click', '.leaf-container', function(event) {
-      var leaf = $(this).closest('.ui-draggable');
-      console.log('key', leaf.data('key'), leaf.data('val'))
-      // console.log('draggable', leaf.html());
+      var leaf = $(this).closest('.json-kv');
       if (leaf.data('key') !== 'md.MODELDB_model_id') {
         $(this).attr('contenteditable', 'true');
-        leaf.draggable('disable');
+        if (leaf.is('.ui-draggable')) {
+          leaf.draggable('disable');
+        }
         leaf.addClass('editable-content');
         $('.save-button').removeAttr('disabled');
         $('.save-button').text('Save Changes')
@@ -235,7 +235,7 @@ $(function() {
       // update the data for each edited fields
       $('.editable-content').each(function () {
         $(this).addClass('edited-content');
-        var value = $(this).find('.leaf-container span').html().replace(/&nbsp;/g, ' ').trim();
+        var value = $(this).find('.leaf-container span, .leaf-container font').html().replace(/&nbsp;/g, ' ').trim();
         var valueWithoutQuotes = value.replace(/"/g,'');
         value = (valueWithoutQuotes == value) ? parseFloat(value) : valueWithoutQuotes;
         $(this).data('val', value);
@@ -256,7 +256,6 @@ $(function() {
   function editMetadata(modelId, kvPairs) {
     var data = [];
     data.push({name: 'kvPairs', value: JSON.stringify(kvPairs)});
-    console.log('data', data);
     $.ajax({
       url: '/models/' + modelId + '/metadata',
       type: "POST",
