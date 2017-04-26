@@ -26,7 +26,7 @@ services:
       CONFIGPROXY_AUTH_TOKEN: ${CONFIGPROXY_AUTH_TOKEN}
     volumes:
       - /var/run/docker.sock:/docker.sock
-    command: python orchestrate.py --image='modeldb-notebook' --docker_network='demo_modeldb_net' --pool_size=10 --command='jupyter notebook --no-browser --port {port} --ip=0.0.0.0 --NotebookApp.base_url=/{base_path} --NotebookApp.port_retries=0 --NotebookApp.token="" --NotebookApp.disable_check_xsrf=True'
+    command: python orchestrate.py --image='mitdbg/modeldb-notebook' --docker_network='demo_modeldb_net' --pool_size=10 --command='jupyter notebook --no-browser --port {port} --ip=0.0.0.0 --NotebookApp.base_url=/{base_path} --NotebookApp.port_retries=0 --NotebookApp.token="" --NotebookApp.disable_check_xsrf=True'
 
   mongo:
     image: mongo:3.4
