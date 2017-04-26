@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:3.4
+    networks:
+      default:
+        aliases:
+          - mongo
+    ports:
+      - "27017:27017"
+  backend:
+    build:
+      context: .
+      dockerfile: dockerbuild/Dockerfile-backend
+    image: mitdbg/modeldb-backend:latest
+    networks:
+      default:
+        aliases:
+          - backend
+    ports:
+      - "6543:6543"
+    command: ["mongo"]
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerbuild/Dockerfile-frontend
+    image: mitdbg/modeldb-frontend:latest
+    networks:
+      default:
+        aliases:
+          - frontend
+    ports:
+      - "3000:3000"
+    command: ["backend"]

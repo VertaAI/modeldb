@@ -1,0 +1,67 @@
+FROM openjdk:8
+
+EXPOSE 6543
+
+# Maven installs openjdk-7 as the default Java. update-alternatives points java back to 8.
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6 && \
+    echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.4.list && \
+    apt-get update && \
+    apt-get install -y \
+        maven \
+        sqlite \
+        g++ \
+        make \
+        automake \
+        bison \
+        flex \
+        pkg-config \
+        libevent-dev \
+        libssl-dev \
+        libtool \
+        mongodb-org-shell && \
+    apt-get clean && \
+    update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+
+WORKDIR /root
+
+# Install Thrift 0.10.0
+RUN wget -q http://archive.apache.org/dist/thrift/0.10.0/thrift-0.10.0.tar.gz && \
+    tar -xzf thrift-0.10.0.tar.gz && \
+    cd thrift-0.10.0 && \
+    ./configure --without-python && \
+    make && \
+    ln -n ~/thrift-0.10.0/compiler/cpp/thrift /usr/local/bin/thrift
+
+# Add ModelDB project
+ADD . /modeldb
+
+WORKDIR /modeldb/server/codegen
+
+# Build SQLite convenience methods and create SQLite databases.
+# Snippet from server/codegen/gen_sqlite.sh. This RUN should be removed once
+# SQLite is completely removed from ModelDB.
+RUN rm -rf jars/ && \
+    rm -f sqlite/*jar && \
+    mkdir -p jars && \
+    wget -q http://central.maven.org/maven2/org/jooq/jooq/3.8.4/jooq-3.8.4.jar -O jars/jooq-3.8.4.jar  && \
+    wget -q http://central.maven.org/maven2/org/jooq/jooq-meta/3.8.4/jooq-meta-3.8.4.jar -O jars/jooq-meta-3.8.4.jar && \
+    wget -q http://central.maven.org/maven2/org/jooq/jooq-codegen/3.8.4/jooq-codegen-3.8.4.jar -O jars/jooq-codegen-3.8.4.jar && \
+    wget -q http://central.maven.org/maven2/org/xerial/sqlite-jdbc/3.15.1/sqlite-jdbc-3.15.1.jar -O sqlite/sqlite-jdbc-3.15.1.jar && \
+    cat ./sqlite/createDb.sql | sqlite3 modeldb.db && \
+    cat ./sqlite/createDb.sql | sqlite3 modeldb_test.db && \
+    java -classpath jars/jooq-3.8.4.jar:jars/jooq-meta-3.8.4.jar:jars/jooq-codegen-3.8.4.jar:sqlite/sqlite-jdbc-3.15.1.jar:. org.jooq.util.GenerationTool sqlite/library.xml && \
+    mv modeldb.db ../ && \
+    mv modeldb_test.db ../ && \
+    chmod a+wrx ../modeldb.db && \
+    chmod a+wrx ../modeldb_test.db
+
+WORKDIR /modeldb/server
+
+RUN ../scripts/gen_thrift_file.sh java '../thrift/ModelDB.thrift' './src/main/thrift/' && \
+    mvn clean compile -Dthrift_version=0.10.0
+
+# This would be better as an ENTRYPOINT with 'mongo' the CMD param, but
+# `exec mvn exec:java ...` leads to a classpath issue that isn't immediately
+# clear how to handle.
+ENTRYPOINT ["/modeldb/dockerbuild/wait_for_mongodb.sh", "0.10.0"]
+CMD ["mongo"]
