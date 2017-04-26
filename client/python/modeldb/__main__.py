@@ -21,7 +21,7 @@ def to_bool(value):
         raise ValueError('invalid literal for boolean: "%s"' % value)
 
 
-def setup_config():
+def create_config():
     # execution_dir = os.getcwd()
     file_dir = os.path.dirname(__file__)
     filename = file_dir + '/syncer.json'
@@ -184,5 +184,5 @@ def setup_config():
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'setup_config':
+    if sys.argv[1] == 'create_config':
         setup_config()

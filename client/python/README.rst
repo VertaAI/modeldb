@@ -26,7 +26,7 @@ Custom Configuration
 
 Once installed, you can create a custom syncing scheme setup by typing::
 
-    python -m modeldb setup_config
+    python -m modeldb create_config
 
 Unless an alternative syncing scheme is specialized, modeldb will use the packaged `syncer.json` defaults.
 
