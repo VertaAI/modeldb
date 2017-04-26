@@ -185,4 +185,4 @@ def create_config():
 
 if __name__ == '__main__':
     if sys.argv[1] == 'create_config':
-        setup_config()
+        create_config()
