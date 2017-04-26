@@ -27,9 +27,9 @@ The demo site uses Docker Compose to manage containers and their networks.
     The Docker images needed for the demo site are available from Docker Hub, but you can build the ModelDB-specific images from source yourself if you want the latest changes.
 
     ```bash
-    cd [path_to_modeldb]
-    docker build -t mitdbg/modeldb-notebook -f demo/Dockerfile-notebook .
-    docker-compose -f demo/docker-compose.yml build
+    cd [path_to_modeldb]/demo
+    docker build -t mitdbg/modeldb-notebook -f Dockerfile-notebook ..
+    docker-compose build
     ```
 
 2. **Pull demo notebook image**
@@ -45,6 +45,7 @@ The demo site uses Docker Compose to manage containers and their networks.
     configurable-http-proxy and tmpnb need a shared secret to prevent anything but tmpnb from adding routes to the proxy. Putting the token in a .env file will persist it across instances of the demo site. Docker Compose looks for .env and uses its contents for environment variable substitution when evaluating docker-compose.yml.
 
     ```bash
+    cd [path_to_modeldb]/demo
     echo CONFIGPROXY_AUTH_TOKEN=$( head -c 30 /dev/urandom | xxd -p ) > .env
     ```
 
@@ -55,5 +56,6 @@ The demo site uses Docker Compose to manage containers and their networks.
     Note: you will see many lines of `Socket error on boot: [Errno 111] Connection refused` from tmpnb_orchestrate while it waits for the first batch of Jupyter notebooks to spin up. Those errors should be ignored.
 
     ```bash
-    docker-compose -f demo/docker-compose.yml up
+    cd [path_to_modeldb]/demo
+    docker-compose up
     ```

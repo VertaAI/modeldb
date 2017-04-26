@@ -7,8 +7,7 @@ networks:
 services:
   httpproxy:
     image: jupyter/configurable-http-proxy
-    environment:
-      CONFIGPROXY_AUTH_TOKEN: ${CONFIGPROXY_AUTH_TOKEN}
+    env_file: .env
     container_name:  tmpnb-proxy
     network_mode: host
     command: --default-target http://127.0.0.1:9999
@@ -22,8 +21,7 @@ services:
     image: jupyter/tmpnb
     network_mode: host
     container_name: tmpnb_orchestrate
-    environment:
-      CONFIGPROXY_AUTH_TOKEN: ${CONFIGPROXY_AUTH_TOKEN}
+    env_file: .env
     volumes:
       - /var/run/docker.sock:/docker.sock
     command: python orchestrate.py --image='mitdbg/modeldb-notebook' --docker_network='demo_modeldb_net' --pool_size=10 --command='jupyter notebook --no-browser --port {port} --ip=0.0.0.0 --NotebookApp.base_url=/{base_path} --NotebookApp.port_retries=0 --NotebookApp.token="" --NotebookApp.disable_check_xsrf=True'
@@ -37,7 +35,7 @@ services:
 
   backend:
     build:
-      context: .
+      context: ..
       dockerfile: dockerbuild/Dockerfile-backend
     image: mitdbg/modeldb-backend:latest
     networks:
@@ -48,7 +46,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: ..
       dockerfile: dockerbuild/Dockerfile-frontend
     image: mitdbg/modeldb-frontend:latest
     networks:
