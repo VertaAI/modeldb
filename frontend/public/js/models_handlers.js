@@ -236,9 +236,9 @@ $(function() {
       var modelId = $('#md-json').data('modelId');
       var kvPairs = {};
       $('.edited-content').each(function () {
-        var key = $(this).data('key').replace('md.', '');
+        var key = $(this).data('key').replace('md.', '').split('.$date')[0];
         var value = $(this).data('val');
-        kvPairs[key] = typeof(value) == String ? value.trim(): value;
+        kvPairs[key] = value;
       });
       editMetadata(modelId, kvPairs);     
     });
@@ -248,6 +248,7 @@ $(function() {
   function editMetadata(modelId, kvPairs) {
     var data = [];
     data.push({name: 'kvPairs', value: JSON.stringify(kvPairs)});
+    console.log('data', data);
     $.ajax({
       url: '/models/' + modelId + '/metadata',
       type: "POST",
