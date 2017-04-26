@@ -1,0 +1,114 @@
+sudo: required
+dist: trusty
+language: python
+
+addons:
+  apt:
+    packages:
+      # - thrift-compiler
+      - docker
+
+before_install:
+  - sudo docker run -d --name mongo -p 27017:27017 mongo:latest
+  - docker ps
+  - sudo apt-get install -y sqlite
+  - sudo apt-get install -y maven
+  - sudo apt-get install -y nodejs
+
+  # install sbt
+  - echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+  - sudo apt-get update
+  - sudo apt-get install sbt
+
+
+  # install thrift
+  - cd ~/
+  - wget -q http://archive.apache.org/dist/thrift/0.9.3/thrift-0.9.3.tar.gz &>/dev/null
+  - tar -xzf thrift-0.9.3.tar.gz &>/dev/null
+  - cd ~/thrift-0.9.3
+  - sudo ./configure --without-python --without-java --without-ruby
+  - sudo make
+  - sudo ln -n ~/thrift-0.9.3/compiler/cpp/thrift /usr/local/bin/thrift
+
+
+install:
+
+  # do pip installs, set pythonpath
+  - pip install -r $TRAVIS_BUILD_DIR/client/python/requirements.txt
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR/client/python:$PYTHONPATH
+
+  # gen_sqlite
+  - cd $TRAVIS_BUILD_DIR/server/codegen
+  - sh ./gen_sqlite.sh
+
+  # build python client
+  - cd $TRAVIS_BUILD_DIR/client/python
+  - ./build_client.sh
+
+  # build scala client
+  - cd $TRAVIS_BUILD_DIR/client/scala/libs/spark.ml
+  - ./build_client.sh
+
+  # start server
+  - cd $TRAVIS_BUILD_DIR/server
+  - ./start_server.sh
+  - /bin/sleep 30
+
+  # # start frontend
+  # - cd $TRAVIS_BUILD_DIR/frontend
+  # - ./start_frontend.sh
+
+
+
+before_script:
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR/client/python:$PYTHONPATH
+  - /bin/netstat -tlpn
+
+script:
+
+  # scala sbt tests
+  - echo =================== SEVER TESTS ===================
+  - cd $TRAVIS_BUILD_DIR/server
+  - mvn test -Dtest=TestAncestryComputer -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestBasicConnection -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestCrossValidation -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestDataFrame -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestEvent -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestExperiment -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestExperimentRun -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestFeatures -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestFitEvent -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestGridSearchCrossValidation -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestPipelineEvent -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestProject -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestTransformer -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestTransformerSpec -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestTransformEvent -Dthrift_version=0.9.3
+  - /bin/sleep 10
+  - mvn test -Dtest=TestTreeModels -Dthrift_version=0.9.3
+  - /bin/sleep 10
+
+
+  - echo =================== CLIENT TESTS ===================
+  - echo ------------------- SCALA  TESTS -------------------
+  - cd $TRAVIS_BUILD_DIR/client/scala/libs/spark.ml
+  - sbt test
+  - echo ------------------- PYTHON TESTS -------------------
+  - cd $TRAVIS_BUILD_DIR/client/python/modeldb/tests/sklearn
+  - python -m unittest discover .
+

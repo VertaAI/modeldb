@@ -7,6 +7,7 @@ import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Record2;
+import org.jooq.impl.DSL;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -148,5 +149,46 @@ public class ProjectDao {
         numExperimentRunsForProjId.get(id)
       ))
       .collect(Collectors.toList());
+  }
+
+  /**
+   * Get the IDs of all the projects that match the specified key-value pairs.
+   * @param  keyValuePairs - The map containing key-value pairs to match.
+   * @param  ctx - The database context.
+   * @return A list of all project IDs that match the given attributes.
+   */
+  public static List<Integer> getProjectIds(Map<String, String> keyValuePairs, DSLContext ctx) {
+    return ctx
+          .select(Tables.PROJECT.ID)
+          .from(Tables.PROJECT)
+          .where(DSL.and(keyValuePairs.keySet()
+                                      .stream()
+                                      .map(
+                                        key -> DSL.field(DSL.name("PROJECT", key))
+                                              .eq(keyValuePairs.get(key)))
+                                      .collect(Collectors.toList())))
+          .fetch()
+          .stream()
+          .map(rec -> rec.value1())
+          .collect(Collectors.toList());
+  }
+
+  /**
+   * Update the given field of the project of the given ID with the given value.
+   * The field must be an existing field of the project.
+   * @param  projectId - The ID of the project.
+   * @param  key - The key to update.
+   * @param  value - The value for the key.
+   * @param  ctx - The database context.
+   * @return whether field was successfully updated or not
+   */
+  public static boolean updateProject(int projectId, String key, String value, DSLContext ctx) {
+    // TODO: throw some kind of exception when key doesn't exist
+    int recordsUpdated = ctx
+      .update(Tables.PROJECT)
+      .set(DSL.field(DSL.name("PROJECT", key)), value)
+      .where(Tables.PROJECT.ID.eq(projectId))
+      .execute();
+    return recordsUpdated > 0;
   }
 }
