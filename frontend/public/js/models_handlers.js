@@ -184,21 +184,27 @@ $(function() {
       var value = leaf.find('.leaf-container span').html().trim();
       var valueWithoutQuotes = value.replace(/"/g,"");
       value = (valueWithoutQuotes == value) ? parseFloat(value) : valueWithoutQuotes;
-
       var parent = leaf.parent().closest('li');
 
       while (parent.length != 0) {
         var split = parent.children().html().split("&nbsp;");
 
-        // can't flatten arrays well
+        // flatten the array
         if (split[0].match("node-top node-bracket")) {
           leaf.addClass('nkv');
-          parent.length = 0;
+          var index = $(leaf).parents('li').last().find('li:not(.nkv)').index(leaf.closest('li:not(.nkv)')); 
+          key = index + "." + key;
+        } else if (key.match('<span>')) {
+          key = key.replace(/<.+?>|,|\s/g, '').trim();
+          var index = $(leaf).parents('li').last().find('li:not(.nkv)').index(leaf.closest('li:not(.nkv)'));
+          key = split[0] + "." + index;
         } else {
           key = split[0] + "." + key;
-          parent = parent.parent().closest('li');
         }
+        parent = parent.parent().closest('li');
       }
+
+      // hide MongoDB id
       if (key === '_id.$oid') {
         leaf.parent().closest('li').remove();
       }
@@ -212,6 +218,8 @@ $(function() {
     // make metadata field editable
     $(document).on('click', '.leaf-container', function(event) {
       var leaf = $(this).closest('.ui-draggable');
+      console.log('key', leaf.data('key'), leaf.data('val'))
+      // console.log('draggable', leaf.html());
       if (leaf.data('key') !== 'md.MODELDB_model_id') {
         $(this).attr('contenteditable', 'true');
         leaf.draggable('disable');
