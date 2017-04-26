@@ -136,45 +136,35 @@ module.exports = {
   },
 
   editMetadata: function(modelId, kvPairs, callback) {
-    console.log('inside editMetadata')
     var count = 0;
     var numKvPairs = Object.keys(kvPairs).length;
-    console.log('got length')
     for (var key in kvPairs) {
-      console.log('get key')
       var value = kvPairs[key];
-      if (value === Array) {
-        // var valueIndex = ??
-        Thrift.client.updateVectorField(modelId, key, valueIndex, value, valueType, function(err, response) {
-          callback(response);
-        });
-      } else {
-        var valueType;
-        if (isNaN(value)) {
-          if (value === 'true' || value === 'false') {
-            valueType = 'bool';
-          } else {
-            valueType = moment(value).isValid() ? 'datetime': 'string';
-          }
+      var valueType;
+      if (isNaN(value)) {
+        if (value === 'true' || value === 'false') {
+          valueType = 'bool';
         } else {
-          var value = value.toString(); // thrift api takes in strings only
-          if (value.indexOf('.') != -1) {
-            valueType = 'double';
-          } else {
-            valueType = parseInt(value) > 2**31 - 1 ? 'long': 'int';
-          }
+          valueType = moment(value).isValid() ? 'datetime': 'string';
         }
-        console.log(key, value, valueType)
-        Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  
-          if (err) {
-            console.log('err', err);
-          }
-          count += 1;
-          if (count === numKvPairs) {
-            callback(response);
-          }
-        });
+      } else {
+        var value = value.toString(); // thrift api takes in strings only
+        if (value.indexOf('.') != -1) {
+          valueType = 'double';
+        } else {
+          valueType = parseInt(value) > 2**31 - 1 ? 'long': 'int';
+        }
       }
+      console.log(key, value, valueType)
+      Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  
+        if (err) {
+          console.log('err', err);
+        }
+        count += 1;
+        if (count === numKvPairs) {
+          callback(response);
+        }
+      });
     }    
   }
 
