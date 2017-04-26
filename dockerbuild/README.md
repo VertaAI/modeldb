@@ -17,7 +17,7 @@ The easiest way to get a ModelDB server up and running is with Docker Compose.
 
 `docker-compose up` will download prebuilt ModelDB images from Docker Hub and create and start containers. When it finishes, your ModelDB server should be reachable at [http://localhost/](http://localhost/).
 
-## Manual Docker
+## Docker (without Docker Compose)
 
 It is also possible to run ModelDB in Docker without Docker Compose.
 
@@ -42,9 +42,9 @@ It is also possible to run ModelDB in Docker without Docker Compose.
 
     ModelDB stores its data in MongoDB.
 
-    *Note: If you have an existing MongoDB server you would like to use, you can skip this part and substitute the hostname or IP of your MongoDB server for `mongo` in the next step.*
+    *Note1: If you have an existing MongoDB server you would like to use, you can skip this part and substitute the hostname or IP of your MongoDB server for `mongo` in the next step.*
 
-    *If you would like to host ModelDB from the same host as MongoDB, we recommend you switch to running MongoDB as a Docker container as detailed in this step or [install ModelDB without Docker](../README.md#manualsetup). Reaching localhost from inside of a Docker container is an advanced Docker networking topic and is especially complicated on non-Linux hosts.*
+    *Note2: If you would like to host ModelDB from the same host as MongoDB, we recommend you switch to running MongoDB as a Docker container as detailed in this step or [install ModelDB without Docker](../README.md#manualsetup). Reaching localhost from inside of a Docker container is an advanced Docker networking topic and is especially complicated on non-Linux hosts.*
 
     ```bash
         # Mongo server
