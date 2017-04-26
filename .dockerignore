@@ -1,0 +1,4 @@
+# Files to be excluded from Docker images
+.git
+.vagrant
+frontend/node_modules

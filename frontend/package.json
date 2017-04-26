@@ -15,7 +15,8 @@
     "moment": "^2.18.1",
     "morgan": "~1.7.0",
     "serve-favicon": "~2.3.0",
-    "thrift": "^0.9.3"
+    "thrift": "^0.9.3",
+    "yargs": "^7.1.0"
   },
   "main": "app.js"
 }

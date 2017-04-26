@@ -1,36 +1,78 @@
-#Running the docker file
-Use the following command to download the image from dockerhub:
-```bash
-docker run -it -p 8082:8082 -p 8081:3000 sanjayganeshan/mdgmodeldb:latest
-```
+# Running ModelDB with Docker
 
-OR build it from the dockerfile. 
+## Docker Compose
 
-*from the dockerbuild directory*
+The easiest way to get a ModelDB server up and running is with Docker Compose.
 
-```bash
-docker build .
-docker run -it -p 8082:8082 -p 8081:3000 <ID>
-```
+1. **Install Docker Compose**
 
-You should replace *ID* with the ID that is printed after building.
+    [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
 
-Once you have started the built container, please run `interactive_installer.sh` to install the dependencies that require
-accepting license agreements. It will then also build ModelDB. You should commit this as a new tag so that you do not need to wait for
-it to install again. Future runs can then `start_modeldb.sh` to build modelDB (You can also build modelDB manually, just use `add_dependencies_to_path.sh`
-to add the dependencies to your PATH first).
+2. **Run ModelDB**
 
-##Summary of Files
+    ```bash
+    cd [path_to_modeldb]
+    docker-compose up
+    ```
 
-`installer.sh`: A full-fledged installer that installs ModelDB. You shouldn't have to run this.
+`docker-compose up` will download prebuilt ModelDB images from Docker Hub and create and start containers. When it finishes, your ModelDB server should be reachable at [http://localhost/](http://localhost/).
 
-`interactive_installer.sh`: An installer that installs the components of ModelDB that require the user to accept an agreement,
-then starts ModelDB.
+## Docker (without Docker Compose)
 
-`quiet_installer.sh`: An installer that installs all it can without user input
+It is also possible to run ModelDB in Docker without Docker Compose.
 
-`start_modeldb.sh`: A script that adds the dependencies to the PATH, then starts ModelDB.
+1. **(Optional) Build images**
 
-`add_dependencies_to_path.sh`: A script that adds the dependencies to the PATH.
+    You can build ModelDB's Docker images locally if you prefer, but prebuilt images are available on [MIT DBg's Docker Hub organization](https://hub.docker.com/r/mitdbg/) and will be downloaded automatically by Docker if you skip this step.
 
-`Dockerfile`: A script that tells Docker how to build the image.
+    ```bash
+    docker build -t mitdbg/modeldb-backend -f dockerbuild/Dockerfile-backend .
+    docker build -t mitdbg/modeldb-frontend -f dockerbuild/Dockerfile-frontend .
+    ```
+
+2. **Create a Docker network for ModelDB**
+
+    Docker containers need a private network in order to find each other by name.
+
+    ```bash
+    docker network create modeldb
+    ```
+
+3. **Run MongoDB**
+
+    ModelDB stores its data in MongoDB.
+
+    *Note1: If you have an existing MongoDB server you would like to use, you can skip this part and substitute the hostname or IP of your MongoDB server for `mongo` in the next step.*
+
+    *Note2: If you would like to host ModelDB from the same host as MongoDB, we recommend you switch to running MongoDB as a Docker container as detailed in this step or [install ModelDB without Docker](../README.md#manualsetup). Reaching localhost from inside of a Docker container is an advanced Docker networking topic and is especially complicated on non-Linux hosts.*
+
+    ```bash
+        # Mongo server
+        docker run -d \
+            --name mongo \
+            --net modeldb \
+            -p 27017:27017 \
+            mongo:3.4
+    ```
+
+4. **Run ModelDB**
+
+    ```bash
+    # ModelDB backend server ('mongo' being the hostname for the mongo server)
+    docker run -d \
+        --name backend \
+        --net modeldb \
+        -p 6543:6543 \
+        mitdbg/modeldb-backend \
+        mongo
+
+    # ModelDB frontend server ('backend' being hostname for backend)
+    docker run -d \
+        --name frontend \
+        --net modeldb \
+        -p 3000:3000 \
+        mitdbg/modeldb-frontend \
+        backend
+    ```
+
+    Shortly after running this command, ModelDB's frontend will be reachable at [http://localhost:3000](http://localhost:3000), and you will be able to log data into ModelDB (at port 6543) via ModelDB clients.

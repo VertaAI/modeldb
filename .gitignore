@@ -1,8 +1,4 @@
-# DS_Store
 .DS_Store
-*/.DS_Store
-*/*/.DS_Store
-*/*/*/.DS_Store
 client/scala/libs/spark.ml/src/main/thrift/ModelDB.thrift
 server/src/main/thrift/ModelDB.thrift
 .local_files/*
@@ -19,5 +15,6 @@ duplicator.sh
 _site/
 .idea/
 .sass-cache/
+.vagrant/
 target/
 bin/

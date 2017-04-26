@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # generate thrift file
-../scripts/gen_thrift_file.py java '../thrift/ModelDB.thrift' './src/main/thrift/'
+../scripts/gen_thrift_file.sh java '../thrift/ModelDB.thrift' './src/main/thrift/' 
 
 # check if thrift version specified and pass that on
 if [ -n "$1" ]; then
