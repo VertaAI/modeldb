@@ -155,7 +155,6 @@ module.exports = {
           valueType = parseInt(value) > 2**31 - 1 ? 'long': 'int';
         }
       }
-      console.log(key, value, valueType)
       Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  
         if (err) {
           console.log('err', err);
