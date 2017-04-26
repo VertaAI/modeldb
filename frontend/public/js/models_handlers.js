@@ -191,14 +191,16 @@ $(function() {
 
         // flatten the array
         if (split[0].match("node-top node-bracket")) {
-          leaf.addClass('nkv');
-          var index = $(leaf).parents('li').last().find('li:not(.nkv)').index(leaf.closest('li:not(.nkv)')); 
-          key = index + "." + key;
+          // nested array element
+          leaf.addClass('nkv'); 
+          key = getArrayIndex(leaf) + "." + key;
         } else if (key.match('<span>')) {
+          // regular array element 
           key = key.replace(/<.+?>|,|\s/g, '').trim();
-          var index = $(leaf).parents('li').last().find('li:not(.nkv)').index(leaf.closest('li:not(.nkv)'));
-          key = split[0] + "." + index;
+          key = split[0] + "." + getArrayIndex(leaf);
+          leaf.addClass('elt');
         } else {
+          // not an array element
           key = split[0] + "." + key;
         }
         parent = parent.parent().closest('li');
@@ -218,6 +220,7 @@ $(function() {
     // make metadata field editable
     $(document).on('click', '.leaf-container', function(event) {
       var leaf = $(this).closest('.json-kv');
+
       if (leaf.data('key') !== 'md.MODELDB_model_id') {
         $(this).attr('contenteditable', 'true');
         if (leaf.is('.ui-draggable')) {
@@ -265,5 +268,9 @@ $(function() {
         $('.save-button').text('Saved');
       },
     });
-  };
+  }
+
+  function getArrayIndex(leaf) {
+    return $(leaf).parents('li').last().find('li:not(.nkv)').index(leaf.closest('li:not(.nkv)'));
+  }
 });

@@ -149,7 +149,7 @@ $(function() {
       sortTable(key, order);
     });
 
-    $(document).on("mouseenter", '.kv:not(.nkv)', function(event){
+    $(document).on("mouseenter", '.kv:not(.nkv):not(.elt)', function(event){
       var item = $(this);
       //check if the item is already draggable
       if (item.is('.ui-draggable-disabled')) {

@@ -522,6 +522,10 @@ li.json-kv.ui-draggable-dragging {
   cursor: text;
 }
 
+#md-json li.kv.elt {
+  cursor: text;
+}
+
 .save-button {
   float:right;
 }
