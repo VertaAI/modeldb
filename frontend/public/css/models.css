@@ -526,7 +526,7 @@ li.json-kv.ui-draggable-dragging {
   cursor: text;
 }
 
-.save-button {
+.save-button, .edit-button {
   float:right;
 }
 

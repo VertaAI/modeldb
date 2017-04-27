@@ -152,7 +152,7 @@ module.exports = {
         if (value.indexOf('.') != -1) {
           valueType = 'double';
         } else {
-          valueType = parseInt(value) > 2**31 - 1 ? 'long': 'int';
+          valueType = parseInt(value) > Math.pow(2, 31) - 1 ? 'long': 'int';
         }
       }
       Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  

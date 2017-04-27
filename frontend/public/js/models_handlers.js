@@ -150,8 +150,11 @@ $(function() {
           data:JSON.parse(response)
         });
         node.expandAll();
+        var editButton = $('<button class="edit-button">Edit</button>');
         var saveButton = $('<button class="save-button" disabled>Save Changes</button>');
+        $('#md-json').append(editButton);
         $('#md-json').append(saveButton);
+        saveButton.hide();
         $('#md-json').data('modelId', modelId);
         $('#modal-2').addClass('md-show');
         attachModalListeners();
@@ -162,6 +165,11 @@ $(function() {
 
   $(document).on('click', '.md-close, .md-overlay', function(event) {
     $('.md-modal').removeClass('md-show');
+  });
+
+  $(document).on('click', '.edit-button', function(event) {
+    $('.edit-button').hide();
+    $('.save-button').show();
   });
 
   // close modal with escape key
@@ -221,7 +229,7 @@ $(function() {
     $(document).on('click', '.leaf-container', function(event) {
       var leaf = $(this).closest('.json-kv');
 
-      if (leaf.data('key') !== 'md.MODELDB_model_id') {
+      if (leaf.data('key') !== 'md.MODELDB_model_id' && $('.save-button').is(':visible')) {
         $(this).attr('contenteditable', 'true');
         if (leaf.is('.ui-draggable')) {
           leaf.draggable('disable');
@@ -252,6 +260,14 @@ $(function() {
         kvPairs[key] = value;
       });
       editMetadata(modelId, kvPairs);     
+    });
+
+    $(document).on('focusout', '.save-button', function(event) {
+      if ($(this).is(':visible') && $(this).text().toLowerCase() === 'saved') {
+        $('.edit-button').show();
+        $('.save-button').hide();
+        $('.save-button').text('Save Changes');
+      }
     });
 
   }
