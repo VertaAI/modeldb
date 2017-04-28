@@ -11,7 +11,7 @@ from ..events import (
     MetricEvent, PipelineEvent, ProjectEvent, RandomSplitEvent, TransformEvent)
 
 from Structs import (NewOrExistingProject, ExistingProject,
-    NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
+     NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
      NewExperimentRun, ExistingExperimentRun, ThriftConfig, VersioningConfig,
      Dataset, ModelConfig, Model, ModelMetrics)
 
@@ -81,21 +81,18 @@ class Syncer(object):
 
     # implements singleton Syncer object
     # __new__ always a classmethod
-    def __new__(cls, project_config, experiment_config, experiment_run_config,
-                thrift_config):
+    def __new__(cls, *args, **kwargs):
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(
-                cls,
-                project_config=project_config,
-                experiment_config=experiment_config,
-                experiment_run_config=experiment_run_config,
-                thrift_config=thrift_config)
+                cls, *args, **kwargs)
         return cls.instance
 
     def __init__(
             self, project_config, experiment_config, experiment_run_config,
-            thrift_config):
+            thrift_config=None):
+        if thrift_config is None:
+            thrift_config = ThriftConfig()
         self.buffer_list = []
         self.local_id_to_modeldb_id = {}
         self.local_id_to_object = {}

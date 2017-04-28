@@ -284,7 +284,7 @@ class Syncer(ModelDbSyncerBase.Syncer):
 
     def __init__(
             self, project_config, experiment_config, experiment_run_config,
-            thrift_config):
+            thrift_config=None):
         super(Syncer, self).__init__(project_config, experiment_config,
                                      experiment_run_config, thrift_config)
         self.local_id_to_path = {}
