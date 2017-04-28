@@ -35,9 +35,8 @@ services:
 
   backend:
     build:
-      context: ..
-      dockerfile: dockerbuild/Dockerfile-backend
-    image: mitdbg/modeldb-backend:latest
+      context: .
+      dockerfile: Dockerfile-demo-backend
     networks:
       modeldb_net:
         aliases:

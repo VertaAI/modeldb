@@ -1,10 +1,16 @@
-#ModelDB Demo Site
+# ModelDB Demo Site
 
-##Overview
+## Overview
 
 ModelDB is comprised of a server and client libraries to talk with it. Following the instructions below will provide a demo site allowing visitors to explore both.
 
-##Architecture
+## Requirements
+
+The ModelDB demo site requires a Linux machine running Docker 1.13.0 or newer and Docker Compose 1.10.0 or newer.
+
+It cannot run on Mac OS due to a limitation in Docker for Mac's networking. configurable-http-proxy and tmpnb use `--net host`, which does not work on Mac OS. The demo is currently untested on Windows.
+
+## Architecture
 
 The demo site is composed of:
 
@@ -18,9 +24,11 @@ The demo site is composed of:
 
 configurable-http-proxy handles incoming web requests and directs tmpnb to spawn new Jupyter notebooks for visitors. tmpnb is configured to spawn 10 concurrent notebooks and reclaim and restart notebooks which have been idle for more than 1 hour.
 
-##Setup
+## Setup
 
 The demo site uses Docker Compose to manage containers and their networks.
+
+*These instructions create a blank demo server. If you want to preload data into the server, add your data as a ModelDB SQLite file named `modeldb.db` to the demo directory and add `-f docker-compose-preloaded.yml` to the below docker-compose calls, e.g. `docker-compose -f docker-compose-preloaded.yml build`.*
 
 1. **Build images (optional)**
 
