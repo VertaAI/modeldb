@@ -61,7 +61,7 @@ syncer_obj = Syncer(
 ### c. Sync Information
 - **Method 1**:
 
-    Load all model infromation from a JSON or a YAML file. The expected key names can be found [here](modeldb/utils/MetadataConstants.py). There are also samples JSON and YAML files in [samples/basic](samples/basic).
+    Load all model information from a JSON or a YAML file. The expected key names can be found [here](modeldb/utils/MetadataConstants.py). There are also samples JSON and YAML files in [samples/basic](samples/basic).
     ```python
     syncer_obj.sync_all(filepath)
     syncer_obj.sync()
