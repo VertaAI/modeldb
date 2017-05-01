@@ -3,13 +3,14 @@ import os
 import json
 import sys
 
+
 def create_config():
     file_dir = os.path.dirname(__file__)
     filename = file_dir + '/syncer.json'
     old_config = json.load(file(filename, 'r'))
     new_config = json.load(file(filename, 'r'))
 
-    raw_input(
+    print(
         'This utility helps you create a modeldb configuration file.\n'
         'The file is used by the modeldb python and/or scala clients to '
         'connect to the modeldb server.\n\n'
@@ -91,4 +92,7 @@ def represents_int(s):
 
 if __name__ == '__main__':
     if sys.argv[1] == 'create_config':
-        create_config()
+        try:
+            create_config()
+        except KeyboardInterrupt:
+            pass
