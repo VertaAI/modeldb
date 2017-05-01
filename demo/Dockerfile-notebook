@@ -31,9 +31,7 @@ COPY demo/notebooks /home/$NB_USER/work
 
 USER root
 
-RUN chown -R $NB_USER /modeldb
-
-USER $NB_USER
-
 RUN cd /modeldb/client/python && \
     ./build_client.sh
+
+USER $NB_USER
