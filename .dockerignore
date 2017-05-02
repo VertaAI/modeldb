@@ -2,3 +2,5 @@
 .git
 .vagrant
 frontend/node_modules
+demo/
+!demo/notebooks

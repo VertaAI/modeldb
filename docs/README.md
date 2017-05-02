@@ -1,7 +1,7 @@
 # Using Package documentation
 Documentation for all the server code can be found in 
 
-[`modeldb/docs/server/index.html`]("server/index.html"),
+[`modeldb/docs/server/index.html`](server/index.html),
 
 # Rebuilding Package documentation
 

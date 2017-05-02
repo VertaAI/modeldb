@@ -6,7 +6,7 @@ data to and querying data from the ModelDB.
 
 # Setup
 
-ModelDB Server currently uses SQLite3 for storing data. So make sure you've installed SQLite3 (see [dependencies] (docs/RequiredSoftware.md)). 
+ModelDB Server currently uses SQLite3 for storing data. So make sure you've installed SQLite3 (see [dependencies](docs/required_software.md)). 
 
 From the server directory, create the SQLite database and tables for ModelDB using:
 
@@ -22,7 +22,7 @@ To launch the server, make sure you have installed Maven 3.
 
 # Tests
 
-You can run server tests with `mvn test -Dthrift_version=[thirft_vserion]`
+You can run server tests with `mvn test -Dthrift_version=[thrift_version]`
 
 # Configuration
 Edit the server [configuration file](server/src/main/resources/reference.conf) to your liking.
