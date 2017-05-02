@@ -29,7 +29,8 @@ class Syncer(object):
     instance = None
 
     # location of the default config file
-    config_file = "../../../syncer.json"
+    config_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.pardir, 'syncer.json'))
 
     @classmethod
     def create_syncer(
@@ -49,7 +50,7 @@ class Syncer(object):
 
     @classmethod
     def create_syncer_from_config(
-            cls, config_file="../../../syncer.json", sha=None):
+            cls, config_file=config_path, sha=None):
         """
         Create a syncer based on the modeldb configuration file
         """
@@ -200,9 +201,7 @@ class Syncer(object):
     def initialize_thrift_client(self, thrift_config):
         # use defaults if thrift_config values are empty
         if not (thrift_config.port and thrift_config.host):
-            syncer_location = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), self.config_file))
-            config_reader = ConfigReader(syncer_location)
+            config_reader = ConfigReader(Syncer.config_path)
             default_thrift = config_reader.get_mdb_server_info()
             thrift_config.host = thrift_config.host or default_thrift.host
             thrift_config.port = thrift_config.port or default_thrift.port
