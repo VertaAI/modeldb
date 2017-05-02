@@ -1,5 +1,9 @@
 # ModelDB Demo Site
 
+These instructions are for creating the demo setup as on modeldb.csail.mit.edu, both the [frontend server](http://modeldb.csail.mit.edu:3000) and [client Jupyter notebooks](http://modeldb.csail.mit.edu:8000).
+
+To set up a normal ModelDB installation, please follow the [Setup and Installation](../README.md#setup-and-installation) instructions in the main README.
+
 ## Overview
 
 ModelDB is comprised of a server and client libraries to talk with it. Following the instructions below will provide a demo site allowing visitors to explore both.
