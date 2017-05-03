@@ -16,7 +16,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, is_classifier, clone
 from ..events import FitEvent
 from ..events import MetricEvent
-import ModelDbSyncer
+from . import ModelDbSyncer
 
 
 def cross_val_score_fn(estimator, X, y=None, scoring=None, cv=None, n_jobs=1,
