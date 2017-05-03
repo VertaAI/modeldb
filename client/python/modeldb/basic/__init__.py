@@ -1,4 +1,4 @@
-from ModelDbSyncerBase import (
+from . ModelDbSyncerBase import (
     NewOrExistingProject, ExistingProject, ExistingExperiment,
     DefaultExperiment, NewOrExistingExperiment, NewExperimentRun,
     ExistingExperimentRun, ThriftConfig, VersioningConfig)

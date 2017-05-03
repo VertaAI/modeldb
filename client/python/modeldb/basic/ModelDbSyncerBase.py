@@ -10,7 +10,7 @@ from ..events import (
     Event, ExperimentEvent, ExperimentRunEvent, FitEvent, GridSearchCVEvent,
     MetricEvent, PipelineEvent, ProjectEvent, RandomSplitEvent, TransformEvent)
 
-from Structs import (NewOrExistingProject, ExistingProject,
+from . Structs import (NewOrExistingProject, ExistingProject,
      NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
      NewExperimentRun, ExistingExperimentRun, ThriftConfig, VersioningConfig,
      Dataset, ModelConfig, Model, ModelMetrics)
@@ -311,8 +311,8 @@ class Syncer(object):
         if data_tag not in self.datasets:
             if "default" not in self.datasets:
                 self.datasets["default"] = Dataset("", {})
-            print data_tag, \
-                ' dataset not defined. default dataset will be used.'
+            print(data_tag,
+                  ' dataset not defined. default dataset will be used.')
             data_tag = "default"
         return self.datasets[data_tag]
 
