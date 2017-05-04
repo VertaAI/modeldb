@@ -29,9 +29,6 @@ FMAX = sys.float_info.max
 
 class Syncer(with_metaclass(Singleton, object)):
 
-    # used for recording whether there is an instance. Syncer is a singleton.
-    # instance = None
-
     # location of the default config file
     config_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), os.pardir, 'syncer.json'))

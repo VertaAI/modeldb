@@ -279,9 +279,8 @@ End functions that extract information from scikit-learn, pandas and numpy
 
 
 class Syncer(with_metaclass(Singleton, ModelDbSyncerBase.Syncer)):
-    __metaclass__ = Singleton
 
-    # The Syncer class needs to have its own pointer to the object
+    # The Syncer class needs to have its own pointer to the singleton instance
     # for overidden sklearn methods to reference
     instance = None
     """
