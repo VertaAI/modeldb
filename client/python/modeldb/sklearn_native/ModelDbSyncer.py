@@ -26,6 +26,7 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 # modeldb imports
+from modeldb.utils.Singleton import Singleton
 from . import GridCrossValidation
 from . CrossValidationScore import *
 from ..basic import *
@@ -277,6 +278,11 @@ End functions that extract information from scikit-learn, pandas and numpy
 
 
 class Syncer(ModelDbSyncerBase.Syncer):
+    __metaclass__ = Singleton
+
+    # The Syncer class needs to have its own pointer to the object
+    # for overidden sklearn methods to reference
+    instance = None
     """
     This is the Syncer class for sklearn, responsible for
     storing events in the ModelDB.
@@ -285,11 +291,14 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def __init__(
             self, project_config, experiment_config, experiment_run_config,
             thrift_config=None):
-        super(Syncer, self).__init__(project_config, experiment_config,
-                                     experiment_run_config, thrift_config)
         self.local_id_to_path = {}
         self.enable_sklearn_sync_functions()
         self.enable_pandas_sync_functions()
+
+        Syncer.instance = self
+
+        super(Syncer, self).__init__(project_config, experiment_config,
+                                     experiment_run_config, thrift_config)
 
     def __str__(self):
         return "SklearnSyncer"

@@ -6,6 +6,7 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
+from modeldb.utils.Singleton import Singleton
 from ..events import (
     Event, ExperimentEvent, ExperimentRunEvent, FitEvent, GridSearchCVEvent,
     MetricEvent, PipelineEvent, ProjectEvent, RandomSplitEvent, TransformEvent)
@@ -14,6 +15,7 @@ from . Structs import (NewOrExistingProject, ExistingProject,
      NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
      NewExperimentRun, ExistingExperimentRun, ThriftConfig, VersioningConfig,
      Dataset, ModelConfig, Model, ModelMetrics)
+
 
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
@@ -25,8 +27,10 @@ FMAX = sys.float_info.max
 
 
 class Syncer(object):
+    __metaclass__ = Singleton
+
     # used for recording whether there is an instance. Syncer is a singleton.
-    instance = None
+    # instance = None
 
     # location of the default config file
     config_path = os.path.abspath(
@@ -79,15 +83,6 @@ class Syncer(object):
             experiment_run_config=ExistingExperimentRun(experiment_run_id),
             thrift_config=ThriftConfig(host, port))
         return syncer_obj
-
-    # implements singleton Syncer object
-    # __new__ always a classmethod
-    def __new__(cls, *args, **kwargs):
-        # This will break if cls is some random class.
-        if not cls.instance:
-            cls.instance = object.__new__(
-                cls)
-        return cls.instance
 
     def __init__(
             self, project_config, experiment_config, experiment_run_config,
