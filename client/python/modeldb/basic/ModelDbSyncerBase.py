@@ -1,6 +1,7 @@
 import sys
 import os
 import yaml
+from future.utils import with_metaclass
 from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
@@ -26,8 +27,7 @@ FMIN = sys.float_info.min
 FMAX = sys.float_info.max
 
 
-class Syncer(object):
-    __metaclass__ = Singleton
+class Syncer(with_metaclass(Singleton, object)):
 
     # used for recording whether there is an instance. Syncer is a singleton.
     # instance = None

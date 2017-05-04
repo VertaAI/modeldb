@@ -12,3 +12,4 @@ thrift
 pyyaml
 requests
 dpath
+future

@@ -5,6 +5,7 @@ Contains functions for overriding basic scikit-learn functions.
 import sys
 import numpy as np
 import pandas as pd
+from future.utils import with_metaclass
 
 # sklearn imports
 from sklearn.linear_model import *
@@ -277,7 +278,7 @@ End functions that extract information from scikit-learn, pandas and numpy
 '''
 
 
-class Syncer(ModelDbSyncerBase.Syncer):
+class Syncer(with_metaclass(Singleton, ModelDbSyncerBase.Syncer)):
     __metaclass__ = Singleton
 
     # The Syncer class needs to have its own pointer to the object
