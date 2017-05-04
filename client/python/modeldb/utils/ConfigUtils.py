@@ -10,7 +10,7 @@ class ConfigReader(object):
 
     def __init__(self, filename):
         # TODO: need to deal with errors here
-        self.config = json.load(file(filename, 'r'))
+        self.config = json.load(open(filename, 'r'))
         self.validate_config()
 
     def validate_config(self):
