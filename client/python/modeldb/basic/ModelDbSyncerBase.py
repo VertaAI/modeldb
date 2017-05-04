@@ -86,7 +86,7 @@ class Syncer(object):
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(
-                cls, *args, **kwargs)
+                cls)
         return cls.instance
 
     def __init__(
