@@ -2,6 +2,8 @@ import unittest
 from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
+from modeldb.basic.Structs import (
+    DefaultExperiment, NewExperimentRun, ThriftConfig)
 from modeldb.sklearn_native.ModelDbSyncer import *
 
 from sklearn import linear_model
