@@ -18,3 +18,5 @@ _site/
 .vagrant/
 target/
 bin/
+.env
+*.pyc

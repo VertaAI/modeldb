@@ -11,7 +11,7 @@ from ..events import (
     MetricEvent, PipelineEvent, ProjectEvent, RandomSplitEvent, TransformEvent)
 
 from Structs import (NewOrExistingProject, ExistingProject,
-    NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
+     NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
      NewExperimentRun, ExistingExperimentRun, ThriftConfig, VersioningConfig,
      Dataset, ModelConfig, Model, ModelMetrics)
 
@@ -29,7 +29,8 @@ class Syncer(object):
     instance = None
 
     # location of the default config file
-    config_file = "../../../syncer.json"
+    config_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.pardir, 'syncer.json'))
 
     @classmethod
     def create_syncer(
@@ -49,7 +50,7 @@ class Syncer(object):
 
     @classmethod
     def create_syncer_from_config(
-            cls, config_file="../../../syncer.json", sha=None):
+            cls, config_file=config_path, sha=None):
         """
         Create a syncer based on the modeldb configuration file
         """
@@ -81,21 +82,18 @@ class Syncer(object):
 
     # implements singleton Syncer object
     # __new__ always a classmethod
-    def __new__(cls, project_config, experiment_config, experiment_run_config,
-                thrift_config):
+    def __new__(cls, *args, **kwargs):
         # This will break if cls is some random class.
         if not cls.instance:
             cls.instance = object.__new__(
-                cls,
-                project_config=project_config,
-                experiment_config=experiment_config,
-                experiment_run_config=experiment_run_config,
-                thrift_config=thrift_config)
+                cls, *args, **kwargs)
         return cls.instance
 
     def __init__(
             self, project_config, experiment_config, experiment_run_config,
-            thrift_config):
+            thrift_config=None):
+        if thrift_config is None:
+            thrift_config = ThriftConfig()
         self.buffer_list = []
         self.local_id_to_modeldb_id = {}
         self.local_id_to_object = {}
@@ -203,9 +201,7 @@ class Syncer(object):
     def initialize_thrift_client(self, thrift_config):
         # use defaults if thrift_config values are empty
         if not (thrift_config.port and thrift_config.host):
-            syncer_location = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), self.config_file))
-            config_reader = ConfigReader(syncer_location)
+            config_reader = ConfigReader(Syncer.config_path)
             default_thrift = config_reader.get_mdb_server_info()
             thrift_config.host = thrift_config.host or default_thrift.host
             thrift_config.port = thrift_config.port or default_thrift.port

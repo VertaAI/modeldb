@@ -10,6 +10,7 @@
 
 - [Overview](#overview)
     - [How Does it Work?](#how-does-it-work)
+- [Demo](#demo)
 - [News](#news)
 - [Setup and Installation](#setup-and-installation)
 - [Usage and Samples](#usage-and-samples)
@@ -38,6 +39,9 @@ ModelDB Configurable Graph Parameters
 [ModelDB's Light API](client/python/light_api.md) can be used with any ML environment to sync model metrics and metadata or even entire config files by calling a few functions (e.g. see [here](client/python/samples/basic/BasicWorkflow.py) and [here](client/python/samples/basic/BasicSyncAll.py) respectively).
 
 Alternatively, ModelDB native clients for  ```spark.ml``` and ```scikit-learn``` can be used to perform automatic, fine-grained logging. Unlike the Light API, native clients do not require the user to explicitly provide model data to ModelDB. The native clients can automatically extract relevant pieces of model data *as the model is being built* and sync them with ModelDB. Incorporating ModelDB into a scikit-learn / spark.ml workflow is as simple as appending `Sync` or `_sync` to relevant methods in the respective libraries. See samples for spark.ml [here](client/scala/libs/spark.ml#samples) and those for scikit-learn [here](client/python/scikit_learn.md).
+
+## Demo
+Visit the [ModelDB client demo](http://modeldb.csail.mit.edu:3000) to try ModelDB's scikit-learn integration in Jupyter Notebook. See your results and those of others at the [ModelDB server demo](http://modeldb.csail.mit.edu:8000).
 
 ## News
 
@@ -150,7 +154,11 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
     ./start_server.sh [thrift_version] &
     # NOTE: if you are building the project in eclipse, you may need to uncomment the pluginManagement tags in pom.xml located in the server directory
 
-    # build scikit-learn client library
+    # build or pip install the scikit-learn client library
+    pip install modeldb
+
+    -- or --
+
     cd [path_to_modeldb]/client/python
     ./build_client.sh
 

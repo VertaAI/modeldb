@@ -9,7 +9,7 @@ from modeldb.basic.ModelDbSyncerBase import Syncer
 
 # Example: Create a syncer from a config file
 syncer_obj = Syncer.create_syncer_from_config(
-    "/Users/arcarter/code/modeldb/client/syncer.json")
+    "[MODELDB_ROOT]/client/syncer.json")
 
 # Example: Create a syncer explicitly
 # syncer_obj = Syncer(
