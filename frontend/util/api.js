@@ -138,7 +138,6 @@ module.exports = {
   editMetadata: function(modelId, kvPairs, callback) {
     var count = 0;
     var numKvPairs = Object.keys(kvPairs).length;
-    console.log('hiii', kvPairs);
     for (var key in kvPairs) {
       var value = kvPairs[key];
       var valueType;
@@ -147,7 +146,6 @@ module.exports = {
           valueType = 'bool';
         } else {
           valueType = moment(value).isValid() ? 'datetime': 'string';
-          console.log('is string')
         }
       } else {
         var value = value.toString(); // thrift api takes in strings only
@@ -157,7 +155,6 @@ module.exports = {
           valueType = parseInt(value) > Math.pow(2, 31) - 1 ? 'long': 'int';
         }
       }
-      console.log('got to here', key, value, valueType)
       Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  
         if (err) {
           console.log('err', err);
