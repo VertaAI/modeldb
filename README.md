@@ -41,8 +41,8 @@ ModelDB Configurable Graph Parameters
 Alternatively, ModelDB native clients for  ```spark.ml``` and ```scikit-learn``` can be used to perform automatic, fine-grained logging. Unlike the Light API, native clients do not require the user to explicitly provide model data to ModelDB. The native clients can automatically extract relevant pieces of model data *as the model is being built* and sync them with ModelDB. Incorporating ModelDB into a scikit-learn / spark.ml workflow is as simple as appending `Sync` or `_sync` to relevant methods in the respective libraries. See samples for spark.ml [here](client/scala/libs/spark.ml#samples) and those for scikit-learn [here](client/python/scikit_learn.md).
 
 ## Demo
-- [ModelDB client](http://modeldb.csail.mit.edu:3000): See how ModelDB can be integrated into different ML workflows 
-- [ModelDB frontend](http://modeldb.csail.mit.edu:8000): See how ModelDB can visualize model data and results
+- [ModelDB client](http://modeldb.csail.mit.edu:8000): See how ModelDB can be integrated into different ML workflows 
+- [ModelDB frontend](http://modeldb.csail.mit.edu:3000): See how ModelDB can visualize model data and results
 
 ## News
 
