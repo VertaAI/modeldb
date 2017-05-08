@@ -229,7 +229,7 @@ $(function() {
     $(document).on('click', '.leaf-container', function(event) {
       var leaf = $(this).closest('.json-kv');
 
-      if (leaf.data('key') !== 'md.MODELDB_model_id' && $('.save-button').is(':visible')) {
+      if (leaf.data('key') !== 'md.MODELDB_model_id' && leaf.data('key') !== 'md.date-created' && $('.save-button').is(':visible')) {
         $(this).attr('contenteditable', 'true');
         if (leaf.is('.ui-draggable')) {
           leaf.draggable('disable');
@@ -248,7 +248,19 @@ $(function() {
         $(this).addClass('edited-content');
         var value = $(this).find('.leaf-container span, .leaf-container font').html().replace(/&nbsp;/g, ' ').trim();
         var valueWithoutQuotes = value.replace(/"/g,'');
-        value = (valueWithoutQuotes == value) ? parseFloat(value) : valueWithoutQuotes;
+        var key = $(this).data('key').replace('md.', '').split('.$date')[0];
+
+        // do type check
+        if (isNaN($(this).data('val')) && !isNaN(valueWithoutQuotes)) {
+          alert(key + ' cannot be a number');
+          $('.save-button').addAttr('disabled');
+          return;
+        } else if (!isNaN($(this).data('val')) && isNaN(valueWithoutQuotes)) {
+          alert(key + ' must be a number');
+          $('.save-button').addAttr('disabled');
+          return;
+        }
+        value = isNaN(valueWithoutQuotes) ? valueWithoutQuotes : parseFloat(value);
         $(this).data('val', value);
       });
 
@@ -259,6 +271,7 @@ $(function() {
         var value = $(this).data('val');
         kvPairs[key] = value;
       });
+      console.log(kvPairs)
       editMetadata(modelId, kvPairs);     
     });
 
