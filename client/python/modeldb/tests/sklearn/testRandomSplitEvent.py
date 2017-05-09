@@ -43,7 +43,7 @@ class TestRandomSplitEvent(unittest.TestCase):
         weights = self.random_split_event.weights
         self.assertAlmostEqual(weights[0], 0.7)
         self.assertAlmostEqual(weights[1], 0.3)
-        self.assertEquals(self.random_split_event.seed, 1)
+        self.assertEqual(self.random_split_event.seed, 1)
 
     def test_old_dataframe(self):
         old_df = self.random_split_event.oldDataFrame
@@ -61,7 +61,7 @@ class TestRandomSplitEvent(unittest.TestCase):
 
     def test_split_dataframes(self):
         split_data_frames = self.random_split_event.splitDataFrames
-        self.assertEquals(len(split_data_frames), 2)
+        self.assertEqual(len(split_data_frames), 2)
         dataframe1 = split_data_frames[0]
         dataframe2 = split_data_frames[1]
         utils.validate_dataframe_struct(dataframe1, self)
@@ -71,7 +71,7 @@ class TestRandomSplitEvent(unittest.TestCase):
         # margin of error)
         self.assertIn(dataframe1.numRows, range(65, 75))
         self.assertIn(dataframe2.numRows, range(25, 35))
-        self.assertEquals(dataframe1.numRows + dataframe2.numRows, 100)
+        self.assertEqual(dataframe1.numRows + dataframe2.numRows, 100)
 
 
 if __name__ == '__main__':

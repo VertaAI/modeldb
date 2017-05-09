@@ -136,9 +136,9 @@ class TestOttoCalibration(unittest.TestCase):
         """
         projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
-        self.assertEquals(project.description, 'kaggle-otto-script')
-        self.assertEquals(project.author, 'author')
-        self.assertEquals(project.name, 'test1')
+        self.assertEqual(project.description, 'kaggle-otto-script')
+        self.assertEqual(project.author, 'author')
+        self.assertEqual(project.name, 'test1')
         self.assertGreaterEqual(project.id, 0)
         self.assertGreaterEqual(projectOverview.numExperimentRuns, 0)
         self.assertGreaterEqual(projectOverview.numExperiments, 0)
@@ -201,8 +201,8 @@ class TestOttoCalibration(unittest.TestCase):
         model2 = model_responses[1]
         model3 = model_responses[2]
 
-        self.assertEquals(len(model2.metrics), 1)
-        self.assertEquals(len(model3.metrics), 1)
+        self.assertEqual(len(model2.metrics), 1)
+        self.assertEqual(len(model3.metrics), 1)
 
         dataframe_id = self.syncer_obj.id_for_object[id(self.x_test)]
         # Calibrated Classifier has lower log loss than Bagging Classfier

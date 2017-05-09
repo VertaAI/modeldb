@@ -94,9 +94,9 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         """
         projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
-        self.assertEquals(project.description, 'pandas-linear-regression')
-        self.assertEquals(project.author, 'srinidhi')
-        self.assertEquals(project.name, 'test1')
+        self.assertEqual(project.description, 'pandas-linear-regression')
+        self.assertEqual(project.author, 'srinidhi')
+        self.assertEqual(project.name, 'test1')
         self.assertGreaterEqual(project.id, 0)
         self.assertGreaterEqual(projectOverview.numExperimentRuns, 0)
         self.assertGreaterEqual(projectOverview.numExperiments, 0)
@@ -116,7 +116,7 @@ class TestLinearModelEndToEnd(unittest.TestCase):
             exp_id).modelResponses
 
         # Two models are stored above - ensure both are in database
-        self.assertEquals(len(model_responses), 2)
+        self.assertEqual(len(model_responses), 2)
 
         model1 = model_responses[0]
         model2 = model_responses[1]
@@ -156,8 +156,8 @@ class TestLinearModelEndToEnd(unittest.TestCase):
         model2 = model_responses[1]
 
         # Metrics are only stored for the second model.
-        self.assertEquals(len(model1.metrics), 0)
-        self.assertEquals(len(model2.metrics), 1)
+        self.assertEqual(len(model1.metrics), 0)
+        self.assertEqual(len(model2.metrics), 1)
         self.assertIn('mean_squared_error', model2.metrics)
 
         dataframe_id = self.syncer_obj.get_modeldb_id_for_object(self.x_test)

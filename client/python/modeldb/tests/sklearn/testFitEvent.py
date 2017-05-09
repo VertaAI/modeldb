@@ -46,7 +46,7 @@ class TestFitEvent(unittest.TestCase):
     def test_model(self):
         utils.validate_fit_event_struct(self.fit_event, self)
         transformer = self.fit_event.model
-        self.assertItemsEqual(self.fit_event.featureColumns,
+        self.assertEqual(self.fit_event.featureColumns,
                               ['A', 'B', 'C', 'D'])
         expected_transformer = modeldb_types.Transformer(
             -1,
