@@ -84,14 +84,14 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
 
     Depending on the client you're using, we assume you have the following already installed:
     - scikit-learn client:
-        - Python 2.7\*\*
+        - Python 2.7 or Python 3.5.1\*\*
         - [pip](https://pip.pypa.io/en/stable/installing/)
         - [scikit-learn](http://scikit-learn.org/stable/install.html) 0.17\*\*
     - spark.ml client:
         - Java 1.8+
         - Spark 2.0.0\*\*
 
-    **(\*\*) = Must have exact version**
+    **(\*\*) = Python 3.5.1+ is only compatilble with thrift 0.10.0+**
 
     On OSX, we also assume that you have [homebrew](https://brew.sh/) installed.
 
@@ -105,8 +105,8 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
     brew install sbt # for spark.ml client only
     brew install mongodb
 
-    # ModelDB works only with Thrift 0.9.3 and 0.10.0. If you do not have thrift installed, install via brew.
-    brew install thrift
+    # ModelDB works only with Thrift 0.9.3 and 0.10.0. Python 3 is only compatible with thrift 0.10.0 If you do not have thrift installed, install via brew.
+    `brew install thrift`
 
     pip install -r [path_to_modeldb]/client/python/requirements.txt
     ```
