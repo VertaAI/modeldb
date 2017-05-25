@@ -255,7 +255,7 @@ def train_test_split_fn(*arrays, **options):
         random_state = 1
     main_df = arrays[0]
     weights = [train_size, test_size]
-    result = split_dfs[:len(split_dfs) / 2]
+    result = split_dfs[:int(len(split_dfs) / 2)]
     random_split_event = RandomSplitEvent(
         main_df, weights, random_state, result)
     Syncer.instance.add_to_buffer(random_split_event)
