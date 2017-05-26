@@ -48,8 +48,8 @@ install:
   - ./build_client.sh
 
   # build scala client
-  # - cd $TRAVIS_BUILD_DIR/client/scala/libs/spark.ml
-  # - ./build_client.sh
+  - cd $TRAVIS_BUILD_DIR/client/scala/libs/spark.ml
+  - ./build_client.sh
 
   # start server
   - cd $TRAVIS_BUILD_DIR/server
