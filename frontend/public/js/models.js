@@ -1,6 +1,7 @@
 const MODELS_PER_LOAD = 10;
 const DEFAULT_X = "Type";
 const DEFAULT_Z = "Experiment Run ID";
+const MODAL_MAX_WIDTH = 630; // in px, defined in components.css
 
 var models = [];
 var summarySpecs;
@@ -281,6 +282,12 @@ $(function() {
         console.log(selectedHeadings);
         console.log(models);
         loadCustomTable();
+                // adjust table styling display based on size
+        if ($('#md-table').outerWidth() == MODAL_MAX_WIDTH) {
+          $('#md-table table').css('display', 'block');
+        } else {
+          $('#md-table table').css('display', 'inline-table');
+        }
         $('#modal-table').addClass('md-show');
       }
     });

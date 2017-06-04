@@ -917,18 +917,20 @@ li.json-kv.ui-draggable-dragging {
   font-size: 15px;
 }
 
-/* Custom table stylinsg */
+/* Custom table styling */
+#modal-table {
+  width: auto;
+}
 
 #md-table {
   padding: 15px;
-  display: inline-block;
 }
 
 #md-table table {
-    border-collapse: collapse;
-    width: 100%;
-    overflow: auto;
-    display: block;
+  border-collapse: collapse;
+  width: 100%;
+  overflow: auto;
+  display: block;
 }
 
 #md-table .model-headings {
