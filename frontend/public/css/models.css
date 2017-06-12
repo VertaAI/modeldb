@@ -518,6 +518,22 @@ li.json-kv.ui-draggable-dragging {
   list-style-type: none;
 }
 
+#md-json li.kv.editable-content {
+  cursor: text;
+}
+
+#md-json li.kv.elt {
+  cursor: text;
+}
+
+.save-button, .edit-button {
+  float:right;
+}
+
+.save-button:disabled {
+  cursor: not-allowed;
+}
+
 /*
  *  Groups
  */

@@ -62,4 +62,12 @@ router.get('/:id/metadata', function(req, res, next) {
   });
 });
 
+router.post('/:id/metadata', function(req, res, next) {
+  var modelId = req.params.id;
+  var kvPairs = JSON.parse(req.body.kvPairs);
+  api.editMetadata(modelId, kvPairs, function(response) {
+    res.json(response);
+  });
+});
+
 module.exports = router;

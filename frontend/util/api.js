@@ -1,5 +1,6 @@
 var async = require('async');
 var Thrift = require('./thrift.js');
+var moment = require('moment')
 
 module.exports = {
 
@@ -132,6 +133,38 @@ module.exports = {
     Thrift.client.storeAnnotationEvent(annotationEvent, function(err, response) {
       callback(response);
     });
+  },
+
+  editMetadata: function(modelId, kvPairs, callback) {
+    var count = 0;
+    var numKvPairs = Object.keys(kvPairs).length;
+    for (var key in kvPairs) {
+      var value = kvPairs[key];
+      var valueType;
+      if (isNaN(value)) {
+        if (value === 'true' || value === 'false') {
+          valueType = 'bool';
+        } else {
+          valueType = moment(value).isValid() ? 'datetime': 'string';
+        }
+      } else {
+        var value = value.toString(); // thrift api takes in strings only
+        if (value.indexOf('.') != -1) {
+          valueType = 'double';
+        } else {
+          valueType = parseInt(value) > Math.pow(2, 31) - 1 ? 'long': 'int';
+        }
+      }
+      Thrift.client.createOrUpdateScalarField(modelId, key, value, valueType, function(err, response) {  
+        if (err) {
+          console.log('err', err);
+        }
+        count += 1;
+        if (count === numKvPairs) {
+          callback(response);
+        }
+      });
+    }    
   }
 
 };

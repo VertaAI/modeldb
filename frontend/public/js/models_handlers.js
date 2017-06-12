@@ -150,6 +150,12 @@ $(function() {
           data:JSON.parse(response)
         });
         node.expandAll();
+        var editButton = $('<button class="edit-button">Edit</button>');
+        var saveButton = $('<button class="save-button" disabled>Save Changes</button>');
+        $('#md-json').append(editButton);
+        $('#md-json').append(saveButton);
+        saveButton.hide();
+        $('#md-json').data('modelId', modelId);
         $('#modal-2').addClass('md-show');
         attachModalListeners();
         node.collapseAll();
@@ -159,6 +165,11 @@ $(function() {
 
   $(document).on('click', '.md-close, .md-overlay', function(event) {
     $('.md-modal').removeClass('md-show');
+  });
+
+  $(document).on('click', '.edit-button', function(event) {
+    $('.edit-button').hide();
+    $('.save-button').show();
   });
 
   // close modal with escape key
@@ -181,20 +192,31 @@ $(function() {
       var value = leaf.find('.leaf-container span').html().trim();
       var valueWithoutQuotes = value.replace(/"/g,"");
       value = (valueWithoutQuotes == value) ? parseFloat(value) : valueWithoutQuotes;
-
       var parent = leaf.parent().closest('li');
 
       while (parent.length != 0) {
         var split = parent.children().html().split("&nbsp;");
 
-        // can't flatten arrays well
+        // flatten the array
         if (split[0].match("node-top node-bracket")) {
-          leaf.addClass('nkv');
-          parent.length = 0;
+          // nested array element
+          leaf.addClass('nkv'); 
+          key = getArrayIndex(leaf) + "." + key;
+        } else if (key.match('<span>')) {
+          // regular array element 
+          key = key.replace(/<.+?>|,|\s/g, '').trim();
+          key = split[0] + "." + getArrayIndex(leaf);
+          leaf.addClass('elt');
         } else {
+          // not an array element
           key = split[0] + "." + key;
-          parent = parent.parent().closest('li');
         }
+        parent = parent.parent().closest('li');
+      }
+
+      // hide MongoDB id
+      if (key === '_id.$oid') {
+        leaf.parent().closest('li').remove();
       }
       leaf.data('key', "md." + key);
       leaf.data('val', value);
@@ -202,5 +224,82 @@ $(function() {
 
     leaves.addClass('kv');
     leaves.addClass('json-kv');
+
+    // make metadata field editable
+    $(document).on('click', '.leaf-container', function(event) {
+      var leaf = $(this).closest('.json-kv');
+
+      if (leaf.data('key') !== 'md.MODELDB_model_id' && leaf.data('key') !== 'md.date-created' && $('.save-button').is(':visible')) {
+        $(this).attr('contenteditable', 'true');
+        if (leaf.is('.ui-draggable')) {
+          leaf.draggable('disable');
+        }
+        leaf.addClass('editable-content');
+        $('.save-button').removeAttr('disabled');
+        $('.save-button').text('Save Changes')
+      }     
+    });
+
+    $(document).on('click', '.save-button', function(event) {
+      event.stopImmediatePropagation();
+
+      // update the data for each edited fields
+      $('.editable-content').each(function () {
+        $(this).addClass('edited-content');
+        var value = $(this).find('.leaf-container span, .leaf-container font').html().replace(/&nbsp;/g, ' ').trim();
+        var valueWithoutQuotes = value.replace(/"/g,'');
+        var key = $(this).data('key').replace('md.', '').split('.$date')[0];
+
+        // do type check
+        if (isNaN($(this).data('val')) && !isNaN(valueWithoutQuotes)) {
+          alert(key + ' cannot be a number');
+          $('.save-button').addAttr('disabled');
+          return;
+        } else if (!isNaN($(this).data('val')) && isNaN(valueWithoutQuotes)) {
+          alert(key + ' must be a number');
+          $('.save-button').addAttr('disabled');
+          return;
+        }
+        value = isNaN(valueWithoutQuotes) ? valueWithoutQuotes : parseFloat(value);
+        $(this).data('val', value);
+      });
+
+      var modelId = $('#md-json').data('modelId');
+      var kvPairs = {};
+      $('.edited-content').each(function () {
+        var key = $(this).data('key').replace('md.', '').split('.$date')[0];
+        var value = $(this).data('val');
+        kvPairs[key] = value;
+      });
+      console.log(kvPairs)
+      editMetadata(modelId, kvPairs);     
+    });
+
+    $(document).on('focusout', '.save-button', function(event) {
+      if ($(this).is(':visible') && $(this).text().toLowerCase() === 'saved') {
+        $('.edit-button').show();
+        $('.save-button').hide();
+        $('.save-button').text('Save Changes');
+      }
+    });
+
+  }
+
+  function editMetadata(modelId, kvPairs) {
+    var data = [];
+    data.push({name: 'kvPairs', value: JSON.stringify(kvPairs)});
+    $.ajax({
+      url: '/models/' + modelId + '/metadata',
+      type: "POST",
+      data: data,
+      dataType: "json",
+      success: function(response) {
+        $('.save-button').text('Saved');
+      },
+    });
+  }
+
+  function getArrayIndex(leaf) {
+    return $(leaf).parents('li').last().find('li:not(.nkv)').index(leaf.closest('li:not(.nkv)'));
   }
 });
