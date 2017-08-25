@@ -1,9 +1,6 @@
 FROM openjdk:8
 
 EXPOSE 6543
-
-RUN  \
- 
  
 # Maven installs openjdk-7 as the default Java. update-alternatives points java back to 8.
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6 && \
