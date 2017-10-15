@@ -1,6 +1,6 @@
 name := "Model DB Spark Client"
 
-version := "1.0"
+version := "1.1"
 
 scalaVersion := "2.11.8"
 
@@ -12,7 +12,7 @@ libraryDependencies += "org.apache.spark" %% "spark-sql" % "2.1.0" % "provided"
 libraryDependencies += "org.apache.spark" %% "spark-mllib" % "2.1.0" % "provided"
 libraryDependencies += "org.apache.spark" %% "spark-hive" % "2.1.0" % "provided"
 
-libraryDependencies += "org.apache.thrift" % "libthrift" % "0.9.2" exclude("org.slf4j", "slf4j-api")
+libraryDependencies += "org.apache.thrift" % "libthrift" % "0.9.3" exclude("org.slf4j", "slf4j-api")
 libraryDependencies += "com.twitter" %% "scrooge-core" % "4.12.0" exclude("com.twitter", "libthrift")
 libraryDependencies += "com.twitter" %% "finagle-thrift" % "6.36.0" exclude("com.twitter", "libthrift")
 

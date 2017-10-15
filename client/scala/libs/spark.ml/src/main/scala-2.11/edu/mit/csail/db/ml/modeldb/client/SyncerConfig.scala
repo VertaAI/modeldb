@@ -1,5 +1,7 @@
 package edu.mit.csail.db.ml.modeldb.client
 
+import java.util.concurrent.TimeUnit
+
 import spray.json._
 
 case class ProjectJson(name: String, author: String, description: String)
@@ -17,7 +19,9 @@ case class SyncerConfigJson(thrift: ThriftJson,
                             experimentRun: ExperimentRunJson,
                             shouldCountRows: Boolean = false,
                             shouldStoreGSCVE: Boolean = false,
-                            shouldStoreSpecificModels: Boolean = false)
+                            shouldStoreSpecificModels: Boolean = false,
+                            var keepAlive: Boolean = true,
+                            var keepAliveBeaconTime: Int = 30)
 
 object SyncerConfigJsonProtocol extends DefaultJsonProtocol {
   implicit val projectFormat = jsonFormat(ProjectJson, "name", "author", "description")
@@ -33,7 +37,9 @@ object SyncerConfigJsonProtocol extends DefaultJsonProtocol {
     "experimentRun",
     "shouldCountRows",
     "shouldStoreGSCVE",
-    "shouldStoreSpecificModels"
+    "shouldStoreSpecificModels",
+    "keepAlive",
+    "keepAliveBeaconTime"
   )
 }
 import SyncerConfigJsonProtocol._
