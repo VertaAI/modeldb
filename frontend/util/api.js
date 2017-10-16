@@ -1,5 +1,6 @@
 var async = require('async');
 var Thrift = require('./thrift.js');
+var ttypes = require('../thrift/ModelDB_types')
 var moment = require('moment')
 
 module.exports = {
@@ -106,8 +107,8 @@ module.exports = {
   },
 
   storeAnnotation: function(modelId, experimentRunId, string, callback) {
-    var transformer = new Transformer({id: modelId});
-    var fragment1 = new AnnotationFragment({
+    var transformer = new ttypes.Transformer({id: modelId});
+    var fragment1 = new ttypes.AnnotationFragment({
       type: "transformer",
       df: null,
       spec: null,
@@ -115,7 +116,7 @@ module.exports = {
       message: null
     });
 
-    var fragment2 = new AnnotationFragment({
+    var fragment2 = new ttypes.AnnotationFragment({
       type: "message",
       df: null,
       spec: null,
@@ -123,7 +124,7 @@ module.exports = {
       message: string
     });
 
-    var annotationEvent = new AnnotationEvent({
+    var annotationEvent = new ttypes.AnnotationEvent({
       fragments: [fragment1, fragment2],
       experimentRunId: experimentRunId
     });
