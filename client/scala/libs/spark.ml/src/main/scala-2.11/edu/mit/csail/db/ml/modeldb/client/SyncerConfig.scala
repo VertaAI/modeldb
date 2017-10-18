@@ -17,9 +17,7 @@ case class SyncerConfigJson(thrift: ThriftJson,
                             experimentRun: ExperimentRunJson,
                             shouldCountRows: Boolean = false,
                             shouldStoreGSCVE: Boolean = false,
-                            shouldStoreSpecificModels: Boolean = false,
-                            keepAlive: Boolean = true,
-                            keepAliveBeaconTime: Int = 30)
+                            shouldStoreSpecificModels: Boolean = false)
 
 object SyncerConfigJsonProtocol extends DefaultJsonProtocol {
   implicit val projectFormat = jsonFormat(ProjectJson, "name", "author", "description")
@@ -35,9 +33,7 @@ object SyncerConfigJsonProtocol extends DefaultJsonProtocol {
     "experimentRun",
     "shouldCountRows",
     "shouldStoreGSCVE",
-    "shouldStoreSpecificModels",
-    "keepAlive",
-    "keepAliveBeaconTime"
+    "shouldStoreSpecificModels"
   )
 }
 import SyncerConfigJsonProtocol._
