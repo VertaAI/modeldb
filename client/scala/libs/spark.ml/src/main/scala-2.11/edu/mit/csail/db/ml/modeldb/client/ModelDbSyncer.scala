@@ -119,11 +119,6 @@ case class NewExperimentRun(description: String="") extends ExperimentRunConfig(
   *                         be stored for a GridSearchCrossValidationEvent. Disabling this improves performance.
   * @param shouldStoreSpecificModels - Whether specific models (e.g. TreeModel, LinearModel) should be stored wherever
   *                                  applicable. Disabling this improves performance.
-  * @param keepAlive - Whether ModelSyncer need to send the keep Alive beacons to the remote server to maintain TCP
-  *                  connection(Default false as there is a overhead to keep the connection alive)
-  * @param keepAliveBeaconTime - The timeout for sending the keep alive beacon. This value is set in seconds . A very
-  *                            small value such as 1 is not recommended as it will keep the server and client busy for
-  *                            no reason. Default value is 30
   */
 class ModelDbSyncer(var hostPortPair: Option[(String, Int)] = Some("localhost", 6543),
                     var syncingStrategy: SyncingStrategy = SyncingStrategy.Eager,
