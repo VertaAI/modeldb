@@ -68,7 +68,7 @@ If you have [Docker Compose](https://docs.docker.com/compose/install/) installed
     cd [path_to_modeldb]
     docker-compose up
     ```
-
+Note by default ModelDB will listen on localhost:3000.     
 ### Manual Setup
 
 Watch a video of the setup and installation process [here](https://youtu.be/rmNnG3-bd6s).
