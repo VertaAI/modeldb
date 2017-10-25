@@ -3,7 +3,8 @@ package edu.mit.csail.db.ml.modeldb.client
 import java.util.UUID
 
 import com.twitter.finagle.Thrift
-import com.twitter.util.Await
+import com.twitter.finagle.transport.Transport
+import com.twitter.util.{Await, Duration}
 import edu.mit.csail.db.ml.modeldb.client.SyncingStrategy.SyncingStrategy
 import edu.mit.csail.db.ml.modeldb.client.event.{ExperimentEvent, ExperimentRunEvent, ModelDbEvent, ProjectEvent}
 import org.apache.spark.ml.FeatureTracker
@@ -174,7 +175,9 @@ class ModelDbSyncer(var hostPortPair: Option[(String, Int)] = Some("localhost", 
     * This is the Thrift client that is responsible for talking to the ModelDB server.
     */
   private val client: Option[FutureIface] = hostPortPair match {
-    case Some((host, port)) => Some(Thrift.client.newIface[ModelDBService.FutureIface](s"$host:$port"))
+    case Some((host, port)) =>  Some(Thrift.client.
+      configured(Transport.Liveness(keepAlive=Some(true),readTimeout = Duration.Top, writeTimeout = Duration.Top)).
+      newIface[ModelDBService.FutureIface](s"$host:$port"))
     case None => None
   }
 
