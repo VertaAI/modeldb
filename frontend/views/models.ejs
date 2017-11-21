@@ -69,7 +69,7 @@
                 <h2>Filter</h2>
                 Drag configs or metrics into this section to filter models based on key - value pairs.
             </div>
-            <div class="filter-area"></div>
+            <div class="selected-area filter-area"></div>
             <button class="filter-button filter-button-disabled">Filter</button>
         </div>
 
@@ -116,6 +116,15 @@
             <div class="sort-area"></div>
           </div>
         <% } %>
+
+        <div class="next-section-container menu-section-container set-headings-container menu1">
+            <div class="set-headings-info">
+                <h2>Customize</h2>
+                Drag any fields into this section to use as custom model table headings.
+            </div>
+            <div class="selected-area set-headings-area"></div>
+            <button class="set-headings-button set-headings-button-disabled">Generate</button>
+        </div>
 
       </div>
 
@@ -262,6 +271,24 @@
         </div>
         <div class="md-body">
           <div id="md-json">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="md-modal md-effect-1" id="modal-table">
+      <div class="md-content">
+        <div class="md-header">
+          Models
+        </div>
+        <div class="md-body">
+          <div id="md-table">
+            <table class="table">
+              <thead>
+                <tr class="model-headings" id="md-table-headings"></tr>
+              </thead>
+              <tbody id="md-table-body"></tbody>
+            </table>
           </div>
         </div>
       </div>

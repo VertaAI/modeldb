@@ -42,6 +42,10 @@ overflow-y: scroll;
   border-bottom: 1px dashed #2c3e50;
 }
 
+.next-section-container {
+  border-top: 1px dashed #2c3e50;
+}
+
 .menu-tab {
   padding: 10px;
   cursor: pointer;
@@ -49,7 +53,7 @@ overflow-y: scroll;
 }
 
 .menu-tab:hover {
-background-color: #d0d8e2;
+  background-color: #d0d8e2;
 }
 
 .menu .selected {
@@ -89,8 +93,8 @@ background-color: #d0d8e2;
   padding: 10px;
 }
 
-.filter-area {
-  height: 200px;
+.filter-area, .set-headings-area {
+  height: 150px;
   overflow-y: auto;
   margin-top: 5px;
   transition: all 0.5s ease;
@@ -125,6 +129,10 @@ background-color: #d0d8e2;
 
 .group-container select {
   width: 100%;
+}
+
+.set-headings-container {
+  display: none;
 }
 
 /*
@@ -466,6 +474,7 @@ background-color: #d0d8e2;
   color: #00B7FF;
   font-size: 12px;
   cursor: pointer;
+  padding-top: 10px;
 }
 
 .model-additional-info {
@@ -639,13 +648,13 @@ li.json-kv.ui-draggable-dragging {
  * Filters
  */
 
-.filter-area-highlight {
+.filter-area-highlight, .set-headings-highlight {
   background-color: rgba(130,130,130, 0.2);
   border: 1px solid #AEBDCD;
   border-bottom: none;
 }
 
-.filter-button {
+.filter-button, .set-headings-button {
   width: 100%;
   padding: 5px;
   background-color: #AEBDCD;
@@ -656,12 +665,13 @@ li.json-kv.ui-draggable-dragging {
   transition: all 0.3s ease;
 }
 
-.filter-button:hover {
+.filter-button:hover, .set-headings-button:hover {
   background-color: #a0b2c5;
 }
 
-.filter-button-disabled {
+.filter-button-disabled, .set-headings-button-disabled {
   opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .kv.ui-draggable-dragging {
@@ -704,6 +714,16 @@ li.json-kv.ui-draggable-dragging {
   color: white;
 }
 
+.selected-heading {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+  margin-left: 5px;
+  cursor: default;
+}
+
+.item-close,
 .filter-close,
 .range-close,
 .sort-close {
@@ -715,6 +735,7 @@ li.json-kv.ui-draggable-dragging {
   top: 5px;
 }
 
+.item-close:hover,
 .filter-close:hover,
 .range-close:hover,
 .sort-close:hover {
@@ -910,4 +931,34 @@ li.json-kv.ui-draggable-dragging {
   border-radius: 5px;
   display: inline-block;
   font-size: 15px;
+}
+
+/* Custom table styling */
+#modal-table {
+  width: auto;
+}
+
+#md-table {
+  padding: 15px;
+}
+
+#md-table table {
+  border-collapse: collapse;
+  width: 100%;
+  overflow: auto;
+  display: block;
+}
+
+#md-table .model-headings {
+  background-color: #AEBDCD;
+}
+
+#md-table th, #md-table td {
+    text-align: center;
+    padding: 8px;
+}
+
+#md-table tr {
+  background-color: white;
+  border: 1px solid #D9E0E8;
 }
