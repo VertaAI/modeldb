@@ -7,7 +7,7 @@ import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Record2;
-import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
+import edu.mit.csail.db.ml.server.metadata.MetadataDb;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;

@@ -5,7 +5,7 @@ import edu.mit.csail.db.ml.util.Pair;
 import jooq.sqlite.gen.Tables;
 import jooq.sqlite.gen.tables.records.FiteventRecord;
 import jooq.sqlite.gen.tables.records.TransformerRecord;
-import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
+import edu.mit.csail.db.ml.server.metadata.MetadataDb;
 import modeldb.*;
 import org.jooq.DSLContext;
 import org.jooq.Record1;

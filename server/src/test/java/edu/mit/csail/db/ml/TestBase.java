@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
-import edu.mit.csail.db.ml.server.storage.metadata.MongoMetadataDb;
+import edu.mit.csail.db.ml.server.metadata.MetadataDb;
+import edu.mit.csail.db.ml.server.metadata.MongoMetadataDb;
 
 import static jooq.sqlite.gen.Tables.*;
 

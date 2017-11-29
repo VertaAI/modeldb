@@ -1,4 +1,4 @@
-package edu.mit.csail.db.ml.server.storage.metadata;
+package edu.mit.csail.db.ml.server.metadata;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
 import com.mongodb.WriteResult;
-import com.mongodb.WriteConcernException;
 import org.joda.time.DateTime;
 
 public class MongoMetadataDb implements MetadataDb {

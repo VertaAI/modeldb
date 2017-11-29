@@ -1,4 +1,4 @@
-package edu.mit.csail.db.ml.server.storage.metadata;
+package edu.mit.csail.db.ml.server.metadata;
 
 import java.util.List;
 import java.util.Map;

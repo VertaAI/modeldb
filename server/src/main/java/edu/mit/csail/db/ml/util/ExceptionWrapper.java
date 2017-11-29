@@ -1,7 +1,7 @@
 package edu.mit.csail.db.ml.util;
 
 import edu.mit.csail.db.ml.server.storage.ExperimentRunDao;
-import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
+import edu.mit.csail.db.ml.server.metadata.MetadataDb;
 import modeldb.ServerLogicException;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;

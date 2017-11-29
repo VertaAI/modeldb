@@ -1,7 +1,7 @@
 package edu.mit.csail.db.ml.server.storage;
 
 import modeldb.*;
-import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
+import edu.mit.csail.db.ml.server.metadata.MetadataDb;
 import java.util.List;
 import java.util.Map;
 

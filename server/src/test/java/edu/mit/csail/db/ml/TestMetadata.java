@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.mongodb.util.JSON;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import edu.mit.csail.db.ml.server.storage.metadata.MongoMetadataDb;
+import edu.mit.csail.db.ml.server.metadata.MongoMetadataDb;
 import org.joda.time.DateTime;
 
 import java.util.Arrays;

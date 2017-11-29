@@ -4,7 +4,7 @@ import edu.mit.csail.db.ml.conf.ModelDbConfig;
 import edu.mit.csail.db.ml.server.algorithm.*;
 import edu.mit.csail.db.ml.server.algorithm.similarity.SimilarModels;
 import edu.mit.csail.db.ml.server.storage.*;
-import edu.mit.csail.db.ml.server.storage.metadata.MetadataDb;
+import edu.mit.csail.db.ml.server.metadata.MetadataDb;
 import edu.mit.csail.db.ml.util.ContextFactory;
 import edu.mit.csail.db.ml.util.ExceptionWrapper;
 import jooq.sqlite.gen.tables.records.DataframeRecord;
