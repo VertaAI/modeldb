@@ -38,9 +38,8 @@ This assumes that you have an ML workflow that you want to instrument with Model
 ### a. Import the ModelDB client library classes
 
 ```python
-from modeldb.sklearn_native import *
 from modeldb.sklearn_native.ModelDbSyncer import *
-
+from modeldb.sklearn_native import SyncableMetrics
 ```
 
 ### b. Create a ModelDB syncer

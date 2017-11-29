@@ -59,7 +59,7 @@ $(function() {
   });
 
   function storeAnnotation(modelId, experimentRunId, string) {
-    var data = []
+    var data = [];
     data.push({name:"string", value:string});
     data.push({name:"experimentRunId", value:experimentRunId});
     $.ajax({

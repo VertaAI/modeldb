@@ -1,6 +1,7 @@
 const MODELS_PER_LOAD = 10;
 const DEFAULT_X = "Type";
 const DEFAULT_Z = "Experiment Run ID";
+const MODAL_MAX_WIDTH = 630; // in px, defined in components.css
 
 var models = [];
 var summarySpecs;
@@ -34,6 +35,10 @@ var filters = {};
 var ranges = {};
 var filterId = 0;
 var rangeId = 0;
+
+// generate custom table
+var selectedHeadings = new Set();
+var mdCursor = 0;
 
 $(function() {
 
@@ -92,11 +97,19 @@ $(function() {
       }
     });
 
-    $('.models-container').scroll(function(event) {
-      if (this.scrollHeight - $(this).scrollTop() <= $(this).outerHeight() + 10) {
+    function loadMoreOnScrollEnd(container, loadFunction) {
+      if (container.scrollHeight - $(container).scrollTop() <= $(container).outerHeight() + 10) {
         // reached bottom of table, so load more
-        loadTable();
+        loadFunction();
       }
+    };
+
+    $('.models-container').scroll(function(event) {
+      loadMoreOnScrollEnd(this, loadTable);
+      // if (this.scrollHeight - $(this).scrollTop() <= $(this).outerHeight() + 10) {
+      //   // reached bottom of table, so load more
+      //   loadTable();
+      // }
     });
 
     $(document).on('click', '.triangle-container', function() {
@@ -149,10 +162,14 @@ $(function() {
       sortTable(key, order);
     });
 
-    $(document).on("mouseenter", '.kv:not(.nkv)', function(event){
+    $(document).on("mouseenter", '.kv:not(.nkv):not(.elt)', function(event){
       var item = $(this);
       //check if the item is already draggable
-      if (!item.is('.ui-draggable')) {
+      if (item.is('.ui-draggable-disabled')) {
+        item.removeClass('editable-content');
+        item.addClass('edited-content');
+        item.draggable('enable');
+      } else if (!item.is('.ui-draggable')) {
         item.draggable({
           helper: 'clone',
           appendTo: 'body',
@@ -162,6 +179,16 @@ $(function() {
           stop: dragStop
         });
       }
+    });
+
+    $(document).on('mouseup', '.set-headings-area', function() {
+      if (filterKey != null) {
+        addHeading(filterKey);
+        $('.set-headings-button').removeClass('set-headings-button-disabled');
+      }
+      filterKey = null;
+      filterVal = null;
+
     });
 
     $(document).on('mouseup', '.filter-area', function() {
@@ -236,12 +263,37 @@ $(function() {
       $('.filter-button').removeClass('filter-button-disabled');
     });
 
+    $(document).on('click', '.item-close', function(event) {
+      var filter = $(event.target).parent('.filter');
+      var key = filter.data('key');
+      filter.remove();
+      removeHeading(key);
+      if (selectedHeadings.size === 0) {
+        $('.set-headings-button').addClass('set-headings-button-disabled');
+      }
+    });
+
     $(document).on('click', '.range-close', function(event) {
       var range = $(event.target).parent('.range');
       var id = range.data('id');
       range.remove();
       removeRange(id);
       $('.filter-button').removeClass('filter-button-disabled');
+    });
+
+    $(document).on('click', '.set-headings-button', function(event) {
+      if (!$(this).hasClass('set-headings-button-disabled')) {
+        console.log(selectedHeadings);
+        console.log(models);
+        loadCustomTable();
+                // adjust table styling display based on size
+        if ($('#md-table').outerWidth() == MODAL_MAX_WIDTH) {
+          $('#md-table table').css('display', 'block');
+        } else {
+          $('#md-table table').css('display', 'inline-table');
+        }
+        $('#modal-table').addClass('md-show');
+      }
     });
 
     $(document).on('click', '.filter-button', function(event) {
@@ -517,7 +569,53 @@ $(function() {
     $('.models').html("");
     loadTable();
     $('.models-container').scrollTop(0);
-  }
+  };
+
+  function clearMdTable() {
+    $('#md-table-headings').empty();
+    $('#md-table-body').empty();
+  };
+
+  function loadCustomTable() {
+    mdCursor = 0;
+    clearMdTable();
+    loadCustomTableHeaders();
+    loadCustomTableRows();
+  };
+
+  function loadCustomTableHeaders() {
+    for (let heading of selectedHeadings) {
+      var html = new EJS({url: '/ejs/table-heading.ejs'}).render({"heading": heading});
+      $('#md-table-headings').append(html);
+    }
+  };
+
+  function loadCustomTableRows() {
+
+    var index = mdCursor;
+    var i = 0;
+    while (i < MODELS_PER_LOAD) {
+      if (index >= models.length) {
+        return;
+      }
+
+      // check filters
+      if (models[index].show) {
+        var row = $('<tr/>', {class: 'model-container'});
+        for (let heading of selectedHeadings) {
+          var value = models[index][heading];
+          var cellHtml = new EJS({url: '/ejs/table-cell.ejs'})
+            .render({"heading": heading, "value": value, "index": index});
+          row.append(cellHtml);
+        }
+        $('#md-table-body').append(row);
+        i += 1;
+      }
+
+      mdCursor += 1;
+      index += 1;
+    }
+  };
 
   function loadTable() {
     var index = cursor;
@@ -1215,6 +1313,17 @@ $(function() {
     $('.filter-area').removeClass('filter-area-highlight');
   };
 
+  function addHeading(key) {
+    if (selectedHeadings.has(key)) {
+      return;
+    }
+    selectedHeadings.add(key);
+    var obj = {key: key};
+    var filterDiv = $(new EJS({url: '/ejs/selected-item.ejs'}).render(obj));
+    console.log(filterDiv);
+    $('.set-headings-area').append(filterDiv);
+  }
+
   function addFilter(key, val) {
     // check if filter with same key already exists
     if (filters[key] != null) {
@@ -1236,6 +1345,10 @@ $(function() {
 
   function removeFilter(key) {
     delete filters[key];
+  }
+
+  function removeHeading(key) {
+    selectedHeadings.delete(key);
   }
 
   function addRange(key) {
@@ -1266,6 +1379,15 @@ $(function() {
 
   function removeRange(id) {
     delete ranges[id];
+  }
+
+  function setHeadings() {
+    for (var key in selectedHeadings) {
+      if (false) {
+        return;
+      }
+    }
+    selectedHeadings.clear();
   }
 
   function filter() {
