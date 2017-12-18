@@ -141,10 +141,10 @@ class TestPipelineEndToEnd(unittest.TestCase):
         """
         # Check ancestry for x_test and x_train.
         # The data the models were trained and tested on.
-        print "x_train_id", self.syncer_obj.get_modeldb_id_for_object(
-            self.x_train)
-        print "x_test_id", self.syncer_obj.get_modeldb_id_for_object(
-            self.x_test)
+        print("x_train_id", self.syncer_obj.get_modeldb_id_for_object(
+                    self.x_train))
+        print("x_test_id", self.syncer_obj.get_modeldb_id_for_object(
+                    self.x_test))
 
         for df in [self.x_train, self.x_test]:
             dataframe_id = self.syncer_obj.get_modeldb_id_for_object(df)

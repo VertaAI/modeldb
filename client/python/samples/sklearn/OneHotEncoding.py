@@ -23,8 +23,8 @@ def oneHotEncoding(lb, feature, df):
         feature_numeric = lb.fit_transform(df[[feature]])
     else:
         feature_numeric = lb.transform(df[[feature]])
-    col_names = map(lambda x: feature + "_" +
-                    str(x).strip(), list(lb.classes_))
+    col_names = list(map(lambda x: feature + "_" +
+                    str(x).strip(), list(lb.classes_)))
     if lb.classes_.shape[0] == 2:
         col_names = col_names[:1]
     feature_df = pd.DataFrame(

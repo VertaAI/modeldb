@@ -72,5 +72,5 @@ alg = LogisticRegression(random_state=1)
 
 scores = cross_validation.cross_val_score_sync(
     alg, titanic[predictors], titanic["Survived"], cv=3)
-print scores.mean()
+print(scores.mean())
 syncer_obj.sync()

@@ -22,7 +22,7 @@ syncer_obj = Syncer.create_syncer_from_config(
 # experiment_run_id = int(sys.argv[len(sys.argv) - 1])
 # syncer_obj = Syncer.create_syncer_for_experiment_run(experiment_run_id)
 
-print "I'm training some model"
+print("I'm training some model")
 
 datasets = {
     "train": Dataset("/path/to/train", {"num_cols": 15, "dist": "random"}),

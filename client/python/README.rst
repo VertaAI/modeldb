@@ -7,7 +7,7 @@ A python client for working with `ModelDB machine learning management system <ht
 This library makes it easy for users of the `ModelDB ML management system <http://modeldb.csail.mit.edu>`_ to automatically catalog models built with `scikit-learn <scikit-learn.org>`_.
 
 
-ModelDB is an end-to-end system for managing machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying. ModelDB runs on python 2.X and 3.X, and can be used with any ML environment via the ModelDB Light API.
+ModelDB is an end-to-end system for managing machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying. ModelDB runs on Python 2.X and 3.X and can be used with any ML environment via the ModelDB Light API.
 
 
 Quick start

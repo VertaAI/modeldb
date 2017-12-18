@@ -9,7 +9,7 @@ syncer_obj = Syncer.create_syncer("Sample Project", "test_user", \
 filename = "YamlSample.yaml"
 # filename = "JsonSample.json"
 
-print "Syncing all data from file..."
+print("Syncing all data from file...")
 syncer_obj.sync_all(filename)
 
 syncer_obj.sync()

@@ -92,7 +92,7 @@ Watch a video of the setup and installation process [here](https://youtu.be/rmNn
         - Java 1.8+
         - Spark 2.0.0\*\*
 
-    **(\*\*) = Python 3.5.1+ is only compatilble with thrift 0.10.0+**
+    **(\*\*) = Python 3.5.1+ is only compatible with thrift 0.10.0+**
 
     On OSX, we also assume that you have [homebrew](https://brew.sh/) installed.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import numpy as np
 import pandas as pd
-import ModelDbSyncer
+from . import ModelDbSyncer
 from ..events import RandomSplitEvent as RandomSplitEvent
 
 # Splits X according to the weights provided. If the optional y dataframe

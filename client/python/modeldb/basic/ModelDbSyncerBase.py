@@ -287,7 +287,7 @@ class Syncer(with_metaclass(Singleton, object)):
         '''
         dataset = self.get_dataset_for_tag(data_tag)
         fit_event = FitEvent(model, config, dataset)
-        Syncer.instance.add_to_buffer(fit_event)
+        self.add_to_buffer(fit_event)
 
     def sync_metrics(self, data_tag, model, metrics):
         '''
@@ -297,7 +297,7 @@ class Syncer(with_metaclass(Singleton, object)):
         for metric, value in metrics.metrics.items():
             metric_event = MetricEvent(dataset, model, "label_col",
                                        "prediction_col", metric, value)
-            Syncer.instance.add_to_buffer(metric_event)
+            self.add_to_buffer(metric_event)
 
     def get_dataset_for_tag(self, data_tag):
         if data_tag not in self.datasets:
@@ -338,7 +338,7 @@ class Syncer(with_metaclass(Singleton, object)):
         config = model_data[metadata_constants.CONFIG_KEY]
         fit_event = FitEvent(model, ModelConfig(model_type, config, model_tag),
                              model_dataset, model_data)
-        Syncer.instance.add_to_buffer(fit_event)
+        self.add_to_buffer(fit_event)
 
         # sync metrics
         metrics_data = model_data.get(metadata_constants.METRICS_KEY, [])
@@ -348,4 +348,4 @@ class Syncer(with_metaclass(Singleton, object)):
             metric_event = MetricEvent(
                 model_dataset, model, "label_col", "prediction_col",
                 metric_type, metric_value)
-            Syncer.instance.add_to_buffer(metric_event)
+            self.add_to_buffer(metric_event)
