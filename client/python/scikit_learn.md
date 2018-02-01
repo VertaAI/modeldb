@@ -15,6 +15,8 @@ like `LogisticRegression().fit(x_train, y_train)`, in ModelDB. You can explore t
 ## Setup
 First, make sure you have followed the [setup instructions for ModelDB](../../README.md#setup-and-installation) and have built the client.
 
+**If you installed modeldb via pip, please skip this step, pip has already set the right paths for you.**
+
 Next, put the python client on your PYTHONPATH:
 ```bash
 export PYTHONPATH=[path_to_modedb_dir]/client/python:$PYTHONPATH
