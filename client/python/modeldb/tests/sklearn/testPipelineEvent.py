@@ -4,6 +4,8 @@ from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
 from modeldb.thrift.modeldb import ttypes as modeldb_types
+from modeldb.basic.Structs import (
+    DefaultExperiment, NewExperimentRun, ThriftConfig)
 from modeldb.sklearn_native.ModelDbSyncer import *
 
 from sklearn import linear_model
@@ -104,7 +106,7 @@ class TestPipelineEvent(unittest.TestCase):
             'pipeline with pca + logistic')
         utils.is_equal_transformer_spec(spec, expected_spec, self)
 
-        self.assertItemsEqual(fit_event.featureColumns, ['A', 'B'])
+        self.assertEqual(fit_event.featureColumns, ['A', 'B'])
 
     def test_pipeline_fit_stages(self):
         fit_stages = self.pipeline_event.fitStages
@@ -148,7 +150,7 @@ class TestPipelineEvent(unittest.TestCase):
             'decomposition PCA')
         utils.is_equal_transformer_spec(spec, expected_spec, self)
 
-        self.assertItemsEqual(fit_event1.featureColumns, ['A', 'B'])
+        self.assertEqual(fit_event1.featureColumns, ['A', 'B'])
 
     def test_pipeline_second_fit_stage(self):
         fit_stages = self.pipeline_event.fitStages

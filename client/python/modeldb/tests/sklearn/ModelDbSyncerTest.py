@@ -1,20 +1,12 @@
 import modeldb.sklearn_native.ModelDbSyncer as ModelDbSyncer
+from modeldb.utils.Singleton import Singleton
+from future.utils import with_metaclass
 
 
-class SyncerTest(ModelDbSyncer.Syncer):
-    instance = None
+class SyncerTest(with_metaclass(Singleton, ModelDbSyncer.Syncer)):
 
-    # __new__ always a classmethod
-    def __new__(
-            cls, project_config, experiment_config, experiment_run_config,
-            thrift_config):
-        # This will break if cls is some random class.
-        if not cls.instance:
-            cls.instance = object.__new__(
-                cls, project_config, experiment_config, experiment_run_config,
-                thrift_config)
-            ModelDbSyncer.Syncer.instance = cls.instance
-        return cls.instance
+    # Singleton. If an ModelDbSyncer.Syncer instance already exists
+    # a new one is instantiated, and the old one is overwritten
 
     def sync(self):
         events = []

@@ -4,6 +4,8 @@ from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
 from modeldb.thrift.modeldb import ttypes as modeldb_types
+from modeldb.basic.Structs import (
+    DefaultExperiment, NewExperimentRun, ThriftConfig)
 from modeldb.sklearn_native.ModelDbSyncer import *
 
 from sklearn import linear_model
@@ -44,7 +46,7 @@ class TestFitEvent(unittest.TestCase):
     def test_model(self):
         utils.validate_fit_event_struct(self.fit_event, self)
         transformer = self.fit_event.model
-        self.assertItemsEqual(self.fit_event.featureColumns,
+        self.assertEqual(self.fit_event.featureColumns,
                               ['A', 'B', 'C', 'D'])
         expected_transformer = modeldb_types.Transformer(
             -1,

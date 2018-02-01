@@ -153,12 +153,7 @@ def is_equal_transformer_spec(spec1, spec2, tester):
     tester.assertEqual(len(spec1.hyperparameters), len(spec2.hyperparameters))
 
     for i in range(len(spec1.hyperparameters)):
-        tester.assertEqual(spec1.hyperparameters[i].name,
-                           spec2.hyperparameters[i].name)
-        tester.assertEqual(spec1.hyperparameters[i].value,
-                           spec2.hyperparameters[i].value)
-        tester.assertEqual(spec1.hyperparameters[i].type,
-                           spec2.hyperparameters[i].type)
+        tester.assertTrue(spec1.hyperparameters[i] in spec2.hyperparameters)
 
 
 def is_equal_transformer(model1, model2, tester):

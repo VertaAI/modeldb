@@ -1,19 +1,22 @@
 import sys
 import os
 import yaml
+from future.utils import with_metaclass
 from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
+from modeldb.utils.Singleton import Singleton
 from ..events import (
     Event, ExperimentEvent, ExperimentRunEvent, FitEvent, GridSearchCVEvent,
     MetricEvent, PipelineEvent, ProjectEvent, RandomSplitEvent, TransformEvent)
 
-from Structs import (NewOrExistingProject, ExistingProject,
+from . Structs import (NewOrExistingProject, ExistingProject,
      NewOrExistingExperiment, ExistingExperiment, DefaultExperiment,
      NewExperimentRun, ExistingExperimentRun, ThriftConfig, VersioningConfig,
      Dataset, ModelConfig, Model, ModelMetrics)
+
 
 from ..thrift.modeldb import ModelDBService
 from ..thrift.modeldb import ttypes as modeldb_types
@@ -24,9 +27,7 @@ FMIN = sys.float_info.min
 FMAX = sys.float_info.max
 
 
-class Syncer(object):
-    # used for recording whether there is an instance. Syncer is a singleton.
-    instance = None
+class Syncer(with_metaclass(Singleton, object)):
 
     # location of the default config file
     config_path = os.path.abspath(
@@ -79,15 +80,6 @@ class Syncer(object):
             experiment_run_config=ExistingExperimentRun(experiment_run_id),
             thrift_config=ThriftConfig(host, port))
         return syncer_obj
-
-    # implements singleton Syncer object
-    # __new__ always a classmethod
-    def __new__(cls, *args, **kwargs):
-        # This will break if cls is some random class.
-        if not cls.instance:
-            cls.instance = object.__new__(
-                cls, *args, **kwargs)
-        return cls.instance
 
     def __init__(
             self, project_config, experiment_config, experiment_run_config,
@@ -295,7 +287,7 @@ class Syncer(object):
         '''
         dataset = self.get_dataset_for_tag(data_tag)
         fit_event = FitEvent(model, config, dataset)
-        Syncer.instance.add_to_buffer(fit_event)
+        self.add_to_buffer(fit_event)
 
     def sync_metrics(self, data_tag, model, metrics):
         '''
@@ -305,14 +297,14 @@ class Syncer(object):
         for metric, value in metrics.metrics.items():
             metric_event = MetricEvent(dataset, model, "label_col",
                                        "prediction_col", metric, value)
-            Syncer.instance.add_to_buffer(metric_event)
+            self.add_to_buffer(metric_event)
 
     def get_dataset_for_tag(self, data_tag):
         if data_tag not in self.datasets:
             if "default" not in self.datasets:
                 self.datasets["default"] = Dataset("", {})
-            print data_tag, \
-                ' dataset not defined. default dataset will be used.'
+            print(data_tag,
+                  ' dataset not defined. default dataset will be used.')
             data_tag = "default"
         return self.datasets[data_tag]
 
@@ -346,7 +338,7 @@ class Syncer(object):
         config = model_data[metadata_constants.CONFIG_KEY]
         fit_event = FitEvent(model, ModelConfig(model_type, config, model_tag),
                              model_dataset, model_data)
-        Syncer.instance.add_to_buffer(fit_event)
+        self.add_to_buffer(fit_event)
 
         # sync metrics
         metrics_data = model_data.get(metadata_constants.METRICS_KEY, [])
@@ -356,4 +348,4 @@ class Syncer(object):
             metric_event = MetricEvent(
                 model_dataset, model, "label_col", "prediction_col",
                 metric_type, metric_value)
-            Syncer.instance.add_to_buffer(metric_event)
+            self.add_to_buffer(metric_event)

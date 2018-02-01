@@ -3,6 +3,8 @@ from ModelDbSyncerTest import SyncerTest
 
 import modeldb.tests.utils as utils
 from modeldb.thrift.modeldb import ttypes as modeldb_types
+from modeldb.basic.Structs import (
+    DefaultExperiment, NewExperimentRun, ThriftConfig)
 from modeldb.sklearn_native.ModelDbSyncer import *
 
 from sklearn.grid_search import GridSearchCV
@@ -40,7 +42,7 @@ class TestGridSearchEvent(unittest.TestCase):
 
     def test_gridcv_event(self):
         utils.validate_grid_search_cv_event(self.grid_search_event, self)
-        self.assertEquals(self.grid_search_event.numFolds, 3)
+        self.assertEqual(self.grid_search_event.numFolds, 3)
         best_fit_event = self.grid_search_event.bestFit
         df = best_fit_event.df
         expected_df = modeldb_types.DataFrame(
@@ -62,25 +64,25 @@ class TestGridSearchEvent(unittest.TestCase):
             'SVC',
             '')
         utils.is_equal_transformer(transformer, expected_transformer, self)
-        self.assertItemsEqual(best_fit_event.featureColumns, [
+        self.assertEqual(best_fit_event.featureColumns, [
                               'A', 'B', 'C', 'D'])
 
     def test_cross_validation_event(self):
         cross_validations = self.grid_search_event.crossValidations
         # Number of cross validations is equal to number of combinations
         # of parameters, multiplied by the number of folds.
-        self.assertEquals(len(cross_validations), 12)
+        self.assertEqual(len(cross_validations), 12)
 
         # Order of cross validations may vary each run, so we only validate
         # certain hyperparameter values.
         for cv in cross_validations:
             utils.validate_cross_validate_event(cv, self)
-            self.assertItemsEqual(cv.featureColumns, ['A', 'B', 'C', 'D'])
-            self.assertEquals(cv.evaluator, 'multiclass')
-            self.assertEquals(cv.seed, 0)
+            self.assertEqual(cv.featureColumns, ['A', 'B', 'C', 'D'])
+            self.assertEqual(cv.evaluator, 'multiclass')
+            self.assertEqual(cv.seed, 0)
 
             hyperparameters = cv.spec.hyperparameters
-            self.assertEquals(len(hyperparameters), 14)
+            self.assertEqual(len(hyperparameters), 14)
 
             # We check these particular hyperparameters because we pass these
             # as our tuned parameters above.
@@ -90,7 +92,7 @@ class TestGridSearchEvent(unittest.TestCase):
                 if hyperparam.name == 'C':
                     self.assertIn(hyperparam.value, ['10', '100'])
                 if hyperparam.name == 'kernel':
-                    self.assertEquals(hyperparam.value, 'rbf')
+                    self.assertEqual(hyperparam.value, 'rbf')
 
     def test_cross_validation_fold(self):
         cross_validations = self.grid_search_event.crossValidations
@@ -100,7 +102,7 @@ class TestGridSearchEvent(unittest.TestCase):
                 utils.validate_cross_validation_fold(fold, self)
                 training_df = fold.trainingDf
                 validation_df = fold.validationDf
-                self.assertEquals(training_df.numRows +
+                self.assertEqual(training_df.numRows +
                                   validation_df.numRows, 2000)
 
 

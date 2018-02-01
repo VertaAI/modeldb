@@ -4,6 +4,7 @@ Overrides cross_val_score to store Fit and Metric Events for each fold.
 import numpy as np
 import time
 import warnings
+import sys
 from sklearn.grid_search import ParameterGrid, _CVScoreTuple
 from sklearn.pipeline import Pipeline
 from sklearn import datasets, linear_model, cross_validation
@@ -16,7 +17,12 @@ from sklearn.externals.joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, is_classifier, clone
 from ..events import FitEvent
 from ..events import MetricEvent
-import ModelDbSyncer
+
+# Python 2 adn 3 deal differently with relative circular imports
+if sys.version_info <= (3, 0):
+    import ModelDbSyncer
+else:
+    from . import ModelDbSyncer
 
 
 def cross_val_score_fn(estimator, X, y=None, scoring=None, cv=None, n_jobs=1,

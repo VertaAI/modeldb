@@ -5,6 +5,7 @@ Contains functions for overriding basic scikit-learn functions.
 import sys
 import numpy as np
 import pandas as pd
+from future.utils import with_metaclass
 
 # sklearn imports
 from sklearn.linear_model import *
@@ -26,8 +27,9 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 # modeldb imports
-import GridCrossValidation
-from CrossValidationScore import *
+from modeldb.utils.Singleton import Singleton
+from . import GridCrossValidation
+from . CrossValidationScore import *
 from ..basic import *
 from ..events import *
 from ..thrift.modeldb import ModelDBService
@@ -253,7 +255,7 @@ def train_test_split_fn(*arrays, **options):
         random_state = 1
     main_df = arrays[0]
     weights = [train_size, test_size]
-    result = split_dfs[:len(split_dfs) / 2]
+    result = split_dfs[:int(len(split_dfs) / 2)]
     random_split_event = RandomSplitEvent(
         main_df, weights, random_state, result)
     Syncer.instance.add_to_buffer(random_split_event)
@@ -276,7 +278,11 @@ End functions that extract information from scikit-learn, pandas and numpy
 '''
 
 
-class Syncer(ModelDbSyncerBase.Syncer):
+class Syncer(with_metaclass(Singleton, ModelDbSyncerBase.Syncer)):
+
+    # The Syncer class needs to have its own pointer to the singleton instance
+    # for overidden sklearn methods to reference
+    instance = None
     """
     This is the Syncer class for sklearn, responsible for
     storing events in the ModelDB.
@@ -285,11 +291,14 @@ class Syncer(ModelDbSyncerBase.Syncer):
     def __init__(
             self, project_config, experiment_config, experiment_run_config,
             thrift_config=None):
-        super(Syncer, self).__init__(project_config, experiment_config,
-                                     experiment_run_config, thrift_config)
         self.local_id_to_path = {}
         self.enable_sklearn_sync_functions()
         self.enable_pandas_sync_functions()
+
+        Syncer.instance = self
+
+        super(Syncer, self).__init__(project_config, experiment_config,
+                                     experiment_run_config, thrift_config)
 
     def __str__(self):
         return "SklearnSyncer"

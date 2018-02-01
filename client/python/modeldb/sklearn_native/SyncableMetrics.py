@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import numpy as np
 import pandas as pd
-import ModelDbSyncer
+from . import ModelDbSyncer
 from ..events import MetricEvent
 from sklearn.linear_model import *
 from sklearn.preprocessing import *

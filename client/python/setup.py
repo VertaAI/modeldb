@@ -23,7 +23,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.1a29',
+    version='0.0.1a30',
     description='A system to manage machine learning models',
     long_description=long_description,
 
@@ -59,7 +59,7 @@ setup(
         # 'Programming Language :: Python :: 3',
         # 'Programming Language :: Python :: 3.3',
         # 'Programming Language :: Python :: 3.4',
-        # 'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.5',
     ],
 
     # What does your project relate to?
@@ -79,7 +79,8 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'numpy', 'pandas', 'statsmodels', 'matplotlib', 'patsy',
-        'scikit-learn', 'sklearn', 'thrift', 'pyyaml', 'requests', 'dpath'],
+        'scikit-learn', 'sklearn', 'thrift', 'pyyaml', 'requests', 'dpath',
+        'future'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

@@ -1,6 +1,5 @@
 ##requirements.txt
 
-python >= 2.7
 numpy
 pandas
 statsmodels
@@ -12,3 +11,4 @@ thrift
 pyyaml
 requests
 dpath
+future

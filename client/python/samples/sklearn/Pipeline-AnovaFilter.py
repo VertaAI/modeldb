@@ -83,9 +83,9 @@ class TestPipelineEndToEnd(unittest.TestCase):
         """
         projectOverview = self.syncer_obj.client.getProjectOverviews()[0]
         project = projectOverview.project
-        self.assertEquals(project.description, 'anova filter pipeline')
-        self.assertEquals(project.author, 'srinidhi')
-        self.assertEquals(project.name, 'pipeline scikit example')
+        self.assertEqual(project.description, 'anova filter pipeline')
+        self.assertEqual(project.author, 'srinidhi')
+        self.assertEqual(project.name, 'pipeline scikit example')
         self.assertGreaterEqual(project.id, 0)
         self.assertGreaterEqual(projectOverview.numExperimentRuns, 0)
         self.assertGreaterEqual(projectOverview.numExperiments, 0)
@@ -104,7 +104,7 @@ class TestPipelineEndToEnd(unittest.TestCase):
             exp_id).modelResponses
 
         # Two models are stored above - ensure both are in database
-        self.assertEquals(len(model_responses), 3)
+        self.assertEqual(len(model_responses), 3)
 
         model1 = model_responses[0]
         model2 = model_responses[1]
@@ -141,10 +141,10 @@ class TestPipelineEndToEnd(unittest.TestCase):
         """
         # Check ancestry for x_test and x_train.
         # The data the models were trained and tested on.
-        print "x_train_id", self.syncer_obj.get_modeldb_id_for_object(
-            self.x_train)
-        print "x_test_id", self.syncer_obj.get_modeldb_id_for_object(
-            self.x_test)
+        print("x_train_id", self.syncer_obj.get_modeldb_id_for_object(
+                    self.x_train))
+        print("x_test_id", self.syncer_obj.get_modeldb_id_for_object(
+                    self.x_test))
 
         for df in [self.x_train, self.x_test]:
             dataframe_id = self.syncer_obj.get_modeldb_id_for_object(df)
@@ -180,9 +180,9 @@ class TestPipelineEndToEnd(unittest.TestCase):
         model3 = model_responses[2]
 
         # Metrics are only stored for the overall pipeline model.
-        self.assertEquals(len(model1.metrics), 2)
-        self.assertEquals(len(model2.metrics), 0)
-        self.assertEquals(len(model3.metrics), 0)
+        self.assertEqual(len(model1.metrics), 2)
+        self.assertEqual(len(model2.metrics), 0)
+        self.assertEqual(len(model3.metrics), 0)
         self.assertIn('f1_score', model1.metrics)
         self.assertIn('precision_score', model1.metrics)
 
