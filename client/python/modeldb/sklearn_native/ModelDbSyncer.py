@@ -419,7 +419,7 @@ class Syncer(with_metaclass(Singleton, ModelDbSyncerBase.Syncer)):
         Users can easily add more models to this function.
         """
         # Linear Models (transform has been deprecated)
-        for class_name in [LogisticRegression, LinearRegression,
+        for class_name in [LogisticRegression, LinearRegression, ElasticNet, Ridge, Lasso,
                            CalibratedClassifierCV, RandomForestClassifier,
                            BaggingClassifier]:
             setattr(class_name, "fit_sync", fit_fn)
