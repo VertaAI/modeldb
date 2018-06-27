@@ -1,7 +1,7 @@
 <header>
   <nav class="nav">
     <div class="logo">
-      <a href="/">ModelDB</a>
+      <a href="<%= rootPath %>/">ModelDB</a>
       <% for (var i=0; i<path.labels.length; i++) { %>
         <div class="path">></div>
         <a href="<%= path.links[i] %>">
@@ -16,7 +16,7 @@
         &#9776;
       </div>
     <% } %>
-    <a href="/projects" class="nav-link">
+    <a href="<%= rootPath %>/projects" class="nav-link">
       Projects
     </a>
   </nav>

@@ -3,22 +3,22 @@
   <head>
     <title><%= title %></title>
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
-    <link rel='stylesheet' href='/css/style.css' />
-    <link rel='stylesheet' href='/css/projects.css' />
+    <link rel='stylesheet' href='<%= rootPath %>/css/style.css' />
+    <link rel='stylesheet' href='<%= rootPath %>/css/projects.css' />
 
     <!-- JQuery -->
-    <script src="/js/lib/jquery-1.12.4.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/jquery-1.12.4.min.js"></script>
 
     <!-- lib js files -->
-    <script src="/js/lib/ejs_production.js"></script>
-    <script src='/js/lib/jquery.hideseek.min.js'></script>
+    <script src="<%= rootPath %>/js/lib/ejs_production.js"></script>
+    <script src='<%= rootPath %>/js/lib/jquery.hideseek.min.js'></script>
 
     <!-- script files -->
-    <script src='/js/tooltip.js'></script>
-    <script src='/js/projects.js'></script>
+    <script src='<%= rootPath %>/js/tooltip.js'></script>
+    <script src='<%= rootPath %>/js/projects.js'></script>
 
   </head>
-  <body>
+  <body data-root=<%= rootPath %>>
     <%- include partials/nav.ejs %>
     <div class="container">
       <input
@@ -31,11 +31,11 @@
       </input>
       <div class="projects-loader">
         Loading additional project information...
-        <img src="/images/loading2.gif">
+        <img src="<%= rootPath %>/images/loading2.gif">
       </div>
       <div class="projects default-list">
         <% for(var i=0; i<projects.length; i++) { %>
-          <a href="/projects/<%= projects[i].project.id %>/models">
+          <a href="<%= rootPath %>/projects/<%= projects[i].project.id %>/models">
             <div class="project" data-id=<%=projects[i].project.id %>>
               <div class="project-name"><%= projects[i].project.name %></div>
               <div class="project-num-models"></div>

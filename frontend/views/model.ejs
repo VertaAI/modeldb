@@ -3,34 +3,34 @@
   <head>
     <title><%= title %></title>
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
-    <link rel='stylesheet' type="text/css" href='/css/lib/vis.min.css' />
-    <link rel="stylesheet" type="text/css" href="/css/lib/component.css">
-    <link rel='stylesheet' type="text/css" href='/css/style.css' />
-    <link rel='stylesheet' type="text/css" href='/css/model.css' />
-    <link rel='stylesheet' type="text/css" href='/css/pipeline.css' />
+    <link rel='stylesheet' type="text/css" href='<%= rootPath %>/css/lib/vis.min.css' />
+    <link rel="stylesheet" type="text/css" href="<%= rootPath %>/css/lib/component.css">
+    <link rel='stylesheet' type="text/css" href='<%= rootPath %>/css/style.css' />
+    <link rel='stylesheet' type="text/css" href='<%= rootPath %>/css/model.css' />
+    <link rel='stylesheet' type="text/css" href='<%= rootPath %>/css/pipeline.css' />
 
     <!-- JQuery -->
-    <script src="/js/lib/jquery-1.12.4.min.js"></script>
-    <script src="/js/lib/jquery-ui.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/jquery-1.12.4.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/jquery-ui.min.js"></script>
 
     <!-- d3 and vega -->
-    <script src="/js/lib/d3.min.js"></script>
-    <script src="/js/lib/vega.js"></script>
-    <script src="/js/lib/vega-lite.js"></script>
-    <script src="/js/lib/vega-embed.js" charset="utf-8"></script>
+    <script src="<%= rootPath %>/js/lib/d3.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/vega.js"></script>
+    <script src="<%= rootPath %>/js/lib/vega-lite.js"></script>
+    <script src="<%= rootPath %>/js/lib/vega-embed.js" charset="utf-8"></script>
 
     <!-- Load vis.js -->
-    <script src="/js/lib/vis.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/vis.min.js"></script>
 
     <!-- lib js files -->
-    <script src="/js/lib/ejs_production.js"></script>
+    <script src="<%= rootPath %>/js/lib/ejs_production.js"></script>
 
-    <script src="/js/annotations.js"></script>
-    <script src="/js/tooltip.js"></script>
-    <script src="/js/pipeline.js"></script>
-    <script src="/js/model.js"></script>
+    <script src="<%= rootPath %>/js/annotations.js"></script>
+    <script src="<%= rootPath %>/js/tooltip.js"></script>
+    <script src="<%= rootPath %>/js/pipeline.js"></script>
+    <script src="<%= rootPath %>/js/model.js"></script>
   </head>
-  <body data-id=<%= modelId %>>
+  <body data-id=<%= modelId %> data-root=<%= rootPath %>>
     <%- include partials/nav.ejs %>
     <div class="container">
       <div class="model-headings">
@@ -71,7 +71,7 @@
           </div>
           <div class="md-input-container">
             <input class="md-input" placeholder="Add annotation..."></input>
-            <img class="md-send" src='/images/send.png'/>
+            <img class="md-send" src='<%= rootPath %>/images/send.png'/>
           </div>
         </div>
       </div>

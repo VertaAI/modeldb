@@ -5,11 +5,15 @@ var api = require('../util/api.js');
 /* GET specific model */
 router.get('/:id', function(req, res, next) {
   var modelId = req.params.id;
+  var root = process.env.ROOT_PATH
+  if (typeof root === "undefined") {
+      root = ""
+  }
   res.render('model', {
     title: 'Model',
     path: {
       'labels': ['Projects', 'Models', 'Model'],
-      'links': ['/projects', '/projects', '/models/' + modelId]
+      'links': [root + '/projects', root + '/projects', root + '/models/' + modelId]
     },
     menu: false,
     modelId: modelId
@@ -34,9 +38,14 @@ router.post('/:id/annotations', function(req, res, next) {
 
 router.get('/:id/card', function(req, res, next) {
   var modelId = req.params.id;
+  var root = process.env.ROOT_PATH
+  if (typeof root === "undefined") {
+      root = ""
+  }
   api.getModel(modelId, function(response) {
     res.render('card', {
-      models: [response]
+      models: [response],
+      rootPath: root
     });
   });
 });

@@ -3,45 +3,45 @@
   <head>
     <title><%= title %></title>
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="/css/lib/vis-tooltip.css">
-    <link rel="stylesheet" type="text/css" href="/css/lib/component.css">
-    <link rel="stylesheet" type="text/css" href="/css/lib/pretty-json.css">
-    <link rel='stylesheet' href='/css/style.css' />
-    <link rel='stylesheet' href='/css/models.css' />
+    <link rel="stylesheet" type="text/css" href="<%= rootPath %>/css/lib/vis-tooltip.css">
+    <link rel="stylesheet" type="text/css" href="<%= rootPath %>/css/lib/component.css">
+    <link rel="stylesheet" type="text/css" href="<%= rootPath %>/css/lib/pretty-json.css">
+    <link rel='stylesheet' href='<%= rootPath %>/css/style.css' />
+    <link rel='stylesheet' href='<%= rootPath %>/css/models.css' />
 
     <!-- JQuery -->
-    <script src="/js/lib/jquery-1.12.4.min.js"></script>
-    <script src="/js/lib/jquery-ui.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/jquery-1.12.4.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/jquery-ui.min.js"></script>
 
     <!-- d3 and vega -->
-    <script src="/js/lib/d3.min.js" charset="utf-8"></script>
-    <script src="/js/lib/vega.js" charset="utf-8"></script>
-    <script src="/js/lib/vega-lite.js"></script>
-    <script src="/js/lib/vega-embed.js" charset="utf-8"></script>
-    <script src="/js/lib/datalib.min.js"></script>
-    <script src="/js/lib/vg-tooltip.js"></script>
+    <script src="<%= rootPath %>/js/lib/d3.min.js" charset="utf-8"></script>
+    <script src="<%= rootPath %>/js/lib/vega.js" charset="utf-8"></script>
+    <script src="<%= rootPath %>/js/lib/vega-lite.js"></script>
+    <script src="<%= rootPath %>/js/lib/vega-embed.js" charset="utf-8"></script>
+    <script src="<%= rootPath %>/js/lib/datalib.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/vg-tooltip.js"></script>
 
     <!-- tinysort -->
-    <script src="/js/lib/tinysort.min.js"></script>
+    <script src="<%= rootPath %>/js/lib/tinysort.min.js"></script>
 
     <!-- lib js files -->
-    <script src="/js/lib/ejs_production.js"></script>
-    <script src="/js/lib/underscore-min.js"></script>
-    <script src="/js/lib/backbone-min.js"></script>
-    <script src="/js/lib/pretty-json-min.js"></script>
+    <script src="<%= rootPath %>/js/lib/ejs_production.js"></script>
+    <script src="<%= rootPath %>/js/lib/underscore-min.js"></script>
+    <script src="<%= rootPath %>/js/lib/backbone-min.js"></script>
+    <script src="<%= rootPath %>/js/lib/pretty-json-min.js"></script>
 
-    <script src="/js/util.js"></script>
-    <script src="/js/annotations.js"></script>
-    <script src="/js/tooltip.js"></script>
-    <script src="/js/models.js"></script>
-    <script src="/js/models_handlers.js"></script>
+    <script src="<%= rootPath %>/js/util.js"></script>
+    <script src="<%= rootPath %>/js/annotations.js"></script>
+    <script src="<%= rootPath %>/js/tooltip.js"></script>
+    <script src="<%= rootPath %>/js/models.js"></script>
+    <script src="<%= rootPath %>/js/models_handlers.js"></script>
   </head>
-  <body data-id=<%= id %>>
+  <body data-id=<%= id %> data-root=<%= rootPath %>>
     <%- include partials/nav.ejs %>
     <div class="container">
 
       <div class="loader">
-        <img src="/images/loading.gif">
+        <img src="<%= rootPath %>/images/loading.gif">
         <div class="loader-text">
           LOADING MODELS...
         </div>
@@ -51,13 +51,13 @@
         <div class="menu-tabs-container">
           <div class="menu-tab selected" data-id="0">
             <div class="selected-arrow"></div>
-            <img src="/images/charts.png">
+            <img src="<%= rootPath %>/images/charts.png">
             <div class="menu-tab-label">
               Overview and Charts
             </div>
           </div>
           <div class="menu-tab" data-id="1">
-            <img src="/images/data.png">
+            <img src="<%= rootPath %>/images/data.png">
             <div class="menu-tab-label">
               Models
             </div>
@@ -258,7 +258,7 @@
           </div>
           <div class="md-input-container">
             <input class="md-input" placeholder="Add annotation..."></input>
-            <img class="md-send" src='/images/send.png'/>
+            <img class="md-send" src='<%= rootPath %>/images/send.png'/>
           </div>
         </div>
       </div>

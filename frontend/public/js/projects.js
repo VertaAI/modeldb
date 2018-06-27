@@ -14,8 +14,9 @@ $(function() {
   function fetchData(projectId) {
     $('.projects-loader').slideDown();
     numLoading += 1;
+    var root_path = $('.body').context.body.dataset.root;
     $.ajax({
-      url: '/projects/' + projectId + '/ms',
+      url: root_path + '/projects/' + projectId + '/ms',
       type: "GET",
       success: function(response) {
         var date = null;

@@ -30,7 +30,7 @@ $(function() {
       'keys': keys,
       'values': values
     }
-
+    var root_path = $('.body').context.body.dataset.root;
     var tooltip = $(new EJS({url: '/ejs/tooltip.ejs'}).render(obj));
 
     $('body').append(tooltip);

@@ -43,10 +43,11 @@ $(function() {
 
     // initialize dictionaries
     var edges_dict = {};
+    var root_path = $('.body').context.body.dataset.root;
 
     // fetch ancestry
     $.ajax({
-      url: '/models/ancestry/' + modelId,
+      url: root_path + '/models/ancestry/' + modelId,
       type: "GET",
       success: function(response) {
         if (response.transformEvents.length === 0) {

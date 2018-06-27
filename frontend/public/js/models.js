@@ -318,9 +318,10 @@ $(function() {
 
   function fetchData(projectId) {
     cursor = 0;
+    var root_path = $('.body').context.body.dataset.root;
     // get project details
     $.ajax({
-      url: '/projects/' + projectId,
+      url: root_path + '/projects/' + projectId,
       type: "GET",
       success: function(response) {
         $('.project-name').html(response.name);
@@ -332,7 +333,7 @@ $(function() {
     $('.loader').fadeIn();
     // get models
     $.ajax({
-      url: '/projects/' + projectId + '/ms',
+      url: root_path + '/projects/' + projectId + '/ms',
       type: "GET",
       success: function(response) {
         values = [];
@@ -584,8 +585,9 @@ $(function() {
   };
 
   function loadCustomTableHeaders() {
+    var root_path = $('.body').context.body.dataset.root;
     for (let heading of selectedHeadings) {
-      var html = new EJS({url: '/ejs/table-heading.ejs'}).render({"heading": heading});
+      var html = new EJS({url: root_path + '/ejs/table-heading.ejs'}).render({"heading": heading, "root_path": root_path});
       $('#md-table-headings').append(html);
     }
   };
@@ -602,10 +604,11 @@ $(function() {
       // check filters
       if (models[index].show) {
         var row = $('<tr/>', {class: 'model-container'});
+        var root_path = $('.body').context.body.dataset.root;
         for (let heading of selectedHeadings) {
           var value = models[index][heading];
-          var cellHtml = new EJS({url: '/ejs/table-cell.ejs'})
-            .render({"heading": heading, "value": value, "index": index});
+          var cellHtml = new EJS({url: root_path + '/ejs/table-cell.ejs'})
+            .render({"heading": heading, "value": value, "index": index, "root_path": root_path });
           row.append(cellHtml);
         }
         $('#md-table-body').append(row);
@@ -1282,7 +1285,8 @@ $(function() {
   };
 
   function getModelDiv(model) {
-    var html = new EJS({url: '/ejs/model.ejs'}).render({"model": model});
+    var root_path = $('.body').context.body.dataset.root;
+    var html = new EJS({url: root_path + '/ejs/model.ejs'}).render({"model": model});
     return $(html);
   };
 
@@ -1319,7 +1323,8 @@ $(function() {
     }
     selectedHeadings.add(key);
     var obj = {key: key};
-    var filterDiv = $(new EJS({url: '/ejs/selected-item.ejs'}).render(obj));
+    var root_path = $('.body').context.body.dataset.root;
+    var filterDiv = $(new EJS({url: root_path + '/ejs/selected-item.ejs'}).render(obj));
     console.log(filterDiv);
     $('.set-headings-area').append(filterDiv);
   }

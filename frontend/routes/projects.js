@@ -5,14 +5,19 @@ var api = require('../util/api.js');
 /* GET projects listing. */
 router.get('/', function(req, res, next) {
   api.getProjects(function(response) {
+    var root = process.env.ROOT_PATH
+    if (typeof root === "undefined") {
+        root = ""
+    }
     res.render('projects', {
       title: 'Projects',
       path: {
         'labels': ['Projects'],
-        'links': ['/projects']
+        'links': [root + '/projects']
       },
       menu: false,
-      projects: response
+      projects: response,
+      rootPath: process.env.ROOT_PATH
     });
   });
 });
@@ -36,14 +41,19 @@ router.get('/:id/experiments', function(req, res, next) {
 /* get all models for specific project */
 router.get('/:id/models', function(req, res, next) {
   var id = req.params.id;
+  var root = process.env.ROOT_PATH
+  if (typeof root === "undefined") {
+      root = ""
+  }
   res.render('models', {
     title: 'Models',
     path: {
       'labels': ['Projects', 'Models'],
-      'links': ['/projects', '/projects/' + id + '/models']
+      'links': [root + '/projects', root + '/projects/' + id + '/models']
     },
     menu: false,
-    id: id
+    id: id,
+    rootPath: root
   });
 });
 
@@ -56,9 +66,14 @@ router.get('/:id/ms', function(req, res, next) {
 
 router.get('/:id/table', function(req, res, next) {
   var projectId = req.params.id;
+  var root = process.env.ROOT_PATH
+  if (typeof root === "undefined") {
+      root = ""
+  }
   api.getProjectModels(projectId, function(response) {
     res.render('card', {
-      models: response
+      models: response,
+      rootPath: root
     });
   });
 });

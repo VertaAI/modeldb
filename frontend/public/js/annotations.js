@@ -7,8 +7,9 @@ $(function() {
     $('.md-input').data('experimentRunId', experimentRunId);
 
     // fetch annotations
+    var root_path = $('.body').context.body.dataset.root;
     $.ajax({
-      url: '/models/' + modelId + '/annotations',
+      url: root_path + '/models/' + modelId + '/annotations',
       type: 'GET',
       success: function(response) {
         $('.md-annotations').html("");
@@ -62,8 +63,9 @@ $(function() {
     var data = [];
     data.push({name:"string", value:string});
     data.push({name:"experimentRunId", value:experimentRunId});
+    var root_path = $('.body').context.body.dataset.root;
     $.ajax({
-      url: '/models/' + modelId + '/annotations',
+      url: root_path + '/models/' + modelId + '/annotations',
       type: "POST",
       data: data,
       dataType: "json",

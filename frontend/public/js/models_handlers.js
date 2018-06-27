@@ -43,8 +43,9 @@ $(function() {
 
     // if grouping by experiment, additionally fetch the description
     if (key == "Experiment ID" || key == "Experiment Run ID") {
+      var root_path = $('.body').context.body.dataset.root;
       $.ajax({
-        url: '/projects/' + id + '/experiments',
+        url: root_path + '/projects/' + id + '/experiments',
         type: "GET",
         success: function(response) {
           var description = null;
@@ -69,7 +70,7 @@ $(function() {
             'description': description
           };
 
-          var tooltip = $(new EJS({url: '/ejs/group-tooltip.ejs'}).render(obj));
+          var tooltip = $(new EJS({url: root_path + '/ejs/group-tooltip.ejs'}).render(obj));
           tooltip.css({'top': top + 'px'});
           $('.groups-bar-container').append(tooltip);
         }
@@ -83,7 +84,7 @@ $(function() {
         'description': null
       };
 
-      var tooltip = $(new EJS({url: '/ejs/group-tooltip.ejs'}).render(obj));
+      var tooltip = $(new EJS({url: root_path + '/ejs/group-tooltip.ejs'}).render(obj));
       tooltip.css({'top': top + 'px'});
       $('.groups-bar-container').append(tooltip);
     }
@@ -141,8 +142,9 @@ $(function() {
   $(document).on('click', '.json-md-trigger', function(event) {
     // TODO: duplicate call; avoid
     var modelId = $(event.target).data('id');
+    var root_path = $('.body').context.body.dataset.root;
     $.ajax({
-      url: '/models/' + modelId + '/metadata',
+      url: root_path + '/models/' + modelId + '/metadata',
       type: "GET",
       success: function(response) {
         var node = new PrettyJSON.view.Node({
@@ -288,8 +290,9 @@ $(function() {
   function editMetadata(modelId, kvPairs) {
     var data = [];
     data.push({name: 'kvPairs', value: JSON.stringify(kvPairs)});
+    var root_path = $('.body').context.body.dataset.root;
     $.ajax({
-      url: '/models/' + modelId + '/metadata',
+      url: root_path + '/models/' + modelId + '/metadata',
       type: "POST",
       data: data,
       dataType: "json",

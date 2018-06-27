@@ -2,16 +2,17 @@ $(function() {
 
   function init() {
     var modelId = $('body').data('id');
+    var root_path = $('.body').context.body.dataset.root;
     $.ajax({
-      url: '/models/' + modelId + '/data',
+      url: root_path + '/models/' + modelId + '/data',
       type: "GET",
       success: function(response) {
         var model = formatData(response);
-        var html = $(new EJS({url: '/ejs/model.ejs'}).render({'model': model}));
+        var html = $(new EJS({url: root_path + '/ejs/model.ejs'}).render({'model': model, "rootPath": root_path}));
         $('.models').append(html);
         $('.kv[data-key="Model ID"]').unwrap();
 
-        var projectId = $('<a href="/projects/' + model["Project ID"] + '/models"></a>');
+        var projectId = $('<a href="' + root_path + '/projects/' + model["Project ID"] + '/models"></a>');
         projectId.append($('<div class="kv">Project ID: ' + model["Project ID"] + '</div>'));
         $('.model-section.model-ids').append(projectId);
 
