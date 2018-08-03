@@ -168,5 +168,33 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>thrift-0.11.0</id>
+            <activation>
+                <property>
+                    <name>thrift_version</name>
+                    <value>0.11.0</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.thrift</groupId>
+                        <artifactId>thrift-maven-plugin</artifactId>
+                        <!-- As of authoring, there is no 0.11.0 plugin available. -->
+                        <version>0.10.0</version>
+                        <executions>
+                            <execution>
+                                <id>thrift-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
