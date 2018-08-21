@@ -14,6 +14,7 @@ import org.jooq.DSLContext;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * This class represents the processors that handles the requests that the ModelDB service can receive.
@@ -42,6 +43,8 @@ public class ModelDbServer implements ModelDBService.Iface {
    * @param dbType - The type of the database (only SQLite is supported for now).
    * @param metadataDbHost - Host for metadataDb
    * @param metadataDbPort - Port for metadataDb
+   * @param metadataDbUsername - If set, the username to use when connecting to the metadataDb
+   * @param metadataDbPassword - If set, the password to use when connecting to the metadataDb
    * @param metadataDbName - Name of DB in metadataDB
    * @param metadataDbType - type of DB used for metadata
    */
@@ -52,12 +55,14 @@ public class ModelDbServer implements ModelDBService.Iface {
     ModelDbConfig.DatabaseType dbType, 
     String metadataDbHost, 
     int metadataDbPort, 
+    Optional<String> metadataDbUsername,
+    Optional<String> metadataDbPassword,
     String metadataDbName, 
     ModelDbConfig.MetadataDbType metadataDbType) {
     try {
       this.ctx = ContextFactory.create(username, password, jdbcUrl, dbType);
       this.metadataDb = ContextFactory.createMetadataDb(metadataDbHost, 
-        metadataDbPort, metadataDbName, metadataDbType);
+        metadataDbPort, metadataDbUsername, metadataDbPassword, metadataDbName, metadataDbType);
     } catch (Exception e) {
       e.printStackTrace();
     }

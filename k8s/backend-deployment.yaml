@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+#  namespace: machine-learning-platform
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.15.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: backend
+  name: backend
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: backend
+    spec:
+      containers:
+      - args:  
+        - mongo-mongodb
+        #- internal-a78449b7ba0d311e8b4b30af2654ceda-2108384050.us-west-2.elb.amazonaws.com 
+        image: mitdbg/modeldb-backend:local #gitlab-registry.nordstrom.com/platform/frankenstein/mitdbg/modeldb-backend:nordstrom_modeldb  #mitdbg/modeldb-backend:local 
+        name: backend
+        ports:
+        - containerPort: 6543
+        volumeMounts:
+        - name: backendvol
+          mountPath: "/modeldb/server/codegen/db"
+          subPath: "db"
+        - name: mongo-creds
+          mountPath: "/mongo"
+        resources: {}
+      volumes:
+      - name: backendvol 
+        persistentVolumeClaim:
+          claimName: theclaim  #modeldb-pvc #theclaim
+      - name: mongo-creds
+        secret:
+          secretName: mongo-mongodb 
+     #restartPolicy: Always
+status: {}

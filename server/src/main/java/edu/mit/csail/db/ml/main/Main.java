@@ -41,6 +41,8 @@ public class Main {
           config.dbType,
           config.metadataDbHost,
           config.metadataDbPort,
+          config.metadataDbUsername,
+          config.metadataDbPassword,
           config.metadataDbName,
           config.metadataDbType
         )))
