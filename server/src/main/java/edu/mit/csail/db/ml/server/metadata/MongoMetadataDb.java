@@ -1,15 +1,18 @@
 package edu.mit.csail.db.ml.server.storage.metadata;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import com.mongodb.MongoClient;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
-import com.mongodb.MongoException;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
 import com.mongodb.util.JSON;
 import com.mongodb.WriteResult;
 import com.mongodb.WriteConcernException;
@@ -21,13 +24,19 @@ public class MongoMetadataDb implements MetadataDb {
   private DB metadataDb;
   private String host;
   private int port;
+  private Optional<String> username;
+  private Optional<String> password;
   private String dbName;
   public static final String COLLECTION_NAME = "model_metadata";
   public static final String MODELID_KEY = "MODELDB_model_id";
 
-  public MongoMetadataDb(String host, int port, String dbName) {
+
+  public MongoMetadataDb(String host, int port, Optional<String> username,
+      Optional<String> password, String dbName) {
     this.host = host;
     this.port = port;
+    this.username = username;
+    this.password = password;
     this.dbName = dbName;
   }
 
@@ -35,7 +44,17 @@ public class MongoMetadataDb implements MetadataDb {
    * Open connections to the underlying database
    */
   public void open() {
-    mongoClient = new MongoClient(host, port);
+    ServerAddress serverAddress = new ServerAddress(host, port);
+    // Use provided username + password if they are set.
+    if (username.isPresent() && password.isPresent()) {
+      MongoCredential credential =
+        MongoCredential.createCredential(username.get(), dbName, password.get().toCharArray());
+      List<MongoCredential> credentials = new ArrayList<>();
+      credentials.add(credential);
+      mongoClient = new MongoClient(serverAddress, credentials);
+    } else {
+      mongoClient = new MongoClient(serverAddress);
+    }
     metadataDb = mongoClient.getDB(dbName);
   }
 
@@ -176,3 +195,4 @@ public class MongoMetadataDb implements MetadataDb {
     return false;
   }
 }
+

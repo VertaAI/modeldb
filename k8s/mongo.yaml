@@ -1,0 +1,170 @@
+ 
+---
+# Source: mongodb/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-mongodb
+ # namespace: machine-learning-platform
+  labels:
+    app: mongodb
+    chart: "mongodb-3.0.4"
+    release: "mongo"
+    heritage: "Tiller"
+type: Opaque
+data:
+  mongodb-root-password: "R1AxSkNjdVhYRw=="
+  mongodb-password:  "WEZwMzY3V3pm"
+
+---
+# Source: mongodb/templates/pvc-standalone.yaml
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  #namespace: machine-learning-platform
+  labels:
+    app: mongodb
+    chart: mongodb-3.0.4
+    heritage: Tiller
+    release: mongo
+  name: mongo-mongodb
+  annotations:
+    pv.beta.kubernetes.io/gid: "100" 
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "8Gi"
+---
+# Source: mongodb/templates/svc-standalone.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  #namespace: machine-learning-platform
+  name: mongo-mongodb
+  labels:
+    app: mongodb
+    chart: "mongodb-3.0.4"
+    release: "mongo"
+    heritage: "Tiller"
+spec:
+  type: ClusterIP
+  ports:
+  - name: mongodb
+    port: 27017
+    targetPort: mongodb
+  selector:
+    app: mongodb
+    release: "mongo"
+---
+# Source: mongodb/templates/deployment-standalone.yaml
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  #namespace: machine-learning-platform
+  name: mongo-mongodb
+  labels:
+    app: mongodb
+    chart: "mongodb-3.0.4"
+    release: "mongo"
+    heritage: "Tiller"
+spec:
+  template:
+    metadata:
+      labels:
+        app: mongodb
+        release: "mongo"    
+    spec:
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      imagePullSecrets: 
+      - name: 
+      containers:
+      - name: mongo-mongodb
+        image: docker.io/bitnami/mongodb:3.6.6-debian-9
+        imagePullPolicy: "Always"
+        env:
+        - name: MONGODB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-mongodb
+              key: mongodb-root-password
+        # uncomment if you add mongo authentication 
+        #- name: MONGODB_USERNAME
+        #  value: "my_username"
+        #- name: MONGODB_PASSWORD
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: mongo-mongodb
+        #      key: mongodb-password
+        - name: MONGODB_DATABASE
+          value: "modeldb_metadata"
+        - name: MONGODB_EXTRA_FLAGS
+          value: 
+        ports:
+        - name: mongodb
+          containerPort: 27017
+        livenessProbe:
+          exec:
+            command:
+            - mongo
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 6
+        readinessProbe:
+          exec:
+            command:
+            - mongo
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 6
+        volumeMounts:
+        - name: data
+          mountPath: "/bitnami/mongodb"
+        resources: {}          
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: mongo-mongodb
+---
+# Source: mongodb/templates/configmap.yaml
+
+---
+# Source: mongodb/templates/headless-svc-rs.yaml
+
+---
+# Source: mongodb/templates/poddisruptionbudget-arbiter-rs.yaml
+
+---
+# Source: mongodb/templates/poddisruptionbudget-primary-rs.yaml
+
+---
+# Source: mongodb/templates/poddisruptionbudget-secondary-rs.yaml
+
+
+---
+# Source: mongodb/templates/statefulset-arbiter-rs.yaml
+
+---
+# Source: mongodb/templates/statefulset-primary-rs.yaml
+
+
+---
+# Source: mongodb/templates/statefulset-secondary-rs.yaml
+
+---
+# Source: mongodb/templates/svc-primary-rs.yaml
+

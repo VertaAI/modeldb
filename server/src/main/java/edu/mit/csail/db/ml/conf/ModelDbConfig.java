@@ -6,6 +6,7 @@ import com.typesafe.config.ConfigFactory;
 import org.apache.commons.cli.*;
 
 import java.io.File;
+import java.util.Optional;
 
 /**
  * Represents the configuration used to set-up the ModelDB Server.
@@ -89,6 +90,16 @@ public class ModelDbConfig {
   public final String metadataDbName;
 
   /**
+   * If set, the username to use when connecting to the metadataDb.
+   */
+  public final Optional<String> metadataDbUsername;
+
+  /**
+   * If set, the password to use when connecting to the metadataDb.
+   */
+  public final Optional<String> metadataDbPassword;
+
+  /**
    * Name of database inside metadataDb
    */
   public final String metadataDbTestDbName;
@@ -118,6 +129,8 @@ public class ModelDbConfig {
     String thriftPort,
     String metadataDbHost,
     String metadataDbPort,
+    Optional<String> metadataDbUsername,
+    Optional<String> metadataDbPassword,
     String metadataDbName,
     String metadataDbTestDbName,
     String metadataDbType,
@@ -131,6 +144,8 @@ public class ModelDbConfig {
     this.thriftPort = Integer.parseInt(thriftPort);
     this.metadataDbHost = metadataDbHost;
     this.metadataDbPort = Integer.parseInt(metadataDbPort);
+    this.metadataDbUsername = metadataDbUsername;
+    this.metadataDbPassword = metadataDbPassword;
     this.metadataDbName = metadataDbName;
     this.metadataDbTestDbName = metadataDbTestDbName;
     this.fsPrefix = fsPrefix;
@@ -155,6 +170,23 @@ public class ModelDbConfig {
   private static String getProp(Config config, String key) {
     return config.getString(String.format("modeldb.%s", key));
   }
+
+
+  /**
+   * Read the key "modeldb.[keyname]" from the given configuration object, if it exists.
+   * @param config - The configuration object.
+   * @param key - Name of the key to lookup.
+   * @return The value of the given key, if it exists.
+   */
+  private static Optional<String> getOptionalProp(Config config, String key) {
+    String path = String.format("modeldb.%s", key);
+    if (config.hasPath(path)) {
+      return Optional.of(config.getString(path));
+    } else {
+      return Optional.empty();
+    }
+  }
+
 
   /**
    * Parse command line arguments and create the singleton ModelDbConfig object.
@@ -195,6 +227,8 @@ public class ModelDbConfig {
       getProp(config, "thrift.port"),
       getProp(config, "metadataDb.host"),
       getProp(config, "metadataDb.port"),
+      getOptionalProp(config, "metadataDb.username"),
+      getOptionalProp(config, "metadataDb.password"),
       getProp(config, "metadataDb.dbName"),
       getProp(config, "metadataDb.testDbName"),
       getProp(config, "metadataDb.type"),
