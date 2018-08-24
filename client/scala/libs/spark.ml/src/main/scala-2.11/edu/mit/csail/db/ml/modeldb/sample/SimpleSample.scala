@@ -1,9 +1,9 @@
 package edu.mit.csail.db.ml.modeldb.sample
 
-// // modeldb start
-// import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
-// import edu.mit.csail.db.ml.modeldb.client.{SyncerConfig, DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
-// // modeldb end
+// modeldb start
+import edu.mit.csail.db.ml.modeldb.client.ModelDbSyncer._
+import edu.mit.csail.db.ml.modeldb.client.{SyncerConfig, DefaultExperiment, ModelDbSyncer, NewExperimentRun, NewOrExistingProject}
+// modeldb end
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
@@ -28,21 +28,21 @@ object SimpleSample {
       .appName("Simple Sample")
       .getOrCreate()
 
-    // // modeldb start
-    // ModelDbSyncer.setSyncer(
-    //   new ModelDbSyncer(projectConfig = NewOrExistingProject("Demo",
-    //     "modeldbuser",
-    //     "Project to hold all models from the demo"
-    //   ),
-    //   experimentConfig = new DefaultExperiment,
-    //   experimentRunConfig = new NewExperimentRun)
-    // )
-    // // modeldb end
+    // modeldb start
+    ModelDbSyncer.setSyncer(
+      new ModelDbSyncer(projectConfig = NewOrExistingProject("Demo",
+        "modeldbuser",
+        "Project to hold all models from the demo"
+      ),
+      experimentConfig = new DefaultExperiment,
+      experimentRunConfig = new NewExperimentRun)
+    )
+    // modeldb end
 
-    // // modeldb start
-    // ModelDbSyncer.setSyncer(new ModelDbSyncer(SyncerConfig(
-    //   MODELDB_ROOT + "/client/syncer.json")))
-    // // modeldb end
+    // modeldb start
+    ModelDbSyncer.setSyncer(new ModelDbSyncer(SyncerConfig(
+      MODELDB_ROOT + "/client/syncer.json")))
+    // modeldb end
 
     // read in the data
 
@@ -52,9 +52,9 @@ object SimpleSample {
       .option("header", true)
       .option("inferSchema", true)
       .csv(path)
-    // // modeldb start
-    //   .csvSync(path)
-    // // modeldb end
+    // modeldb start
+      .csvSync(path)
+    // modeldb end
 
     val assembler = new VectorAssembler()
       .setInputCols(Array("LIMIT_BAL", "SEX",
@@ -63,9 +63,9 @@ object SimpleSample {
 
     val transformedDf = assembler
       .transform(df)
-    // // modeldb start
-    //   .transformSync(df)
-    // // modeldb end
+    // modeldb start
+      .transformSync(df)
+    // modeldb end
 
     val logReg = new LogisticRegression()
       .setLabelCol("DEFAULT")
@@ -73,22 +73,22 @@ object SimpleSample {
     // create train and test sets
     val Array(trainDf, testDf) = transformedDf
       .randomSplit(Array(0.7, 0.3))
-    // // modeldb start
-    //   .randomSplitSync(Array(0.7, 0.3))
-    // // modeldb end
+    // modeldb start
+      .randomSplitSync(Array(0.7, 0.3))
+    // modeldb end
 
     val logRegModel = logReg
       .fit(trainDf)
-    // // modeldb start
-    //   .fitSync(trainDf)
-    // // modeldb end
+    // modeldb start
+      .fitSync(trainDf)
+    // modeldb end
     System.out.println(s"Coefficients: ${logRegModel.coefficients}")
 
     val predictions = logRegModel
       .transform(testDf)
-    // // modeldb start
-    //   .transformSync(testDf)
-    // // modeldb end
+    // modeldb start
+      .transformSync(testDf)
+    // modeldb end
     predictions.printSchema()
 
     val evaluator = new BinaryClassificationEvaluator()
@@ -97,9 +97,9 @@ object SimpleSample {
     // compute metrics
     val metric = evaluator
       .evaluate(predictions)
-    // // modeldb start
-    //   .evaluateSync(predictions, logRegModel)
-    // // modeldb end
+    // modeldb start
+      .evaluateSync(predictions, logRegModel)
+    // modeldb end
     System.out.println(s"Metric: ${metric}")
   }
 }
