@@ -178,7 +178,7 @@ def fit_fn_pipeline(self, x, y):
     old_df = cur_dataset
     model = last_estimator.fit(old_df, y)
     fit_event = FitEvent(model, last_estimator, old_df)
-    fit_stages.append((index + 1, fit_event))
+    fit_stages.append((len(estimators), fit_event))
 
     # Create the pipeline event with all components
     pipeline_event = PipelineEvent(pipeline_fit, transform_stages, fit_stages)
