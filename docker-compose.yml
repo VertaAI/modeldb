@@ -28,8 +28,6 @@ services:
       default:
         aliases:
           - backend
-    volumes:
-      - ./mdb/sqlitedata:/sqlite_data
     ports:
       - "6543:6543"
     command: ["mongo"]
