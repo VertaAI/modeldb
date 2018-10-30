@@ -7,8 +7,18 @@ services:
       default:
         aliases:
           - mongo
+    volumes:
+      - ./mdb/mongodata:/data/db
     ports:
       - "27017:27017"
+  sqlite:
+    image: modeldb-sqlite:latest
+    networks:
+      default:
+        aliases:
+          - sqlite
+    volumes:
+      - ./mdb/sqlitedata:/db
   backend:
     build:
       context: .
@@ -18,6 +28,8 @@ services:
       default:
         aliases:
           - backend
+    volumes:
+      - ./mdb/sqlitedata:/sqlite_data
     ports:
       - "6543:6543"
     command: ["mongo"]

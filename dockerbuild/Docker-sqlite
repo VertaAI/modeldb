@@ -1,0 +1,8 @@
+FROM alpine:3.4
+RUN apk add --update sqlite
+
+ADD ./server/codegen/sqlite /sqlite_scripts
+ADD ./dockerbuild/create_sqlite_external.sh /sqlite_scripts/create_sqlite_external.sh
+
+ENTRYPOINT ["sh", "/sqlite_scripts/create_sqlite_external.sh"]
+CMD ["sqlite"]
