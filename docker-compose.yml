@@ -12,6 +12,9 @@ services:
     ports:
       - "27017:27017"
   sqlite:
+    build:
+      context: .
+      dockerfile: dockerbuild/Docker-sqlite
     image: modeldb-sqlite:latest
     networks:
       default:
@@ -28,6 +31,8 @@ services:
       default:
         aliases:
           - backend
+    volumes:
+      - ./mdb/sqlitedata:/db
     ports:
       - "6543:6543"
     command: ["mongo"]
