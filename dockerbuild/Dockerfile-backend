@@ -38,6 +38,8 @@ RUN wget -q http://archive.apache.org/dist/thrift/0.10.0/thrift-0.10.0.tar.gz &&
 # Add ModelDB project
 ADD . /modeldb
 
+ADD ./server/codegen/sqlite /sqlite_scripts
+
 WORKDIR /modeldb/server/codegen
 
 # Build SQLite convenience methods and create SQLite databases.
@@ -65,8 +67,9 @@ WORKDIR /modeldb/server
 RUN ../scripts/gen_thrift_file.sh java '../thrift/ModelDB.thrift' './src/main/thrift/' && \
     mvn clean compile -Dthrift_version=0.10.0
 
+ENV MONGO_HOST mongo
+
 # This would be better as an ENTRYPOINT with 'mongo' the CMD param, but
 # `exec mvn exec:java ...` leads to a classpath issue that isn't immediately
 # clear how to handle.
-ENTRYPOINT ["/modeldb/dockerbuild/wait_for_mongodb.sh", "0.10.0"]
-CMD ["mongo"]
+ENTRYPOINT /modeldb/dockerbuild/kubernetes/wait_for_mongodb.sh 0.10.0 $MONGO_HOST

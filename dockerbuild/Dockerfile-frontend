@@ -25,11 +25,12 @@ RUN cd /modeldb/frontend && \
 
 ADD . /modeldb
 
+ENV BACKEND_HOST backend
+
 WORKDIR /modeldb/frontend
 
 RUN mkdir -p './thrift' && \
     thrift -r -out './thrift' -gen js:node '../thrift/ModelDB.thrift' && \
     npm install
 
-ENTRYPOINT ["/modeldb/dockerbuild/wait_for_backend.sh"]
-CMD ["backend"]
+ENTRYPOINT /modeldb/dockerbuild/wait_for_backend.sh $BACKEND_HOST

@@ -7,6 +7,7 @@ set -e
 
 thrift_version="$1"
 host="$2"
+echo "$host"
 
 # 'foo' doesn't matter here. Just needs something so that $host is interpreted
 # as a hostname and not a database name.
@@ -23,5 +24,14 @@ cd /modeldb/server
 cp src/main/resources/reference-docker.conf target/classes/reference.conf
 sed -i "s/MONGODB_HOST/$host/" target/classes/reference.conf
 cd "$before"
+
+# set up sqlite
+if [ ! -f /db/modeldb.db ]; then
+    echo "here"
+    touch /db/some
+    cat /sqlite_scripts/createDb.sql | sqlite3 /db/modeldb.db
+    cat /sqlite_scripts/createDb.sql | sqlite3 /db/modeldb_test.db
+    echo "created DB"
+fi
 
 exec mvn exec:java -Dexec.mainClass='edu.mit.csail.db.ml.main.Main' -Dthrift_version=$thrift_version

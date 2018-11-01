@@ -11,22 +11,11 @@ services:
       - ./mdb/mongodata:/data/db
     ports:
       - "27017:27017"
-  sqlite:
-    build:
-      context: .
-      dockerfile: dockerbuild/Docker-sqlite
-    image: modeldb-sqlite:latest
-    networks:
-      default:
-        aliases:
-          - sqlite
-    volumes:
-      - ./mdb/sqlitedata:/db
   backend:
     build:
       context: .
       dockerfile: dockerbuild/Dockerfile-backend
-    image: mitdbg/modeldb-backend:latest
+    image: mvartak/modeldb-backend:latest
     networks:
       default:
         aliases:
@@ -35,16 +24,14 @@ services:
       - ./mdb/sqlitedata:/db
     ports:
       - "6543:6543"
-    command: ["mongo"]
   frontend:
     build:
       context: .
       dockerfile: dockerbuild/Dockerfile-frontend
-    image: mitdbg/modeldb-frontend:latest
+    image: mvartak/modeldb-frontend:latest
     networks:
       default:
         aliases:
           - frontend
     ports:
       - "3000:3000"
-    command: ["backend"]
