@@ -72,4 +72,4 @@ ENV MONGODB_HOST mongo
 # This would be better as an ENTRYPOINT with 'mongo' the CMD param, but
 # `exec mvn exec:java ...` leads to a classpath issue that isn't immediately
 # clear how to handle.
-ENTRYPOINT /modeldb/dockerbuild/kubernetes/wait_for_mongodb.sh 0.10.0 $MONGODB_HOST
+ENTRYPOINT /modeldb/dockerbuild/wait_for_mongodb.sh 0.10.0 $MONGODB_HOST

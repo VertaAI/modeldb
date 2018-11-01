@@ -32,7 +32,7 @@ spec:
         tier: frontend
     spec:
       containers:
-      - image: mvartak/modeldb-frontend
+      - image: mitdbg/modeldb-frontend
         name: frontend
         env:
         - name: BACKEND_HOST
