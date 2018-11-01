@@ -48,7 +48,7 @@ spec:
       - image: mvartak/modeldb-backend
         name: modeldb
         env:
-          - name: MONGO_HOST
+          - name: MONGODB_HOST
             value: modeldb-mongodb
         ports:
         - containerPort: 6543

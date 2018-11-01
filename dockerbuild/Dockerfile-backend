@@ -67,9 +67,9 @@ WORKDIR /modeldb/server
 RUN ../scripts/gen_thrift_file.sh java '../thrift/ModelDB.thrift' './src/main/thrift/' && \
     mvn clean compile -Dthrift_version=0.10.0
 
-ENV MONGO_HOST mongo
+ENV MONGODB_HOST mongo
 
 # This would be better as an ENTRYPOINT with 'mongo' the CMD param, but
 # `exec mvn exec:java ...` leads to a classpath issue that isn't immediately
 # clear how to handle.
-ENTRYPOINT /modeldb/dockerbuild/kubernetes/wait_for_mongodb.sh 0.10.0 $MONGO_HOST
+ENTRYPOINT /modeldb/dockerbuild/kubernetes/wait_for_mongodb.sh 0.10.0 $MONGODB_HOST
