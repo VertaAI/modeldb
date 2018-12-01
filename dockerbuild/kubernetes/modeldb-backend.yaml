@@ -10,7 +10,7 @@ spec:
   selector:
     app: modeldb
     tier: backend
-  type: NodePort
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
