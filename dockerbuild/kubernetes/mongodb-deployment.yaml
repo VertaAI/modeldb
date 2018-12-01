@@ -13,7 +13,7 @@ spec:
     app: modeldb
     tier: mongodb
   # clusterIP: None
-  type: NodePort
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
