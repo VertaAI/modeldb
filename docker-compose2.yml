@@ -14,8 +14,8 @@ services:
   backend:
     build:
       context: .
-      dockerfile: dockerbuild/Dockerfile-backend
-    image: mitdbg/modeldb-backend:latest
+      dockerfile: dockerbuild/Dockerfile-backend2
+    image: mitdbg/modeldb-backend:uberjar
     networks:
       default:
         aliases:

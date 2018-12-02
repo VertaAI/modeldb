@@ -19,11 +19,11 @@ done
 >&2 echo "MongoDB is up - executing command"
 
 # Substitute the desired MongoDB hostname in the built project's conf file.
-before="$PWD"
-cd /modeldb/server
-cp src/main/resources/reference-docker.conf target/classes/reference.conf
-sed -i "s/MONGODB_HOST/$host/" target/classes/reference.conf
-cd "$before"
+# before="$PWD"
+# cd /modeldb/server
+# cp src/main/resources/reference-docker.conf target/classes/reference.conf
+# sed -i "s/MONGODB_HOST/$host/" target/classes/reference.conf
+# cd "$before"
 
 # set up sqlite
 if [ ! -f /db/modeldb.db ]; then
@@ -32,4 +32,4 @@ if [ ! -f /db/modeldb.db ]; then
     cat /sqlite_scripts/createDb.sql | sqlite3 /db/modeldb_test.db
 fi
 
-exec mvn exec:java -Dexec.mainClass='edu.mit.csail.db.ml.main.Main' -Dthrift_version=$thrift_version
+java -cp /modeldb/server/target/uber-modeldb.jar edu.mit.csail.db.ml.main.Main
