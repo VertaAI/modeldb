@@ -10,6 +10,7 @@ like `estimator.fit(dataframe)`, in ModelDB.
 
 To build the JAR
 * first make sure you have installed sbt (requires sbt 0.13/spark 2.11).
+    * For brew on Mac, use `brew install sbt@0.13`
 * Update the MODELDB_ROOT value in [SimpleSample.scala](src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample/SimpleSample.scala) to point to the local root of this project
 * Then, from the spark.ml dir, run:
 
@@ -23,7 +24,7 @@ This will create the JAR `target/scala-2.11/modeldb-scala-client.jar`.
 
 This project includes samples [here](src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/evaluation) and [here](src/main/scala-2.11/edu/mit/csail/db/ml/modeldb/sample) demonstrating usage of the library.
 
-Note: I've added scripts to run the simple and pipeline samples `simple.sh` and `pipeline.sh`.
+Note: I've added scripts to run the simple and pipeline samples `simple.sh` and `pipeline.sh`. These scripts assume your SPARK_HOME environment variable is set to the root of your Spark installation.
 
 First, you'll need to import the classes you need, for example:
 
