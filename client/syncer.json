@@ -16,9 +16,9 @@
   "experimentRun": {
     "description": "Default Run Description"
   },
-  "shouldCountRows": false,
-  "shouldStoreGSCVE": false,
-  "shouldStoreSpecificModels": false,
+  "shouldCountRows": true,
+  "shouldStoreGSCVE": true,
+  "shouldStoreSpecificModels": true,
   "git": {
     "versionCode": "no",
     "username": "default",

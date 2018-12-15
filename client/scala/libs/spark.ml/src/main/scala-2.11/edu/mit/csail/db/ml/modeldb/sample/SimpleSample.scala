@@ -84,14 +84,18 @@ object SimpleSample {
       .fitSync(trainDf)
     // modeldb end
     System.out.println(s"Coefficients: ${logRegModel.coefficients}")
-
+    
     val predictions = logRegModel
       //      .transform(testDf)
       // modeldb start
       .transformSync(testDf)
     // modeldb end
     predictions.printSchema()
-
+    
+    val didSave = logRegModel.saveSyncS3("s3a://relevance-sns-etl")
+    
+    System.out.println(s"Did save: ${didSave}")
+    
     val evaluator = new BinaryClassificationEvaluator()
       .setLabelCol("DEFAULT")
 

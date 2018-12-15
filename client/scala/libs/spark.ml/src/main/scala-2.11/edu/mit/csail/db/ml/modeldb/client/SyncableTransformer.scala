@@ -6,7 +6,6 @@ import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.ml.util.MLWritable
 import org.apache.spark.sql.DataFrame
 
-
 trait SyncableTransformer {
   /**
     * Implicit class that equips all Spark Transformers with the transformSync method.
@@ -44,6 +43,20 @@ trait SyncableTransformer {
           case w: MLWritable =>
             val filepath = mdbs.get.getFilepath(m, desiredFileName)
             w.write.overwrite().save(filepath)
+            System.out.println(s"filepath is $filepath")
+            true
+          case _ => false
+        }
+    }
+
+    def saveSyncS3(desiredFileName: String)(implicit mdbs: Option[ModelDbSyncer]): Boolean = {
+      if (mdbs.isEmpty)
+        false
+      else
+        m match {
+          case w: MLWritable =>
+            w.write.overwrite().save(desiredFileName)
+            System.out.println(s"filepath is $desiredFileName")
             true
           case _ => false
         }
