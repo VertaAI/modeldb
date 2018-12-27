@@ -1,0 +1,16 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+      "tslint:recommended",
+      "tslint-config-airbnb"
+    ],
+    "jsRules": {},
+    "rules": {
+      "import-name": [true, {
+        "react": "React",
+        "react-dom": "ReactDom"
+      }],
+      "object-curly-spacing": ["warning", "never"]
+    },
+    "rulesDirectory": []
+}
