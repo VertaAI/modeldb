@@ -1,6 +1,6 @@
 
-import Project from '../models/Project';
+import { Project } from '../models/Project';
 
-export default interface IDataService {
+export interface IDataService {
   getProjects(): Project[];
 }

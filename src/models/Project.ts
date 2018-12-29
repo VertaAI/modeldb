@@ -1,7 +1,6 @@
-import { BaseEntity } from './BaseEntity';
 import { Model } from './Model';
 
-export default class Project extends BaseEntity {
+export class Project {
   private name: string = '';
   private description: string = '';
   private author: string = '';
