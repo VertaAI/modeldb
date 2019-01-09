@@ -1,6 +1,6 @@
 import { Model } from './Model';
 
-export class Project {
+export default class Project {
   private name: string = '';
   private description: string = '';
   private author: string = '';
