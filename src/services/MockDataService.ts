@@ -1,7 +1,7 @@
 
 import { Store } from 'redux';
 import { Model, ModelType } from '../models/Model';
-import { Project } from '../models/Project';
+import Project from '../models/Project';
 import { IDataService } from './IDataService';
 
 export default class MockDataService implements IDataService {
