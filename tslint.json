@@ -6,11 +6,12 @@
     ],
     "jsRules": {},
     "rules": {
-      "import-name": [true, {
+      "import-name": [false, {
         "react": "React",
-        "react-dom": "ReactDom"
+        "react-dom": "ReactDOM"
       }],
-      "object-curly-spacing": ["warning", "never"]
+      "object-curly-spacing": ["warning", "never"],
+      "max-line-length": [true, 140]
     },
     "rulesDirectory": []
 }
