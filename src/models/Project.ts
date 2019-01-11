@@ -42,5 +42,4 @@ export default class Project {
   public set CreationDate(v: Date) {
     this.creationDate = v;
   }
-
 }

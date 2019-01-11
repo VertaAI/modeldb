@@ -1,10 +1,10 @@
-import React, {Component} from 'react';
-import {connect} from 'react-redux';
-import {BrowserRouter as Router, Link, Route, Switch} from 'react-router-dom';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import './App.css';
 import Dashboard from './components/Dashboard';
-import {ThemeColors} from './store/layout';
-import {IApplicationState, IConnectedReduxProps} from './store/store';
+import { ThemeColors } from './store/layout';
+import { IApplicationState, IConnectedReduxProps } from './store/store';
 
 // Any additional component props go here.
 interface IOwnProps {
@@ -20,7 +20,6 @@ type AllProps = IPropsFromState & IConnectedReduxProps & IOwnProps;
 
 class App extends Component<AllProps> {
   public render() {
-
     return (
       <Router>
         <div>
@@ -56,9 +55,9 @@ class App extends Component<AllProps> {
 }
 
 const mapStateToProps = ({ layout }: IApplicationState) => ({
-  theme: layout.theme,
+  theme: layout.theme
 });
 
 export default connect<IPropsFromState, {}, IOwnProps, IApplicationState>(
-  mapStateToProps,
+  mapStateToProps
 )(App);

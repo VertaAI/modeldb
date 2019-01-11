@@ -1,4 +1,3 @@
-
 import Project from '../models/Project';
 
 export interface IDataService {

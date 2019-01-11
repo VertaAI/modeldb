@@ -1,8 +1,8 @@
-import {Reducer} from 'redux';
-import {ILayoutState, LayoutActionTypes} from './types';
+import { Reducer } from 'redux';
+import { ILayoutState, LayoutActionTypes } from './types';
 
 const initialState: ILayoutState = {
-  theme: 'light',
+  theme: 'light'
 };
 
 const reducer: Reducer<ILayoutState> = (state = initialState, action) => {
@@ -16,4 +16,4 @@ const reducer: Reducer<ILayoutState> = (state = initialState, action) => {
   }
 };
 
-export {reducer as layoutReducer};
+export { reducer as layoutReducer };

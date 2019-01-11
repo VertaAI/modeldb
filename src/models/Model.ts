@@ -1,5 +1,5 @@
 export enum ModelType {
-    LinearRegression = 'LinearRegression',
+  LinearRegression = 'LinearRegression'
 }
 
 export class Model {

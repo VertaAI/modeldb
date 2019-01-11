@@ -1,11 +1,9 @@
-
 import { Store } from 'redux';
 import { Model, ModelType } from '../models/Model';
 import Project from '../models/Project';
 import { IDataService } from './IDataService';
 
 export default class MockDataService implements IDataService {
-
   private projects: Project[];
 
   constructor(store: Store) {
@@ -21,7 +19,6 @@ export default class MockDataService implements IDataService {
     imdbProj.Models.push(model1);
 
     this.projects.push(imdbProj);
-
   }
   public getProjects(): Project[] {
     return this.projects;

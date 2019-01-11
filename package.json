@@ -26,7 +26,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "lint": "tslint -p .",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "pretty": "prettier --write \"src/**/*.{ts*,css,js*}\""
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -52,7 +53,7 @@
     }
   },
   "lint-staged": {
-    "src/**/*.ts*": [
+    "src/**/*.{ts*,css,js*}": [
       "prettier --write",
       "git add"
     ]

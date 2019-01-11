@@ -4,7 +4,7 @@ export enum projectActionTypes {
   ADD_PROJECT = '@@project/ADD_PROJECT',
   FETCH_PROJECTS = '@@project/FETCH_PROJECTS',
   FETCH_SUCCESS = '@@project/FETCH_SUCCESS',
-  REMOVE_PROJECTS = '@@project/REMOVE_PROJECTS',
+  REMOVE_PROJECTS = '@@project/REMOVE_PROJECTS'
 }
 
 export interface IProjectState {

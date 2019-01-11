@@ -1,9 +1,9 @@
-import {Reducer} from 'redux';
-import {IProjectState, projectActionTypes} from './types';
+import { Reducer } from 'redux';
+import { IProjectState, projectActionTypes } from './types';
 
 const initialState: IProjectState = {
   data: null,
-  loading: false,
+  loading: false
 };
 
 const reducer: Reducer<IProjectState> = (state = initialState, action) => {
@@ -17,4 +17,4 @@ const reducer: Reducer<IProjectState> = (state = initialState, action) => {
   }
 };
 
-export {reducer as projectReducer};
+export { reducer as projectReducer };
