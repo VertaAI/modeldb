@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
+import { ThemeColors } from 'store/layout';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import './App.css';
 import Dashboard from './components/Dashboard';
-import { ThemeColors } from './store/layout';
-import { IApplicationState, IConnectedReduxProps } from './store/store';
 
 // Any additional component props go here.
 interface IOwnProps {
@@ -42,10 +42,14 @@ class App extends Component<AllProps> {
             <hr />
 
             <Switch>
-              <Route exact path="/" component={Dashboard} />
-              <Route exact path="/project" component={Dashboard} />
-              <Route exact path="/model" component={Dashboard} />
-              <Route exact path="/visualizations" component={Dashboard} />
+              <Route exact={true} path="/" component={Dashboard} />
+              <Route exact={true} path="/project" component={Dashboard} />
+              <Route exact={true} path="/model" component={Dashboard} />
+              <Route
+                exact={true}
+                path="/visualizations"
+                component={Dashboard}
+              />
             </Switch>
           </div>
         </div>
