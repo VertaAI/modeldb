@@ -19,6 +19,7 @@
     "redux": "^4.0.1",
     "redux-devtools-extension": "^2.13.7",
     "redux-thunk": "^2.3.0",
+    "source-map-explorer": "^1.6.0",
     "typesafe-actions": "^2.1.1",
     "typescript": "^3.2.2"
   },
@@ -28,7 +29,8 @@
     "test": "react-scripts test",
     "lint": "tslint -p .",
     "eject": "react-scripts eject",
-    "pretty": "prettier --write \"src/**/*.{ts*,css,js*}\""
+    "pretty": "prettier --write \"src/**/*.{ts*,css,js*}\"",
+    "analyze": "source-map-explorer build/static/js/main.*"
   },
   "eslintConfig": {
     "extends": "react-app"
