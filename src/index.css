@@ -1,9 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500');
-
-:root {
-  --blue-color: #6863ff;
-}
-
+@import './css/theme.css';
 body {
   margin: 0;
   padding: 0;

@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import './App.css';
 import AuthorizedLayout from './components/AuthorizedLayout/AuthorizedLayout';
 
 // Any additional component props go here.
