@@ -2,7 +2,7 @@ import { Reducer } from 'redux';
 import { ILayoutState, LayoutActionTypes } from './types';
 
 const initialState: ILayoutState = {
-  theme: 'light'
+  user: undefined
 };
 
 const reducer: Reducer<ILayoutState> = (state = initialState, action) => {

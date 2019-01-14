@@ -1,0 +1,23 @@
+.header {
+  background-color: var(--blue-color);
+  color: white;
+  /* height: 56px; */
+  padding: 17px;
+}
+
+.nav_menu {
+  display: inline;
+}
+
+.nav_menu a {
+  display: inline;
+  margin: 0 18px;
+}
+
+.logo {
+  display: inline;
+}
+
+.user_bar {
+  display: inline;
+}

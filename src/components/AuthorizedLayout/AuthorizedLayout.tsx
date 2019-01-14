@@ -1,26 +1,33 @@
-import User from 'models/User';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import './App.css';
-import AuthorizedLayout from './components/AuthorizedLayout/AuthorizedLayout';
+import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import LayoutHeader from '..//LayoutHeader/LayoutHeader';
+import Projects from '../Projects/Projects';
+import styles from './AuthorizedLayout.module.css';
 
 // Any additional component props go here.
 interface IOwnProps {
   history: any;
 }
 
-interface IPropsFromState {
-  user: User | undefined;
-}
+interface IPropsFromState {}
 
 // Create an intersection type of the component props and our Redux props.
 type AllProps = IPropsFromState & IConnectedReduxProps & IOwnProps;
 
-class App extends Component<AllProps> {
+class AuthorizedLayout extends Component<AllProps> {
   public render() {
-    return <AuthorizedLayout history={this.props.history} />;
+    return (
+      <Router>
+        <div className={styles.layout}>
+          <LayoutHeader />
+          <Switch>
+            <Route exact={true} path="/" component={Projects} />
+          </Switch>
+        </div>
+      </Router>
+    );
   }
 }
 
@@ -30,4 +37,4 @@ const mapStateToProps = ({ layout }: IApplicationState) => ({
 
 export default connect<IPropsFromState, {}, IOwnProps, IApplicationState>(
   mapStateToProps
-)(App);
+)(AuthorizedLayout);

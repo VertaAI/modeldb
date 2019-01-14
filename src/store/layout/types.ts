@@ -1,9 +1,9 @@
-export type ThemeColors = 'light' | 'dark';
+import User from 'models/User';
 
 export enum LayoutActionTypes {
   SET_THEME = '@@layout/SET_THEME'
 }
 
 export interface ILayoutState {
-  readonly theme: ThemeColors;
+  readonly user: User | undefined;
 }
