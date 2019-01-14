@@ -11,7 +11,7 @@ import { IApplicationState } from './store/store';
 const history = createBrowserHistory();
 const initialState: IApplicationState = {
   layout: {
-    theme: 'dark'
+    user: undefined
   }
 };
 

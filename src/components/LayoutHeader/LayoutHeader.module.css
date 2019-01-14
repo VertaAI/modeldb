@@ -1,0 +1,29 @@
+.header {
+  background-color: var(--blue-color);
+  color: white;
+  height: 56px;
+  align-content: center;
+  font-size: 16px;
+  display: grid;
+  grid-template-columns: 40px auto 56px;
+}
+
+.nav_menu {
+  display: inline;
+  justify-self: end;
+}
+
+.nav_menu a {
+  display: inline;
+  margin: 0 18px;
+  text-decoration: none;
+  color: white;
+}
+
+.logo {
+  display: inline;
+}
+
+.user_bar {
+  display: inline;
+}
