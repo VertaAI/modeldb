@@ -1,3 +1,26 @@
 .layout {
-  max-width: 1440px;
+  /* max-width: 1440px; */
+  max-width: 100%;
+  min-height: 100vh;
+  display: grid;
+
+  grid-template-columns: auto 300px 1140px auto;
+  grid-template-rows: 56px auto;
+  grid-template-areas:
+    'a header header .'
+    'a filtersBar content .';
+}
+
+.header {
+  grid-area: header;
+}
+
+.filters_bar {
+  grid-area: filtersBar;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.15);
+}
+
+.content {
+  grid-area: content;
+  padding: 30px 40px;
 }

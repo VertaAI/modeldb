@@ -21,10 +21,15 @@ class AuthorizedLayout extends Component<AllProps> {
     return (
       <Router>
         <div className={styles.layout}>
-          <LayoutHeader />
-          <Switch>
-            <Route exact={true} path="/" component={Projects} />
-          </Switch>
+          <div className={styles.header}>
+            <LayoutHeader />
+          </div>
+          <div className={styles.filters_bar} />
+          <div className={styles.content}>
+            <Switch>
+              <Route exact={true} path="/" component={Projects} />
+            </Switch>
+          </div>
         </div>
       </Router>
     );
