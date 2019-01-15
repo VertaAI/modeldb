@@ -1,15 +1,18 @@
 import { Reducer } from 'redux';
-import { IProjectState, projectActionTypes } from './types';
+import { IProjectsState, projectActionTypes } from './types';
 
-const initialState: IProjectState = {
+const initialState: IProjectsState = {
   data: null,
   loading: false
 };
 
-const reducer: Reducer<IProjectState> = (state = initialState, action) => {
+const reducer: Reducer<IProjectsState> = (state = initialState, action) => {
   switch (action.type) {
     case projectActionTypes.FETCH_PROJECTS: {
       return { ...state, loading: true };
+    }
+    case projectActionTypes.FETCH_SUCCESS: {
+      return { ...state, loading: false, data: action.payload };
     }
     default: {
       return state;

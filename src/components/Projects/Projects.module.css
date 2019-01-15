@@ -1,3 +1,24 @@
 .headPanel {
   display: grid;
+  grid-template-columns: 100px auto 124px;
+}
+
+.projects {
+  color: black;
+  font-size: 20px;
+}
+
+.create_button {
+  color: white;
+  border-radius: 2px;
+  width: 124px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  background-color: var(--blue-color);
+  font-size: 15px;
+}
+
+.widgets_list {
+  margin-top: 34px;
 }

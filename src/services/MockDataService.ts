@@ -6,7 +6,7 @@ import { IDataService } from './IDataService';
 export default class MockDataService implements IDataService {
   private projects: Project[];
 
-  constructor(store: Store) {
+  constructor() {
     this.projects = [];
 
     const model1 = new Model();
@@ -14,7 +14,8 @@ export default class MockDataService implements IDataService {
 
     const imdbProj = new Project();
     imdbProj.Author = 'Anton Vasin';
-    imdbProj.Description = 'Test project for IMDB';
+    imdbProj.Description =
+      'Building model to predict rating for movies from IMDB';
     imdbProj.Name = 'IMDB_exploratory';
     imdbProj.Models.push(model1);
 

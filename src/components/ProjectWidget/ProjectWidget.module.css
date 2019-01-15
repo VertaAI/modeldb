@@ -1,0 +1,46 @@
+.project_widget {
+  display: grid;
+  grid-template-columns: 245px auto 160px;
+  height: 215px;
+  padding: 30px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  grid-column-gap: 40px;
+  color: #4e4e4e;
+}
+
+.metrics_block {
+}
+
+.metrics_header {
+  display: inline-block;
+  color: var(--blue-color);
+  font-size: 15px;
+}
+
+.metrics_header_item {
+  height: 26px;
+}
+
+.title_block {
+  display: grid;
+  grid-template-rows: 32px auto 24px;
+}
+.title {
+  color: var(--blue-color);
+  font-size: 20px;
+}
+
+.model_counter {
+  display: inline-block;
+  font-size: 20px;
+  font-weight: 300;
+  margin-right: 6px;
+}
+
+.author_block {
+}
+
+.inline_block {
+  display: inline-block;
+}

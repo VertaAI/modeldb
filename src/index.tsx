@@ -12,6 +12,9 @@ const history = createBrowserHistory();
 const initialState: IApplicationState = {
   layout: {
     user: undefined
+  },
+  projects: {
+    loading: false
   }
 };
 
