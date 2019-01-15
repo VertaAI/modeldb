@@ -8,6 +8,7 @@
     ],
     "jsRules": {},
     "rules": {
+      "no-console": false,
       "import-name": [false, {
         "react": "React",
         "react-dom": "ReactDOM"

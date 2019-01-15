@@ -1,11 +1,8 @@
 import Project from 'models/Project';
 import { action } from 'typesafe-actions';
-import { IProjectState, projectActionTypes } from './types';
+import { IProjectState, ProjectActionTypes } from './types';
 
-export const fetchProjects = () => action(projectActionTypes.FETCH_PROJECTS);
-export const fetchSuccess = (data: Project[]) =>
-  action(projectActionTypes.FETCH_SUCCESS, data);
-export const addProject = (data: Project) =>
-  action(projectActionTypes.ADD_PROJECT, data);
-export const removeProjects = (ids: number[]) =>
-  action(projectActionTypes.REMOVE_PROJECTS, ids);
+export const fetchProjects = () => action(ProjectActionTypes.FETCH_PROJECTS);
+export const fetchSuccess = (data: Project[]) => action(ProjectActionTypes.FETCH_SUCCESS, data);
+export const addProject = (data: Project) => action(ProjectActionTypes.ADD_PROJECT, data);
+export const removeProjects = (ids: number[]) => action(ProjectActionTypes.REMOVE_PROJECTS, ids);

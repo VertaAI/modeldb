@@ -1,5 +1,5 @@
 import { Reducer } from 'redux';
-import { IProjectState, projectActionTypes } from './types';
+import { IProjectState, ProjectActionTypes } from './types';
 
 const initialState: IProjectState = {
   data: null,
@@ -8,7 +8,7 @@ const initialState: IProjectState = {
 
 const reducer: Reducer<IProjectState> = (state = initialState, action) => {
   switch (action.type) {
-    case projectActionTypes.FETCH_PROJECTS: {
+    case ProjectActionTypes.FETCH_PROJECTS: {
       return { ...state, loading: true };
     }
     default: {

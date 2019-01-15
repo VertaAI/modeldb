@@ -1,6 +1,6 @@
 import Project from 'models/Project';
 
-export enum projectActionTypes {
+export enum ProjectActionTypes {
   ADD_PROJECT = '@@project/ADD_PROJECT',
   FETCH_PROJECTS = '@@project/FETCH_PROJECTS',
   FETCH_SUCCESS = '@@project/FETCH_SUCCESS',
