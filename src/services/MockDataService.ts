@@ -19,7 +19,18 @@ export default class MockDataService implements IDataService {
     imdbProj.Name = 'IMDB_exploratory';
     imdbProj.Models.push(model1);
 
+    const hpProj = new Project();
+    hpProj.Author = 'Oleg Lukinov';
+    hpProj.Description = 'Predict housing prices';
+    hpProj.Name = 'Housing Prices';
+    hpProj.Models.push(model1);
+    hpProj.Models.push(model1);
+    hpProj.Models.push(model1);
+    hpProj.Models.push(model1);
+    hpProj.Models.push(model1);
+
     this.projects.push(imdbProj);
+    this.projects.push(hpProj);
   }
   public getProjects(): Project[] {
     return this.projects;

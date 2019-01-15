@@ -16,7 +16,9 @@ class ProjectWidget extends React.Component<AllProps> {
       <div className={styles.project_widget}>
         <div className={styles.title_block}>
           <div className={styles.title}>{this.props.project.Name}</div>
-          <div>{this.props.project.Description}</div>
+          <div className={styles.description}>
+            {this.props.project.Description}
+          </div>
           <div>
             <div className={styles.model_counter}>
               {this.props.project.Models.length}
@@ -32,7 +34,13 @@ class ProjectWidget extends React.Component<AllProps> {
             <div className={styles.metrics_header_item}>average</div>
           </div>
         </div>
-        <div className={styles.author_block} />
+        <div className={styles.author_block}>
+          <div>{this.props.project.Author}</div>
+          <div className={styles.created_date_block}>
+            <div>Created:</div>
+            <div>{this.props.project.CreationDate.toLocaleDateString()}</div>
+          </div>
+        </div>
       </div>
     );
   }

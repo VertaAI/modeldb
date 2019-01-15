@@ -1,12 +1,14 @@
 .project_widget {
   display: grid;
   grid-template-columns: 245px auto 160px;
-  height: 215px;
+  height: 110px;
   padding: 30px;
+  padding-bottom: 75px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.15);
   font-size: 13px;
   grid-column-gap: 40px;
   color: #4e4e4e;
+  margin: 16px 0;
 }
 
 .metrics_block {
@@ -20,6 +22,7 @@
 
 .metrics_header_item {
   height: 26px;
+  line-height: 18px;
 }
 
 .title_block {
@@ -29,6 +32,11 @@
 .title {
   color: var(--blue-color);
   font-size: 20px;
+  line-height: 24px;
+}
+
+.description {
+  line-height: 15px;
 }
 
 .model_counter {
@@ -39,6 +47,13 @@
 }
 
 .author_block {
+  display: grid;
+  grid-template-rows: auto 30px;
+  text-align: right;
+}
+
+.created_date_block {
+  opacity: 0.6;
 }
 
 .inline_block {

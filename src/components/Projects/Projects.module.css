@@ -1,6 +1,7 @@
 .headPanel {
   display: grid;
   grid-template-columns: 100px auto 124px;
+  margin-bottom: 26px;
 }
 
 .projects {
@@ -20,5 +21,5 @@
 }
 
 .widgets_list {
-  margin-top: 34px;
+  /* margin-top: 34px; */
 }
