@@ -13,7 +13,10 @@ const initialState: IApplicationState = {
   layout: {
     user: undefined
   },
-  models: { data: undefined, loading: false }
+  models: { data: undefined, loading: false },
+  projects: {
+    loading: false
+  }
 };
 
 const store = configureStore(history, initialState);

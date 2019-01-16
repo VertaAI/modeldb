@@ -7,7 +7,7 @@ export enum ProjectActionTypes {
   REMOVE_PROJECTS = '@@project/REMOVE_PROJECTS'
 }
 
-export interface IProjectState {
+export interface IProjectsState {
   readonly loading: boolean;
   readonly data?: Project[] | null;
 }

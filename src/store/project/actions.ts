@@ -1,6 +1,6 @@
 import Project from 'models/Project';
 import { action } from 'typesafe-actions';
-import { IProjectState, ProjectActionTypes } from './types';
+import { IProjectsState, ProjectActionTypes } from './types';
 
 export const fetchProjects = () => action(ProjectActionTypes.FETCH_PROJECTS);
 export const fetchSuccess = (data: Project[]) => action(ProjectActionTypes.FETCH_SUCCESS, data);
