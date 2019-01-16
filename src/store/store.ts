@@ -3,12 +3,10 @@ import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
 import { ILayoutState, layoutReducer } from './layout';
-import { IModelsState, modelsReducer } from './model';
 
 export interface IApplicationState {
   layout: ILayoutState;
   router?: RouterState;
-  models: IModelsState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -19,7 +17,6 @@ export interface IConnectedReduxProps<A extends Action = any> {
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
     layout: layoutReducer,
-    models: modelsReducer,
     router: connectRouter(history)
   });
 
