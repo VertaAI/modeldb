@@ -1,5 +1,6 @@
 import Project from 'models/Project';
 import * as React from 'react';
+import Avatar from 'react-avatar';
 import { connect } from 'react-redux';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import styles from './ProjectWidget.module.css';
@@ -31,7 +32,18 @@ class ProjectWidget extends React.Component<AllProps> {
           </div>
         </div>
         <div className={styles.author_block}>
-          <div>{this.props.project.Author}</div>
+          <div>
+            <div>{this.props.project.Author}</div>
+            <div className={styles.semitransparent}>Owner</div>
+          </div>
+
+          <Avatar
+            name={this.props.project.Author}
+            round={true}
+            size="36"
+            textSizeRatio={36 / 16}
+            style={{ 'font-family': 'Roboto', 'font-weight': '300' }}
+          />
           <div className={styles.created_date_block}>
             <div>Created:</div>
             <div>{this.props.project.CreationDate.toLocaleDateString()}</div>

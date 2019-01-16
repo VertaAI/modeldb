@@ -48,12 +48,23 @@
 
 .author_block {
   display: grid;
+  grid-template-columns: auto 54px;
   grid-template-rows: auto 30px;
   text-align: right;
+  justify-content: end;
+  justify-items: end;
+}
+.autor_name {
+  display: inline;
 }
 
+.semitransparent,
 .created_date_block {
   opacity: 0.6;
+}
+.created_date_block {
+  grid-column-start: 1;
+  grid-column-end: end;
 }
 
 .inline_block {
