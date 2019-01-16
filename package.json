@@ -12,6 +12,7 @@
     "@types/react-router-dom": "^4.3.1",
     "@types/redux-logger": "^3.0.6",
     "connected-react-router": "^6.1.0",
+    "fixed-data-table-2": "^0.8.16",
     "lodash": "^4.17.11",
     "normalize.css": "^8.0.1",
     "react": "^16.7.0",
