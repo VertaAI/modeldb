@@ -11,6 +11,10 @@
   margin: 16px 0;
 }
 
+.project_link {
+  text-decoration: none;
+}
+
 .metrics_block {
 }
 
