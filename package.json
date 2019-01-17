@@ -17,6 +17,7 @@
     "lodash": "^4.17.11",
     "normalize.css": "^8.0.1",
     "react": "^16.7.0",
+    "react-avatar": "^3.5.0",
     "react-dom": "^16.7.0",
     "react-redux": "^6.0.0",
     "react-router-dom": "^4.3.1",

@@ -1,6 +1,6 @@
 .project_widget {
   display: grid;
-  grid-template-columns: 245px auto 160px;
+  grid-template-columns: auto 160px;
   height: 110px;
   padding: 30px;
   padding-bottom: 75px;
@@ -9,6 +9,10 @@
   grid-column-gap: 40px;
   color: #4e4e4e;
   margin: 16px 0;
+}
+
+.project_link {
+  text-decoration: none;
 }
 
 .metrics_block {
@@ -48,12 +52,23 @@
 
 .author_block {
   display: grid;
+  grid-template-columns: auto 54px;
   grid-template-rows: auto 30px;
   text-align: right;
+  justify-content: end;
+  justify-items: end;
+}
+.autor_name {
+  display: inline;
 }
 
+.semitransparent,
 .created_date_block {
   opacity: 0.6;
+}
+.created_date_block {
+  grid-column-start: 1;
+  grid-column-end: end;
 }
 
 .inline_block {

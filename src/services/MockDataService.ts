@@ -28,6 +28,7 @@ export default class MockDataService implements IDataService {
     imdbProj.Models.push(model1);
 
     const hpProj = new Project();
+    hpProj.Id = '2';
     hpProj.Author = 'Oleg Lukinov';
     hpProj.Description = 'Predict housing prices';
     hpProj.Name = 'Housing Prices';
@@ -42,9 +43,5 @@ export default class MockDataService implements IDataService {
   }
   public getProjects(): Project[] {
     return this.projects;
-  }
-
-  public getProject(id: string): Project {
-    return this.projects.find(x => x.Id === id) || new Project();
   }
 }

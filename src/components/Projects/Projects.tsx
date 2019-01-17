@@ -5,6 +5,7 @@ import ServiceFactory from '../../services/ServiceFactory';
 import { fetchProjects, fetchSuccess } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
+
 import styles from './Projects.module.css';
 
 interface IPropsFromState {
@@ -26,9 +27,7 @@ class Projects extends React.Component<AllProps> {
         <div className={styles.headPanel}>
           <div>Projects</div>
           <div />
-          <div>
-            <button className={styles.create_button}>Create</button>
-          </div>
+          <div />
         </div>
         <div className={styles.widgets_list}>
           {this.props.projects ? this.props.projects.map((proj, i) => <ProjectWidget project={proj} key={i} />) : ''}
