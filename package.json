@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/fixed-data-table-2": "^0.8.2",
     "@types/jest": "23.3.10",
     "@types/lodash": "^4.14.119",
     "@types/node": "10.12.18",

@@ -10,11 +10,11 @@ export const addProject = (data: Project) => action(ProjectActionTypes.ADD_PROJE
 export const removeProjects = (ids: number[]) => action(ProjectActionTypes.REMOVE_PROJECTS, ids);
 
 export const fetchProjectWithModels = (id: string): ActionResult<void, projectFetchModelsAction> => async (dispatch, getState) => {
-  dispatch({ type: projectFetchModelsActionTypes.FETCH_MODELS_REQUEST });
+  dispatch(action(projectFetchModelsActionTypes.FETCH_MODELS_REQUEST));
 
   await new Promise<Project>((resolve, reject) => {
     resolve(ServiceFactory.getDataService().getProject(id));
   }).then(res => {
-    dispatch({ type: projectFetchModelsActionTypes.FETCH_MODELS_SUCESS, payload: res });
+    dispatch(action(projectFetchModelsActionTypes.FETCH_MODELS_SUCESS, res));
   });
 };

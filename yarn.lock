@@ -948,6 +948,13 @@
     "@svgr/core" "^2.4.1"
     loader-utils "^1.1.0"
 
+"@types/fixed-data-table-2@^0.8.2":
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/@types/fixed-data-table-2/-/fixed-data-table-2-0.8.2.tgz#4f0d4301da3c32b7dcfb4552a8c11c6a863cbc8c"
+  integrity sha512-rwopEasDQYd75PPvCgVNFDFUvrOW2Lshtc9JVG+St7GBOHDUuFML6k6qMyLnwHqSA0znleoVyQC3bFRht0pYiA==
+  dependencies:
+    "@types/react" "*"
+
 "@types/history@*":
   version "4.7.2"
   resolved "https://registry.yarnpkg.com/@types/history/-/history-4.7.2.tgz#0e670ea254d559241b6eeb3894f8754991e73220"
