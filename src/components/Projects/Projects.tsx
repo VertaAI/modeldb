@@ -26,9 +26,7 @@ class Projects extends React.Component<AllProps> {
         <div className={styles.headPanel}>
           <div>Projects</div>
           <div />
-          <div>
-            <button className={styles.create_button}>Create</button>
-          </div>
+          <div />
         </div>
         <div className={styles.widgets_list}>
           {this.props.projects ? this.props.projects.map((proj, i) => <ProjectWidget project={proj} key={i} />) : ''}

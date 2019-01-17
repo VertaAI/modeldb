@@ -25,14 +25,6 @@ class ProjectWidget extends React.Component<AllProps> {
               <div className={styles.inline_block}>model</div>
             </div>
           </div>
-          <div className={styles.metrics_block}>
-            <div className={styles.metrics_header}>
-              <div className={styles.metrics_header_item}>Metrics</div>
-              <div className={styles.metrics_header_item}>min</div>
-              <div className={styles.metrics_header_item}>max</div>
-              <div className={styles.metrics_header_item}>average</div>
-            </div>
-          </div>
           <div className={styles.author_block}>
             <div>
               <div>{this.props.project.Author}</div>

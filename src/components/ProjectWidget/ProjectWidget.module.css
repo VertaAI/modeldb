@@ -1,6 +1,6 @@
 .project_widget {
   display: grid;
-  grid-template-columns: 245px auto 160px;
+  grid-template-columns: auto 160px;
   height: 110px;
   padding: 30px;
   padding-bottom: 75px;
