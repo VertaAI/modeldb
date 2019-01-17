@@ -6,6 +6,7 @@ export default class Project {
   private author: string = '';
   private models: Model[] = [];
   private creationDate: Date = new Date();
+  private id: string = '';
 
   public get Name(): string {
     return this.name;
@@ -41,5 +42,13 @@ export default class Project {
 
   public set CreationDate(v: Date) {
     this.creationDate = v;
+  }
+
+  public get Id(): string {
+    return this.id;
+  }
+
+  public set Id(v: string) {
+    this.id = v;
   }
 }
