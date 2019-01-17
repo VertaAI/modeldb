@@ -44,4 +44,7 @@ export default class MockDataService implements IDataService {
   public getProjects(): Project[] {
     return this.projects;
   }
+  public getProject(id: string): Project {
+    return this.projects.find(x => x.Id === id) || new Project();
+  }
 }

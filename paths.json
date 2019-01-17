@@ -6,7 +6,8 @@
     "paths": {
       "models/*": ["src/models/*"],
       "components/*": ["src/components/*"],
-      "store/*": ["src/store/*"]
+      "store/*": ["src/store/*"],
+      "services/*": ["src/services/*"]
     }
   }
 }
