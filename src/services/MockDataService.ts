@@ -6,14 +6,13 @@ import { IDataService } from './IDataService';
 export default class MockDataService implements IDataService {
   private projects: Project[];
 
-  constructor() {
+  constructor(store: Store) {
     this.projects = [];
 
     const model1 = new Model();
-    model1.Id = '21';
+    model1.type = ModelType.LinearRegression;
 
     const imdbProj = new Project();
-    imdbProj.Id = '1';
     imdbProj.Author = 'Anton Vasin';
     imdbProj.Description = 'Building model to predict rating for movies from IMDB';
     imdbProj.Name = 'IMDB_exploratory';
@@ -34,9 +33,5 @@ export default class MockDataService implements IDataService {
   }
   public getProjects(): Project[] {
     return this.projects;
-  }
-
-  public getProject(id: string): Project {
-    return this.projects.find(x => x.Id === id) || new Project();
   }
 }

@@ -3,6 +3,7 @@ import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
 import { ILayoutState, layoutReducer } from './layout';
+
 import { IModelsState, modelsReducer } from './model';
 import { IProjectsState, projectReducer } from './project';
 
@@ -10,7 +11,6 @@ export interface IApplicationState {
   layout: ILayoutState;
   projects: IProjectsState;
   router?: RouterState;
-  models: IModelsState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`

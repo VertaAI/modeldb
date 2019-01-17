@@ -1,20 +1,11 @@
 import { Model } from './Model';
 
 export default class Project {
-  private id: string = '';
   private name: string = '';
   private description: string = '';
   private author: string = '';
   private models: Model[] = [];
   private creationDate: Date = new Date();
-
-  public get Id(): string {
-    return this.id;
-  }
-
-  public set Id(v: string) {
-    this.id = v;
-  }
 
   public get Name(): string {
     return this.name;

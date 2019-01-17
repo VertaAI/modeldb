@@ -5,6 +5,7 @@ import ServiceFactory from '../../services/ServiceFactory';
 import { fetchProjects, fetchSuccess } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
+
 import styles from './Projects.module.css';
 
 interface IPropsFromState {
