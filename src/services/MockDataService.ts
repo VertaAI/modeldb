@@ -6,19 +6,21 @@ import { IDataService } from './IDataService';
 export default class MockDataService implements IDataService {
   private projects: Project[];
 
-  constructor(store: Store) {
+  constructor() {
     this.projects = [];
 
     const model1 = new Model();
     model1.type = ModelType.LinearRegression;
 
     const imdbProj = new Project();
+    imdbProj.Id = '1';
     imdbProj.Author = 'Anton Vasin';
     imdbProj.Description = 'Building model to predict rating for movies from IMDB';
     imdbProj.Name = 'IMDB_exploratory';
     imdbProj.Models.push(model1);
 
     const hpProj = new Project();
+    hpProj.Id = '2';
     hpProj.Author = 'Oleg Lukinov';
     hpProj.Description = 'Predict housing prices';
     hpProj.Name = 'Housing Prices';

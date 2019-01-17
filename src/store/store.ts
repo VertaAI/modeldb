@@ -3,8 +3,6 @@ import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
 import { ILayoutState, layoutReducer } from './layout';
-
-import { IModelsState, modelsReducer } from './model';
 import { IProjectsState, projectReducer } from './project';
 
 export interface IApplicationState {
@@ -21,7 +19,6 @@ export interface IConnectedReduxProps<A extends Action = any> {
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
     layout: layoutReducer,
-    models: modelsReducer,
     projects: projectReducer,
     router: connectRouter(history)
   });
