@@ -29,6 +29,4 @@ const mapStateToProps = ({ layout }: IApplicationState) => ({
   user: layout.user
 });
 
-export default connect<IPropsFromState, {}, {}, IApplicationState>(
-  mapStateToProps
-)(LayoutHeader);
+export default connect<IPropsFromState, {}, {}, IApplicationState>(mapStateToProps)(LayoutHeader);

@@ -27,6 +27,4 @@ const mapStateToProps = ({ layout }: IApplicationState) => ({
   user: layout.user
 });
 
-export default connect<IPropsFromState, {}, IOwnProps, IApplicationState>(
-  mapStateToProps
-)(App);
+export default connect<IPropsFromState, {}, IOwnProps, IApplicationState>(mapStateToProps)(App);

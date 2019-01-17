@@ -1,0 +1,76 @@
+.project_widget {
+  display: grid;
+  grid-template-columns: auto 160px;
+  height: 110px;
+  padding: 30px;
+  padding-bottom: 75px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  grid-column-gap: 40px;
+  color: #4e4e4e;
+  margin: 16px 0;
+}
+
+.project_link {
+  text-decoration: none;
+}
+
+.metrics_block {
+}
+
+.metrics_header {
+  display: inline-block;
+  color: var(--blue-color);
+  font-size: 15px;
+}
+
+.metrics_header_item {
+  height: 26px;
+  line-height: 18px;
+}
+
+.title_block {
+  display: grid;
+  grid-template-rows: 32px auto 24px;
+}
+.title {
+  color: var(--blue-color);
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.description {
+  line-height: 15px;
+}
+
+.model_counter {
+  display: inline-block;
+  font-size: 20px;
+  font-weight: 300;
+  margin-right: 6px;
+}
+
+.author_block {
+  display: grid;
+  grid-template-columns: auto 54px;
+  grid-template-rows: auto 30px;
+  text-align: right;
+  justify-content: end;
+  justify-items: end;
+}
+.autor_name {
+  display: inline;
+}
+
+.semitransparent,
+.created_date_block {
+  opacity: 0.6;
+}
+.created_date_block {
+  grid-column-start: 1;
+  grid-column-end: end;
+}
+
+.inline_block {
+  display: inline-block;
+}
