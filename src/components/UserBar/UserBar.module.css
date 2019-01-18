@@ -1,0 +1,36 @@
+.menu_arrow {
+  font-family: 'font-awesome';
+}
+
+.menu_arrow:hover {
+  cursor: pointer;
+}
+
+.user_bar {
+  display: grid;
+  grid-template-columns: 36px 22px;
+  align-items: center;
+  justify-items: end;
+}
+
+.drop_down {
+  font-family: Roboto;
+  color: black;
+  position: absolute;
+  background-color: white;
+  border: solid 1px lightgray;
+  padding: 5px;
+  font-size: 16px;
+  display: none;
+}
+
+.user_bar:hover > .drop_down {
+  display: block;
+}
+
+.drop_down:after,
+.drop_down::before {
+  content: '';
+  display: inline-block;
+  position: absolute;
+}
