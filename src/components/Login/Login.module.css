@@ -1,0 +1,23 @@
+.content {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+}
+
+.logo {
+  margin: 100px 0 150px 0;
+}
+
+.create_button {
+  color: white;
+  border-radius: 2px;
+  width: 350px;
+  height: 50px;
+  padding: 0;
+  border: none;
+  background-color: var(--blue-color);
+  font-size: 15px;
+}
+
+.form_login {
+}

@@ -23,7 +23,7 @@ const store = configureStore(history, initialState);
 
 ReactDOM.render(
   <Provider store={store}>
-    <App history={{}} />
+    <App />
   </Provider>,
   document.getElementById('root')
 );

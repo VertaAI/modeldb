@@ -1,0 +1,21 @@
+.layout {
+  max-width: 100%;
+  min-height: 100vh;
+  display: grid;
+
+  grid-template-columns: auto 1440px auto;
+  grid-template-rows: 56px auto;
+  grid-template-areas:
+    '. header .'
+    '. content .';
+}
+
+.header {
+  grid-area: header;
+}
+
+.content {
+  grid-area: content;
+  padding: 30px 40px;
+  justify-self: center;
+}

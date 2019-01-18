@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
+import Login from '../../components/Login/Login';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import LayoutHeader from '../LayoutHeader/LayoutHeader';
-import Models from '../Models/Models';
-import Projects from '../Projects/Projects';
-import styles from './AuthorizedLayout.module.css';
+import styles from './AnonymousLayout.module.css';
 
-// Create an intersection type of the component props and our Redux props.
 type AllProps = IConnectedReduxProps;
 
-class AuthorizedLayout extends Component<AllProps> {
+class AnonymousLayout extends Component<AllProps> {
   public render() {
     return (
       <Router>
@@ -18,11 +16,9 @@ class AuthorizedLayout extends Component<AllProps> {
           <div className={styles.header}>
             <LayoutHeader />
           </div>
-          <div className={styles.filters_bar} />
           <div className={styles.content}>
             <Switch>
-              <Route exact={true} path="/" component={Projects} />
-              <Route path="/project/:projectId/models" component={Models} />
+              <Route exact={true} path="/" component={Login} />
             </Switch>
           </div>
         </div>
@@ -35,4 +31,4 @@ const mapStateToProps = ({ layout }: IApplicationState) => ({
   user: layout.user
 });
 
-export default connect<{}, {}, {}, IApplicationState>(mapStateToProps)(AuthorizedLayout);
+export default connect<{}, {}, {}, IApplicationState>(mapStateToProps)(AnonymousLayout);
