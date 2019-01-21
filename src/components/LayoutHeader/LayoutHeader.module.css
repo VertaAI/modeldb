@@ -25,6 +25,7 @@
 
 .logo {
   display: inline;
+  justify-self: start;
 }
 
 .user_bar {

@@ -15,11 +15,14 @@ class LayoutHeader extends React.Component<IPropsFromState, {}> {
   public render() {
     return (
       <header className={styles.header}>
-        <div className={styles.logo}>Logo</div>
+        <div className={styles.logo}>
+          <Link to="/">
+            <img src={logo} />
+          </Link>
+        </div>
         <nav className={styles.nav_menu}>
           <Link to="/">About</Link>
           <Link to="/project">Blog</Link>
-          <Link to="/model">Settings</Link>
         </nav>
         <div className={styles.user_bar}>
           <UserBar />
