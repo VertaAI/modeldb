@@ -5,18 +5,31 @@
 }
 
 .logo {
-  margin: 100px 0 150px 0;
+  margin: 205px 0 42px 0;
 }
 
 .create_button {
-  color: white;
-  border-radius: 2px;
-  width: 350px;
-  height: 50px;
-  padding: 0;
+  color: #fff;
+  height: 56px;
+  width: 276px;
+  border-radius: 4px;
+  background-color: var(--bg-color2);
+  font-size: 20px;
+  line-height: 24px;
   border: none;
-  background-color: var(--blue-color);
-  font-size: 15px;
+  cursor: pointer;
+}
+
+.github_icon {
+  margin-right: 8px;
+}
+
+.login_slogan {
+  margin-bottom: 65px;
+  color: #8885ae;
+  font-size: 18px;
+  line-height: 21px;
+  text-align: center;
 }
 
 .form_login {

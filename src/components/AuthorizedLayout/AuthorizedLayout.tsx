@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import LayoutHeader from '../LayoutHeader/LayoutHeader';
+import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 import Models from '../Models/Models';
 import Projects from '../Projects/Projects';
 import styles from './AuthorizedLayout.module.css';
@@ -16,7 +16,7 @@ class AuthorizedLayout extends Component<AllProps> {
       <Router>
         <div className={styles.layout}>
           <div className={styles.header}>
-            <LayoutHeader />
+            <AuthorizedLayoutHeader />
           </div>
           <div className={styles.filters_bar} />
           <div className={styles.content}>

@@ -2,12 +2,14 @@
   max-width: 100%;
   min-height: 100vh;
   display: grid;
+  background-color: #f6f9fc;
 
   grid-template-columns: auto 1440px auto;
-  grid-template-rows: 56px auto;
+  grid-template-rows: 56px auto 56px;
   grid-template-areas:
     '. header .'
-    '. content .';
+    '. content .'
+    '. footer .';
 }
 
 .header {
@@ -18,4 +20,8 @@
   grid-area: content;
   padding: 30px 40px;
   justify-self: center;
+}
+
+.footer {
+  grid-area: footer;
 }
