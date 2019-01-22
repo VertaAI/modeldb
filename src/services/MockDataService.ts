@@ -12,7 +12,7 @@ export default class MockDataService implements IDataService {
     const model1 = new Model();
     model1.Name = 'test';
     model1.Id = '22';
-    model1.ProjectId = '13';
+    model1.ProjectId = '1';
     model1.ExperimentId = '15';
     model1.DataFrameId = '30';
     model1.ModelType = ModelType.LinearRegression;

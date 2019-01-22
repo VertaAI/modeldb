@@ -2,6 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import { Link } from 'react-router-dom';
 import { IArtifact } from '../../models/Artifact';
 import { Model } from '../../models/Model';
 import { fetchModel } from '../../store/model';
@@ -34,6 +35,9 @@ class ModelLayout extends React.Component<AllProps> {
     return (
       <div className={styles.model_layout}>
         <div className={styles.model_header}>
+          <Link className={styles.path_copy} to={`/project/${notNullModel.ProjectId}/models`}>
+            <i className="fa fa-angle-left" />
+          </Link>
           <span className={styles.model_name}>Model: {notNullModel.Name}</span>
         </div>
         <div className={styles.model_details}>

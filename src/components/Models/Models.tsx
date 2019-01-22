@@ -37,7 +37,9 @@ class Models extends React.Component<AllProps> {
       <div className={styles.models_grid}>
         <div className={styles.project_header}>
           <div>
-            <Link className={styles.path_copy} to={'/'} />
+            <Link className={styles.path_copy} to={`/`}>
+              <i className="fa fa-angle-left" />
+            </Link>
             <span className={styles.project_name}>{notNullData.Name}</span>
           </div>
         </div>
