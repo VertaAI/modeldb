@@ -36,7 +36,7 @@ class ProjectWidget extends React.Component<AllProps> {
               round={true}
               size="36"
               textSizeRatio={36 / 16}
-              style={{ 'font-family': 'Roboto', 'font-weight': '300' }}
+              style={{ fontFamily: 'Roboto', fontWeight: '300' }}
             />
             <div className={styles.created_date_block}>
               <div>Created:</div>

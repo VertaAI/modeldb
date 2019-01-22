@@ -5,9 +5,10 @@
   align-content: center;
   font-size: 16px;
   display: grid;
-  grid-template-columns: 40px auto 100px;
+  grid-template-columns: 40px auto 86px;
   justify-items: end;
   padding: 0 30px;
+  align-items: center;
 }
 
 .nav_menu {
@@ -24,6 +25,7 @@
 
 .logo {
   display: inline;
+  justify-self: start;
 }
 
 .user_bar {
