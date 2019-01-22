@@ -1,4 +1,5 @@
 import * as React from 'react';
+import styles from './ShowContentBasedOnUrl.module.css';
 
 interface ILocalProps {
   path: string;
@@ -40,11 +41,15 @@ export default class ShowContentBasedOnUrl extends React.Component<ILocalProps, 
     let element = null;
     switch (this.state.urlContentType) {
       case ContentType.IMAGE: {
-        element = <img width={200} height={100} src={this.props.path} />;
+        element = <img width={220} height={160} src={this.props.path} />;
         break;
       }
       default: {
-        element = <a href={this.props.path}>{this.props.path}</a>;
+        element = (
+          <a className={styles.link} href={this.props.path}>
+            {this.props.path}
+          </a>
+        );
         break;
       }
     }

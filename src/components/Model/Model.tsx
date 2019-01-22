@@ -30,112 +30,85 @@ class ModelLayout extends React.Component<AllProps> {
 
     return (
       <div className={styles.model_layout}>
-        <div className={styles.model_header}>
-          <Link className={styles.path_copy} to={`/project/${notNullModel.ProjectId}/models`}>
-            <i className="fa fa-angle-left" />
-          </Link>
-          <span className={styles.model_name}>Model: {notNullModel.Name}</span>
-        </div>
-        <div className={styles.model_details}>
-          <div>{notNullModel.Id ? `Id: ${notNullModel.Id}` : ''}</div>
-          <div>{notNullModel.ProjectId ? `Project: ${notNullModel.ProjectId}` : ''}</div>
-          <div>{notNullModel.ExperimentId ? `Experiment: ${notNullModel.ExperimentId}` : ''}</div>
-          <div>
-            {notNullModel.Tags && notNullModel.Tags.length > 0 ? (
-              <div>
-                Tags:{' '}
-                {notNullModel.Tags.map((value: string, key: number) => {
-                  return (
-                    <span className={styles.tag} key={key}>
-                      {value}
-                    </span>
-                  );
-                })}
+        {this.renderTextRecord('Model', notNullModel.Name, styles.name)}
+        {this.renderTextRecord('ID', notNullModel.Id)}
+        {this.renderTextRecord('Project', notNullModel.ProjectId)}
+        {this.renderTextRecord('Experiment', notNullModel.ExperimentId)}
+        {this.renderListRecord(
+          'Tags',
+          notNullModel.Tags.map((value: string, key: number) => {
+            return (
+              <div className={styles.tag} key={key}>
+                <span className={styles.tag_text}>{value}</span>
               </div>
-            ) : (
-              ''
-            )}
-          </div>
-          <div>
-            {notNullModel.Hyperparameters && notNullModel.Hyperparameters.length > 0 ? (
-              <div>
-                Hyperparameters: <br />
-                <div className={styles.internal_lists}>
-                  {notNullModel.Hyperparameters.map((value: IHyperparameter, key: number) => {
-                    return (
-                      <div key={key}>
-                        {value.key}: {value.value}
-                      </div>
-                    );
-                  })}
-                </div>
+            );
+          })
+        )}
+        {this.renderListRecord(
+          'Hyperparameters',
+          notNullModel.Hyperparameters.map((value: IHyperparameter, key: number) => {
+            return (
+              <div key={key}>
+                {value.key}: {value.value}
               </div>
-            ) : (
-              ''
-            )}
-          </div>
-          <div>
-            {notNullModel.ModelMetric && notNullModel.ModelMetric.length > 0 ? (
-              <div>
-                Metrics: <br />
-                <div className={styles.internal_lists}>
-                  {notNullModel.ModelMetric.map((value: IModelMetric, key: number) => {
-                    return (
-                      <div key={key}>
-                        {value.key}: {value.value}
-                      </div>
-                    );
-                  })}
-                </div>
+            );
+          })
+        )}
+        {this.renderListRecord(
+          'Metrics',
+          notNullModel.ModelMetric.map((value: IModelMetric, key: number) => {
+            return (
+              <div key={key}>
+                {value.key}: {value.value}
               </div>
-            ) : (
-              ''
-            )}
-          </div>
-
-          <div>
-            {notNullModel.DataSets && notNullModel.DataSets.length > 0 ? (
-              <div>
-                DataSets: <br />
-                <div className={styles.internal_lists}>
-                  {notNullModel.DataSets.map((value: IArtifact, key: number) => {
-                    return (
-                      <div key={key}>
-                        {value.key}: <ShowContentBasedOnUrl path={value.path} />
-                      </div>
-                    );
-                  })}
-                </div>
+            );
+          })
+        )}
+        {this.renderListRecord(
+          'DataSets',
+          notNullModel.DataSets.map((value: IArtifact, key: number) => {
+            return (
+              <div key={key}>
+                {value.key}: <ShowContentBasedOnUrl path={value.path} />
               </div>
-            ) : (
-              ''
-            )}
-          </div>
-          <div>
-            {notNullModel.Artifacts && notNullModel.Artifacts.length > 0 ? (
-              <div>
-                Artifacts: <br />
-                <div className={styles.internal_lists}>
-                  {notNullModel.Artifacts.map((value: IArtifact, key: number) => {
-                    return (
-                      <div key={key}>
-                        {value.key}: <ShowContentBasedOnUrl path={value.path} />
-                      </div>
-                    );
-                  })}
-                </div>
+            );
+          })
+        )}
+        {this.renderListRecord(
+          'Artifacts',
+          notNullModel.Artifacts.map((value: IArtifact, key: number) => {
+            return (
+              <div key={key}>
+                {value.key}: <ShowContentBasedOnUrl path={value.path} />
               </div>
-            ) : (
-              ''
-            )}
-          </div>
-        </div>
+            );
+          })
+        )}
       </div>
     );
   }
 
   public componentDidMount() {
     this.props.dispatch(fetchModel(this.props.match.params.modelId));
+  }
+
+  private renderRecord(header: string, content: JSX.Element[], additionalValueClassName: string = '') {
+    return content && content.length > 0 ? (
+      <div className={styles.record}>
+        <div className={styles.record_header}>{header}</div>
+        <div className={`${styles.record_value} ${additionalValueClassName}`}>{content}</div>
+      </div>
+    ) : (
+      ''
+    );
+  }
+
+  private renderTextRecord(header: string, value: string, additionalValueClassName: string = '') {
+    return value ? this.renderRecord(header, [<span key={0}>{value}</span>], additionalValueClassName) : '';
+  }
+
+  private renderListRecord(header: string, content: JSX.Element[]) {
+    return this.renderRecord(header, content, styles.list);
   }
 }
 
