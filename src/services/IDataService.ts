@@ -2,7 +2,7 @@ import { Model } from '../models/Model';
 import Project from '../models/Project';
 
 export interface IDataService {
-  getProjects(): Project[];
-  getProject(id: string): Project;
-  getModel(id: string): Model;
+  getProjects(): Promise<Project[]>;
+  getProject(id: string): Promise<Project>;
+  getModel(id: string): Promise<Model>;
 }

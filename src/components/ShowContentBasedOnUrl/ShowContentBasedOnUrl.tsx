@@ -1,7 +1,11 @@
 import * as React from 'react';
 
-interface IOwnProps {
+interface ILocalProps {
   path: string;
+}
+
+interface ILocalState {
+  urlContentType: ContentType;
 }
 
 enum ContentType {
@@ -9,10 +13,12 @@ enum ContentType {
   OTHER = 'other'
 }
 
-export default class ShowContentBasedOnUrl extends React.Component<IOwnProps> {
-  public state = {
-    urlContentType: ContentType.OTHER
-  };
+export default class ShowContentBasedOnUrl extends React.Component<ILocalProps, ILocalState> {
+  constructor(props: ILocalProps) {
+    super(props);
+
+    this.state = { urlContentType: ContentType.OTHER };
+  }
 
   public componentDidMount() {
     const configInit: RequestInit = {
@@ -43,6 +49,6 @@ export default class ShowContentBasedOnUrl extends React.Component<IOwnProps> {
       }
     }
 
-    return <div>{element}</div>;
+    return <span>{element}</span>;
   }
 }

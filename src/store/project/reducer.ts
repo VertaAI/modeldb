@@ -1,5 +1,12 @@
 import { Reducer } from 'redux';
-import { IProjectsState, IProjectState, ProjectActionTypes, projectFetchModelsAction, projectFetchModelsActionTypes } from './types';
+import {
+  fetchProjectsAction,
+  fetchProjectsActionTypes,
+  IProjectsState,
+  IProjectState,
+  projectFetchModelsAction,
+  projectFetchModelsActionTypes
+} from './types';
 
 const projectsInitialState: IProjectsState = {
   data: null,
@@ -11,12 +18,12 @@ const projectInitialState: IProjectState = {
   loading: false
 };
 
-export const projectsReducer: Reducer<IProjectsState> = (state = projectsInitialState, action) => {
+export const projectsReducer: Reducer<IProjectsState> = (state = projectsInitialState, action: fetchProjectsAction) => {
   switch (action.type) {
-    case ProjectActionTypes.FETCH_PROJECTS: {
+    case fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST: {
       return { ...state, loading: true };
     }
-    case ProjectActionTypes.FETCH_SUCCESS: {
+    case fetchProjectsActionTypes.FETCH_PROJECTS_SUCESS: {
       return { ...state, loading: false, data: action.payload };
     }
     default: {

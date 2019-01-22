@@ -13,4 +13,12 @@
 .public_fixedDataTable_header,
 .public_fixedDataTable_hasBottomBorder {
   border-color: rgba(0, 0, 0, 0.3);
+  background-image: none;
+}
+
+.public_fixedDataTableRow_main {
+  background-color: #fff;
+  border-color: rgba(0, 0, 0, 0.3);
+  border-width: 0 0 1px 0;
+  border-style: solid;
 }
