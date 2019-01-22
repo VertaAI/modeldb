@@ -13,6 +13,9 @@ const initialState: IApplicationState = {
   layout: {
     user: undefined
   },
+  model: {
+    loading: false
+  },
   project: { loading: false },
   projects: {
     loading: false

@@ -1,0 +1,47 @@
+.path_copy {
+  height: 12px;
+  width: 12px;
+  border: solid #000000;
+  border-width: 0 3px 3px 0;
+  opacity: 0.5;
+  transform: rotate(135deg);
+  display: inline-block;
+}
+
+.model_name {
+  height: 24px;
+  opacity: 0.8;
+  color: #000000;
+  font-family: Roboto;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.model_header {
+  margin-bottom: 24px;
+}
+
+.model_layout {
+}
+
+.model_details {
+}
+
+.internal_lists {
+  margin-left: 10px;
+}
+
+.tag {
+  display: inline;
+  padding: 2.4px 7.2px 3.6px;
+  margin: 0px 2px;
+  font-size: 75%;
+  font-weight: 500;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 3px;
+  background-color: var(--blue-color);
+}
