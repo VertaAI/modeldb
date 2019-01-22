@@ -1,14 +1,13 @@
 .project_widget {
   display: grid;
   grid-template-columns: auto 160px;
-  height: 110px;
+  min-height: 155px;
   padding: 30px;
-  padding-bottom: 75px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.15);
   font-size: 13px;
   grid-column-gap: 40px;
-  color: #4e4e4e;
+  color: var(--fr-color3);
   margin: 16px 0;
+  background-color: var(--bg-color3);
 }
 
 .project_link {
@@ -34,7 +33,7 @@
   grid-template-rows: 32px auto 24px;
 }
 .title {
-  color: var(--blue-color);
+  color: var(--fr-color2);
   font-size: 20px;
   line-height: 24px;
 }
@@ -57,16 +56,14 @@
   text-align: right;
   justify-content: end;
   justify-items: end;
+  color: var(--fr-color3);
 }
 .autor_name {
   display: inline;
 }
 
-.semitransparent,
 .created_date_block {
-  opacity: 0.6;
-}
-.created_date_block {
+  color: var(--fr-color4);
   grid-column-start: 1;
   grid-column-end: end;
 }
