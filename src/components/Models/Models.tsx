@@ -32,7 +32,6 @@ class Models extends React.Component<AllProps> {
   public render() {
     const { data, loading } = this.props;
     const notNullData = data || new Project();
-
     return (
       <div className={styles.models_grid}>
         <div className={styles.project_header}>
