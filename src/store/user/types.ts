@@ -1,7 +1,7 @@
 import User from 'models/User';
 
 export interface IUserState {
-  readonly user: User | undefined;
+  readonly user: User | null;
 }
 
 export enum userAuthenticateActionTypes {

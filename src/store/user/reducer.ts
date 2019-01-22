@@ -2,7 +2,7 @@ import { Reducer } from 'redux';
 import { IUserState, userAuthenticateAction, userAuthenticateActionTypes } from './types';
 
 const initialState: IUserState = {
-  user: undefined
+  user: null
 };
 
 const reducer: Reducer<IUserState> = (state = initialState, action: userAuthenticateAction) => {

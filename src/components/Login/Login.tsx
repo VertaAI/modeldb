@@ -7,7 +7,7 @@ import logo from './images/logo.svg';
 import styles from './Login.module.css';
 
 interface IPropsFromState {
-  user?: User | undefined;
+  user?: User | null;
 }
 
 type AllProps = IPropsFromState & IConnectedReduxProps;

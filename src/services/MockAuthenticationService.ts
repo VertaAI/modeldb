@@ -5,7 +5,7 @@ export default class MockAuthenticationService implements IAuthenticationService
   private user: User;
 
   constructor() {
-    this.user = new User(1, 'user');
+    this.user = new User(1, 'Manasi Vartak');
   }
 
   public authenticate() {

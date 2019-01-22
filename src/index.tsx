@@ -10,12 +10,12 @@ import configureStore from './store/configureStore';
 import { IApplicationState } from './store/store';
 
 const history = createBrowserHistory();
-function getUser(): User | undefined {
+function getUser(): User | null {
   const storageUser = localStorage.getItem('user');
   if (storageUser) {
     return JSON.parse(storageUser);
   }
-  return undefined;
+  return null;
 }
 
 const initialState: IApplicationState = {

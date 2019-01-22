@@ -7,7 +7,7 @@ import AuthorizedLayout from './components/AuthorizedLayout/AuthorizedLayout';
 import User from './models/User';
 
 interface IPropsFromState {
-  user: User | undefined;
+  user: User | null;
 }
 
 // Create an intersection type of the component props and our Redux props.
