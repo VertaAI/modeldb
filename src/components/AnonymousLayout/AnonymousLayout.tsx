@@ -1,15 +1,11 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React from 'react';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import Footer from '../../components/Footer/Footer';
 import Login from '../../components/Login/Login';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import AnonymousLayoutHeader from '../AnonymousLayoutHeader/AnonymousLayoutHeader';
 import styles from './AnonymousLayout.module.css';
 
-type AllProps = IConnectedReduxProps;
-
-class AnonymousLayout extends Component<AllProps> {
+export default class AnonymousLayout extends React.PureComponent {
   public render() {
     return (
       <Router>
@@ -30,9 +26,3 @@ class AnonymousLayout extends Component<AllProps> {
     );
   }
 }
-
-const mapStateToProps = ({ layout }: IApplicationState) => ({
-  user: layout.user
-});
-
-export default connect<{}, {}, {}, IApplicationState>(mapStateToProps)(AnonymousLayout);

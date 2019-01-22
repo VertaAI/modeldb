@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-interface IOwnProps {
+interface ILocalProps {
   data: Map<string, string>;
   containerClassName?: string;
   itemClassName?: string;
 }
 
-export default class StringMapRenderer extends React.Component<IOwnProps> {
+export default class StringMapRenderer extends React.Component<ILocalProps> {
   public render() {
     const stringArray = Array<string>();
     this.props.data.forEach((value: string, key: string) => {

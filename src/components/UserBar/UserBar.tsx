@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import styles from './UserBar.module.css';
 
-interface IStateProps {
+interface ILocalState {
   isOpened: boolean;
 }
 
@@ -17,7 +17,7 @@ interface IPropsFromState {
 
 type AllProps = IConnectedReduxProps & IPropsFromState;
 
-class UserBar extends React.Component<AllProps, IStateProps> {
+class UserBar extends React.Component<AllProps, ILocalState> {
   public constructor(props: AllProps) {
     super(props);
     this.state = { isOpened: false };
@@ -26,6 +26,7 @@ class UserBar extends React.Component<AllProps, IStateProps> {
 
   public render() {
     const user = this.props.user;
+
     return (
       <div className={styles.root}>
         <div className={styles.user_bar} onClick={this.toggleMenu}>
@@ -93,4 +94,4 @@ const mapStateToProps = ({ layout }: IApplicationState) => ({
   user: layout.user
 });
 
-export default connect<IPropsFromState, {}, {}, IApplicationState>(mapStateToProps)(onClickOutside(UserBar));
+export default connect(mapStateToProps)(onClickOutside(UserBar));

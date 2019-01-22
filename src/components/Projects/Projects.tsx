@@ -5,7 +5,6 @@ import ServiceFactory from '../../services/ServiceFactory';
 import { fetchProjects, fetchSuccess } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
-
 import styles from './Projects.module.css';
 
 interface IPropsFromState {
@@ -42,4 +41,4 @@ const mapStateToProps = ({ projects }: IApplicationState) => ({
   projects: projects.data
 });
 
-export default connect<IPropsFromState, {}, {}, IApplicationState>(mapStateToProps)(Projects);
+export default connect(mapStateToProps)(Projects);

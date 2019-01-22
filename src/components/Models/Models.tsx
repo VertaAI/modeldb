@@ -17,7 +17,7 @@ import { SpecificationsCell } from './CellComponents/SpecificationsCell';
 import styles from './Models.module.css';
 import './ModelsGrid.css';
 
-export interface IModelsProps {
+export interface IUrlProps {
   projectId: string;
 }
 
@@ -26,7 +26,7 @@ interface IPropsFromState {
   loading: boolean;
 }
 
-type AllProps = RouteComponentProps<IModelsProps> & IPropsFromState & IConnectedReduxProps;
+type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedReduxProps;
 
 class Models extends React.Component<AllProps> {
   public render() {

@@ -1,17 +1,12 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React from 'react';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 import Model from '../Model/Model';
 import Models from '../Models/Models';
 import Projects from '../Projects/Projects';
 import styles from './AuthorizedLayout.module.css';
 
-// Create an intersection type of the component props and our Redux props.
-type AllProps = IConnectedReduxProps;
-
-class AuthorizedLayout extends Component<AllProps> {
+export default class AuthorizedLayout extends React.PureComponent {
   public render() {
     return (
       <Router>
@@ -32,9 +27,3 @@ class AuthorizedLayout extends Component<AllProps> {
     );
   }
 }
-
-const mapStateToProps = ({ layout }: IApplicationState) => ({
-  user: layout.user
-});
-
-export default connect<{}, {}, {}, IApplicationState>(mapStateToProps)(AuthorizedLayout);

@@ -11,7 +11,7 @@ import ShowContentBasedOnUrl from '../ShowContentBasedOnUrl/ShowContentBasedOnUr
 import StringMapRenderer from '../StringMapRenderer/StringMapRenderer';
 import styles from './Model.module.css';
 
-export interface IModelProps {
+export interface IUrlProps {
   modelId: string;
 }
 
@@ -20,7 +20,7 @@ interface IPropsFromState {
   loading: boolean;
 }
 
-type AllProps = RouteComponentProps<IModelProps> & IPropsFromState & IConnectedReduxProps;
+type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedReduxProps;
 
 class ModelLayout extends React.Component<AllProps> {
   public render() {
