@@ -1,0 +1,20 @@
+.header {
+  height: 59px;
+  display: grid;
+  align-items: center;
+  align-content: center;
+  justify-content: end;
+  justify-items: end;
+}
+
+.nav_menu {
+  font-size: 16px;
+  line-height: 19px;
+  margin-right: 40px;
+}
+
+.nav_menu > a {
+  color: #8885ae;
+  text-decoration: none;
+  margin-left: 36px;
+}
