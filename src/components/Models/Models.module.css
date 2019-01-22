@@ -1,11 +1,7 @@
 .path_copy {
-  height: 12px;
-  width: 12px;
-  border: solid #000000;
-  border-width: 0 3px 3px 0;
+  font-size: 24px;
+  color: black;
   opacity: 0.5;
-  transform: rotate(135deg);
-  display: inline-block;
 }
 
 .project_name {

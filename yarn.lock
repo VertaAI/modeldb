@@ -992,6 +992,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-onclickoutside@^6.7.0":
+  version "6.7.0"
+  resolved "https://registry.yarnpkg.com/@types/react-onclickoutside/-/react-onclickoutside-6.7.0.tgz#5cc4807ec26decdc9031bc7c87fc8cfbe09b92cc"
+  integrity sha512-5u9HYXHuTBAfDTBSwhJ6867ngksrzaQOhv/PwPwICdTsPMCujWeg3/KLeFuJ4JVouA7KBrB+/98COUNBn/kkyA==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-redux@^6.0.11":
   version "6.0.11"
   resolved "https://registry.yarnpkg.com/@types/react-redux/-/react-redux-6.0.11.tgz#d872254bbcba42465195a5475f40b22502b0407d"
@@ -8462,6 +8469,11 @@ react-is@^16.3.2, react-is@^16.6.3:
   version "16.7.0"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.7.0.tgz#c1bd21c64f1f1364c6f70695ec02d69392f41bfa"
   integrity sha512-Z0VRQdF4NPDoI0tsXVMLkJLiwEBa+RP66g0xDHxgxysxSoCUccSten4RTF/UFvZF1dZvZ9Zu1sx+MDXwcOR34g==
+
+react-onclickoutside@^6.7.1:
+  version "6.7.1"
+  resolved "https://registry.yarnpkg.com/react-onclickoutside/-/react-onclickoutside-6.7.1.tgz#6a5b5b8b4eae6b776259712c89c8a2b36b17be93"
+  integrity sha512-p84kBqGaMoa7VYT0vZ/aOYRfJB+gw34yjpda1Z5KeLflg70HipZOT+MXQenEhdkPAABuE2Astq4zEPdMqUQxcg==
 
 react-redux@^6.0.0:
   version "6.0.0"

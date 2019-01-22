@@ -22,6 +22,9 @@ const initialState: IApplicationState = {
   layout: {
     user: getUser()
   },
+  model: {
+    loading: false
+  },
   project: { loading: false },
   projects: {
     loading: false

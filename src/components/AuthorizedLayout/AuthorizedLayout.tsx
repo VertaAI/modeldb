@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
+import Model from '../Model/Model';
 import Models from '../Models/Models';
 import Projects from '../Projects/Projects';
 import styles from './AuthorizedLayout.module.css';
@@ -23,6 +24,7 @@ class AuthorizedLayout extends Component<AllProps> {
             <Switch>
               <Route exact={true} path="/" component={Projects} />
               <Route path="/project/:projectId/models" component={Models} />
+              <Route path="/model/:modelId" component={Model} />
             </Switch>
           </div>
         </div>
