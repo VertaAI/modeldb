@@ -52,7 +52,7 @@
 .author_block {
   display: grid;
   grid-template-columns: auto 54px;
-  grid-template-rows: auto 30px;
+  grid-template-rows: auto 70px;
   text-align: right;
   justify-content: end;
   justify-items: end;

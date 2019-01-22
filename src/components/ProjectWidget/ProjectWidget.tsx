@@ -41,6 +41,9 @@ class ProjectWidget extends React.Component<AllProps> {
             <div className={styles.created_date_block}>
               <div>Created:</div>
               <div>{this.props.project.CreationDate.toLocaleDateString()}</div>
+              <br />
+              <div>Updated:</div>
+              <div>{this.props.project.UpdatedDate.toLocaleDateString()}</div>
             </div>
           </div>
         </div>
