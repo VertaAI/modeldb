@@ -8,7 +8,6 @@
   height: 24px;
   opacity: 0.8;
   color: #000000;
-  font-family: Roboto;
   font-size: 20px;
   line-height: 24px;
   margin-left: 12px;
@@ -43,7 +42,6 @@
 .table_header {
   opacity: 0.8;
   color: #000000;
-  font-family: Roboto;
   font-size: 15px;
   font-weight: 500;
   line-height: 18px;
@@ -58,7 +56,6 @@
   align-content: start;
   padding-top: 14px;
   color: #4e4e4e;
-  font-family: Roboto;
   font-size: 13px;
   line-height: 15px;
 }

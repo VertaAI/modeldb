@@ -49,6 +49,6 @@ export default class ShowContentBasedOnUrl extends React.Component<ILocalProps, 
       }
     }
 
-    return <div>{element}</div>;
+    return <span>{element}</span>;
   }
 }

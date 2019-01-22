@@ -1,7 +1,7 @@
 import { Cell, CellProps } from 'fixed-data-table-2';
 import { Model } from 'models/Model';
+import { IModelMetric } from 'models/ModelMetric';
 import * as React from 'react';
-import StringMapRenderer from '../../StringMapRenderer/StringMapRenderer';
 
 interface IModelsProps {
   models: Model[];
@@ -15,7 +15,13 @@ export class MetricsCell extends React.PureComponent<ModelsCellProps> {
 
     return (
       <Cell {...props}>
-        <StringMapRenderer data={models[definedRowIndex].ModelMetric} />
+        {models[definedRowIndex].ModelMetric.map((value: IModelMetric, key: number) => {
+          return (
+            <div key={key}>
+              {value.key}: {value.value}
+            </div>
+          );
+        })}
       </Cell>
     );
   }

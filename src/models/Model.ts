@@ -1,23 +1,19 @@
-import { Artifact, IArtifact } from './Artifact';
-
-export enum ModelType {
-  LinearRegression = 'LinearRegression'
-}
+import { IArtifact } from './Artifact';
+import { IHyperparameter } from './HyperParameters';
+import { IModelMetric } from './ModelMetric';
 
 export class Model {
   private id: string = '';
   private projectId: string = '';
   private experimentId: string = '';
-  private dataFrameId: string = '';
   private name: string = '';
 
-  private tags: string[] = Array<string>();
-  private hyperparameters: Map<string, string> = new Map<string, string>();
-  private modelMetrics: Map<string, string> = new Map<string, string>();
-  private artifacts: IArtifact[] = Array<Artifact>();
-  private dataSets: IArtifact[] = Array<Artifact>();
+  private tags: string[] = [];
+  private hyperparameters: IHyperparameter[] = [];
+  private modelMetrics: IModelMetric[] = [];
+  private artifacts: IArtifact[] = [];
+  private dataSets: IArtifact[] = [];
   private timestamp: Date = new Date();
-  private modelType: ModelType = ModelType.LinearRegression;
 
   public get Id(): string {
     return this.id;
@@ -54,31 +50,17 @@ export class Model {
     this.tags = v;
   }
 
-  public get DataFrameId(): string {
-    return this.dataFrameId;
-  }
-  public set DataFrameId(v: string) {
-    this.dataFrameId = v;
-  }
-
-  public get ModelType(): ModelType {
-    return this.modelType;
-  }
-  public set ModelType(v: ModelType) {
-    this.modelType = v;
-  }
-
-  public get Hyperparameters(): Map<string, string> {
+  public get Hyperparameters(): IHyperparameter[] {
     return this.hyperparameters;
   }
-  public set Hyperparameters(v: Map<string, string>) {
+  public set Hyperparameters(v: IHyperparameter[]) {
     this.hyperparameters = v;
   }
 
-  public get ModelMetric(): Map<string, string> {
+  public get ModelMetric(): IModelMetric[] {
     return this.modelMetrics;
   }
-  public set ModelMetric(v: Map<string, string>) {
+  public set ModelMetric(v: IModelMetric[]) {
     this.modelMetrics = v;
   }
 

@@ -3,17 +3,14 @@ import 'fixed-data-table-2/dist/fixed-data-table.css';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { Dispatch } from 'redux';
 
 import { Link } from 'react-router-dom';
 import Project from '../../models/Project';
 import { fetchProjectWithModels } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import { DataFrameCell } from './CellComponents/DataFrameCell';
 import { IdCell } from './CellComponents/IdCell';
 import { MetricsCell } from './CellComponents/MetricsCell';
 import { MiscCell } from './CellComponents/MiscCell';
-import { SpecificationsCell } from './CellComponents/SpecificationsCell';
 import styles from './Models.module.css';
 import './ModelsGrid.css';
 
@@ -56,16 +53,6 @@ class Models extends React.Component<AllProps> {
               header={<Cell className={styles.table_header}>IDs</Cell>}
               cell={<IdCell className={styles.table_cell} models={notNullData.Models} />}
               width={184}
-            />
-            <Column
-              header={<Cell className={styles.table_header}>DataFrame</Cell>}
-              cell={<DataFrameCell className={styles.table_cell} models={notNullData.Models} />}
-              width={184}
-            />
-            <Column
-              header={<Cell className={styles.table_header}>Specifications</Cell>}
-              cell={<SpecificationsCell className={styles.table_cell} models={notNullData.Models} />}
-              width={203}
             />
             <Column
               header={<Cell className={styles.table_header}>Metrics</Cell>}
