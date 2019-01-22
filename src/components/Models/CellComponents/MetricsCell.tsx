@@ -1,5 +1,6 @@
 import { Cell, CellProps } from 'fixed-data-table-2';
 import { Model } from 'models/Model';
+import { IModelMetric } from 'models/ModelMetric';
 import * as React from 'react';
 
 interface IModelsProps {
@@ -12,11 +13,16 @@ export class MetricsCell extends React.PureComponent<ModelsCellProps> {
     const { models, rowIndex, columnKey, ...props } = this.props;
     const definedRowIndex = rowIndex || 0;
 
-    let metricString = '';
-    models[definedRowIndex].ModelMetric.forEach((value: string, key: string) => {
-      metricString = `${key}: ${value}`;
-    });
-
-    return <Cell {...props}>{models[definedRowIndex].ModelMetric ? metricString : ''}</Cell>;
+    return (
+      <Cell {...props}>
+        {models[definedRowIndex].ModelMetric.map((value: IModelMetric, key: number) => {
+          return (
+            <div key={key}>
+              {value.key}: {value.value}
+            </div>
+          );
+        })}
+      </Cell>
+    );
   }
 }

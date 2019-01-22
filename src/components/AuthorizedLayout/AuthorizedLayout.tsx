@@ -1,30 +1,20 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React from 'react';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
-import LayoutHeader from '../LayoutHeader/LayoutHeader';
+import Model from '../Model/Model';
 import Models from '../Models/Models';
 import Projects from '../Projects/Projects';
 import styles from './AuthorizedLayout.module.css';
 
-// Any additional component props go here.
-interface IOwnProps {
-  history: any;
-}
-
-interface IPropsFromState {}
-
-// Create an intersection type of the component props and our Redux props.
-type AllProps = IPropsFromState & IConnectedReduxProps & IOwnProps;
-
-class AuthorizedLayout extends Component<AllProps> {
+export default class AuthorizedLayout extends React.PureComponent {
   public render() {
     return (
       <Router>
         <div className={styles.layout}>
           <div className={styles.header}>
-            <LayoutHeader />
+            <AuthorizedLayoutHeader />
           </div>
           <div className={styles.filters_bar}>
             <FilterSelect placeHolderText="Search models and filter" />
@@ -33,6 +23,7 @@ class AuthorizedLayout extends Component<AllProps> {
             <Switch>
               <Route exact={true} path="/" component={Projects} />
               <Route path="/project/:projectId/models" component={Models} />
+              <Route path="/model/:modelId" component={Model} />
             </Switch>
           </div>
         </div>
@@ -40,9 +31,3 @@ class AuthorizedLayout extends Component<AllProps> {
     );
   }
 }
-
-const mapStateToProps = ({ layout }: IApplicationState) => ({
-  user: layout.user
-});
-
-export default connect<IPropsFromState, {}, IOwnProps, IApplicationState>(mapStateToProps)(AuthorizedLayout);

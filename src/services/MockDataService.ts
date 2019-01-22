@@ -1,50 +1,92 @@
-import { string } from 'prop-types';
-import { Store } from 'redux';
-import { Model, ModelType } from '../models/Model';
+import { Artifact, ArtifactKey, ArtifactType } from '../models/Artifact';
+import { Hyperparameter } from '../models/HyperParameters';
+import { Model } from '../models/Model';
+import { MetricKey, ModelMetric, ValueType } from '../models/ModelMetric';
 import Project from '../models/Project';
 import { IDataService } from './IDataService';
+import { modelsMocks } from './mocks/modelsMocks';
+import { projectsMock } from './mocks/projectsMocks';
+
+type Not<T> = [T] extends [never] ? unknown : never;
+type Extractable<T, U> = Not<U extends any ? Not<T extends U ? unknown : never> : never>;
+function asEnum<E extends Record<keyof E, string | number>, K extends string | number>(
+  e: E,
+  k: K & Extractable<E[keyof E], K>
+): Extract<E[keyof E], K> {
+  // runtime guard, shouldn't need it at compiler time
+  if (Object.values(e).indexOf(k) < 0) throw new Error(`Expected one of ${Object.values(e).join(', ')}`);
+  return k as any; // assertion
+}
 
 export default class MockDataService implements IDataService {
   private projects: Project[];
 
   constructor() {
+    const models: Model[] = [];
+    modelsMocks.forEach(element => {
+      const model = new Model();
+      model.Id = element.id;
+      model.Name = element.name;
+      model.ProjectId = element.projectId;
+      model.ExperimentId = element.experimentId;
+      model.Tags = element.tags || [];
+      element.hyperparameters.forEach(hyperParameter => {
+        model.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
+      });
+      element.metrics.forEach(metric => {
+        model.ModelMetric.push(new ModelMetric(asEnum(MetricKey, metric.key), metric.value, asEnum(ValueType, metric.valueType)));
+      });
+      element.artifacts.forEach(artifact => {
+        model.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path, asEnum(ArtifactType, artifact.artifactType)));
+      });
+      element.datasets.forEach(dataset => {
+        model.DataSets.push(new Artifact(asEnum(ArtifactKey, dataset.key), dataset.path, asEnum(ArtifactType, dataset.artifactType)));
+      });
+      models.push(model);
+    });
+
     this.projects = [];
+    projectsMock.forEach(element => {
+      const proj = new Project();
+      proj.Id = element.id;
+      proj.Author = element.author;
+      proj.Description = element.description || '';
+      proj.Name = element.name;
 
-    const model1 = new Model();
-    model1.Id = '22';
-    model1.DataFrameId = '30';
-    model1.ModelType = ModelType.LinearRegression;
-    model1.ModelMetric = new Map<string, string>([['rmse', '0.881']]);
-    model1.Timestamp = new Date();
+      models.forEach(model => {
+        if (model.ProjectId === proj.Id) {
+          proj.Models.push(model);
+        }
+      });
 
-    const imdbProj = new Project();
-    imdbProj.Id = '1';
-    imdbProj.Author = 'Anton Vasin';
-    imdbProj.Description = 'Building model to predict rating for movies from IMDB';
-    imdbProj.Name = 'IMDB_exploratory';
-    imdbProj.Models.push(model1);
-    imdbProj.Models.push(model1);
-    imdbProj.Models.push(model1);
-    imdbProj.Models.push(model1);
-
-    const hpProj = new Project();
-    hpProj.Id = '2';
-    hpProj.Author = 'Oleg Lukinov';
-    hpProj.Description = 'Predict housing prices';
-    hpProj.Name = 'Housing Prices';
-    hpProj.Models.push(model1);
-    hpProj.Models.push(model1);
-    hpProj.Models.push(model1);
-    hpProj.Models.push(model1);
-    hpProj.Models.push(model1);
-
-    this.projects.push(imdbProj);
-    this.projects.push(hpProj);
+      this.projects.push(proj);
+    });
   }
-  public getProjects(): Project[] {
-    return this.projects;
+
+  public getProjects(): Promise<Project[]> {
+    return new Promise<Project[]>((resolve, reject) => {
+      resolve(this.projects);
+    });
   }
-  public getProject(id: string): Project {
-    return this.projects.find(x => x.Id === id) || new Project();
+
+  public getProject(id: string): Promise<Project> {
+    return new Promise<Project>((resolve, reject) => {
+      resolve(this.projects.find(x => x.Id === id));
+    });
+  }
+
+  public getModel(id: string): Promise<Model> {
+    return new Promise<Model>((resolve, reject) => {
+      let foundModel;
+
+      this.projects.forEach(project => {
+        project.Models.forEach(model => {
+          if (model.Id === id) {
+            foundModel = model;
+          }
+        });
+      });
+      resolve(foundModel);
+    });
   }
 }

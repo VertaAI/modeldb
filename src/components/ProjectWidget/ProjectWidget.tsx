@@ -1,18 +1,14 @@
 import Project from 'models/Project';
 import * as React from 'react';
 import Avatar from 'react-avatar';
-import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import styles from './ProjectWidget.module.css';
 
-interface IOwnProps {
+interface ILocalProps {
   project: Project;
 }
 
-type AllProps = IOwnProps & IConnectedReduxProps;
-
-class ProjectWidget extends React.Component<AllProps> {
+export default class ProjectWidget extends React.Component<ILocalProps> {
   public render() {
     return (
       <Link className={styles.project_link} to={`/project/${this.props.project.Id}/models`}>
@@ -51,9 +47,3 @@ class ProjectWidget extends React.Component<AllProps> {
     );
   }
 }
-
-const mapStateToProps = ({ projects }: IApplicationState) => ({
-  loading: projects.loading
-});
-
-export default connect<{}, {}, {}, IApplicationState>(mapStateToProps)(ProjectWidget);

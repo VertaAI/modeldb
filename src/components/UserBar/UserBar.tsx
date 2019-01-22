@@ -1,4 +1,4 @@
-import Project from 'models/Project';
+import User from 'models/User';
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import onClickOutside from 'react-onclickoutside';
@@ -7,13 +7,17 @@ import { Link } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import styles from './UserBar.module.css';
 
-interface IOwnProps {
+interface ILocalState {
   isOpened: boolean;
 }
 
-type AllProps = IConnectedReduxProps;
+interface IPropsFromState {
+  user: User | null;
+}
 
-class UserBar extends React.Component<AllProps, IOwnProps> {
+type AllProps = IConnectedReduxProps & IPropsFromState;
+
+class UserBar extends React.Component<AllProps, ILocalState> {
   public constructor(props: AllProps) {
     super(props);
     this.state = { isOpened: false };
@@ -21,11 +25,13 @@ class UserBar extends React.Component<AllProps, IOwnProps> {
   }
 
   public render() {
+    const user = this.props.user;
+
     return (
       <div className={styles.root}>
         <div className={styles.user_bar} onClick={this.toggleMenu}>
           <Avatar
-            name="Anton Vasin"
+            name={user ? user.name : ''}
             color="white"
             fgColor="black"
             round={true}
@@ -41,7 +47,7 @@ class UserBar extends React.Component<AllProps, IOwnProps> {
           <div className={styles.drop_down}>
             <div className={styles.menu_header}>
               <Avatar
-                name="Anton Vasin"
+                name={user ? user.name : ''}
                 color="var(--bg-color2)"
                 fgColor="white"
                 round={true}
@@ -50,8 +56,7 @@ class UserBar extends React.Component<AllProps, IOwnProps> {
                 style={{ fontFamily: 'Roboto', fontWeight: '400' }}
               />
               <div>
-                <div className={styles.menu_header_user_name}>Anton</div>
-                <div className={styles.menu_header_user_name}>Vasin</div>
+                <div className={styles.menu_header_user_name}>{user ? user.name : ''}</div>
               </div>
             </div>
             <div className={styles.menu_item}>
@@ -85,8 +90,8 @@ class UserBar extends React.Component<AllProps, IOwnProps> {
   }
 }
 
-const mapStateToProps = ({ projects }: IApplicationState) => ({
-  loading: projects.loading
+const mapStateToProps = ({ layout }: IApplicationState) => ({
+  user: layout.user
 });
 
-export default connect<{}, {}, {}, IApplicationState>(mapStateToProps)(onClickOutside(UserBar));
+export default connect(mapStateToProps)(onClickOutside(UserBar));

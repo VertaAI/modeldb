@@ -1,0 +1,44 @@
+.path_copy {
+  font-size: 24px;
+  color: black;
+  opacity: 0.5;
+}
+
+.model_name {
+  height: 24px;
+  opacity: 0.8;
+  color: #000000;
+  font-family: Roboto;
+  font-size: 20px;
+  line-height: 24px;
+  margin-left: 12px;
+}
+
+.model_header {
+  margin-bottom: 24px;
+}
+
+.model_layout {
+}
+
+.model_details {
+}
+
+.internal_lists {
+  margin-left: 10px;
+}
+
+.tag {
+  display: inline;
+  padding: 2.4px 7.2px 3.6px;
+  margin: 0px 2px;
+  font-size: 75%;
+  font-weight: 500;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 3px;
+  background-color: var(--blue-color);
+}
