@@ -8,7 +8,9 @@ export default class MockAuthenticationService implements IAuthenticationService
     this.user = new User(1, 'Manasi Vartak');
   }
 
-  public authenticate() {
-    return this.user;
+  public authenticate(): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      resolve(this.user);
+    });
   }
 }

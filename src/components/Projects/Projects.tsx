@@ -1,8 +1,7 @@
 import Project from 'models/Project';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import ServiceFactory from '../../services/ServiceFactory';
-import { fetchProjects, fetchSuccess } from '../../store/project';
+import { fetchProjects } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
 import styles from './Projects.module.css';
@@ -16,8 +15,7 @@ type AllProps = IPropsFromState & IConnectedReduxProps;
 
 class Projects extends React.Component<AllProps> {
   public componentDidMount() {
-    const data = ServiceFactory.getDataService().getProjects();
-    this.props.dispatch(fetchSuccess(data));
+    this.props.dispatch(fetchProjects());
   }
 
   public render() {

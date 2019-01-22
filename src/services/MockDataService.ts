@@ -60,22 +60,28 @@ export default class MockDataService implements IDataService {
     this.projects.push(imdbProj);
     this.projects.push(hpProj);
   }
-  public getProjects(): Project[] {
-    return this.projects;
-  }
-  public getProject(id: string): Project {
-    return this.projects.find(x => x.Id === id) || new Project();
-  }
-  public getModel(id: string): Model {
-    let foundModel;
-
-    this.projects.forEach(project => {
-      project.Models.forEach(model => {
-        if (model.Id === id) {
-          foundModel = model;
-        }
-      });
+  public getProjects(): Promise<Project[]> {
+    return new Promise<Project[]>((resolve, reject) => {
+      resolve(this.projects);
     });
-    return foundModel || new Model();
+  }
+  public getProject(id: string): Promise<Project> {
+    return new Promise<Project>((resolve, reject) => {
+      resolve(this.projects.find(x => x.Id === id));
+    });
+  }
+  public getModel(id: string): Promise<Model> {
+    return new Promise<Model>((resolve, reject) => {
+      let foundModel;
+
+      this.projects.forEach(project => {
+        project.Models.forEach(model => {
+          if (model.Id === id) {
+            foundModel = model;
+          }
+        });
+      });
+      resolve(foundModel);
+    });
   }
 }
