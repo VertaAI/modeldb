@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import { FilterSelect } from '../FilterSelect/FilterSelect';
 import LayoutHeader from '../LayoutHeader/LayoutHeader';
 import Models from '../Models/Models';
 import Projects from '../Projects/Projects';
@@ -25,7 +26,9 @@ class AuthorizedLayout extends Component<AllProps> {
           <div className={styles.header}>
             <LayoutHeader />
           </div>
-          <div className={styles.filters_bar} />
+          <div className={styles.filters_bar}>
+            <FilterSelect placeHolderText="Search models and filter" />
+          </div>
           <div className={styles.content}>
             <Switch>
               <Route exact={true} path="/" component={Projects} />
