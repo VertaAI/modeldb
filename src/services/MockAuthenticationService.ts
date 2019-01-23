@@ -13,4 +13,8 @@ export default class MockAuthenticationService implements IAuthenticationService
       resolve(this.user);
     });
   }
+
+  public logout(): void {
+    Promise.resolve('user logout');
+  }
 }

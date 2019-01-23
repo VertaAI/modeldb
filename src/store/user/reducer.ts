@@ -1,11 +1,11 @@
 import { Reducer } from 'redux';
-import { IUserState, userAuthenticateAction, userAuthenticateActionTypes } from './types';
+import { IUserLogoutAction, IUserState, userAuthenticateAction, userAuthenticateActionTypes, userLogoutActionTypes } from './types';
 
 const initialState: IUserState = {
   user: null
 };
 
-const reducer: Reducer<IUserState> = (state = initialState, action: userAuthenticateAction) => {
+const userAuthenticateReducer: Reducer<IUserState> = (state = initialState, action: userAuthenticateAction) => {
   switch (action.type) {
     case userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST: {
       return { ...state };
@@ -19,4 +19,23 @@ const reducer: Reducer<IUserState> = (state = initialState, action: userAuthenti
   }
 };
 
-export { reducer as userReducer };
+const userLogoutReducer: Reducer<IUserState> = (state = initialState, action: IUserLogoutAction) => {
+  switch (action.type) {
+    case userLogoutActionTypes.LOGOUT_USER: {
+      return { ...state, user: null };
+    }
+    default: {
+      return state;
+    }
+  }
+};
+
+export const userReducer: Reducer<IUserState> = (state = initialState, action) => {
+  if (Object.values(userAuthenticateActionTypes).includes(action.type)) {
+    return userAuthenticateReducer(state, action);
+  }
+  if (Object.values(userLogoutActionTypes).includes(action.type)) {
+    return userLogoutReducer(state, action);
+  }
+  return state;
+};

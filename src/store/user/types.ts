@@ -14,3 +14,11 @@ export type userAuthenticateAction =
   | { type: userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST }
   | { type: userAuthenticateActionTypes.AUTHENTICATE_USER_SUCESS; payload: User }
   | { type: userAuthenticateActionTypes.AUTHENTICATE_USER_FAILURE };
+
+export enum userLogoutActionTypes {
+  LOGOUT_USER = '@@user/LOGOUT_USER'
+}
+
+export interface IUserLogoutAction {
+  type: userLogoutActionTypes.LOGOUT_USER;
+}

@@ -17,9 +17,10 @@
 }
 
 .input::placeholder {
-  font-size: 15px;
+  font-size: 13px;
   color: var(--fr-color4);
 }
+
 .input + label {
   position: relative;
   display: inline-block;
@@ -54,6 +55,9 @@
   background-color: var(--bg-color2);
   border-radius: 2px;
   padding: 8px 45px;
+  border: none;
+  outline: none;
+  cursor: pointer;
 }
 
 .found_filters_popup {
