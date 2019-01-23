@@ -5,6 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import { logoutUser } from '../../store/user/actions';
 import styles from './UserBar.module.css';
 
 interface ILocalState {
@@ -22,6 +23,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
     super(props);
     this.state = { isOpened: false };
     this.toggleMenu = this.toggleMenu.bind(this);
+    this.logout = this.logout.bind(this);
   }
 
   public render() {
@@ -65,7 +67,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
               </Link>
             </div>
             <div className={styles.menu_item}>
-              <Link onClick={this.toggleMenu} to="/logout">
+              <Link onClick={this.logout} to={'/'}>
                 Log out
               </Link>
             </div>
@@ -87,6 +89,11 @@ class UserBar extends React.Component<AllProps, ILocalState> {
 
   private toggleMenu(): void {
     this.setState(prevState => ({ isOpened: !prevState.isOpened }));
+  }
+
+  private logout(): void {
+    this.toggleMenu();
+    this.props.dispatch(logoutUser());
   }
 }
 

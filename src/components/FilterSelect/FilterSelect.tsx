@@ -1,9 +1,4 @@
-import Project from 'models/Project';
 import * as React from 'react';
-import Avatar from 'react-avatar';
-import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import FilterItem from './FilterItem';
 import styles from './FilterSelect.module.css';
 

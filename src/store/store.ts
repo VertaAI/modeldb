@@ -29,10 +29,3 @@ export const createRootReducer = (history: History) =>
   });
 
 export type ActionResult<R = void, A extends Action = AnyAction> = ThunkAction<R, IApplicationState, undefined, A>;
-
-// export const someThunkAction = (): ActionResult<Promise<boolean>> => async (dispatch, getState) => {
-//   const state = getState();
-//   await Promise.resolve('some result');
-//   dispatch(fetchProjects());
-//   return Promise.resolve(true);
-// };

@@ -17,7 +17,7 @@ export default class AuthorizedLayout extends React.PureComponent {
             <AuthorizedLayoutHeader />
           </div>
           <div className={styles.filters_bar}>
-            <FilterSelect placeHolderText="Search models and filter" />
+            <FilterSelect placeHolderText="Search models and filters" />
           </div>
           <div className={styles.content}>
             <Switch>

@@ -52,6 +52,8 @@ export default class MockDataService implements IDataService {
       proj.Author = element.author;
       proj.Description = element.description || '';
       proj.Name = element.name;
+      proj.CreationDate = new Date(element.dateCreated);
+      proj.UpdatedDate = new Date(element.dateUpdated);
 
       models.forEach(model => {
         if (model.ProjectId === proj.Id) {
