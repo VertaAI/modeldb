@@ -1,0 +1,67 @@
+.input {
+  border: solid var(--fr-color5) 1px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 13px;
+  padding-right: 31px;
+  outline: none;
+  position: relative;
+  border-radius: 2px;
+
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.root {
+  position: relative;
+}
+
+.input::placeholder {
+  font-size: 15px;
+  color: var(--fr-color4);
+}
+.input + label {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.input + label:before {
+  content: '\f002';
+  position: absolute;
+  left: -31px;
+  top: -1px;
+  font-size: 18px;
+  color: var(--fr-color5);
+  line-height: 0px;
+}
+
+.applied_filters {
+  height: 350px;
+  overflow: scroll;
+  background-color: var(--bg-color4);
+  margin-top: 25px;
+  margin-bottom: 13px;
+  border-radius: 4px;
+}
+
+.apply_filters_button {
+  text-align: right;
+}
+
+.apply_filters_button button {
+  color: white;
+  background-color: var(--bg-color2);
+  border-radius: 2px;
+  padding: 8px 45px;
+}
+
+.found_filters_popup {
+  border: solid 1px var(--fr-color5);
+  border-bottom-right-radius: 2px;
+  border-bottom-left-radius: 2px;
+  border-top: none;
+  position: absolute;
+  width: 100%;
+  box-sizing: border-box;
+}
