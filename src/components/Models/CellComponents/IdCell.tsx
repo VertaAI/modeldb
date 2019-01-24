@@ -13,11 +13,11 @@ export class IdCell extends React.PureComponent<ModelsCellProps> {
   public render() {
     const { models, rowIndex, columnKey, ...props } = this.props;
     const definedRowIndex = rowIndex || 0;
-    const modelId = models[definedRowIndex].Id;
+    const model = models[definedRowIndex];
     return (
       <Cell {...props}>
-        <Link className={styles.link} to={`/model/${modelId}/`}>
-          Model ID: {modelId}
+        <Link className={styles.link} to={`/project/${model.ProjectId}/model/${model.Id}/`}>
+          Model ID: {model.Id}
         </Link>
       </Cell>
     );
