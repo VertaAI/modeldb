@@ -1,23 +1,4 @@
-.path_copy {
-  font-size: 24px;
-  color: black;
-  opacity: 0.5;
-}
-
-.project_name {
-  height: 24px;
-  opacity: 0.8;
-  color: #000000;
-  font-size: 20px;
-  line-height: 24px;
-  margin-left: 12px;
-}
-
 .grid_layout {
-}
-
-.project_header {
-  margin-bottom: 11px;
 }
 
 .filter {

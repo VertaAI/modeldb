@@ -16,7 +16,7 @@ export class IdCell extends React.PureComponent<ModelsCellProps> {
     const model = models[definedRowIndex];
     return (
       <Cell {...props}>
-        <Link className={styles.link} to={`/project/${model.ProjectId}/model/${model.Id}/`}>
+        <Link className={styles.link} to={`/project/${model.ProjectId}/model/${model.Id}`}>
           Model ID: {model.Id}
         </Link>
       </Cell>

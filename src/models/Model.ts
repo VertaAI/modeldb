@@ -5,6 +5,7 @@ import { IModelMetric } from './ModelMetric';
 export class Model {
   private id: string = '';
   private projectId: string = '';
+  private projectName: string = '';
   private experimentId: string = '';
   private name: string = '';
 
@@ -34,6 +35,13 @@ export class Model {
   }
   public set ProjectId(v: string) {
     this.projectId = v;
+  }
+
+  public get ProjectName(): string {
+    return this.projectName;
+  }
+  public set ProjectName(v: string) {
+    this.projectName = v;
   }
 
   public get ExperimentId(): string {

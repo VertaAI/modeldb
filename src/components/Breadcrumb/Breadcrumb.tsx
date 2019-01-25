@@ -1,3 +1,4 @@
+import { UnregisterCallback } from 'history';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps, Router, withRouter } from 'react-router-dom';
@@ -5,6 +6,7 @@ import { Model } from '../../models/Model';
 import Project from '../../models/Project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import styles from './Breadcrumb.module.css';
+import { BreadcrumbItem } from './BreadcrumbItem';
 
 interface IPropsFromState {
   project?: Project | null;
@@ -15,73 +17,85 @@ interface ILocalState {
   url: string;
 }
 
-enum Paths {
-  Index = 0,
-  Project = 1,
-  Model = 2
-}
-
 type AllProps = IPropsFromState & IConnectedReduxProps & RouteComponentProps;
 
 class Breadcrumb extends React.Component<AllProps, ILocalState> {
+  private unlistenCallback: UnregisterCallback | undefined = undefined;
+
+  private indexBreadcrumbItem = new BreadcrumbItem(/^\/$/, '/', 'PROJECTS');
+  private projectBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/models.?$/);
+  private modelBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/model\/([\w-]*).?$/);
+
   public constructor(props: AllProps) {
     super(props);
 
     this.state = {
       url: this.props.history.location.pathname.toLowerCase()
     };
+
+    this.prepareItem = this.prepareItem.bind(this);
   }
 
   public componentDidMount() {
-    this.props.history.listen((location, action) => {
+    this.unlistenCallback = this.props.history.listen((location, action) => {
       this.setState({ ...this.state, url: location.pathname.toLowerCase() });
     });
   }
 
-  public render() {
-    let currentPath = Paths.Index;
-
-    const reg = /(model[^s])/;
-    if (this.state.url.includes('models')) {
-      currentPath = Paths.Project;
+  public componentWillUnmount() {
+    if (this.unlistenCallback) {
+      this.unlistenCallback();
     }
-    if (reg.test(this.state.url)) {
-      currentPath = Paths.Model;
+  }
+
+  public render() {
+    const content: JSX.Element[] = [];
+    let currentItem = this.prepareItem();
+    content.push(this.renderItem(currentItem));
+
+    while (currentItem.PreviousItem) {
+      currentItem = currentItem.PreviousItem;
+      content.push(this.renderItem(currentItem));
     }
 
     return (
       <div className={styles.content}>
-        {currentPath >= Paths.Index ? this.renderCrumb(currentPath === Paths.Index, '/', 'PROJECTS', false) : ''}
-        {currentPath >= Paths.Project
-          ? this.renderCrumb(
-              currentPath === Paths.Project,
-              `/project/${this.props.project ? this.props.project.Id : this.props.model ? this.props.model.ProjectId : ''}/models`,
-              'MODELS'
-            )
-          : ''}
-        {currentPath >= Paths.Model && this.props.model
-          ? this.renderCrumb(
-              currentPath === Paths.Model,
-              `/project/${this.props.model.ProjectId}/model/${this.props.model.Id}`,
-              this.props.model.Name.toLocaleUpperCase()
-            )
-          : ''}
+        {content.reverse().map((value: JSX.Element, index: number) => {
+          return (
+            <span className={index === content.length - 1 ? styles.active_link : ''} key={index}>
+              {value}
+            </span>
+          );
+        })}
       </div>
     );
   }
 
-  private renderCrumb(active: boolean, linkTo: string, linkName: string, needArrow: boolean = true) {
+  private prepareItem(): BreadcrumbItem {
+    const { project, model } = this.props;
+
+    this.projectBreadcrumbItem.Name = project ? project.Name.toLocaleUpperCase() : model ? model.ProjectName.toLocaleUpperCase() : '';
+    this.projectBreadcrumbItem.Path = `/project/${project ? project.Id : model ? model.ProjectId : ''}/models`;
+    this.projectBreadcrumbItem.PreviousItem = this.indexBreadcrumbItem;
+
+    this.modelBreadcrumbItem.Name = model ? model.Name.toLocaleUpperCase() : '';
+    this.modelBreadcrumbItem.Path = model ? `/project/${model.ProjectId}/model/${model.Id}` : '';
+    this.modelBreadcrumbItem.PreviousItem = this.projectBreadcrumbItem;
+
+    const breadcrumbItems: BreadcrumbItem[] = [];
+    breadcrumbItems.push(this.indexBreadcrumbItem);
+    breadcrumbItems.push(this.projectBreadcrumbItem);
+    breadcrumbItems.push(this.modelBreadcrumbItem);
+
+    return breadcrumbItems.find(x => x.ShouldMatch.test(this.state.url)) || this.indexBreadcrumbItem;
+  }
+
+  private renderItem(item: BreadcrumbItem) {
     return (
       <span>
-        {needArrow ? (
-          <span className={styles.arrow}>
-            <i className="fa fa-angle-right" />
-          </span>
-        ) : (
-          ''
-        )}
-        <Link className={`${styles.link} ${active ? styles.active_link : ''}`} to={linkTo}>
-          {linkName}
+        {item.PreviousItem ? <i className={`fa fa-angle-right ${styles.arrow}`} /> : ''}
+        <Link className={styles.link} to={item.Path}>
+          {item.Name}
         </Link>
       </span>
     );
