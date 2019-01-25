@@ -57,6 +57,7 @@ export default class MockDataService implements IDataService {
 
       models.forEach(model => {
         if (model.ProjectId === proj.Id) {
+          model.ProjectName = proj.Name;
           proj.Models.push(model);
         }
       });

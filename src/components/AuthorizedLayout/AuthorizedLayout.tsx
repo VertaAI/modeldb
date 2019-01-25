@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
 import Model from '../Model/Model';
@@ -22,8 +21,8 @@ export default class AuthorizedLayout extends React.PureComponent {
           <div className={styles.content}>
             <Switch>
               <Route exact={true} path="/" component={Projects} />
-              <Route path="/project/:projectId/models" component={Models} />
-              <Route path="/model/:modelId" component={Model} />
+              <Route path={'/project/:projectId/models'} component={Models} />
+              <Route path={'/project/:projectId/model/:modelId'} component={Model} />
             </Switch>
           </div>
         </div>

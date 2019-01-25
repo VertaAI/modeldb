@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import AnonymousLayout from './components/AnonymousLayout/AnonymousLayout';
 import AuthorizedLayout from './components/AuthorizedLayout/AuthorizedLayout';
@@ -24,4 +23,4 @@ const mapStateToProps = ({ layout }: IApplicationState) => ({
   user: layout.user
 });
 
-export default connect<IPropsFromState, {}, {}, IApplicationState>(mapStateToProps)(App);
+export default connect(mapStateToProps)(App);

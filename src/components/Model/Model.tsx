@@ -4,7 +4,6 @@ import { RouteComponentProps } from 'react-router';
 
 import { IHyperparameter } from 'models/HyperParameters';
 import { IModelMetric } from 'models/ModelMetric';
-import { Link } from 'react-router-dom';
 import { IArtifact } from '../../models/Artifact';
 import { Model } from '../../models/Model';
 import { fetchModel } from '../../store/model';
@@ -14,6 +13,7 @@ import styles from './Model.module.css';
 
 export interface IUrlProps {
   modelId: string;
+  projectId: string;
 }
 
 interface IPropsFromState {

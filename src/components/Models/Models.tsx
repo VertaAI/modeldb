@@ -31,14 +31,6 @@ class Models extends React.Component<AllProps> {
     const notNullData = data || new Project();
     return (
       <div className={styles.models_grid}>
-        <div className={styles.project_header}>
-          <div>
-            <Link className={styles.path_copy} to={`/`}>
-              <i className="fa fa-angle-left" />
-            </Link>
-            <span className={styles.project_name}>{notNullData.Name}</span>
-          </div>
-        </div>
         <div className={styles.filter} />
         <div className={styles.grid_layout}>
           <Table
