@@ -34,7 +34,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
         <div className={styles.user_bar} onClick={this.toggleMenu}>
           <Avatar
             name={user ? user.name : ''}
-            color="white"
+            color="var(--bg-color3)"
             fgColor="black"
             round={true}
             size="36"
@@ -51,7 +51,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
               <Avatar
                 name={user ? user.name : ''}
                 color="var(--bg-color2)"
-                fgColor="white"
+                fgColor="var(--bg-color3)"
                 round={true}
                 size="48"
                 textSizeRatio={36 / 16}

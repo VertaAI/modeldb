@@ -10,7 +10,7 @@
 
 .link {
   text-decoration: none;
-  color: #fff;
+  color: var(--bg-color3);
 }
 
 .active_link {

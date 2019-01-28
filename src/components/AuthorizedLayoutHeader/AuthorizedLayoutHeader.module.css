@@ -1,6 +1,6 @@
 .header {
-  background-color: var(--blue-color);
-  color: white;
+  background-color: var(--bg-color2);
+  color: var(--bg-color3);
   height: 56px;
   align-content: center;
   font-size: 16px;
@@ -19,7 +19,7 @@
 .nav_menu a {
   margin: 0 18px;
   text-decoration: none;
-  color: white;
+  color: var(--bg-color3);
 }
 
 .logo {

@@ -1,6 +1,4 @@
-@import '../../../css/theme.css';
-
 .link {
   text-decoration-line: none;
-  color: var(--blue-color);
+  color: var(--bg-color2);
 }
