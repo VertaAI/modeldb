@@ -3,7 +3,7 @@ import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
 import { IModelState, modelReducer } from './model';
-import { IProjectsState, IProjectState, projectReducer, projectsReducer } from './project';
+import { IProjectsState, IProjectState, IApiProjectsState, projectReducer, projectsReducer, apiProjectsReducer } from './project';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
@@ -11,6 +11,7 @@ export interface IApplicationState {
   projects: IProjectsState;
   router?: RouterState;
   project: IProjectState;
+  apiProjects: IApiProjectsState;
   model: IModelState;
 }
 
@@ -25,6 +26,7 @@ export const createRootReducer = (history: History) =>
     model: modelReducer,
     project: projectReducer,
     projects: projectsReducer,
+    apiProjects: apiProjectsReducer,
     router: connectRouter(history)
   });
 

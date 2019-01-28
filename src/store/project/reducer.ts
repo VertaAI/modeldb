@@ -1,5 +1,6 @@
 import { Reducer } from 'redux';
 import {
+  apiProjectsAction,
   fetchProjectsAction,
   fetchProjectsActionTypes,
   IProjectsState,
@@ -9,6 +10,11 @@ import {
 } from './types';
 
 const projectsInitialState: IProjectsState = {
+  data: null,
+  loading: false
+};
+
+const apiProjectsInitialState: any = {
   data: null,
   loading: false
 };
@@ -24,6 +30,20 @@ export const projectsReducer: Reducer<IProjectsState> = (state = projectsInitial
       return { ...state, loading: true };
     }
     case fetchProjectsActionTypes.FETCH_PROJECTS_SUCESS: {
+      return { ...state, loading: false, data: action.payload };
+    }
+    default: {
+      return state;
+    }
+  }
+};
+
+export const apiProjectsReducer: Reducer<IProjectsState> = (state = apiProjectsInitialState, action: apiProjectsAction) => {
+  switch (action.type) {
+    case fetchProjectsActionTypes.API_PROJECTS_REQUEST: {
+      return { ...state, loading: true };
+    }
+    case fetchProjectsActionTypes.API_PROJECTS_SUCESS: {
       return { ...state, loading: false, data: action.payload };
     }
     default: {

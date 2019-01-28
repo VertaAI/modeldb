@@ -1,7 +1,7 @@
 import Project from 'models/Project';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { fetchProjects } from '../../store/project';
+import { fetchProjects, apiFetchProjects } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
 import styles from './Projects.module.css';
@@ -16,6 +16,7 @@ type AllProps = IPropsFromState & IConnectedReduxProps;
 class Projects extends React.Component<AllProps> {
   public componentDidMount() {
     this.props.dispatch(fetchProjects());
+    this.props.dispatch(apiFetchProjects());
   }
 
   public render() {
@@ -29,9 +30,10 @@ class Projects extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = ({ projects }: IApplicationState) => ({
+const mapStateToProps = ({ projects, apiProjects }: IApplicationState) => ({
   loading: projects.loading,
-  projects: projects.data
+  projects: projects.data,
+  apiProjects: apiProjects.data
 });
 
 export default connect(mapStateToProps)(Projects);

@@ -26,9 +26,8 @@ const initialState: IApplicationState = {
     loading: false
   },
   project: { loading: false },
-  projects: {
-    loading: false
-  }
+  projects: { loading: false },
+  apiProjects: { loading: false }
 };
 
 const store = configureStore(history, initialState);
