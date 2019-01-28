@@ -9,7 +9,7 @@
 }
 
 .create_button {
-  color: #fff;
+  color: var(--bg-color3);
   height: 56px;
   width: 276px;
   border-radius: 4px;

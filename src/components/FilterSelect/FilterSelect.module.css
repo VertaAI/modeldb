@@ -51,7 +51,7 @@
 }
 
 .apply_filters_button button {
-  color: white;
+  color: var(--bg-color3);
   background-color: var(--bg-color2);
   border-radius: 2px;
   padding: 8px 45px;

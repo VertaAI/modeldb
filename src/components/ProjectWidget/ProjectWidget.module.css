@@ -19,7 +19,7 @@
 
 .metrics_header {
   display: inline-block;
-  color: var(--blue-color);
+  color: var(--bg-color2);
   font-size: 15px;
 }
 
@@ -32,6 +32,7 @@
   display: grid;
   grid-template-rows: 32px auto 24px;
 }
+
 .title {
   color: var(--fr-color2);
   font-size: 20px;
@@ -58,6 +59,7 @@
   justify-items: end;
   color: var(--fr-color3);
 }
+
 .autor_name {
   display: inline;
 }
