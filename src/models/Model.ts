@@ -8,13 +8,17 @@ export class Model {
   private projectName: string = '';
   private experimentId: string = '';
   private name: string = '';
+  private description: string = '';
+  private dateCreated?: Date = undefined;
+  private dateUpdated?: Date = undefined;
+  private codeVersion: string = '';
+  private version: string = '';
 
   private tags: string[] = [];
   private hyperparameters: IHyperparameter[] = [];
   private modelMetrics: IModelMetric[] = [];
   private artifacts: IArtifact[] = [];
   private dataSets: IArtifact[] = [];
-  private timestamp: Date = new Date();
 
   public get Id(): string {
     return this.id;
@@ -23,11 +27,32 @@ export class Model {
     this.id = v;
   }
 
+  public get Version(): string {
+    return this.version;
+  }
+  public set Version(v: string) {
+    this.version = v;
+  }
+
   public get Name(): string {
     return this.name;
   }
   public set Name(v: string) {
     this.name = v;
+  }
+
+  public get Description(): string {
+    return this.description;
+  }
+  public set Description(v: string) {
+    this.description = v;
+  }
+
+  public get CodeVersion(): string {
+    return this.codeVersion;
+  }
+  public set CodeVersion(v: string) {
+    this.codeVersion = v;
   }
 
   public get ProjectId(): string {
@@ -86,10 +111,17 @@ export class Model {
     this.dataSets = v;
   }
 
-  public get Timestamp(): Date {
-    return this.timestamp;
+  public get DateCreated(): Date | undefined {
+    return this.dateCreated;
   }
-  public set Timestamp(v: Date) {
-    this.timestamp = v;
+  public set DateCreated(v: Date | undefined) {
+    this.dateCreated = v;
+  }
+
+  public get DateUpdated(): Date | undefined {
+    return this.dateUpdated;
+  }
+  public set DateUpdated(v: Date | undefined) {
+    this.dateUpdated = v;
   }
 }
