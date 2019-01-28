@@ -30,10 +30,17 @@ class ModelLayout extends React.Component<AllProps> {
 
     return (
       <div className={styles.model_layout}>
-        {this.renderTextRecord('Model', notNullModel.Name, styles.name)}
-        {this.renderTextRecord('ID', notNullModel.Id)}
+        {this.renderTextRecord('Name', notNullModel.Name, styles.name)}
+        {this.renderTextRecord('Description', notNullModel.Description)}
+        {this.renderTextRecord(
+          `ID${notNullModel.Version ? `, version` : ''}`,
+          `${notNullModel.Id}${notNullModel.Version ? `, ${notNullModel.Version}` : ''}`
+        )}
         {this.renderTextRecord('Project', notNullModel.ProjectId)}
         {this.renderTextRecord('Experiment', notNullModel.ExperimentId)}
+        {this.renderTextRecord('Date created', `${notNullModel.DateCreated ? notNullModel.DateCreated.toDateString() : ''}`)}
+        {this.renderTextRecord('Date updated', `${notNullModel.DateUpdated ? notNullModel.DateUpdated.toDateString() : ''}`)}
+        {this.renderTextRecord('Code version', notNullModel.CodeVersion)}
         {this.renderRecord(
           'Tags',
           notNullModel.Tags.map((value: string, key: number) => {
