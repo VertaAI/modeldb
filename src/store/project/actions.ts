@@ -32,7 +32,7 @@ export const apiFetchProjects = (): ActionResult<void, apiProjectsAction> => asy
     })
     .then(res => {
       console.log(res.projects);
-      // dispatch(action(fetchProjectsActionTypes.API_PROJECTS_SUCESS, res.projects));
+      dispatch({ type: fetchProjectsActionTypes.API_PROJECTS_SUCESS, payload: res.projects });
     });
 };
 

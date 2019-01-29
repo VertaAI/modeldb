@@ -16,7 +16,7 @@ export type fetchProjectsAction =
 
 export type apiProjectsAction =
   | { type: fetchProjectsActionTypes.API_PROJECTS_REQUEST }
-  | { type: fetchProjectsActionTypes.API_PROJECTS_SUCESS; payload: any }
+  | { type: fetchProjectsActionTypes.API_PROJECTS_SUCESS; payload?: any }
   | { type: fetchProjectsActionTypes.API_PROJECTS_FAILURE };
 
 export interface IProjectsState {
