@@ -1,5 +1,4 @@
 import { Model } from './Model';
-
 export default class Project {
   private name: string = '';
   private description: string = '';
@@ -8,6 +7,15 @@ export default class Project {
   private creationDate: Date = new Date();
   private updatedDate: Date = new Date();
   private id: string = '';
+  private tags: Array<string> = [];
+
+  public get Tags(): Array<string> {
+    return this.tags;
+  }
+
+  public set Tags(v: Array<string>) {
+    this.tags = v;
+  }
 
   public get Name(): string {
     return this.name;

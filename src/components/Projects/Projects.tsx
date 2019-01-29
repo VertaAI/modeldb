@@ -8,6 +8,7 @@ import styles from './Projects.module.css';
 
 interface IPropsFromState {
   projects?: Project[] | null;
+  apiProjects?: any | null;
   loading: boolean;
 }
 
