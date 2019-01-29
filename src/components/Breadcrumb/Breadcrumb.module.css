@@ -5,14 +5,20 @@
 
 .arrow {
   margin: 0 9.5px;
-  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .link {
   text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  outline: none;
+}
+
+.link:hover {
   color: var(--bg-color3);
 }
 
 .active_link {
   font-weight: 500;
+  color: var(--bg-color3);
 }
