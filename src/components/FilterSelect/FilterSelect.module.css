@@ -60,6 +60,10 @@
   cursor: pointer;
 }
 
+.apply_filters_button button:hover {
+  background-color: #6a84ff;
+}
+
 .found_filters_popup {
   border: solid 1px var(--fr-color5);
   border-bottom-right-radius: 2px;

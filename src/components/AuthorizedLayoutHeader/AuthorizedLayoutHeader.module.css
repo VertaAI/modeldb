@@ -2,18 +2,26 @@
   background-color: var(--bg-color2);
   color: var(--bg-color3);
   height: 56px;
-  align-content: center;
   font-size: 16px;
   display: grid;
-  grid-template-columns: 100px 210px auto 150px 86px;
-  padding: 0 30px;
+  grid-template-columns: 300px minmax(20px, 40px) auto minmax(940px, 1060px) auto minmax(20px, 40px);
+  padding: 0;
   align-items: center;
-  grid-template-areas: 'logo . breadcrumb urls user_bar';
+  grid-template-areas: 'logo . . header_content header_content header_content';
+}
+
+.header_content {
+  grid-area: header_content;
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto 150px 86px;
+  grid-template-areas: 'breadcrumb urls userbar';
+  margin-right: 30px;
 }
 
 .nav_menu {
-  justify-self: end;
   grid-area: urls;
+  justify-self: end;
 }
 
 .nav_menu a {
@@ -22,16 +30,17 @@
   color: var(--bg-color3);
 }
 
+.nav_menu a:hover {
+  font-weight: 500;
+}
+
 .logo {
   justify-self: start;
   grid-area: logo;
+  margin-left: 30px;
 }
 
 .user_bar {
+  grid-area: userbar;
   justify-self: end;
-  grid-area: user_bar;
-}
-
-.breadcrumb {
-  grid-area: breadcrumb;
 }

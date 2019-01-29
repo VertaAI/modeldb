@@ -1,24 +1,28 @@
 .project_widget {
   display: grid;
-  grid-template-columns: auto 160px;
+  grid-template-columns: 310px auto 180px;
   min-height: 155px;
   padding: 30px;
   font-size: 13px;
-  grid-column-gap: 40px;
   color: var(--fr-color3);
-  margin: 16px 0;
+  margin: 0 0 16px 0;
   background-color: var(--bg-color3);
+  border: 1px solid var(--bg-color3);
+}
+
+.project_widget:hover {
+  border: 1px solid var(--bg-color2);
 }
 
 .project_link {
   text-decoration: none;
+  outline: none;
 }
 
 .metrics_block {
 }
 
 .metrics_header {
-  display: inline-block;
   color: var(--bg-color2);
   font-size: 15px;
 }

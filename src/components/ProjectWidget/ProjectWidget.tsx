@@ -21,6 +21,7 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
               <div className={styles.inline_block}>model</div>
             </div>
           </div>
+          <div className={styles.metrics_block} />
           <div className={styles.author_block}>
             <div>
               <div>{this.props.project.Author}</div>
