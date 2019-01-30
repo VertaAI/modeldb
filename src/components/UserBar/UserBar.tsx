@@ -40,6 +40,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
             size="36"
             textSizeRatio={36 / 16}
             style={{ fontFamily: 'Roboto', fontWeight: '400' }}
+            src={user ? user.picture : ''}
           />
           <div className={styles.menu_arrow}>
             <i className="fa fa-caret-down" />
@@ -56,6 +57,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
                 size="48"
                 textSizeRatio={36 / 16}
                 style={{ fontFamily: 'Roboto', fontWeight: '400' }}
+                src={user ? user.picture : ''}
               />
               <div>
                 <div className={styles.menu_header_user_name}>{user ? user.name : ''}</div>
