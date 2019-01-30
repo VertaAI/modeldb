@@ -25,8 +25,8 @@ const initialState: IApplicationState = {
   model: {
     loading: false
   },
-  project: { loading: false },
-  projects: { loading: false },
+  // project: { loading: false },
+  // projects: { loading: false },
   apiProjects: { loading: false }
 };
 

@@ -8,9 +8,9 @@ import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
   layout: IUserState;
-  projects: IProjectsState;
+  // projects: IProjectsState;
   router?: RouterState;
-  project: IProjectState;
+  // project: IProjectState;
   apiProjects: IApiProjectsState;
   model: IModelState;
 }
@@ -24,8 +24,8 @@ export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
     layout: userReducer,
     model: modelReducer,
-    project: projectReducer,
-    projects: projectsReducer,
+    // project: projectReducer,
+    // projects: projectsReducer,
     apiProjects: apiProjectsReducer,
     router: connectRouter(history)
   });

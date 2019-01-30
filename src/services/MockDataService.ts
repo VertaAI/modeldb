@@ -1,6 +1,6 @@
 import { Artifact, ArtifactKey, ArtifactType } from '../models/Artifact';
 import { Hyperparameter } from '../models/HyperParameters';
-import { Model } from '../models/Model';
+import { ModelRecord } from '../models/ModelRecord';
 import { MetricKey, ModelMetric, ValueType } from '../models/ModelMetric';
 import Project from '../models/Project';
 import { IDataService } from './IDataService';
@@ -22,9 +22,9 @@ export default class MockDataService implements IDataService {
   private projects: Project[];
 
   constructor() {
-    const models: Model[] = [];
+    const models: ModelRecord[] = [];
     modelsMocks.forEach(element => {
-      const model = new Model();
+      const model = new ModelRecord();
       model.Id = element.id;
       model.Name = element.name;
       model.ProjectId = element.projectId;
@@ -58,7 +58,7 @@ export default class MockDataService implements IDataService {
       models.forEach(model => {
         if (model.ProjectId === proj.Id) {
           model.ProjectName = proj.Name;
-          proj.Models.push(model);
+          // proj.Models.push(model);
         }
       });
 
@@ -78,18 +78,18 @@ export default class MockDataService implements IDataService {
     });
   }
 
-  public getModel(id: string): Promise<Model> {
-    return new Promise<Model>((resolve, reject) => {
-      let foundModel;
+  // public getModel(id: string): Promise<ModelRecord> {
+  //   return new Promise<ModelRecord>((resolve, reject) => {
+  //     let foundModel;
 
-      this.projects.forEach(project => {
-        project.Models.forEach(model => {
-          if (model.Id === id) {
-            foundModel = model;
-          }
-        });
-      });
-      resolve(foundModel);
-    });
-  }
+  //     this.projects.forEach(project => {
+  //       project.Models.forEach(model => {
+  //         if (model.Id === id) {
+  //           foundModel = model;
+  //         }
+  //       });
+  //     });
+  //     resolve(foundModel);
+  //   });
+  // }
 }

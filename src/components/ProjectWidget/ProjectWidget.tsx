@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import styles from './ProjectWidget.module.css';
 
 interface ILocalProps {
-  project: Project;
+  project: any;
 }
 
 export default class ProjectWidget extends React.Component<ILocalProps> {
@@ -14,21 +14,21 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
       <Link className={styles.project_link} to={`/project/${this.props.project.Id}/models`}>
         <div className={styles.project_widget}>
           <div className={styles.title_block}>
-            <div className={styles.title}>{this.props.project.Name}</div>
-            <div className={styles.description}>{this.props.project.Description}</div>
+            <div className={styles.title}>{this.props.project.name}</div>
+            <div className={styles.description}>{this.props.project.description}</div>
             <div>
-              <div className={styles.model_counter}>{this.props.project.Models.length}</div>
+              <div className={styles.model_counter}>{Math.round(Math.random() * 10)}</div>
               <div className={styles.inline_block}>model</div>
             </div>
           </div>
           <div className={styles.author_block}>
             <div>
-              <div>{this.props.project.Author}</div>
+              <div>Manasi Vartak</div>
               <div className={styles.semitransparent}>Owner</div>
             </div>
 
             <Avatar
-              name={this.props.project.Author}
+              name="Manasi Vartak"
               round={true}
               size="36"
               textSizeRatio={36 / 16}
@@ -36,10 +36,10 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
             />
             <div className={styles.created_date_block}>
               <div>Created:</div>
-              <div>{this.props.project.CreationDate.toLocaleDateString()}</div>
+              <div> {getDate(Number(this.props.project.date_created))} </div>
               <br />
               <div>Updated:</div>
-              <div>{this.props.project.UpdatedDate.toLocaleDateString()}</div>
+              <div> {getDate(Number(this.props.project.date_updated))} </div>
             </div>
           </div>
         </div>
@@ -47,3 +47,12 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
     );
   }
 }
+
+const getDate = function(utc_date: number): string {
+  const date = new Date(utc_date);
+  return date
+    .toUTCString()
+    .split(' ')
+    .slice(0, 4)
+    .join(' ');
+};

@@ -1,20 +1,18 @@
-import { Model } from './Model';
 export default class Project {
+  private id: string = '';
   private name: string = '';
   private description: string = '';
-  private author: string = '';
-  private models: Model[] = [];
   private creationDate: Date = new Date();
   private updatedDate: Date = new Date();
-  private id: string = '';
+  private author?: string;
   private tags: Array<string> = [];
 
-  public get Tags(): Array<string> {
-    return this.tags;
+  public get Id(): string {
+    return this.id;
   }
 
-  public set Tags(v: Array<string>) {
-    this.tags = v;
+  public set Id(v: string) {
+    this.id = v;
   }
 
   public get Name(): string {
@@ -33,18 +31,6 @@ export default class Project {
     this.description = v;
   }
 
-  public get Author(): string {
-    return this.author;
-  }
-
-  public set Author(v: string) {
-    this.author = v;
-  }
-
-  public get Models(): Model[] {
-    return this.models;
-  }
-
   public get CreationDate(): Date {
     return this.creationDate;
   }
@@ -61,11 +47,19 @@ export default class Project {
     this.updatedDate = v;
   }
 
-  public get Id(): string {
-    return this.id;
+  public get Author(): string | undefined {
+    return this.author;
   }
 
-  public set Id(v: string) {
-    this.id = v;
+  public set Author(v: string | undefined) {
+    this.author = v;
+  }
+
+  public get Tags(): Array<string> {
+    return this.tags;
+  }
+
+  public set Tags(v: Array<string>) {
+    this.tags = v;
   }
 }

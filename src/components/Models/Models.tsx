@@ -1,15 +1,15 @@
-import { Cell, Column, Table } from 'fixed-data-table-2';
+// import { Cell, Column, Table } from 'fixed-data-table-2';
 import 'fixed-data-table-2/dist/fixed-data-table.css';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
 import Project from '../../models/Project';
-import { fetchProjectWithModels } from '../../store/project';
+// import { fetchProjectWithModels } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import { IdCell } from './CellComponents/IdCell';
-import { MetricsCell } from './CellComponents/MetricsCell';
-import { MiscCell } from './CellComponents/MiscCell';
+// import { IdCell } from './CellComponents/IdCell';
+// import { MetricsCell } from './CellComponents/MetricsCell';
+// import { MiscCell } from './CellComponents/MiscCell';
 import styles from './Models.module.css';
 import './ModelsGrid.css';
 
@@ -27,12 +27,12 @@ type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedRed
 class Models extends React.Component<AllProps> {
   public render() {
     const { data, loading } = this.props;
-    const notNullData = data || new Project();
+    // const notNullData = data || new Project();
     return (
       <div className={styles.models_grid}>
         <div className={styles.filter} />
         <div className={styles.grid_layout}>
-          <Table
+          {/* <Table
             className={styles.table_wrapper}
             rowHeight={155}
             rowsCount={notNullData.Models.length}
@@ -55,20 +55,21 @@ class Models extends React.Component<AllProps> {
               cell={<MiscCell className={styles.table_cell} models={notNullData.Models} />}
               width={290}
             />
-          </Table>
+          </Table> */}
         </div>
       </div>
     );
   }
 
   public componentDidMount() {
-    this.props.dispatch(fetchProjectWithModels(this.props.match.params.projectId));
+    // this.props.dispatch(fetchProjectWithModels(this.props.match.params.projectId));
   }
 }
 
-const mapStateToProps = ({ project }: IApplicationState) => ({
-  data: project.data,
-  loading: project.loading
-});
+// project, project.data, project.loading
+// const mapStateToProps = ({  }: IApplicationState) => ({
+//   data: [],
+//   loading: false
+// });
 
-export default connect(mapStateToProps)(Models);
+// export default connect(mapStateToProps)(Models);
