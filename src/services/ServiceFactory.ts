@@ -1,6 +1,7 @@
-import { IAuthenticationService } from './IAuthenticationService';
+import Auth0AuthenticationService from './auth/Auth0AuthenticationService';
+import { IAuthenticationService } from './auth/IAuthenticationService';
+import MockAuthenticationService from './auth/MockAuthenticationService';
 import { IDataService } from './IDataService';
-import MockAuthenticationService from './MockAuthenticationService';
 import MockDataService from './MockDataService';
 
 export default class ServiceFactory {
@@ -9,6 +10,6 @@ export default class ServiceFactory {
   }
 
   public static getAuthenticationService(): IAuthenticationService {
-    return new MockAuthenticationService();
+    return new Auth0AuthenticationService();
   }
 }

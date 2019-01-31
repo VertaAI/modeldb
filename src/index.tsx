@@ -1,4 +1,5 @@
 import { createBrowserHistory } from 'history';
+import jwtDecode from 'jwt-decode';
 import 'normalize.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -6,20 +7,28 @@ import { Provider } from 'react-redux';
 import App from './App';
 import './index.css';
 import User from './models/User';
+import ServiceFactory from './services/ServiceFactory';
 import configureStore from './store/configureStore';
 import { IApplicationState } from './store/store';
 
-const history = createBrowserHistory();
+export const history = createBrowserHistory();
 function getUser(): User | null {
-  const storageUser = localStorage.getItem('user');
-  if (storageUser) {
-    return JSON.parse(storageUser);
+  try {
+    const authenticatedService = ServiceFactory.getAuthenticationService();
+
+    if (authenticatedService.authenticated) {
+      return jwtDecode<User>(authenticatedService.idToken);
+    }
+    return null;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 const initialState: IApplicationState = {
   layout: {
+    authenticated: false,
+    loading: false,
     user: getUser()
   },
   model: {

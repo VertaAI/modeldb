@@ -2,16 +2,18 @@ import { Reducer } from 'redux';
 import { IUserLogoutAction, IUserState, userAuthenticateAction, userAuthenticateActionTypes, userLogoutActionTypes } from './types';
 
 const initialState: IUserState = {
+  authenticated: false,
+  loading: false,
   user: null
 };
 
 const userAuthenticateReducer: Reducer<IUserState> = (state = initialState, action: userAuthenticateAction) => {
   switch (action.type) {
     case userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST: {
-      return { ...state };
+      return { ...state, loading: true };
     }
     case userAuthenticateActionTypes.AUTHENTICATE_USER_SUCESS: {
-      return { ...state, user: action.payload };
+      return { ...state, authenticated: true, loading: false, user: action.payload };
     }
     default: {
       return state;
@@ -22,7 +24,7 @@ const userAuthenticateReducer: Reducer<IUserState> = (state = initialState, acti
 const userLogoutReducer: Reducer<IUserState> = (state = initialState, action: IUserLogoutAction) => {
   switch (action.type) {
     case userLogoutActionTypes.LOGOUT_USER: {
-      return { ...state, user: null };
+      return { ...state, authenticated: false, loading: false, user: null };
     }
     default: {
       return state;
