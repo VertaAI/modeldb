@@ -1,37 +1,24 @@
 import { IArtifact } from './Artifact';
 import { IHyperparameter } from './HyperParameters';
-import { IModelMetric } from './ModelMetric';
+import { IMetric } from './Metrics';
 
 export default class ModelRecord {
   private id: string = '';
-  private projectId: string = '';
-  private projectName: string = '';
-  private experimentId: string = '';
+  private project_id: string = '';
+  private experiment_id: string = '';
   private name: string = '';
-  private description: string = '';
-  private dateCreated?: Date = undefined;
-  private dateUpdated?: Date = undefined;
-  private codeVersion: string = '';
-  private version: string = '';
+  private code_version: string = '';
 
   private tags: string[] = [];
   private hyperparameters: IHyperparameter[] = [];
-  private modelMetrics: IModelMetric[] = [];
+  private metrics: IMetric[] = [];
   private artifacts: IArtifact[] = [];
-  private dataSets: IArtifact[] = [];
 
   public get Id(): string {
     return this.id;
   }
   public set Id(v: string) {
     this.id = v;
-  }
-
-  public get Version(): string {
-    return this.version;
-  }
-  public set Version(v: string) {
-    this.version = v;
   }
 
   public get Name(): string {
@@ -41,39 +28,25 @@ export default class ModelRecord {
     this.name = v;
   }
 
-  public get Description(): string {
-    return this.description;
-  }
-  public set Description(v: string) {
-    this.description = v;
-  }
-
   public get CodeVersion(): string {
-    return this.codeVersion;
+    return this.code_version;
   }
   public set CodeVersion(v: string) {
-    this.codeVersion = v;
+    this.code_version = v;
   }
 
   public get ProjectId(): string {
-    return this.projectId;
+    return this.project_id;
   }
   public set ProjectId(v: string) {
-    this.projectId = v;
-  }
-
-  public get ProjectName(): string {
-    return this.projectName;
-  }
-  public set ProjectName(v: string) {
-    this.projectName = v;
+    this.project_id = v;
   }
 
   public get ExperimentId(): string {
-    return this.experimentId;
+    return this.experiment_id;
   }
   public set ExperimentId(v: string) {
-    this.experimentId = v;
+    this.experiment_id = v;
   }
 
   public get Tags(): string[] {
@@ -90,11 +63,11 @@ export default class ModelRecord {
     this.hyperparameters = v;
   }
 
-  public get ModelMetric(): IModelMetric[] {
-    return this.modelMetrics;
+  public get Metric(): IMetric[] {
+    return this.metrics;
   }
-  public set ModelMetric(v: IModelMetric[]) {
-    this.modelMetrics = v;
+  public set Metric(v: IMetric[]) {
+    this.metrics = v;
   }
 
   public get Artifacts(): IArtifact[] {
@@ -102,26 +75,5 @@ export default class ModelRecord {
   }
   public set Artifacts(v: IArtifact[]) {
     this.artifacts = v;
-  }
-
-  public get DataSets(): IArtifact[] {
-    return this.dataSets;
-  }
-  public set DataSets(v: IArtifact[]) {
-    this.dataSets = v;
-  }
-
-  public get DateCreated(): Date | undefined {
-    return this.dateCreated;
-  }
-  public set DateCreated(v: Date | undefined) {
-    this.dateCreated = v;
-  }
-
-  public get DateUpdated(): Date | undefined {
-    return this.dateUpdated;
-  }
-  public set DateUpdated(v: Date | undefined) {
-    this.dateUpdated = v;
   }
 }

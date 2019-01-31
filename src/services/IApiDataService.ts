@@ -7,5 +7,6 @@ export interface IProjectDataService {
 }
 
 export interface IExperimentRunsDataService {
-  getExperimentRuns(id: string): Promise<ModelRecord[]>;
+  getExperimentRuns(project_id: string): Promise<ModelRecord[]>;
+  getModelRecord(model_id: string, store_experiment_runs: ModelRecord[]): Promise<ModelRecord>;
 }

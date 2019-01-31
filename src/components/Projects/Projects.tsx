@@ -1,7 +1,7 @@
 import Project from 'models/Project';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { fetchProjects } from '../../store/project';
+import { fetchProjects } from '../../store/projects';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
 import styles from './Projects.module.css';
@@ -22,7 +22,6 @@ class Projects extends React.Component<AllProps> {
     return (
       <div className={styles.projects}>
         <div className={styles.widgets_list}>
-          {console.log(this.props.projects)}
           {this.props.projects ? this.props.projects.map((proj: any, i: number) => <ProjectWidget project={proj} key={i} />) : ''}
         </div>
       </div>

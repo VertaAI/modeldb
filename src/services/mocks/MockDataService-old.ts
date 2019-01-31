@@ -1,4 +1,4 @@
-import { Artifact, ArtifactKey, ArtifactType } from '../../models/Artifact';
+import { Artifact, ArtifactKey } from '../../models/Artifact';
 import { Hyperparameter } from '../../models/HyperParameters';
 import ModelRecord from '../../models/ModelRecord';
 import { MetricKey, ModelMetric, ValueType } from '../../models/ModelMetric';
@@ -33,15 +33,15 @@ export default class MockDataService implements IDataService {
       element.hyperparameters.forEach(hyperParameter => {
         model.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
       });
-      element.metrics.forEach(metric => {
-        model.ModelMetric.push(new ModelMetric(asEnum(MetricKey, metric.key), metric.value, asEnum(ValueType, metric.valueType)));
-      });
-      element.artifacts.forEach(artifact => {
-        model.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path, asEnum(ArtifactType, artifact.artifactType)));
-      });
-      element.datasets.forEach(dataset => {
-        model.DataSets.push(new Artifact(asEnum(ArtifactKey, dataset.key), dataset.path, asEnum(ArtifactType, dataset.artifactType)));
-      });
+      // element.metrics.forEach(metric => {
+      //   model.ModelMetric.push(new ModelMetric(asEnum(MetricKey, metric.key), metric.value, asEnum(ValueType, metric.valueType)));
+      // });
+      // element.artifacts.forEach(artifact => {
+      //   model.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path, asEnum(ArtifactType, artifact.artifactType)));
+      // });
+      // element.datasets.forEach(dataset => {
+      //   model.DataSets.push(new Artifact(asEnum(ArtifactKey, dataset.key), dataset.path, asEnum(ArtifactType, dataset.artifactType)));
+      // });
       models.push(model);
     });
 
@@ -57,7 +57,7 @@ export default class MockDataService implements IDataService {
 
       models.forEach(model => {
         if (model.ProjectId === proj.Id) {
-          model.ProjectName = proj.Name;
+          // model.ProjectName = proj.Name;
           // proj.Models.push(model);
         }
       });

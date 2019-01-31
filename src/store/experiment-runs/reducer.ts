@@ -11,13 +11,13 @@ export const experimentRunsReducer: Reducer<IExperimentRunsState> = (
   action: fetchExperimentRunsAction
 ) => {
   switch (action.type) {
-    case fetchExperimentRunsActionTypes.FETCH_MODEL_RECORD_REQUEST: {
+    case fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_REQUEST: {
       return { ...state, loading: true };
     }
-    case fetchExperimentRunsActionTypes.FETCH_MODEL_RECORD_SUCESS: {
-      return { ...state, data: action.payload };
+    case fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_SUCESS: {
+      return { ...state, loading: false, data: action.payload };
     }
-    case fetchExperimentRunsActionTypes.FETCH_MODEL_RECORD_FAILURE: {
+    case fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_FAILURE: {
       return { ...state };
     }
     default: {

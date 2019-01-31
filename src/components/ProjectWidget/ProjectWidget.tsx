@@ -16,6 +16,16 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
           <div className={styles.title_block}>
             <div className={styles.title}>{this.props.project.name}</div>
             <div className={styles.description}>{this.props.project.description}</div>
+            <div className={styles.tags_block}>
+              {this.props.project.tags.map((tag: string, i: number) => {
+                return (
+                  <p key={i} className={styles.tags}>
+                    {' '}
+                    {tag}
+                  </p>
+                );
+              })}
+            </div>
             <div>
               <div className={styles.model_counter}>{Math.round(Math.random() * 10)}</div>
               <div className={styles.inline_block}>model</div>

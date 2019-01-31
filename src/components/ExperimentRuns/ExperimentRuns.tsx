@@ -1,6 +1,7 @@
-import ModelRecord from 'models/ModelRecord';
+import ModelRecord from '../../models/ModelRecord';
 import * as React from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import styles from './ExperimentRuns.module.css';
 import { fetchExperimentRuns } from '../../store/experiment-runs';
@@ -11,12 +12,11 @@ export interface IUrlProps {
 }
 
 interface IPropsFromState {
-  experimentRuns?: ModelRecord[] | null;
+  experiment_runs?: ModelRecord[] | null;
   loading: boolean;
 }
 
 type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedReduxProps;
-// type AllProps = IPropsFromState & IConnectedReduxProps;
 
 class ExperimentRuns extends React.Component<AllProps> {
   public componentDidMount() {
@@ -24,20 +24,31 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
 
   public render() {
+    const notNullModelRecord = this.props.experiment_runs || [new ModelRecord()];
     return (
       <div>
         <h2>Experiment Runs</h2>
-        <pre>
-          <code>{JSON.stringify(this.props.experimentRuns, null, 4)}</code>
-        </pre>
+        {notNullModelRecord.map((element: ModelRecord, key: number) => {
+          return (
+            <div key={key}>
+              Model ID:
+              <Link to={`/project/${element.ProjectId}/model/${element.Id}`}>
+                <h5>{element.Id}</h5>
+              </Link>
+              <pre>
+                <code>{JSON.stringify(element, null, 4)}</code>
+              </pre>
+            </div>
+          );
+        })}
       </div>
     );
   }
 }
 
-const mapStateToProps = ({ experimentRuns }: IApplicationState) => ({
-  loading: experimentRuns.loading,
-  experimentRuns: experimentRuns.data
+const mapStateToProps = ({ experiment_runs }: IApplicationState) => ({
+  loading: experiment_runs.loading,
+  experiment_runs: experiment_runs.data
 });
 
 export default connect(mapStateToProps)(ExperimentRuns);

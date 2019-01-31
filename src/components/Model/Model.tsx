@@ -1,3 +1,12 @@
+import React from 'react';
+import styles from './ModelRecord.module.css';
+
+export default class ModelRecord extends React.PureComponent {
+  public render() {
+    return <div>Model Record</div>;
+  }
+}
+
 // import * as React from 'react';
 // import { connect } from 'react-redux';
 // import { RouteComponentProps } from 'react-router';

@@ -2,11 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
-// import Model from '../Model/Model';
-// import Models from '../Models/Models';
+import ModelRecord from '../ModelRecord/ModelRecord';
 import Projects from '../Projects/Projects';
 import ExperimentRuns from '../ExperimentRuns/ExperimentRuns';
-// import ModelRecord from '../ModelRecord/ModelRecord';
 import styles from './AuthorizedLayout.module.css';
 
 export default class AuthorizedLayout extends React.PureComponent {
@@ -24,9 +22,7 @@ export default class AuthorizedLayout extends React.PureComponent {
             <Switch>
               <Route exact={true} path="/" component={Projects} />
               <Route path={'/project/:projectId/models'} component={ExperimentRuns} />
-              {/* <Route path={'/project/:projectId/model/:modelId'} component={ModelRecord} /> */}
-              {/* <Route path={'/project/:projectId/models'} component={Models} />
-              <Route path={'/project/:projectId/model/:modelId'} component={Model} /> */}
+              <Route path={'/project/:projectId/model/:modelId'} component={ModelRecord} />
             </Switch>
           </div>
         </div>

@@ -22,10 +22,13 @@ const initialState: IApplicationState = {
   layout: {
     user: getUser()
   },
-  experimentRuns: {
+  experiment_runs: {
     loading: false
   },
-  projects: { loading: false }
+  projects: { loading: false },
+  model_record: {
+    loading: false
+  }
 };
 
 const store = configureStore(history, initialState);
