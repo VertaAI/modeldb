@@ -27,7 +27,9 @@ export default class MockAuthenticationService implements IAuthenticationService
     });
   }
 
-  public setSession(authResult: Auth0DecodedHash): void {}
+  public setSession(authResult: Auth0DecodedHash): Promise<void> {
+    return Promise.resolve();
+  }
 
   public logout(): void {
     this.authenticated = false;
