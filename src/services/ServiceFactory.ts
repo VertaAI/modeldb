@@ -1,11 +1,16 @@
+import { IExperimentRunsDataService, IProjectDataService } from './IApiDataService';
 import { IAuthenticationService } from './IAuthenticationService';
-import { IDataService } from './IDataService';
+import ProjectDataService from './ProjectDataService';
+import ExperimentRunsDataService from './ExperimentRunsDataService';
 import MockAuthenticationService from './MockAuthenticationService';
-import MockDataService from './MockDataService';
 
 export default class ServiceFactory {
-  public static getDataService(): IDataService {
-    return new MockDataService();
+  public static getProjectsService(): IProjectDataService {
+    return new ProjectDataService();
+  }
+
+  public static getExperimentRunsService(): IExperimentRunsDataService {
+    return new ExperimentRunsDataService();
   }
 
   public static getAuthenticationService(): IAuthenticationService {

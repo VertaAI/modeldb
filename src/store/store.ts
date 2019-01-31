@@ -2,17 +2,15 @@ import { connectRouter, RouterState } from 'connected-react-router';
 import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
-import { IModelState, modelReducer } from './model';
-import { IProjectsState, IProjectState, IApiProjectsState, projectReducer, projectsReducer, apiProjectsReducer } from './project';
+import { IExperimentRunsState, experimentRunsReducer } from './experiment-runs';
+import { IProjectsState, projectsReducer } from './project';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
   layout: IUserState;
-  // projects: IProjectsState;
   router?: RouterState;
-  // project: IProjectState;
-  apiProjects: IApiProjectsState;
-  model: IModelState;
+  projects: IProjectsState;
+  experimentRuns: IExperimentRunsState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -23,11 +21,9 @@ export interface IConnectedReduxProps<A extends Action = any> {
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
     layout: userReducer,
-    model: modelReducer,
-    // project: projectReducer,
-    // projects: projectsReducer,
-    apiProjects: apiProjectsReducer,
-    router: connectRouter(history)
+    router: connectRouter(history),
+    projects: projectsReducer,
+    experimentRuns: experimentRunsReducer
   });
 
 export type ActionResult<R = void, A extends Action = AnyAction> = ThunkAction<R, IApplicationState, undefined, A>;

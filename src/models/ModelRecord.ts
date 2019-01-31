@@ -2,7 +2,7 @@ import { IArtifact } from './Artifact';
 import { IHyperparameter } from './HyperParameters';
 import { IModelMetric } from './ModelMetric';
 
-export class ModelRecord {
+export default class ModelRecord {
   private id: string = '';
   private projectId: string = '';
   private projectName: string = '';

@@ -1,5 +1,6 @@
 import Project from '../models/Project';
 import { IProjectDataService } from './IApiDataService';
+import { PROJECTS_LIST } from './ApiEndpoints';
 
 export default class ProjectDataService implements IProjectDataService {
   private projects: Project[];
@@ -8,9 +9,9 @@ export default class ProjectDataService implements IProjectDataService {
     this.projects = [];
   }
 
-  public getProjects(allProjects: any[]): Promise<Project[]> {
+  public getProjects(): Promise<Project[]> {
     return new Promise<Project[]>((resolve, reject) => {
-      fetch('http://localhost:8080/v1/example/getProjects', { method: 'post' })
+      fetch(PROJECTS_LIST.endpoint, { method: PROJECTS_LIST.method })
         .then(res => {
           if (!res.ok) {
             throw Error(res.statusText);

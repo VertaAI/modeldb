@@ -6,7 +6,7 @@ import { FilterSelect } from '../FilterSelect/FilterSelect';
 // import Models from '../Models/Models';
 import Projects from '../Projects/Projects';
 import ExperimentRuns from '../ExperimentRuns/ExperimentRuns';
-import ModelRecord from '../ModelRecord/ModelRecord';
+// import ModelRecord from '../ModelRecord/ModelRecord';
 import styles from './AuthorizedLayout.module.css';
 
 export default class AuthorizedLayout extends React.PureComponent {
@@ -24,7 +24,7 @@ export default class AuthorizedLayout extends React.PureComponent {
             <Switch>
               <Route exact={true} path="/" component={Projects} />
               <Route path={'/project/:projectId/models'} component={ExperimentRuns} />
-              <Route path={'/project/:projectId/model/:modelId'} component={ModelRecord} />
+              {/* <Route path={'/project/:projectId/model/:modelId'} component={ModelRecord} /> */}
               {/* <Route path={'/project/:projectId/models'} component={Models} />
               <Route path={'/project/:projectId/model/:modelId'} component={Model} /> */}
             </Switch>

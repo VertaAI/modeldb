@@ -1,11 +1,11 @@
 import Project from '../models/Project';
-import { ModelRecord } from '../models/ModelRecord';
+import ModelRecord from '../models/ModelRecord';
 
 export interface IProjectDataService {
-  getProjects(allProjects: object[]): Promise<Project[]>;
+  getProjects(): Promise<Project[]>;
   mapProjectAuthors(): Promise<Project[]>;
 }
 
-export interface IExperimentsDataService {
-  getExperimentRuns(): Promise<ModelRecord[]>;
+export interface IExperimentRunsDataService {
+  getExperimentRuns(id: string): Promise<ModelRecord[]>;
 }

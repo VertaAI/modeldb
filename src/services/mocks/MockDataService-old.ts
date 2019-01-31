@@ -1,11 +1,11 @@
-import { Artifact, ArtifactKey, ArtifactType } from '../models/Artifact';
-import { Hyperparameter } from '../models/HyperParameters';
-import { ModelRecord } from '../models/ModelRecord';
-import { MetricKey, ModelMetric, ValueType } from '../models/ModelMetric';
-import Project from '../models/Project';
-import { IDataService } from './IDataService';
-import { modelsMocks } from './mocks/modelsMocks';
-import { projectsMock } from './mocks/projectsMocks';
+import { Artifact, ArtifactKey, ArtifactType } from '../../models/Artifact';
+import { Hyperparameter } from '../../models/HyperParameters';
+import ModelRecord from '../../models/ModelRecord';
+import { MetricKey, ModelMetric, ValueType } from '../../models/ModelMetric';
+import Project from '../../models/Project';
+import { IDataService } from './IDataService-old';
+import { modelsMocks } from './modelsMocks';
+import { projectsMock } from './projectsMocks';
 
 type Not<T> = [T] extends [never] ? unknown : never;
 type Extractable<T, U> = Not<U extends any ? Not<T extends U ? unknown : never> : never>;
