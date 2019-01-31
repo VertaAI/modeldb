@@ -1,0 +1,18 @@
+.content {
+  font-size: 16px;
+  line-height: 19px;
+}
+
+.arrow {
+  margin: 0 9.5px;
+  font-size: 18px;
+}
+
+.link {
+  text-decoration: none;
+  color: var(--bg-color3);
+}
+
+.active_link {
+  font-weight: 500;
+}
