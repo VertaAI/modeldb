@@ -7,14 +7,14 @@ import { fetchModelRecordAction, fetchModelRecordActionTypes } from './types';
 export const fetchModelRecord = (model_id: string): ActionResult<void, fetchModelRecordAction> => async (dispatch, getState) => {
   dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_REQUEST));
 
-  // we may make a fetch API for model records page if necessary
-  if (getState().experiment_runs.data) {
-    let store_experiment_runs = getState().experiment_runs.data || [new ModelRecord()];
+  // if (getState().experiment_runs.data) {
 
-    await ServiceFactory.getExperimentRunsService()
-      .getModelRecord(model_id, store_experiment_runs)
-      .then(res => {
-        dispatch({ type: fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCESS, payload: res });
-      });
-  }
+  // }
+
+  let store_experiment_runs = getState().experiment_runs.data || [new ModelRecord()];
+  await ServiceFactory.getExperimentRunsService()
+    .getModelRecord(model_id, store_experiment_runs)
+    .then(res => {
+      dispatch({ type: fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCESS, payload: res });
+    });
 };

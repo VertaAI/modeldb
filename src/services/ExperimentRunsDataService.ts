@@ -63,10 +63,9 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
     });
   }
 
-  public getModelRecord(model_id: string, store_experiment_runs: ModelRecord[] | null): Promise<ModelRecord> {
+  public getModelRecord(model_id: string, store_experiment_runs: ModelRecord[]): Promise<ModelRecord> {
     return new Promise<ModelRecord>((resolve, reject) => {
-      const experiment_runs = store_experiment_runs || [new ModelRecord()];
-      experiment_runs.forEach(model => {
+      store_experiment_runs.forEach(model => {
         if (model.Id === model_id) {
           this.model_record = model;
         }
