@@ -11,7 +11,8 @@ export class MiscCell extends React.PureComponent<ModelsCellProps> {
   public render() {
     const { models, rowIndex, columnKey, ...props } = this.props;
     const definedRowIndex = rowIndex || 0;
+    const updatedDate = models[definedRowIndex].DateUpdated ? models[definedRowIndex].DateUpdated : '';
 
-    return <Cell {...props}>Timestamp: {models[definedRowIndex].Timestamp.toDateString()}</Cell>;
+    return <Cell {...props}>{updatedDate ? `Date updated: ${updatedDate.toDateString()}` : ''}</Cell>;
   }
 }

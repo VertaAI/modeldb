@@ -4,12 +4,12 @@
   display: grid;
   background-color: #f6f9fc;
 
-  grid-template-columns: auto 1440px auto;
+  grid-template-columns: auto minmax(940px, 1060px) auto;
   grid-template-rows: 56px auto 56px;
   grid-template-areas:
-    '. header .'
+    'header header header'
     '. content .'
-    '. footer .';
+    'footer footer footer';
 }
 
 .header {

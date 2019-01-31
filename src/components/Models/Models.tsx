@@ -4,7 +4,6 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
-import { Link } from 'react-router-dom';
 import Project from '../../models/Project';
 import { fetchProjectWithModels } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';

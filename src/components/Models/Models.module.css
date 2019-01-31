@@ -3,7 +3,6 @@
 
 .filter {
   justify-self: end;
-  margin-bottom: 17px;
 }
 
 .models_grid {
@@ -12,27 +11,25 @@
 }
 
 .table_wrapper {
-  border-width: 1px 0 0 0;
-  border-style: solid;
-  border-color: rgba(0, 0, 0, 0.3);
+  border: none;
   overflow: hidden;
   height: 100%;
-  background: #fff;
+  background: var(--bg-color3);
 }
 
 .table_header {
   opacity: 0.8;
-  color: #000000;
+  color: var(--fr-color2);
   font-size: 15px;
   font-weight: 500;
   line-height: 18px;
-  background: #fff;
+  background: var(--bg-color3);
   border: none;
 }
 
 .table_cell {
   border: none;
-  background: #fff;
+  background: var(--bg-color3);
   display: grid;
   align-content: start;
   padding-top: 14px;

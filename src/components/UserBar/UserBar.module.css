@@ -1,6 +1,6 @@
 .menu_arrow {
   font-family: 'font-awesome';
-  color: #ffffff;
+  color: var(--bg-color3);
 }
 
 .user_bar {
@@ -20,7 +20,7 @@
 .drop_down {
   font-family: Roboto;
   position: absolute;
-  background-color: white;
+  background-color: var(--bg-color3);
   border: solid 1px lightgray;
   padding: 20px;
   font-size: 16px;
@@ -37,6 +37,7 @@
 .menu_item:last-of-type {
   margin-bottom: 0;
 }
+
 .menu_item a {
   text-decoration: none;
   color: var(--fr-color3);

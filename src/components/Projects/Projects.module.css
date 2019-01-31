@@ -10,13 +10,13 @@
 }
 
 .create_button {
-  color: white;
+  color: var(--bg-color3);
   border-radius: 2px;
   width: 124px;
   height: 34px;
   padding: 0;
   border: none;
-  background-color: var(--blue-color);
+  background-color: var(--bg-color2);
   font-size: 15px;
 }
 
