@@ -2,8 +2,8 @@ export default class Project {
   private id: string = '';
   private name: string = '';
   private description: string = '';
-  private creation_date: Date = new Date();
-  private updated_date: Date = new Date();
+  private date_created: Date = new Date();
+  private date_updated: Date = new Date();
   private author?: string;
   private tags: Array<string> = [];
 
@@ -31,20 +31,20 @@ export default class Project {
     this.description = v;
   }
 
-  public get CreationDate(): Date {
-    return this.creation_date;
+  public get DateCreated(): Date {
+    return this.date_created;
   }
 
-  public set CreationDate(v: Date) {
-    this.creation_date = v;
+  public set DateCreated(v: Date) {
+    this.date_created = v;
   }
 
-  public get UpdatedDate(): Date {
-    return this.updated_date;
+  public get DateUpdated(): Date {
+    return this.date_updated;
   }
 
-  public set UpdatedDate(v: Date) {
-    this.updated_date = v;
+  public set DateUpdated(v: Date) {
+    this.date_updated = v;
   }
 
   public get Author(): string | undefined {

@@ -1,6 +1,6 @@
 import ModelRecord from '../models/ModelRecord';
 import { IExperimentRunsDataService } from './IApiDataService';
-import { EXPERIMENT_RUNS, MODEL_RECORD } from './ApiEndpoints';
+import { EXPERIMENT_RUNS } from './ApiEndpoints';
 import { MetricKey, Metric } from '../models/Metrics';
 import { Hyperparameter } from '../models/HyperParameters';
 import { Artifact, ArtifactKey } from '../models/Artifact';
@@ -12,7 +12,7 @@ function asEnum<E extends Record<keyof E, string | number>, K extends string | n
   k: K & Extractable<E[keyof E], K>
 ): Extract<E[keyof E], K> {
   // runtime guard, shouldn't need it at compiler time
-  //   if (Object.values(e).indexOf(k) < 0) throw new Error(`Expected one of ${Object.values(e).join(', ')}`);
+  if (Object.values(e).indexOf(k) < 0) throw new Error(`Expected one of ${Object.values(e).join(', ')}`);
   return k as any; // assertion
 }
 

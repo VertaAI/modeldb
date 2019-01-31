@@ -26,8 +26,8 @@ export default class ProjectDataService implements IProjectDataService {
             proj.Description = element.description || '';
             proj.Name = element.name;
             proj.Tags = element.tags || '';
-            proj.CreationDate = new Date(Number(element.date_created));
-            proj.UpdatedDate = new Date(Number(element.date_updated));
+            proj.DateCreated = new Date(Number(element.date_created));
+            proj.DateUpdated = new Date(Number(element.date_updated));
             this.projects.push(proj);
           });
           resolve(this.projects);
