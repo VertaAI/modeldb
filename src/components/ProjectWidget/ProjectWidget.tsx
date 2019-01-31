@@ -11,7 +11,7 @@ interface ILocalProps {
 export default class ProjectWidget extends React.Component<ILocalProps> {
   public render() {
     return (
-      <Link className={styles.project_link} to={`/project/${this.props.project.Id}/models`}>
+      <Link className={styles.project_link} to={`/project/${this.props.project.Id}/exp-runs`}>
         <div className={styles.project_widget}>
           <div className={styles.title_block}>
             <div className={styles.title}>{this.props.project.name}</div>
@@ -37,6 +37,7 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
               <div className={styles.semitransparent}>Owner</div>
             </div>
 
+            {/* // we may use mapProjectAuthors() function from ProjectDataService.ts to map project Ids to owner once backend supports author field */}
             <Avatar
               name="Manasi Vartak"
               round={true}

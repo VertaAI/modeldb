@@ -21,8 +21,8 @@ export default class AuthorizedLayout extends React.PureComponent {
           <div className={styles.content}>
             <Switch>
               <Route exact={true} path="/" component={Projects} />
-              <Route path={'/project/:projectId/models'} component={ExperimentRuns} />
-              <Route path={'/project/:projectId/model/:modelId'} component={ModelRecord} />
+              <Route path={'/project/:projectId/exp-runs'} component={ExperimentRuns} />
+              <Route path={'/project/:projectId/exp-run/:modelId'} component={ModelRecord} />
             </Switch>
           </div>
         </div>

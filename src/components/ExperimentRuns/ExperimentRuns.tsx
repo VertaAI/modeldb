@@ -32,7 +32,7 @@ class ExperimentRuns extends React.Component<AllProps> {
           return (
             <div key={key}>
               Model ID:
-              <Link to={`/project/${element.ProjectId}/model/${element.Id}`}>
+              <Link to={`/project/${element.ProjectId}/exp-run/${element.Id}`}>
                 <h5>{element.Id}</h5>
               </Link>
               <pre>
