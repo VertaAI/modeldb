@@ -1,16 +1,21 @@
 import * as React from 'react';
+import { connect } from 'react-redux';
+import { searchFilters } from '../../store/filter/actions';
+import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import FilterItem from './FilterItem';
 import styles from './FilterSelect.module.css';
+import dragDropImg from './images/drag-and-drop.png';
+
+import AppliedFilterItem from './AppliedFilterItem';
 
 interface ILocalProps {
-  // onChangeFilter?: React.EventHandler<Map<string, string>>;
   placeHolderText?: string;
-  filterProps?: string[];
+  foundFilters?: IFilterData[];
+  isFiltersSupport: boolean;
+  appliedFilters: IFilterData[];
 }
 
 interface ILocalState {
-  txt: string;
-  filteredProps?: string[];
   isFocused: boolean;
 }
 
@@ -19,54 +24,22 @@ export interface IFilterData {
   propertyValue: string;
 }
 
-export class FilterSelect extends React.Component<ILocalProps, ILocalState> {
-  private static checkProp(txt: string, propName: string) {
-    const txtParts = txt
-      .trim()
-      .toUpperCase()
-      .split(' ');
-    if (txtParts.length > 1) {
-      return (
-        propName
-          .trim()
-          .toUpperCase()
-          .search(txtParts[0]) > -1
-      );
-    }
-    return false;
-  }
-
-  private static getValue(txt: string): string {
-    const txtParts = txt.split(' ');
-    if (txtParts.length > 1) {
-      txtParts.shift();
-      return txtParts.join(' ');
-    }
-    return '';
-  }
+type AllProps = ILocalProps & IConnectedReduxProps;
+class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
-    filteredProps: [],
-    isFocused: false,
-    txt: ''
+    isFocused: false
   };
-  public constructor(props: ILocalProps) {
+  public constructor(props: AllProps) {
     super(props);
     this.onChange = this.onChange.bind(this);
     this.onFocus = this.onFocus.bind(this);
     this.onBlur = this.onBlur.bind(this);
-  }
 
-  public componentDidMount() {
-    this.setState({ txt: '', filteredProps: this.props.filterProps });
+    this.renderPopup = this.renderPopup.bind(this);
   }
 
   public onChange(event: React.ChangeEvent<HTMLInputElement>) {
-    let foundProps: string[] | undefined = this.state.filteredProps;
-    if (this.props.filterProps) {
-      const txt: string = event.target.value;
-      foundProps = this.props.filterProps.filter((value, index, array) => FilterSelect.checkProp(txt, value));
-    }
-    this.setState({ ...this.state, txt: event.target.value, filteredProps: foundProps });
+    this.props.dispatch(searchFilters(event.target.value));
   }
 
   public onFocus() {
@@ -76,37 +49,54 @@ export class FilterSelect extends React.Component<ILocalProps, ILocalState> {
   public onBlur() {
     this.setState({ ...this.state, isFocused: false });
   }
-
   public render() {
     return (
       <div className={styles.root}>
-        <input
-          className={styles.input}
-          placeholder={this.props.placeHolderText}
-          onChange={this.onChange}
-          onFocus={this.onFocus}
-          onBlur={this.onBlur}
-        />
-        <label className="fa fa-search" aria-hidden={true} />
-        {this.state.filteredProps && this.state.isFocused ? (
-          <div className={styles.found_filters_popup}>
-            {this.state.filteredProps.map((prop, index) => (
-              <FilterItem
-                key={index}
-                PropertyName={prop}
-                PropertyValue={FilterSelect.getValue(this.state.txt)}
-                onCreateFilter={this.onCreateFilter}
-              />
-            ))}
-          </div>
-        ) : (
-          ''
-        )}
-        <div className={styles.applied_filters} />
-        <div className={styles.apply_filters_button}>
-          <button>Filter</button>
+        <div>
+          <input
+            className={styles.input}
+            placeholder={this.props.placeHolderText}
+            onChange={this.onChange}
+            onFocus={this.onFocus}
+            onBlur={this.onBlur}
+          />
+          <label className="fa fa-search" aria-hidden={true} />
+          {this.renderPopup()}
         </div>
+
+        {this.props.isFiltersSupport && (
+          <div>
+            <div className={styles.applied_filters}>
+              {this.props.appliedFilters.map((filter, index) => (
+                <AppliedFilterItem key={index} data={filter} />
+              ))}
+            </div>
+
+            <div className={styles.apply_filters_button}>
+              <button>Filter</button>
+            </div>
+          </div>
+        )}
       </div>
+    );
+  }
+
+  private renderPopup(): JSX.Element | false | undefined {
+    return (
+      this.props.foundFilters &&
+      this.props.foundFilters.length > 0 &&
+      this.state.isFocused && (
+        <div className={styles.found_filters_popup}>
+          {this.props.foundFilters!.map((filter, index) => (
+            <FilterItem
+              key={index}
+              PropertyName={filter.propertyName}
+              PropertyValue={filter.propertyValue}
+              onCreateFilter={this.onCreateFilter}
+            />
+          ))}
+        </div>
+      )
     );
   }
 
@@ -114,3 +104,13 @@ export class FilterSelect extends React.Component<ILocalProps, ILocalState> {
     console.log(data);
   }
 }
+
+const mapStateToProps = ({ filters }: IApplicationState) => ({
+  appliedFilters: filters.appliedFilters,
+  foundFilters: filters.foundFilters,
+  isFiltersSupport: filters.isFiltersSupporting
+});
+
+// export connect(mapStateToProps)(FilterSelect);
+const filterSelect = connect(mapStateToProps)(FilterSelectComponent);
+export { filterSelect as FilterSelect };

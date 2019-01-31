@@ -1,3 +1,4 @@
+import { IFilterData } from 'components/FilterSelect/FilterSelect';
 import { Artifact, ArtifactKey, ArtifactType } from '../models/Artifact';
 import { Hyperparameter } from '../models/HyperParameters';
 import { Model } from '../models/Model';
@@ -66,7 +67,7 @@ export default class MockDataService implements IDataService {
     });
   }
 
-  public getProjects(): Promise<Project[]> {
+  public getProjects(filter?: IFilterData[]): Promise<Project[]> {
     return new Promise<Project[]>((resolve, reject) => {
       resolve(this.projects);
     });

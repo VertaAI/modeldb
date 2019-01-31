@@ -2,6 +2,7 @@ import { connectRouter, RouterState } from 'connected-react-router';
 import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
+import { filtersReducer, IFilterState } from './filter';
 import { IModelState, modelReducer } from './model';
 import { IProjectsState, IProjectState, projectReducer, projectsReducer } from './project';
 import { IUserState, userReducer } from './user';
@@ -11,6 +12,7 @@ export interface IApplicationState {
   projects: IProjectsState;
   router?: RouterState;
   project: IProjectState;
+  filters: IFilterState;
   model: IModelState;
 }
 
@@ -21,6 +23,7 @@ export interface IConnectedReduxProps<A extends Action = any> {
 
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
+    filters: filtersReducer,
     layout: userReducer,
     model: modelReducer,
     project: projectReducer,

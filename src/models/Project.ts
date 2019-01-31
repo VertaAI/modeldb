@@ -1,6 +1,9 @@
+import { IMetaData, MetaData } from './IMetaData';
 import { Model } from './Model';
 
-export default class Project {
+export default class Project extends MetaData {
+  public static metaData: IMetaData[] = [{ propertyName: 'Name' }, { propertyName: 'Description' }];
+
   private name: string = '';
   private description: string = '';
   private author: string = '';

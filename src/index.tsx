@@ -19,6 +19,12 @@ function getUser(): User | null {
 }
 
 const initialState: IApplicationState = {
+  filters: {
+    appliedFilters: [],
+    context: '',
+    foundFilters: [],
+    isFiltersSupporting: false
+  },
   layout: {
     user: getUser()
   },
