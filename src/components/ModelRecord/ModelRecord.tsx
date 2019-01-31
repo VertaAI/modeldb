@@ -16,7 +16,7 @@ export interface IUrlProps {
 }
 
 interface IPropsFromState {
-  model_record?: ModelRecord | null;
+  data?: ModelRecord | null;
   loading: boolean;
 }
 
@@ -24,8 +24,8 @@ type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedRed
 
 class ModelRecordLayout extends React.Component<AllProps> {
   public render() {
-    const { model_record, loading } = this.props;
-    const notNullModel = model_record || new ModelRecord();
+    const { data, loading } = this.props;
+    const notNullModel = data || new ModelRecord();
 
     return (
       <div className={styles.model_layout}>
@@ -106,7 +106,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
 }
 
 const mapStateToProps = ({ model_record }: IApplicationState) => ({
-  model_record: model_record.data,
+  data: model_record.data,
   loading: model_record.loading
 });
 

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import styles from './ProjectWidget.module.css';
 
 interface ILocalProps {
-  project: any;
+  project: Project;
 }
 
 export default class ProjectWidget extends React.Component<ILocalProps> {
@@ -14,10 +14,10 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
       <Link className={styles.project_link} to={`/project/${this.props.project.Id}/exp-runs`}>
         <div className={styles.project_widget}>
           <div className={styles.title_block}>
-            <div className={styles.title}>{this.props.project.name}</div>
-            <div className={styles.description}>{this.props.project.description}</div>
+            <div className={styles.title}>{this.props.project.Name}</div>
+            <div className={styles.description}>{this.props.project.Description}</div>
             <div className={styles.tags_block}>
-              {this.props.project.tags.map((tag: string, i: number) => {
+              {this.props.project.Tags.map((tag: string, i: number) => {
                 return (
                   <p key={i} className={styles.tags}>
                     {' '}
@@ -47,10 +47,10 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
             />
             <div className={styles.created_date_block}>
               <div>Created:</div>
-              <div> {getDate(Number(this.props.project.date_created))} </div>
+              <div>{this.props.project.DateCreated.toLocaleDateString()}</div>
               <br />
               <div>Updated:</div>
-              <div> {getDate(Number(this.props.project.date_updated))} </div>
+              <div>{this.props.project.DateUpdated.toLocaleDateString()}</div>
             </div>
           </div>
         </div>
@@ -58,12 +58,3 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
     );
   }
 }
-
-const getDate = function(utc_date: number): string {
-  const date = new Date(utc_date);
-  return date
-    .toUTCString()
-    .split(' ')
-    .slice(0, 4)
-    .join(' ');
-};

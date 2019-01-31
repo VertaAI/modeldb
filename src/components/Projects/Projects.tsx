@@ -22,7 +22,7 @@ class Projects extends React.Component<AllProps> {
     return (
       <div className={styles.projects}>
         <div className={styles.widgets_list}>
-          {this.props.projects ? this.props.projects.map((proj: any, i: number) => <ProjectWidget project={proj} key={i} />) : ''}
+          {this.props.projects ? this.props.projects.map((proj, i) => <ProjectWidget project={proj} key={i} />) : ''}
         </div>
       </div>
     );
