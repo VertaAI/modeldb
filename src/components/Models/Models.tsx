@@ -4,7 +4,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import { Model } from '../../models/Model';
 import Project from '../../models/Project';
+import { initContext, resetContext } from '../../store/filter';
 import { fetchProjectWithModels } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import { IdCell } from './CellComponents/IdCell';
@@ -63,6 +65,18 @@ class Models extends React.Component<AllProps> {
 
   public componentDidMount() {
     this.props.dispatch(fetchProjectWithModels(this.props.match.params.projectId));
+    this.props.dispatch(
+      initContext(Model.name, {
+        appliedFilters: [],
+        ctx: Model.name,
+        isFiltersSupporting: true,
+        metadata: Model.metaData
+      })
+    );
+  }
+
+  public componentWillUnmount() {
+    this.props.dispatch(resetContext());
   }
 }
 

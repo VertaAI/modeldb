@@ -17,7 +17,14 @@ type AllProps = IPropsFromState & IConnectedReduxProps;
 class Projects extends React.Component<AllProps> {
   public componentDidMount() {
     this.props.dispatch(fetchProjects());
-    this.props.dispatch(initContext(Project.name, Project.metaData, true));
+    this.props.dispatch(
+      initContext(Project.name, {
+        appliedFilters: [],
+        ctx: Project.name,
+        isFiltersSupporting: true,
+        metadata: Project.metaData
+      })
+    );
   }
 
   public componentWillUnmount() {

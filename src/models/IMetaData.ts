@@ -1,7 +1,8 @@
+import { Model } from './Model';
+import Project from './Project';
+
 export interface IMetaData {
   propertyName?: string;
 }
 
-export abstract class MetaData {
-  public static metaData: IMetaData[];
-}
+export type MetaData = Project | Model;

@@ -7,6 +7,11 @@
   background-color: #ffffff;
   color: var(--fr-color3);
   font-size: var(--font-size3);
+  margin-top: 6px;
+}
+
+.root:first-of-type {
+  margin-top: 0;
 }
 
 .edit_button {

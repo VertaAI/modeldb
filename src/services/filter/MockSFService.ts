@@ -1,9 +1,9 @@
 import { IMetaData, MetaData } from 'models/IMetaData';
 import Project from 'models/Project';
-import { IFilterData } from '../components/FilterSelect/FilterSelect';
-import ISearchAndFilterService from './ISearchAndFilterService';
+import { IFilterData } from '../../components/FilterSelect/FilterSelect';
+import ISearchAndFilterService from '../ISearchAndFilterService';
 
-export default class MockSearchAndFiltersService implements ISearchAndFilterService<Project> {
+export default abstract class MockSFService<T extends MetaData> implements ISearchAndFilterService<T> {
   private filters: string[] = [];
 
   private metaData: IMetaData[] = [];
@@ -14,11 +14,12 @@ export default class MockSearchAndFiltersService implements ISearchAndFilterServ
     });
   }
 
-  public search<T extends MetaData>(searchString: string): Promise<T[]> {
-    return new Promise<T[]>((resolve, reject) => {
-      resolve([]);
-    });
-  }
+  public abstract search(searchString: string): Promise<T[]>;
+  // public search<T extends MetaData>(searchString: string): Promise<T[]> {
+  //   return new Promise<T[]>((resolve, reject) => {
+  //     resolve([]);
+  //   });
+  // }
   public setMetaData(meta: IMetaData[]): void {
     this.metaData = meta;
     this.filters = [];
