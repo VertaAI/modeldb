@@ -1,4 +1,3 @@
-import { Model } from 'models/Model';
 import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
 import ServiceFactory from '../../services/ServiceFactory';
@@ -10,6 +9,9 @@ export const fetchModel = (id: string): ActionResult<void, fetchModelAction> => 
   await ServiceFactory.getDataService()
     .getModel(id)
     .then(res => {
-      dispatch(action(fetchModelActionTypes.FETCH_MODEL_SUCESS, res));
+      dispatch(action(fetchModelActionTypes.FETCH_MODEL_SUCCESS, res));
+    })
+    .catch(err => {
+      dispatch(action(fetchModelActionTypes.FETCH_MODEL_FAILURE));
     });
 };

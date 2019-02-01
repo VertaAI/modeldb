@@ -12,7 +12,7 @@ export default function configureStore(history: History, initialState: IApplicat
   const store = createStore(
     createRootReducer(history),
     initialState,
-    composeEnhancers(applyMiddleware(routerMiddleware(history), createLogger, reduxThunk as ThunkMiddleware<IApplicationState>))
+    composeEnhancers(applyMiddleware(routerMiddleware(history), reduxThunk as ThunkMiddleware<IApplicationState>))
   );
 
   return store;

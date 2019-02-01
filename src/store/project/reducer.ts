@@ -1,4 +1,5 @@
 import { Reducer } from 'redux';
+import { IUserState } from 'store/user';
 import {
   fetchProjectsAction,
   fetchProjectsActionTypes,
@@ -23,7 +24,7 @@ export const projectsReducer: Reducer<IProjectsState> = (state = projectsInitial
     case fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST: {
       return { ...state, loading: true };
     }
-    case fetchProjectsActionTypes.FETCH_PROJECTS_SUCESS: {
+    case fetchProjectsActionTypes.FETCH_PROJECTS_SUCСESS: {
       return { ...state, loading: false, data: action.payload };
     }
     default: {
@@ -37,8 +38,8 @@ export const projectReducer: Reducer<IProjectState> = (state = projectInitialSta
     case projectFetchModelsActionTypes.FETCH_MODELS_REQUEST: {
       return { ...state, loading: true };
     }
-    case projectFetchModelsActionTypes.FETCH_MODELS_SUCESS: {
-      return { ...state, data: action.payload };
+    case projectFetchModelsActionTypes.FETCH_MODELS_SUCCESS: {
+      return { ...state, loading: false, data: action.payload };
     }
     case projectFetchModelsActionTypes.FETCH_MODELS_FAILURE: {
       return { ...state };

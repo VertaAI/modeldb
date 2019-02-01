@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import Callback from '../../components/Callback/Callback';
-import Footer from '../../components/Footer/Footer';
+import { Footer } from '../../components/Footer/Footer';
 import Login from '../../components/Login/Login';
 import AnonymousLayoutHeader from '../AnonymousLayoutHeader/AnonymousLayoutHeader';
 import styles from './AnonymousLayout.module.css';
@@ -16,8 +16,8 @@ export default class AnonymousLayout extends React.PureComponent {
           </div>
           <div className={styles.content}>
             <Switch>
-              <Route exact={true} path="/" component={Login} />
               <Route path="/callback" component={Callback} />
+              <Route component={Login} />
             </Switch>
           </div>
           <div className={styles.footer}>
