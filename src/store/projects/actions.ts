@@ -9,6 +9,6 @@ export const fetchProjects = (): ActionResult<void, fetchProjectsAction> => asyn
   await ServiceFactory.getProjectsService()
     .getProjects()
     .then(res => {
-      dispatch({ type: fetchProjectsActionTypes.FETCH_PROJECTS_SUCESS, payload: res });
+      dispatch(action(fetchProjectsActionTypes.FETCH_PROJECTS_SUCESS, res));
     });
 };

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
+import { IArtifact } from '../../models/Artifact';
 import { IHyperparameter } from '../../models/HyperParameters';
 import { IMetric } from '../../models/Metrics';
-import { IArtifact } from '../../models/Artifact';
 import ModelRecord from '../../models/ModelRecord';
 import { fetchModelRecord } from '../../store/model-record';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
@@ -30,10 +30,6 @@ class ModelRecordLayout extends React.Component<AllProps> {
     return (
       <div className={styles.model_layout}>
         {this.renderTextRecord('Name', notNullModel.Name, styles.name)}
-        {this.renderTextRecord(
-          `ID${notNullModel.CodeVersion ? `, version` : ''}`,
-          `${notNullModel.Id}${notNullModel.CodeVersion ? `, ${notNullModel.CodeVersion}` : ''}`
-        )}
         {this.renderTextRecord('Project', notNullModel.ProjectId)}
         {this.renderTextRecord('Experiment', notNullModel.ExperimentId)}
         {this.renderTextRecord('Code version', notNullModel.CodeVersion)}
@@ -105,9 +101,9 @@ class ModelRecordLayout extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = ({ model_record }: IApplicationState) => ({
-  data: model_record.data,
-  loading: model_record.loading
+const mapStateToProps = ({ modelRecord }: IApplicationState) => ({
+  data: modelRecord.data,
+  loading: modelRecord.loading
 });
 
 export default connect(mapStateToProps)(ModelRecordLayout);

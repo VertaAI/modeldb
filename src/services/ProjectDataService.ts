@@ -1,6 +1,6 @@
 import Project from '../models/Project';
-import { IProjectDataService } from './IApiDataService';
 import { PROJECTS_LIST } from './ApiEndpoints';
+import { IProjectDataService } from './IApiDataService';
 
 export default class ProjectDataService implements IProjectDataService {
   private projects: Project[];
@@ -14,7 +14,7 @@ export default class ProjectDataService implements IProjectDataService {
       fetch(PROJECTS_LIST.endpoint, { method: PROJECTS_LIST.method })
         .then(res => {
           if (!res.ok) {
-            throw Error(res.statusText);
+            reject(res.statusText);
           }
           return res.json();
         })

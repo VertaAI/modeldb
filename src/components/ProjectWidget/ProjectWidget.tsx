@@ -20,7 +20,6 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
               {this.props.project.Tags.map((tag: string, i: number) => {
                 return (
                   <p key={i} className={styles.tags}>
-                    {' '}
                     {tag}
                   </p>
                 );

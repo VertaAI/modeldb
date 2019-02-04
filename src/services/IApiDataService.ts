@@ -1,5 +1,5 @@
-import Project from '../models/Project';
 import ModelRecord from '../models/ModelRecord';
+import Project from '../models/Project';
 
 export interface IProjectDataService {
   getProjects(): Promise<Project[]>;
@@ -7,6 +7,6 @@ export interface IProjectDataService {
 }
 
 export interface IExperimentRunsDataService {
-  getExperimentRuns(project_id: string): Promise<ModelRecord[]>;
-  getModelRecord(model_id: string, store_experiment_runs?: ModelRecord[]): Promise<ModelRecord>;
+  getExperimentRuns(projectId: string): Promise<ModelRecord[]>;
+  getModelRecord(modelId: string, storeExperimentRuns?: ModelRecord[]): Promise<ModelRecord>;
 }

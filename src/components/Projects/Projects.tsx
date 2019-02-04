@@ -7,7 +7,7 @@ import ProjectWidget from '../ProjectWidget/ProjectWidget';
 import styles from './Projects.module.css';
 
 interface IPropsFromState {
-  projects?: Project[] | null;
+  data?: Project[] | null;
   loading: boolean;
 }
 
@@ -22,7 +22,7 @@ class Projects extends React.Component<AllProps> {
     return (
       <div className={styles.projects}>
         <div className={styles.widgets_list}>
-          {this.props.projects ? this.props.projects.map((proj, i) => <ProjectWidget project={proj} key={i} />) : ''}
+          {this.props.data ? this.props.data.map((proj, i) => <ProjectWidget project={proj} key={i} />) : ''}
         </div>
       </div>
     );
@@ -30,8 +30,8 @@ class Projects extends React.Component<AllProps> {
 }
 
 const mapStateToProps = ({ projects }: IApplicationState) => ({
-  loading: projects.loading,
-  projects: projects.data
+  data: projects.data,
+  loading: projects.loading
 });
 
 export default connect(mapStateToProps)(Projects);

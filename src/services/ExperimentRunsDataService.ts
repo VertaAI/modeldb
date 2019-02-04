@@ -1,9 +1,9 @@
-import ModelRecord from '../models/ModelRecord';
-import { IExperimentRunsDataService } from './IApiDataService';
-import { EXPERIMENT_RUNS } from './ApiEndpoints';
-import { MetricKey, Metric } from '../models/Metrics';
-import { Hyperparameter } from '../models/HyperParameters';
 import { Artifact, ArtifactKey } from '../models/Artifact';
+import { EXPERIMENT_RUNS } from './ApiEndpoints';
+import { IExperimentRunsDataService } from './IApiDataService';
+import { Hyperparameter } from '../models/HyperParameters';
+import { Metric, MetricKey } from '../models/Metrics';
+import ModelRecord from '../models/ModelRecord';
 
 type Not<T> = [T] extends [never] ? unknown : never;
 type Extractable<T, U> = Not<U extends any ? Not<T extends U ? unknown : never> : never>;
@@ -17,60 +17,60 @@ function asEnum<E extends Record<keyof E, string | number>, K extends string | n
 }
 
 export default class ExperimentRunsDataService implements IExperimentRunsDataService {
-  private experiment_runs: ModelRecord[];
-  private model_record: ModelRecord;
+  private experimentRuns: ModelRecord[];
+  private modelRecord: ModelRecord;
 
   constructor() {
-    this.experiment_runs = [];
-    this.model_record = new ModelRecord();
+    this.experimentRuns = [];
+    this.modelRecord = new ModelRecord();
   }
 
-  public getExperimentRuns(project_id: string): Promise<ModelRecord[]> {
+  public getExperimentRuns(projectId: string): Promise<ModelRecord[]> {
     return new Promise<ModelRecord[]>((resolve, reject) => {
-      fetch(EXPERIMENT_RUNS.endpoint, { method: EXPERIMENT_RUNS.method, body: EXPERIMENT_RUNS.body(project_id) })
+      fetch(EXPERIMENT_RUNS.endpoint, { method: EXPERIMENT_RUNS.method, body: EXPERIMENT_RUNS.body(projectId) })
         .then(res => {
           if (!res.ok) {
-            throw Error(res.statusText);
+            reject(res.statusText);
           }
           return res.json();
         })
         .then(res => {
           res.experiment_runs.forEach((element: any) => {
-            const model_record = new ModelRecord();
-            model_record.Id = element.id;
-            model_record.ProjectId = element.project_id;
-            model_record.ExperimentId = element.experiment_id;
-            model_record.Tags = element.tags || '';
-            model_record.Name = element.name;
-            model_record.CodeVersion = element.code_version || '';
+            const modelRecord = new ModelRecord();
+            modelRecord.Id = element.id;
+            modelRecord.ProjectId = element.project_id;
+            modelRecord.ExperimentId = element.experiment_id;
+            modelRecord.Tags = element.tags || '';
+            modelRecord.Name = element.name;
+            modelRecord.CodeVersion = element.code_version || '';
 
             element.metrics.forEach((metric: Metric) => {
-              model_record.Metric.push(new Metric(asEnum(MetricKey, metric.key), metric.value));
+              modelRecord.Metric.push(new Metric(asEnum(MetricKey, metric.key), metric.value));
             });
 
             element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
-              model_record.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
+              modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
             });
 
             element.artifacts.forEach((artifact: Artifact) => {
-              model_record.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+              modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
             });
 
-            this.experiment_runs.push(model_record);
+            this.experimentRuns.push(modelRecord);
           });
-          resolve(this.experiment_runs);
+          resolve(this.experimentRuns);
         });
     });
   }
 
-  public getModelRecord(model_id: string, store_experiment_runs: ModelRecord[]): Promise<ModelRecord> {
+  public getModelRecord(modelId: string, storeExperimentRuns: ModelRecord[]): Promise<ModelRecord> {
     return new Promise<ModelRecord>((resolve, reject) => {
-      store_experiment_runs.forEach(model => {
-        if (model.Id === model_id) {
-          this.model_record = model;
+      storeExperimentRuns.forEach(model => {
+        if (model.Id === modelId) {
+          this.modelRecord = model;
         }
       });
-      resolve(this.model_record);
+      resolve(this.modelRecord);
     });
   }
 }

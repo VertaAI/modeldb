@@ -19,16 +19,16 @@ function getUser(): User | null {
 }
 
 const initialState: IApplicationState = {
+  experimentRuns: {
+    loading: false
+  },
   layout: {
     user: getUser()
   },
-  experiment_runs: {
+  modelRecord: {
     loading: false
   },
-  projects: { loading: false },
-  model_record: {
-    loading: false
-  }
+  projects: { loading: false }
 };
 
 const store = configureStore(history, initialState);

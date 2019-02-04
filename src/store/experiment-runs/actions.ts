@@ -9,6 +9,6 @@ export const fetchExperimentRuns = (id: string): ActionResult<void, fetchExperim
   await ServiceFactory.getExperimentRunsService()
     .getExperimentRuns(id)
     .then(res => {
-      dispatch({ type: fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_SUCESS, payload: res });
+      dispatch(action(fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_SUCESS, res));
     });
 };

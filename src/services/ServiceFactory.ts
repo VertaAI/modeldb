@@ -1,8 +1,8 @@
+import ExperimentRunsDataService from './ExperimentRunsDataService';
 import { IExperimentRunsDataService, IProjectDataService } from './IApiDataService';
 import { IAuthenticationService } from './IAuthenticationService';
-import ProjectDataService from './ProjectDataService';
-import ExperimentRunsDataService from './ExperimentRunsDataService';
 import MockAuthenticationService from './MockAuthenticationService';
+import ProjectDataService from './ProjectDataService';
 
 export default class ServiceFactory {
   public static getProjectsService(): IProjectDataService {

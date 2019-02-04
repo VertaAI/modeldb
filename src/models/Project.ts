@@ -2,10 +2,10 @@ export default class Project {
   private id: string = '';
   private name: string = '';
   private description: string = '';
-  private date_created: Date = new Date();
-  private date_updated: Date = new Date();
+  private dateCreated: Date = new Date();
+  private dateUpdated: Date = new Date();
   private author?: string;
-  private tags: Array<string> = [];
+  private tags: string[] = [];
 
   public get Id(): string {
     return this.id;
@@ -32,19 +32,19 @@ export default class Project {
   }
 
   public get DateCreated(): Date {
-    return this.date_created;
+    return this.dateCreated;
   }
 
   public set DateCreated(v: Date) {
-    this.date_created = v;
+    this.dateCreated = v;
   }
 
   public get DateUpdated(): Date {
-    return this.date_updated;
+    return this.dateUpdated;
   }
 
   public set DateUpdated(v: Date) {
-    this.date_updated = v;
+    this.dateUpdated = v;
   }
 
   public get Author(): string | undefined {
@@ -55,11 +55,11 @@ export default class Project {
     this.author = v;
   }
 
-  public get Tags(): Array<string> {
+  public get Tags(): string[] {
     return this.tags;
   }
 
-  public set Tags(v: Array<string>) {
+  public set Tags(v: string[]) {
     this.tags = v;
   }
 }
