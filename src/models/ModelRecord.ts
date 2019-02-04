@@ -4,10 +4,10 @@ import { IMetric } from './Metrics';
 
 export default class ModelRecord {
   private id: string = '';
-  private project_id: string = '';
-  private experiment_id: string = '';
+  private projectId: string = '';
+  private experimentId: string = '';
   private name: string = '';
-  private code_version: string = '';
+  private codeVersion: string = '';
 
   private tags: string[] = [];
   private hyperparameters: IHyperparameter[] = [];
@@ -29,24 +29,24 @@ export default class ModelRecord {
   }
 
   public get CodeVersion(): string {
-    return this.code_version;
+    return this.codeVersion;
   }
   public set CodeVersion(v: string) {
-    this.code_version = v;
+    this.codeVersion = v;
   }
 
   public get ProjectId(): string {
-    return this.project_id;
+    return this.projectId;
   }
   public set ProjectId(v: string) {
-    this.project_id = v;
+    this.projectId = v;
   }
 
   public get ExperimentId(): string {
-    return this.experiment_id;
+    return this.experimentId;
   }
   public set ExperimentId(v: string) {
-    this.experiment_id = v;
+    this.experimentId = v;
   }
 
   public get Tags(): string[] {
