@@ -4,11 +4,11 @@
   min-height: 100vh;
   display: grid;
 
-  grid-template-columns: auto 300px 1140px auto;
+  grid-template-columns: 300px minmax(20px, 40px) auto minmax(940px, 1060px) auto minmax(20px, 40px);
   grid-template-rows: 56px auto;
   grid-template-areas:
-    'a header header .'
-    'a filtersBar content .';
+    'header header header header header header'
+    'filtersBar . . content . .';
 }
 
 .header {
@@ -24,5 +24,5 @@
 
 .content {
   grid-area: content;
-  padding: 30px 40px;
+  padding: 30px 0;
 }

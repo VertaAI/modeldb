@@ -7,6 +7,7 @@ import Project from '../../models/Project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import styles from './Breadcrumb.module.css';
 import { BreadcrumbItem } from './BreadcrumbItem';
+import headerArrow from './images/header-arrow.svg';
 
 interface IPropsFromState {
   project?: Project | null;
@@ -51,7 +52,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   public render() {
     const content: JSX.Element[] = [];
     let currentItem = this.prepareItem();
-    content.push(this.renderItem(currentItem));
+    content.push(this.renderItem(currentItem, true));
 
     while (currentItem.PreviousItem) {
       currentItem = currentItem.PreviousItem;
@@ -61,11 +62,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     return (
       <div className={styles.content}>
         {content.reverse().map((value: JSX.Element, index: number) => {
-          return (
-            <span className={index === content.length - 1 ? styles.active_link : ''} key={index}>
-              {value}
-            </span>
-          );
+          return <span key={index}>{value}</span>;
         })}
       </div>
     );
@@ -92,11 +89,11 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     return breadcrumbItems.find(x => x.ShouldMatch.test(this.state.url)) || this.indexBreadcrumbItem;
   }
 
-  private renderItem(item: BreadcrumbItem) {
+  private renderItem(item: BreadcrumbItem, active: boolean = false) {
     return (
       <span>
-        {item.PreviousItem ? <i className={`fa fa-angle-right ${styles.arrow}`} /> : ''}
-        <Link className={styles.link} to={item.Path}>
+        {item.PreviousItem ? <img className={styles.arrow} src={headerArrow} /> : ''}
+        <Link className={`${styles.link} ${active ? styles.active_link : ''}`} to={item.Path}>
           {item.Name}
         </Link>
       </span>
