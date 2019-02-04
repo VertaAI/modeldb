@@ -1,22 +1,30 @@
 import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
+import { history } from '../../index';
 import ServiceFactory from '../../services/ServiceFactory';
 import { IUserLogoutAction, userAuthenticateAction, userAuthenticateActionTypes, userLogoutActionTypes } from './types';
 
 export const authenticateUser = (): ActionResult<void, userAuthenticateAction> => async (dispatch, getState) => {
   dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST));
 
-  await ServiceFactory.getAuthenticationService()
-    .authenticate()
-    .then(res => {
-      localStorage.setItem('user', JSON.stringify(res));
-      dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_SUCESS, res));
-    });
+  ServiceFactory.getAuthenticationService().login();
 };
 
 export const logoutUser = (): ActionResult<void, IUserLogoutAction> => async (dispatch, getState) => {
   dispatch(action(userLogoutActionTypes.LOGOUT_USER));
 
   ServiceFactory.getAuthenticationService().logout();
-  localStorage.removeItem('user');
+};
+
+export const handleUserAuthentication = (): ActionResult<void, userAuthenticateAction> => async (dispatch, getState) => {
+  try {
+    const authenticationService = ServiceFactory.getAuthenticationService();
+
+    await authenticationService.handleAuthentication();
+    const profile = await authenticationService.getProfile();
+    history.push('/');
+    dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_SUCESS, profile));
+  } catch (error) {
+    dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_FAILURE));
+  }
 };

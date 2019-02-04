@@ -1,8 +1,10 @@
+import Auth0AuthenticationService from './auth/Auth0AuthenticationService';
+import { IAuthenticationService } from './auth/IAuthenticationService';
+import MockAuthenticationService from './auth/MockAuthenticationService';
 import ExperimentRunsDataService from './ExperimentRunsDataService';
 import { IExperimentRunsDataService, IProjectDataService } from './IApiDataService';
-import { IAuthenticationService } from './IAuthenticationService';
-import MockAuthenticationService from './MockAuthenticationService';
 import ProjectDataService from './ProjectDataService';
+
 
 export default class ServiceFactory {
   public static getProjectsService(): IProjectDataService {
@@ -14,6 +16,6 @@ export default class ServiceFactory {
   }
 
   public static getAuthenticationService(): IAuthenticationService {
-    return new MockAuthenticationService();
+    return new Auth0AuthenticationService();
   }
 }

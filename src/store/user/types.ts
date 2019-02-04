@@ -2,6 +2,8 @@ import User from 'models/User';
 
 export interface IUserState {
   readonly user: User | null;
+  loading: boolean;
+  authenticated: boolean;
 }
 
 export enum userAuthenticateActionTypes {
