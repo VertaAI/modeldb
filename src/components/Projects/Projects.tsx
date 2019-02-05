@@ -1,6 +1,7 @@
-import Project from 'models/Project';
 import * as React from 'react';
 import { connect } from 'react-redux';
+import Project from '../../models/Project';
+import { initContext, resetContext } from '../../store/filter/actions';
 import { fetchProjects } from '../../store/project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
@@ -16,6 +17,18 @@ type AllProps = IPropsFromState & IConnectedReduxProps;
 class Projects extends React.Component<AllProps> {
   public componentDidMount() {
     this.props.dispatch(fetchProjects());
+    this.props.dispatch(
+      initContext(Project.name, {
+        appliedFilters: [],
+        ctx: Project.name,
+        isFiltersSupporting: true,
+        metadata: Project.metaData
+      })
+    );
+  }
+
+  public componentWillUnmount() {
+    this.props.dispatch(resetContext());
   }
 
   public render() {
