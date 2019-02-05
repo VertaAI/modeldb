@@ -11,8 +11,8 @@ export const modelReducer: Reducer<IModelState> = (state = modelInitialState, ac
     case fetchModelActionTypes.FETCH_MODEL_REQUEST: {
       return { ...state, loading: true };
     }
-    case fetchModelActionTypes.FETCH_MODEL_SUCESS: {
-      return { ...state, data: action.payload };
+    case fetchModelActionTypes.FETCH_MODEL_SUCCESS: {
+      return { ...state, loading: false, data: action.payload };
     }
     case fetchModelActionTypes.FETCH_MODEL_FAILURE: {
       return { ...state };

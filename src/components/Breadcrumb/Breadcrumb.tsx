@@ -52,6 +52,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   public render() {
     const content: JSX.Element[] = [];
     let currentItem = this.prepareItem();
+    if (!currentItem) return '';
     content.push(this.renderItem(currentItem, true));
 
     while (currentItem.PreviousItem) {
@@ -68,7 +69,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     );
   }
 
-  private prepareItem(): BreadcrumbItem {
+  private prepareItem(): BreadcrumbItem | undefined {
     const { project, model } = this.props;
 
     this.projectBreadcrumbItem.Name = project ? project.Name.toLocaleUpperCase() : model ? model.ProjectName.toLocaleUpperCase() : '';
@@ -84,7 +85,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     breadcrumbItems.push(this.projectBreadcrumbItem);
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
-    return breadcrumbItems.find(x => x.ShouldMatch.test(this.state.url)) || this.indexBreadcrumbItem;
+    return breadcrumbItems.find(x => x.ShouldMatch.test(this.state.url));
   }
 
   private renderItem(item: BreadcrumbItem, active: boolean = false) {

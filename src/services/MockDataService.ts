@@ -74,7 +74,8 @@ export default class MockDataService implements IDataService {
 
   public getProject(id: string): Promise<Project> {
     return new Promise<Project>((resolve, reject) => {
-      resolve(this.projects.find(x => x.Id === id));
+      const project = this.projects.find(x => x.Id === id);
+      project ? resolve(project) : reject('error');
     });
   }
 
@@ -89,7 +90,7 @@ export default class MockDataService implements IDataService {
           }
         });
       });
-      resolve(foundModel);
+      foundModel ? resolve(foundModel) : reject();
     });
   }
 }

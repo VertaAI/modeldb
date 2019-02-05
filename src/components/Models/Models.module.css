@@ -37,3 +37,8 @@
   font-size: 13px;
   line-height: 15px;
 }
+
+.loader {
+  display: block;
+  margin: 0 auto;
+}

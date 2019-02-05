@@ -8,6 +8,7 @@ import { IArtifact } from '../../models/Artifact';
 import { Model } from '../../models/Model';
 import { fetchModel } from '../../store/model';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import loader from '../images/loader.gif';
 import ShowContentBasedOnUrl from '../ShowContentBasedOnUrl/ShowContentBasedOnUrl';
 import styles from './Model.module.css';
 
@@ -26,24 +27,22 @@ type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedRed
 class ModelLayout extends React.Component<AllProps> {
   public render() {
     const { data, loading } = this.props;
-    const notNullModel = data || new Model();
 
-    return (
+    return loading ? (
+      <img src={loader} className={styles.loader} />
+    ) : data ? (
       <div className={styles.model_layout}>
-        {this.renderTextRecord('Name', notNullModel.Name, styles.name)}
-        {this.renderTextRecord('Description', notNullModel.Description)}
-        {this.renderTextRecord(
-          `ID${notNullModel.Version ? `, version` : ''}`,
-          `${notNullModel.Id}${notNullModel.Version ? `, ${notNullModel.Version}` : ''}`
-        )}
-        {this.renderTextRecord('Project', notNullModel.ProjectId)}
-        {this.renderTextRecord('Experiment', notNullModel.ExperimentId)}
-        {this.renderTextRecord('Date created', `${notNullModel.DateCreated ? notNullModel.DateCreated.toDateString() : ''}`)}
-        {this.renderTextRecord('Date updated', `${notNullModel.DateUpdated ? notNullModel.DateUpdated.toDateString() : ''}`)}
-        {this.renderTextRecord('Code version', notNullModel.CodeVersion)}
+        {this.renderTextRecord('Name', data.Name, styles.name)}
+        {this.renderTextRecord('Description', data.Description)}
+        {this.renderTextRecord(`ID${data.Version ? `, version` : ''}`, `${data.Id}${data.Version ? `, ${data.Version}` : ''}`)}
+        {this.renderTextRecord('Project', data.ProjectId)}
+        {this.renderTextRecord('Experiment', data.ExperimentId)}
+        {this.renderTextRecord('Date created', `${data.DateCreated ? data.DateCreated.toDateString() : ''}`)}
+        {this.renderTextRecord('Date updated', `${data.DateUpdated ? data.DateUpdated.toDateString() : ''}`)}
+        {this.renderTextRecord('Code version', data.CodeVersion)}
         {this.renderRecord(
           'Tags',
-          notNullModel.Tags.map((value: string, key: number) => {
+          data.Tags.map((value: string, key: number) => {
             return (
               <div className={styles.tag} key={key}>
                 <span className={styles.tag_text}>{value}</span>
@@ -53,7 +52,7 @@ class ModelLayout extends React.Component<AllProps> {
         )}
         {this.renderListRecord(
           'Hyperparameters',
-          notNullModel.Hyperparameters.map((value: IHyperparameter, key: number) => {
+          data.Hyperparameters.map((value: IHyperparameter, key: number) => {
             return (
               <div key={key}>
                 {value.key}: {value.value}
@@ -63,7 +62,7 @@ class ModelLayout extends React.Component<AllProps> {
         )}
         {this.renderListRecord(
           'Metrics',
-          notNullModel.ModelMetric.map((value: IModelMetric, key: number) => {
+          data.ModelMetric.map((value: IModelMetric, key: number) => {
             return (
               <div key={key}>
                 {value.key}: {value.value}
@@ -73,7 +72,7 @@ class ModelLayout extends React.Component<AllProps> {
         )}
         {this.renderListRecord(
           'DataSets',
-          notNullModel.DataSets.map((value: IArtifact, key: number) => {
+          data.DataSets.map((value: IArtifact, key: number) => {
             return (
               <div key={key}>
                 {value.key}: <ShowContentBasedOnUrl path={value.path} />
@@ -83,7 +82,7 @@ class ModelLayout extends React.Component<AllProps> {
         )}
         {this.renderListRecord(
           'Artifacts',
-          notNullModel.Artifacts.map((value: IArtifact, key: number) => {
+          data.Artifacts.map((value: IArtifact, key: number) => {
             return (
               <div key={key}>
                 {value.key}: <ShowContentBasedOnUrl path={value.path} />
@@ -92,6 +91,8 @@ class ModelLayout extends React.Component<AllProps> {
           })
         )}
       </div>
+    ) : (
+      ''
     );
   }
 
