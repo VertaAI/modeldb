@@ -18,6 +18,7 @@
     "auth0-js": "^9.10.0",
     "connected-react-router": "^6.2.2",
     "fixed-data-table-2": "^0.8.16",
+    "json2typescript": "^1.0.6",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.11",
     "normalize.css": "^8.0.1",

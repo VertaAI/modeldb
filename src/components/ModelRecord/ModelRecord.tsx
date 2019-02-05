@@ -33,8 +33,9 @@ class ModelRecordLayout extends React.Component<AllProps> {
     ) : data ? (
       <div className={styles.model_layout}>
         {this.renderTextRecord('Name', notNullModel.Name, styles.name)}
-        {this.renderTextRecord('Project', notNullModel.ProjectId)}
-        {this.renderTextRecord('Experiment', notNullModel.ExperimentId)}
+        {this.renderTextRecord('Model Id', notNullModel.Id)}
+        {this.renderTextRecord('Project Id', notNullModel.ProjectId)}
+        {this.renderTextRecord('Experiment Id', notNullModel.ExperimentId)}
         {this.renderTextRecord('Code version', notNullModel.CodeVersion)}
         {this.renderRecord(
           'Tags',

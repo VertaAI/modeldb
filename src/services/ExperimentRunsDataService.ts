@@ -4,6 +4,7 @@ import { IExperimentRunsDataService } from './IApiDataService';
 import { Hyperparameter } from '../models/HyperParameters';
 import { Metric, MetricKey } from '../models/Metrics';
 import ModelRecord from '../models/ModelRecord';
+import { expRunsMocks } from './mocks/expRunsMock';
 
 type Not<T> = [T] extends [never] ? unknown : never;
 type Extractable<T, U> = Not<U extends any ? Not<T extends U ? unknown : never> : never>;
@@ -27,39 +28,65 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
 
   public getExperimentRuns(projectId: string): Promise<ModelRecord[]> {
     return new Promise<ModelRecord[]>((resolve, reject) => {
-      fetch(EXPERIMENT_RUNS.endpoint, { method: EXPERIMENT_RUNS.method, body: EXPERIMENT_RUNS.body(projectId) })
-        .then(res => {
-          if (!res.ok) {
-            reject(res.statusText);
-          }
-          return res.json();
-        })
-        .then(res => {
-          res.experiment_runs.forEach((element: any) => {
-            const modelRecord = new ModelRecord();
-            modelRecord.Id = element.id;
-            modelRecord.ProjectId = element.project_id;
-            modelRecord.ExperimentId = element.experiment_id;
-            modelRecord.Tags = element.tags || '';
-            modelRecord.Name = element.name;
-            modelRecord.CodeVersion = element.code_version || '';
+      expRunsMocks.forEach((element: any) => {
+        const modelRecord = new ModelRecord();
+        modelRecord.Id = element.id;
+        modelRecord.ProjectId = element.project_id;
+        modelRecord.ExperimentId = element.experiment_id;
+        modelRecord.Tags = element.tags || '';
+        modelRecord.Name = element.name;
+        modelRecord.CodeVersion = element.code_version || '';
 
-            element.metrics.forEach((metric: Metric) => {
-              modelRecord.Metric.push(new Metric(asEnum(MetricKey, metric.key), metric.value));
-            });
-
-            element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
-              modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
-            });
-
-            element.artifacts.forEach((artifact: Artifact) => {
-              modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
-            });
-
-            this.experimentRuns.push(modelRecord);
-          });
-          resolve(this.experimentRuns);
+        element.metrics.forEach((metric: Metric) => {
+          modelRecord.Metric.push(new Metric(asEnum(MetricKey, metric.key), metric.value));
         });
+
+        element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
+          modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
+        });
+
+        element.artifacts.forEach((artifact: Artifact) => {
+          modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+        });
+
+        this.experimentRuns.push(modelRecord);
+      });
+      resolve(this.experimentRuns);
+
+      // could be used post API activation
+      // fetch(EXPERIMENT_RUNS.endpoint, { method: EXPERIMENT_RUNS.method, body: EXPERIMENT_RUNS.body(projectId) })
+      //   .then(res => {
+      //     if (!res.ok) {
+      //       reject(res.statusText);
+      //     }
+      //     return res.json();
+      //   })
+      //   .then(res => {
+      //     res.experiment_runs.forEach((element: any) => {
+      //       const modelRecord = new ModelRecord();
+      //       modelRecord.Id = element.id;
+      //       modelRecord.ProjectId = element.project_id;
+      //       modelRecord.ExperimentId = element.experiment_id;
+      //       modelRecord.Tags = element.tags || '';
+      //       modelRecord.Name = element.name;
+      //       modelRecord.CodeVersion = element.code_version || '';
+
+      //       element.metrics.forEach((metric: Metric) => {
+      //         modelRecord.Metric.push(new Metric(asEnum(MetricKey, metric.key), metric.value));
+      //       });
+
+      //       element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
+      //         modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
+      //       });
+
+      //       element.artifacts.forEach((artifact: Artifact) => {
+      //         modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+      //       });
+
+      //       this.experimentRuns.push(modelRecord);
+      //     });
+      //     resolve(this.experimentRuns);
+      //   });
     });
   }
 

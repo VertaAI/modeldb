@@ -1,4 +1,4 @@
-export const modelsMocks = [
+export const expRunsMocks = [
   {
     id: '25c0e2d8-992f-4e32-860c-6d2dd13b03b2',
     project_id: '6a95fea8-5167-4046-ab0c-ef44ce229a78',
