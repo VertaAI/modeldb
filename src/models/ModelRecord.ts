@@ -1,8 +1,16 @@
 import { IArtifact } from './Artifact';
 import { IHyperparameter } from './HyperParameters';
+import { IMetaData, MetaData } from './IMetaData';
 import { IMetric } from './Metrics';
 
 export default class ModelRecord {
+  public static metaData: IMetaData[] = [
+    { propertyName: 'Name' },
+    { propertyName: 'ID' },
+    { propertyName: 'Experiment ID' },
+    { propertyName: 'Experiment Run ID' }
+  ];
+
   private id: string = '';
   private projectId: string = '';
   private experimentId: string = '';

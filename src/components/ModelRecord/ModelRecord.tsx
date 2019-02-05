@@ -7,6 +7,7 @@ import { IMetric } from '../../models/Metrics';
 import ModelRecord from '../../models/ModelRecord';
 import { fetchModelRecord } from '../../store/model-record';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import loader from '../images/loader.gif';
 import ShowContentBasedOnUrl from '../ShowContentBasedOnUrl/ShowContentBasedOnUrl';
 import styles from './ModelRecord.module.css';
 
@@ -27,7 +28,9 @@ class ModelRecordLayout extends React.Component<AllProps> {
     const { data, loading } = this.props;
     const notNullModel = data || new ModelRecord();
 
-    return (
+    return loading ? (
+      <img src={loader} className={styles.loader} />
+    ) : data ? (
       <div className={styles.model_layout}>
         {this.renderTextRecord('Name', notNullModel.Name, styles.name)}
         {this.renderTextRecord('Project', notNullModel.ProjectId)}
@@ -35,7 +38,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
         {this.renderTextRecord('Code version', notNullModel.CodeVersion)}
         {this.renderRecord(
           'Tags',
-          notNullModel.Tags.map((value: string, key: number) => {
+          data.Tags.map((value: string, key: number) => {
             return (
               <div className={styles.tag} key={key}>
                 <span className={styles.tag_text}>{value}</span>
@@ -45,7 +48,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
         )}
         {this.renderListRecord(
           'Hyperparameters',
-          notNullModel.Hyperparameters.map((value: IHyperparameter, key: number) => {
+          data.Hyperparameters.map((value: IHyperparameter, key: number) => {
             return (
               <div key={key}>
                 {value.key}: {value.value}
@@ -65,7 +68,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
         )}
         {this.renderListRecord(
           'Artifacts',
-          notNullModel.Artifacts.map((value: IArtifact, key: number) => {
+          data.Artifacts.map((value: IArtifact, key: number) => {
             return (
               <div key={key}>
                 {value.key}: <ShowContentBasedOnUrl path={value.path} />
@@ -74,6 +77,8 @@ class ModelRecordLayout extends React.Component<AllProps> {
           })
         )}
       </div>
+    ) : (
+      ''
     );
   }
 

@@ -1,8 +1,9 @@
+import { IFilterData } from 'components/FilterSelect/FilterSelect';
 import ModelRecord from '../models/ModelRecord';
 import Project from '../models/Project';
 
 export interface IProjectDataService {
-  getProjects(): Promise<Project[]>;
+  getProjects(filter?: IFilterData[]): Promise<Project[]>;
   mapProjectAuthors(): Promise<Project[]>;
 }
 

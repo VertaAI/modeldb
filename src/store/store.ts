@@ -2,6 +2,7 @@ import { connectRouter, RouterState } from 'connected-react-router';
 import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
+import { filtersReducer, IFilterState } from './filter';
 import { experimentRunsReducer, IExperimentRunsState } from './experiment-runs';
 import { IModelRecordState, modelRecordReducer } from './model-record';
 import { IProjectsState, projectsReducer } from './projects';
@@ -13,6 +14,7 @@ export interface IApplicationState {
   modelRecord: IModelRecordState;
   projects: IProjectsState;
   router?: RouterState;
+  filters: IFilterState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -23,6 +25,7 @@ export interface IConnectedReduxProps<A extends Action = any> {
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
     experimentRuns: experimentRunsReducer,
+    filters: filtersReducer,
     layout: userReducer,
     modelRecord: modelRecordReducer,
     projects: projectsReducer,

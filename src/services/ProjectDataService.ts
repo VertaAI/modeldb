@@ -1,3 +1,4 @@
+import { IFilterData } from 'components/FilterSelect/FilterSelect';
 import Project from '../models/Project';
 import { PROJECTS_LIST } from './ApiEndpoints';
 import { IProjectDataService } from './IApiDataService';
@@ -9,7 +10,7 @@ export default class ProjectDataService implements IProjectDataService {
     this.projects = [];
   }
 
-  public getProjects(): Promise<Project[]> {
+  public getProjects(filter?: IFilterData[]): Promise<Project[]> {
     return new Promise<Project[]>((resolve, reject) => {
       fetch(PROJECTS_LIST.endpoint, { method: PROJECTS_LIST.method })
         .then(res => {
