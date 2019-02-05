@@ -1,9 +1,9 @@
 import { IArtifact } from './Artifact';
 import { IHyperparameter } from './HyperParameters';
 import { IMetaData, MetaData } from './IMetaData';
-import { IModelMetric } from './ModelMetric';
+import { IMetric } from './Metrics';
 
-export class Model {
+export default class ModelRecord {
   public static metaData: IMetaData[] = [
     { propertyName: 'Name' },
     { propertyName: 'ID' },
@@ -13,20 +13,14 @@ export class Model {
 
   private id: string = '';
   private projectId: string = '';
-  private projectName: string = '';
   private experimentId: string = '';
   private name: string = '';
-  private description: string = '';
-  private dateCreated?: Date = undefined;
-  private dateUpdated?: Date = undefined;
   private codeVersion: string = '';
-  private version: string = '';
 
   private tags: string[] = [];
   private hyperparameters: IHyperparameter[] = [];
-  private modelMetrics: IModelMetric[] = [];
+  private metrics: IMetric[] = [];
   private artifacts: IArtifact[] = [];
-  private dataSets: IArtifact[] = [];
 
   public get Id(): string {
     return this.id;
@@ -35,25 +29,11 @@ export class Model {
     this.id = v;
   }
 
-  public get Version(): string {
-    return this.version;
-  }
-  public set Version(v: string) {
-    this.version = v;
-  }
-
   public get Name(): string {
     return this.name;
   }
   public set Name(v: string) {
     this.name = v;
-  }
-
-  public get Description(): string {
-    return this.description;
-  }
-  public set Description(v: string) {
-    this.description = v;
   }
 
   public get CodeVersion(): string {
@@ -68,13 +48,6 @@ export class Model {
   }
   public set ProjectId(v: string) {
     this.projectId = v;
-  }
-
-  public get ProjectName(): string {
-    return this.projectName;
-  }
-  public set ProjectName(v: string) {
-    this.projectName = v;
   }
 
   public get ExperimentId(): string {
@@ -98,11 +71,11 @@ export class Model {
     this.hyperparameters = v;
   }
 
-  public get ModelMetric(): IModelMetric[] {
-    return this.modelMetrics;
+  public get Metric(): IMetric[] {
+    return this.metrics;
   }
-  public set ModelMetric(v: IModelMetric[]) {
-    this.modelMetrics = v;
+  public set Metric(v: IMetric[]) {
+    this.metrics = v;
   }
 
   public get Artifacts(): IArtifact[] {
@@ -110,26 +83,5 @@ export class Model {
   }
   public set Artifacts(v: IArtifact[]) {
     this.artifacts = v;
-  }
-
-  public get DataSets(): IArtifact[] {
-    return this.dataSets;
-  }
-  public set DataSets(v: IArtifact[]) {
-    this.dataSets = v;
-  }
-
-  public get DateCreated(): Date | undefined {
-    return this.dateCreated;
-  }
-  public set DateCreated(v: Date | undefined) {
-    this.dateCreated = v;
-  }
-
-  public get DateUpdated(): Date | undefined {
-    return this.dateUpdated;
-  }
-  public set DateUpdated(v: Date | undefined) {
-    this.dateUpdated = v;
   }
 }

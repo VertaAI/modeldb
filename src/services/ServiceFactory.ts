@@ -1,18 +1,24 @@
 import { MetaData } from 'models/IMetaData';
-import { Model } from '../models/Model';
+import ModelRecord from '../models/ModelRecord';
 import Project from '../models/Project';
 import Auth0AuthenticationService from './auth/Auth0AuthenticationService';
 import { IAuthenticationService } from './auth/IAuthenticationService';
+import ExperimentRunsDataService from './ExperimentRunsDataService';
+import { IExperimentRunsDataService, IProjectDataService } from './IApiDataService';
+import ProjectDataService from './ProjectDataService';
+
 import MockSFModelService from './filter/MockSFModelService';
 import MockSFProjectService from './filter/MockSFProjectService';
 import MockSFService from './filter/MockSFService';
-import { IDataService } from './IDataService';
 import ISearchAndFilterService from './ISearchAndFilterService';
-import MockDataService from './MockDataService';
 
 export default class ServiceFactory {
-  public static getDataService(): IDataService {
-    return new MockDataService();
+  public static getProjectsService(): IProjectDataService {
+    return new ProjectDataService();
+  }
+
+  public static getExperimentRunsService(): IExperimentRunsDataService {
+    return new ExperimentRunsDataService();
   }
 
   public static getAuthenticationService(): IAuthenticationService {
@@ -24,7 +30,7 @@ export default class ServiceFactory {
         return ServiceFactory.projSFSvc;
       }
 
-      case Model.name: {
+      case ModelRecord.name: {
         return ServiceFactory.modelSFSvc;
       }
     }
@@ -33,5 +39,5 @@ export default class ServiceFactory {
   }
 
   private static projSFSvc: MockSFService<Project> = new MockSFProjectService();
-  private static modelSFSvc: MockSFService<Model> = new MockSFModelService();
+  private static modelSFSvc: MockSFService<ModelRecord> = new MockSFModelService();
 }

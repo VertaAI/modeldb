@@ -2,10 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Link, Redirect, Route, RouteComponentProps, RouteProps, Switch } from 'react-router-dom';
 import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
+import ModelRecord from '../ModelRecord/ModelRecord';
 import { GenericNotFound } from '../GenericNotFound/GenericNotFound';
-import Model from '../Model/Model';
-import Models from '../Models/Models';
 import Projects from '../Projects/Projects';
+import ExperimentRuns from '../ExperimentRuns/ExperimentRuns';
 import styles from './AuthorizedLayout.module.css';
 
 const notFoundRedirect = () => <Redirect to="/not-found" />;
@@ -44,8 +44,8 @@ export default class AuthorizedLayout extends React.PureComponent {
           </div>
           <Switch>
             <RouteWithFilter exact={true} path={'/'} component={Projects} />
-            <RouteWithFilter path={'/project/:projectId/models'} component={Models} />
-            <RouteWithFilter path={'/project/:projectId/model/:modelId'} component={Model} />
+            <RouteWithFilter path={'/project/:projectId/exp-runs'} component={ExperimentRuns} />
+            <RouteWithFilter path={'/project/:projectId/exp-run/:modelId'} component={ModelRecord} />
             <Route component={GenericNotFound} />
           </Switch>
         </div>

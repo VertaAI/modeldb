@@ -1,16 +1,15 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-
-import { IHyperparameter } from 'models/HyperParameters';
-import { IModelMetric } from 'models/ModelMetric';
 import { IArtifact } from '../../models/Artifact';
-import { Model } from '../../models/Model';
-import { fetchModel } from '../../store/model';
+import { IHyperparameter } from '../../models/HyperParameters';
+import { IMetric } from '../../models/Metrics';
+import ModelRecord from '../../models/ModelRecord';
+import { fetchModelRecord } from '../../store/model-record';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import loader from '../images/loader.gif';
 import ShowContentBasedOnUrl from '../ShowContentBasedOnUrl/ShowContentBasedOnUrl';
-import styles from './Model.module.css';
+import styles from './ModelRecord.module.css';
 
 export interface IUrlProps {
   modelId: string;
@@ -18,28 +17,26 @@ export interface IUrlProps {
 }
 
 interface IPropsFromState {
-  data?: Model | null;
+  data?: ModelRecord | null;
   loading: boolean;
 }
 
 type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedReduxProps;
 
-class ModelLayout extends React.Component<AllProps> {
+class ModelRecordLayout extends React.Component<AllProps> {
   public render() {
     const { data, loading } = this.props;
+    const notNullModel = data || new ModelRecord();
 
     return loading ? (
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <div className={styles.model_layout}>
-        {this.renderTextRecord('Name', data.Name, styles.name)}
-        {this.renderTextRecord('Description', data.Description)}
-        {this.renderTextRecord(`ID${data.Version ? `, version` : ''}`, `${data.Id}${data.Version ? `, ${data.Version}` : ''}`)}
-        {this.renderTextRecord('Project', data.ProjectId)}
-        {this.renderTextRecord('Experiment', data.ExperimentId)}
-        {this.renderTextRecord('Date created', `${data.DateCreated ? data.DateCreated.toDateString() : ''}`)}
-        {this.renderTextRecord('Date updated', `${data.DateUpdated ? data.DateUpdated.toDateString() : ''}`)}
-        {this.renderTextRecord('Code version', data.CodeVersion)}
+        {this.renderTextRecord('Name', notNullModel.Name, styles.name)}
+        {this.renderTextRecord('Model Id', notNullModel.Id)}
+        {this.renderTextRecord('Project Id', notNullModel.ProjectId)}
+        {this.renderTextRecord('Experiment Id', notNullModel.ExperimentId)}
+        {this.renderTextRecord('Code version', notNullModel.CodeVersion)}
         {this.renderRecord(
           'Tags',
           data.Tags.map((value: string, key: number) => {
@@ -62,20 +59,10 @@ class ModelLayout extends React.Component<AllProps> {
         )}
         {this.renderListRecord(
           'Metrics',
-          data.ModelMetric.map((value: IModelMetric, key: number) => {
+          notNullModel.Metric.map((value: IMetric, key: number) => {
             return (
               <div key={key}>
                 {value.key}: {value.value}
-              </div>
-            );
-          })
-        )}
-        {this.renderListRecord(
-          'DataSets',
-          data.DataSets.map((value: IArtifact, key: number) => {
-            return (
-              <div key={key}>
-                {value.key}: <ShowContentBasedOnUrl path={value.path} />
               </div>
             );
           })
@@ -97,7 +84,7 @@ class ModelLayout extends React.Component<AllProps> {
   }
 
   public componentDidMount() {
-    this.props.dispatch(fetchModel(this.props.match.params.modelId));
+    this.props.dispatch(fetchModelRecord(this.props.match.params.modelId));
   }
 
   private renderRecord(header: string, content: JSX.Element[], additionalValueClassName: string = '') {
@@ -120,9 +107,9 @@ class ModelLayout extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = ({ model }: IApplicationState) => ({
-  data: model.data,
-  loading: model.loading
+const mapStateToProps = ({ modelRecord }: IApplicationState) => ({
+  data: modelRecord.data,
+  loading: modelRecord.loading
 });
 
-export default connect(mapStateToProps)(ModelLayout);
+export default connect(mapStateToProps)(ModelRecordLayout);

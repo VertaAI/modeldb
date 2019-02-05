@@ -29,6 +29,9 @@ function getUser(): User | null {
 }
 
 const initialState: IApplicationState = {
+  experimentRuns: {
+    loading: false
+  },
   filters: {
     contexts: new HashMap<IFilterContextData>()
   },
@@ -37,13 +40,10 @@ const initialState: IApplicationState = {
     loading: false,
     user: getUser()
   },
-  model: {
+  modelRecord: {
     loading: false
   },
-  project: { loading: false },
-  projects: {
-    loading: false
-  }
+  projects: { loading: false }
 };
 
 const store = configureStore(history, initialState);

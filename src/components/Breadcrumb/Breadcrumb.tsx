@@ -2,7 +2,7 @@ import { UnregisterCallback } from 'history';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps, Router, withRouter } from 'react-router-dom';
-import { Model } from '../../models/Model';
+import ModelRecord from '../../models/ModelRecord';
 import Project from '../../models/Project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import styles from './Breadcrumb.module.css';
@@ -11,7 +11,7 @@ import headerArrow from './images/header-arrow.svg';
 
 interface IPropsFromState {
   project?: Project | null;
-  model?: Model | null;
+  model?: ModelRecord | null;
 }
 
 interface ILocalState {
@@ -71,8 +71,10 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
 
   private prepareItem(): BreadcrumbItem | undefined {
     const { project, model } = this.props;
+    // project name no-longer exist @ModelRecord, this could be resolved either by composing an object for breadcrumbs while
+    // subscribing to "projects" array at store to fetch associated project name if needed
+    // this.projectBreadcrumbItem.Name = project ? project.Name.toLocaleUpperCase() : model ? model.ProjectName.toLocaleUpperCase() : '';
 
-    this.projectBreadcrumbItem.Name = project ? project.Name.toLocaleUpperCase() : model ? model.ProjectName.toLocaleUpperCase() : '';
     this.projectBreadcrumbItem.Path = `/project/${project ? project.Id : model ? model.ProjectId : ''}/models`;
     this.projectBreadcrumbItem.PreviousItem = this.indexBreadcrumbItem;
 
@@ -100,9 +102,9 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ project, model }: IApplicationState) => ({
-  model: model.data,
-  project: project.data
-});
+// const mapStateToProps = ({ project, model }: IApplicationState) => ({
+//   model: model.data,
+//   project: project.data
+// });
 
-export default withRouter(connect(mapStateToProps)(Breadcrumb));
+// export default withRouter(connect(mapStateToProps)(Breadcrumb));
