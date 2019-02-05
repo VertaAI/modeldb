@@ -11,7 +11,7 @@ export const projectsReducer: Reducer<IProjectsState> = (state = projectsInitial
     case fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST: {
       return { ...state, loading: true };
     }
-    case fetchProjectsActionTypes.FETCH_PROJECTS_SUCESS: {
+    case fetchProjectsActionTypes.FETCH_PROJECTS_SUCCESS: {
       return { ...state, loading: false, data: action.payload };
     }
     case fetchProjectsActionTypes.FETCH_PROJECTS_FAILURE: {

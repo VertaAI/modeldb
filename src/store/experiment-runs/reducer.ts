@@ -14,7 +14,7 @@ export const experimentRunsReducer: Reducer<IExperimentRunsState> = (
     case fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_REQUEST: {
       return { ...state, loading: true };
     }
-    case fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_SUCESS: {
+    case fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_SUCCESS: {
       return { ...state, loading: false, data: action.payload };
     }
     case fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_FAILURE: {

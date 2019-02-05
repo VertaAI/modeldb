@@ -12,7 +12,7 @@ function asEnum<E extends Record<keyof E, string | number>, K extends string | n
   k: K & Extractable<E[keyof E], K>
 ): Extract<E[keyof E], K> {
   // runtime guard, shouldn't need it at compiler time
-  if (Object.values(e).indexOf(k) < 0) throw new Error(`Expected one of ${Object.values(e).join(', ')}`);
+  // if (Object.values(e).indexOf(k) < 0) throw new Error(`Expected one of ${Object.values(e).join(', ')}`);
   return k as any; // assertion
 }
 

@@ -11,6 +11,6 @@ export const fetchModelRecord = (modelId: string): ActionResult<void, fetchModel
   await ServiceFactory.getExperimentRunsService()
     .getModelRecord(modelId, storeExperimentRuns)
     .then(res => {
-      dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCESS, res));
+      dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCCESS, res));
     });
 };

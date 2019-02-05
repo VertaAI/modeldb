@@ -11,7 +11,7 @@ export const modelRecordReducer: Reducer<IModelRecordState> = (state = modelInit
     case fetchModelRecordActionTypes.FETCH_MODEL_RECORD_REQUEST: {
       return { ...state, loading: true };
     }
-    case fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCESS: {
+    case fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCCESS: {
       return { ...state, loading: false, data: action.payload };
     }
     case fetchModelRecordActionTypes.FETCH_MODEL_RECORD_FAILURE: {
