@@ -42,15 +42,12 @@ export default class AuthorizedLayout extends React.PureComponent {
           <div className={styles.header}>
             <AuthorizedLayoutHeader />
           </div>
-
-          <div className={styles.content}>
-            <Switch>
-              <RouteWithFilter exact={true} path={'/'} component={Projects} />
-              <RouteWithFilter path={'/project/:projectId/exp-runs'} component={ExperimentRuns} />
-              <RouteWithFilter path={'/project/:projectId/exp-run/:modelId'} component={ModelRecord} />
-              <Route component={GenericNotFound} />
-            </Switch>
-          </div>
+          <Switch>
+            <RouteWithFilter exact={true} path={'/'} component={Projects} />
+            <RouteWithFilter path={'/project/:projectId/exp-runs'} component={ExperimentRuns} />
+            <RouteWithFilter path={'/project/:projectId/exp-run/:modelId'} component={ModelRecord} />
+            <Route component={GenericNotFound} />
+          </Switch>
         </div>
       </Router>
     );
