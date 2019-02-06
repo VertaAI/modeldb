@@ -1,13 +1,22 @@
-import { Model } from './Model';
+import { IMetaData, MetaData } from './IMetaData';
 
 export default class Project {
+  public static metaData: IMetaData[] = [{ propertyName: 'Name' }, { propertyName: 'Description' }];
+  private id: string = '';
   private name: string = '';
   private description: string = '';
-  private author: string = '';
-  private models: Model[] = [];
-  private creationDate: Date = new Date();
-  private updatedDate: Date = new Date();
-  private id: string = '';
+  private dateCreated: Date = new Date();
+  private dateUpdated: Date = new Date();
+  private author?: string;
+  private tags: string[] = [];
+
+  public get Id(): string {
+    return this.id;
+  }
+
+  public set Id(v: string) {
+    this.id = v;
+  }
 
   public get Name(): string {
     return this.name;
@@ -25,39 +34,35 @@ export default class Project {
     this.description = v;
   }
 
-  public get Author(): string {
+  public get DateCreated(): Date {
+    return this.dateCreated;
+  }
+
+  public set DateCreated(v: Date) {
+    this.dateCreated = v;
+  }
+
+  public get DateUpdated(): Date {
+    return this.dateUpdated;
+  }
+
+  public set DateUpdated(v: Date) {
+    this.dateUpdated = v;
+  }
+
+  public get Author(): string | undefined {
     return this.author;
   }
 
-  public set Author(v: string) {
+  public set Author(v: string | undefined) {
     this.author = v;
   }
 
-  public get Models(): Model[] {
-    return this.models;
+  public get Tags(): string[] {
+    return this.tags;
   }
 
-  public get CreationDate(): Date {
-    return this.creationDate;
-  }
-
-  public set CreationDate(v: Date) {
-    this.creationDate = v;
-  }
-
-  public get UpdatedDate(): Date {
-    return this.updatedDate;
-  }
-
-  public set UpdatedDate(v: Date) {
-    this.updatedDate = v;
-  }
-
-  public get Id(): string {
-    return this.id;
-  }
-
-  public set Id(v: string) {
-    this.id = v;
+  public set Tags(v: string[]) {
+    this.tags = v;
   }
 }

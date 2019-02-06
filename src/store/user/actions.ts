@@ -23,7 +23,7 @@ export const handleUserAuthentication = (): ActionResult<void, userAuthenticateA
     await authenticationService.handleAuthentication();
     const profile = await authenticationService.getProfile();
     history.push('/');
-    dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_SUCESS, profile));
+    dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_SUCCESS, profile));
   } catch (error) {
     dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_FAILURE));
   }

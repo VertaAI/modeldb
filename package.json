@@ -20,6 +20,7 @@
     "es-cookie": "^1.2.0",
     "fixed-data-table-2": "^0.8.16",
     "jose-jwe-jws": "^0.1.6",
+    "json2typescript": "^1.0.6",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.11",
     "normalize.css": "^8.0.1",

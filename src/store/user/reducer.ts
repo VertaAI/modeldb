@@ -12,7 +12,7 @@ const userAuthenticateReducer: Reducer<IUserState> = (state = initialState, acti
     case userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST: {
       return { ...state, loading: true };
     }
-    case userAuthenticateActionTypes.AUTHENTICATE_USER_SUCESS: {
+    case userAuthenticateActionTypes.AUTHENTICATE_USER_SUCCESS: {
       return { ...state, authenticated: true, loading: false, user: action.payload };
     }
     default: {

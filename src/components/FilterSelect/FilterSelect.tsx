@@ -1,17 +1,23 @@
 import * as React from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import { addFilter, removeFilter, searchFilters } from '../../store/filter/actions';
+import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import FilterItem from './FilterItem';
 import styles from './FilterSelect.module.css';
 
+import { IFilterContextData } from 'store/filter';
+import AppliedFilterItem from './AppliedFilterItem';
+
 interface ILocalProps {
-  // onChangeFilter?: React.EventHandler<Map<string, string>>;
   placeHolderText?: string;
-  filterProps?: string[];
+  foundFilters?: IFilterData[];
+  appliedFilters: IFilterData[];
+  isFiltersSupporting: boolean;
 }
 
 interface ILocalState {
-  txt: string;
-  filteredProps?: string[];
-  isFocused: boolean;
+  isOpened: boolean;
 }
 
 export interface IFilterData {
@@ -19,98 +25,113 @@ export interface IFilterData {
   propertyValue: string;
 }
 
-export class FilterSelect extends React.Component<ILocalProps, ILocalState> {
-  private static checkProp(txt: string, propName: string) {
-    const txtParts = txt
-      .trim()
-      .toUpperCase()
-      .split(' ');
-    if (txtParts.length > 1) {
-      return (
-        propName
-          .trim()
-          .toUpperCase()
-          .search(txtParts[0]) > -1
-      );
-    }
-    return false;
-  }
+type AllProps = ILocalProps & IConnectedReduxProps;
 
-  private static getValue(txt: string): string {
-    const txtParts = txt.split(' ');
-    if (txtParts.length > 1) {
-      txtParts.shift();
-      return txtParts.join(' ');
-    }
-    return '';
-  }
+class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
-    filteredProps: [],
-    isFocused: false,
-    txt: ''
+    isOpened: false
   };
-  public constructor(props: ILocalProps) {
+
+  private searchFiltersTimeout: number | undefined;
+  public constructor(props: AllProps) {
     super(props);
     this.onChange = this.onChange.bind(this);
-    this.onFocus = this.onFocus.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-  }
 
-  public componentDidMount() {
-    this.setState({ txt: '', filteredProps: this.props.filterProps });
+    this.renderPopup = this.renderPopup.bind(this);
+    this.onShowPopup = this.onShowPopup.bind(this);
+    this.onCreateFilter = this.onCreateFilter.bind(this);
+    this.onRemoveFilter = this.onRemoveFilter.bind(this);
   }
 
   public onChange(event: React.ChangeEvent<HTMLInputElement>) {
-    let foundProps: string[] | undefined = this.state.filteredProps;
-    if (this.props.filterProps) {
-      const txt: string = event.target.value;
-      foundProps = this.props.filterProps.filter((value, index, array) => FilterSelect.checkProp(txt, value));
+    if (this.searchFiltersTimeout) {
+      clearTimeout(this.searchFiltersTimeout);
     }
-    this.setState({ ...this.state, txt: event.target.value, filteredProps: foundProps });
-  }
 
-  public onFocus() {
-    this.setState({ ...this.state, isFocused: true });
-  }
+    const cb = ((txt: string) => {
+      this.props.dispatch(searchFilters(txt));
+      this.onShowPopup();
+      this.searchFiltersTimeout = undefined;
+    }).bind(this, event.target.value);
 
-  public onBlur() {
-    this.setState({ ...this.state, isFocused: false });
+    this.searchFiltersTimeout = (setTimeout(cb, 300) as unknown) as number;
   }
 
   public render() {
     return (
       <div className={styles.root}>
-        <input
-          className={styles.input}
-          placeholder={this.props.placeHolderText}
-          onChange={this.onChange}
-          onFocus={this.onFocus}
-          onBlur={this.onBlur}
-        />
-        <label className="fa fa-search" aria-hidden={true} />
-        {this.state.filteredProps && this.state.isFocused ? (
-          <div className={styles.found_filters_popup}>
-            {this.state.filteredProps.map((prop, index) => (
-              <FilterItem
-                key={index}
-                PropertyName={prop}
-                PropertyValue={FilterSelect.getValue(this.state.txt)}
-                onCreateFilter={this.onCreateFilter}
-              />
-            ))}
-          </div>
-        ) : (
-          ''
-        )}
-        <div className={styles.applied_filters} />
-        <div className={styles.apply_filters_button}>
-          <button>Filter</button>
+        <div>
+          <input className={styles.input} placeholder={this.props.placeHolderText} onChange={this.onChange} onClick={this.onShowPopup} />
+          <label className="fa fa-search" aria-hidden={true} />
+          {this.renderPopup()}
         </div>
+
+        {this.props.isFiltersSupporting && (
+          <div>
+            <div className={styles.applied_filters}>
+              {this.props.appliedFilters.map((filter, index) => (
+                <AppliedFilterItem key={index} data={filter} onRemoveFilter={this.onRemoveFilter} />
+              ))}
+            </div>
+
+            <div className={styles.apply_filters_button}>
+              <button>Filter</button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
+  public handleClickOutside(ev: MouseEvent) {
+    this.setState({ ...this.state, isOpened: false });
+  }
+
+  private renderPopup(): JSX.Element | false | undefined {
+    return (
+      this.props.foundFilters &&
+      this.props.foundFilters.length > 0 &&
+      this.state.isOpened && (
+        <div className={styles.found_filters_popup}>
+          {this.props.foundFilters!.map((filter, index) => (
+            <FilterItem key={index} data={filter} onCreateFilter={this.onCreateFilter} />
+          ))}
+        </div>
+      )
+    );
+  }
+
   private onCreateFilter(data: IFilterData) {
-    console.log(data);
+    this.props.dispatch(addFilter(data));
+  }
+
+  private onRemoveFilter(data: IFilterData) {
+    this.props.dispatch(removeFilter(data));
+  }
+
+  private onShowPopup() {
+    this.setState({
+      ...this.state,
+      isOpened: true
+    });
   }
 }
+
+const mapStateToProps = ({ filters }: IApplicationState) => {
+  const currentContext: IFilterContextData | undefined =
+    filters.context && filters.contexts.has(filters.context) ? filters.contexts.get(filters.context) : undefined;
+
+  if (currentContext) {
+    return {
+      appliedFilters: currentContext.appliedFilters,
+      foundFilters: filters.foundFilters,
+      isFiltersSupporting: currentContext.isFiltersSupporting
+    };
+  }
+
+  return { appliedFilters: [], isFiltersSupporting: false, foundFilters: filters.foundFilters };
+};
+
+// export connect(mapStateToProps)(FilterSelect);
+const filterSelect = connect(mapStateToProps)(onClickOutside(FilterSelectComponent));
+export { filterSelect as FilterSelect };
