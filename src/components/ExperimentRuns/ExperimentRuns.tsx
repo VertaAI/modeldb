@@ -2,12 +2,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import { Link } from 'react-router-dom';
 import ModelRecord from '../../models/ModelRecord';
 import Project from '../../models/Project';
-import { initContext, resetContext } from '../../store/filter';
 import { fetchExperimentRuns } from '../../store/experiment-runs';
+import { initContext, resetContext } from '../../store/filter';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import { Link } from 'react-router-dom';
+import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 
 export interface IUrlProps {
@@ -23,11 +24,14 @@ type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedRed
 
 class ExperimentRuns extends React.Component<AllProps> {
   public render() {
-    const notNullModelRecord = this.props.data || [new ModelRecord()];
-    return (
+    const { data, loading } = this.props;
+
+    return loading ? (
+      <img src={loader} className={styles.loader} />
+    ) : data ? (
       <div>
         <h2>Experiment Runs</h2>
-        {notNullModelRecord.map((element: ModelRecord, key: number) => {
+        {data.map((element: ModelRecord, key: number) => {
           return (
             <div key={key}>
               Model ID:
@@ -41,6 +45,8 @@ class ExperimentRuns extends React.Component<AllProps> {
           );
         })}
       </div>
+    ) : (
+      ''
     );
   }
 

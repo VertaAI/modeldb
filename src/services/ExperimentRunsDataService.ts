@@ -1,9 +1,9 @@
 import { Artifact, ArtifactKey } from '../models/Artifact';
-import { EXPERIMENT_RUNS } from './ApiEndpoints';
-import { IExperimentRunsDataService } from './IApiDataService';
 import { Hyperparameter } from '../models/HyperParameters';
 import { Metric, MetricKey } from '../models/Metrics';
 import ModelRecord from '../models/ModelRecord';
+import { EXPERIMENT_RUNS } from './ApiEndpoints';
+import { IExperimentRunsDataService } from './IApiDataService';
 import { expRunsMocks } from './mocks/expRunsMock';
 
 type Not<T> = [T] extends [never] ? unknown : never;
@@ -13,17 +13,15 @@ function asEnum<E extends Record<keyof E, string | number>, K extends string | n
   k: K & Extractable<E[keyof E], K>
 ): Extract<E[keyof E], K> {
   // runtime guard, shouldn't need it at compiler time
-  // if (Object.values(e).indexOf(k) < 0) throw new Error(`Expected one of ${Object.values(e).join(', ')}`);
+  if (Object.values(e).indexOf(k) < 0) throw new Error(`Expected one of ${Object.values(e).join(', ')}`);
   return k as any; // assertion
 }
 
 export default class ExperimentRunsDataService implements IExperimentRunsDataService {
   private experimentRuns: ModelRecord[];
-  private modelRecord: ModelRecord;
 
   constructor() {
     this.experimentRuns = [];
-    this.modelRecord = new ModelRecord();
   }
 
   public getExperimentRuns(projectId: string): Promise<ModelRecord[]> {
@@ -49,7 +47,9 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
           modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
         });
 
-        this.experimentRuns.push(modelRecord);
+        if (modelRecord.ProjectId === projectId) {
+          this.experimentRuns.push(modelRecord);
+        }
       });
       resolve(this.experimentRuns);
 
@@ -92,12 +92,13 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
 
   public getModelRecord(modelId: string, storeExperimentRuns: ModelRecord[]): Promise<ModelRecord> {
     return new Promise<ModelRecord>((resolve, reject) => {
+      let modelRecord;
       storeExperimentRuns.forEach(model => {
         if (model.Id === modelId) {
-          this.modelRecord = model;
+          modelRecord = model;
         }
       });
-      resolve(this.modelRecord);
+      resolve(modelRecord);
     });
   }
 }
