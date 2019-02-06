@@ -11,7 +11,8 @@ interface IJwtToken {
 }
 
 export default class Auth0AuthenticationService implements IAuthenticationService {
-  private storage: Storage = sessionStorage;
+  private idTokenName: string = 'idToken';
+  private auth0accessTokenName: string = 'auth0accessToken';
   private user: User | null = null;
   private auth0: WebAuth = new WebAuth({
     audience: `https://${AUTH_CONFIG.domain}/userinfo`,
@@ -31,11 +32,15 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   get accessToken(): string {
-    throw new Error('No access token found');
+    const accessToken = Cookies.get(this.auth0accessTokenName);
+    if (!accessToken) {
+      throw new Error('No access token found');
+    }
+    return accessToken;
   }
 
   get idToken(): string {
-    const idToken = Cookies.get('id_token');
+    const idToken = Cookies.get(this.idTokenName);
     if (!idToken) {
       throw new Error('No id token found');
     }
@@ -43,7 +48,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   get authenticated(): boolean {
-    const cookie = Cookies.get('id_token');
+    const cookie = Cookies.get(this.idTokenName);
     if (cookie) {
       const expiresAt = jwtDecode<IJwtToken>(cookie).exp;
       return new Date().getTime() < expiresAt * 1000;
@@ -86,7 +91,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   public async setSession(authResult: Auth0DecodedHash): Promise<void> {
-    const { idToken } = authResult;
+    const { idToken, accessToken } = authResult;
 
     await fetch(`https://${AUTH_CONFIG.domain}/.well-known/jwks.json`).then(async res => {
       const jsonResponse = await res.json();
@@ -99,7 +104,8 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
         await verifier.addRecipient(jwkrsa, jwkrsa.kid, 'RS256');
         await verifier.verify().then(result => {
           const token = jwtDecode<IJwtToken>(idToken!);
-          Cookies.set('id_token', idToken!, { expires: new Date(token.exp * 1000) });
+          Cookies.set(this.idTokenName, idToken!, { expires: new Date(token.exp * 1000) });
+          Cookies.set(this.auth0accessTokenName, accessToken!, { expires: new Date(token.exp * 1000) });
           this.user = jwtDecode<User>(idToken!);
         });
       }
@@ -107,7 +113,8 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   public logout(): void {
-    Cookies.remove('id_token');
+    Cookies.remove(this.idTokenName);
+    Cookies.remove(this.auth0accessTokenName);
     this.user = null;
   }
 }
