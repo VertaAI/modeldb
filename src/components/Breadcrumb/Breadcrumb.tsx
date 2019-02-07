@@ -10,8 +10,8 @@ import { BreadcrumbItem } from './BreadcrumbItem';
 import headerArrow from './images/header-arrow.svg';
 
 interface IPropsFromState {
-  project?: Project | null;
-  model?: ModelRecord | null;
+  experimentRuns?: ModelRecord[] | null;
+  modelRecord?: ModelRecord | null;
 }
 
 interface ILocalState {
@@ -24,8 +24,8 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   private indexBreadcrumbItem = new BreadcrumbItem(/^\/$/, '/', 'PROJECTS');
-  private projectBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/models.?$/);
-  private modelBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/model\/([\w-]*).?$/);
+  private projectBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-runs.?$/);
+  private modelBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/);
 
   public constructor(props: AllProps) {
     super(props);
@@ -70,16 +70,19 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   }
 
   private prepareItem(): BreadcrumbItem | undefined {
-    const { project, model } = this.props;
+    const { experimentRuns, modelRecord } = this.props;
     // project name no-longer exist @ModelRecord, this could be resolved either by composing an object for breadcrumbs while
     // subscribing to "projects" array at store to fetch associated project name if needed
     // this.projectBreadcrumbItem.Name = project ? project.Name.toLocaleUpperCase() : model ? model.ProjectName.toLocaleUpperCase() : '';
 
-    this.projectBreadcrumbItem.Path = `/project/${project ? project.Id : model ? model.ProjectId : ''}/models`;
+    this.projectBreadcrumbItem.Name = 'PROJECT';
+    this.projectBreadcrumbItem.Path = `/project/${
+      experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].ProjectId : modelRecord ? modelRecord.ProjectId : ''
+    }/exp-runs`;
     this.projectBreadcrumbItem.PreviousItem = this.indexBreadcrumbItem;
 
-    this.modelBreadcrumbItem.Name = model ? model.Name.toLocaleUpperCase() : '';
-    this.modelBreadcrumbItem.Path = model ? `/project/${model.ProjectId}/model/${model.Id}` : '';
+    this.modelBreadcrumbItem.Name = modelRecord ? modelRecord.Name.toLocaleUpperCase() : '';
+    this.modelBreadcrumbItem.Path = modelRecord ? `/project/${modelRecord.ProjectId}/exp-run/${modelRecord.Id}` : '';
     this.modelBreadcrumbItem.PreviousItem = this.projectBreadcrumbItem;
 
     const breadcrumbItems: BreadcrumbItem[] = [];
@@ -102,9 +105,9 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   }
 }
 
-// const mapStateToProps = ({ project, model }: IApplicationState) => ({
-//   model: model.data,
-//   project: project.data
-// });
+const mapStateToProps = ({ experimentRuns, modelRecord }: IApplicationState) => ({
+  experimentRuns: experimentRuns.data,
+  modelRecord: modelRecord.data
+});
 
-// export default withRouter(connect(mapStateToProps)(Breadcrumb));
+export default withRouter(connect(mapStateToProps)(Breadcrumb));
