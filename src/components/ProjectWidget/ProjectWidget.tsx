@@ -37,7 +37,8 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
               <div className={styles.semitransparent}>Owner</div>
             </div>
 
-            {/* // we may use mapProjectAuthors() function from ProjectDataService.ts to map project Ids to owner once backend supports author field */}
+            {/* // we may use mapProjectAuthors() function from ProjectDataService.ts 
+            to map project Ids to owner once backend supports author field */}
             <Avatar
               name="Manasi Vartak"
               round={true}

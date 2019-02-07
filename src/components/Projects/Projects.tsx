@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { fetchProjects } from '../../store/projects';
-import { initContext, resetContext } from '../../store/filter/actions';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import Project from '../../models/Project';
+import { initContext, resetContext } from '../../store/filter/actions';
+import { fetchProjects } from '../../store/projects';
+import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
 import styles from './Projects.module.css';
 
