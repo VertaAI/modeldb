@@ -1,13 +1,17 @@
 .project_widget {
   display: grid;
-  grid-template-columns: 310px auto 180px;
-  min-height: 155px;
-  padding: 30px;
+  grid-template-columns: 310px auto auto 110px 70px;
+  grid-template-rows: auto 50px;
+  padding: 30px 30px 25px 30px;
   font-size: 13px;
   color: var(--fr-color3);
   margin: 0 0 16px 0;
   background-color: var(--bg-color3);
   border: 1px solid var(--bg-color3);
+
+  grid-template-areas:
+    'title_block metrics_block metrics_block author_block author_block'
+    'count_block . . collaborators dates';
 }
 
 .project_widget:hover {
@@ -20,6 +24,7 @@
 }
 
 .metrics_block {
+  grid-area: metrics_block;
 }
 
 .metrics_header {
@@ -35,6 +40,7 @@
 .title_block {
   display: grid;
   grid-template-rows: 32px auto auto 24px;
+  grid-area: title_block;
 }
 
 .title {
@@ -48,7 +54,6 @@
 }
 
 .model_counter {
-  display: inline-block;
   font-size: 20px;
   font-weight: 300;
   margin-right: 6px;
@@ -66,26 +71,81 @@
   border-radius: 3px;
 }
 
-.author_block {
-  display: grid;
-  grid-template-columns: auto 54px;
-  grid-template-rows: auto 70px;
-  text-align: right;
-  justify-content: end;
-  justify-items: end;
-  color: var(--fr-color3);
-}
-
-.autor_name {
-  display: inline;
-}
-
 .created_date_block {
   color: var(--fr-color4);
-  grid-column-start: 1;
-  grid-column-end: end;
+  grid-area: dates;
+  align-self: end;
+  justify-self: end;
+  text-align: end;
+  margin-bottom: 5px;
 }
 
-.inline_block {
-  display: inline-block;
+.author_status {
+  color: var(--text-color3);
+}
+
+.author_block {
+  display: grid;
+  grid-template-columns: auto 12px 36px;
+  grid-template-areas: 'author_name . author_avatar';
+  align-items: center;
+  margin-top: 6px;
+  text-align: right;
+  color: var(--fr-color3);
+  grid-area: author_block;
+  grid-template-rows: 36px auto;
+}
+
+.author_name {
+  grid-area: author_name;
+}
+
+.author_avatar {
+  font-family: 'Roboto';
+  font-weight: 300;
+  grid-area: author_avatar;
+}
+
+.model_count_block {
+  grid-area: count_block;
+  align-self: end;
+  margin-bottom: 5px;
+}
+
+.collaborators {
+  grid-area: collaborators;
+  justify-self: end;
+  align-self: end;
+}
+
+.collaborate_button {
+  height: 40px;
+  width: 122px;
+  border: 1px solid var(--line-color2);
+  border-radius: 20px;
+  color: var(--text-color3);
+  background-color: var(--main-color3);
+  font-size: 13px;
+  line-height: 15px;
+  outline: none;
+}
+
+.collaborate_button .combined_icon {
+  margin-right: 4px;
+  filter: invert(0.5);
+}
+
+.collaborate_button:hover {
+  background-color: var(--main-color2);
+  color: var(--main-color3);
+  border-color: var(--main-color2);
+  outline: none;
+}
+
+.collaborate_button:focus {
+  outline: none;
+}
+
+.collaborate_button:hover .combined_icon {
+  filter: invert(1);
 }
