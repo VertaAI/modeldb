@@ -1,11 +1,18 @@
 import { Auth0DecodedHash, Auth0Error, WebAuth } from 'auth0-js';
+import * as Cookies from 'es-cookie';
+import { Jose, JoseJWS } from 'jose-jwe-jws';
 import jwtDecode from 'jwt-decode';
 import User from '../../models/User';
 import { AUTH_CONFIG } from './AuthConfiguration';
 import { IAuthenticationService } from './IAuthenticationService';
 
+interface IJwtToken {
+  exp: number;
+}
+
 export default class Auth0AuthenticationService implements IAuthenticationService {
-  private storage: Storage = sessionStorage;
+  private idTokenName: string = 'idToken';
+  private auth0accessTokenName: string = 'auth0accessToken';
   private user: User | null = null;
   private auth0: WebAuth = new WebAuth({
     audience: `https://${AUTH_CONFIG.domain}/userinfo`,
@@ -25,7 +32,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   get accessToken(): string {
-    const accessToken = this.storage.getItem('access_token');
+    const accessToken = Cookies.get(this.auth0accessTokenName);
     if (!accessToken) {
       throw new Error('No access token found');
     }
@@ -33,7 +40,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   get idToken(): string {
-    const idToken = this.storage.getItem('id_token');
+    const idToken = Cookies.get(this.idTokenName);
     if (!idToken) {
       throw new Error('No id token found');
     }
@@ -41,19 +48,23 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   get authenticated(): boolean {
-    const expiresAt = JSON.parse(this.storage.getItem('expires_at')!);
-    return new Date().getTime() < expiresAt;
+    const cookie = Cookies.get(this.idTokenName);
+    if (cookie) {
+      const expiresAt = jwtDecode<IJwtToken>(cookie).exp;
+      return new Date().getTime() < expiresAt * 1000;
+    }
+    return false;
   }
 
   public login(): void {
     this.auth0.authorize();
   }
 
-  public handleAuthentication(): Promise<void> {
+  public async handleAuthentication(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.auth0.parseHash((e: Auth0Error | null, result: Auth0DecodedHash | null) => {
+      this.auth0.parseHash(async (e: Auth0Error | null, result: Auth0DecodedHash | null) => {
         if (result && result.accessToken && result.idToken) {
-          resolve(this.setSession(result));
+          resolve(await this.setSession(result));
         }
         if (e) {
           reject(e.error);
@@ -79,20 +90,31 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     });
   }
 
-  public setSession(authResult: Auth0DecodedHash): void {
-    const { accessToken, expiresIn, idToken } = authResult;
-    const expiresAt = JSON.stringify(expiresIn! * 1000 + new Date().getTime());
-    this.storage.setItem('access_token', accessToken!);
-    this.storage.setItem('expires_at', expiresAt);
+  public async setSession(authResult: Auth0DecodedHash): Promise<void> {
+    const { idToken, accessToken } = authResult;
 
-    this.storage.setItem('id_token', idToken!);
-    this.user = jwtDecode<User>(idToken!);
+    await fetch(`https://${AUTH_CONFIG.domain}/.well-known/jwks.json`).then(async res => {
+      const jsonResponse = await res.json();
+
+      const cryptographer = new Jose.WebCryptographer();
+      cryptographer.setContentSignAlgorithm('RS256');
+      const verifier = new JoseJWS.Verifier(cryptographer, idToken!);
+      const jwkrsas = jsonResponse.keys as JWKRSA[];
+      for (const jwkrsa of jwkrsas) {
+        await verifier.addRecipient(jwkrsa, jwkrsa.kid, 'RS256');
+        await verifier.verify().then(result => {
+          const token = jwtDecode<IJwtToken>(idToken!);
+          Cookies.set(this.idTokenName, idToken!, { expires: new Date(token.exp * 1000) });
+          Cookies.set(this.auth0accessTokenName, accessToken!, { expires: new Date(token.exp * 1000) });
+          this.user = jwtDecode<User>(idToken!);
+        });
+      }
+    });
   }
 
   public logout(): void {
-    this.storage.removeItem('access_token');
-    this.storage.removeItem('id_token');
-    this.storage.removeItem('expires_at');
+    Cookies.remove(this.idTokenName);
+    Cookies.remove(this.auth0accessTokenName);
     this.user = null;
   }
 }
