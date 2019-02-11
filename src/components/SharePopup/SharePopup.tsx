@@ -17,7 +17,7 @@ enum Tabs {
 interface ILocalProps {
   showModal: boolean;
   projectName: string;
-  collaborators?: User[];
+  collaborators: User[];
   onRequestClose?(): void;
 }
 
@@ -32,7 +32,7 @@ class SharePopup extends React.Component<ILocalProps, ILocalState> {
   constructor(props: ILocalProps) {
     super(props);
     this.state = {
-      activeTab: this.props.collaborators ? Tabs.collaborators : Tabs.share,
+      activeTab: this.props.collaborators.length > 1 ? Tabs.collaborators : Tabs.share,
       emailValue: '',
       inputActive: false,
       showModal: this.props.showModal
@@ -71,7 +71,7 @@ class SharePopup extends React.Component<ILocalProps, ILocalState> {
               className={`${styles.button_collaborators} ${this.state.activeTab === Tabs.collaborators ? styles.activeTab : ''}`}
               onClick={this.selectCollaboratorsTab}
             >
-              Collaborators <span className={styles.collaborators_count}>8</span>
+              Collaborators <span className={styles.collaborators_count}>{this.props.collaborators.length}</span>
             </button>
             <button
               className={`${styles.button_share} ${this.state.activeTab === Tabs.share ? styles.activeTab : ''}`}

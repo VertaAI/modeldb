@@ -13,6 +13,6 @@ export const projectsMock = [
     description: 'exploratory classification model for images with epoch accuracy/loss attributes',
     date_created: '1548315955305',
     date_updated: '1548315955305',
-    tags: ['exploratory', 'updated data', 'deployment']
+    tags: ['exploratory', 'updated data', 'deployment', 'long-text-tag example']
   }
 ];

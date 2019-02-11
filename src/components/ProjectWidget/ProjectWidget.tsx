@@ -1,4 +1,5 @@
 import Project from 'models/Project';
+import User from 'models/User';
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
@@ -31,31 +32,42 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
 
     return (
       <div>
-        <SharePopup projectName={project.Name} showModal={this.state.showModal} onRequestClose={this.handleCloseModal} />
+        <SharePopup
+          projectName={project.Name}
+          showModal={this.state.showModal}
+          onRequestClose={this.handleCloseModal}
+          collaborators={[project.Author!]}
+        />
         <Link className={styles.project_link} to={`/project/${project.Id}/exp-runs`}>
           <div className={styles.project_widget}>
             <div className={styles.title_block}>
               <div className={styles.title}>{project.Name}</div>
               <div className={styles.description}>{project.Description}</div>
-              <div className={styles.tags_block}>
-                {project.Tags.map((tag: string, i: number) => {
-                  return (
-                    <p key={i} className={styles.tags}>
-                      {tag}
-                    </p>
-                  );
-                })}
-              </div>
+            </div>
+            <div className={styles.tags_block}>
+              {project.Tags.map((tag: string, i: number) => {
+                return (
+                  <div className={styles.tag} key={i}>
+                    <span className={styles.tag_text}>{tag}</span>
+                  </div>
+                );
+              })}
             </div>
             <div className={styles.metrics_block} />
             <div className={styles.author_block}>
               <div className={styles.author_name}>
-                <div>Manasi Vartak</div>
+                <div>{project.Author ? project.Author.name : ''}</div>
                 <div className={styles.author_status}>Owner</div>
               </div>
               {/* // we may use mapProjectAuthors() function from ProjectDataService.ts 
             to map project Ids to owner once backend supports author field */}
-              <Avatar name="Manasi Vartak" round={true} size="36" textSizeRatio={36 / 16} className={styles.author_avatar} />
+              <Avatar
+                name={project.Author ? project.Author.name : ''}
+                round={true}
+                size="36"
+                textSizeRatio={36 / 16}
+                className={styles.author_avatar}
+              />
             </div>
             <div className={styles.model_count_block}>
               <span className={styles.model_counter}>{Math.round(Math.random() * 10)}</span>
@@ -68,11 +80,8 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               </button>
             </div>
             <div className={styles.created_date_block}>
-              <div>Created:</div>
-              <div>{project.DateCreated.toLocaleDateString()}</div>
-              <br />
-              <div>Updated:</div>
-              <div>{project.DateUpdated.toLocaleDateString()}</div>
+              <div className={styles.created_date}>Created: {project.DateCreated.toLocaleDateString()}</div>
+              <div>Updated: {project.DateUpdated.toLocaleDateString()}</div>
             </div>
           </div>
         </Link>

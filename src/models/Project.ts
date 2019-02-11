@@ -1,4 +1,5 @@
 import { IMetaData, MetaData } from './IMetaData';
+import User from './User';
 
 export default class Project {
   public static metaData: IMetaData[] = [{ propertyName: 'Name' }, { propertyName: 'Description' }];
@@ -7,7 +8,7 @@ export default class Project {
   private description: string = '';
   private dateCreated: Date = new Date();
   private dateUpdated: Date = new Date();
-  private author?: string;
+  private author?: User | undefined;
   private tags: string[] = [];
 
   public get Id(): string {
@@ -50,11 +51,11 @@ export default class Project {
     this.dateUpdated = v;
   }
 
-  public get Author(): string | undefined {
+  public get Author(): User | undefined {
     return this.author;
   }
 
-  public set Author(v: string | undefined) {
+  public set Author(v: User | undefined) {
     this.author = v;
   }
 

@@ -1,17 +1,19 @@
 .project_widget {
   display: grid;
-  grid-template-columns: 310px auto auto 110px 70px;
-  grid-template-rows: auto 50px;
-  padding: 30px 30px 25px 30px;
+  grid-template-columns: 310px auto auto 180px;
+  grid-template-rows: 50px 28px auto 48px;
+  padding: 30px;
   font-size: 13px;
   color: var(--fr-color3);
-  margin: 0 0 16px 0;
+  margin-bottom: 16px;
   background-color: var(--bg-color3);
   border: 1px solid var(--bg-color3);
 
   grid-template-areas:
-    'title_block metrics_block metrics_block author_block author_block'
-    'count_block . . collaborators dates';
+    'title_block metrics_block metrics_block author_block'
+    'title_block metrics_block metrics_block dates'
+    'tags metrics_block metrics_block dates'
+    'count_block . collaborators collaborators';
 }
 
 .project_widget:hover {
@@ -60,15 +62,27 @@
 }
 
 .tags_block {
+  grid-area: tags;
+  margin-bottom: -6px;
 }
 
-.tags {
-  color: var(--fr-color2);
-  display: inline-block;
-  background: #d6fff9;
-  padding: 3px 5px;
-  margin-right: 5px;
-  border-radius: 3px;
+.tag {
+  height: 28px;
+  border: 1px solid var(--main-color2);
+  border-radius: 17px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  float: left;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+}
+
+.tag_text {
+  color: var(--text-color2);
+  font-size: 13px;
+  line-height: 15px;
+  margin: 0 12px;
 }
 
 .created_date_block {
@@ -77,7 +91,11 @@
   align-self: end;
   justify-self: end;
   text-align: end;
-  margin-bottom: 5px;
+  padding-bottom: 8px;
+}
+
+.created_date {
+  margin-bottom: 8px;
 }
 
 .author_status {
@@ -89,7 +107,7 @@
   grid-template-columns: auto 12px 36px;
   grid-template-areas: 'author_name . author_avatar';
   align-items: center;
-  margin-top: 6px;
+  margin-top: 4px;
   text-align: right;
   color: var(--fr-color3);
   grid-area: author_block;
@@ -109,7 +127,6 @@
 .model_count_block {
   grid-area: count_block;
   align-self: end;
-  margin-bottom: 5px;
 }
 
 .collaborators {
@@ -128,6 +145,7 @@
   font-size: 13px;
   line-height: 15px;
   outline: none;
+  margin-right: -3px;
 }
 
 .collaborate_button .combined_icon {
