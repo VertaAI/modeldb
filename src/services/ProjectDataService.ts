@@ -1,5 +1,5 @@
 import { IFilterData } from 'components/FilterSelect/FilterSelect';
-import Project from '../models/Project';
+import Project, { UserAccess } from '../models/Project';
 import User from '../models/User';
 import { PROJECTS_LIST } from './ApiEndpoints';
 import { IProjectDataService } from './IApiDataService';
@@ -18,14 +18,14 @@ export default class ProjectDataService implements IProjectDataService {
         const proj = new Project();
 
         proj.Id = element.id;
-        proj.Author = element.author;
         proj.Description = element.description || '';
         proj.Name = element.name;
         proj.Tags = element.tags || '';
         proj.DateCreated = new Date(Number(element.date_created));
         proj.DateUpdated = new Date(Number(element.date_updated));
-        proj.Author = new User();
-        proj.Author.name = 'Manasi Vartak';
+        const author = new User();
+        author.name = 'Manasi Vartak';
+        proj.Collaborators.set(author, UserAccess.Owner);
         this.projects.push(proj);
       });
       resolve(this.projects);

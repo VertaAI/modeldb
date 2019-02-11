@@ -7,9 +7,11 @@ import ExperimentRunsDataService from './ExperimentRunsDataService';
 import { IExperimentRunsDataService, IProjectDataService } from './IApiDataService';
 import ProjectDataService from './ProjectDataService';
 
+import CollaboratorsService from './CollaboratorsService';
 import MockSFModelService from './filter/MockSFModelService';
 import MockSFProjectService from './filter/MockSFProjectService';
 import MockSFService from './filter/MockSFService';
+import { ICollaboratorsService } from './ICollaboratorsService';
 import ISearchAndFilterService from './ISearchAndFilterService';
 
 export default class ServiceFactory {
@@ -36,6 +38,10 @@ export default class ServiceFactory {
     }
 
     return null;
+  }
+
+  public static getCollaboratorsService(): ICollaboratorsService {
+    return new CollaboratorsService();
   }
 
   private static projSFSvc: MockSFService<Project> = new MockSFProjectService();

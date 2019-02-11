@@ -1,5 +1,10 @@
 import { IMetaData, MetaData } from './IMetaData';
 import User from './User';
+export enum UserAccess {
+  Owner = 0,
+  Write = 1,
+  Read = 2
+}
 
 export default class Project {
   public static metaData: IMetaData[] = [{ propertyName: 'Name' }, { propertyName: 'Description' }];
@@ -8,7 +13,7 @@ export default class Project {
   private description: string = '';
   private dateCreated: Date = new Date();
   private dateUpdated: Date = new Date();
-  private author?: User | undefined;
+  private collaborators: Map<User, UserAccess> = new Map<User, UserAccess>();
   private tags: string[] = [];
 
   public get Id(): string {
@@ -51,12 +56,12 @@ export default class Project {
     this.dateUpdated = v;
   }
 
-  public get Author(): User | undefined {
-    return this.author;
+  public get Collaborators(): Map<User, UserAccess> {
+    return this.collaborators;
   }
 
-  public set Author(v: User | undefined) {
-    this.author = v;
+  public set Collaborators(v: Map<User, UserAccess>) {
+    this.collaborators = v;
   }
 
   public get Tags(): string[] {

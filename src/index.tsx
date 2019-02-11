@@ -29,6 +29,7 @@ function getUser(): User | null {
 }
 
 const initialState: IApplicationState = {
+  collaboration: { sending: false },
   experimentRuns: {
     loading: false
   },

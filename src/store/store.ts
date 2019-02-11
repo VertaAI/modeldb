@@ -2,6 +2,7 @@ import { connectRouter, RouterState } from 'connected-react-router';
 import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
+import { collaborationReducer, ISendInvitationState } from './collaboration';
 import { experimentRunsReducer, IExperimentRunsState } from './experiment-runs';
 import { filtersReducer, IFilterState } from './filter';
 import { IModelRecordState, modelRecordReducer } from './model-record';
@@ -9,6 +10,7 @@ import { IProjectsState, projectsReducer } from './projects';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
+  collaboration: ISendInvitationState;
   experimentRuns: IExperimentRunsState;
   layout: IUserState;
   modelRecord: IModelRecordState;
@@ -24,6 +26,7 @@ export interface IConnectedReduxProps<A extends Action = any> {
 
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
+    collaboration: collaborationReducer,
     experimentRuns: experimentRunsReducer,
     filters: filtersReducer,
     layout: userReducer,

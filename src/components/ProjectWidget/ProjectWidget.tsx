@@ -1,8 +1,8 @@
-import Project from 'models/Project';
-import User from 'models/User';
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
+import Project, { UserAccess } from '../../models/Project';
+import User from '../../models/User';
 import SharePopup from '../SharePopup/SharePopup';
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
@@ -29,6 +29,10 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
 
   public render() {
     const project = this.props.project;
+    let author: User = new User();
+    project.Collaborators.forEach((value: UserAccess, key: User) => {
+      if (value === UserAccess.Owner) author = key;
+    });
 
     return (
       <div>
@@ -36,7 +40,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
           projectName={project.Name}
           showModal={this.state.showModal}
           onRequestClose={this.handleCloseModal}
-          collaborators={[project.Author!]}
+          collaborators={project.Collaborators}
         />
         <Link className={styles.project_link} to={`/project/${project.Id}/exp-runs`}>
           <div className={styles.project_widget}>
@@ -56,18 +60,12 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
             <div className={styles.metrics_block} />
             <div className={styles.author_block}>
               <div className={styles.author_name}>
-                <div>{project.Author ? project.Author.name : ''}</div>
+                <div>{author ? author.name : ''}</div>
                 <div className={styles.author_status}>Owner</div>
               </div>
               {/* // we may use mapProjectAuthors() function from ProjectDataService.ts 
             to map project Ids to owner once backend supports author field */}
-              <Avatar
-                name={project.Author ? project.Author.name : ''}
-                round={true}
-                size="36"
-                textSizeRatio={36 / 16}
-                className={styles.author_avatar}
-              />
+              <Avatar name={author ? author.name : ''} round={true} size="36" textSizeRatio={36 / 16} className={styles.author_avatar} />
             </div>
             <div className={styles.model_count_block}>
               <span className={styles.model_counter}>{Math.round(Math.random() * 10)}</span>

@@ -179,6 +179,10 @@
   background-color: #6a84ff;
 }
 
+.send_invitation_button:focus {
+  outline: none;
+}
+
 .form_group {
   position: relative;
   border: 1px solid #dedede;
@@ -263,6 +267,7 @@
   position: relative;
   border-radius: 3px;
   display: inline-block;
+  outline: none;
 }
 
 .share_button:after {
@@ -313,4 +318,35 @@
 
 .share_button:focus {
   outline: none;
+}
+
+.content_share_sucess {
+  margin-top: 35px;
+  display: grid;
+  margin-bottom: 55px;
+  justify-items: center;
+  grid-template-rows: 71px 22px auto;
+}
+
+.invitation_success_header {
+  font-size: 15px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.invitation_success_button {
+  font-size: 13px;
+  line-height: 15px;
+  height: 20px;
+  text-align: center;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  border: none;
+}
+
+.invitation_success_button_text {
+  color: #6863ff;
+  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
+  cursor: pointer;
 }
