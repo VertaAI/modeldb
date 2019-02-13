@@ -24,7 +24,10 @@ RUN apt-get update && \
 
 RUN pip3 install awscli
 
-
+##### Get secrets START
+# We have two ways of getting secrets: one is via sops and 
+# KMS and another is via parameter store
+# This is an example of using the parameter store
 ARG AWS_ACCESS_KEY_ID_BUILD
 ARG AWS_SECRET_ACCESS_KEY_BUILD
 ARG AWS_DEFAULT_REGION_BUILD
@@ -42,6 +45,8 @@ ENV SECRETS=$SECRETS_BUILD
 COPY inject_env.sh /usr/bin/inject_env
 RUN chmod +x /usr/bin/inject_env
 RUN /usr/bin/inject_env
+
+##### Get secrets END
 
 # Copy app source
 COPY . /usr/src/app
