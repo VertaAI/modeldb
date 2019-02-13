@@ -6,12 +6,13 @@ env:
     AWS_ACCOUNT_ID: "CODEPIPELINE_AWS_ACCOUNT_ID"
     IMAGE_REPO_NAME: "CODEPIPELINE_IMAGE_REPO_NAME"
     IMAGE_TAG: "WEBAPP_DEV_IMAGE_TAG"
-
+    WEBAPPENV: "/aws/reference/secretsmanager/VertaWebAppSecrets"
 phases:
   pre_build:
   commands:
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=$IMAGE_TAG-${COMMIT_HASH:=latest}
+      - echo $WEBAPPENV > .env
       - echo Logging in to Amazon ECR...
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION | sed -e "s/-e none//g")
   build:
