@@ -1,0 +1,27 @@
+version: 0.2
+
+env:
+  parameter-store:
+    AWS_DEFAULT_REGION: "CODEPIPELINE_AWS_DEFAULT_REGION"
+    AWS_ACCOUNT_ID: "CODEPIPELINE_AWS_ACCOUNT_ID"
+    IMAGE_REPO_NAME: "CODEPIPELINE_IMAGE_REPO_NAME"
+    IMAGE_TAG: "WEBAPP_DEV_IMAGE_TAG"
+
+phases:
+  pre_build:
+  commands:
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=$IMAGE_TAG-${COMMIT_HASH:=latest}
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION | sed -e "s/-e none//g")
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...          
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG -f Dockerfile-prod .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG   
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
