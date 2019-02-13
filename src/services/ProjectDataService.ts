@@ -26,6 +26,14 @@ export default class ProjectDataService implements IProjectDataService {
         const author = new User();
         author.name = 'Manasi Vartak';
         proj.Collaborators.set(author, UserAccess.Owner);
+
+        for (let index = 0; index < Math.round(Math.random() * 10); index++) {
+          const user = new User();
+          const rand = Math.floor(Math.random() * 2) + 1;
+          user.name = `Collaborator ${rand === 1 ? 'Read' : 'Write'}`;
+          proj.Collaborators.set(user, rand);
+        }
+
         this.projects.push(proj);
       });
       resolve(this.projects);

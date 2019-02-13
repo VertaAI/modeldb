@@ -120,8 +120,10 @@
 
 .author_avatar {
   font-family: 'Roboto';
-  font-weight: 300;
+  font-weight: 400;
   grid-area: author_avatar;
+  font-size: 16px;
+  line-height: 19px;
 }
 
 .model_count_block {
@@ -137,7 +139,8 @@
 
 .collaborate_button {
   height: 40px;
-  width: 122px;
+  min-width: 122px;
+  max-width: 210px;
   border: 1px solid var(--line-color2);
   border-radius: 20px;
   color: var(--text-color3);
@@ -146,10 +149,10 @@
   line-height: 15px;
   outline: none;
   margin-right: -3px;
+  padding: 0;
 }
 
 .collaborate_button .combined_icon {
-  margin-right: 4px;
   filter: invert(0.5);
 }
 
@@ -166,4 +169,12 @@
 
 .collaborate_button:hover .combined_icon {
   filter: invert(1);
+}
+
+.collaborate_button .collaborator_avatar {
+  font-family: 'Roboto';
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 19px;
+  margin-left: 2px;
 }

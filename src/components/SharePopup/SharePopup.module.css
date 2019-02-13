@@ -1,12 +1,12 @@
 .modal_window {
   position: absolute;
-  top: 32px;
+  top: 30px;
   left: 0;
   right: 0;
   margin-left: auto;
   margin-right: auto;
   min-height: 300px;
-  max-height: 520px;
+  max-height: calc(100vh - 60px);
   width: 540px;
   background-color: var(--main-color3);
   box-shadow: 0 2px 18px 0 rgba(0, 0, 0, 0.25), 0 0 1px 0 rgba(0, 0, 0, 0.32);
@@ -278,46 +278,6 @@
   left: 0;
   height: 50%;
   width: 1px;
-}
-
-.share_button .tooltiptext {
-  visibility: hidden;
-  height: 52px;
-  width: 93px;
-  background-color: rgba(51, 51, 51, 0.9);
-  color: #fff;
-  text-align: center;
-  border-radius: 4px;
-  position: absolute;
-  z-index: 1;
-  bottom: 120%;
-  left: 50%;
-  margin-left: -46px;
-
-  font-size: 12px;
-  line-height: 20px;
-  display: grid;
-  justify-items: center;
-  align-items: center;
-}
-
-.share_button .tooltiptext::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: rgba(51, 51, 51, 0.9) transparent transparent transparent;
-}
-
-.share_button:hover .tooltiptext {
-  visibility: visible;
-}
-
-.share_button:focus {
-  outline: none;
 }
 
 .content_share_sucess {

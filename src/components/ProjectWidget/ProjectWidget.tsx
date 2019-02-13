@@ -33,6 +33,8 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
     project.Collaborators.forEach((value: UserAccess, key: User) => {
       if (value === UserAccess.Owner) author = key;
     });
+    const showCollaboratorsAvatars = project.Collaborators.size > 1;
+    const moreThanMaxCollaborators = project.Collaborators.size - 3;
 
     return (
       <div>
@@ -65,16 +67,61 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               </div>
               {/* // we may use mapProjectAuthors() function from ProjectDataService.ts 
             to map project Ids to owner once backend supports author field */}
-              <Avatar name={author ? author.name : ''} round={true} size="36" textSizeRatio={36 / 16} className={styles.author_avatar} />
+              <Avatar
+                name={author ? author.name : ''}
+                round={true}
+                size="36"
+                textSizeRatio={36 / 16}
+                className={styles.author_avatar}
+                src={author ? author.picture : ''}
+              />
             </div>
             <div className={styles.model_count_block}>
               <span className={styles.model_counter}>{Math.round(Math.random() * 10)}</span>
               <span>model</span>
             </div>
             <div className={styles.collaborators}>
-              <button className={styles.collaborate_button} onClick={this.showCollaborators}>
-                <img src={combined} className={styles.combined_icon} />
-                <span>Collaborators</span>
+              <button
+                className={styles.collaborate_button}
+                style={{ paddingRight: showCollaboratorsAvatars ? 8 : 0 }}
+                onClick={this.showCollaborators}
+              >
+                {showCollaboratorsAvatars ? '' : <img src={combined} className={styles.combined_icon} />}
+                <span style={{ marginLeft: showCollaboratorsAvatars ? 14 : 4 }}>Collaborators</span>
+                {showCollaboratorsAvatars ? (
+                  <span>
+                    {Array.from(project.Collaborators.keys()).map((user: User, index: number) => {
+                      return index < 3 ? (
+                        <Avatar
+                          key={index}
+                          name={user ? user.name : ''}
+                          round={true}
+                          size="24"
+                          textSizeRatio={24 / 11}
+                          className={styles.collaborator_avatar}
+                          src={user ? user.picture : ''}
+                        />
+                      ) : (
+                        ''
+                      );
+                    })}
+                    {project.Collaborators.size > 3 ? (
+                      <Avatar
+                        name={`+ ${moreThanMaxCollaborators}`}
+                        round={true}
+                        size="24"
+                        textSizeRatio={24 / 11}
+                        className={styles.collaborator_avatar}
+                        color="#EDEDED"
+                        fgColor="#666666"
+                      />
+                    ) : (
+                      ''
+                    )}
+                  </span>
+                ) : (
+                  ''
+                )}
               </button>
             </div>
             <div className={styles.created_date_block}>

@@ -1,4 +1,6 @@
 import React, { CSSProperties } from 'react';
+import Avatar from 'react-avatar';
+import Scrollbars from 'react-custom-scrollbars';
 import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
@@ -7,8 +9,12 @@ import User from '../../models/User';
 import { resetInvitationState, sendInvitationForUser } from '../../store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import { handleUserAuthentication } from '../../store/user';
+import { ButtonTooltip } from './ButtonTooltip/ButtonTooltip';
+import { CollaboratorsTab } from './CollaboratorsTab/CollaboratorsTab';
 import close from './images/close.svg';
 import icon_check from './images/icon-check.svg';
+import share_change_icon from './images/share-change-icon.svg';
+import share_delete_icon from './images/share-del-icon.svg';
 import share_read_icon from './images/share-r-icon.svg';
 import share_write_icon from './images/share-wr-icon.svg';
 import styles from './SharePopup.module.css';
@@ -79,6 +85,7 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
         onRequestClose={this.handleCloseModal}
         className={styles.modal_window}
         overlayClassName={styles.overlay}
+        appElement={document.getElementById('root')!}
       >
         <div className={styles.header}>
           <div className={styles.title}>{this.props.projectName}</div>
@@ -118,13 +125,13 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
                       ref={c => (this.shareInput = c!)}
                     />
                     <label className={`${styles.content_label} ${styles.content_placeholder}`}>Email or username</label>
-                    <button className={styles.share_button} onClick={this.changeShareType}>
-                      <img src={this.state.userAccess === UserAccess.Read ? share_read_icon : share_write_icon} />
-                      <span className={styles.tooltiptext}>
-                        Access type <br />
-                        {this.state.userAccess === UserAccess.Read ? 'Read Only' : 'Read / Write'}
-                      </span>
-                    </button>
+                    <ButtonTooltip
+                      additionalClassName={styles.share_button}
+                      imgSrc={this.state.userAccess === UserAccess.Read ? share_read_icon : share_write_icon}
+                      toolTipContent={`Access type ${this.state.userAccess === UserAccess.Read ? 'Read Only' : 'Read / Write'}`}
+                      onButtonClick={this.changeShareType}
+                      width={93}
+                    />
                   </label>
                 </div>
                 <div>
@@ -145,7 +152,7 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
               'Failure'
             )
           ) : this.state.activeTab === Tabs.collaborators ? (
-            <div className={styles.content_collaborators}>Collaborators</div>
+            <CollaboratorsTab collaborators={this.props.collaborators} />
           ) : (
             ''
           )}
