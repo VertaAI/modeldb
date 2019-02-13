@@ -10,5 +10,8 @@ export const fetchExperimentRuns = (id: string): ActionResult<void, fetchExperim
     .getExperimentRuns(id)
     .then(res => {
       dispatch(action(fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_SUCCESS, res));
+    })
+    .catch(err => {
+      dispatch(action(fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_FAILURE));
     });
 };

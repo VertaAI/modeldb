@@ -8,6 +8,6 @@ export interface IAuthenticationService {
   login(): void;
   handleAuthentication(): Promise<void>;
   getProfile(): Promise<User>;
-  setSession(authResult: Auth0DecodedHash): void;
+  setSession(authResult: Auth0DecodedHash): Promise<void>;
   logout(): void;
 }

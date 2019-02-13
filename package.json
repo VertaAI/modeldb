@@ -17,7 +17,9 @@
     "@types/redux-logger": "^3.0.6",
     "auth0-js": "^9.10.0",
     "connected-react-router": "^6.2.2",
+    "es-cookie": "^1.2.0",
     "fixed-data-table-2": "^0.8.16",
+    "jose-jwe-jws": "^0.1.6",
     "json2typescript": "^1.0.6",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.11",
@@ -44,7 +46,8 @@
     "lint": "tslint -p .",
     "eject": "react-scripts eject",
     "pretty": "prettier --write \"src/**/*.{ts*,css,js*}\"",
-    "analyze": "source-map-explorer build/static/js/main.*"
+    "analyze": "source-map-explorer build/static/js/main.*",
+    "lint-fix": "tslint -p . --fix"
   },
   "eslintConfig": {
     "extends": "react-app"

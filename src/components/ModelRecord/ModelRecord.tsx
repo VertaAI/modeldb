@@ -12,7 +12,7 @@ import ShowContentBasedOnUrl from '../ShowContentBasedOnUrl/ShowContentBasedOnUr
 import styles from './ModelRecord.module.css';
 
 export interface IUrlProps {
-  modelId: string;
+  modelRecordId: string;
   projectId: string;
 }
 
@@ -26,17 +26,16 @@ type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedRed
 class ModelRecordLayout extends React.Component<AllProps> {
   public render() {
     const { data, loading } = this.props;
-    const notNullModel = data || new ModelRecord();
 
     return loading ? (
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <div className={styles.model_layout}>
-        {this.renderTextRecord('Name', notNullModel.Name, styles.name)}
-        {this.renderTextRecord('Model Id', notNullModel.Id)}
-        {this.renderTextRecord('Project Id', notNullModel.ProjectId)}
-        {this.renderTextRecord('Experiment Id', notNullModel.ExperimentId)}
-        {this.renderTextRecord('Code version', notNullModel.CodeVersion)}
+        {this.renderTextRecord('Name', data.Name, styles.name)}
+        {this.renderTextRecord('Model Id', data.Id)}
+        {this.renderTextRecord('Project Id', data.ProjectId)}
+        {this.renderTextRecord('Experiment Id', data.ExperimentId)}
+        {this.renderTextRecord('Code version', data.CodeVersion)}
         {this.renderRecord(
           'Tags',
           data.Tags.map((value: string, key: number) => {
@@ -59,7 +58,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
         )}
         {this.renderListRecord(
           'Metrics',
-          notNullModel.Metric.map((value: IMetric, key: number) => {
+          data.Metric.map((value: IMetric, key: number) => {
             return (
               <div key={key}>
                 {value.key}: {value.value}
@@ -84,7 +83,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
   }
 
   public componentDidMount() {
-    this.props.dispatch(fetchModelRecord(this.props.match.params.modelId));
+    this.props.dispatch(fetchModelRecord(this.props.match.params.modelRecordId));
   }
 
   private renderRecord(header: string, content: JSX.Element[], additionalValueClassName: string = '') {
