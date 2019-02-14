@@ -1,4 +1,4 @@
-import { Auth0DecodedHash, Auth0Error, WebAuth } from 'auth0-js';
+import { Auth0DecodedHash, Auth0Error, Auth0UserProfile, WebAuth } from 'auth0-js';
 import * as Cookies from 'es-cookie';
 import { Jose, JoseJWS } from 'jose-jwe-jws';
 import jwtDecode from 'jwt-decode';
@@ -79,10 +79,13 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
         return resolve(this.user);
       }
       const accessToken = this.accessToken;
-      this.auth0.client.userInfo(accessToken, (error: Auth0Error | null, user: User) => {
+      this.auth0.client.userInfo(accessToken, (error: Auth0Error | null, auth0User: Auth0UserProfile) => {
         if (error) {
           reject(error);
         } else {
+          const user = new User(auth0User.email!);
+          user.name = auth0User.name;
+          user.picture = auth0User.picture;
           this.user = user;
           resolve(this.user);
         }

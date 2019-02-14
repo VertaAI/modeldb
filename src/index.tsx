@@ -29,7 +29,7 @@ function getUser(): User | null {
 }
 
 const initialState: IApplicationState = {
-  collaboration: { sending: false },
+  collaboration: { changeOwner: { sending: false }, inviteNewCollaborator: { sending: false } },
   experimentRuns: {
     loading: false
   },

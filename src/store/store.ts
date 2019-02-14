@@ -2,7 +2,7 @@ import { connectRouter, RouterState } from 'connected-react-router';
 import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
-import { collaborationReducer, ISendInvitationState } from './collaboration';
+import { collaborationReducer, ICollaborationState } from './collaboration';
 import { experimentRunsReducer, IExperimentRunsState } from './experiment-runs';
 import { filtersReducer, IFilterState } from './filter';
 import { IModelRecordState, modelRecordReducer } from './model-record';
@@ -10,7 +10,7 @@ import { IProjectsState, projectsReducer } from './projects';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
-  collaboration: ISendInvitationState;
+  collaboration: ICollaborationState;
   experimentRuns: IExperimentRunsState;
   layout: IUserState;
   modelRecord: IModelRecordState;

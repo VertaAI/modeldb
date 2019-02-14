@@ -29,20 +29,17 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
 
   public render() {
     const project = this.props.project;
-    let author: User = new User();
-    project.Collaborators.forEach((value: UserAccess, key: User) => {
-      if (value === UserAccess.Owner) author = key;
-    });
     const showCollaboratorsAvatars = project.Collaborators.size > 1;
     const moreThanMaxCollaborators = project.Collaborators.size - 3;
 
     return (
       <div>
         <SharePopup
+          projectId={project.Id}
           projectName={project.Name}
           showModal={this.state.showModal}
           onRequestClose={this.handleCloseModal}
-          collaborators={project.Collaborators}
+          collaborators={new Map<User, UserAccess>(project.Collaborators)}
         />
         <Link className={styles.project_link} to={`/project/${project.Id}/exp-runs`}>
           <div className={styles.project_widget}>
@@ -62,18 +59,18 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
             <div className={styles.metrics_block} />
             <div className={styles.author_block}>
               <div className={styles.author_name}>
-                <div>{author ? author.name : ''}</div>
+                <div>{project.Author.getNameOrEmail()}</div>
                 <div className={styles.author_status}>Owner</div>
               </div>
               {/* // we may use mapProjectAuthors() function from ProjectDataService.ts 
             to map project Ids to owner once backend supports author field */}
               <Avatar
-                name={author ? author.name : ''}
+                name={project.Author.getNameOrEmail()}
                 round={true}
                 size="36"
                 textSizeRatio={36 / 16}
                 className={styles.author_avatar}
-                src={author ? author.picture : ''}
+                src={project.Author.picture ? project.Author.picture : ''}
               />
             </div>
             <div className={styles.model_count_block}>
@@ -94,12 +91,12 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                       return index < 3 ? (
                         <Avatar
                           key={index}
-                          name={user ? user.name : ''}
+                          name={user.getNameOrEmail()}
                           round={true}
                           size="24"
                           textSizeRatio={24 / 11}
                           className={styles.collaborator_avatar}
-                          src={user ? user.picture : ''}
+                          src={user.picture ? user.picture : ''}
                         />
                       ) : (
                         ''

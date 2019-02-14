@@ -10,13 +10,14 @@ import { resetInvitationState, sendInvitationForUser } from '../../store/collabo
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import { handleUserAuthentication } from '../../store/user';
 import { ButtonTooltip } from './ButtonTooltip/ButtonTooltip';
-import { CollaboratorsTab } from './CollaboratorsTab/CollaboratorsTab';
+import CollaboratorsTab from './CollaboratorsTab/CollaboratorsTab';
 import close from './images/close.svg';
 import icon_check from './images/icon-check.svg';
 import share_change_icon from './images/share-change-icon.svg';
 import share_delete_icon from './images/share-del-icon.svg';
 import share_read_icon from './images/share-r-icon.svg';
 import share_write_icon from './images/share-wr-icon.svg';
+import { PlaceholderInput } from './PlaceholderInput/PlaceholderInput';
 import styles from './SharePopup.module.css';
 
 enum Tabs {
@@ -27,6 +28,7 @@ enum Tabs {
 interface ILocalProps {
   showModal: boolean;
   projectName: string;
+  projectId: string;
   collaborators: Map<User, UserAccess>;
   onRequestClose?(): void;
 }
@@ -47,7 +49,10 @@ interface ILocalState {
 type AllProps = IConnectedReduxProps & ILocalProps & IPropsFromState;
 
 class SharePopup extends React.Component<AllProps, ILocalState> {
-  private shareInput?: HTMLInputElement;
+  public static getDerivedStateFromProps(nextProps: AllProps, prevState: ILocalState) {
+    return { showModal: nextProps.showModal };
+  }
+
   private initialState: ILocalState = {
     activeTab: this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share,
     emailValue: '',
@@ -69,10 +74,6 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
     this.changeShareType = this.changeShareType.bind(this);
     this.sendInvitationOnClick = this.sendInvitationOnClick.bind(this);
     this.sendNewInvitation = this.sendNewInvitation.bind(this);
-  }
-
-  public componentWillReceiveProps(nextProps: ILocalProps) {
-    this.setState({ showModal: nextProps.showModal });
   }
 
   public render() {
@@ -115,24 +116,21 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
               <div className={styles.content_share}>
                 <div className={styles.content_header}>Invite People to the Project</div>
                 <div>
-                  <label className={`${styles.form_group} ${styles.content_label}`}>
-                    <input
-                      type="text"
-                      placeholder=" "
-                      className={styles.content_input}
-                      value={this.state.emailValue}
-                      onChange={this.updateInputValue}
-                      ref={c => (this.shareInput = c!)}
-                    />
-                    <label className={`${styles.content_label} ${styles.content_placeholder}`}>Email or username</label>
-                    <ButtonTooltip
-                      additionalClassName={styles.share_button}
-                      imgSrc={this.state.userAccess === UserAccess.Read ? share_read_icon : share_write_icon}
-                      toolTipContent={`Access type ${this.state.userAccess === UserAccess.Read ? 'Read Only' : 'Read / Write'}`}
-                      onButtonClick={this.changeShareType}
-                      width={93}
-                    />
-                  </label>
+                  <PlaceholderInput
+                    additionalClassName={styles.form_group}
+                    inputValue={this.state.emailValue}
+                    onInputChange={this.updateInputValue}
+                    placeholderValue={'Email or username'}
+                    additionalControl={
+                      <ButtonTooltip
+                        additionalClassName={styles.share_button}
+                        imgSrc={this.state.userAccess === UserAccess.Read ? share_read_icon : share_write_icon}
+                        toolTipContent={`Access type ${this.state.userAccess === UserAccess.Read ? 'Read Only' : 'Read / Write'}`}
+                        onButtonClick={this.changeShareType}
+                        width={93}
+                      />
+                    }
+                  />
                 </div>
                 <div>
                   <button className={styles.send_invitation_button} onClick={this.sendInvitationOnClick}>
@@ -152,7 +150,7 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
               'Failure'
             )
           ) : this.state.activeTab === Tabs.collaborators ? (
-            <CollaboratorsTab collaborators={this.props.collaborators} />
+            <CollaboratorsTab projectId={this.props.projectId} collaborators={this.props.collaborators} />
           ) : (
             ''
           )}
@@ -176,7 +174,8 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
   private handleCloseModal() {
     if (this.props.onRequestClose) {
       this.props.onRequestClose();
-      this.setState(this.initialState);
+      this.props.dispatch(resetInvitationState());
+      this.setState({ ...this.initialState, activeTab: this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share });
     }
   }
 
@@ -189,16 +188,15 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
         this.setState({ ...this.state, userAccess: UserAccess.Read });
         break;
     }
-    this.shareInput!.focus();
   }
 
   private sendInvitationOnClick() {
-    this.props.dispatch(sendInvitationForUser(this.state.emailValue, this.state.userAccess));
+    this.props.dispatch(sendInvitationForUser(this.props.projectId, this.state.emailValue, this.state.userAccess));
   }
 
   private sendNewInvitation() {
     this.props.dispatch(resetInvitationState());
-    this.setState(this.initialState);
+    this.setState({ ...this.initialState, activeTab: Tabs.share });
   }
 
   private updateInputValue(event: React.ChangeEvent<HTMLInputElement>) {
@@ -210,8 +208,8 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
 }
 
 const mapStateToProps = ({ collaboration }: IApplicationState) => ({
-  result: collaboration.result,
-  sending: collaboration.sending
+  result: collaboration.inviteNewCollaborator.result,
+  sending: collaboration.inviteNewCollaborator.sending
 });
 
 export default connect(mapStateToProps)(SharePopup);

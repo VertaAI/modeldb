@@ -8,11 +8,12 @@ export enum UserAccess {
 
 export default class Project {
   public static metaData: IMetaData[] = [{ propertyName: 'Name' }, { propertyName: 'Description' }];
-  private id: string = '';
-  private name: string = '';
+  private id: string;
+  private name: string;
   private description: string = '';
   private dateCreated: Date = new Date();
   private dateUpdated: Date = new Date();
+  private author: User;
   private collaborators: Map<User, UserAccess> = new Map<User, UserAccess>();
   private tags: string[] = [];
 
@@ -70,5 +71,21 @@ export default class Project {
 
   public set Tags(v: string[]) {
     this.tags = v;
+  }
+
+  public get Author(): User {
+    return this.author;
+  }
+
+  public set Author(v: User) {
+    this.author = v;
+  }
+
+  constructor(id: string, name: string, author: User) {
+    this.id = id;
+    this.name = name;
+    this.author = author;
+
+    this.Collaborators.set(author, UserAccess.Owner);
   }
 }

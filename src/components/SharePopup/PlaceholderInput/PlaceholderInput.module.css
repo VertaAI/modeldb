@@ -1,0 +1,97 @@
+.form_group {
+  position: relative;
+  border: 1px solid #dedede;
+  border-radius: 3px;
+  width: 360px;
+}
+
+.form_group:focus-within {
+  border-color: #999999;
+}
+
+.form_group:focus-within .share_button {
+  visibility: visible;
+}
+
+.form_group:focus-within .content_input,
+.form_group:focus-within .content_input + .content_label {
+  color: black;
+}
+
+/* Move placeholder up on focus and by default (when it is not empty) */
+/* .form_group input:placeholder-shown + label ---- will overwrite it when empty */
+
+.form_group .content_label {
+  position: absolute;
+  transform-origin: 0 150%;
+  margin-left: 8px;
+  transition: transform 0.314s ease, top 0.314s ease, background 0.314s ease;
+  -webkit-user-select: none;
+  user-select: none;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* The only way to handle if input field is not empty - detect by :placeholder-shown :(( */
+.form_group .content_input:placeholder-shown + .content_label {
+  top: 50%;
+  transform: scale(1, 1) translateY(-50%);
+  background: transparent;
+}
+
+/* Remove placeholders text. Placeholder should not be empty. */
+.form_group .content_input::-webkit-input-placeholder {
+  color: transparent;
+}
+
+.form_group .content_input:focus + .content_label {
+  color: black;
+}
+
+.form_group .content_input:focus {
+  color: black;
+  outline: none;
+}
+
+.form_group .content_input:focus + .content_label,
+.form_group:focus-within .content_input:placeholder-shown + .content_label,
+.form_group .content_label {
+  top: -100%;
+  transform: scale(1, 1) translateY(200%);
+  background: white;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.form_group .content_input:invalid + .content_label:after {
+  color: firebrick;
+  content: '(invalid)';
+  margin-left: 0.314rem;
+}
+
+.content_placeholder {
+  font-size: 13px;
+  line-height: 15px;
+  pointer-events: none;
+}
+
+.content_input {
+  height: 36px;
+  background-color: #ffffff;
+  display: block;
+  padding-left: 16px;
+  font-size: 14px;
+  line-height: 16px;
+  color: rgba(0, 0, 0, 0.5);
+  flex-grow: 2;
+  border: none;
+  border-radius: 3px;
+}
+
+.content_input:focus {
+  outline: none;
+}
+
+.content_label {
+  display: flex;
+  flex-direction: row;
+}

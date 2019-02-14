@@ -1,4 +1,4 @@
-import Project from 'models/Project';
+import Project, { UserAccess } from 'models/Project';
 
 export enum fetchProjectsActionTypes {
   FETCH_PROJECTS_REQUEST = '@@projects/FETCH_PROJECTS_REQUEST',
@@ -14,4 +14,13 @@ export type fetchProjectsAction =
 export interface IProjectsState {
   readonly loading: boolean;
   readonly data?: Project[] | null;
+}
+
+export enum updateProjectActionTypes {
+  UPDATE_PROJECT_STATE = '@@projects/UPDATE_PROJECT_STATE'
+}
+
+export interface IUpdateProjectAction {
+  type: updateProjectActionTypes.UPDATE_PROJECT_STATE;
+  payload: Project[];
 }
