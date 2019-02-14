@@ -8,7 +8,7 @@ const projectsInitialState: IProjectsState = {
   loading: false
 };
 
-export const updateProjectReducer: Reducer<IProjectsState, IUpdateProjectAction> = (
+export const updateProjectsReducer: Reducer<IProjectsState, IUpdateProjectAction> = (
   state = projectsInitialState,
   action: IUpdateProjectAction
 ) => {
@@ -44,7 +44,7 @@ export const fetchProjectsReducer: Reducer<IProjectsState, fetchProjectsAction> 
 
 export const projectsReducer: Reducer<IProjectsState> = (state = projectsInitialState, action) => {
   if (Object.values(updateProjectActionTypes).includes(action.type)) {
-    return updateProjectReducer(state, action as IUpdateProjectAction);
+    return updateProjectsReducer(state, action as IUpdateProjectAction);
   }
   if (Object.values(fetchProjectsActionTypes).includes(action.type)) {
     return fetchProjectsReducer(state, action);

@@ -45,3 +45,25 @@ export enum resetChangeOwnerActionTypes {
 export interface IResetChangeOwnerAction {
   type: resetChangeOwnerActionTypes.RESET_CHANGE_OWNER;
 }
+
+export enum changeAccessActionTypes {
+  CHANGE_ACCESS_REQUEST = '@@collaboration/CHANGE_ACCESS_REQUEST',
+  CHANGE_ACCESS_SUCCESS = '@@collaboration/CHANGE_ACCESS_SUCCESS',
+  CHANGE_ACCESS_FAILURE = '@@collaboration/CHANGE_ACCESS_FAILURE'
+}
+
+export type changeAccessAction =
+  | { type: changeAccessActionTypes.CHANGE_ACCESS_REQUEST }
+  | { type: changeAccessActionTypes.CHANGE_ACCESS_SUCCESS; payload: boolean }
+  | { type: changeAccessActionTypes.CHANGE_ACCESS_FAILURE };
+
+export enum removeAccessActionTypes {
+  REMOVE_ACCESS_REQUEST = '@@collaboration/REMOVE_ACCESS_REQUEST',
+  REMOVE_ACCESS_SUCCESS = '@@collaboration/REMOVE_ACCESS_SUCCESS',
+  REMOVE_ACCESS_FAILURE = '@@collaboration/REMOVE_ACCESS_FAILURE'
+}
+
+export type removeAccessAction =
+  | { type: removeAccessActionTypes.REMOVE_ACCESS_REQUEST }
+  | { type: removeAccessActionTypes.REMOVE_ACCESS_SUCCESS; payload: boolean }
+  | { type: removeAccessActionTypes.REMOVE_ACCESS_FAILURE };

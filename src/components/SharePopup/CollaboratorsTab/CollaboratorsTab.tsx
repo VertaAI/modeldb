@@ -8,6 +8,7 @@ import { UserAccess } from '../../../models/Project';
 import User from '../../../models/User';
 import { changeProjectOwner } from '../../../store/collaboration/actions';
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
+import CollaboratorItem from '../CollaboratorItem/CollaboratorItem';
 import share_change_icon from '../images/share-change-icon.svg';
 import share_delete_icon from '../images/share-del-icon.svg';
 import share_read_icon from '../images/share-r-icon.svg';
@@ -79,69 +80,13 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
           {Array.from(this.props.collaborators.entries()).map((value: [User, UserAccess], index: number) => {
             const [user, userAccess] = value;
             return (
-              <div key={index} className={styles.collaborator}>
-                <Avatar
-                  name={user.getNameOrEmail()}
-                  round={true}
-                  size="40"
-                  textSizeRatio={40 / 16}
-                  className={styles.user_avatar}
-                  src={user.picture ? user.picture : ''}
-                />
-                <div className={styles.user_name}>
-                  <div>{user.getNameOrEmail()}</div>
-                  {userAccess === UserAccess.Owner ? <div className={styles.user_name_title}>Owner</div> : ''}
-                </div>
-                <div className={styles.user_access}>
-                  {userAccess === UserAccess.Owner ? (
-                    <div className={styles.collaborator_buttons}>
-                      <div />
-                      <div />
-                      <ButtonTooltip
-                        additionalClassName={`${styles.collaborator_button} ${styles.blue_button}`}
-                        imgSrc={share_change_icon}
-                        toolTipContent={'Change owner'}
-                        onButtonClick={this.showChangeOwnerMode}
-                        width={104}
-                      />
-                    </div>
-                  ) : userAccess === UserAccess.Read ? (
-                    <div className={styles.collaborator_buttons}>
-                      <ButtonTooltip
-                        additionalClassName={`${styles.collaborator_button} ${styles.blue_button}`}
-                        imgSrc={share_read_icon}
-                        toolTipContent={'Read only'}
-                        width={79}
-                      />
-                      <div />
-                      <ButtonTooltip
-                        additionalClassName={`${styles.collaborator_button} ${styles.red_button}`}
-                        imgSrc={share_delete_icon}
-                        toolTipContent={'Delete'}
-                        width={59}
-                      />
-                    </div>
-                  ) : userAccess === UserAccess.Write ? (
-                    <div className={styles.collaborator_buttons}>
-                      <ButtonTooltip
-                        additionalClassName={`${styles.collaborator_button} ${styles.blue_button}`}
-                        imgSrc={share_write_icon}
-                        toolTipContent={'Read / Write'}
-                        width={93}
-                      />
-                      <div />
-                      <ButtonTooltip
-                        additionalClassName={`${styles.collaborator_button} ${styles.red_button}`}
-                        imgSrc={share_delete_icon}
-                        toolTipContent={'Delete'}
-                        width={59}
-                      />
-                    </div>
-                  ) : (
-                    ''
-                  )}
-                </div>
-              </div>
+              <CollaboratorItem
+                key={index}
+                projectId={this.props.projectId}
+                user={user}
+                userAccess={userAccess}
+                onChangeOwner={this.showChangeOwnerMode}
+              />
             );
           })}
         </Scrollbars>

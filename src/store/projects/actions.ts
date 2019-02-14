@@ -18,28 +18,44 @@ export const fetchProjects = (): ActionResult<void, fetchProjectsAction> => asyn
     });
 };
 
-export const updateProjectsCollaborator = (
+export const updateProjectCollaboratorAccess = (
   projectId: string,
-  email: string,
+  user: User,
   userAccess: UserAccess
 ): ActionResult<void, IUpdateProjectAction> => async (dispatch, getState) => {
   const { projects } = getState();
   const project = projects.data!.find((value: Project, index: number) => value.Id === projectId)!;
 
   if (userAccess === UserAccess.Owner) {
-    project.Author = new User(email);
+    project.Author = user;
+
     const collaborators = Array.from(project.Collaborators).slice(1);
     project.Collaborators.clear();
     project.Collaborators.set(project.Author, UserAccess.Owner);
+
     for (const collaborator of collaborators) {
-      const [user, collaboratorUserAccess] = collaborator;
-      project.Collaborators.set(user, collaboratorUserAccess);
+      const [collaboratorUser, collaboratorUserAccess] = collaborator;
+      project.Collaborators.set(collaboratorUser, collaboratorUserAccess);
     }
   } else {
     const projectIndex = projects.data!.indexOf(project);
+    project.Collaborators.set(user, userAccess);
 
-    project.Collaborators.set(new User(email), userAccess);
     projects.data![projectIndex] = project;
   }
+  dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects.data!));
+};
+
+export const removeCollaboratorFromProject = (projectId: string, user: User): ActionResult<void, IUpdateProjectAction> => async (
+  dispatch,
+  getState
+) => {
+  const { projects } = getState();
+  const project = projects.data!.find((value: Project, index: number) => value.Id === projectId)!;
+  project.Collaborators.delete(user);
+
+  const projectIndex = projects.data!.indexOf(project);
+  projects.data![projectIndex] = project;
+
   dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects.data!));
 };
