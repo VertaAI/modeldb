@@ -2,12 +2,11 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import { Link } from 'react-router-dom';
 import ModelRecord from '../../models/ModelRecord';
 import Project from '../../models/Project';
-import { initContext, resetContext } from '../../store/filter';
 import { fetchExperimentRuns } from '../../store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import { Link } from 'react-router-dom';
 import styles from './ExperimentRuns.module.css';
 
 export interface IUrlProps {
@@ -46,18 +45,6 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public componentDidMount() {
     this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
-    this.props.dispatch(
-      initContext(ModelRecord.name, {
-        appliedFilters: [],
-        ctx: ModelRecord.name,
-        isFiltersSupporting: true,
-        metadata: ModelRecord.metaData
-      })
-    );
-  }
-
-  public componentWillUnmount() {
-    this.props.dispatch(resetContext());
   }
 }
 

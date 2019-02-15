@@ -1,4 +1,4 @@
-import { IFilterData } from 'components/FilterSelect/FilterSelect';
+import { IFilterData } from 'models/Filters';
 import Project from '../models/Project';
 import { PROJECTS_LIST } from './ApiEndpoints';
 import { IProjectDataService } from './IApiDataService';

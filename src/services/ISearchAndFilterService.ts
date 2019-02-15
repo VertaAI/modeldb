@@ -1,8 +1,6 @@
-import { IMetaData, MetaData } from 'models/IMetaData';
-import { IFilterData } from '../components/FilterSelect/FilterSelect';
+import { IFilterContextData } from 'store/filter';
+import { IFilterData } from '../models/Filters';
 
-export default interface ISearchAndFilterService<T extends MetaData> {
-  searchFilters(searchString: string): Promise<IFilterData[]>;
-  search(searchString: string): Promise<T[]>;
-  setMetaData(meta: IMetaData[]): void;
+export default interface ISearchAndFilterService {
+  searchFilterSuggestions(searchString: string, ctx?: IFilterContextData): Promise<IFilterData[]>;
 }
