@@ -1,6 +1,3 @@
-import { FilterContextPool, IFilterContext } from './FilterContextPool';
-import { IFilterData, PropertyType } from './Filters';
-
 export default class Project {
   private id: string = '';
   private name: string = '';
@@ -66,25 +63,3 @@ export default class Project {
     this.tags = v;
   }
 }
-
-FilterContextPool.registerContext({
-  metadata: [
-    { propertyName: 'Name', type: PropertyType.STRING },
-    { propertyName: 'Description', type: PropertyType.STRING },
-    { propertyName: 'Tag', type: PropertyType.STRING },
-    { propertyName: 'Id', type: PropertyType.NUMBER },
-    { propertyName: 'acc', type: PropertyType.METRIC }
-  ],
-
-  isFilteringSupport: true,
-  isValidLocation: (location: string) => {
-    return location === '/';
-  },
-  name: Project.name,
-  onApplyFilters: (filters: IFilterData[]) => {
-    console.log(`Apply: ${filters.length}`);
-  },
-  onSearch: (text: string) => {
-    console.log(`Search: ${text}`);
-  }
-});

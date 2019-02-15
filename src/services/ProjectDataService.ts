@@ -25,7 +25,12 @@ export default class ProjectDataService implements IProjectDataService {
         proj.DateUpdated = new Date(Number(element.date_updated));
         this.projects.push(proj);
       });
-      resolve(this.projects);
+
+      if (filter !== undefined && filter.length > 0) {
+        resolve(this.projects.slice(0, 1));
+      } else {
+        resolve(this.projects);
+      }
 
       // could be used post API activation
       // fetch(PROJECTS_LIST.endpoint, { method: PROJECTS_LIST.method })

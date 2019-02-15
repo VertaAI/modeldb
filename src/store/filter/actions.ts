@@ -36,14 +36,14 @@ export function suggestFilters(searchString: string): ActionResult<void, suggest
 export function applyFilters(ctxName: string, filters: IFilterData[]): ActionResult<void, applyFiltersAction> {
   return async (dispatch, getState) => {
     const ctx = FilterContextPool.getContextByName(ctxName);
-    ctx.onApplyFilters(filters);
+    ctx.onApplyFilters(filters, dispatch);
   };
 }
 
 export function search(ctxName: string, searchStr: string): ActionResult<void, applyFiltersAction> {
   return async (dispatch, getState) => {
     const ctx = FilterContextPool.getContextByName(ctxName);
-    ctx.onSearch(searchStr);
+    ctx.onSearch(searchStr, dispatch);
   };
 }
 
