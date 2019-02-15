@@ -12,5 +12,8 @@ export const fetchModelRecord = (modelId: string): ActionResult<void, fetchModel
     .getModelRecord(modelId, storeExperimentRuns)
     .then(res => {
       dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCCESS, res));
+    })
+    .catch(err => {
+      dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_FAILURE));
     });
 };

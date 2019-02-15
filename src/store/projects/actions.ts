@@ -10,5 +10,8 @@ export const fetchProjects = (): ActionResult<void, fetchProjectsAction> => asyn
     .getProjects()
     .then(res => {
       dispatch(action(fetchProjectsActionTypes.FETCH_PROJECTS_SUCCESS, res));
+    })
+    .catch(err => {
+      dispatch(action(fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST));
     });
 };
