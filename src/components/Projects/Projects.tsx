@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import Project from '../../models/Project';
-import { initContext, resetContext } from '../../store/filter/actions';
+
+import { FilterContextPool, IFilterContext } from '../../models/FilterContextPool';
+import { IFilterData, PropertyType } from '../../models/Filters';
 import { fetchProjects } from '../../store/projects';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import ProjectWidget from '../ProjectWidget/ProjectWidget';
@@ -14,21 +16,31 @@ interface IPropsFromState {
 
 type AllProps = IPropsFromState & IConnectedReduxProps;
 
+FilterContextPool.registerContext({
+  metadata: [
+    { propertyName: 'Name', type: PropertyType.STRING },
+    { propertyName: 'Description', type: PropertyType.STRING },
+    { propertyName: 'Tag', type: PropertyType.STRING },
+    { propertyName: 'Id', type: PropertyType.NUMBER },
+    { propertyName: 'acc', type: PropertyType.METRIC }
+  ],
+
+  isFilteringSupport: true,
+  isValidLocation: (location: string) => {
+    return location === '/';
+  },
+  name: Project.name,
+  onApplyFilters: (filters, dispatch) => {
+    dispatch(fetchProjects(filters));
+  },
+  onSearch: (text: string) => {
+    console.log(`Search: ${text}`);
+  }
+});
+
 class Projects extends React.Component<AllProps> {
   public componentDidMount() {
     this.props.dispatch(fetchProjects());
-    this.props.dispatch(
-      initContext(Project.name, {
-        appliedFilters: [],
-        ctx: Project.name,
-        isFiltersSupporting: true,
-        metadata: Project.metaData
-      })
-    );
-  }
-
-  public componentWillUnmount() {
-    this.props.dispatch(resetContext());
   }
 
   public render() {

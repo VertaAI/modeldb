@@ -1,7 +1,4 @@
-import { IMetaData, MetaData } from './IMetaData';
-
 export default class Project {
-  public static metaData: IMetaData[] = [{ propertyName: 'Name' }, { propertyName: 'Description' }];
   private id: string = '';
   private name: string = '';
   private description: string = '';
