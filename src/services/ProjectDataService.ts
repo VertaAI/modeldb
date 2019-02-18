@@ -1,6 +1,6 @@
-import { IFilterData } from 'components/FilterSelect/FilterSelect';
-import Project, { UserAccess } from '../models/Project';
+import { IFilterData } from 'models/Filters';
 import User from '../models/User';
+import Project, { UserAccess } from '../models/Project';
 import { PROJECTS_LIST } from './ApiEndpoints';
 import { IProjectDataService } from './IApiDataService';
 import { projectsMock } from './mocks/projectsMock';
@@ -35,7 +35,12 @@ export default class ProjectDataService implements IProjectDataService {
 
         this.projects.push(proj);
       });
-      resolve(this.projects);
+
+      if (filter !== undefined && filter.length > 0) {
+        resolve(this.projects.slice(0, 1));
+      } else {
+        resolve(this.projects);
+      }
 
       // could be used post API activation
       // fetch(PROJECTS_LIST.endpoint, { method: PROJECTS_LIST.method })

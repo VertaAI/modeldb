@@ -1,6 +1,6 @@
 import * as React from 'react';
+import { IFilterData } from '../../../models/Filters';
 import styles from './FilterItem.module.css';
-import { IFilterData } from './FilterSelect';
 
 interface ILocalProps {
   data: IFilterData;
@@ -25,9 +25,7 @@ export default class FilterItem extends React.Component<ILocalProps> {
         <div className={styles.filter_icon}>
           <i className="fa fa-filter" aria-hidden="true" />
         </div>
-        <div className={styles.prop_text}>{`${this.props.data.propertyName}${
-          this.props.data.propertyValue ? `: ${this.props.data.propertyValue}` : ''
-        }`}</div>
+        <div className={styles.prop_text}>{`${this.props.data.name}${this.props.data.value ? `: ${this.props.data.value}` : ''}`}</div>
         <div className={styles.add_button} onClick={this.onClick}>
           +
         </div>

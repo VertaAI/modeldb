@@ -1,4 +1,4 @@
-import { IFilterData } from 'components/FilterSelect/FilterSelect';
+import { IFilterData } from '../models/Filters';
 import ModelRecord from '../models/ModelRecord';
 import Project from '../models/Project';
 

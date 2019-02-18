@@ -1,8 +1,6 @@
-import ModelRecord from './ModelRecord';
-import Project from './Project';
+import { PropertyType } from './Filters';
 
 export interface IMetaData {
-  propertyName?: string;
+  propertyName: string;
+  type: PropertyType;
 }
-
-export type MetaData = Project | ModelRecord;

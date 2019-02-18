@@ -1,4 +1,3 @@
-import { IMetaData, MetaData } from './IMetaData';
 import User from './User';
 export enum UserAccess {
   Owner = 0,
@@ -7,7 +6,6 @@ export enum UserAccess {
 }
 
 export default class Project {
-  public static metaData: IMetaData[] = [{ propertyName: 'Name' }, { propertyName: 'Description' }];
   private id: string;
   private name: string;
   private description: string = '';

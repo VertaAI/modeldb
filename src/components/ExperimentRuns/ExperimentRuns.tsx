@@ -6,8 +6,8 @@ import { Link } from 'react-router-dom';
 import ModelRecord from '../../models/ModelRecord';
 import Project from '../../models/Project';
 import { fetchExperimentRuns } from '../../store/experiment-runs';
-import { initContext, resetContext } from '../../store/filter';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 
@@ -52,18 +52,6 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public componentDidMount() {
     this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
-    this.props.dispatch(
-      initContext(ModelRecord.name, {
-        appliedFilters: [],
-        ctx: ModelRecord.name,
-        isFiltersSupporting: true,
-        metadata: ModelRecord.metaData
-      })
-    );
-  }
-
-  public componentWillUnmount() {
-    this.props.dispatch(resetContext());
   }
 }
 

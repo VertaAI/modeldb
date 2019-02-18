@@ -12,7 +12,6 @@ import { InvitationStatus } from './store/collaboration';
 import configureStore from './store/configureStore';
 import { IFilterContextData } from './store/filter';
 import { IApplicationState } from './store/store';
-import { HashMap } from './types/HashMap';
 
 export const history = createBrowserHistory();
 function getUser(): User | null {
@@ -39,7 +38,8 @@ const initialState: IApplicationState = {
     loading: false
   },
   filters: {
-    contexts: new HashMap<IFilterContextData>()
+    // contexts: new Map<string, IFilterContextData>()
+    contexts: {}
   },
   layout: {
     authenticated: false,
