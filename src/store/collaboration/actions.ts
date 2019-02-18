@@ -1,7 +1,6 @@
-import { AnyAction } from 'redux';
 import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
-import Project, { UserAccess } from '../../models/Project';
+import { UserAccess } from '../../models/Project';
 import User from '../../models/User';
 import ServiceFactory from '../../services/ServiceFactory';
 import { removeCollaboratorFromProject, updateProjectCollaboratorAccess } from '../projects';
@@ -10,12 +9,17 @@ import {
   changeAccessActionTypes,
   changeOwnerAction,
   changeOwnerActionTypes,
+  InvitationStatus,
+  IResetChangeAccessAction,
   IResetChangeOwnerAction,
   IResetInvitationAction,
+  IResetRemoveAccessAction,
   removeAccessAction,
   removeAccessActionTypes,
+  resetChangeAccessActionTypes,
   resetChangeOwnerActionTypes,
   resetInvitationActionTypes,
+  resetRemoveAccessActionTypes,
   sendInvitationAction,
   sendInvitationActionTypes
 } from './types';
@@ -30,7 +34,7 @@ export const sendInvitationForUser = (
   await ServiceFactory.getCollaboratorsService()
     .sendInvitation(projectId, email, userAccess)
     .then(res => {
-      dispatch(action(sendInvitationActionTypes.SEND_INVITATION_SUCCESS, true));
+      dispatch(action(sendInvitationActionTypes.SEND_INVITATION_SUCCESS, InvitationStatus.Success));
       dispatch(updateProjectCollaboratorAccess(projectId, new User(email), userAccess));
     })
     .catch(err => {
@@ -51,7 +55,7 @@ export const changeProjectOwner = (projectId: string, email: string): ActionResu
   await ServiceFactory.getCollaboratorsService()
     .changeOwner(projectId, email)
     .then(res => {
-      dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_SUCCESS, true));
+      dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_SUCCESS, InvitationStatus.Success));
       dispatch(updateProjectCollaboratorAccess(projectId, new User(email), UserAccess.Owner));
     })
     .catch(err => {
@@ -73,12 +77,16 @@ export const changeAccessToProject = (
   await ServiceFactory.getCollaboratorsService()
     .changeAccessToProject(projectId, user.email, userAccess)
     .then(res => {
-      dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_SUCCESS, true));
+      dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_SUCCESS, InvitationStatus.Success));
       dispatch(updateProjectCollaboratorAccess(projectId, user, userAccess));
     })
     .catch(err => {
       dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_FAILURE));
     });
+};
+
+export const resetChangeAccessState = (): ActionResult<void, IResetChangeAccessAction> => async (dispatch, getState) => {
+  dispatch(action(resetChangeAccessActionTypes.RESET_CHANGE_ACCESS));
 };
 
 export const removeAccessFromProject = (projectId: string, user: User): ActionResult<void, removeAccessAction> => async (
@@ -90,10 +98,14 @@ export const removeAccessFromProject = (projectId: string, user: User): ActionRe
   await ServiceFactory.getCollaboratorsService()
     .removeAccessFromProject(projectId, user.email)
     .then(res => {
-      dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_SUCCESS, true));
+      dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_SUCCESS, InvitationStatus.Success));
       dispatch(removeCollaboratorFromProject(projectId, user));
     })
     .catch(err => {
       dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_FAILURE));
     });
+};
+
+export const resetRemoveAccessState = (): ActionResult<void, IResetRemoveAccessAction> => async (dispatch, getState) => {
+  dispatch(action(resetRemoveAccessActionTypes.RESET_REMOVE_ACCESS));
 };

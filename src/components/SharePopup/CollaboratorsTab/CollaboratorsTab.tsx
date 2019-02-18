@@ -1,18 +1,11 @@
-import React, { StaticLifecycle } from 'react';
-import Avatar from 'react-avatar';
+import React from 'react';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars';
 import { connect } from 'react-redux';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { action } from 'typesafe-actions';
+import { IConnectedReduxProps } from 'store/store';
 import { UserAccess } from '../../../models/Project';
 import User from '../../../models/User';
 import { changeProjectOwner } from '../../../store/collaboration/actions';
-import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
 import CollaboratorItem from '../CollaboratorItem/CollaboratorItem';
-import share_change_icon from '../images/share-change-icon.svg';
-import share_delete_icon from '../images/share-del-icon.svg';
-import share_read_icon from '../images/share-r-icon.svg';
-import share_write_icon from '../images/share-wr-icon.svg';
 import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './CollaboratorsTab.module.css';
 

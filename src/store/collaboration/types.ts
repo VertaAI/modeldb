@@ -1,11 +1,19 @@
-interface ISendInvitationState {
-  readonly sending: boolean;
-  readonly result?: boolean;
+export enum InvitationStatus {
+  None,
+  Sending,
+  Success,
+  Failure
+}
+
+interface IInvitationState {
+  readonly status: InvitationStatus;
 }
 
 export interface ICollaborationState {
-  readonly changeOwner: ISendInvitationState;
-  readonly inviteNewCollaborator: ISendInvitationState;
+  readonly changeOwner: IInvitationState;
+  readonly inviteNewCollaborator: IInvitationState;
+  readonly changeAccess: IInvitationState;
+  readonly removeAccess: IInvitationState;
 }
 
 export enum sendInvitationActionTypes {
@@ -16,8 +24,16 @@ export enum sendInvitationActionTypes {
 
 export type sendInvitationAction =
   | { type: sendInvitationActionTypes.SEND_INVITATION_REQUEST }
-  | { type: sendInvitationActionTypes.SEND_INVITATION_SUCCESS; payload: boolean }
+  | { type: sendInvitationActionTypes.SEND_INVITATION_SUCCESS; payload: InvitationStatus }
   | { type: sendInvitationActionTypes.SEND_INVITATION_FAILURE };
+
+export enum resetInvitationActionTypes {
+  RESET_INVITATION_STATE = '@@collaboration/RESET_INVITATION_STATE'
+}
+
+export interface IResetInvitationAction {
+  type: resetInvitationActionTypes.RESET_INVITATION_STATE;
+}
 
 export enum changeOwnerActionTypes {
   CHANGE_OWNER_REQUEST = '@@collaboration/CHANGE_OWNER_REQUEST',
@@ -27,16 +43,8 @@ export enum changeOwnerActionTypes {
 
 export type changeOwnerAction =
   | { type: changeOwnerActionTypes.CHANGE_OWNER_REQUEST }
-  | { type: changeOwnerActionTypes.CHANGE_OWNER_SUCCESS; payload: boolean }
+  | { type: changeOwnerActionTypes.CHANGE_OWNER_SUCCESS; payload: InvitationStatus }
   | { type: changeOwnerActionTypes.CHANGE_OWNER_FAILURE };
-
-export enum resetInvitationActionTypes {
-  RESET_INVITATION_STATE = '@@collaboration/RESET_INVITATION_STATE'
-}
-
-export interface IResetInvitationAction {
-  type: resetInvitationActionTypes.RESET_INVITATION_STATE;
-}
 
 export enum resetChangeOwnerActionTypes {
   RESET_CHANGE_OWNER = '@@collaboration/RESET_CHANGE_OWNER'
@@ -54,8 +62,16 @@ export enum changeAccessActionTypes {
 
 export type changeAccessAction =
   | { type: changeAccessActionTypes.CHANGE_ACCESS_REQUEST }
-  | { type: changeAccessActionTypes.CHANGE_ACCESS_SUCCESS; payload: boolean }
+  | { type: changeAccessActionTypes.CHANGE_ACCESS_SUCCESS; payload: InvitationStatus }
   | { type: changeAccessActionTypes.CHANGE_ACCESS_FAILURE };
+
+export enum resetChangeAccessActionTypes {
+  RESET_CHANGE_ACCESS = '@@collaboration/RESET_CHANGE_ACCESS'
+}
+
+export interface IResetChangeAccessAction {
+  type: resetChangeAccessActionTypes.RESET_CHANGE_ACCESS;
+}
 
 export enum removeAccessActionTypes {
   REMOVE_ACCESS_REQUEST = '@@collaboration/REMOVE_ACCESS_REQUEST',
@@ -65,5 +81,13 @@ export enum removeAccessActionTypes {
 
 export type removeAccessAction =
   | { type: removeAccessActionTypes.REMOVE_ACCESS_REQUEST }
-  | { type: removeAccessActionTypes.REMOVE_ACCESS_SUCCESS; payload: boolean }
+  | { type: removeAccessActionTypes.REMOVE_ACCESS_SUCCESS; payload: InvitationStatus }
   | { type: removeAccessActionTypes.REMOVE_ACCESS_FAILURE };
+
+export enum resetRemoveAccessActionTypes {
+  RESET_REMOVE_ACCESS = '@@collaboration/RESET_REMOVE_ACCESS'
+}
+
+export interface IResetRemoveAccessAction {
+  type: resetRemoveAccessActionTypes.RESET_REMOVE_ACCESS;
+}

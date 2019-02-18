@@ -1,7 +1,6 @@
 import { createBrowserHistory } from 'history';
 import jwtDecode from 'jwt-decode';
 import 'normalize.css';
-import { string } from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
@@ -9,6 +8,7 @@ import App from './App';
 import './index.css';
 import User from './models/User';
 import ServiceFactory from './services/ServiceFactory';
+import { InvitationStatus } from './store/collaboration';
 import configureStore from './store/configureStore';
 import { IFilterContextData } from './store/filter';
 import { IApplicationState } from './store/store';
@@ -29,7 +29,12 @@ function getUser(): User | null {
 }
 
 const initialState: IApplicationState = {
-  collaboration: { changeOwner: { sending: false }, inviteNewCollaborator: { sending: false } },
+  collaboration: {
+    changeAccess: { status: InvitationStatus.None },
+    changeOwner: { status: InvitationStatus.None },
+    inviteNewCollaborator: { status: InvitationStatus.None },
+    removeAccess: { status: InvitationStatus.None }
+  },
   experimentRuns: {
     loading: false
   },
