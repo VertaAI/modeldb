@@ -28,7 +28,7 @@
   transition: transform 0.314s ease, top 0.314s ease, background 0.314s ease;
   -webkit-user-select: none;
   user-select: none;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--text-color3);
 }
 
 /* The only way to handle if input field is not empty - detect by :placeholder-shown :(( */
@@ -49,7 +49,6 @@
 
 .form_group .content_input:focus {
   color: black;
-  outline: none;
 }
 
 .form_group .content_input:focus + .content_label,
@@ -57,13 +56,13 @@
 .form_group .content_label {
   top: -100%;
   transform: scale(1, 1) translateY(200%);
-  background: white;
+  background: var(--main-color3);
   padding-left: 6px;
   padding-right: 6px;
 }
 
 .form_group .content_input:invalid + .content_label:after {
-  color: firebrick;
+  color: var(--error-color1);
   content: '(invalid)';
   margin-left: 0.314rem;
 }
@@ -76,19 +75,15 @@
 
 .content_input {
   height: 36px;
-  background-color: #ffffff;
+  background-color: var(--main-color3);
   display: block;
   padding-left: 16px;
   font-size: 14px;
   line-height: 16px;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--text-color3);
   flex-grow: 2;
   border: none;
   border-radius: 3px;
-}
-
-.content_input:focus {
-  outline: none;
 }
 
 .content_label {

@@ -20,7 +20,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     domain: AUTH_CONFIG.domain,
     redirectUri: AUTH_CONFIG.callbackUrl,
     responseType: 'id_token token',
-    scope: 'openid profile'
+    scope: 'openid profile email'
   });
 
   constructor() {
@@ -75,7 +75,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
 
   public getProfile(): Promise<User> {
     return new Promise((resolve, reject) => {
-      if (this.user) {
+      if (this.user && this.user.email) {
         return resolve(this.user);
       }
       const accessToken = this.accessToken;

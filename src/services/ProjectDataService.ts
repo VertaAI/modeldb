@@ -1,6 +1,6 @@
 import { IFilterData } from 'models/Filters';
-import User from '../models/User';
 import Project, { UserAccess } from '../models/Project';
+import User from '../models/User';
 import { PROJECTS_LIST } from './ApiEndpoints';
 import { IProjectDataService } from './IApiDataService';
 import { projectsMock } from './mocks/projectsMock';
@@ -29,7 +29,7 @@ export default class ProjectDataService implements IProjectDataService {
         for (let index = 0; index < Math.round(Math.random() * 10); index++) {
           const user = new User('Manasi.Vartak@verta.ai');
           const rand = Math.floor(Math.random() * 2) + 1;
-          user.name = `Collaborator ${rand === 1 ? 'Read' : 'Write'}`;
+          user.name = `Collaborator ${rand === 2 ? 'Read' : 'Write'}`;
           proj.Collaborators.set(user, rand);
         }
 

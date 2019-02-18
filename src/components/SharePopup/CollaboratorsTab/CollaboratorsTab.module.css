@@ -40,12 +40,7 @@
   line-height: 18px;
   text-align: center;
   cursor: pointer;
-  outline: none;
   border: none;
-}
-
-.change_owner_button:focus {
-  outline: none;
 }
 
 .change_owner_cancel_button {
@@ -57,14 +52,14 @@
 }
 
 .change_owner_cancel_button:hover {
-  background-color: #f3f3f3;
+  background-color: var(--main-color4);
 }
 
 .change_owner_confirm_button {
   width: 114px;
   border-radius: 2px;
-  background-color: #6863ff;
-  color: #ffffff;
+  background-color: var(---main-color2);
+  color: var(--main-color3);
 }
 
 .change_owner_confirm_button:hover {

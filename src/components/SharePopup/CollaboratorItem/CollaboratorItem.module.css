@@ -28,11 +28,8 @@
   line-height: 15px;
 }
 
-.user_access {
-  grid-area: user_access;
-}
-
 .collaborator_buttons {
+  grid-area: user_access;
   display: grid;
   grid-template-columns: 40px 20px 40px;
 }
@@ -42,7 +39,12 @@
   width: 40px;
   border: none;
   border-radius: 28.75px;
-  background-color: #fff;
+  background-color: var(--main-color3);
+}
+
+.collaborator_button.without_active_button:active {
+  background: none;
+  padding: 0;
 }
 
 .collaborator_button img {
@@ -50,17 +52,14 @@
 }
 
 .blue_button:hover {
-  background-color: #6863ff;
+  background-color: var(--main-color2);
 }
 
 .red_button:hover {
-  background-color: #ff787f;
+  background-color: var(--error-color1);
 }
 
-.collaborator_button:hover img {
+.collaborator_button:hover.blue_button img,
+.collaborator_button:hover.red_button img {
   filter: invert(1);
-}
-
-.collaborator_button:focus {
-  outline: none;
 }

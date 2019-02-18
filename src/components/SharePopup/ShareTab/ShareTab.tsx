@@ -12,12 +12,9 @@ import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './ShareTab.module.css';
 
 interface ILocalProps {
+  currentUserAccess: UserAccess;
   status: InvitationStatus;
   projectId: string;
-}
-
-interface IPropsFromState {
-  currentUser: User;
 }
 
 interface ILocalState {
@@ -25,7 +22,7 @@ interface ILocalState {
   userAccess: UserAccess;
 }
 
-type AllProps = IConnectedReduxProps & ILocalProps & IPropsFromState;
+type AllProps = IConnectedReduxProps & ILocalProps;
 
 class ShareTab extends React.Component<AllProps, ILocalState> {
   constructor(props: AllProps) {
@@ -39,6 +36,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
     this.sendInvitationOnClick = this.sendInvitationOnClick.bind(this);
     this.changeShareType = this.changeShareType.bind(this);
     this.updateInputValue = this.updateInputValue.bind(this);
+    this.sendNewInvitation = this.sendNewInvitation.bind(this);
   }
 
   public render() {
@@ -93,6 +91,9 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   }
 
   private changeShareType() {
+    if (this.props.currentUserAccess === UserAccess.Read) {
+      return;
+    }
     switch (this.state.userAccess) {
       case UserAccess.Read:
         this.setState({ ...this.state, userAccess: UserAccess.Write });

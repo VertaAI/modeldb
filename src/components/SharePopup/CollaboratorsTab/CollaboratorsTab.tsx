@@ -1,7 +1,7 @@
 import React from 'react';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars';
 import { connect } from 'react-redux';
-import { IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { UserAccess } from '../../../models/Project';
 import User from '../../../models/User';
 import { changeProjectOwner } from '../../../store/collaboration/actions';
@@ -11,6 +11,7 @@ import styles from './CollaboratorsTab.module.css';
 
 interface ILocalProps {
   collaborators: Map<User, UserAccess>;
+  currentUserAccess: UserAccess;
   projectId: string;
 }
 
@@ -75,6 +76,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
             return (
               <CollaboratorItem
                 key={index}
+                currentUserAccess={this.props.currentUserAccess}
                 projectId={this.props.projectId}
                 user={user}
                 userAccess={userAccess}

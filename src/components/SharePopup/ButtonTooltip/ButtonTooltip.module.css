@@ -1,5 +1,5 @@
 .tooltip_button {
-  background: white;
+  background: var(--main-color3);
   cursor: pointer;
   border: none;
   position: relative;

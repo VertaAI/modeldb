@@ -22,7 +22,6 @@
 
 .project_link {
   text-decoration: none;
-  outline: none;
 }
 
 .metrics_block {
@@ -147,7 +146,6 @@
   background-color: var(--main-color3);
   font-size: 13px;
   line-height: 15px;
-  outline: none;
   margin-right: -3px;
   padding: 0;
 }
@@ -160,11 +158,6 @@
   background-color: var(--main-color2);
   color: var(--main-color3);
   border-color: var(--main-color2);
-  outline: none;
-}
-
-.collaborate_button:focus {
-  outline: none;
 }
 
 .collaborate_button:hover .combined_icon {
