@@ -35,7 +35,7 @@ export const sendInvitationForUser = (
     .sendInvitation(projectId, email, userAccess)
     .then(res => {
       dispatch(action(sendInvitationActionTypes.SEND_INVITATION_SUCCESS, InvitationStatus.Success));
-      dispatch(updateProjectCollaboratorAccess(projectId, new User(email), userAccess));
+      dispatch(updateProjectCollaboratorAccess(projectId, new User(undefined, email), userAccess));
     })
     .catch(err => {
       dispatch(action(sendInvitationActionTypes.SEND_INVITATION_FAILURE));
@@ -56,7 +56,7 @@ export const changeProjectOwner = (projectId: string, email: string): ActionResu
     .changeOwner(projectId, email)
     .then(res => {
       dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_SUCCESS, InvitationStatus.Success));
-      dispatch(updateProjectCollaboratorAccess(projectId, new User(email), UserAccess.Owner));
+      dispatch(updateProjectCollaboratorAccess(projectId, new User(undefined, email), UserAccess.Owner));
     })
     .catch(err => {
       dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_FAILURE));

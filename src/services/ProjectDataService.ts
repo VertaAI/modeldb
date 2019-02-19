@@ -15,7 +15,7 @@ export default class ProjectDataService implements IProjectDataService {
   public getProjects(filter?: IFilterData[]): Promise<Project[]> {
     return new Promise<Project[]>((resolve, reject) => {
       projectsMock.forEach((element: any) => {
-        const author = new User('Manasi.Vartak@verta.ai');
+        const author = new User(this.generateId(), 'Manasi.Vartak@verta.ai');
         author.name = 'Manasi Vartak';
         const proj = new Project(element.id, element.name, author);
 
@@ -27,7 +27,7 @@ export default class ProjectDataService implements IProjectDataService {
         proj.DateUpdated = new Date(Number(element.date_updated));
 
         for (let index = 0; index < Math.round(Math.random() * 10); index++) {
-          const user = new User('Manasi.Vartak@verta.ai');
+          const user = new User(this.generateId(), 'Manasi.Vartak@verta.ai');
           const rand = Math.floor(Math.random() * 2) + 1;
           user.name = `Collaborator ${rand === 2 ? 'Read' : 'Write'}`;
           proj.Collaborators.set(user, rand);
@@ -75,5 +75,11 @@ export default class ProjectDataService implements IProjectDataService {
       // implement mapping for author if any
       resolve(this.projects);
     });
+  }
+
+  private generateId() {
+    return `_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
   }
 }

@@ -83,10 +83,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
         if (error) {
           reject(error);
         } else {
-          const user = new User(auth0User.email!);
-          user.name = auth0User.name;
-          user.picture = auth0User.picture;
-          this.user = user;
+          this.user = this.convertAuth0UserToUser(auth0User);
           resolve(this.user);
         }
       });
@@ -109,7 +106,8 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
           const token = jwtDecode<IJwtToken>(idToken!);
           Cookies.set(this.idTokenName, idToken!, { expires: new Date(token.exp * 1000) });
           Cookies.set(this.auth0accessTokenName, accessToken!, { expires: new Date(token.exp * 1000) });
-          this.user = jwtDecode<User>(idToken!);
+          const auth0User = jwtDecode<Auth0UserProfile>(idToken!);
+          this.user = this.convertAuth0UserToUser(auth0User);
         });
       }
     });
@@ -119,5 +117,12 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     Cookies.remove(this.idTokenName);
     Cookies.remove(this.auth0accessTokenName);
     this.user = null;
+  }
+
+  private convertAuth0UserToUser(auth0User: Auth0UserProfile): User {
+    const user = new User(auth0User.user_id || auth0User.sub.split('|')[1], auth0User.email!);
+    user.name = auth0User.name;
+    user.picture = auth0User.picture;
+    return user;
   }
 }
