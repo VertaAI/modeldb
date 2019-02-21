@@ -1,4 +1,4 @@
-## ModelDB V2 Coming Soon! Sign up [here](https://verta.ai) for early access to open-source and managed service via Verta.AI.
+## ModelDB V2 Coming Soon! Sign up [here](https://verta.ai) for early access to open-source and managed service via [Verta.AI](https://verta.ai).
 
 ---
 ---
