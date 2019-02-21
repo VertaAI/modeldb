@@ -1,5 +1,7 @@
 # ModelDB: A system to manage ML models
-[![Build Status](https://travis-ci.org/mitdbg/modeldb.svg?branch=master)](https://travis-ci.org/mitdbg/modeldb)
+
+## ModelDB V2 Coming Soon: sign up [here](https://verta.ai) for early access to open-source and managed service via Verta.AI.
+
 **Website**: [http://modeldb.csail.mit.edu](http://modeldb.csail.mit.edu)
 
 **See the ModelDB frontend in action**:
