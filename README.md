@@ -1,6 +1,9 @@
-# ModelDB: A system to manage ML models
+## ModelDB V2 Coming Soon! Sign up [here](https://verta.ai) for early access to open-source and managed service via Verta.AI.
 
-## ModelDB V2 Coming Soon: sign up [here](https://verta.ai) for early access to open-source and managed service via Verta.AI.
+---
+---
+
+# ModelDB: A system to manage ML models
 
 **Website**: [http://modeldb.csail.mit.edu](http://modeldb.csail.mit.edu)
 
