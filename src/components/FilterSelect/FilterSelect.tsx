@@ -23,6 +23,7 @@ import { FilterContextPool, IFilterContext } from '../../models/FilterContextPoo
 import ModelRecord from '../../models/ModelRecord';
 import Project from '../../models/Project';
 import { IFilterContextData } from '../../store/filter';
+import Droppable from '../Droppable/Droppable';
 import AppliedFilterItem from './AppliedFilterItem/AppliedFilterItem';
 
 const contextMap: Map<string, string> = new Map();
@@ -97,19 +98,20 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
           <label className="fa fa-search" aria-hidden={true} />
           {this.renderPopup()}
         </div>
-
         {this.props.isFiltersSupporting && (
           <div>
-            <div className={styles.applied_filters}>
-              {this.props.appliedFilters.map((filter, index) => (
-                <AppliedFilterItem
-                  key={index}
-                  data={filter}
-                  onRemoveFilter={this.onRemoveFilter}
-                  onChange={this.onSaveFilterData(index, this.props.ctx)}
-                />
-              ))}
-            </div>
+            <Droppable type="Filter" onDrop={this.onCreateFilter}>
+              <div className={styles.applied_filters}>
+                {this.props.appliedFilters.map((filter, index) => (
+                  <AppliedFilterItem
+                    key={index}
+                    data={filter}
+                    onRemoveFilter={this.onRemoveFilter}
+                    onChange={this.onSaveFilterData(index, this.props.ctx)}
+                  />
+                ))}
+              </div>
+            </Droppable>
 
             <div className={styles.apply_filters_button}>
               <button onClick={this.onApplyFilters}>Filter</button>
