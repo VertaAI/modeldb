@@ -10,6 +10,7 @@ import { BreadcrumbItem } from './BreadcrumbItem';
 import headerArrow from './images/header-arrow.svg';
 
 interface IPropsFromState {
+  projects?: any | null;
   experimentRuns?: ModelRecord[] | null;
   modelRecord?: ModelRecord | null;
 }
@@ -70,12 +71,11 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   }
 
   private prepareItem(): BreadcrumbItem | undefined {
-    const { experimentRuns, modelRecord } = this.props;
-    // project name no-longer exist @ModelRecord, this could be resolved either by composing an object for breadcrumbs while
-    // subscribing to "projects" array at store to fetch associated project name if needed
-    // this.projectBreadcrumbItem.Name = project ? project.Name.toLocaleUpperCase() : model ? model.ProjectName.toLocaleUpperCase() : '';
-
-    this.projectBreadcrumbItem.Name = 'PROJECT';
+    const { experimentRuns, modelRecord, projects } = this.props;
+    this.projectBreadcrumbItem.Name =
+      projects && projects.length > 0 && experimentRuns && experimentRuns.length > 0
+        ? projects.find((pjt: any) => pjt.Id === experimentRuns[0].ProjectId).name.toLocaleUpperCase()
+        : 'EXPERIMENT RUNS';
     this.projectBreadcrumbItem.Path = `/project/${
       experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].ProjectId : modelRecord ? modelRecord.ProjectId : ''
     }/exp-runs`;
@@ -105,9 +105,10 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ experimentRuns, modelRecord }: IApplicationState) => ({
+const mapStateToProps = ({ experimentRuns, modelRecord, projects }: IApplicationState) => ({
   experimentRuns: experimentRuns.data,
-  modelRecord: modelRecord.data
+  modelRecord: modelRecord.data,
+  projects: projects.data
 });
 
 export default withRouter(connect(mapStateToProps)(Breadcrumb));

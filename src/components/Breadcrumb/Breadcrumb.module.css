@@ -1,6 +1,6 @@
 .content {
-  font-size: 16px;
-  line-height: 19px;
+  font-size: 14px;
+  line-height: 18px;
 }
 
 .arrow {
@@ -10,15 +10,14 @@
 
 .link {
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--grey-light);
   outline: none;
 }
 
 .link:hover {
-  color: var(--bg-color3);
+  color: var(--main-color3);
 }
 
 .active_link {
-  font-weight: 500;
-  color: var(--bg-color3);
+  color: var(--grey-lightest);
 }

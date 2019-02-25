@@ -1276,6 +1276,18 @@ address@1.0.3, address@^1.0.1:
   resolved "https://registry.yarnpkg.com/address/-/address-1.0.3.tgz#b5f50631f8d6cec8bd20c963963afb55e06cbce9"
   integrity sha512-z55ocwKBRLryBs394Sm3ushTtBeg6VAeuku7utSoSnsJKvKcnXFIyC6vh27n3rXyxSgkJBBCAvyOn7gSUcTYjg==
 
+ag-grid-community@^20.1.0:
+  version "20.1.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-20.1.0.tgz#38c11aaaf7418dc33627d7e67e00de3ba99786a8"
+  integrity sha512-58JQj2n/2NvqStDO0aNEEUUvc1ziRcEhi1NY+AYzsADzA0snrn228D4ea974JYjxbqy4cqFsqn9hDX11aInIfg==
+
+ag-grid-react@^20.1.0:
+  version "20.1.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-20.1.0.tgz#3a25265f793347e29a60b1284bf47c37389a4001"
+  integrity sha512-hwxxJLWcLyrp5sSjfDl9aYCZ0tr6hCcdVgYsqTSiO955c8BwR3VRZxmKL0DqujZEnHVgx3kBiBSVyjBVQVmtog==
+  dependencies:
+    prop-types "^15.6.2"
+
 ajv-errors@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/ajv-errors/-/ajv-errors-1.0.1.tgz#f35986aceb91afadec4102fbd85014950cefa64d"

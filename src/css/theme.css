@@ -32,4 +32,8 @@
   --font-size3: 15px;
   --font-size4: 13px;
   --font-size5: 12px;
+
+  --grey-light: #dae1e7;
+  --grey-lighter: #f1f5f8;
+  --grey-lightest: #f8fafc;
 }
