@@ -2,6 +2,8 @@ import Project from 'models/Project';
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
+import { PropertyType } from '../../models/Filters';
+import Draggable from '../Draggable/Draggable';
 import styles from './ProjectWidget.module.css';
 
 interface ILocalProps {
@@ -19,9 +21,9 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
             <div className={styles.tags_block}>
               {this.props.project.Tags.map((tag: string, i: number) => {
                 return (
-                  <p key={i} className={styles.tags}>
-                    {tag}
-                  </p>
+                  <Draggable key={i} type="Filter" data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}>
+                    <p className={styles.tags}>{tag}</p>
+                  </Draggable>
                 );
               })}
             </div>

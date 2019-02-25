@@ -20,9 +20,7 @@ FilterContextPool.registerContext({
   metadata: [
     { propertyName: 'Name', type: PropertyType.STRING },
     { propertyName: 'Description', type: PropertyType.STRING },
-    { propertyName: 'Tag', type: PropertyType.STRING },
-    { propertyName: 'Id', type: PropertyType.NUMBER },
-    { propertyName: 'acc', type: PropertyType.METRIC }
+    { propertyName: 'Tag', type: PropertyType.STRING }
   ],
 
   isFilteringSupport: true,
@@ -33,8 +31,17 @@ FilterContextPool.registerContext({
   onApplyFilters: (filters, dispatch) => {
     dispatch(fetchProjects(filters));
   },
-  onSearch: (text: string) => {
-    console.log(`Search: ${text}`);
+  onSearch: (text: string, dispatch) => {
+    dispatch(
+      fetchProjects([
+        {
+          invert: false,
+          name: 'Name',
+          type: PropertyType.STRING,
+          value: text
+        }
+      ])
+    );
   }
 });
 
