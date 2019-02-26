@@ -64,8 +64,29 @@ export default class ProjectDataService implements IProjectDataService {
                 proj.DateUpdated = new Date(Number(element.date_updated));
                 this.projects.push(proj);
               });
+
+              if (filter !== undefined && filter.length > 0) {
+                let result: Project[] = this.projects;
+                for (const f of filter) {
+                  if (f.name === 'Name') {
+                    result = result.filter(item => item.Name.toLowerCase().indexOf(f.value.toString().toLowerCase()) !== -1);
+                  }
+
+                  if (f.name === 'Tag') {
+                    result = result.filter(
+                      item => item.Tags.findIndex(tag => tag.toLowerCase() === f.value.toString().toLowerCase()) !== -1
+                    );
+                  }
+
+                  if (f.name === 'Description') {
+                    result = result.filter(item => item.Description.toLowerCase().indexOf(f.value.toString().toLowerCase()) !== -1);
+                  }
+                }
+                resolve(result);
+              } else {
+                resolve(this.projects);
+              }
             }
-            resolve(this.projects);
           });
       }
     });
