@@ -19,13 +19,14 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
             <div className={styles.title}>{this.props.project.Name}</div>
             <div className={styles.description}>{this.props.project.Description}</div>
             <div className={styles.tags_block}>
-              {this.props.project.Tags.map((tag: string, i: number) => {
-                return (
-                  <Draggable key={i} type="Filter" data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}>
-                    <p className={styles.tags}>{tag}</p>
-                  </Draggable>
-                );
-              })}
+              {this.props.project.Tags &&
+                this.props.project.Tags.map((tag: string, i: number) => {
+                  return (
+                    <Draggable key={i} type="Filter" data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}>
+                      <p className={styles.tags}>{tag}</p>
+                    </Draggable>
+                  );
+                })}
             </div>
             <div>
               <div className={styles.model_counter}>{Math.round(Math.random() * 10)}</div>

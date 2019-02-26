@@ -3,18 +3,18 @@ const apiAddress = `${process.env.REACT_APP_BACKEND_API_PROTOCOL}://${process.en
 }`;
 
 export const PROJECTS_LIST = {
-  endpoint: `${apiAddress}/v1/example/getProjects`,
-  method: 'post'
+  endpoint: `${apiAddress}/v1/project/getProjects`,
+  method: 'get'
 };
 
 export const EXPERIMENT_RUNS = {
   body: (id: string) => JSON.stringify({ project_id: id }),
-  endpoint: `${apiAddress}/v1/example/getExperimentRunsInProject`,
-  method: 'post'
+  endpoint: `${apiAddress}/v1/experiment-run/getExperimentRunsInProject`,
+  method: 'get'
 };
 
 export const MODEL_RECORD = {
   body: (mid: string) => JSON.stringify({ id: mid }),
-  endpoint: `${apiAddress}/v1/example/getExperiment`,
-  method: 'post'
+  endpoint: `${apiAddress}/v1/experiment/getExperiment`,
+  method: 'get'
 };
