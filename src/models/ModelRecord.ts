@@ -72,10 +72,10 @@ export default class ModelRecord {
     this.hyperparameters = v;
   }
 
-  public get Metric(): IMetric[] {
+  public get Metrics(): IMetric[] {
     return this.metrics;
   }
-  public set Metric(v: IMetric[]) {
+  public set Metrics(v: IMetric[]) {
     this.metrics = v;
   }
 

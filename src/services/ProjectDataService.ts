@@ -17,10 +17,10 @@ export default class ProjectDataService implements IProjectDataService {
       if (process.env.REACT_APP_USE_API_DATA.toString() === 'false') {
         projectsMock.forEach((element: any) => {
           const proj = new Project();
-          proj.Id = element.id;
+          proj.Id = element.id || '';
           proj.Author = element.author;
           proj.Description = element.description || '';
-          proj.Name = element.name;
+          proj.Name = element.name || '';
           proj.Tags = element.tags || '';
           proj.DateCreated = new Date(Number(element.date_created));
           proj.DateUpdated = new Date(Number(element.date_updated));
@@ -69,10 +69,10 @@ export default class ProjectDataService implements IProjectDataService {
             } else {
               res.projects.forEach((element: any) => {
                 const proj = new Project();
-                proj.Id = element.id;
+                proj.Id = element.id || '';
                 proj.Author = element.author;
                 proj.Description = element.description || '';
-                proj.Name = element.name;
+                proj.Name = element.name || '';
                 proj.Tags = element.tags || '';
                 proj.DateCreated = new Date(Number(element.date_created));
                 proj.DateUpdated = new Date(Number(element.date_updated));

@@ -30,15 +30,15 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
       if (process.env.REACT_APP_USE_API_DATA.toString() === 'false') {
         expRunsMocks.forEach((element: any) => {
           const modelRecord = new ModelRecord();
-          modelRecord.Id = element.id;
+          modelRecord.Id = element.id || '';
           modelRecord.ProjectId = element.project_id;
           modelRecord.ExperimentId = element.experiment_id;
           modelRecord.Tags = element.tags || '';
-          modelRecord.Name = element.name;
+          modelRecord.Name = element.name || '';
           modelRecord.CodeVersion = element.code_version || '';
 
           element.metrics.forEach((metric: Metric) => {
-            modelRecord.Metric.push(new Metric(metric.key, metric.value));
+            modelRecord.Metrics.push(new Metric(metric.key, metric.value));
           });
 
           element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
@@ -66,7 +66,6 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
             if (!res.ok) {
               reject(res.statusText);
             }
-            console.log(res);
             return res.json();
           })
           .then(res => {
@@ -76,16 +75,16 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
             } else {
               res.experiment_runs.forEach((element: any) => {
                 const modelRecord = new ModelRecord();
-                modelRecord.Id = element.id;
+                modelRecord.Id = element.id || '';
                 modelRecord.ProjectId = element.project_id;
                 modelRecord.ExperimentId = element.experiment_id;
                 modelRecord.Tags = element.tags || '';
-                modelRecord.Name = element.name;
+                modelRecord.Name = element.name || '';
                 modelRecord.CodeVersion = element.code_version || '';
 
                 if (element.metrics !== undefined) {
                   element.metrics.forEach((metric: Metric) => {
-                    modelRecord.Metric.push(new Metric(metric.key, metric.value));
+                    modelRecord.Metrics.push(new Metric(metric.key, metric.value));
                   });
                 }
 
