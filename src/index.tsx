@@ -2,6 +2,8 @@ import { createBrowserHistory } from 'history';
 import jwtDecode from 'jwt-decode';
 import 'normalize.css';
 import React from 'react';
+import { DragDropContextProvider } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import App from './App';
@@ -55,8 +57,10 @@ const initialState: IApplicationState = {
 const store = configureStore(history, initialState);
 
 ReactDOM.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
+  <DragDropContextProvider backend={HTML5Backend}>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </DragDropContextProvider>,
   document.getElementById('root')
 );

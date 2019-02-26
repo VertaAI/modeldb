@@ -31,19 +31,20 @@ class ExperimentRuns extends React.Component<AllProps> {
     ) : data ? (
       <div>
         <h2>Experiment Runs</h2>
-        {data.map((element: ModelRecord, key: number) => {
-          return (
-            <div key={key}>
-              Model ID:
-              <Link to={`/project/${element.ProjectId}/exp-run/${element.Id}`}>
-                <h5>{element.Id}</h5>
-              </Link>
-              <pre>
-                <code>{JSON.stringify(element, null, 4)}</code>
-              </pre>
-            </div>
-          );
-        })}
+        {data &&
+          data.map((element: ModelRecord, key: number) => {
+            return (
+              <div key={key}>
+                Model ID:
+                <Link to={`/project/${element.ProjectId}/exp-run/${element.Id}`}>
+                  <h5>{element.Id}</h5>
+                </Link>
+                <pre>
+                  <code>{JSON.stringify(element, null, 4)}</code>
+                </pre>
+              </div>
+            );
+          })}
       </div>
     ) : (
       ''

@@ -15,7 +15,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   private auth0accessTokenName: string = 'auth0accessToken';
   private user: User | null = null;
   private auth0: WebAuth = new WebAuth({
-    audience: `https://${AUTH_CONFIG.domain}/userinfo`,
+    audience: 'https://verta.ai/api/v1',
     clientID: AUTH_CONFIG.clientId,
     domain: AUTH_CONFIG.domain,
     redirectUri: AUTH_CONFIG.callbackUrl,

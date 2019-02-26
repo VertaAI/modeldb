@@ -75,6 +75,7 @@
   display: grid;
   justify-items: center;
   align-items: center;
+  cursor: grab;
 }
 
 .tag_text {
