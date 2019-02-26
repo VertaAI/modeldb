@@ -66,7 +66,6 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
             if (!res.ok) {
               reject(res.statusText);
             }
-            console.log(res);
             return res.json();
           })
           .then(res => {
