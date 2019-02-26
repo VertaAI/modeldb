@@ -7,5 +7,6 @@ declare namespace NodeJS {
     REACT_APP_BACKEND_API_PROTOCOL: string;
     REACT_APP_BACKEND_API_DOMAIN: string;
     REACT_APP_BACKEND_API_PORT: string;
+    REACT_APP_USE_API_DATA: bool;
   }
 }

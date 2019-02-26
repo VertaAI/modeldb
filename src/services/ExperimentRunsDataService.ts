@@ -5,6 +5,7 @@ import ModelRecord from '../models/ModelRecord';
 import { EXPERIMENT_RUNS } from './ApiEndpoints';
 import { IExperimentRunsDataService } from './IApiDataService';
 import { expRunsMocks } from './mocks/expRunsMock';
+import ServiceFactory from './ServiceFactory';
 
 type Not<T> = [T] extends [never] ? unknown : never;
 type Extractable<T, U> = Not<U extends any ? Not<T extends U ? unknown : never> : never>;
@@ -26,67 +27,85 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
 
   public getExperimentRuns(projectId: string): Promise<ModelRecord[]> {
     return new Promise<ModelRecord[]>((resolve, reject) => {
-      expRunsMocks.forEach((element: any) => {
-        const modelRecord = new ModelRecord();
-        modelRecord.Id = element.id;
-        modelRecord.ProjectId = element.project_id;
-        modelRecord.ExperimentId = element.experiment_id;
-        modelRecord.Tags = element.tags || '';
-        modelRecord.Name = element.name;
-        modelRecord.CodeVersion = element.code_version || '';
+      if (process.env.REACT_APP_USE_API_DATA.toString() === 'false') {
+        expRunsMocks.forEach((element: any) => {
+          const modelRecord = new ModelRecord();
+          modelRecord.Id = element.id;
+          modelRecord.ProjectId = element.project_id;
+          modelRecord.ExperimentId = element.experiment_id;
+          modelRecord.Tags = element.tags || '';
+          modelRecord.Name = element.name;
+          modelRecord.CodeVersion = element.code_version || '';
 
-        element.metrics.forEach((metric: Metric) => {
-          modelRecord.Metric.push(new Metric(asEnum(MetricKey, metric.key), metric.value));
-        });
+          element.metrics.forEach((metric: Metric) => {
+            modelRecord.Metric.push(new Metric(metric.key, metric.value));
+          });
 
-        element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
-          modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
-        });
+          element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
+            modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
+          });
 
-        element.artifacts.forEach((artifact: Artifact) => {
-          modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
-        });
+          element.artifacts.forEach((artifact: Artifact) => {
+            modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+          });
 
-        if (modelRecord.ProjectId === projectId) {
           this.experimentRuns.push(modelRecord);
-        }
-      });
-      resolve(this.experimentRuns);
+        });
+        resolve(this.experimentRuns);
+      } else {
+        const authenticationService = ServiceFactory.getAuthenticationService();
+        const url = `${EXPERIMENT_RUNS.endpoint}?project_id=${projectId}`;
+        fetch(url, {
+          headers: {
+            'Grpc-Metadata-bearer_access_token': authenticationService.accessToken,
+            'Grpc-Metadata-source': 'WebApp'
+          },
+          method: EXPERIMENT_RUNS.method
+        })
+          .then(res => {
+            if (!res.ok) {
+              reject(res.statusText);
+            }
+            console.log(res);
+            return res.json();
+          })
+          .then(res => {
+            if (res.experiment_runs === undefined) {
+              const emptyModelRecord = new ModelRecord();
+              this.experimentRuns.push(emptyModelRecord);
+            } else {
+              res.experiment_runs.forEach((element: any) => {
+                const modelRecord = new ModelRecord();
+                modelRecord.Id = element.id;
+                modelRecord.ProjectId = element.project_id;
+                modelRecord.ExperimentId = element.experiment_id;
+                modelRecord.Tags = element.tags || '';
+                modelRecord.Name = element.name;
+                modelRecord.CodeVersion = element.code_version || '';
 
-      // could be used post API activation
-      // fetch(EXPERIMENT_RUNS.endpoint, { method: EXPERIMENT_RUNS.method, body: EXPERIMENT_RUNS.body(projectId) })
-      //   .then(res => {
-      //     if (!res.ok) {
-      //       reject(res.statusText);
-      //     }
-      //     return res.json();
-      //   })
-      //   .then(res => {
-      //     res.experiment_runs.forEach((element: any) => {
-      //       const modelRecord = new ModelRecord();
-      //       modelRecord.Id = element.id;
-      //       modelRecord.ProjectId = element.project_id;
-      //       modelRecord.ExperimentId = element.experiment_id;
-      //       modelRecord.Tags = element.tags || '';
-      //       modelRecord.Name = element.name;
-      //       modelRecord.CodeVersion = element.code_version || '';
+                if (element.metrics !== undefined) {
+                  element.metrics.forEach((metric: Metric) => {
+                    modelRecord.Metric.push(new Metric(metric.key, metric.value));
+                  });
+                }
 
-      //       element.metrics.forEach((metric: Metric) => {
-      //         modelRecord.Metric.push(new Metric(asEnum(MetricKey, metric.key), metric.value));
-      //       });
+                if (element.hyperparameters !== undefined) {
+                  element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
+                    modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
+                  });
+                }
 
-      //       element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
-      //         modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
-      //       });
-
-      //       element.artifacts.forEach((artifact: Artifact) => {
-      //         modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
-      //       });
-
-      //       this.experimentRuns.push(modelRecord);
-      //     });
-      //     resolve(this.experimentRuns);
-      //   });
+                if (element.artifacts !== undefined) {
+                  element.artifacts.forEach((artifact: Artifact) => {
+                    modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+                  });
+                }
+                this.experimentRuns.push(modelRecord);
+              });
+            }
+            resolve(this.experimentRuns);
+          });
+      }
     });
   }
 

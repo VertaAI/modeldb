@@ -36,16 +36,18 @@ class ModelRecordLayout extends React.Component<AllProps> {
         {this.renderTextRecord('Project Id', data.ProjectId)}
         {this.renderTextRecord('Experiment Id', data.ExperimentId)}
         {this.renderTextRecord('Code version', data.CodeVersion)}
-        {this.renderRecord(
-          'Tags',
-          data.Tags.map((value: string, key: number) => {
-            return (
-              <div className={styles.tag} key={key}>
-                <span className={styles.tag_text}>{value}</span>
-              </div>
-            );
-          })
-        )}
+        {data &&
+          data.Tags &&
+          this.renderRecord(
+            'Tags',
+            data.Tags.map((value: string, key: number) => {
+              return (
+                <div className={styles.tag} key={key}>
+                  <span className={styles.tag_text}>{value}</span>
+                </div>
+              );
+            })
+          )}
         {this.renderListRecord(
           'Hyperparameters',
           data.Hyperparameters.map((value: IHyperparameter, key: number) => {
