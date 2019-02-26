@@ -36,8 +36,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
         {this.renderTextRecord('Project Id', data.ProjectId)}
         {this.renderTextRecord('Experiment Id', data.ExperimentId)}
         {this.renderTextRecord('Code version', data.CodeVersion)}
-        {data &&
-          data.Tags &&
+        {data.Tags &&
           this.renderRecord(
             'Tags',
             data.Tags.map((value: string, key: number) => {
