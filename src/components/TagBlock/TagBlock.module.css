@@ -1,0 +1,33 @@
+.tags {
+  list-style: none;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.tags li {
+  float: left;
+  margin: 0 6px 0 0;
+  border-radius: 3px;
+  border-width: 0 !important;
+  overflow: hidden;
+}
+
+.tag {
+  font-size: 0.8em;
+  background-color: var(--vgreen-lighter);
+  color: var(--fr-color2);
+  display: inline-block;
+  height: 20px;
+  line-height: 20px;
+  padding: 0 16px 0 16px;
+  position: relative;
+  text-decoration: none;
+  -webkit-transition: color 0.1s;
+  cursor: pointer;
+}
+
+.tag:hover {
+  background-color: var(--main-color1);
+  color: var(--main-color3);
+}

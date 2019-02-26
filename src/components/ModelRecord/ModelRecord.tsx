@@ -9,6 +9,7 @@ import { fetchModelRecord } from '../../store/model-record';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import loader from '../images/loader.gif';
 import ShowContentBasedOnUrl from '../ShowContentBasedOnUrl/ShowContentBasedOnUrl';
+import Tag from '../TagBlock/Tag';
 import styles from './ModelRecord.module.css';
 
 export interface IUrlProps {
@@ -41,8 +42,8 @@ class ModelRecordLayout extends React.Component<AllProps> {
             'Tags',
             data.Tags.map((value: string, key: number) => {
               return (
-                <div className={styles.tag} key={key}>
-                  <span className={styles.tag_text}>{value}</span>
+                <div key={key}>
+                  <Tag tag={value} />
                 </div>
               );
             })

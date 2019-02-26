@@ -2,8 +2,7 @@ import Project from 'models/Project';
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
-import { PropertyType } from '../../models/Filters';
-import Draggable from '../Draggable/Draggable';
+import TagBlock from '../TagBlock/TagBlock';
 import styles from './ProjectWidget.module.css';
 
 interface ILocalProps {
@@ -18,16 +17,11 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
           <div className={styles.title_block}>
             <div className={styles.title}>{this.props.project.Name}</div>
             <div className={styles.description}>{this.props.project.Description}</div>
-            <div className={styles.tags_block}>
-              {this.props.project.Tags &&
-                this.props.project.Tags.map((tag: string, i: number) => {
-                  return (
-                    <Draggable key={i} type="Filter" data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}>
-                      <p className={styles.tags}>{tag}</p>
-                    </Draggable>
-                  );
-                })}
-            </div>
+            {this.props.project.Tags && (
+              <div className={styles.tags_block}>
+                <TagBlock tags={this.props.project.Tags} />
+              </div>
+            )}
             <div>
               <div className={styles.model_counter}>{Math.round(Math.random() * 10)}</div>
               <div className={styles.inline_block}>model</div>

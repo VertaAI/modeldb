@@ -54,18 +54,6 @@
   margin-right: 6px;
 }
 
-.tags_block {
-}
-
-.tags {
-  color: var(--fr-color2);
-  display: inline-block;
-  background: #d6fff9;
-  padding: 3px 5px;
-  margin-right: 5px;
-  border-radius: 3px;
-}
-
 .author_block {
   display: grid;
   grid-template-columns: auto 54px;
