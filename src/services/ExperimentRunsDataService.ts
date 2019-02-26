@@ -38,7 +38,7 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
           modelRecord.CodeVersion = element.code_version || '';
 
           element.metrics.forEach((metric: Metric) => {
-            modelRecord.Metric.push(new Metric(metric.key, metric.value));
+            modelRecord.Metrics.push(new Metric(metric.key, metric.value));
           });
 
           element.hyperparameters.forEach((hyperParameter: Hyperparameter) => {
@@ -84,7 +84,7 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
 
                 if (element.metrics !== undefined) {
                   element.metrics.forEach((metric: Metric) => {
-                    modelRecord.Metric.push(new Metric(metric.key, metric.value));
+                    modelRecord.Metrics.push(new Metric(metric.key, metric.value));
                   });
                 }
 

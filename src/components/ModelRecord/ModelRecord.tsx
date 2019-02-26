@@ -58,10 +58,10 @@ class ModelRecordLayout extends React.Component<AllProps> {
               );
             })
           )}
-        {data.Metric &&
+        {data.Metrics &&
           this.renderListRecord(
             'Metrics',
-            data.Metric.map((value: IMetric, key: number) => {
+            data.Metrics.map((value: IMetric, key: number) => {
               return (
                 <div key={key}>
                   {value.key}: {value.value}
