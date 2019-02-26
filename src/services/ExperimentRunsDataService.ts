@@ -30,11 +30,11 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
       if (process.env.REACT_APP_USE_API_DATA.toString() === 'false') {
         expRunsMocks.forEach((element: any) => {
           const modelRecord = new ModelRecord();
-          modelRecord.Id = element.id;
+          modelRecord.Id = element.id || '';
           modelRecord.ProjectId = element.project_id;
           modelRecord.ExperimentId = element.experiment_id;
           modelRecord.Tags = element.tags || '';
-          modelRecord.Name = element.name;
+          modelRecord.Name = element.name || '';
           modelRecord.CodeVersion = element.code_version || '';
 
           element.metrics.forEach((metric: Metric) => {
@@ -76,11 +76,11 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
             } else {
               res.experiment_runs.forEach((element: any) => {
                 const modelRecord = new ModelRecord();
-                modelRecord.Id = element.id;
+                modelRecord.Id = element.id || '';
                 modelRecord.ProjectId = element.project_id;
                 modelRecord.ExperimentId = element.experiment_id;
                 modelRecord.Tags = element.tags || '';
-                modelRecord.Name = element.name;
+                modelRecord.Name = element.name || '';
                 modelRecord.CodeVersion = element.code_version || '';
 
                 if (element.metrics !== undefined) {

@@ -47,36 +47,39 @@ class ModelRecordLayout extends React.Component<AllProps> {
               );
             })
           )}
-        {this.renderListRecord(
-          'Hyperparameters',
-          data.Hyperparameters.map((value: IHyperparameter, key: number) => {
-            return (
-              <div key={key}>
-                {value.key}: {value.value}
-              </div>
-            );
-          })
-        )}
-        {this.renderListRecord(
-          'Metrics',
-          data.Metric.map((value: IMetric, key: number) => {
-            return (
-              <div key={key}>
-                {value.key}: {value.value}
-              </div>
-            );
-          })
-        )}
-        {this.renderListRecord(
-          'Artifacts',
-          data.Artifacts.map((value: IArtifact, key: number) => {
-            return (
-              <div key={key}>
-                {value.key}: <ShowContentBasedOnUrl path={value.path} />
-              </div>
-            );
-          })
-        )}
+        {data.Hyperparameters &&
+          this.renderListRecord(
+            'Hyperparameters',
+            data.Hyperparameters.map((value: IHyperparameter, key: number) => {
+              return (
+                <div key={key}>
+                  {value.key}: {value.value}
+                </div>
+              );
+            })
+          )}
+        {data.Metric &&
+          this.renderListRecord(
+            'Metrics',
+            data.Metric.map((value: IMetric, key: number) => {
+              return (
+                <div key={key}>
+                  {value.key}: {value.value}
+                </div>
+              );
+            })
+          )}
+        {data.Artifacts &&
+          this.renderListRecord(
+            'Artifacts',
+            data.Artifacts.map((value: IArtifact, key: number) => {
+              return (
+                <div key={key}>
+                  {value.key}: <ShowContentBasedOnUrl path={value.path} />
+                </div>
+              );
+            })
+          )}
       </div>
     ) : (
       ''
