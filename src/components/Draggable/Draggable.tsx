@@ -1,13 +1,4 @@
 import React from 'react';
-import {
-  ConnectDragPreview,
-  ConnectDragSource,
-  DragSource,
-  DragSourceCollector,
-  DragSourceConnector,
-  DragSourceMonitor,
-  DragSourceSpec
-} from 'react-dnd';
 
 interface ILocalProps {
   type: string;
@@ -15,31 +6,22 @@ interface ILocalProps {
   additionalClassName?: string | '';
 }
 
-interface IDragProps {
-  isDragginig?: boolean;
-  connectDragSource: ConnectDragSource;
-  connectDragPreview: ConnectDragPreview;
-}
-
-const source: DragSourceSpec<ILocalProps, object> = {
-  beginDrag(props: ILocalProps) {
-    return props.data;
+export default class Draggable extends React.Component<ILocalProps> {
+  constructor(props: ILocalProps) {
+    super(props);
+    this.onDragStart = this.onDragStart.bind(this);
   }
-};
-
-const collect: DragSourceCollector<IDragProps> = (connect: DragSourceConnector, monitor: DragSourceMonitor) => {
-  return {
-    connectDragPreview: connect.dragPreview(),
-    connectDragSource: connect.dragSource(),
-    isDragginig: monitor.isDragging()
-  };
-};
-
-class Draggable extends React.Component<ILocalProps & IDragProps> {
   public render() {
-    const { connectDragSource, children } = this.props;
-    return connectDragSource(<div className={this.props.additionalClassName}>{children}</div>);
+    return (
+      <div style={{ cursor: 'grab' }} draggable={true} onDragStart={this.onDragStart} className={this.props.additionalClassName}>
+        {this.props.children}
+      </div>
+    );
+  }
+
+  private onDragStart(e: React.DragEvent) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData(this.props.type, JSON.stringify(this.props.data));
+    return true;
   }
 }
-
-export default DragSource<ILocalProps, IDragProps>(props => props.type, source, collect)(Draggable);

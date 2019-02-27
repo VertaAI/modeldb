@@ -8,6 +8,6 @@ export interface IProjectDataService {
 }
 
 export interface IExperimentRunsDataService {
-  getExperimentRuns(projectId: string): Promise<ModelRecord[]>;
+  getExperimentRuns(projectId: string, filters?: IFilterData[]): Promise<ModelRecord[]>;
   getModelRecord(modelId: string, storeExperimentRuns?: ModelRecord[]): Promise<ModelRecord>;
 }

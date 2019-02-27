@@ -7,6 +7,7 @@ export enum PropertyType {
 
 export enum ComparisonType {
   MORE,
+  EQUALS,
   LESS
 }
 export interface IStringFilterData {

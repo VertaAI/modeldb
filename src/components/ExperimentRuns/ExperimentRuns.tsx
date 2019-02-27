@@ -1,9 +1,9 @@
-import * as React from 'react';
-import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
+import * as React from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import ModelRecord from '../../models/ModelRecord';
 import { fetchExperimentRuns } from '../../store/experiment-runs';
@@ -12,7 +12,35 @@ import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 
+import { FilterContextPool } from '../../models/FilterContextPool';
+import { PropertyType } from '../../models/Filters';
 import { columnDefinitions, defaultColDefinitions } from './columnDefinitions/Definitions';
+
+const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
+FilterContextPool.registerContext({
+  metadata: [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
+
+  isFilteringSupport: true,
+  isValidLocation: (location: string) => {
+    return locationRegEx.test(location);
+  },
+  name: ModelRecord.name,
+  onApplyFilters: (filters, dispatch) => {
+    dispatch(fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', filters));
+  },
+  onSearch: (text: string, dispatch) => {
+    dispatch(
+      fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', [
+        {
+          invert: false,
+          name: 'Name',
+          type: PropertyType.STRING,
+          value: text
+        }
+      ])
+    );
+  }
+});
 
 export interface IUrlProps {
   projectId: string;

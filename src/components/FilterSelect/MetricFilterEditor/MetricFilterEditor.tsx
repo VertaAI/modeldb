@@ -21,6 +21,7 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
       <div className={styles.root}>
         <select defaultValue={this.props.data.comparisonType.toString()} onChange={this.onComparisonChanged}>
           <option value={ComparisonType.MORE}>&gt;</option>
+          <option value={ComparisonType.EQUALS}>=</option>
           <option value={ComparisonType.LESS}>&lt;</option>
         </select>
 
@@ -36,12 +37,13 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
   }
 
   private onComparisonChanged(event: React.ChangeEvent<HTMLSelectElement>) {
+    const cmp: ComparisonType = event.target.selectedIndex;
     const newData = {
       ...this.props.data,
-      comparisonType: ComparisonType[event.target.selectedIndex]
+      comparisonType: cmp
     };
 
-    // this.onSave(newData);
+    this.onSave(newData);
   }
   private onSubmit(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {

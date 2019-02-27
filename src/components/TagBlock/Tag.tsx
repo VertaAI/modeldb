@@ -1,4 +1,6 @@
 import * as React from 'react';
+import Draggable from '../../components/Draggable/Draggable';
+import { PropertyType } from '../../models/Filters';
 import styles from './TagBlock.module.css';
 
 interface ILocalProps {
@@ -9,9 +11,11 @@ export default class Tags extends React.Component<ILocalProps> {
   public render() {
     const { tag } = this.props;
     return (
-      <a href="#" className={styles.tag}>
-        {tag}
-      </a>
+      <Draggable type="Filter" data={{ type: PropertyType.STRING, name: 'Tag', value: tag }} additionalClassName={styles.tag}>
+        <a href="#" className={styles.tag} draggable={true}>
+          {tag}
+        </a>
+      </Draggable>
     );
   }
 }

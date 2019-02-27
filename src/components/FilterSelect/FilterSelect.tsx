@@ -100,7 +100,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
         </div>
         {this.props.isFiltersSupporting && (
           <div>
-            <Droppable type="Filter" onDrop={this.onCreateFilter}>
+            <Droppable type="filter" onDrop={this.onCreateFilter}>
               <div className={styles.applied_filters}>
                 {this.props.appliedFilters.map((filter, index) => (
                   <AppliedFilterItem
