@@ -4,7 +4,9 @@ import ExperimentRunsDataService from './ExperimentRunsDataService';
 import { IExperimentRunsDataService, IProjectDataService } from './IApiDataService';
 import ProjectDataService from './ProjectDataService';
 
+import CollaboratorsService from './CollaboratorsService';
 import MockSFService from './filter/MockSFService';
+import { ICollaboratorsService } from './ICollaboratorsService';
 import ISearchAndFilterService from './ISearchAndFilterService';
 
 export default class ServiceFactory {
@@ -21,5 +23,9 @@ export default class ServiceFactory {
   }
   public static getSearchAndFiltersService(): ISearchAndFilterService | null {
     return new MockSFService();
+  }
+
+  public static getCollaboratorsService(): ICollaboratorsService {
+    return new CollaboratorsService();
   }
 }

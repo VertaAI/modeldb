@@ -19,5 +19,6 @@
 }
 
 .active_link {
+  font-weight: 500;
   color: var(--bg-color3);
 }
