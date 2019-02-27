@@ -1,4 +1,4 @@
-import { Auth0DecodedHash, Auth0Error, WebAuth } from 'auth0-js';
+import { Auth0DecodedHash, Auth0Error, Auth0UserProfile, WebAuth } from 'auth0-js';
 import * as Cookies from 'es-cookie';
 import { Jose, JoseJWS } from 'jose-jwe-jws';
 import jwtDecode from 'jwt-decode';
@@ -20,7 +20,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     domain: AUTH_CONFIG.domain,
     redirectUri: AUTH_CONFIG.callbackUrl,
     responseType: 'id_token token',
-    scope: 'openid profile'
+    scope: 'openid profile email'
   });
 
   constructor() {
@@ -75,15 +75,15 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
 
   public getProfile(): Promise<User> {
     return new Promise((resolve, reject) => {
-      if (this.user) {
+      if (this.user && this.user.email) {
         return resolve(this.user);
       }
       const accessToken = this.accessToken;
-      this.auth0.client.userInfo(accessToken, (error: Auth0Error | null, user: User) => {
+      this.auth0.client.userInfo(accessToken, (error: Auth0Error | null, auth0User: Auth0UserProfile) => {
         if (error) {
           reject(error);
         } else {
-          this.user = user;
+          this.user = this.convertAuth0UserToUser(auth0User);
           resolve(this.user);
         }
       });
@@ -106,7 +106,8 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
           const token = jwtDecode<IJwtToken>(idToken!);
           Cookies.set(this.idTokenName, idToken!, { expires: new Date(token.exp * 1000) });
           Cookies.set(this.auth0accessTokenName, accessToken!, { expires: new Date(token.exp * 1000) });
-          this.user = jwtDecode<User>(idToken!);
+          const auth0User = jwtDecode<Auth0UserProfile>(idToken!);
+          this.user = this.convertAuth0UserToUser(auth0User);
         });
       }
     });
@@ -116,5 +117,12 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     Cookies.remove(this.idTokenName);
     Cookies.remove(this.auth0accessTokenName);
     this.user = null;
+  }
+
+  private convertAuth0UserToUser(auth0User: Auth0UserProfile): User {
+    const user = new User(auth0User.user_id || auth0User.sub.split('|')[1], auth0User.email!);
+    user.name = auth0User.name;
+    user.picture = auth0User.picture;
+    return user;
   }
 }

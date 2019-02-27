@@ -1,13 +1,19 @@
 .project_widget {
   display: grid;
-  grid-template-columns: 310px auto 180px;
-  min-height: 155px;
+  grid-template-columns: 310px auto auto 180px;
+  grid-template-rows: 50px 28px auto 48px;
   padding: 30px;
   font-size: 13px;
   color: var(--fr-color3);
-  margin: 0 0 16px 0;
+  margin-bottom: 16px;
   background-color: var(--bg-color3);
   border: 1px solid var(--bg-color3);
+
+  grid-template-areas:
+    'title_block metrics_block metrics_block author_block'
+    'title_block metrics_block metrics_block dates'
+    'tags metrics_block metrics_block dates'
+    'count_block . collaborators collaborators';
 }
 
 .project_widget:hover {
@@ -16,10 +22,10 @@
 
 .project_link {
   text-decoration: none;
-  outline: none;
 }
 
 .metrics_block {
+  grid-area: metrics_block;
 }
 
 .metrics_header {
@@ -35,6 +41,7 @@
 .title_block {
   display: grid;
   grid-template-rows: 32px auto auto 24px;
+  grid-area: title_block;
 }
 
 .title {
@@ -48,32 +55,120 @@
 }
 
 .model_counter {
-  display: inline-block;
   font-size: 20px;
   font-weight: 300;
   margin-right: 6px;
 }
 
-.author_block {
-  display: grid;
-  grid-template-columns: auto 54px;
-  grid-template-rows: auto 70px;
-  text-align: right;
-  justify-content: end;
-  justify-items: end;
-  color: var(--fr-color3);
+.tags_block {
+  grid-area: tags;
+  margin-bottom: -6px;
 }
 
-.autor_name {
-  display: inline;
+.tag {
+  height: 28px;
+  border: 1px solid var(--main-color2);
+  border-radius: 17px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  float: left;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  cursor: grab;
+}
+
+.tag_text {
+  color: var(--text-color2);
+  font-size: 13px;
+  line-height: 15px;
+  margin: 0 12px;
 }
 
 .created_date_block {
   color: var(--fr-color4);
-  grid-column-start: 1;
-  grid-column-end: end;
+  grid-area: dates;
+  align-self: end;
+  justify-self: end;
+  text-align: end;
+  padding-bottom: 8px;
 }
 
-.inline_block {
-  display: inline-block;
+.created_date {
+  margin-bottom: 8px;
+}
+
+.author_status {
+  color: var(--text-color3);
+}
+
+.author_block {
+  display: grid;
+  grid-template-columns: auto 12px 36px;
+  grid-template-areas: 'author_name . author_avatar';
+  align-items: center;
+  margin-top: 4px;
+  text-align: right;
+  color: var(--fr-color3);
+  grid-area: author_block;
+  grid-template-rows: 36px auto;
+}
+
+.author_name {
+  grid-area: author_name;
+}
+
+.author_avatar {
+  font-family: 'Roboto';
+  font-weight: 400;
+  grid-area: author_avatar;
+  font-size: 16px;
+  line-height: 19px;
+}
+
+.model_count_block {
+  grid-area: count_block;
+  align-self: end;
+}
+
+.collaborators {
+  grid-area: collaborators;
+  justify-self: end;
+  align-self: end;
+}
+
+.collaborate_button {
+  height: 40px;
+  min-width: 122px;
+  max-width: 210px;
+  border: 1px solid var(--line-color2);
+  border-radius: 20px;
+  color: var(--text-color3);
+  background-color: var(--main-color3);
+  font-size: 13px;
+  line-height: 15px;
+  margin-right: -3px;
+  padding: 0;
+}
+
+.collaborate_button .combined_icon {
+  filter: invert(0.5);
+}
+
+.collaborate_button:hover {
+  background-color: var(--main-color2);
+  color: var(--main-color3);
+  border-color: var(--main-color2);
+}
+
+.collaborate_button:hover .combined_icon {
+  filter: invert(1);
+}
+
+.collaborate_button .collaborator_avatar {
+  font-family: 'Roboto';
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 19px;
+  margin-left: 2px;
 }

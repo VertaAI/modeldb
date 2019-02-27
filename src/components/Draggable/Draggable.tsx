@@ -12,6 +12,7 @@ import {
 interface ILocalProps {
   type: string;
   data: object;
+  additionalClassName?: string | '';
 }
 
 interface IDragProps {
@@ -37,7 +38,7 @@ const collect: DragSourceCollector<IDragProps> = (connect: DragSourceConnector, 
 class Draggable extends React.Component<ILocalProps & IDragProps> {
   public render() {
     const { connectDragSource, children } = this.props;
-    return connectDragSource(<div>{children}</div>);
+    return connectDragSource(<div className={this.props.additionalClassName}>{children}</div>);
   }
 }
 

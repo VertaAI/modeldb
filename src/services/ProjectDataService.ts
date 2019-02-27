@@ -1,5 +1,6 @@
 import { IFilterData } from 'models/Filters';
-import Project from '../models/Project';
+import Project, { UserAccess } from '../models/Project';
+import User from '../models/User';
 import { PROJECTS_LIST } from './ApiEndpoints';
 import { IProjectDataService } from './IApiDataService';
 import { projectsMock } from './mocks/projectsMock';
@@ -16,14 +17,23 @@ export default class ProjectDataService implements IProjectDataService {
     return new Promise<Project[]>((resolve, reject) => {
       if (process.env.REACT_APP_USE_API_DATA.toString() === 'false') {
         projectsMock.forEach((element: any) => {
-          const proj = new Project();
+          const author = new User(this.generateId(), 'Manasi.Vartak@verta.ai');
+          author.name = 'Manasi Vartak';
+          const proj = new Project(element.id, element.name, author);
           proj.Id = element.id || '';
-          proj.Author = element.author;
           proj.Description = element.description || '';
           proj.Name = element.name || '';
           proj.Tags = element.tags || '';
           proj.DateCreated = new Date(Number(element.date_created));
           proj.DateUpdated = new Date(Number(element.date_updated));
+
+          for (let index = 0; index < Math.round(Math.random() * 10); index++) {
+            const user = new User(this.generateId(), 'Manasi.Vartak@verta.ai');
+            const rand = Math.floor(Math.random() * 2) + 1;
+            user.name = `Collaborator ${rand === 2 ? 'Read' : 'Write'}`;
+            proj.Collaborators.set(user, rand);
+          }
+
           this.projects.push(proj);
         });
 
@@ -64,15 +74,12 @@ export default class ProjectDataService implements IProjectDataService {
           })
           .then(res => {
             if (res.projects === undefined) {
-              const emptyProject = new Project();
-              this.projects.push(emptyProject);
+              this.projects.push();
             } else {
               res.projects.forEach((element: any) => {
-                const proj = new Project();
-                proj.Id = element.id || '';
+                const proj = new Project(element.id, element.name, new User(this.generateId(), 'Manasi.Vartak@verta.ai'));
                 proj.Author = element.author;
                 proj.Description = element.description || '';
-                proj.Name = element.name || '';
                 proj.Tags = element.tags || '';
                 proj.DateCreated = new Date(Number(element.date_created));
                 proj.DateUpdated = new Date(Number(element.date_updated));
@@ -111,5 +118,11 @@ export default class ProjectDataService implements IProjectDataService {
       // implement mapping for author if any
       resolve(this.projects);
     });
+  }
+
+  private generateId() {
+    return `_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
   }
 }
