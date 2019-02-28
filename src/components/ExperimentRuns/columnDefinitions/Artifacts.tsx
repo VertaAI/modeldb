@@ -3,13 +3,21 @@ import styles from './ColumnDefs.module.css';
 
 class ArtifactsColDef extends React.Component<any> {
   public render() {
-    const artifactObject = this.props.value;
+    const artifactList = this.props.value;
     return (
-      <div className={styles.param_cell}>
-        {artifactObject.map((property: any, i: number) => {
-          return <a key={i}> {property.path}</a>;
+      <p>
+        Artifact:{' '}
+        {artifactList.map((artifact: any, i: number) => {
+          return (
+            <span key={i}>
+              {artifact.path
+                .split('/')
+                .slice(-1)
+                .pop()}
+            </span>
+          );
         })}
-      </div>
+      </p>
     );
   }
 }

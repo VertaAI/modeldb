@@ -5,12 +5,14 @@ import { ThunkAction } from 'redux-thunk';
 import { collaborationReducer, ICollaborationState } from './collaboration';
 import { experimentRunsReducer, IExperimentRunsState } from './experiment-runs';
 import { filtersReducer, IFilterState } from './filter';
+import { IDashboardConfigState, dashboardConfigReducer } from './dashboard-config';
 import { IModelRecordState, modelRecordReducer } from './model-record';
 import { IProjectsState, projectsReducer } from './projects';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
   collaboration: ICollaborationState;
+  dashboardConfig: IDashboardConfigState;
   experimentRuns: IExperimentRunsState;
   layout: IUserState;
   modelRecord: IModelRecordState;
@@ -27,6 +29,7 @@ export interface IConnectedReduxProps<A extends Action = any> {
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
     collaboration: collaborationReducer,
+    dashboardConfig: dashboardConfigReducer,
     experimentRuns: experimentRunsReducer,
     filters: filtersReducer,
     layout: userReducer,

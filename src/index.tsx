@@ -17,7 +17,6 @@ export const history = createBrowserHistory();
 function getUser(): User | null {
   try {
     const authenticatedService = ServiceFactory.getAuthenticationService();
-
     if (authenticatedService.authenticated) {
       return jwtDecode<User>(authenticatedService.idToken);
     }
@@ -33,6 +32,17 @@ const initialState: IApplicationState = {
     changeOwner: { status: InvitationStatus.None },
     inviteNewCollaborator: { status: InvitationStatus.None },
     removeAccess: { status: InvitationStatus.None }
+  },
+  dashboardConfig: {
+    columnConfig: new Map([
+      ['id', { checked: true, name: 'id', label: 'Ids' }],
+      ['summary', { checked: true, name: 'summary', label: 'Summary' }],
+      ['metrics', { checked: true, name: 'metrics', label: 'Metrics' }],
+      ['hyperparameters', { checked: true, name: 'hyperparameters', label: 'Hyperparameters' }],
+      ['artifacts', { checked: true, name: 'artifacts', label: 'Artifacts' }],
+      ['datasets', { checked: false, name: 'datasets', label: 'Dataset' }],
+      ['observations', { checked: false, name: 'observations', label: 'Observations' }]
+    ])
   },
   experimentRuns: {
     loading: false
