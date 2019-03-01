@@ -8,6 +8,7 @@
 
 .summary_cell {
   line-height: 15px;
+  color: rgb(112, 112, 112);
 }
 
 .param_draggable {
@@ -36,12 +37,13 @@
 }
 
 .param_key {
+  color: rgb(141, 141, 141);
   word-break: break-all;
   word-wrap: break-word;
 }
 
 .param_val {
-  font-family: monospace;
+  /* font-family: monospace; */
   word-break: break-all;
   word-wrap: break-word;
 }
@@ -63,7 +65,7 @@
 }
 
 .highlight_summary {
-  color: var(--main-color2);
+  color: #000;
 }
 
 .experiment_link {
@@ -121,14 +123,17 @@
   font-family: monospace;
   word-break: break-all;
   word-wrap: break-word;
+  font-size: 0.9em;
 }
 .type {
   grid-column: 2/3;
   grid-row: 1;
+  color: rgb(112, 112, 112);
 }
 .key {
   grid-column: 3;
   grid-row: 1;
+  color: rgb(112, 112, 112);
 }
 
 .notif {

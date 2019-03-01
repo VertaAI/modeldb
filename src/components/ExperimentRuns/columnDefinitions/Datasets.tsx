@@ -10,7 +10,7 @@ class DatasetsColDef extends React.Component<any> {
           return (
             <div style={{ lineHeight: '20px' }} key={i}>
               <div>{dataset.key}</div>
-              <div style={{ marginTop: '20px' }}>Path:</div>
+              <div style={{ marginTop: '20px', fontSize: '0.9em' }}>Path:</div>
               <div style={{ fontFamily: 'monospace' }}>{dataset.path}</div>
             </div>
           );
