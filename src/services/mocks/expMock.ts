@@ -16,16 +16,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_11.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_11.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_11.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_11.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.18684466613531112' }, { key: 'train_acc', value: '0.9489' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.9519083389706082' }, timestamp: '1551397429' },
@@ -64,16 +64,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_10.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_10.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_10.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_10.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.1365139489620924' }, { key: 'train_acc', value: '0.9638' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.6785422730975681' }, timestamp: '1551397422' },
@@ -112,16 +112,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.2' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_9.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_9.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_9.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_9.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.1881319917201996' }, { key: 'train_acc', value: '0.947' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.9558361691368951' }, timestamp: '1551397416' },
@@ -155,21 +155,21 @@ export const expMockData = [
     start_time: '1551397407',
     end_time: '1551397413',
     code_version: '2.11.6',
-    tags: ['exploratory', 'enhancement', 'debug', 'development', 'deployment'],
+    tags: ['exploratory', 'enhancement', 'debug'],
     hyperparameters: [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.2' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_8.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_8.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_8.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_8.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.1336024184882641' }, { key: 'train_acc', value: '0.9649' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.7211938899887933' }, timestamp: '1551397410' },
@@ -203,21 +203,21 @@ export const expMockData = [
     start_time: '1551397401',
     end_time: '1551397406',
     code_version: '2.4.4',
-    tags: ['enhancement', 'obsolete', 'deployment', 'debug', 'demo'],
+    tags: ['enhancement', 'obsolete', 'debug', 'demo'],
     hyperparameters: [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_7.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_7.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_7.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_7.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.20214657875299455' }, { key: 'train_acc', value: '0.9428' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.9368557413154178' }, timestamp: '1551397403' },
@@ -256,16 +256,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_6.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_6.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_6.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_6.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.13426868647933007' }, { key: 'train_acc', value: '0.9647' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.709883780002594' }, timestamp: '1551397397' },
@@ -303,16 +303,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_5.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_5.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_5.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_5.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.22949894895553588' }, { key: 'train_acc', value: '0.9376' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '1.1175737194485134' }, timestamp: '1551397393' },
@@ -350,16 +350,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      // { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_4.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_4.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_4.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_4.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.17164144936800002' }, { key: 'train_acc', value: '0.9537' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.7905485984219445' }, timestamp: '1551397388' },
@@ -397,16 +397,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.2' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_3.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_3.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_3.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_3.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.23576154751777648' }, { key: 'train_acc', value: '0.9369' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '1.1939481258922153' }, timestamp: '1551397385' },
@@ -445,16 +445,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.2' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_2.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_2.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_2.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_2.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.173713723218441' }, { key: 'train_acc', value: '0.9533' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.8285414762232038' }, timestamp: '1551397380' },
@@ -493,16 +493,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_1.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_1.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_1.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_1.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.2272228590130806' }, { key: 'train_acc', value: '0.9369' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '1.1274396013683743' }, timestamp: '1551397377' },
@@ -540,16 +540,16 @@ export const expMockData = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
-      { key: 'loss', value: 'sparse_categorical_crossentropy' },
+      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
     artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_0.png', artifact_type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_0.hdf5', artifact_type: 'MODEL' }
+      { key: 'validation_plot', path: '../output/val_obs_0.png', type: 'IMAGE' },
+      { key: 'model', path: '../output/tensorflow-basic_0.hdf5', type: 'MODEL' }
     ],
-    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', artifact_type: 'DATA' }],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.1696645508170128' }, { key: 'train_acc', value: '0.9549' }],
     observations: [
       { attribute: { key: 'val_train_loss', value: '0.8269302136368222' }, timestamp: '1551397373' },

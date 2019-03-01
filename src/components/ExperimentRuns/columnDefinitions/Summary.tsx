@@ -1,5 +1,7 @@
 import * as React from 'react';
 import styles from './ColumnDefs.module.css';
+import Tag from '../../TagBlock/Tag';
+import tag_styles from '../../TagBlock/TagBlock.module.css';
 
 class SummaryColDef extends React.Component<any> {
   public render() {
@@ -7,23 +9,23 @@ class SummaryColDef extends React.Component<any> {
     return (
       <div className={styles.summary_cell}>
         <p>
-          Model Name:{' '}
-          <strong style={{ color: '#666' }}>
-            <span>{modelRecord.name}</span>
-          </strong>
+          Name: <span className={styles.highlight_summary}>{modelRecord.name}</span>
         </p>
         <p>
-          Model Desc:{' '}
-          <strong style={{ color: '#666' }}>
-            <span>.....</span>
-          </strong>
+          Code Version: <span className={styles.highlight_summary}>{modelRecord.codeVersion}</span>
         </p>
-        <p>
-          Code Version:{' '}
-          <strong style={{ color: '#666' }}>
-            <span>{modelRecord.codeVersion}</span>
-          </strong>
-        </p>
+        <p>Tags:</p>
+        <div className={tag_styles.tag_block}>
+          <ul className={tag_styles.tags}>
+            {modelRecord.tags.map((tag: string, i: number) => {
+              return (
+                <li key={i}>
+                  <Tag tag={tag} />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
     );
   }

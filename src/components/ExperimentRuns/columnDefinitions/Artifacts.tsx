@@ -5,19 +5,24 @@ class ArtifactsColDef extends React.Component<any> {
   public render() {
     const artifactList = this.props.value;
     return (
-      <p>
-        Artifact:{' '}
+      <div>
         {artifactList.map((artifact: any, i: number) => {
           return (
-            <span key={i}>
-              {artifact.path
-                .split('/')
-                .slice(-1)
-                .pop()}
-            </span>
+            <div key={i} className={styles.artifact_wrapper}>
+              <div className={styles.notif}>
+                {artifact.type === 'IMAGE' ? (
+                  <i className="fa fa-image" style={{ color: '#6863ff' }} />
+                ) : (
+                  <i className="fa fa-codepen" style={{ color: '#6863ff' }} />
+                )}
+              </div>
+              <div className={styles.type}>{artifact.type}</div>
+              <div className={styles.key}>{artifact.key}</div>
+              <div className={styles.path}>{artifact.path}</div>
+            </div>
           );
         })}
-      </p>
+      </div>
     );
   }
 }

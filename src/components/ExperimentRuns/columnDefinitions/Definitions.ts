@@ -1,5 +1,7 @@
 import ArtifactsColDef from './Artifacts';
 import HyperparamsColDef from './Hyperparams';
+import DatasetsColDef from './Datasets';
+// import ObservationsColDef from './Observations';
 import MetricsColDef from './Metrics';
 import ModelRecordColDef from './ModelRecord';
 import SummaryColDef from './Summary';
@@ -14,7 +16,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
     {
       headerName: 'IDs',
       field: 'data',
-      width: 200,
+      width: 190,
       cellRendererFramework: ModelRecordColDef,
       cellClass: [styles.cell, styles.modelDescription],
       hide: !updatedConfig.get('id').checked
@@ -23,7 +25,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       headerName: 'Summary',
       field: 'data',
       cellRendererFramework: SummaryColDef,
-      width: 200,
+      width: 180,
       cellClass: styles.cell,
       hide: !updatedConfig.get('summary').checked
     },
@@ -37,7 +39,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
     },
     {
       headerName: 'Hyperparameters',
-      width: 200,
+      width: 230,
       field: 'hyperparameters',
       cellRendererFramework: HyperparamsColDef,
       cellClass: styles.cell,
@@ -53,19 +55,19 @@ export const returnColumnDefs = (updatedConfig: any) => {
     },
     {
       headerName: 'Datasets',
-      field: 'hyperparameters',
-      cellRendererFramework: HyperparamsColDef,
-      width: 200,
+      field: 'datasets',
+      cellRendererFramework: DatasetsColDef,
+      width: 240,
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked
-    },
-    {
-      headerName: 'Observations',
-      field: 'hyperparameters',
-      cellRendererFramework: HyperparamsColDef,
-      width: 200,
-      cellClass: styles.cell,
-      hide: !updatedConfig.get('observations').checked
     }
+    // {
+    //   headerName: 'Observations',
+    //   field: 'observations',
+    //   cellRendererFramework: ObservationsColDef,
+    //   width: 200,
+    //   cellClass: styles.cell,
+    //   hide: !updatedConfig.get('observations').checked
+    // }
   ];
 };

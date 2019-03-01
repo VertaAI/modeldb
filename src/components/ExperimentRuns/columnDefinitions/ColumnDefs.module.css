@@ -1,27 +1,59 @@
 .cell {
   margin-top: 1em;
-  line-height: 10px;
+  /* line-height: 10px; */
+  border: none !important;
+  outline: none;
+  /* padding: 0 15px !important; */
 }
 
 .summary_cell {
   line-height: 15px;
 }
 
-.param_grid {
-  display: grid;
-  grid-template-columns: 70px 70px;
-  grid-template-rows: 50px;
-  grid-gap: 10px;
+.param_draggable {
+  padding: 5px;
+  /* display: none; */
+}
+.param_draggable:hover {
+  border-radius: 5px;
+  background-color: #e4e4e4;
 }
 
-.param_label {
-  font-weight: 300;
-  color: var(--main-color2);
+.param_grid_hyp {
+  line-height: 20px !important;
+  display: grid;
+  grid-template-columns: 100px 60px;
+  grid-gap: 10px;
+  white-space: pre-wrap;
+}
+
+.param_grid_metric {
+  line-height: 20px !important;
+  display: grid;
+  grid-template-columns: 60px 80px;
+  grid-gap: 10px;
+  white-space: pre-wrap;
+}
+
+.param_key {
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.param_val {
+  font-family: monospace;
+  word-break: break-all;
+  word-wrap: break-word;
 }
 
 .param_cell {
   display: grid;
   justify-content: 'unset';
+  outline: none;
+}
+.param_cell:focus {
+  outline: none !important;
+  border: none !important;
 }
 
 .model_link {
@@ -30,16 +62,76 @@
   line-height: 30px;
 }
 
+.highlight_summary {
+  color: var(--main-color2);
+}
+
 .experiment_link {
   color: var(--text-color1);
   text-decoration: none;
   line-height: 30px;
   border: solid 1px lightgrey;
   border-radius: 3px;
-  padding-left: 35px;
-  margin-top: 10px;
+  padding: 0 20px;
+  text-align: center;
+  float: none;
+  margin: 5px 0;
+  cursor: move;
+}
+
+.experiment_link:hover {
+  background-color: #e4e4e4;
 }
 
 .modelDescription {
   line-height: 10px !important;
+}
+
+.ag-theme-material .ag-ltr .ag-cell-focus {
+  border: none !important;
+  outline: none;
+}
+
+.artifact_wrapper {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: 10px 80px 100px;
+  background-color: #fff;
+  color: #444;
+  line-height: 16px !important;
+  margin-bottom: 15px;
+  padding: 10px 20px 10px 10px;
+  border: solid 1px lightgrey;
+  border-radius: 3px;
+  white-space: pre-wrap;
+}
+
+.box {
+  background-color: #444;
+  color: #fff;
+  border-radius: 5px;
+  /* padding: 20px; */
+  padding-right: 40px;
+  font-size: 150%;
+}
+
+.path {
+  grid-column: 1/4;
+  grid-row: 2;
+  font-family: monospace;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+.type {
+  grid-column: 2/3;
+  grid-row: 1;
+}
+.key {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.notif {
+  grid-column: 1/2;
+  grid-row: 1;
 }

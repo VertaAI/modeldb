@@ -10,14 +10,16 @@ class ModelRecordColDef extends React.Component<any> {
     return (
       <div className={styles.param_cell}>
         <Link className={styles.model_link} to={`/project/${modelRecord.ProjectId}/exp-run/${modelRecord.Id}`}>
-          <strong>Model ID</strong>
+          <strong>
+            Model ID <i className="fa fa-external-link" />
+          </strong>
         </Link>
-        <a className={styles.experiment_link}>Project ID</a>
-        <a className={styles.experiment_link}>Experiment ID</a>
+        <div className={styles.experiment_link}>Project ID</div>
+        <div className={styles.experiment_link}>Experiment ID</div>
         {modelRecord.tags && (
           <span>
             {/* // dragabble did not work when a TagBlock Component was inserted */}
-            <p>Tags:</p>
+            {/* <p>Tags:</p>
             <ul className={tag_styles.tags}>
               {modelRecord.tags.map((tag: string, i: number) => {
                 return (
@@ -26,7 +28,7 @@ class ModelRecordColDef extends React.Component<any> {
                   </li>
                 );
               })}
-            </ul>
+            </ul> */}
           </span>
         )}
       </div>

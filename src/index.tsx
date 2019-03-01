@@ -40,8 +40,8 @@ const initialState: IApplicationState = {
       ['metrics', { checked: true, name: 'metrics', label: 'Metrics' }],
       ['hyperparameters', { checked: true, name: 'hyperparameters', label: 'Hyperparameters' }],
       ['artifacts', { checked: true, name: 'artifacts', label: 'Artifacts' }],
-      ['datasets', { checked: false, name: 'datasets', label: 'Dataset' }],
-      ['observations', { checked: false, name: 'observations', label: 'Observations' }]
+      ['datasets', { checked: false, name: 'datasets', label: 'Dataset' }]
+      // ['observations', { checked: false, name: 'observations', label: 'Observations' }]
     ])
   },
   experimentRuns: {

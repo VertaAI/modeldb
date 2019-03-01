@@ -28,7 +28,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
       <div className={styles.root}>
         <div className={styles.user_bar} onClick={this.toggleMenu}>
           <div className={styles.dashboard_cog}>
-            <i className="fa fa-cogs" />
+            <i className="fa fa-cog" />
           </div>
         </div>
         {this.state.isOpened ? (
@@ -36,15 +36,17 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
             <h4 className={styles.title}> Add/Drop Columns </h4>
             <div className={styles.menu_item}>
               {Array.from(dashboardConfigMap.values()).map((element: any) => (
-                <label key={element.name} style={{ display: 'block' }}>
+                <label key={element.name} style={{ display: 'block' }} className={styles.container}>
                   <input
                     className={styles.input_style}
                     type="checkbox"
                     name={element.name}
                     checked={element.checked}
                     onChange={this.handleColumnsUpdate}
-                  />{' '}
-                  {element.name}
+                  />
+                  <span className={styles.checkmark} />
+                  &nbsp; &nbsp;
+                  {element.label}
                 </label>
               ))}
             </div>

@@ -12,9 +12,7 @@ export default class Tags extends React.Component<ILocalProps> {
     const { tag } = this.props;
     return (
       <Draggable type="Filter" data={{ type: PropertyType.STRING, name: 'Tag', value: tag }} additionalClassName={styles.tag}>
-        <a href="#" className={styles.tag} draggable={true}>
-          {tag}
-        </a>
+        <span draggable={true}>{tag}</span>
       </Draggable>
     );
   }
