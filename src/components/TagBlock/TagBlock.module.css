@@ -32,3 +32,12 @@
   background-color: var(--vgreen-light);
   color: #444;
 }
+
+/* .tag_block {
+  background-color: rgb(240, 240, 240);
+  padding-bottom: 5px;
+  padding-top: 5px;
+  border-radius: 5px;
+  border: none;
+  border-style: groove;
+} */

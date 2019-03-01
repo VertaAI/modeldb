@@ -85,7 +85,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               />
             </div>
             <div className={styles.model_count_block}>
-              <span className={styles.model_counter}>{Math.round(Math.random() * 10)}</span>
+              <span className={styles.model_counter}>{12}</span>
               <span>model</span>
             </div>
             <div className={styles.collaborators}>

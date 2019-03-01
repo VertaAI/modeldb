@@ -42,7 +42,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
             'Tags',
             data.Tags.map((value: string, key: number) => {
               return (
-                <div key={key}>
+                <div style={{ marginTop: '5px' }} key={key}>
                   <Tag tag={value} />
                 </div>
               );
