@@ -41,3 +41,16 @@
   --vgreen-lighter: #d6fff9;
   --vgreen-light: #b8fff4;
 }
+
+.ag-header-cell-label .ag-header-cell-text {
+  font-size: 14px;
+  /* padding: 0 10px; */
+}
+
+.ag-body-viewport .ag-layout-auto-height .ag-row-animation {
+  /* padding: 0 10px; */
+}
+
+.ag-theme-material .ag-cell {
+  /* padding: 0 10px; */
+}

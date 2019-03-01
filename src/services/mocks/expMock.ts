@@ -17,7 +17,7 @@ export const expMockData = [
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
       //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
-      { key: 'batch_size', value: '512' },
+      { key: 'batch_size', value: '51257889' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
@@ -117,10 +117,7 @@ export const expMockData = [
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
-    artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_9.png', type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_9.hdf5', type: 'MODEL' }
-    ],
+    artifacts: [{ key: 'model', path: '../output/tensorflow-basic_9.hdf5', type: 'MODEL' }],
     datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.1881319917201996' }, { key: 'train_acc', value: '0.947' }],
     observations: [
@@ -213,10 +210,7 @@ export const expMockData = [
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],
-    artifacts: [
-      { key: 'validation_plot', path: '../output/val_obs_7.png', type: 'IMAGE' },
-      { key: 'model', path: '../output/tensorflow-basic_7.hdf5', type: 'MODEL' }
-    ],
+    artifacts: [{ key: 'validation_plot', path: '../output/val_obs_7.png', type: 'IMAGE' }],
     datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
     metrics: [{ key: 'train_loss', value: '0.20214657875299455' }, { key: 'train_acc', value: '0.9428' }],
     observations: [
@@ -257,7 +251,7 @@ export const expMockData = [
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
       //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
-      { key: 'batch_size', value: '256' },
+      { key: 'batch_size', value: '2676769' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
     ],

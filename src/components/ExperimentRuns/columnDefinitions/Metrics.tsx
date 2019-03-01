@@ -22,7 +22,7 @@ class MetricsColDef extends React.Component<any> {
   public render() {
     const metricsObject = this.props.value;
     return (
-      <div className={styles.param_cell}>
+      <div className={styles.param_cell} title={`Drag & Drop To Filter`}>
         {metricsObject.map((property: object, i: number) => {
           return <ModelProperty key={i} property={property} />;
         })}

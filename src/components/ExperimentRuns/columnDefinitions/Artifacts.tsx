@@ -16,7 +16,7 @@ class ArtifactsColDef extends React.Component<any> {
                   <i className="fa fa-codepen" style={{ color: '#6863ff' }} />
                 )}
               </div>
-              <div className={styles.type}>{artifact.type}</div>
+              <div className={styles.type}>{artifact.type} &nbsp; &nbsp; &nbsp; -> </div>
               <div className={styles.key}>{artifact.key}</div>
               <div className={styles.path}>{artifact.path}</div>
             </div>

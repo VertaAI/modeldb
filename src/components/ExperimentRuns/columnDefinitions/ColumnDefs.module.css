@@ -17,7 +17,7 @@
 }
 .param_draggable:hover {
   border-radius: 5px;
-  background-color: #e4e4e4;
+  background-color: #e6e6e6;
 }
 
 .param_grid_hyp {
@@ -80,11 +80,11 @@
   text-align: center;
   float: none;
   margin: 5px 0;
-  cursor: move;
+  /* cursor: move; */
 }
 
 .experiment_link:hover {
-  background-color: #e4e4e4;
+  background-color: #e6e6e6;
 }
 
 .modelDescription {

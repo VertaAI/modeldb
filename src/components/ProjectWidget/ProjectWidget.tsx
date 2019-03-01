@@ -6,8 +6,10 @@ import Project, { UserAccess } from '../../models/Project';
 import User from '../../models/User';
 import Draggable from '../Draggable/Draggable';
 import SharePopup from '../SharePopup/SharePopup';
+import Tag from '../TagBlock/TagPjt';
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
+import tstyles from '../TagBlock/TagBlock.module.css';
 
 interface ILocalProps {
   project: Project;
@@ -49,21 +51,24 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               <div className={styles.title}>{project.Name}</div>
               <div className={styles.description}>{project.Description}</div>
             </div>
-            <div className={styles.tags_block}>
+            <ul className={tstyles.tags}>
               {this.props.project.Tags &&
                 this.props.project.Tags.map((tag: string, i: number) => {
                   return (
-                    <Draggable
-                      key={i}
-                      type="filter"
-                      data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}
-                      additionalClassName={styles.tag}
-                    >
-                      <span className={styles.tag_text}>{tag}</span>
-                    </Draggable>
+                    <li key={i}>
+                      <Tag tag={tag} />
+                    </li>
+                    // <Draggable
+                    //   key={i}
+                    //   type="filter"
+                    //   data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}
+                    //   additionalClassName={styles.tag}
+                    // >
+                    //   <span className={styles.tag_text}>{tag}</span>
+                    // </Draggable>
                   );
                 })}
-            </div>
+            </ul>
             <div className={styles.metrics_block} />
             <div className={styles.author_block}>
               <div className={styles.author_name}>

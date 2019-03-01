@@ -1,7 +1,7 @@
 import * as React from 'react';
-import Draggable from '../../components/Draggable/Draggable';
+import Draggable from '../Draggable/Draggable';
 import { PropertyType } from '../../models/Filters';
-import styles from './TagBlock.module.css';
+import styles from './TagBlockPjt.module.css';
 
 interface ILocalProps {
   tag: string;
