@@ -44,6 +44,8 @@
 
 .param_val {
   /* font-family: monospace; */
+  /* font-family: sans-serif; */
+  color: #000;
   word-break: break-all;
   word-wrap: break-word;
 }
