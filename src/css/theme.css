@@ -44,7 +44,13 @@
 
 .ag-header-cell-label .ag-header-cell-text {
   font-size: 14px;
+  pointer-events: none;
   /* padding: 0 10px; */
+}
+.ag-header-container,
+.ag-floating-top-container,
+.ag-header-cell {
+  pointer-events: none;
 }
 
 .ag-body-viewport .ag-layout-auto-height .ag-row-animation {
