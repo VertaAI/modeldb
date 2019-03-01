@@ -1,10 +1,13 @@
 import { Artifact, ArtifactKey } from '../models/Artifact';
 import { ComparisonType, IFilterData, PropertyType } from '../models/Filters';
+import { Dataset } from '../models/Dataset';
+import { Observation, IDataAttribute } from '../models/Observation';
 import { Hyperparameter, IHyperparameter } from '../models/HyperParameters';
 import { IMetric, Metric, MetricKey } from '../models/Metrics';
 import ModelRecord from '../models/ModelRecord';
 import { EXPERIMENT_RUNS } from './ApiEndpoints';
 import { IExperimentRunsDataService } from './IApiDataService';
+import { expMockData } from './mocks/expMock';
 import { expRunsMocks } from './mocks/expRunsMock';
 import ServiceFactory from './ServiceFactory';
 
@@ -29,7 +32,7 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
   public getExperimentRuns(projectId: string, filters?: IFilterData[]): Promise<ModelRecord[]> {
     return new Promise<ModelRecord[]>((resolve, reject) => {
       if (process.env.REACT_APP_USE_API_DATA.toString() === 'false') {
-        expRunsMocks.forEach((element: any) => {
+        expMockData.forEach((element: any) => {
           const modelRecord = new ModelRecord();
           modelRecord.Id = element.id || '';
           modelRecord.ProjectId = element.project_id;
@@ -37,6 +40,13 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
           modelRecord.Tags = element.tags || '';
           modelRecord.Name = element.name || '';
           modelRecord.CodeVersion = element.code_version || '';
+
+          modelRecord.Description = element.description || '';
+          modelRecord.Owner = element.owner || '';
+          modelRecord.DateCreated = new Date(Number(element.date_created));
+          modelRecord.DateUpdated = new Date(Number(element.date_updated));
+          modelRecord.StartTime = new Date(Number(element.start_time));
+          modelRecord.EndTime = new Date(Number(element.end_time));
 
           element.metrics.forEach((metric: Metric) => {
             modelRecord.Metrics.push(new Metric(metric.key, metric.value));
@@ -47,7 +57,15 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
           });
 
           element.artifacts.forEach((artifact: Artifact) => {
-            modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+            modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.type));
+          });
+
+          element.datasets.forEach((dataset: any) => {
+            modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.type));
+          });
+
+          element.observations.forEach((observation: Observation) => {
+            modelRecord.Observations.push(new Observation(observation.attribute, observation.timestamp));
           });
 
           this.experimentRuns.push(modelRecord);
@@ -56,6 +74,7 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
         if (filters !== undefined && filters.length > 0) {
           this.experimentRuns = this.experimentRuns.filter(model => this.checkExperimantRun(model, filters));
         }
+        console.log(this.experimentRuns);
         resolve(this.experimentRuns);
       } else {
         const authenticationService = ServiceFactory.getAuthenticationService();
@@ -101,7 +120,7 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
 
                 if (element.artifacts !== undefined) {
                   element.artifacts.forEach((artifact: Artifact) => {
-                    modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+                    modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.type));
                   });
                 }
                 this.experimentRuns.push(modelRecord);

@@ -1,6 +1,7 @@
 export interface IArtifact {
-  key: ArtifactKey;
+  key: string;
   path: string;
+  type: string;
 }
 
 export enum ArtifactKey {
@@ -9,10 +10,12 @@ export enum ArtifactKey {
 }
 
 export class Artifact implements IArtifact {
-  public readonly key: ArtifactKey;
+  public readonly key: string;
   public readonly path: string;
-  constructor(key: ArtifactKey, path: string) {
+  public readonly type: string;
+  constructor(key: string, path: string, type: string) {
     this.key = key;
     this.path = path;
+    this.type = type;
   }
 }

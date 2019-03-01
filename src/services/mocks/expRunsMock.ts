@@ -6,6 +6,12 @@ export const expRunsMocks = [
     name: 'Exp Run 1',
     code_version: '0.1.0',
     tags: ['exploratory'],
+    description: '...',
+    date_created: '1551397426',
+    date_updated: '1551397431',
+    start_time: '1551397426',
+    end_time: '1551397431',
+    owner: 'github|14152628',
     hyperparameters: [
       {
         key: 'C',
@@ -23,7 +29,8 @@ export const expRunsMocks = [
     artifacts: [
       {
         key: 'model',
-        path: 'output/census_logreg_simple1.gz'
+        path: 'output/census_logreg_simple1.gz',
+        type: 'IMAGE'
       }
     ],
     metrics: [
@@ -32,6 +39,8 @@ export const expRunsMocks = [
         value: '0.77'
       }
     ],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
+    observations: [{ attribute: { key: 'val_train_loss', value: '0.9519083389706082' }, timestamp: '1551397429' }],
     features: [
       {
         name: 'income'
@@ -54,6 +63,12 @@ export const expRunsMocks = [
     name: 'Exp Run 2',
     code_version: '0.1.0',
     tags: ['outlier-detect'],
+    description: '...',
+    date_created: '1551397426',
+    date_updated: '1551397431',
+    start_time: '1551397426',
+    end_time: '1551397431',
+    owner: 'github|14152628',
     hyperparameters: [
       {
         key: 'C',
@@ -68,42 +83,19 @@ export const expRunsMocks = [
         value: '200'
       }
     ],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
+    observations: [{ attribute: { key: 'val_train_loss', value: '0.9519083389706082' }, timestamp: '1551397429' }],
     artifacts: [
       {
         key: 'model',
-        path: 'output/census_logreg_simple2.gz'
+        path: 'output/census_logreg_simple2.gz',
+        type: 'MODEL'
       }
     ],
     metrics: [
       {
         key: 'accuracy',
         value: '0.82'
-      }
-    ],
-    observations: [
-      {
-        attribute: {
-          key: 'epoch_val_acc',
-          value: '0.7'
-        }
-      },
-      {
-        attribute: {
-          key: 'epoch_val_acc',
-          value: '0.8'
-        }
-      },
-      {
-        attribute: {
-          key: 'epoch_val_acc',
-          value: '0.9'
-        }
-      },
-      {
-        attribute: {
-          key: 'epoch_val_acc',
-          value: '0.95'
-        }
       }
     ],
     features: [
@@ -128,6 +120,12 @@ export const expRunsMocks = [
     name: 'Exp Run 3',
     code_version: '0.1.2',
     tags: ['outlier-detect'],
+    description: '...',
+    date_created: '1551397426',
+    date_updated: '1551397431',
+    start_time: '1551397426',
+    end_time: '1551397431',
+    owner: 'github|14152628',
     hyperparameters: [
       {
         key: 'C',
@@ -145,9 +143,12 @@ export const expRunsMocks = [
     artifacts: [
       {
         key: 'model',
-        path: 'output/census_logreg_simple3.gz'
+        path: 'output/census_logreg_simple3.gz',
+        type: 'MODEL'
       }
     ],
+    datasets: [{ key: 'train_data', path: '../data/mnist/train.npz', type: 'DATA' }],
+    observations: [{ attribute: { key: 'val_train_loss', value: '0.9519083389706082' }, timestamp: '1551397429' }],
     metrics: [
       {
         key: 'accuracy',
