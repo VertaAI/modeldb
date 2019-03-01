@@ -11,7 +11,7 @@ export const expMockData = [
     start_time: '1551397426',
     end_time: '1551397431',
     code_version: '1.15.6',
-    tags: ['exploratory'],
+    tags: ['enhancement', 'obsolete', 'debug', 'demo'],
     hyperparameters: [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.4' },
