@@ -55,7 +55,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                   return (
                     <Draggable
                       key={i}
-                      type="Filter"
+                      type="filter"
                       data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}
                       additionalClassName={styles.tag}
                     >

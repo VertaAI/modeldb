@@ -1,6 +1,7 @@
 import { Artifact, ArtifactKey } from '../models/Artifact';
-import { Hyperparameter } from '../models/HyperParameters';
-import { Metric, MetricKey } from '../models/Metrics';
+import { ComparisonType, IFilterData, PropertyType } from '../models/Filters';
+import { Hyperparameter, IHyperparameter } from '../models/HyperParameters';
+import { IMetric, Metric, MetricKey } from '../models/Metrics';
 import ModelRecord from '../models/ModelRecord';
 import { EXPERIMENT_RUNS } from './ApiEndpoints';
 import { IExperimentRunsDataService } from './IApiDataService';
@@ -25,7 +26,7 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
     this.experimentRuns = [];
   }
 
-  public getExperimentRuns(projectId: string): Promise<ModelRecord[]> {
+  public getExperimentRuns(projectId: string, filters?: IFilterData[]): Promise<ModelRecord[]> {
     return new Promise<ModelRecord[]>((resolve, reject) => {
       if (process.env.REACT_APP_USE_API_DATA.toString() === 'false') {
         expRunsMocks.forEach((element: any) => {
@@ -51,6 +52,10 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
 
           this.experimentRuns.push(modelRecord);
         });
+
+        if (filters !== undefined && filters.length > 0) {
+          this.experimentRuns = this.experimentRuns.filter(model => this.checkExperimantRun(model, filters));
+        }
         resolve(this.experimentRuns);
       } else {
         const authenticationService = ServiceFactory.getAuthenticationService();
@@ -118,5 +123,65 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
       });
       resolve(modelRecord);
     });
+  }
+
+  private checkExperimantRun(modelRecord: ModelRecord, filters: IFilterData[]) {
+    for (const filter of filters) {
+      const propName: string = filter.name.toLocaleLowerCase();
+      const filterValue = filter.value;
+
+      if (propName === 'tag') {
+        if (modelRecord.Tags.includes(filter.value.toString())) {
+          return true;
+        }
+      }
+
+      if (propName === 'name') {
+        if (modelRecord.Name === filter.value.toString()) {
+          return true;
+        }
+      }
+
+      if (propName === 'id') {
+        if (modelRecord.Id === filter.value.toString()) {
+          return true;
+        }
+      }
+
+      if (propName === 'ProjectId') {
+        if (modelRecord.ProjectId === filter.value.toString()) {
+          return true;
+        }
+      }
+
+      if (filter.type === PropertyType.METRIC) {
+        let val;
+        const m: IMetric | undefined = modelRecord.Metrics.find(metric => metric.key === filter.name);
+        if (m !== undefined) {
+          val = m.value;
+        }
+
+        const h: IHyperparameter | undefined = modelRecord.Hyperparameters.find(metric => metric.key === filter.name);
+        if (h !== undefined) {
+          val = h.value;
+        }
+
+        if (val === undefined) {
+          continue;
+        }
+
+        if (filter.comparisonType === ComparisonType.LESS) {
+          return filterValue > val;
+        }
+        if (filter.comparisonType === ComparisonType.MORE) {
+          return filterValue < val;
+        }
+        if (filter.comparisonType === ComparisonType.EQUALS) {
+          return filterValue === val;
+        }
+      }
+    }
+
+    return false;
   }
 }

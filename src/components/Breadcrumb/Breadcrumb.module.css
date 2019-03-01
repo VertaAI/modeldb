@@ -5,7 +5,7 @@
 
 .arrow {
   margin: 0 9.5px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--grey-light);
 }
 
 .link {

@@ -1,0 +1,37 @@
+.cell {
+  margin-top: 1em;
+  line-height: 26px;
+}
+
+.param_grid {
+  display: grid;
+  grid-template-columns: 70px 70px;
+  grid-template-rows: 50px;
+  grid-gap: 10px;
+}
+
+.param_label {
+  font-weight: 300;
+  color: var(--main-color2);
+}
+
+.param_cell {
+  display: grid;
+  justify-content: 'unset';
+}
+
+.model_link {
+  color: var(--main-color2);
+  text-decoration: none;
+  line-height: 30px;
+}
+
+.experiment_link {
+  color: var(--text-color1);
+  text-decoration: none;
+  line-height: 30px;
+}
+
+.modelDescription {
+  line-height: 10px !important;
+}
