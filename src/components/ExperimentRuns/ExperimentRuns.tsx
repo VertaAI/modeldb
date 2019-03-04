@@ -4,17 +4,19 @@ import { AgGridReact } from 'ag-grid-react';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
 import ModelRecord from '../../models/ModelRecord';
 import { fetchExperimentRuns } from '../../store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import { IColumnMetaData } from '../../store/dashboard-config';
 
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
+import './ExperimentRuns.module.css';
 
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
-import { columnDefinitions, defaultColDefinitions } from './columnDefinitions/Definitions';
+import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
+import DashboardConfig from './DashboardConfig/DashboardConfig';
 
 const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
 FilterContextPool.registerContext({
@@ -49,10 +51,10 @@ export interface IUrlProps {
 interface IPropsFromState {
   data?: ModelRecord[] | null;
   loading: boolean;
-  columnDefinitions: any;
   defaultColDefinitions: any;
   filterState: { [index: string]: {} };
   filtered: boolean;
+  columnConfig: Map<string, IColumnMetaData>;
 }
 
 interface IOperator {
@@ -80,6 +82,10 @@ class ExperimentRuns extends React.Component<AllProps> {
     if (this.gridApi !== undefined) {
       setTimeout(this.callFilterUpdate, 100);
     }
+    const updatedConfig = this.props.columnConfig;
+    if (this.gridApi && updatedConfig !== undefined) {
+      this.gridApi.setColumnDefs(returnColumnDefs(updatedConfig));
+    }
   }
 
   public componentDidUpdate() {
@@ -88,19 +94,20 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
   }
   public render() {
-    const { data, loading } = this.props;
+    const { data, loading, columnConfig } = this.props;
 
     return loading ? (
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <div>
+        <DashboardConfig />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
             pagination={true}
             onGridReady={this.onGridReady}
             animateRows={true}
             getRowHeight={this.gridRowHeight}
-            columnDefs={this.props.columnDefinitions}
+            columnDefs={returnColumnDefs(columnConfig)}
             rowData={undefined}
             domLayout="autoHeight"
             defaultColDef={this.props.defaultColDefinitions}
@@ -178,9 +185,9 @@ class ExperimentRuns extends React.Component<AllProps> {
 }
 
 // filterState and filtered should be provided by from IApplicationState -> customFilter
-const mapStateToProps = ({ experimentRuns }: IApplicationState) => ({
-  columnDefinitions,
+const mapStateToProps = ({ experimentRuns, dashboardConfig }: IApplicationState) => ({
   defaultColDefinitions,
+  columnConfig: dashboardConfig.columnConfig,
   data: experimentRuns.data,
   loading: experimentRuns.loading,
   filterState: {},

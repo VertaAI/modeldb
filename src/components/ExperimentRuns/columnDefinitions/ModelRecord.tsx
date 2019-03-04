@@ -12,25 +12,8 @@ class ModelRecordColDef extends React.Component<any> {
         <Link className={styles.model_link} to={`/project/${modelRecord.ProjectId}/exp-run/${modelRecord.Id}`}>
           <strong>Model ID</strong>
         </Link>
+        <a className={styles.experiment_link}>Project ID</a>
         <a className={styles.experiment_link}>Experiment ID</a>
-        <p>
-          Model Name: <span>{modelRecord.name}</span>
-        </p>
-        {modelRecord.artifacts.length > 0 && (
-          <p>
-            Artifact:{' '}
-            {modelRecord.artifacts.map((artifact: any, i: number) => {
-              return (
-                <span key={i}>
-                  {modelRecord.artifacts[0].path
-                    .split('/')
-                    .slice(-1)
-                    .pop()}
-                </span>
-              );
-            })}
-          </p>
-        )}
         {modelRecord.tags && (
           <span>
             {/* // dragabble did not work when a TagBlock Component was inserted */}

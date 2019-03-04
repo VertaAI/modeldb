@@ -1,6 +1,10 @@
 .cell {
   margin-top: 1em;
-  line-height: 26px;
+  line-height: 10px;
+}
+
+.summary_cell {
+  line-height: 15px;
 }
 
 .param_grid {
@@ -30,6 +34,10 @@
   color: var(--text-color1);
   text-decoration: none;
   line-height: 30px;
+  border: solid 1px lightgrey;
+  border-radius: 3px;
+  padding-left: 35px;
+  margin-top: 10px;
 }
 
 .modelDescription {
