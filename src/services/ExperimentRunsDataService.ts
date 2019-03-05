@@ -39,7 +39,6 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
           modelRecord.Tags = element.tags || '';
           modelRecord.Name = element.name || '';
           modelRecord.CodeVersion = element.code_version || '';
-
           modelRecord.Description = element.description || '';
           modelRecord.Owner = element.owner || '';
           modelRecord.DateCreated = new Date(Number(element.date_created));
@@ -55,18 +54,17 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
             modelRecord.Hyperparameters.push(new Hyperparameter(hyperParameter.key, hyperParameter.value));
           });
 
-          element.artifacts.forEach((artifact: Artifact) => {
-            modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.type));
+          element.artifacts.forEach((artifact: any) => {
+            modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.artifact_type));
           });
 
-          element.datasets.forEach((dataset: Dataset) => {
-            modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.type));
+          element.datasets.forEach((dataset: any) => {
+            modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.artifact_type));
           });
 
           element.observations.forEach((observation: Observation) => {
             modelRecord.Observations.push(new Observation(observation.attribute, new Date(Number(observation.timestamp))));
           });
-
           this.experimentRuns.push(modelRecord);
         });
 
@@ -95,7 +93,6 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
               const emptyModelRecord = new ModelRecord();
               this.experimentRuns.push(emptyModelRecord);
             } else {
-              console.log(res.experiment_runs);
               res.experiment_runs.forEach((element: any) => {
                 const modelRecord = new ModelRecord();
                 modelRecord.Id = element.id || '';
@@ -104,7 +101,6 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
                 modelRecord.Tags = element.tags || '';
                 modelRecord.Name = element.name || '';
                 modelRecord.CodeVersion = element.code_version || '';
-
                 modelRecord.Description = element.description || '';
                 modelRecord.Owner = element.owner || '';
                 modelRecord.DateCreated = new Date(Number(element.date_created));
@@ -125,14 +121,14 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
                 }
 
                 if (element.artifacts !== undefined) {
-                  element.artifacts.forEach((artifact: Artifact) => {
-                    modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.type));
+                  element.artifacts.forEach((artifact: any) => {
+                    modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.artifact_type));
                   });
                 }
 
                 if (element.datasets !== undefined) {
-                  element.datasets.forEach((dataset: Dataset) => {
-                    modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.type));
+                  element.datasets.forEach((dataset: any) => {
+                    modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.artifact_type));
                   });
                 }
 
