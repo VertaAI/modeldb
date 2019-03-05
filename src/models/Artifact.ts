@@ -4,11 +4,6 @@ export interface IArtifact {
   type: string;
 }
 
-export enum ArtifactKey {
-  InputData = 'input_data',
-  Model = 'model'
-}
-
 export class Artifact implements IArtifact {
   public readonly key: string;
   public readonly path: string;

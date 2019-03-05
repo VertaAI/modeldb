@@ -1,16 +1,12 @@
 export interface IMetric {
-  key: MetricKey;
+  key: string;
   value: string;
 }
 
-export enum MetricKey {
-  accuracy = 'accuracy'
-}
-
 export class Metric implements IMetric {
-  public readonly key: MetricKey;
+  public readonly key: string;
   public readonly value: string;
-  constructor(key: MetricKey, value: string) {
+  constructor(key: string, value: string) {
     this.key = key;
     this.value = value;
   }
