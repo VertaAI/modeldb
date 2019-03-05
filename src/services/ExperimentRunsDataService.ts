@@ -1,9 +1,9 @@
-import { Artifact, ArtifactKey } from '../models/Artifact';
+import { Artifact } from '../models/Artifact';
 import { ComparisonType, IFilterData, PropertyType } from '../models/Filters';
 import { Dataset } from '../models/Dataset';
 import { Observation } from '../models/Observation';
 import { Hyperparameter, IHyperparameter } from '../models/HyperParameters';
-import { IMetric, Metric, MetricKey } from '../models/Metrics';
+import { IMetric, Metric } from '../models/Metrics';
 import ModelRecord from '../models/ModelRecord';
 import { EXPERIMENT_RUNS } from './ApiEndpoints';
 import { IExperimentRunsDataService } from './IApiDataService';
@@ -141,6 +141,7 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
                   });
                 }
                 this.experimentRuns.push(modelRecord);
+                console.log(this.experimentRuns);
               });
             }
             resolve(this.experimentRuns);
