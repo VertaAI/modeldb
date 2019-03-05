@@ -17,13 +17,14 @@ class SummaryColDef extends React.Component<any> {
         <p>Tags:</p>
         <div className={tag_styles.tag_block}>
           <ul className={tag_styles.tags}>
-            {modelRecord.tags.map((tag: string, i: number) => {
-              return (
-                <li key={i}>
-                  <Tag tag={tag} />
-                </li>
-              );
-            })}
+            {modelRecord.tags &&
+              modelRecord.tags.map((tag: string, i: number) => {
+                return (
+                  <li key={i}>
+                    <Tag tag={tag} />
+                  </li>
+                );
+              })}
           </ul>
         </div>
       </div>
