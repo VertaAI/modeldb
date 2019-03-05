@@ -1,7 +1,7 @@
 import { Artifact, ArtifactKey } from '../models/Artifact';
 import { ComparisonType, IFilterData, PropertyType } from '../models/Filters';
 import { Dataset } from '../models/Dataset';
-import { Observation, IDataAttribute } from '../models/Observation';
+import { Observation } from '../models/Observation';
 import { Hyperparameter, IHyperparameter } from '../models/HyperParameters';
 import { IMetric, Metric, MetricKey } from '../models/Metrics';
 import ModelRecord from '../models/ModelRecord';
@@ -59,12 +59,12 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
             modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.type));
           });
 
-          element.datasets.forEach((dataset: any) => {
+          element.datasets.forEach((dataset: Dataset) => {
             modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.type));
           });
 
           element.observations.forEach((observation: Observation) => {
-            modelRecord.Observations.push(new Observation(observation.attribute, observation.timestamp));
+            modelRecord.Observations.push(new Observation(observation.attribute, new Date(Number(observation.timestamp))));
           });
 
           this.experimentRuns.push(modelRecord);
@@ -95,7 +95,6 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
               const emptyModelRecord = new ModelRecord();
               this.experimentRuns.push(emptyModelRecord);
             } else {
-              console.log(res.experiment_runs);
               res.experiment_runs.forEach((element: any) => {
                 const modelRecord = new ModelRecord();
                 modelRecord.Id = element.id || '';
@@ -131,14 +130,14 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
                 }
 
                 if (element.datasets !== undefined) {
-                  element.datasets.forEach((dataset: any) => {
+                  element.datasets.forEach((dataset: Dataset) => {
                     modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.type));
                   });
                 }
 
                 if (element.observations !== undefined) {
                   element.observations.forEach((observation: Observation) => {
-                    modelRecord.Observations.push(new Observation(observation.attribute, observation.timestamp));
+                    modelRecord.Observations.push(new Observation(observation.attribute, new Date(Number(observation.timestamp))));
                   });
                 }
                 this.experimentRuns.push(modelRecord);
