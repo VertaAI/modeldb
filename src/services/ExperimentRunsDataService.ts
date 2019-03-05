@@ -141,7 +141,6 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
                   });
                 }
                 this.experimentRuns.push(modelRecord);
-                console.log(this.experimentRuns);
               });
             }
             resolve(this.experimentRuns);
