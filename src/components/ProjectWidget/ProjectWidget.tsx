@@ -70,8 +70,6 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                 <div>{project.Author.getNameOrEmail()}</div>
                 <div className={styles.author_status}>Owner</div>
               </div>
-              {/* // we may use mapProjectAuthors() function from ProjectDataService.ts 
-            to map project Ids to owner once backend supports author field */}
               <Avatar
                 name={project.Author.getNameOrEmail()}
                 round={true}

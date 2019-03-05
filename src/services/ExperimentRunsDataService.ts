@@ -1,7 +1,9 @@
-import { Artifact, ArtifactKey } from '../models/Artifact';
+import { Artifact } from '../models/Artifact';
 import { ComparisonType, IFilterData, PropertyType } from '../models/Filters';
+import { Dataset } from '../models/Dataset';
+import { Observation } from '../models/Observation';
 import { Hyperparameter, IHyperparameter } from '../models/HyperParameters';
-import { IMetric, Metric, MetricKey } from '../models/Metrics';
+import { IMetric, Metric } from '../models/Metrics';
 import ModelRecord from '../models/ModelRecord';
 import { EXPERIMENT_RUNS } from './ApiEndpoints';
 import { IExperimentRunsDataService } from './IApiDataService';
@@ -38,6 +40,13 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
           modelRecord.Name = element.name || '';
           modelRecord.CodeVersion = element.code_version || '';
 
+          modelRecord.Description = element.description || '';
+          modelRecord.Owner = element.owner || '';
+          modelRecord.DateCreated = new Date(Number(element.date_created));
+          modelRecord.DateUpdated = new Date(Number(element.date_updated));
+          modelRecord.StartTime = new Date(Number(element.start_time));
+          modelRecord.EndTime = new Date(Number(element.end_time));
+
           element.metrics.forEach((metric: Metric) => {
             modelRecord.Metrics.push(new Metric(metric.key, metric.value));
           });
@@ -47,7 +56,15 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
           });
 
           element.artifacts.forEach((artifact: Artifact) => {
-            modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+            modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.type));
+          });
+
+          element.datasets.forEach((dataset: Dataset) => {
+            modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.type));
+          });
+
+          element.observations.forEach((observation: Observation) => {
+            modelRecord.Observations.push(new Observation(observation.attribute, new Date(Number(observation.timestamp))));
           });
 
           this.experimentRuns.push(modelRecord);
@@ -87,6 +104,13 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
                 modelRecord.Name = element.name || '';
                 modelRecord.CodeVersion = element.code_version || '';
 
+                modelRecord.Description = element.description || '';
+                modelRecord.Owner = element.owner || '';
+                modelRecord.DateCreated = new Date(Number(element.date_created));
+                modelRecord.DateUpdated = new Date(Number(element.date_updated));
+                modelRecord.StartTime = new Date(Number(element.start_time));
+                modelRecord.EndTime = new Date(Number(element.end_time));
+
                 if (element.metrics !== undefined) {
                   element.metrics.forEach((metric: Metric) => {
                     modelRecord.Metrics.push(new Metric(metric.key, metric.value));
@@ -101,7 +125,19 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
 
                 if (element.artifacts !== undefined) {
                   element.artifacts.forEach((artifact: Artifact) => {
-                    modelRecord.Artifacts.push(new Artifact(asEnum(ArtifactKey, artifact.key), artifact.path));
+                    modelRecord.Artifacts.push(new Artifact(artifact.key, artifact.path, artifact.type));
+                  });
+                }
+
+                if (element.datasets !== undefined) {
+                  element.datasets.forEach((dataset: Dataset) => {
+                    modelRecord.Datasets.push(new Dataset(dataset.key, dataset.path, dataset.type));
+                  });
+                }
+
+                if (element.observations !== undefined) {
+                  element.observations.forEach((observation: Observation) => {
+                    modelRecord.Observations.push(new Observation(observation.attribute, new Date(Number(observation.timestamp))));
                   });
                 }
                 this.experimentRuns.push(modelRecord);

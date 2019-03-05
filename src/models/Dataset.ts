@@ -1,10 +1,10 @@
-export interface IArtifact {
+export interface IDataset {
   key: string;
   path: string;
   type: string;
 }
 
-export class Artifact implements IArtifact {
+export class Dataset implements IDataset {
   public readonly key: string;
   public readonly path: string;
   public readonly type: string;
