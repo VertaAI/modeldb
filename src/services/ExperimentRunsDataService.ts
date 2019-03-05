@@ -138,7 +138,7 @@ export default class ExperimentRunsDataService implements IExperimentRunsDataSer
 
                 if (element.observations !== undefined) {
                   element.observations.forEach((observation: Observation) => {
-                    modelRecord.Observations.push(new Observation(observation.attribute, new Date(Number(observation.timestamp))));
+                    modelRecord.Observations.push(new Observation(observation.attribute, observation.timestamp));
                   });
                 }
                 this.experimentRuns.push(modelRecord);
