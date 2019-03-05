@@ -1,3 +1,4 @@
+import { ConnectedRouter } from 'connected-react-router';
 import { createBrowserHistory } from 'history';
 import jwtDecode from 'jwt-decode';
 import 'normalize.css';
@@ -66,7 +67,9 @@ const store = configureStore(history, initialState);
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <ConnectedRouter history={history}>
+      <App />
+    </ConnectedRouter>
   </Provider>,
   document.getElementById('root')
 );
