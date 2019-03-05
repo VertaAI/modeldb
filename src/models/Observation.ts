@@ -5,13 +5,13 @@ export interface IDataAttribute {
 
 export interface IObservation {
   attribute: IDataAttribute;
-  timestamp: string;
+  timestamp: Date;
 }
 
 export class Observation implements IObservation {
   public readonly attribute: IDataAttribute;
-  public readonly timestamp: string;
-  constructor(attribute: IDataAttribute, timestamp: string) {
+  public readonly timestamp: Date;
+  constructor(attribute: IDataAttribute, timestamp: Date) {
     this.attribute = attribute;
     this.timestamp = timestamp;
   }
