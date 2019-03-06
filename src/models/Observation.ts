@@ -1,6 +1,6 @@
 export interface IDataAttribute {
   key: string;
-  value: string;
+  value: number | string;
 }
 
 export interface IObservation {
