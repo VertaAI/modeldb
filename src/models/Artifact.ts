@@ -13,9 +13,9 @@ export class Artifact implements IArtifact {
   @JsonProperty('path', String)
   public readonly path: string;
   @JsonProperty('artifact_type', String, true)
-  public readonly artifactType: string = 'IMAGE';
+  public readonly artifactType: string;
 
-  public constructor(key?: string, path?: string, artifactType?: string) {
+  public constructor(key?: string, path?: string, artifactType: string = 'IMAGE') {
     this.key = key || '';
     this.path = path || '';
     this.artifactType = artifactType || '';
