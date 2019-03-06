@@ -3,9 +3,9 @@ import { JsonConverter, JsonCustomConvert } from 'json2typescript';
 @JsonConverter
 export class StringToDateConverter implements JsonCustomConvert<Date> {
   public serialize(date: Date): any {
-    return (date.getTime() / 1000).toString();
+    return date.getTime().toString();
   }
   public deserialize(date: any): Date {
-    return new Date(Number(date) * 1000);
+    return new Date(Number(date));
   }
 }
