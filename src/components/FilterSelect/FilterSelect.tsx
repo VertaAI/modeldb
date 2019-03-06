@@ -21,7 +21,7 @@ import styles from './FilterSelect.module.css';
 import { UnregisterCallback } from 'history';
 import { FilterContextPool, IFilterContext } from '../../models/FilterContextPool';
 import ModelRecord from '../../models/ModelRecord';
-import Project from '../../models/Project';
+import { Project } from '../../models/Project';
 import { IFilterContextData } from '../../store/filter';
 import Droppable from '../Droppable/Droppable';
 import AppliedFilterItem from './AppliedFilterItem/AppliedFilterItem';

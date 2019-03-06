@@ -2,7 +2,7 @@ import { Reducer } from 'redux';
 import { fetchExperimentRunsAction, fetchExperimentRunsActionTypes, IExperimentRunsState } from './types';
 
 const experimentRunsInitialState: IExperimentRunsState = {
-  data: null,
+  data: undefined,
   loading: false
 };
 

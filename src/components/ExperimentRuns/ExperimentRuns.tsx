@@ -5,14 +5,15 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import ModelRecord from '../../models/ModelRecord';
+import { IColumnMetaData } from '../../store/dashboard-config';
 import { fetchExperimentRuns } from '../../store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import { IColumnMetaData } from '../../store/dashboard-config';
 
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
+import { GridReadyEvent } from 'ag-grid-community';
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
@@ -49,7 +50,7 @@ export interface IUrlProps {
 }
 
 interface IPropsFromState {
-  data?: ModelRecord[] | null;
+  data?: ModelRecord[] | undefined;
   loading: boolean;
   defaultColDefinitions: any;
   filterState: { [index: string]: {} };
@@ -121,9 +122,9 @@ class ExperimentRuns extends React.Component<AllProps> {
     );
   }
 
-  public onGridReady = (params: any) => {
-    this.gridApi = params.api;
-    this.columnApi = params.columnApi;
+  public onGridReady = (event: GridReadyEvent) => {
+    this.gridApi = event.api;
+    this.columnApi = event.columnApi;
     this.gridApi.setRowData(this.props.data);
   };
 

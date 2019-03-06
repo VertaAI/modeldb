@@ -1,4 +1,5 @@
 import { UnregisterCallback } from 'history';
+import { Project } from 'models/Project';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
@@ -9,7 +10,7 @@ import styles from './Breadcrumb.module.css';
 import headerArrow from './images/header-arrow.svg';
 
 interface IPropsFromState {
-  projects?: any | null;
+  projects?: Project[] | null;
   experimentRuns?: ModelRecord[] | null;
   modelRecord?: ModelRecord | null;
 }
@@ -79,17 +80,22 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
 
   private prepareItem(): BreadcrumbItem | undefined {
     const { experimentRuns, modelRecord, projects } = this.props;
-    this.projectBreadcrumbItem.name =
-      projects && projects.length > 0 && experimentRuns && experimentRuns.length > 0
-        ? projects.find((pjt: any) => pjt.Id === experimentRuns[0].ProjectId).name.toLocaleUpperCase()
-        : 'EXPERIMENT RUNS';
+    let projectName = 'experiment runs';
+    if (projects && projects.length > 0 && experimentRuns && experimentRuns.length > 0) {
+      const neededProject = projects.find((project: Project) => project.id === experimentRuns[0].projectId);
+      if (neededProject) {
+        projectName = neededProject.name;
+      }
+    }
+    this.projectBreadcrumbItem.name = projectName;
+
     this.projectBreadcrumbItem.path = `/project/${
-      experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].ProjectId : modelRecord ? modelRecord.ProjectId : ''
+      experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].projectId : modelRecord ? modelRecord.projectId : ''
     }/exp-runs`;
     this.projectBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
 
-    this.modelBreadcrumbItem.name = modelRecord ? modelRecord.Name.toLocaleUpperCase() : '';
-    this.modelBreadcrumbItem.path = modelRecord ? `/project/${modelRecord.ProjectId}/exp-run/${modelRecord.Id}` : '';
+    this.modelBreadcrumbItem.name = modelRecord ? modelRecord.name : '';
+    this.modelBreadcrumbItem.path = modelRecord ? `/project/${modelRecord.projectId}/exp-run/${modelRecord.id}` : '';
     this.modelBreadcrumbItem.previousItem = this.projectBreadcrumbItem;
 
     const breadcrumbItems: BreadcrumbItem[] = [];

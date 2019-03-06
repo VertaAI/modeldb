@@ -120,7 +120,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   private convertAuth0UserToUser(auth0User: Auth0UserProfile): User {
-    const user = new User(auth0User.user_id || auth0User.sub.split('|')[1], auth0User.email!);
+    const user = new User(auth0User.user_id || auth0User.sub, auth0User.email!);
     user.name = auth0User.name;
     user.picture = auth0User.picture;
     return user;

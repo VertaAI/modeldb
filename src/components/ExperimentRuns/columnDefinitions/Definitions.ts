@@ -1,9 +1,9 @@
 import ArtifactsColDef from './Artifacts';
+import styles from './ColumnDefs.module.css';
 import HyperparamsColDef from './Hyperparams';
 import MetricsColDef from './Metrics';
 import ModelRecordColDef from './ModelRecord';
 import SummaryColDef from './Summary';
-import styles from './ColumnDefs.module.css';
 
 export const defaultColDefinitions = {
   autoHeight: true
