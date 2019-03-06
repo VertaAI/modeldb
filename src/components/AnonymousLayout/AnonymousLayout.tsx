@@ -1,10 +1,10 @@
 import React from 'react';
 import { Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
 import Callback from '../../components/Callback/Callback';
-import { Footer } from '../../components/Footer/Footer';
 import Login from '../../components/Login/Login';
-import AnonymousLayoutHeader from '../AnonymousLayoutHeader/AnonymousLayoutHeader';
 import styles from './AnonymousLayout.module.css';
+import AnonymousLayoutHeader from './AnonymousLayoutHeader/AnonymousLayoutHeader';
+import { Footer } from './Footer/Footer';
 
 class AnonymousLayout extends React.Component<RouteComponentProps> {
   public render() {

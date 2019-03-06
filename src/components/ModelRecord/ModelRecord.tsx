@@ -8,9 +8,9 @@ import ModelRecord from '../../models/ModelRecord';
 import { fetchModelRecord } from '../../store/model-record';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import loader from '../images/loader.gif';
-import ShowContentBasedOnUrl from '../ShowContentBasedOnUrl/ShowContentBasedOnUrl';
 import Tag from '../TagBlock/Tag';
 import styles from './ModelRecord.module.css';
+import ShowContentBasedOnUrl from './ShowContentBasedOnUrl/ShowContentBasedOnUrl';
 
 export interface IUrlProps {
   modelRecordId: string;
