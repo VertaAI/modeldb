@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import AnonymousLayout from './components/AnonymousLayout/AnonymousLayout';
 import AuthorizedLayout from './components/AuthorizedLayout/AuthorizedLayout';
@@ -10,9 +11,9 @@ interface IPropsFromState {
 }
 
 // Create an intersection type of the component props and our Redux props.
-type AllProps = IPropsFromState & IConnectedReduxProps;
+type AllProps = IPropsFromState & IConnectedReduxProps & RouteComponentProps;
 
-class App extends Component<AllProps> {
+class App extends React.Component<AllProps> {
   public render() {
     const user = this.props.user;
     return user ? <AuthorizedLayout /> : <AnonymousLayout />;
@@ -23,4 +24,4 @@ const mapStateToProps = ({ layout }: IApplicationState) => ({
   user: layout.user
 });
 
-export default connect(mapStateToProps)(App);
+export default withRouter(connect(mapStateToProps)(App));

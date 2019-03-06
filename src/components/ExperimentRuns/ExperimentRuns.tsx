@@ -5,14 +5,15 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import ModelRecord from '../../models/ModelRecord';
+import { IColumnMetaData } from '../../store/dashboard-config';
 import { fetchExperimentRuns } from '../../store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import { IColumnMetaData } from '../../store/dashboard-config';
 
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
+import { GridReadyEvent } from 'ag-grid-community';
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
@@ -49,7 +50,7 @@ export interface IUrlProps {
 }
 
 interface IPropsFromState {
-  data?: ModelRecord[] | null;
+  data?: ModelRecord[] | undefined;
   loading: boolean;
   defaultColDefinitions: any;
   filterState: { [index: string]: {} };
@@ -121,19 +122,20 @@ class ExperimentRuns extends React.Component<AllProps> {
     );
   }
 
-  public onGridReady = (params: any) => {
-    this.gridApi = params.api;
-    this.columnApi = params.columnApi;
+  public onGridReady = (event: GridReadyEvent) => {
+    this.gridApi = event.api;
+    this.columnApi = event.columnApi;
     this.gridApi.setRowData(this.props.data);
   };
 
   public gridRowHeight = (params: any) => {
     const data = params.node.data;
-    if (data.Metrics.length > 3 || data.Hyperparameters.length > 3) {
-      if (data.Metrics.length > data.Hyperparameters.length) {
-        return (data.Metric.length - 3) * 25 + 240;
+
+    if (data.metrics.length > 3 || data.hyperparameters.length > 3) {
+      if (data.metrics.length > data.hyperparameters.length) {
+        return (data.metric.length - 3) * 25 + 240;
       }
-      return (data.Hyperparameters.length - 3) * 25 + 240;
+      return (data.hyperparameters.length - 3) * 25 + 240;
     }
     if (data.tags.length >= 1) {
       return 220;

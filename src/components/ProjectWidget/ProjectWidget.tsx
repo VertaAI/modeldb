@@ -2,7 +2,7 @@ import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
 import { PropertyType } from '../../models/Filters';
-import Project, { UserAccess } from '../../models/Project';
+import { Project, UserAccess } from '../../models/Project';
 import User from '../../models/User';
 import Draggable from '../Draggable/Draggable';
 import SharePopup from '../SharePopup/SharePopup';
@@ -31,27 +31,27 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
 
   public render() {
     const project = this.props.project;
-    const showCollaboratorsAvatars = project.Collaborators.size > 1;
-    const moreThanMaxCollaborators = project.Collaborators.size - 3;
+    const showCollaboratorsAvatars = project.collaborators.size > 1;
+    const moreThanMaxCollaborators = project.collaborators.size - 3;
 
     return (
       <div>
         <SharePopup
-          projectId={project.Id}
-          projectName={project.Name}
+          projectId={project.id}
+          projectName={project.name}
           showModal={this.state.showModal}
           onRequestClose={this.handleCloseModal}
-          collaborators={new Map<User, UserAccess>(project.Collaborators)}
+          collaborators={new Map<User, UserAccess>(project.collaborators)}
         />
-        <Link className={styles.project_link} to={`/project/${project.Id}/exp-runs`}>
+        <Link className={styles.project_link} to={`/project/${project.id}/exp-runs`}>
           <div className={styles.project_widget}>
             <div className={styles.title_block}>
-              <div className={styles.title}>{project.Name}</div>
-              <div className={styles.description}>{project.Description}</div>
+              <div className={styles.title}>{project.name}</div>
+              <div className={styles.description}>{project.description}</div>
             </div>
             <div className={styles.tags_block}>
-              {this.props.project.Tags &&
-                this.props.project.Tags.map((tag: string, i: number) => {
+              {this.props.project.tags &&
+                this.props.project.tags.map((tag: string, i: number) => {
                   return (
                     <Draggable
                       key={i}
@@ -93,7 +93,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                 <span style={{ marginLeft: showCollaboratorsAvatars ? 14 : 4 }}>Collaborators</span>
                 {showCollaboratorsAvatars ? (
                   <span>
-                    {Array.from(project.Collaborators.keys()).map((user: User, index: number) => {
+                    {Array.from(project.collaborators.keys()).map((user: User, index: number) => {
                       return index < 3 ? (
                         <Avatar
                           key={index}
@@ -108,7 +108,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                         ''
                       );
                     })}
-                    {project.Collaborators.size > 3 ? (
+                    {project.collaborators.size > 3 ? (
                       <Avatar
                         name={`+ ${moreThanMaxCollaborators}`}
                         round={true}
@@ -128,8 +128,8 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               </button>
             </div>
             <div className={styles.created_date_block}>
-              <div className={styles.created_date}>Created: {project.DateCreated.toLocaleDateString()}</div>
-              <div>Updated: {project.DateUpdated.toLocaleDateString()}</div>
+              <div className={styles.created_date}>Created: {project.dateCreated.toLocaleDateString()}</div>
+              <div>Updated: {project.dateUpdated.toLocaleDateString()}</div>
             </div>
           </div>
         </Link>

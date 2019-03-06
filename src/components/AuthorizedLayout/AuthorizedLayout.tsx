@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Link, Redirect, Route, RouteComponentProps, RouteProps, Switch } from 'react-router-dom';
+import { Route, RouteComponentProps, RouteProps, Switch, withRouter } from 'react-router-dom';
 import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 import ExperimentRuns from '../ExperimentRuns/ExperimentRuns';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
@@ -7,8 +7,6 @@ import { GenericNotFound } from '../GenericNotFound/GenericNotFound';
 import ModelRecord from '../ModelRecord/ModelRecord';
 import Projects from '../Projects/Projects';
 import styles from './AuthorizedLayout.module.css';
-
-const notFoundRedirect = () => <Redirect to="/not-found" />;
 
 // tslint:disable-next-line:variable-name
 export const RouteWithFilter = ({ component, ...rest }: RouteProps) => {
@@ -34,22 +32,22 @@ export const RouteWithFilter = ({ component, ...rest }: RouteProps) => {
   return <Route {...rest} render={render} />;
 };
 
-export default class AuthorizedLayout extends React.PureComponent {
+class AuthorizedLayout extends React.Component<RouteComponentProps> {
   public render() {
     return (
-      <Router>
-        <div className={styles.layout}>
-          <div className={styles.header}>
-            <AuthorizedLayoutHeader />
-          </div>
-          <Switch>
-            <RouteWithFilter exact={true} path={'/'} component={Projects} />
-            <RouteWithFilter path={'/project/:projectId/exp-runs'} component={ExperimentRuns} />
-            <RouteWithFilter path={'/project/:projectId/exp-run/:modelRecordId'} component={ModelRecord} />
-            <Route component={GenericNotFound} />
-          </Switch>
+      <div className={styles.layout}>
+        <div className={styles.header}>
+          <AuthorizedLayoutHeader />
         </div>
-      </Router>
+        <Switch>
+          <RouteWithFilter exact={true} path={'/'} component={Projects} />
+          <RouteWithFilter path={'/project/:projectId/exp-runs'} component={ExperimentRuns} />
+          <RouteWithFilter path={'/project/:projectId/exp-run/:modelRecordId'} component={ModelRecord} />
+          <Route component={GenericNotFound} />
+        </Switch>
+      </div>
     );
   }
 }
+
+export default withRouter(AuthorizedLayout);

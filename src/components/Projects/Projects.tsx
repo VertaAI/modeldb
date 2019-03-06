@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import Project from '../../models/Project';
+import { Project } from '../../models/Project';
 
 import { FilterContextPool, IFilterContext } from '../../models/FilterContextPool';
 import { IFilterData, PropertyType } from '../../models/Filters';

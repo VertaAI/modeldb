@@ -32,15 +32,15 @@ class ModelRecordLayout extends React.Component<AllProps> {
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <div className={styles.model_layout}>
-        {this.renderTextRecord('Name', data.Name, styles.name)}
-        {this.renderTextRecord('Model Id', data.Id)}
-        {this.renderTextRecord('Project Id', data.ProjectId)}
-        {this.renderTextRecord('Experiment Id', data.ExperimentId)}
-        {this.renderTextRecord('Code version', data.CodeVersion)}
-        {data.Tags &&
+        {this.renderTextRecord('Name', data.name, styles.name)}
+        {this.renderTextRecord('Model Id', data.id)}
+        {this.renderTextRecord('Project Id', data.projectId)}
+        {this.renderTextRecord('Experiment Id', data.experimentId)}
+        {this.renderTextRecord('Code version', data.codeVersion)}
+        {data.tags &&
           this.renderRecord(
             'Tags',
-            data.Tags.map((value: string, key: number) => {
+            data.tags.map((value: string, key: number) => {
               return (
                 <div key={key}>
                   <Tag tag={value} />
@@ -48,10 +48,10 @@ class ModelRecordLayout extends React.Component<AllProps> {
               );
             })
           )}
-        {data.Hyperparameters &&
+        {data.hyperparameters &&
           this.renderListRecord(
             'Hyperparameters',
-            data.Hyperparameters.map((value: IHyperparameter, key: number) => {
+            data.hyperparameters.map((value: IHyperparameter, key: number) => {
               return (
                 <div key={key}>
                   {value.key}: {value.value}
@@ -59,10 +59,10 @@ class ModelRecordLayout extends React.Component<AllProps> {
               );
             })
           )}
-        {data.Metrics &&
+        {data.metrics &&
           this.renderListRecord(
             'Metrics',
-            data.Metrics.map((value: IMetric, key: number) => {
+            data.metrics.map((value: IMetric, key: number) => {
               return (
                 <div key={key}>
                   {value.key}: {value.value}
@@ -70,10 +70,10 @@ class ModelRecordLayout extends React.Component<AllProps> {
               );
             })
           )}
-        {data.Artifacts &&
+        {data.artifacts &&
           this.renderListRecord(
             'Artifacts',
-            data.Artifacts.map((value: IArtifact, key: number) => {
+            data.artifacts.map((value: IArtifact, key: number) => {
               return (
                 <div key={key}>
                   {value.key}: <ShowContentBasedOnUrl path={value.path} />

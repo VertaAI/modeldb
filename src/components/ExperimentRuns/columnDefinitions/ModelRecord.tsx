@@ -9,7 +9,7 @@ class ModelRecordColDef extends React.Component<any> {
     const modelRecord = this.props.data;
     return (
       <div className={styles.param_cell}>
-        <Link className={styles.model_link} to={`/project/${modelRecord.ProjectId}/exp-run/${modelRecord.Id}`}>
+        <Link className={styles.model_link} to={`/project/${modelRecord.projectId}/exp-run/${modelRecord.id}`}>
           <strong>Model ID</strong>
         </Link>
         <a className={styles.experiment_link}>Project ID</a>
