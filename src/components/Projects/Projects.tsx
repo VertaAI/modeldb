@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import Project from '../../models/Project';
+import { Project } from '../../models/Project';
 
 import { FilterContextPool, IFilterContext } from '../../models/FilterContextPool';
 import { IFilterData, PropertyType } from '../../models/Filters';
 import { fetchProjects } from '../../store/projects';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import ProjectWidget from '../ProjectWidget/ProjectWidget';
 import styles from './Projects.module.css';
+import ProjectWidget from './ProjectWidget/ProjectWidget';
 
 interface IPropsFromState {
   data?: Project[] | null;

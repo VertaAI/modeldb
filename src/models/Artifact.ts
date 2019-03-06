@@ -1,16 +1,23 @@
+import { JsonObject, JsonProperty } from 'json2typescript';
+
 export interface IArtifact {
   key: string;
   path: string;
-  type: string;
+  artifactType: string;
 }
 
+@JsonObject('artifact')
 export class Artifact implements IArtifact {
+  @JsonProperty('key', String)
   public readonly key: string;
+  @JsonProperty('path', String)
   public readonly path: string;
-  public readonly type: string;
-  constructor(key: string, path: string, type: string) {
-    this.key = key;
-    this.path = path;
-    this.type = type;
+  @JsonProperty('artifact_type', String, true)
+  public readonly artifactType: string;
+
+  public constructor(key?: string, path?: string, artifactType: string = 'IMAGE') {
+    this.key = key || '';
+    this.path = path || '';
+    this.artifactType = artifactType || '';
   }
 }

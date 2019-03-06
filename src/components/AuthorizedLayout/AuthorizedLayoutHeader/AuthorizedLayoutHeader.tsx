@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import Breadcrumb from '../Breadcrumb/Breadcrumb';
-import UserBar from '../UserBar/UserBar';
 import styles from './AuthorizedLayoutHeader.module.css';
+import Breadcrumb from './Breadcrumb/Breadcrumb';
 import logo from './images/Verta logo.svg';
+import UserBar from './UserBar/UserBar';
 
 export default class AuthorizedLayoutHeader extends React.PureComponent {
   public render() {
