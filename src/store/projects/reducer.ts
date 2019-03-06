@@ -1,5 +1,5 @@
 import { Reducer } from 'redux';
-import Project, { UserAccess } from '../../models/Project';
+import { Project, UserAccess } from '../../models/Project';
 import User from '../../models/User';
 import { fetchProjectsAction, fetchProjectsActionTypes, IProjectsState, IUpdateProjectAction, updateProjectActionTypes } from './types';
 

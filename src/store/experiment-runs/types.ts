@@ -2,7 +2,7 @@ import ModelRecord from 'models/ModelRecord';
 
 export interface IExperimentRunsState {
   readonly loading: boolean;
-  readonly data?: ModelRecord[] | null;
+  readonly data?: ModelRecord[] | undefined;
 }
 
 export enum fetchExperimentRunsActionTypes {

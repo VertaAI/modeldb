@@ -2,13 +2,13 @@ import { JsonObject, JsonProperty } from 'json2typescript';
 
 import { AnyToStringOrNumberConverter } from '../utils/MapperConverters';
 
-export interface IHyperparameter {
+export interface IDataAttribute {
   key: string;
   value: number | string;
 }
 
-@JsonObject('hyperparameter')
-export class Hyperparameter implements IHyperparameter {
+@JsonObject('attribute')
+export class DataAttribute implements IDataAttribute {
   @JsonProperty('key', String)
   public readonly key: string;
   @JsonProperty('value', AnyToStringOrNumberConverter)
