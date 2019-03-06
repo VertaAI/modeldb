@@ -1,12 +1,12 @@
 import React from 'react';
 import { Route, RouteComponentProps, RouteProps, Switch, withRouter } from 'react-router-dom';
-import AuthorizedLayoutHeader from '../AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 import ExperimentRuns from '../ExperimentRuns/ExperimentRuns';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
 import { GenericNotFound } from '../GenericNotFound/GenericNotFound';
 import ModelRecord from '../ModelRecord/ModelRecord';
 import Projects from '../Projects/Projects';
 import styles from './AuthorizedLayout.module.css';
+import AuthorizedLayoutHeader from './AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 
 // tslint:disable-next-line:variable-name
 export const RouteWithFilter = ({ component, ...rest }: RouteProps) => {

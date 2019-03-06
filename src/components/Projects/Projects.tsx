@@ -6,8 +6,8 @@ import { FilterContextPool, IFilterContext } from '../../models/FilterContextPoo
 import { IFilterData, PropertyType } from '../../models/Filters';
 import { fetchProjects } from '../../store/projects';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import ProjectWidget from '../ProjectWidget/ProjectWidget';
 import styles from './Projects.module.css';
+import ProjectWidget from './ProjectWidget/ProjectWidget';
 
 interface IPropsFromState {
   data?: Project[] | null;
