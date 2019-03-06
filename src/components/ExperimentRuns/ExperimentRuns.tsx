@@ -130,7 +130,6 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public gridRowHeight = (params: any) => {
     const data = params.node.data;
-    console.log(data);
 
     if (data.metrics.length > 3 || data.hyperparameters.length > 3) {
       if (data.metrics.length > data.hyperparameters.length) {

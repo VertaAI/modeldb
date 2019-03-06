@@ -15,7 +15,6 @@ export default class ExperimentRunsDataService extends BaseDataService implement
   public getExperimentRuns(projectId: string, filters?: IFilterData[]): AxiosPromise<ModelRecord[]> {
     const axiosConfig = this.responseToExperimentRunsConfig(filters);
     axiosConfig.params = { project_id: projectId };
-    console.log(axios.get<ModelRecord[]>('/v1/experiment-run/getExperimentRunsInProject', axiosConfig));
     return axios.get<ModelRecord[]>('/v1/experiment-run/getExperimentRunsInProject', axiosConfig);
   }
 
