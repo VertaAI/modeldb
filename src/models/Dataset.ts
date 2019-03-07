@@ -3,7 +3,7 @@ import { JsonObject, JsonProperty } from 'json2typescript';
 export interface IDataset {
   key: string;
   path: string;
-  artifactType: string;
+  type: string;
 }
 
 @JsonObject('artifact')

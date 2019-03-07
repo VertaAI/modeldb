@@ -13,7 +13,7 @@ import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
-import { GridReadyEvent } from 'ag-grid-community';
+import { GridReadyEvent, DisplayedColumnsChangedEvent } from 'ag-grid-community';
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
@@ -122,10 +122,15 @@ class ExperimentRuns extends React.Component<AllProps> {
     );
   }
 
+  // public displayedColumnsChanged = (event: DisplayedColumnsChangedEvent) => {
+  //   console.log(this.columnApi);
+  // };
+
   public onGridReady = (event: GridReadyEvent) => {
     this.gridApi = event.api;
     this.columnApi = event.columnApi;
     this.gridApi.setRowData(this.props.data);
+    // this.columnApi.setColumnVisible('datasets');
   };
 
   public gridRowHeight = (params: any) => {
@@ -133,9 +138,10 @@ class ExperimentRuns extends React.Component<AllProps> {
 
     if (data.metrics.length > 3 || data.hyperparameters.length > 3) {
       if (data.metrics.length > data.hyperparameters.length) {
-        return (data.metric.length - 3) * 25 + 240;
+        return (data.metric.length - 3) * 5 + 220;
       }
-      return (data.hyperparameters.length - 3) * 25 + 240;
+      console.log(data.hyperparameters.length * 5 + 220);
+      return data.hyperparameters.length * 5 + 220;
     }
     if (data.tags.length >= 1) {
       return 220;
