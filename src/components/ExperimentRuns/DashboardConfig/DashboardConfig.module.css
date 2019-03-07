@@ -30,7 +30,7 @@
   font-family: Roboto;
   position: absolute;
   background-color: var(--bg-color3);
-  /* border: solid 1px lightgray; */
+  border: solid 1px lightgray;
   margin-top: 20px;
   margin-right: 15px;
   padding: 25px 20px 20px 20px;
@@ -39,9 +39,9 @@
   right: 0;
   z-index: 100;
   cursor: pointer;
-  -webkit-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
+  /* -webkit-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 25px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 25px -5px rgba(0, 0, 0, 0.2); */
 }
 
 .menu_item {

@@ -45,6 +45,7 @@
 .ag-header-cell-label .ag-header-cell-text {
   font-size: 14px;
   pointer-events: none;
+  color: var(--text-color2);
   /* padding: 0 10px; */
 }
 .ag-header-container,

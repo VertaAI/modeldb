@@ -80,7 +80,7 @@
   text-align: center;
   float: none;
   margin: 5px 0;
-  /* cursor: move; */
+  cursor: move;
 }
 
 .experiment_link:hover {
@@ -106,8 +106,17 @@
   margin-bottom: 15px;
   padding: 10px 20px 10px 10px;
   border: solid 1px lightgrey;
-  border-radius: 3px;
+  border-radius: 5px;
   white-space: pre-wrap;
+}
+
+.artifact_wrapper:hover {
+  border: solid 1px var(--main-color2);
+  cursor: pointer;
+  /* -webkit-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 25px -5px rgba(0, 0, 0, 0.2);
+  border: solid 1px #fff; */
 }
 
 .box {

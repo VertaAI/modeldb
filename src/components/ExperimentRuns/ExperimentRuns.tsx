@@ -140,7 +140,6 @@ class ExperimentRuns extends React.Component<AllProps> {
       if (data.metrics.length > data.hyperparameters.length) {
         return (data.metric.length - 3) * 5 + 220;
       }
-      console.log(data.hyperparameters.length * 5 + 220);
       return data.hyperparameters.length * 5 + 220;
     }
     if (data.tags.length >= 1) {

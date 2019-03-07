@@ -7,14 +7,15 @@ import Draggable from '../../Draggable/Draggable';
 
 class ModelRecordColDef extends React.Component<any> {
   public render() {
-    const modelRecord = this.props.data;
+    const { id, projectId, experimentId } = this.props.data;
     return (
       <div className={styles.param_cell}>
-        <Link className={styles.model_link} to={`/project/${modelRecord.projectId}/exp-run/${modelRecord.id}`}>
-          <strong>Model ID</strong>
+        <Link className={styles.model_link} to={`/project/${projectId}/exp-run/${id}`}>
+          <strong>Model ID</strong> {' : '}
+          {`${id.slice(0, 4)}...${id.slice(-4)}`}
         </Link>
-        <div className={styles.experiment_link}>Project ID</div>
-        <div className={styles.experiment_link}>Experiment ID</div>
+        <div className={styles.experiment_link}>{`Project ID: ${projectId.slice(0, 4)}...`}</div>
+        <div className={styles.experiment_link}>{`Experiment ID: ${experimentId.slice(0, 4)}...`}</div>
         {/* <Draggable
           type="filter"
           data={{ type: PropertyType.METRIC, name: 'expID', value: modelRecord.expId, comparisonType: ComparisonType.EQUALS }}
