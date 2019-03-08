@@ -8,7 +8,6 @@ import Draggable from '../../Draggable/Draggable';
 import SharePopup from '../../SharePopup/SharePopup';
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
-import Tag from '../../TagBlock/TagPjt';
 import tstyles from '../../TagBlock/TagBlock.module.css';
 
 interface ILocalProps {
@@ -55,17 +54,14 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               {this.props.project.tags &&
                 this.props.project.tags.map((tag: string, i: number) => {
                   return (
-                    <li key={i}>
-                      <Tag tag={tag} />
-                    </li>
-                    // <Draggable
-                    //   key={i}
-                    //   type="filter"
-                    //   data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}
-                    //   additionalClassName={styles.tag}
-                    // >
-                    //   <span className={styles.tag_text}>{tag}</span>
-                    // </Draggable>
+                    <Draggable
+                      key={i}
+                      type="filter"
+                      data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}
+                      additionalClassName={styles.tag}
+                    >
+                      <span className={styles.tag_text}>{tag}</span>
+                    </Draggable>
                   );
                 })}
             </ul>

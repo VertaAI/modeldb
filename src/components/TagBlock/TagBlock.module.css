@@ -41,3 +41,19 @@
   border: none;
   border-style: groove;
 } */
+
+.staticTag {
+  font-size: 0.85em;
+  color: rgb(83, 83, 83);
+  font-family: sans-serif;
+  text-decoration: none;
+  border-radius: 5px;
+  border-width: 0 !important;
+  background-color: var(--vgreen-lighter);
+  opacity: 0.95;
+  display: inline-block;
+  height: 20px;
+  line-height: 20px;
+  padding: 0px 7px 0px 7px;
+  position: relative;
+}
