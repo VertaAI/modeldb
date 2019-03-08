@@ -8,9 +8,10 @@ class DatasetsColDef extends React.Component<any> {
       <div>
         {datasets.map((dataset: any, i: number) => {
           return (
-            <div style={{ lineHeight: '20px' }} key={i}>
+            <div style={{ lineHeight: '20px', fontSize: '0.9em' }} key={i}>
+              <div>Key:</div>
               <div>{dataset.key}</div>
-              <div style={{ marginTop: '20px', fontSize: '0.9em' }}>Path:</div>
+              <div style={{ marginTop: '10px' }}>Path:</div>
               <div style={{ fontFamily: 'monospace' }}>{dataset.path}</div>
             </div>
           );

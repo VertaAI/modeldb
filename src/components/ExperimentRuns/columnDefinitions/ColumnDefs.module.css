@@ -99,7 +99,7 @@
 .artifact_wrapper {
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: 10px 80px 100px;
+  grid-template-columns: 10px 70px 84px;
   background-color: #fff;
   color: #444;
   line-height: 16px !important;
@@ -108,6 +108,7 @@
   border: solid 1px lightgrey;
   border-radius: 5px;
   white-space: pre-wrap;
+  font-size: 0.9em;
 }
 
 .artifact_wrapper:hover {

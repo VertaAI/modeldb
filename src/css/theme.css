@@ -61,3 +61,7 @@
 .ag-theme-material .ag-cell {
   /* padding: 0 10px; */
 }
+
+.ag-center-cols-viewport {
+  scroll-behavior: smooth;
+}

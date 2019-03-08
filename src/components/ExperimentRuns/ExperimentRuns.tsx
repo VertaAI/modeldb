@@ -86,6 +86,10 @@ class ExperimentRuns extends React.Component<AllProps> {
     const updatedConfig = this.props.columnConfig;
     if (this.gridApi && updatedConfig !== undefined) {
       this.gridApi.setColumnDefs(returnColumnDefs(updatedConfig));
+      const el = document.getElementsByClassName('ag-center-cols-viewport');
+      if (el !== undefined && el[0] !== undefined) {
+        el[0].scrollLeft += 200;
+      }
     }
   }
 
@@ -130,7 +134,6 @@ class ExperimentRuns extends React.Component<AllProps> {
     this.gridApi = event.api;
     this.columnApi = event.columnApi;
     this.gridApi.setRowData(this.props.data);
-    // this.columnApi.setColumnVisible('datasets');
   };
 
   public gridRowHeight = (params: any) => {
