@@ -8,6 +8,7 @@ import Draggable from '../../Draggable/Draggable';
 import SharePopup from '../../SharePopup/SharePopup';
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
+import tstyles from '../../TagBlock/TagBlock.module.css';
 
 interface ILocalProps {
   project: Project;
@@ -49,7 +50,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               <div className={styles.title}>{project.name}</div>
               <div className={styles.description}>{project.description}</div>
             </div>
-            <div className={styles.tags_block}>
+            <ul className={tstyles.tags}>
               {this.props.project.tags &&
                 this.props.project.tags.map((tag: string, i: number) => {
                   return (
@@ -63,7 +64,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                     </Draggable>
                   );
                 })}
-            </div>
+            </ul>
             <div className={styles.metrics_block} />
             <div className={styles.author_block}>
               <div className={styles.author_name}>
@@ -82,7 +83,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               />
             </div>
             <div className={styles.model_count_block}>
-              <span className={styles.model_counter}>{Math.round(Math.random() * 10)}</span>
+              <span className={styles.model_counter}>{12}</span>
               <span>model</span>
             </div>
             <div className={styles.collaborators}>

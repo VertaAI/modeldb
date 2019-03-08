@@ -8,8 +8,8 @@ const dashboardInitialState: IDashboardConfigState = {
     ['metrics', { checked: false, name: 'metrics', label: 'Metrics' }],
     ['hyperparameters', { checked: false, name: 'hyperparameters', label: 'Hyperparameters' }],
     ['artifacts', { checked: false, name: 'artifacts', label: 'Artifacts' }],
-    ['datasets', { checked: false, name: 'datasets', label: 'Dataset' }],
-    ['observations', { checked: false, name: 'observations', label: 'Observations' }]
+    ['datasets', { checked: false, name: 'datasets', label: 'Dataset' }]
+    // ['observations', { checked: false, name: 'observations', label: 'Observations' }]
   ])
 };
 

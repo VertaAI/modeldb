@@ -13,7 +13,7 @@ import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
-import { GridReadyEvent } from 'ag-grid-community';
+import { GridReadyEvent, DisplayedColumnsChangedEvent } from 'ag-grid-community';
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
@@ -86,6 +86,10 @@ class ExperimentRuns extends React.Component<AllProps> {
     const updatedConfig = this.props.columnConfig;
     if (this.gridApi && updatedConfig !== undefined) {
       this.gridApi.setColumnDefs(returnColumnDefs(updatedConfig));
+      const el = document.getElementsByClassName('ag-center-cols-viewport');
+      if (el !== undefined && el[0] !== undefined) {
+        el[0].scrollLeft += 200;
+      }
     }
   }
 
@@ -133,13 +137,14 @@ class ExperimentRuns extends React.Component<AllProps> {
 
     if (data.metrics.length > 3 || data.hyperparameters.length > 3) {
       if (data.metrics.length > data.hyperparameters.length) {
-        return (data.metric.length - 3) * 25 + 240;
+        return (data.metric.length - 3) * 5 + 220;
       }
-      return (data.hyperparameters.length - 3) * 25 + 240;
+      return data.hyperparameters.length * 5 + 220;
     }
     if (data.tags.length >= 1) {
       return 220;
     }
+
     return 200;
   };
 

@@ -30,18 +30,18 @@
   font-family: Roboto;
   position: absolute;
   background-color: var(--bg-color3);
-  /* border: solid 1px lightgray; */
-  margin-top: 50px;
+  border: solid 1px lightgray;
+  margin-top: 20px;
   margin-right: 15px;
-  padding: 20px;
-  font-size: 16px;
-  width: 220px;
+  padding: 25px 20px 20px 20px;
+  font-size: 12px;
+  width: 200px;
   right: 0;
   z-index: 100;
   cursor: pointer;
-  -webkit-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
+  /* -webkit-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 25px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 25px -5px rgba(0, 0, 0, 0.2); */
 }
 
 .menu_item {
@@ -83,16 +83,70 @@
 }
 
 .input_style {
-  /* border: 0.1em solid #000;
-  border-radius: 0.2em;
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  padding-left: 0.2em;
-  padding-bottom: 0.3em;
-  margin-right: 0.2em;
-  vertical-align: bottom;
-  color: transparent;
-  transition: 0.2s; */
-  /* color: red; */
+  padding: 10px;
+  font-size: 2em;
+}
+
+.container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border-radius: 2px;
+}
+
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+  border-radius: 2px;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #8f91fd;
+}
+
+.container:hover input ~ .checkmark {
+  background-color: #8f91fd;
+  border-radius: 2px;
+}
+
+.container input:checked ~ .checkmark {
+  background-color: #5457e3;
+  border-radius: 2px;
+}
+
+.checkmark:after {
+  content: '';
+  position: absolute;
+  display: none;
+}
+
+.container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.container .checkmark:after {
+  left: 7px;
+  top: 3.5px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
 }

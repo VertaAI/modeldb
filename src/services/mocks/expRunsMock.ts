@@ -16,7 +16,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '51257889' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -64,7 +63,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -112,7 +110,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.2' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -157,7 +154,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.2' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -205,7 +201,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -250,7 +245,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '1024' },
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '2676769' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -297,7 +291,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -344,7 +337,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.4' },
       { key: 'optimizer', value: 'adam' },
-      // { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -391,7 +383,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.2' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -439,7 +430,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.2' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -487,7 +477,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '512' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
@@ -534,7 +523,6 @@ export const expRunsMocks = [
       { key: 'hidden_size', value: '512' },
       { key: 'dropout', value: '0.1' },
       { key: 'optimizer', value: 'adam' },
-      //   { key: 'loss', value: 'sparse_categorical_crossentropy' },
       { key: 'batch_size', value: '256' },
       { key: 'num_epochs', value: '4' },
       { key: 'validation_split', value: '0.1' }
