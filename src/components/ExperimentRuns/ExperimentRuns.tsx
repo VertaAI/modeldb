@@ -126,10 +126,6 @@ class ExperimentRuns extends React.Component<AllProps> {
     );
   }
 
-  // public displayedColumnsChanged = (event: DisplayedColumnsChangedEvent) => {
-  //   console.log(this.columnApi);
-  // };
-
   public onGridReady = (event: GridReadyEvent) => {
     this.gridApi = event.api;
     this.columnApi = event.columnApi;
