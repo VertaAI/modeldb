@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/d3": "^5.7.1",
     "ag-grid-community": "^20.1.0",
     "ag-grid-react": "^20.1.0",
     "auth0-js": "^9.10.0",
     "axios": "^0.18.0",
     "connected-react-router": "^6.2.2",
+    "d3": "^5.9.1",
     "es-cookie": "^1.2.0",
     "jose-jwe-jws": "^0.1.6",
     "json2typescript": "^1.0.6",

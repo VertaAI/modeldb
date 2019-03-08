@@ -1,5 +1,6 @@
 import React from 'react';
 import { Route, RouteComponentProps, RouteProps, Switch, withRouter } from 'react-router-dom';
+import Charts from '../Charts/Charts';
 import ExperimentRuns from '../ExperimentRuns/ExperimentRuns';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
 import { GenericNotFound } from '../GenericNotFound/GenericNotFound';
@@ -43,6 +44,7 @@ class AuthorizedLayout extends React.Component<RouteComponentProps> {
           <RouteWithFilter exact={true} path={'/'} component={Projects} />
           <RouteWithFilter path={'/project/:projectId/exp-runs'} component={ExperimentRuns} />
           <RouteWithFilter path={'/project/:projectId/exp-run/:modelRecordId'} component={ModelRecord} />
+          <RouteWithFilter path={'/project/:projectId/charts/'} component={Charts} />
           <Route component={GenericNotFound} />
         </Switch>
       </div>
