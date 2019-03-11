@@ -7,53 +7,73 @@ const height = 400;
 const margin = { top: 20, right: 5, bottom: 20, left: 35 };
 
 interface ILocalProps {
-  chartData: ModelRecord[] | undefined;
+  chartData: any[];
 }
 
 export default class SummaryChart extends React.Component<ILocalProps> {
   public xAxis: any;
   // = d3.axisBottom().tickFormat(d3.timeFormat('%b'));
   public yAxis: any;
-  public extentDate: Date[] | number[] = [0, 0];
+  public extentDate: any[] = [0, 0];
   // = d3.axisLeft().tickFormat(d => `${d}℉`);
 
-  // public componentWillReceiveProps() {
-  //   const { chartData } = this.props;
-  //   if (!chartData) return {};
+  public componentDidMount() {
+    const { chartData } = this.props;
+    const tickFormat = d3.timeFormat('%b');
+    if (!chartData) return {};
 
-  //   if (chartData !== undefined) {
-  //     this.extentDate = d3.extent(chartData, d => d.dateCreated);
-  //   }
+    if (chartData !== undefined) {
+      this.extentDate = d3.extent(chartData, d => d.date);
+      console.log(this.extentDate);
+    }
 
-  //   const xScale = d3
-  //     .scaleTime()
-  //     .domain(extent)
-  //     .range([margin.left, width - margin.right]);
+    this.xAxis = d3.axisBottom(
+      d3
+        .scaleTime()
+        .domain(this.extentDate)
+        .range([margin.left, width - margin.right])
+    );
+    console.log(this.xAxis);
+  }
 
-  //   const [min, max] = d3.extent(data, d => d.high);
-  //   const yScale = d3
-  //     .scaleLinear()
-  //     .domain([Math.min(min, 0), max])
-  //     .range([height - margin.bottom, margin.top]);
+  public componentWillReceiveProps() {
+    const { chartData } = this.props;
+    if (!chartData) return {};
 
-  //   const colorExtent = d3.extent(data, d => d.avg).reverse();
-  //   const colorScale = d3
-  //     .scaleSequential()
-  //     .domain(colorExtent)
-  //     .interpolator(d3.interpolateRdYlBu);
+    if (chartData !== undefined) {
+      this.extentDate = d3.extent(chartData, d => d.date);
+      console.log(this.extentDate);
+    }
 
-  //   const marks = data.map(d => {
-  //     const isColored = !range.length || (range[0] <= d.date && d.date <= range[1]);
-  //     return {
-  //       x: xScale(d.date),
-  //       y: yScale(d.high),
-  //       r: 12,
-  //       fill: isColored ? colorScale(d.avg) : '#ccc'
-  //     };
-  //   });
+    // const xScale = d3
+    //   .scaleTime()
+    //   .domain(extent)
+    //   .range([margin.left, width - margin.right]);
 
-  //   return { marks, xScale, yScale };
-  // }
+    // const [min, max] = d3.extent(data, d => d.high);
+    // const yScale = d3
+    //   .scaleLinear()
+    //   .domain([Math.min(min, 0), max])
+    //   .range([height - margin.bottom, margin.top]);
+
+    // const colorExtent = d3.extent(data, d => d.avg).reverse();
+    // const colorScale = d3
+    //   .scaleSequential()
+    //   .domain(colorExtent)
+    //   .interpolator(d3.interpolateRdYlBu);
+
+    // const marks = data.map(d => {
+    //   const isColored = !range.length || (range[0] <= d.date && d.date <= range[1]);
+    //   return {
+    //     x: xScale(d.date),
+    //     y: yScale(d.high),
+    //     r: 12,
+    //     fill: isColored ? colorScale(d.avg) : '#ccc'
+    //   };
+    // });
+
+    // return { marks, xScale, yScale };
+  }
 
   // componentDidMount() {
   //   this.brush = d3

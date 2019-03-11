@@ -9,6 +9,7 @@
 .summary_cell {
   line-height: 15px;
   color: rgb(112, 112, 112);
+  white-space: pre-wrap;
 }
 
 .param_draggable {
@@ -68,6 +69,8 @@
 
 .highlight_summary {
   color: #000;
+  word-break: break-all;
+  word-wrap: break-word;
 }
 
 .experiment_link {

@@ -22,17 +22,13 @@ class HyperparamsColDef extends React.Component<any> {
   public render() {
     const hyperparamObject = this.props.value;
     return (
-      <div className={styles.param_cell} onClick={this.damal} title={`Drag & Drop To Filter`}>
+      <div className={styles.param_cell} title={`Drag & Drop To Filter`}>
         {hyperparamObject.map((property: object, i: number) => {
           return <ModelProperty key={i} property={property} />;
         })}
       </div>
     );
   }
-
-  public damal = () => {
-    console.log(this.props);
-  };
 }
 
 export default HyperparamsColDef;

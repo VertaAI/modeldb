@@ -40,9 +40,9 @@ export default class ExperimentRunsDataService extends BaseDataService implement
             if (filters && filters.length > 0) {
               experimentRuns = experimentRuns.filter(model => this.checkExperimentRun(model, filters));
             }
-
             return experimentRuns;
           } catch (error) {
+            console.log(error);
             return data;
           }
         }

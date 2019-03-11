@@ -7,9 +7,9 @@ class ObservationsColDef extends React.Component<any> {
     return (
       <p>
         Observations:{' '}
-        {observations.map((observation: any, i: number) => {
+        {/* {observations.map((observation: any, i: number) => {
           return <div key={i}>{observation.timestamp.toLocaleDateString()}</div>;
-        })}
+        })} */}
       </p>
     );
   }
