@@ -19,7 +19,8 @@ export default class SummaryChart extends React.Component<ILocalProps> {
 
   public componentDidMount() {
     const { chartData } = this.props;
-    const tickFormat = d3.timeFormat('%b');
+    const tickFormatX: any = d3.timeFormat('%b');
+    const tickFormatY: any = (d: any) => `${d}℉`;
     if (!chartData) return {};
 
     if (chartData !== undefined) {
@@ -27,13 +28,21 @@ export default class SummaryChart extends React.Component<ILocalProps> {
       console.log(this.extentDate);
     }
 
-    this.xAxis = d3.axisBottom(
-      d3
-        .scaleTime()
-        .domain(this.extentDate)
-        .range([margin.left, width - margin.right])
-    );
+    this.xAxis = d3
+      .axisBottom(
+        d3
+          .scaleTime()
+          .domain(this.extentDate)
+          .range([margin.left, width - margin.right])
+      )
+      .tickFormat(tickFormatX);
     console.log(this.xAxis);
+
+    // const [min, max] = d3.extent(data, d => d.high);
+    // const yScale = d3
+    //   .scaleLinear()
+    //   .domain([Math.min(min, 0), max])
+    //   .range([height - margin.bottom, margin.top]);
   }
 
   public componentWillReceiveProps() {
