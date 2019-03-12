@@ -12,7 +12,7 @@ export class Dataset implements IDataset {
   public readonly key: string;
   @JsonProperty('path', String)
   public readonly path: string;
-  @JsonProperty('artifact_type', String)
+  @JsonProperty('artifact_type', String, true)
   public readonly type: string;
 
   constructor(key?: string, path?: string, type?: string) {
