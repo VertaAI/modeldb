@@ -1,7 +1,12 @@
 import { UserAccess } from '../models/Project';
+import { BaseDataService } from './BaseDataService';
 import { ICollaboratorsService } from './ICollaboratorsService';
 
-export default class CollaboratorsService implements ICollaboratorsService {
+export default class CollaboratorsService extends BaseDataService implements ICollaboratorsService {
+  constructor() {
+    super();
+  }
+
   public sendInvitation(projectId: string, email: string, userAccess: UserAccess): Promise<void> {
     return Promise.resolve();
   }

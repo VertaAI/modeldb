@@ -6,6 +6,7 @@ import { UserAccess } from '../../../models/Project';
 import User from '../../../models/User';
 import { changeProjectOwner } from '../../../store/collaboration/actions';
 import CollaboratorItem from '../CollaboratorItem/CollaboratorItem';
+import error_icon from '../images/error-icon.svg';
 import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './CollaboratorsTab.module.css';
 
@@ -13,6 +14,8 @@ interface ILocalProps {
   collaborators: Map<User, UserAccess>;
   currentUserAccess: UserAccess;
   projectId: string;
+  // should be changed to actual type after getting format from the backend
+  error?: any;
 }
 
 interface ILocalState {
@@ -40,10 +43,19 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
     this.hideChangeOwnerMode = this.hideChangeOwnerMode.bind(this);
     this.updateInputValue = this.updateInputValue.bind(this);
     this.changeOwnerOnClick = this.changeOwnerOnClick.bind(this);
+    this.refreshPage = this.refreshPage.bind(this);
   }
 
   public render() {
-    return this.state.changeOwnerMode ? (
+    return this.props.error ? (
+      <div className={styles.share_result_content}>
+        <img src={error_icon} />
+        <span className={styles.share_result_header}>There are some errors happened…</span>
+        <button className={styles.share_result_button} onClick={this.refreshPage}>
+          <span className={`${styles.share_result_button_text} ${styles.share_result_text}`}>Refresh page</span>
+        </button>
+      </div>
+    ) : this.state.changeOwnerMode ? (
       <div className={styles.change_owner_content}>
         <div className={styles.content_header}>Change Project Owner</div>
         <div>
@@ -134,8 +146,14 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
     this.props.dispatch(changeProjectOwner(this.props.projectId, this.state.emailValue));
     this.hideChangeOwnerMode();
   }
+
+  private refreshPage() {
+    location.reload();
+  }
 }
 
-const mapStateToProps = () => ({});
+const mapStateToProps = ({ collaboration }: IApplicationState) => ({
+  error: collaboration.changeAccess.error || collaboration.changeOwner.error || collaboration.removeAccess.error
+});
 
 export default connect(mapStateToProps)(CollaboratorsTab);

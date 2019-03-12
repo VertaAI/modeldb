@@ -55,7 +55,7 @@
   width: 1px;
 }
 
-.content_share_sucess {
+.share_result_content {
   margin-top: 35px;
   display: grid;
   margin-bottom: 55px;
@@ -63,23 +63,26 @@
   grid-template-rows: 71px 22px auto;
 }
 
-.invitation_success_header {
+.share_result_header {
   font-size: 15px;
   line-height: 18px;
   text-align: center;
 }
 
-.invitation_success_button {
+.share_result_text {
   font-size: 13px;
   line-height: 15px;
-  height: 20px;
+  text-align: center;
+}
+
+.share_result_button {
   text-align: center;
   background: var(--main-color3);
   cursor: pointer;
   border: none;
 }
 
-.invitation_success_button_text {
+.share_result_button_text {
   color: var(--main-color2);
   border-bottom: 1px solid rgb(104, 99, 255, 0.3);
   cursor: pointer;
