@@ -189,7 +189,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   };
 
   public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
+    this.props.dispatch(fetchExperimentRuns(currentProjectID));
   }
 }
 
