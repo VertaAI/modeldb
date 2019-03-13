@@ -19,6 +19,7 @@ import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 
+let currentProjectID: string;
 const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
 FilterContextPool.registerContext({
   metadata: [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
@@ -29,11 +30,11 @@ FilterContextPool.registerContext({
   },
   name: ModelRecord.name,
   onApplyFilters: (filters, dispatch) => {
-    dispatch(fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', filters));
+    dispatch(fetchExperimentRuns(currentProjectID, filters));
   },
   onSearch: (text: string, dispatch) => {
     dispatch(
-      fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', [
+      fetchExperimentRuns(currentProjectID, [
         {
           invert: false,
           name: 'Name',
@@ -73,6 +74,7 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public constructor(props: AllProps) {
     super(props);
+    currentProjectID = this.props.match.params.projectId;
   }
 
   public callFilterUpdate = () => {
@@ -187,7 +189,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   };
 
   public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
+    this.props.dispatch(fetchExperimentRuns(currentProjectID));
   }
 }
 
