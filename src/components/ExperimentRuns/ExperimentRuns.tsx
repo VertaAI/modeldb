@@ -19,7 +19,7 @@ import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 
-let currentProjectID: any;
+let currentProjectID: string;
 const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
 FilterContextPool.registerContext({
   metadata: [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
@@ -74,6 +74,7 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public constructor(props: AllProps) {
     super(props);
+    currentProjectID = this.props.match.params.projectId;
   }
 
   public callFilterUpdate = () => {
@@ -101,7 +102,6 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
   public render() {
     const { data, loading, columnConfig } = this.props;
-    currentProjectID = this.props.match.params.projectId;
 
     return loading ? (
       <img src={loader} className={styles.loader} />
