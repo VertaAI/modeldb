@@ -35,6 +35,9 @@ export default class ExperimentRunsDataService extends BaseDataService implement
       transformResponse: [
         (data: any) => {
           try {
+            if (!data || !data.experiment_runs) {
+              return Array<ModelRecord>();
+            }
             const jsonConvert = new JsonConvert();
             let experimentRuns = jsonConvert.deserializeArray(data.experiment_runs, ModelRecord) as ModelRecord[];
             if (filters && filters.length > 0) {

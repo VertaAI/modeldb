@@ -2,12 +2,12 @@ import * as React from 'react';
 import styles from './Brush.module.css';
 
 interface ILocalProps {
-  tag: string;
+  brush: string;
 }
 
 export default class Brush extends React.Component<ILocalProps> {
   public render() {
-    const { tag } = this.props;
+    const { brush } = this.props;
     return <span />;
   }
 }

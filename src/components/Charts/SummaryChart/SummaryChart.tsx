@@ -11,11 +11,16 @@ interface ILocalProps {
 }
 
 export default class SummaryChart extends React.Component<ILocalProps> {
-  public xAxis: any;
-  // = d3.axisBottom().tickFormat(d3.timeFormat('%b'));
+  public state = {
+    xAxis: {},
+    yAxis: {}
+  };
+
+  public xAxis: any; //  = d3.axisBottom()
   public yAxis: any;
+  public xAxisName: string = 'xAxis';
+  public yAxisName: string = 'yAxis';
   public extentDate: any[] = [0, 0];
-  // = d3.axisLeft().tickFormat(d => `${d}℉`);
 
   public componentDidMount() {
     const { chartData } = this.props;
@@ -25,8 +30,13 @@ export default class SummaryChart extends React.Component<ILocalProps> {
 
     if (chartData !== undefined) {
       this.extentDate = d3.extent(chartData, d => d.date);
-      console.log(this.extentDate);
     }
+
+    // const extent = d3.extent(chartData, d => d.date);
+    const xScale = d3
+      .scaleTime()
+      .domain(this.extentDate)
+      .range([margin.left, width - margin.right]);
 
     this.xAxis = d3
       .axisBottom(
@@ -36,53 +46,30 @@ export default class SummaryChart extends React.Component<ILocalProps> {
           .range([margin.left, width - margin.right])
       )
       .tickFormat(tickFormatX);
-    console.log(this.xAxis);
+    this.setState({ xAxis: this.xAxis });
 
-    // const [min, max] = d3.extent(data, d => d.high);
-    // const yScale = d3
-    //   .scaleLinear()
-    //   .domain([Math.min(min, 0), max])
-    //   .range([height - margin.bottom, margin.top]);
+    this.yAxis = d3
+      .axisLeft(
+        d3
+          .scaleLinear()
+          .domain([0, 1])
+          .range([height - margin.bottom, margin.top])
+      )
+      .tickFormat(tickFormatY);
+    this.setState({ yAxis: this.yAxis });
   }
 
-  public componentWillReceiveProps() {
-    const { chartData } = this.props;
-    if (!chartData) return {};
+  // const marks = data.map(d => {
+  //   const isColored = !range.length || (range[0] <= d.date && d.date <= range[1]);
+  //   return {
+  //     x: xScale(d.date),
+  //     y: yScale(d.high),
+  //     r: 12,
+  //     fill: isColored ? colorScale(d.avg) : '#ccc'
+  //   };
+  // });
 
-    if (chartData !== undefined) {
-      this.extentDate = d3.extent(chartData, d => d.date);
-      console.log(this.extentDate);
-    }
-
-    // const xScale = d3
-    //   .scaleTime()
-    //   .domain(extent)
-    //   .range([margin.left, width - margin.right]);
-
-    // const [min, max] = d3.extent(data, d => d.high);
-    // const yScale = d3
-    //   .scaleLinear()
-    //   .domain([Math.min(min, 0), max])
-    //   .range([height - margin.bottom, margin.top]);
-
-    // const colorExtent = d3.extent(data, d => d.avg).reverse();
-    // const colorScale = d3
-    //   .scaleSequential()
-    //   .domain(colorExtent)
-    //   .interpolator(d3.interpolateRdYlBu);
-
-    // const marks = data.map(d => {
-    //   const isColored = !range.length || (range[0] <= d.date && d.date <= range[1]);
-    //   return {
-    //     x: xScale(d.date),
-    //     y: yScale(d.high),
-    //     r: 12,
-    //     fill: isColored ? colorScale(d.avg) : '#ccc'
-    //   };
-    // });
-
-    // return { marks, xScale, yScale };
-  }
+  // return { marks, xScale, yScale };
 
   // componentDidMount() {
   //   this.brush = d3
@@ -92,12 +79,11 @@ export default class SummaryChart extends React.Component<ILocalProps> {
   //   d3.select(this.refs.brush).call(this.brush);
   // }
 
-  // componentDidUpdate() {
-  //   this.xAxis.scale(this.state.xScale);
-  //   d3.select(this.refs.xAxis).call(this.xAxis);
-  //   this.yAxis.scale(this.state.yScale);
-  //   d3.select(this.refs.yAxis).call(this.yAxis);
-  // }
+  public componentDidUpdate() {
+    // this.xAxis.scale(this.xScale);
+    d3.select(this.xAxisName).call(this.xAxis);
+    d3.select(this.yAxisName).call(this.yAxis);
+  }
 
   // brushEnd = () => {
   //   if (!d3.event.selection) {
@@ -112,20 +98,35 @@ export default class SummaryChart extends React.Component<ILocalProps> {
 
   public render() {
     {
-      console.log(this.props.chartData);
+      console.log(this.state);
+      console.log(JSON.stringify(this.props.chartData));
     }
     return (
-      <div> ccd </div>
-      // <svg width={width} height={height}>
-      //   {this.state.chartData.map((d, i) => (
-      //     <circle key={i} x={d.x} y={d.y} r={12} fill={d.fill} />
-      //   ))}
-      //   <g>
-      //     <g ref="xAxis" transform={`translate(0, ${height - margin.bottom})`} />
-      //     <g ref="yAxis" transform={`translate(${margin.left}, 0)`} />
-      //     <g ref="brush" />
-      //   </g>
-      // </svg>
+      <svg width={width} height={height}>
+        {/* {this.state.chartData.map((d, i) => (
+          <circle key={i} x={d.x} y={d.y} r={12} fill={d.fill} />
+        ))} */}
+        <g>
+          <g ref={this.xAxisName} style={{ color: '#444', fill: '#444' }} transform={`translate(0, ${height - margin.bottom})`} />
+          <g ref={this.yAxisName} style={{ color: '#444', fill: '#444' }} transform={`translate(${margin.left}, 0)`} />
+          {/* <g ref="brush" /> */}
+        </g>
+      </svg>
     );
   }
 }
+
+// public static getDerivedStateFromProps(nextProps: any, prevState: any) {
+//   const { data, range } = nextProps;
+//   if (!data) return {};
+//   console.log(data);
+//   // console.log()
+//   const damal = 'damal damal';
+//   if (nextProps.damal !== prevState.damal) {
+//     return { damal: nextProps.damal };
+//   }
+
+//   return { damal };
+// }
+
+// damal: 'mal'
