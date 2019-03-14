@@ -56,7 +56,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
         <div className={styles.summary_wrapper}>
           <h3>{this.expName}</h3>
           <h5>Summary Chart</h5>
-          <ScatterChart data={this.flatArray} />
+          <ScatterChart data={this.flatArray} paramList={paramList} />
         </div>
         <br />
         <div className={styles.summary_wrapper}>

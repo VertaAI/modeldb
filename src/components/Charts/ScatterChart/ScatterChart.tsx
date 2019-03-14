@@ -2,13 +2,15 @@ import * as d3 from 'd3';
 import { select } from 'd3-selection';
 import * as React from 'react';
 
+const wrapper = 800;
 const chartWidth = 650;
 const chartHeight = 400;
 const chartMargin = { top: 20, right: 5, bottom: 20, left: 35 };
-const defaultRadius = 10;
+const defaultRadius = 7;
 
 interface IProps {
   data: any[];
+  paramList: any;
   // width: number = chartWidth;
   // height: number = chartHeight;
   // margin: object = chartMargin;
@@ -19,18 +21,18 @@ export default class ScatterChart extends React.Component<IProps> {
   private svgRef?: SVGElement | null;
 
   public componentDidMount() {
-    const { data } = this.props; //  width, height, margin
-    this.drawScatterChart(data);
+    const { data, paramList } = this.props; //  width, height, margin
+    this.drawScatterChart(data, paramList);
   }
 
   public componentWillReceiveProps(nextProps: IProps) {
     if (nextProps.data !== this.props.data) {
-      const { data } = this.props;
-      this.drawScatterChart(data);
+      const { data, paramList } = this.props;
+      this.drawScatterChart(data, paramList);
     }
   }
 
-  public drawScatterChart(data: any[]) {
+  public drawScatterChart(data: any[], paramList: any) {
     // width: number, height: number, margin: object
     const svg = select(this.svgRef!);
     const axisLayer = svg.append('g').classed('axis', true);
@@ -94,9 +96,25 @@ export default class ScatterChart extends React.Component<IProps> {
       .style('opacity', 0.6)
       .attr('cx', d => xScale(d.date))
       .attr('cy', d => 1.15 * yScale(d.val_acc));
+
+    [...paramList].map((param: string, i: number) => {
+      const legend = svg.append('g').attr('transform', `translate(0,20)`);
+      legend
+        .append('circle')
+        .attr('r', defaultRadius)
+        .attr('cx', chartWidth + 30)
+        .attr('cy', 20 * i)
+        .attr('fill', param === 'val_acc' ? '#6863ff' : '#5fe6c9');
+      legend
+        .append('text')
+        .style('font-size', '12px')
+        .attr('x', chartWidth + 40)
+        .attr('y', 25 * i)
+        .text(param);
+    });
   }
 
   public render() {
-    return <svg width={chartWidth} height={chartHeight} ref={ref => (this.svgRef = ref)} style={{ marginLeft: '40px' }} />;
+    return <svg width={wrapper} height={chartHeight} ref={ref => (this.svgRef = ref)} style={{ marginLeft: '40px' }} />;
   }
 }
