@@ -2,6 +2,7 @@ import { Auth0DecodedHash, Auth0Error, Auth0UserProfile, WebAuth } from 'auth0-j
 import * as Cookies from 'es-cookie';
 import { Jose, JoseJWS } from 'jose-jwe-jws';
 import jwtDecode from 'jwt-decode';
+import { bind } from 'decko';
 import User from '../../models/User';
 import { AUTH_CONFIG } from './AuthConfiguration';
 import { IAuthenticationService } from './IAuthenticationService';
@@ -22,14 +23,6 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     responseType: 'id_token token',
     scope: 'openid profile email'
   });
-
-  constructor() {
-    this.getProfile = this.getProfile.bind(this);
-    this.handleAuthentication = this.handleAuthentication.bind(this);
-    this.login = this.login.bind(this);
-    this.logout = this.logout.bind(this);
-    this.setSession = this.setSession.bind(this);
-  }
 
   get accessToken(): string {
     const accessToken = Cookies.get(this.auth0accessTokenName);
@@ -56,10 +49,12 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     return false;
   }
 
+  @bind
   public login(): void {
     this.auth0.authorize();
   }
 
+  @bind
   public async handleAuthentication(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.auth0.parseHash(async (e: Auth0Error | null, result: Auth0DecodedHash | null) => {
@@ -73,6 +68,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     });
   }
 
+  @bind
   public getProfile(): Promise<User> {
     return new Promise((resolve, reject) => {
       if (this.user && this.user.email) {
@@ -90,6 +86,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     });
   }
 
+  @bind
   public async setSession(authResult: Auth0DecodedHash): Promise<void> {
     const { idToken, accessToken } = authResult;
 
@@ -113,12 +110,14 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     });
   }
 
+  @bind
   public logout(): void {
     Cookies.remove(this.idTokenName);
     Cookies.remove(this.auth0accessTokenName);
     this.user = null;
   }
 
+  @bind
   private convertAuth0UserToUser(auth0User: Auth0UserProfile): User {
     const user = new User(auth0User.user_id || auth0User.sub, auth0User.email!);
     user.name = auth0User.name;

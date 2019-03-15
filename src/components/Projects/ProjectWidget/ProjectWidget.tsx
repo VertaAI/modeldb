@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
+import { bind } from 'decko';
 import { PropertyType } from '../../../models/Filters';
 import { Project, UserAccess } from '../../../models/Project';
 import User from '../../../models/User';
@@ -19,16 +20,7 @@ interface ILocalState {
 }
 
 export default class ProjectWidget extends React.Component<ILocalProps, ILocalState> {
-  public constructor(props: ILocalProps) {
-    super(props);
-
-    this.state = {
-      showModal: false
-    };
-
-    this.showCollaborators = this.showCollaborators.bind(this);
-    this.handleCloseModal = this.handleCloseModal.bind(this);
-  }
+  public state: ILocalState = { showModal: false };
 
   public render() {
     const project = this.props.project;
@@ -140,11 +132,13 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
     );
   }
 
+  @bind
   private showCollaborators(event: React.SyntheticEvent<HTMLButtonElement>) {
     event.preventDefault();
     this.setState({ showModal: true });
   }
 
+  @bind
   private handleCloseModal() {
     this.setState({ showModal: false });
   }

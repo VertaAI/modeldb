@@ -8,6 +8,7 @@
     "auth0-js": "^9.10.0",
     "axios": "^0.18.0",
     "connected-react-router": "^6.2.2",
+    "decko": "^1.2.0",
     "es-cookie": "^1.2.0",
     "jose-jwe-jws": "^0.1.6",
     "json2typescript": "^1.0.6",

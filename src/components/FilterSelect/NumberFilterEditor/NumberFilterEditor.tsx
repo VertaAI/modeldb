@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { bind } from 'decko';
 import { INumberFilterData } from '../../../models/Filters';
 import styles from './NumberFilterEditor.module.css';
 
@@ -8,20 +9,6 @@ interface ILocalProps {
 }
 
 export default class NumberFilterEditor extends React.Component<ILocalProps> {
-  public constructor(props: ILocalProps) {
-    super(props);
-    this.onSubmit = this.onSubmit.bind(this);
-    this.onInvertChanged = this.onInvertChanged.bind(this);
-    this.onSave = this.onSave.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-  }
-
-  public onClick() {
-    if (this.props.onChange) {
-      this.props.onChange(this.props.data);
-    }
-  }
-
   public render() {
     return (
       <div className={styles.root}>
@@ -36,12 +23,21 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
     );
   }
 
+  @bind
+  private onClick() {
+    if (this.props.onChange) {
+      this.props.onChange(this.props.data);
+    }
+  }
+
+  @bind
   private onSave(data: INumberFilterData) {
     if (this.props.onChange) {
       this.props.onChange(data);
     }
   }
 
+  @bind
   private onInvertChanged(event: React.ChangeEvent<HTMLInputElement>) {
     const newData = {
       ...this.props.data,
@@ -49,6 +45,8 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
     };
     this.onSave(newData);
   }
+
+  @bind
   private onSubmit(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
       const newData = { ...this.props.data, value: Number(event.currentTarget.value) };
@@ -56,6 +54,7 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
     }
   }
 
+  @bind
   private onBlur(event: React.ChangeEvent<HTMLInputElement>) {
     const newData = { ...this.props.data, value: Number(event.target.value) };
     this.onSave(newData);
