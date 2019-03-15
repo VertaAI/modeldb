@@ -37,7 +37,7 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "lint": "tslint -p .",
-    "eject": "react-app-rewired eject",
+    "eject": "react-scripts eject",
     "pretty": "prettier --write \"src/**/*.{ts*,css,js*}\"",
     "analyze": "source-map-explorer build/static/js/main.*",
     "lint-fix": "tslint -p . --fix"
