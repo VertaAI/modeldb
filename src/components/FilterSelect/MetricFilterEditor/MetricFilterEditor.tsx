@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ComparisonType, IFilterData, IMetricFilterData, PropertyType } from '../../../models/Filters';
+import { ComparisonType, IFilterData, IMetricFilterData, PropertyType } from 'models/Filters';
 import styles from './MetricFilterEditor.module.css';
 
 interface ILocalProps {

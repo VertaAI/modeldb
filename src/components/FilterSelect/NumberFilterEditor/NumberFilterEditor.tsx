@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { INumberFilterData } from '../../../models/Filters';
+import { INumberFilterData } from 'models/Filters';
 import styles from './NumberFilterEditor.module.css';
 
 interface ILocalProps {

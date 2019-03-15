@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IFilterData } from '../../../models/Filters';
+import { IFilterData } from 'models/Filters';
 import styles from './FilterItem.module.css';
 
 interface ILocalProps {

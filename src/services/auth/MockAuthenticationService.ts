@@ -1,5 +1,5 @@
 import { Auth0DecodedHash } from 'auth0-js';
-import User from '../../models/User';
+import User from 'models/User';
 import { IAuthenticationService } from './IAuthenticationService';
 
 export default class MockAuthenticationService implements IAuthenticationService {

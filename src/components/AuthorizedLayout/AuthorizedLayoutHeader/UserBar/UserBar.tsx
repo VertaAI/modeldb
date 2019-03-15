@@ -4,8 +4,10 @@ import Avatar from 'react-avatar';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { IApplicationState, IConnectedReduxProps } from '../../../../store/store';
-import { logoutUser } from '../../../../store/user/actions';
+
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { logoutUser } from 'store/user/actions';
+
 import styles from './UserBar.module.css';
 
 interface ILocalState {

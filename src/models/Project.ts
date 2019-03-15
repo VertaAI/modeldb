@@ -1,6 +1,6 @@
 import { JsonObject, JsonProperty } from 'json2typescript';
 
-import { StringToDateConverter } from '../utils/MapperConverters';
+import { StringToDateConverter } from 'utils/MapperConverters';
 import User from './User';
 
 export enum UserAccess {

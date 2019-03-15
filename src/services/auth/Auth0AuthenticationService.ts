@@ -2,7 +2,9 @@ import { Auth0DecodedHash, Auth0Error, Auth0UserProfile, WebAuth } from 'auth0-j
 import * as Cookies from 'es-cookie';
 import { Jose, JoseJWS } from 'jose-jwe-jws';
 import jwtDecode from 'jwt-decode';
-import User from '../../models/User';
+
+import User from 'models/User';
+
 import { AUTH_CONFIG } from './AuthConfiguration';
 import { IAuthenticationService } from './IAuthenticationService';
 

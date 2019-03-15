@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IFilterData, PropertyType } from '../../../models/Filters';
+import { IFilterData, PropertyType } from 'models/Filters';
 import MetricFilterEditor from '../MetricFilterEditor/MetricFilterEditor';
 import NumberFilterEditor from '../NumberFilterEditor/NumberFilterEditor';
 import StringFilterEditor from '../StringFilterEditor/StringFilterEditor';

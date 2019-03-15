@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IStringFilterData } from '../../../models/Filters';
+import { IStringFilterData } from 'models/Filters';
 import styles from './StringFilterEditor.module.css';
 
 interface ILocalProps {
