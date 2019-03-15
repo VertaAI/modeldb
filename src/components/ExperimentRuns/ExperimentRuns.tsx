@@ -13,6 +13,7 @@ import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
+import routes, { GetRouteParams } from '../../routes';
 import { GridReadyEvent, DisplayedColumnsChangedEvent } from 'ag-grid-community';
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
@@ -46,9 +47,7 @@ FilterContextPool.registerContext({
   }
 });
 
-export interface IUrlProps {
-  projectId: string;
-}
+type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
 interface IPropsFromState {
   data?: ModelRecord[] | undefined;

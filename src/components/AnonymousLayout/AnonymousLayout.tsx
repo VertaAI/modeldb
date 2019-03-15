@@ -5,6 +5,7 @@ import Login from '../../components/Login/Login';
 import styles from './AnonymousLayout.module.css';
 import AnonymousLayoutHeader from './AnonymousLayoutHeader/AnonymousLayoutHeader';
 import { Footer } from './Footer/Footer';
+import routes from '../../routes';
 
 class AnonymousLayout extends React.Component<RouteComponentProps> {
   public render() {
@@ -15,7 +16,7 @@ class AnonymousLayout extends React.Component<RouteComponentProps> {
         </div>
         <div className={styles.content}>
           <Switch>
-            <Route path={'/callback'} component={Callback} />
+            <Route path={routes.callback.getPath()} component={Callback} />
             <Route component={Login} />
           </Switch>
         </div>

@@ -6,6 +6,7 @@ import { FilterContextPool, IFilterContext } from '../../models/FilterContextPoo
 import { IFilterData, PropertyType } from '../../models/Filters';
 import { fetchProjects } from '../../store/projects';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import routes from '../../routes';
 import styles from './Projects.module.css';
 import ProjectWidget from './ProjectWidget/ProjectWidget';
 
@@ -25,7 +26,7 @@ FilterContextPool.registerContext({
 
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
-    return location === '/';
+    return location === routes.mainPage.getRedirectPath({});
   },
   name: Project.name,
   onApplyFilters: (filters, dispatch) => {

@@ -6,6 +6,7 @@ import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 import { BreadcrumbItem } from '../../../../models/BreadcrumbItem';
 import ModelRecord from '../../../../models/ModelRecord';
 import { IApplicationState, IConnectedReduxProps } from '../../../../store/store';
+import routes from '../../../../routes';
 import styles from './Breadcrumb.module.css';
 import headerArrow from './images/header-arrow.svg';
 
@@ -24,7 +25,7 @@ type AllProps = IPropsFromState & IConnectedReduxProps & RouteComponentProps;
 class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
-  private indexBreadcrumbItem = new BreadcrumbItem(/^\/$/, '/', 'PROJECTS');
+  private indexBreadcrumbItem = new BreadcrumbItem(/^\/$/, routes.mainPage.getRedirectPath({}), 'PROJECTS');
   private projectBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-runs.?$/);
   private modelBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/);
 
@@ -89,13 +90,15 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     }
     this.projectBreadcrumbItem.name = projectName;
 
-    this.projectBreadcrumbItem.path = `/project/${
-      experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].projectId : modelRecord ? modelRecord.projectId : ''
-    }/exp-runs`;
+    this.projectBreadcrumbItem.path = routes.expirementRuns.getRedirectPath({
+      projectId: experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].projectId : modelRecord ? modelRecord.projectId : ''
+    });
     this.projectBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
 
     this.modelBreadcrumbItem.name = modelRecord ? modelRecord.name : '';
-    this.modelBreadcrumbItem.path = modelRecord ? `/project/${modelRecord.projectId}/exp-run/${modelRecord.id}` : '';
+    this.modelBreadcrumbItem.path = modelRecord
+      ? routes.modelRecord.getRedirectPath({ projectId: modelRecord.projectId, modelRecordId: modelRecord.id })
+      : '';
     this.modelBreadcrumbItem.previousItem = this.projectBreadcrumbItem;
 
     const breadcrumbItems: BreadcrumbItem[] = [];
