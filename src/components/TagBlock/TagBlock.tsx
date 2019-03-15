@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PropertyType } from '../../models/Filters';
+import { PropertyType } from 'models/Filters';
 import Draggable from '../Draggable/Draggable';
 import Tag from './Tag';
 import styles from './TagBlock.module.css';

@@ -1,9 +1,11 @@
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
-import { PropertyType } from '../../../models/Filters';
-import { Project, UserAccess } from '../../../models/Project';
-import User from '../../../models/User';
+
+import { PropertyType } from 'models/Filters';
+import { Project, UserAccess } from 'models/Project';
+import User from 'models/User';
+
 import Draggable from '../../Draggable/Draggable';
 import SharePopup from '../../SharePopup/SharePopup';
 import combined from './images/combined.svg';

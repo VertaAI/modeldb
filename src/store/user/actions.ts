@@ -1,7 +1,7 @@
 import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
-import { history } from '../../index';
-import ServiceFactory from '../../services/ServiceFactory';
+import { history } from 'index';
+import ServiceFactory from 'services/ServiceFactory';
 import { IUserLogoutAction, userAuthenticateAction, userAuthenticateActionTypes, userLogoutActionTypes } from './types';
 
 export const authenticateUser = (): ActionResult<void, userAuthenticateAction> => async (dispatch, getState) => {

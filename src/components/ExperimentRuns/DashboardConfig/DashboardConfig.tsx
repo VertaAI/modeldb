@@ -1,8 +1,10 @@
 import * as React from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
-import { IDashboardConfigState, updateDashboardConfig } from '../../../store/dashboard-config';
-import { IApplicationState, IConnectedReduxProps } from '../../../store/store';
+
+import { IDashboardConfigState, updateDashboardConfig } from 'store/dashboard-config';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import styles from './DashboardConfig.module.css';
 
 interface ILocalState {

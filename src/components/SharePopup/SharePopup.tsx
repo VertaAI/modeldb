@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
-import { UserAccess } from '../../models/Project';
-import User from '../../models/User';
-import { InvitationStatus, resetInvitationState } from '../../store/collaboration';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+
+import { UserAccess } from 'models/Project';
+import User from 'models/User';
+import { InvitationStatus, resetInvitationState } from 'store/collaboration';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import CollaboratorsTab from './CollaboratorsTab/CollaboratorsTab';
 import close from './images/close.svg';
 import styles from './SharePopup.module.css';

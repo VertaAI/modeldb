@@ -1,5 +1,5 @@
-import { IFilterData } from '../../models/Filters';
-import { IMetaData } from '../../models/IMetaData';
+import { IFilterData } from 'models/Filters';
+import { IMetaData } from 'models/IMetaData';
 
 export interface IFilterContextData {
   appliedFilters: IFilterData[];

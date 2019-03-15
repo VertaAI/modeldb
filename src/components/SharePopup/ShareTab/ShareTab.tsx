@@ -1,14 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { UserAccess } from '../../../models/Project';
-import User from '../../../models/User';
-import { InvitationStatus, resetInvitationState, sendInvitationForUser } from '../../../store/collaboration';
-import { IApplicationState, IConnectedReduxProps } from '../../../store/store';
+
+import { UserAccess } from 'models/Project';
+import { InvitationStatus, resetInvitationState, sendInvitationForUser } from 'store/collaboration';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
+import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import icon_check from '../images/icon-check.svg';
 import share_read_icon from '../images/share-r-icon.svg';
 import share_write_icon from '../images/share-wr-icon.svg';
-import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './ShareTab.module.css';
 
 interface ILocalProps {

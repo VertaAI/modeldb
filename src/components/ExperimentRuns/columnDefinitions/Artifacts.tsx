@@ -1,6 +1,6 @@
 import * as React from 'react';
-import styles from './ColumnDefs.module.css';
 import { Link } from 'react-router-dom';
+import styles from './ColumnDefs.module.css';
 
 class ArtifactsColDef extends React.Component<any> {
   public render() {

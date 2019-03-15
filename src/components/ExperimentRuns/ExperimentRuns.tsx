@@ -1,21 +1,22 @@
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
-import { AgGridReact } from 'ag-grid-react';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import ModelRecord from '../../models/ModelRecord';
-import { IColumnMetaData } from '../../store/dashboard-config';
-import { fetchExperimentRuns } from '../../store/experiment-runs';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import { AgGridReact } from 'ag-grid-react';
+import { GridReadyEvent } from 'ag-grid-community';
+
+import ModelRecord from 'models/ModelRecord';
+import { IColumnMetaData } from 'store/dashboard-config';
+import { fetchExperimentRuns } from 'store/experiment-runs';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { FilterContextPool } from 'models/FilterContextPool';
+import { PropertyType } from 'models/Filters';
 
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
-import { GridReadyEvent, DisplayedColumnsChangedEvent } from 'ag-grid-community';
-import { FilterContextPool } from '../../models/FilterContextPool';
-import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 

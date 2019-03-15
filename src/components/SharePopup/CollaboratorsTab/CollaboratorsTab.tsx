@@ -1,10 +1,12 @@
 import React from 'react';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars';
 import { connect } from 'react-redux';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { UserAccess } from '../../../models/Project';
-import User from '../../../models/User';
-import { changeProjectOwner } from '../../../store/collaboration/actions';
+
+import { IConnectedReduxProps } from 'store/store';
+import { UserAccess } from 'models/Project';
+import User from 'models/User';
+import { changeProjectOwner } from 'store/collaboration/actions';
+
 import CollaboratorItem from '../CollaboratorItem/CollaboratorItem';
 import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './CollaboratorsTab.module.css';

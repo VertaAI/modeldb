@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import styles from './ColumnDefs.module.css';
-import { ComparisonType, PropertyType } from '../../../models/Filters';
+
+import { ComparisonType, PropertyType } from 'models/Filters';
 
 import Draggable from '../../Draggable/Draggable';
+import styles from './ColumnDefs.module.css';
 
 class ModelRecordColDef extends React.Component<any> {
   public render() {
