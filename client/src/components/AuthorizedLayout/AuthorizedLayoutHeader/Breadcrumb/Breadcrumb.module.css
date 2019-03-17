@@ -1,0 +1,31 @@
+.content {
+  font-size: 16px;
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb_item {
+  display: inline;
+}
+
+.arrow {
+  margin: 0 9.5px;
+  color: var(--grey-light);
+}
+
+.link {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  outline: none;
+  text-transform: uppercase;
+}
+
+.link:hover {
+  color: var(--bg-color3);
+}
+
+.active_link > .link {
+  font-weight: 500;
+  color: var(--bg-color3);
+}

@@ -1,0 +1,67 @@
+.shadowTop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
+  margin-right: 150px;
+}
+
+.shadowBottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+  margin-right: 150px;
+}
+
+.change_owner_content {
+  margin-top: 30px;
+  display: grid;
+  margin-bottom: 20px;
+  justify-items: center;
+  grid-template-rows: 36px 60px auto;
+}
+
+.content_header {
+  font-size: 15px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.change_owner_button {
+  height: 34px;
+  border-radius: 2px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+}
+
+.change_owner_cancel_button {
+  width: 106px;
+  border-radius: 2px;
+  background-color: #eeeeee;
+  color: #5a5a5a;
+  margin-right: 4px;
+}
+
+.change_owner_cancel_button:hover {
+  background-color: var(--main-color4);
+}
+
+.change_owner_confirm_button {
+  width: 114px;
+  border-radius: 2px;
+  background-color: var(---main-color2);
+  color: var(--main-color3);
+}
+
+.change_owner_confirm_button:hover {
+  background-color: #6a84ff;
+}

@@ -1,0 +1,96 @@
+.input {
+  border: solid var(--fr-color5) 1px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 13px;
+  padding-right: 31px;
+  outline: none;
+  position: relative;
+  border-radius: 2px;
+
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.root {
+  position: relative;
+}
+
+.input::placeholder {
+  font-size: 13px;
+  color: var(--fr-color4);
+}
+
+.input + label {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.input + label:before {
+  content: '\f002';
+  position: absolute;
+  left: -31px;
+  top: -1px;
+  font-size: 18px;
+  color: var(--fr-color5);
+  line-height: 0px;
+}
+
+.applied_filters {
+  height: 350px;
+  overflow: scroll;
+  background-color: var(--bg-color4);
+  margin-top: 25px;
+  margin-bottom: 13px;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.applied_filters:empty::after {
+  content: 'Drag and drop parameters here';
+  position: absolute;
+  top: 205px;
+  left: 52px;
+  width: 135px;
+  text-align: center;
+  color: #888888;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.applied_filters:empty {
+  background-position-x: 50%;
+  background-position-y: 100px;
+  background-image: url('/images/drag-and-drop.png');
+  background-repeat: no-repeat;
+  background-size: 46px;
+}
+
+.apply_filters_button {
+  text-align: right;
+}
+
+.apply_filters_button button {
+  color: var(--bg-color3);
+  background-color: var(--bg-color2);
+  border-radius: 2px;
+  padding: 8px 45px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.apply_filters_button button:hover {
+  background-color: #6a84ff;
+}
+
+.found_filters_popup {
+  border: solid 1px var(--fr-color5);
+  border-bottom-right-radius: 2px;
+  border-bottom-left-radius: 2px;
+  border-top: none;
+  position: absolute;
+  width: 100%;
+  box-sizing: border-box;
+}
