@@ -6,6 +6,8 @@ var dotenv = require('dotenv');
 var session = require('express-session');
 var auth = require('./routes/auth.js');
 var cors = require('cors');
+var cookieParser = require('cookie-parser');
+
 dotenv.config();
 
 // config express-session
@@ -20,23 +22,9 @@ if (app.get('env') === 'production') {
   sess.cookie.secure = true; // serve secure cookies, requires https
 }
 
+app.use(cookieParser());
 app.use(session(sess));
 
-// Set up a whitelist and check against it:
-// var whitelist = ['http://localhost:3000', 'https://verta.auth0.com']
-// var corsOptions = {
-//   origin: function (origin, callback) {
-//     console.log("Origin", origin);
-//     if (whitelist.indexOf(origin) !== -1) {
-//       callback(null, true)
-//     } else {
-//       callback(new Error('Not allowed by CORS'))
-//     }
-//   }
-// }
-
-// Then pass them to cors:
-// app.use(cors(corsOptions));
 app.use(cors());
 
 // Load Passport
@@ -73,7 +61,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'client/build')));
+// app.use(express.static(path.join(__dirname, 'client/build'),
+//     {
+//     setHeaders: function (res, path, stat) {
+//       res.set('Set-Cookie', "myCookie=cookieValue;Path=/")
+//     }
+//   }));
 
 app.get('/api/getProjects', (req, res) => {
   api.getFromAPI('/v1/project/getProjects', req.headers)
@@ -100,12 +93,31 @@ app.get('/api/getExperimentRunsInProject', (req, res) => {
 
 app.use('/api/auth/', auth);
 
+console.log("hello");
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
 app.get('*', (req, res) => {
+  tmpPath = req.path;
+
+  if (tmpPath == '/') {
+    tmpPath = '/index.html';
+  }
+  if (req.user) {
+    console.log('got user in session');
+    res.cookie('verta', req.user, {maxAge: 900000, httpOnly: true});
+  } else {
+    console.log('no req.user');
+  }
+
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+
   // console.log(req);
-  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+  res.sendFile(path.join(__dirname+'/client/build' + tmpPath));
 });
+
+app.disable('etags');
 
 const port = process.env.PORT || 3000;
 app.listen(port);

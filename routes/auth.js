@@ -20,14 +20,21 @@ router.get('/login', passport.authenticate('auth0', {
 
 // Perform the final stage of authentication and redirect to previously requested URL or '/user'
 router.get('/callback', function (req, res, next) {
-  console.log("IN SOME CALLBACK");
   passport.authenticate('auth0', function (err, user, info) {
-    if (err) { return next(err); }
-    if (!user) { return res.redirect('/login'); }
+    console.log("callback user:")
+    console.log(err, user, info);
+    if (err) { 
+      return next(err); 
+    }
+    if (!user) { 
+      console.log("no user found");
+      return res.redirect('/login'); 
+    }
     req.logIn(user, function (err) {
       if (err) { return next(err); }
       const returnTo = req.session.returnTo;
       delete req.session.returnTo;
+      console.log("req.user", req.user);
       res.redirect(returnTo || '/');
     });
   })(req, res, next);

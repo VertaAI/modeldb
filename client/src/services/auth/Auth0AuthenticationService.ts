@@ -61,8 +61,9 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   public login(): void {
     // this.auth0.authorize();
     // call the backend server
-    console.log('called login on Auth0AuthenticationService');
-    axios.get('/api/auth/login', { crossdomain: true });
+    // console.log('called login on Auth0AuthenticationService');
+    // axios.get('/api/auth/login', { crossdomain: true });
+    window.location.replace('/api/auth/login');
     // history.push('api/auth/login');
   }
 
