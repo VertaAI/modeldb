@@ -205,7 +205,7 @@ const mapStateToProps = ({ filters }: IApplicationState) => {
         appliedFilters: currentContext.appliedFilters,
         ctx: filters.context,
         foundFilters: filters.foundFilters,
-        isFiltersSupporting: currentContext.isFiltersSupporting
+        isFiltersSupporting: currentContext.ctx.isFilteringSupport
       };
     }
   }

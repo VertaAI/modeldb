@@ -17,7 +17,7 @@ interface IPropsFromState {
 type AllProps = IPropsFromState & IConnectedReduxProps;
 
 FilterContextPool.registerContext({
-  metadata: [
+  getMetadata: () => [
     { propertyName: 'Name', type: PropertyType.STRING },
     { propertyName: 'Description', type: PropertyType.STRING },
     { propertyName: 'Tag', type: PropertyType.STRING }
@@ -27,7 +27,7 @@ FilterContextPool.registerContext({
   isValidLocation: (location: string) => {
     return location === '/';
   },
-  name: Project.name,
+  name: 'Project',
   onApplyFilters: (filters, dispatch) => {
     dispatch(fetchProjects(filters));
   },
@@ -46,10 +46,6 @@ FilterContextPool.registerContext({
 });
 
 class Projects extends React.Component<AllProps> {
-  public componentDidMount() {
-    this.props.dispatch(fetchProjects());
-  }
-
   public render() {
     return (
       <div className={styles.projects}>

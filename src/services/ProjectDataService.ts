@@ -47,9 +47,7 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
               let result: Project[] = projects;
               for (const filter of filters) {
                 if (filter.name === 'Name') {
-                  result = result.filter(
-                    item => item.name.localeCompare(filter.value.toString(), undefined, { sensitivity: 'accent' }) === 0
-                  );
+                  result = result.filter(item => item.name.toLowerCase().includes(filter.value.toString().toLowerCase()));
                 }
 
                 if (filter.name === 'Tag') {

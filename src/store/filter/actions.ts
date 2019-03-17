@@ -57,6 +57,10 @@ export function changeContext(ctx?: string): ActionResult<void, initContextActio
   return async (dispatch, getState) => {
     dispatch(action(initActionTypes.CHANGE_CONTEXT, ctx));
     dispatch(action(suggestFiltersActionTypes.SUGGEST_FILTERS_RESULT, []));
+    if (ctx !== undefined && FilterContextPool.hasContext(ctx)) {
+      const ctxData = FilterContextPool.getContextByName(ctx);
+      ctxData.onApplyFilters(getState().filters.contexts[ctx].appliedFilters, dispatch);
+    }
   };
 }
 

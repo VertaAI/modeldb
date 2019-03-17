@@ -12,7 +12,7 @@ export default class MockSFService implements ISearchAndFilterService {
       if (ctx === undefined) {
         reject();
       } else {
-        const metadata: IMetaData[] = ctx.metadata;
+        const metadata: IMetaData[] = ctx.ctx.getMetadata();
         if (metadata !== undefined) {
           resolve(this.tryFindFilters(searchString, metadata));
         } else {

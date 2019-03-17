@@ -13,7 +13,7 @@ import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
-import { GridReadyEvent, DisplayedColumnsChangedEvent } from 'ag-grid-community';
+import { DisplayedColumnsChangedEvent, GridReadyEvent } from 'ag-grid-community';
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
@@ -21,13 +21,12 @@ import DashboardConfig from './DashboardConfig/DashboardConfig';
 
 const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
 FilterContextPool.registerContext({
-  metadata: [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
-
+  getMetadata: () => [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
     return locationRegEx.test(location);
   },
-  name: ModelRecord.name,
+  name: 'ModelRecord',
   onApplyFilters: (filters, dispatch) => {
     dispatch(fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', filters));
   },

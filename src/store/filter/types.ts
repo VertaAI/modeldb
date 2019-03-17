@@ -1,11 +1,10 @@
+import { IFilterContext } from 'models/FilterContextPool';
 import { IFilterData } from '../../models/Filters';
-import { IMetaData } from '../../models/IMetaData';
 
 export interface IFilterContextData {
   appliedFilters: IFilterData[];
-  metadata: IMetaData[];
-  isFiltersSupporting: boolean;
-  ctx: string;
+  ctx: IFilterContext;
+  name: string;
 }
 export interface IFilterState {
   contexts: { [index: string]: IFilterContextData };

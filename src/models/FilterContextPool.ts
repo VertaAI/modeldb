@@ -6,9 +6,9 @@ import { IFilterData } from './Filters';
 import { IMetaData } from './IMetaData';
 
 export interface IFilterContext {
-  metadata: IMetaData[];
   isFilteringSupport: boolean;
   name: string;
+  getMetadata(): IMetaData[];
   onSearch(text: string, dispatch: ThunkDispatch<IApplicationState, undefined, AnyAction>): void;
   onApplyFilters(filters: IFilterData[], dispatch: ThunkDispatch<IApplicationState, undefined, AnyAction>): void;
   isValidLocation(location: string): boolean;
@@ -45,12 +45,13 @@ class FilterContextPool {
     for (const prop in this.contexts) {
       if (this.contexts.hasOwnProperty(prop)) {
         const ctx = this.contexts[prop];
-        result.push({
-          appliedFilters: [],
-          ctx: ctx.name,
-          isFiltersSupporting: ctx.isFilteringSupport,
-          metadata: ctx.metadata
-        });
+
+        const resultItem = { ctx, appliedFilters: [], name: ctx.name };
+        const confData = localStorage.getItem(`${ctx.name}_filter`);
+        if (confData !== null) {
+          resultItem.appliedFilters = JSON.parse(confData);
+        }
+        result.push(resultItem);
       }
     }
     return result;
@@ -78,6 +79,9 @@ class FilterContextPool {
     }
 
     return this.contexts[name];
+  }
+  public hasContext(name: string) {
+    return this.contexts[name] !== undefined;
   }
 }
 
