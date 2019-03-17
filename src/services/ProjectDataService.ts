@@ -26,6 +26,10 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
       transformResponse: [
         (data: any) => {
           try {
+            if (!data || !data.projects) {
+              return Array<Project>();
+            }
+
             const jsonConvert = new JsonConvert();
             const projects = jsonConvert.deserializeArray(data.projects, Project) as Project[];
 

@@ -10,9 +10,9 @@ export interface IObservation {
 
 @JsonObject('observation')
 export class Observation implements IObservation {
-  @JsonProperty('attribute', DataAttribute)
+  @JsonProperty('attribute', DataAttribute, true)
   public readonly attribute: DataAttribute;
-  @JsonProperty('timestamp', StringToDateConverter)
+  @JsonProperty('timestamp', StringToDateConverter, true)
   public readonly timestamp: Date;
 
   constructor(attribute?: DataAttribute, timestamp?: Date) {

@@ -16,9 +16,11 @@ import './ExperimentRuns.module.css';
 import { DisplayedColumnsChangedEvent, GridReadyEvent } from 'ag-grid-community';
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
+import routes, { GetRouteParams } from '../../routes';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 
+let currentProjectID: string;
 const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
 FilterContextPool.registerContext({
   getMetadata: () => [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
@@ -28,11 +30,11 @@ FilterContextPool.registerContext({
   },
   name: 'ModelRecord',
   onApplyFilters: (filters, dispatch) => {
-    dispatch(fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', filters));
+    dispatch(fetchExperimentRuns(currentProjectID, filters));
   },
   onSearch: (text: string, dispatch) => {
     dispatch(
-      fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', [
+      fetchExperimentRuns(currentProjectID, [
         {
           invert: false,
           name: 'Name',
@@ -44,9 +46,7 @@ FilterContextPool.registerContext({
   }
 });
 
-export interface IUrlProps {
-  projectId: string;
-}
+type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
 interface IPropsFromState {
   data?: ModelRecord[] | undefined;
@@ -72,6 +72,7 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public constructor(props: AllProps) {
     super(props);
+    currentProjectID = this.props.match.params.projectId;
   }
 
   public callFilterUpdate = () => {
@@ -186,7 +187,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   };
 
   public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
+    this.props.dispatch(fetchExperimentRuns(currentProjectID));
   }
 }
 
