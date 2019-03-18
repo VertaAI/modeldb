@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { select } from 'd3-selection';
 import * as React from 'react';
 
-const wrapper = 800;
+const wrapper = 1000;
 const chartWidth = 650;
 const chartHeight = 400;
 const chartMargin = { top: 20, right: 5, bottom: 20, left: 35 };
@@ -98,7 +98,7 @@ export default class ScatterChart extends React.Component<IProps> {
       .attr('cy', d => 1.15 * yScale(d.val_acc));
 
     [...paramList].map((param: string, i: number) => {
-      const legend = svg.append('g').attr('transform', `translate(0,20)`);
+      const legend = svg.append('g').attr('transform', `translate(100,60)`);
       legend
         .append('circle')
         .attr('r', defaultRadius)

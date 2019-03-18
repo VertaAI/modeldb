@@ -4,8 +4,10 @@ import Avatar from 'react-avatar';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+
 import { IApplicationState, IConnectedReduxProps } from '../../../../store/store';
 import { logoutUser } from '../../../../store/user/actions';
+import routes from '../../../../routes';
 import styles from './UserBar.module.css';
 
 interface ILocalState {
@@ -64,12 +66,12 @@ class UserBar extends React.Component<AllProps, ILocalState> {
               </div>
             </div>
             <div className={styles.menu_item}>
-              <Link onClick={this.toggleMenu} to="/settings">
+              <Link onClick={this.toggleMenu} to={routes.settings.getRedirectPath({})}>
                 Settings
               </Link>
             </div>
             <div className={styles.menu_item}>
-              <Link onClick={this.logout} to={'/'}>
+              <Link onClick={this.logout} to={routes.mainPage.getRedirectPath({})}>
                 Log out
               </Link>
             </div>

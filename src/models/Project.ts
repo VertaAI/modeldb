@@ -13,7 +13,7 @@ export enum UserAccess {
 export class Project {
   @JsonProperty('id', String)
   public id: string;
-  @JsonProperty('name', String)
+  @JsonProperty('name', String, true)
   public name: string;
   @JsonProperty('description', String, true)
   public description: string = '';

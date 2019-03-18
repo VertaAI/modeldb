@@ -13,13 +13,15 @@ import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
+import routes, { GetRouteParams } from '../../routes';
 import { GridReadyEvent } from 'ag-grid-community';
 import { FilterContextPool } from '../../models/FilterContextPool';
 import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
+import ExpSubMenu from '../ExpSubMenu/ExpSubMenu';
 
-let currentProjectID: any;
+let currentProjectID: string;
 const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
 FilterContextPool.registerContext({
   metadata: [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
@@ -46,9 +48,7 @@ FilterContextPool.registerContext({
   }
 });
 
-export interface IUrlProps {
-  projectId: string;
-}
+type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
 interface IPropsFromState {
   data?: ModelRecord[] | undefined;
@@ -74,6 +74,7 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public constructor(props: AllProps) {
     super(props);
+    currentProjectID = this.props.match.params.projectId;
   }
 
   public callFilterUpdate = () => {
@@ -106,6 +107,7 @@ class ExperimentRuns extends React.Component<AllProps> {
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <div>
+        <ExpSubMenu projectId={currentProjectID} active="exp-runs" />
         <DashboardConfig />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
@@ -188,7 +190,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   };
 
   public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
+    this.props.dispatch(fetchExperimentRuns(currentProjectID));
   }
 }
 
