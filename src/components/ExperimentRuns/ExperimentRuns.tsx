@@ -12,6 +12,7 @@ import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { FilterContextPool } from 'models/FilterContextPool';
 import { PropertyType } from 'models/Filters';
+import routes, { GetRouteParams } from 'routes';
 
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
@@ -47,9 +48,7 @@ FilterContextPool.registerContext({
   }
 });
 
-export interface IUrlProps {
-  projectId: string;
-}
+type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
 interface IPropsFromState {
   data?: ModelRecord[] | undefined;

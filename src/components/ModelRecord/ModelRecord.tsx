@@ -8,16 +8,14 @@ import { IMetric } from 'models/Metrics';
 import ModelRecord from 'models/ModelRecord';
 import { fetchModelRecord } from 'store/model-record';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import routes, { GetRouteParams } from 'routes';
 
 import loader from '../images/loader.gif';
 import styles from './ModelRecord.module.css';
 import tagStyles from '../TagBlock/TagBlock.module.css';
 import ShowContentBasedOnUrl from './ShowContentBasedOnUrl/ShowContentBasedOnUrl';
 
-export interface IUrlProps {
-  modelRecordId: string;
-  projectId: string;
-}
+type IUrlProps = GetRouteParams<typeof routes.modelRecord>;
 
 interface IPropsFromState {
   data?: ModelRecord | null;

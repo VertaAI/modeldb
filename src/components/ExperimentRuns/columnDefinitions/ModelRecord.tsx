@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { ComparisonType, PropertyType } from 'models/Filters';
+import routes from 'routes';
 
-import Draggable from '../../Draggable/Draggable';
 import styles from './ColumnDefs.module.css';
 
 class ModelRecordColDef extends React.Component<any> {
@@ -11,7 +10,7 @@ class ModelRecordColDef extends React.Component<any> {
     const { id, projectId, experimentId } = this.props.data;
     return (
       <div className={styles.param_cell}>
-        <Link className={styles.model_link} to={`/project/${projectId}/exp-run/${id}`}>
+        <Link className={styles.model_link} to={routes.modelRecord.getRedirectPath({ projectId, modelRecordId: id })}>
           <strong>Model ID</strong> {' : '}
           {`${id.slice(0, 4)}...${id.slice(-4)}`}
         </Link>
