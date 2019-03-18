@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { bind } from 'decko';
 import { ComparisonType, IFilterData, IMetricFilterData, PropertyType } from '../../../models/Filters';
 import styles from './MetricFilterEditor.module.css';
 
@@ -8,14 +9,6 @@ interface ILocalProps {
 }
 
 export default class MetricFilterEditor extends React.Component<ILocalProps> {
-  public constructor(props: ILocalProps) {
-    super(props);
-    this.onSubmit = this.onSubmit.bind(this);
-    this.onComparisonChanged = this.onComparisonChanged.bind(this);
-    this.onSave = this.onSave.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-  }
-
   public render() {
     return (
       <div className={styles.root}>
@@ -30,12 +23,14 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
     );
   }
 
+  @bind
   private onSave(data: IMetricFilterData) {
     if (this.props.onChange) {
       this.props.onChange(data);
     }
   }
 
+  @bind
   private onComparisonChanged(event: React.ChangeEvent<HTMLSelectElement>) {
     const cmp: ComparisonType = event.target.selectedIndex;
     const newData = {
@@ -45,6 +40,8 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
 
     this.onSave(newData);
   }
+
+  @bind
   private onSubmit(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
       const newData = { ...this.props.data, value: Number(event.currentTarget.value) };
@@ -52,6 +49,7 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
     }
   }
 
+  @bind
   private onBlur(event: React.ChangeEvent<HTMLInputElement>) {
     const newData = { ...this.props.data, value: Number(event.target.value) };
     this.onSave(newData);

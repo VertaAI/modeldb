@@ -3,6 +3,7 @@ import * as React from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { bind, debounce } from 'decko';
 import { IFilterData } from '../../models/Filters';
 import {
   addFilter,
@@ -52,21 +53,6 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   };
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
-  public constructor(props: AllProps) {
-    super(props);
-    this.onChange = this.onChange.bind(this);
-
-    this.renderPopup = this.renderPopup.bind(this);
-    this.onShowPopup = this.onShowPopup.bind(this);
-    this.onCreateFilter = this.onCreateFilter.bind(this);
-    this.onRemoveFilter = this.onRemoveFilter.bind(this);
-    this.onSaveFilterData = this.onSaveFilterData.bind(this);
-    this.changeContext = this.changeContext.bind(this);
-    this.searchFilterSuggestions = _.debounce(this.searchFilterSuggestions.bind(this), 500);
-    this.onApplyFilters = this.onApplyFilters.bind(this);
-    this.onSearch = this.onSearch.bind(this);
-  }
-
   public componentDidMount() {
     this.unlistenCallback = this.props.history.listen((location, action) => this.changeContext(location.pathname));
     this.props.dispatch(initContexts());
@@ -77,10 +63,6 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     if (this.unlistenCallback) {
       this.unlistenCallback();
     }
-  }
-  public onChange(event: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({ ...this.state, txt: event.target.value });
-    this.searchFilterSuggestions(event.target.value);
   }
 
   public render() {
@@ -122,13 +104,21 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     );
   }
 
-  public onApplyFilters() {
+  @bind
+  private onChange(event: React.ChangeEvent<HTMLInputElement>) {
+    this.setState({ ...this.state, txt: event.target.value });
+    this.searchFilterSuggestions(event.target.value);
+  }
+
+  @bind
+  private onApplyFilters() {
     if (this.props.ctx !== undefined) {
       this.props.dispatch(applyFilters(this.props.ctx, this.props.appliedFilters));
     }
   }
 
-  public onSearch(ev: React.KeyboardEvent<HTMLInputElement>) {
+  @bind
+  private onSearch(ev: React.KeyboardEvent<HTMLInputElement>) {
     if (ev.key === 'Enter') {
       if (this.props.ctx !== undefined) {
         this.props.dispatch(search(this.props.ctx, this.state.txt));
@@ -136,15 +126,19 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     }
   }
 
-  public handleClickOutside(ev: MouseEvent) {
+  @bind
+  private handleClickOutside(ev: MouseEvent) {
     this.setState({ ...this.state, isOpened: false });
   }
 
+  @bind
+  @debounce(500)
   private searchFilterSuggestions(txt: string) {
     this.props.dispatch(suggestFilters(txt));
     this.onShowPopup();
   }
 
+  @bind
   private changeContext(pathname: string) {
     const ctx: IFilterContext | undefined = FilterContextPool.findContextByLocation(pathname);
     if (ctx !== undefined) {
@@ -154,6 +148,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     }
   }
 
+  @bind
   private renderPopup(): JSX.Element | false | undefined {
     return (
       this.props.foundFilters &&
@@ -168,6 +163,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     );
   }
 
+  @bind
   private onCreateFilter(data: IFilterData) {
     if (this.props.ctx !== undefined) {
       this.props.dispatch(addFilter(data, this.props.ctx));
@@ -175,12 +171,14 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     this.setState({ ...this.state, isOpened: false });
   }
 
+  @bind
   private onRemoveFilter(data: IFilterData) {
     if (this.props.ctx !== undefined) {
       this.props.dispatch(removeFilter(data, this.props.ctx));
     }
   }
 
+  @bind
   private onSaveFilterData(index: number, ctx?: string) {
     return (data: IFilterData) => {
       if (ctx !== undefined) {
@@ -189,6 +187,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     };
   }
 
+  @bind
   private onShowPopup() {
     this.setState({
       ...this.state,
