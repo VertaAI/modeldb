@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { bind } from 'decko';
-import { IFilterData, PropertyType } from '../../../models/Filters';
+
+import { IFilterData, PropertyType } from 'models/Filters';
+
 import MetricFilterEditor from '../MetricFilterEditor/MetricFilterEditor';
 import NumberFilterEditor from '../NumberFilterEditor/NumberFilterEditor';
 import StringFilterEditor from '../StringFilterEditor/StringFilterEditor';

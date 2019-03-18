@@ -1,13 +1,15 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { IArtifact } from '../../models/Artifact';
-import { IHyperparameter } from '../../models/HyperParameters';
-import { IMetric } from '../../models/Metrics';
-import ModelRecord from '../../models/ModelRecord';
-import { fetchModelRecord } from '../../store/model-record';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import routes, { GetRouteParams } from '../../routes';
+
+import { IArtifact } from 'models/Artifact';
+import { IHyperparameter } from 'models/HyperParameters';
+import { IMetric } from 'models/Metrics';
+import ModelRecord from 'models/ModelRecord';
+import { fetchModelRecord } from 'store/model-record';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import routes, { GetRouteParams } from 'routes';
+
 import loader from '../images/loader.gif';
 import styles from './ModelRecord.module.css';
 import tagStyles from '../TagBlock/TagBlock.module.css';

@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { bind } from 'decko';
-import { IFilterData } from '../../../models/Filters';
+
+import { IFilterData } from 'models/Filters';
+
 import styles from './FilterItem.module.css';
 
 interface ILocalProps {

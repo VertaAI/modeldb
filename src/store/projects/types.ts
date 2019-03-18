@@ -1,4 +1,4 @@
-import { Project, UserAccess } from 'models/Project';
+import { Project } from 'models/Project';
 
 export enum fetchProjectsActionTypes {
   FETCH_PROJECTS_REQUEST = '@@projects/FETCH_PROJECTS_REQUEST',

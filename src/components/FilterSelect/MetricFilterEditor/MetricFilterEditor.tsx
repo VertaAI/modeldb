@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { bind } from 'decko';
-import { ComparisonType, IFilterData, IMetricFilterData, PropertyType } from '../../../models/Filters';
+
+import { ComparisonType, IMetricFilterData } from 'models/Filters';
+
 import styles from './MetricFilterEditor.module.css';
 
 interface ILocalProps {

@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { bind } from 'decko';
-import { IStringFilterData } from '../../../models/Filters';
+
+import { IStringFilterData } from 'models/Filters';
+
 import styles from './StringFilterEditor.module.css';
 
 interface ILocalProps {

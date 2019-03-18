@@ -4,7 +4,9 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { bind, debounce } from 'decko';
-import { IFilterData } from '../../models/Filters';
+import { UnregisterCallback } from 'history';
+
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import {
   addFilter,
   applyFilters,
@@ -13,17 +15,16 @@ import {
   initContexts,
   removeFilter,
   search,
-  suggestFilters
-} from '../../store/filter/actions';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+  suggestFilters,
+  IFilterContextData
+} from 'store/filter';
+import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
+import { IFilterData } from 'models/Filters';
+import ModelRecord from 'models/ModelRecord';
+import { Project } from 'models/Project';
+
 import FilterItem from './FilterItem/FilterItem';
 import styles from './FilterSelect.module.css';
-
-import { UnregisterCallback } from 'history';
-import { FilterContextPool, IFilterContext } from '../../models/FilterContextPool';
-import ModelRecord from '../../models/ModelRecord';
-import { Project } from '../../models/Project';
-import { IFilterContextData } from '../../store/filter';
 import Droppable from '../Droppable/Droppable';
 import AppliedFilterItem from './AppliedFilterItem/AppliedFilterItem';
 

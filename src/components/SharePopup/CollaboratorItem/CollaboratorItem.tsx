@@ -2,10 +2,12 @@ import React from 'react';
 import Avatar from 'react-avatar';
 import { connect } from 'react-redux';
 import { bind } from 'decko';
-import { UserAccess } from '../../../models/Project';
-import User from '../../../models/User';
-import { changeAccessToProject, removeAccessFromProject } from '../../../store/collaboration';
-import { IConnectedReduxProps } from '../../../store/store';
+
+import { UserAccess } from 'models/Project';
+import User from 'models/User';
+import { changeAccessToProject, removeAccessFromProject } from 'store/collaboration';
+import { IConnectedReduxProps } from 'store/store';
+
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
 import share_change_icon from '../images/share-change-icon.svg';
 import share_delete_icon from '../images/share-del-icon.svg';

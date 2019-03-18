@@ -1,8 +1,10 @@
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import { handleUserAuthentication } from '../../store/user';
+
+import { IConnectedReduxProps } from 'store/store';
+import { handleUserAuthentication } from 'store/user';
+
 import loader from '../images/loader.gif';
 import styles from './Callback.module.css';
 

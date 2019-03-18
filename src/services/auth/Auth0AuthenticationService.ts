@@ -3,7 +3,9 @@ import * as Cookies from 'es-cookie';
 import { Jose, JoseJWS } from 'jose-jwe-jws';
 import jwtDecode from 'jwt-decode';
 import { bind } from 'decko';
-import User from '../../models/User';
+
+import User from 'models/User';
+
 import { AUTH_CONFIG } from './AuthConfiguration';
 import { IAuthenticationService } from './IAuthenticationService';
 

@@ -1,5 +1,7 @@
 import * as React from 'react';
-import { ComparisonType, PropertyType } from '../../../models/Filters';
+
+import { ComparisonType, PropertyType } from 'models/Filters';
+
 import Draggable from '../../Draggable/Draggable';
 import styles from './ColumnDefs.module.css';
 

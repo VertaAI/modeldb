@@ -6,9 +6,10 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { bind } from 'decko';
 
-import { IApplicationState, IConnectedReduxProps } from '../../../../store/store';
-import { logoutUser } from '../../../../store/user/actions';
-import routes from '../../../../routes';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { logoutUser } from 'store/user/actions';
+import routes from 'routes';
+
 import styles from './UserBar.module.css';
 
 interface ILocalState {
