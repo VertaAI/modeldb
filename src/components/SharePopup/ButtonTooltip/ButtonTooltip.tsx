@@ -1,5 +1,5 @@
 import Tooltip from 'rc-tooltip';
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import styles from './ButtonTooltip.module.css';
 import './tooltip.css';
 

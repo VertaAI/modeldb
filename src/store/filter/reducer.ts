@@ -1,5 +1,5 @@
 import { Reducer } from 'redux';
-import { IFilterData } from '../../models/Filters';
+import { IFilterData } from 'models/Filters';
 
 import {
   IFilterContextData,

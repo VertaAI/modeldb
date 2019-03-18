@@ -1,6 +1,6 @@
 import { JsonObject, JsonProperty } from 'json2typescript';
 
-import { AnyToStringOrNumberConverter } from '../utils/MapperConverters';
+import { AnyToStringOrNumberConverter } from 'utils/MapperConverters';
 
 export interface IHyperparameter {
   key: string;

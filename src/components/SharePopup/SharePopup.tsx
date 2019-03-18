@@ -1,10 +1,13 @@
 import React from 'react';
 import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
-import { UserAccess } from '../../models/Project';
-import User from '../../models/User';
-import { InvitationStatus, resetInvitationState } from '../../store/collaboration';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import { bind } from 'decko';
+
+import { UserAccess } from 'models/Project';
+import User from 'models/User';
+import { InvitationStatus, resetInvitationState } from 'store/collaboration';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import CollaboratorsTab from './CollaboratorsTab/CollaboratorsTab';
 import close from './images/close.svg';
 import styles from './SharePopup.module.css';
@@ -36,18 +39,13 @@ interface ILocalState {
 type AllProps = IConnectedReduxProps & ILocalProps & IPropsFromState;
 
 class SharePopup extends React.Component<AllProps, ILocalState> {
+  public state: ILocalState = {
+    activeTab: this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share,
+    showModal: this.props.showModal
+  };
+
   public static getDerivedStateFromProps(nextProps: AllProps) {
     return { showModal: nextProps.showModal };
-  }
-
-  constructor(props: AllProps) {
-    super(props);
-    this.state = { activeTab: this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share, showModal: this.props.showModal };
-
-    this.changeTab = this.changeTab.bind(this);
-    this.selectShareTab = this.selectShareTab.bind(this);
-    this.selectCollaboratorsTab = this.selectCollaboratorsTab.bind(this);
-    this.handleCloseModal = this.handleCloseModal.bind(this);
   }
 
   public render() {
@@ -107,18 +105,22 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
     );
   }
 
+  @bind
   private selectCollaboratorsTab() {
     this.changeTab(Tabs.collaborators);
   }
 
+  @bind
   private selectShareTab() {
     this.changeTab(Tabs.share);
   }
 
+  @bind
   private changeTab(tab: Tabs) {
     this.setState({ ...this.state, activeTab: tab });
   }
 
+  @bind
   private handleCloseModal() {
     if (this.props.onRequestClose) {
       this.props.onRequestClose();

@@ -1,12 +1,11 @@
 import { async } from 'q';
 import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
-import { FilterContextPool, IFilterContext } from '../../models/FilterContextPool';
-import { IFilterData } from '../../models/Filters';
-import ServiceFactory from '../../services/ServiceFactory';
+import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
+import { IFilterData } from 'models/Filters';
+import ServiceFactory from 'services/ServiceFactory';
 import {
   applyFiltersAction,
-  applyFiltersActionType,
   IFilterContextData,
   initActionTypes,
   initContextAction,

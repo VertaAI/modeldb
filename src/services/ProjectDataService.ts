@@ -2,8 +2,8 @@ import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
 import { JsonConvert } from 'json2typescript';
 
 import { IFilterData } from 'models/Filters';
-import { Project } from '../models/Project';
-import User from '../models/User';
+import { Project } from 'models/Project';
+import User from 'models/User';
 import { BaseDataService } from './BaseDataService';
 import { IProjectDataService } from './IProjectDataService';
 

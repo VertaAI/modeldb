@@ -1,7 +1,7 @@
 import { JsonObject, JsonProperty } from 'json2typescript';
 import { DataAttribute } from './DataAttribute';
 
-import { StringToDateConverter } from '../utils/MapperConverters';
+import { StringToDateConverter } from 'utils/MapperConverters';
 
 export interface IObservation {
   attribute: DataAttribute;

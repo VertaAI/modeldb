@@ -1,14 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { UserAccess } from '../../../models/Project';
-import User from '../../../models/User';
-import { InvitationStatus, resetInvitationState, sendInvitationForUser } from '../../../store/collaboration';
-import { IApplicationState, IConnectedReduxProps } from '../../../store/store';
+import { bind } from 'decko';
+
+import { UserAccess } from 'models/Project';
+import { InvitationStatus, resetInvitationState, sendInvitationForUser } from 'store/collaboration';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
+import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import icon_check from '../images/icon-check.svg';
 import share_read_icon from '../images/share-r-icon.svg';
 import share_write_icon from '../images/share-wr-icon.svg';
-import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './ShareTab.module.css';
 
 interface ILocalProps {
@@ -25,19 +27,10 @@ interface ILocalState {
 type AllProps = IConnectedReduxProps & ILocalProps;
 
 class ShareTab extends React.Component<AllProps, ILocalState> {
-  constructor(props: AllProps) {
-    super(props);
-
-    this.state = {
-      emailValue: '',
-      userAccess: UserAccess.Read
-    };
-
-    this.sendInvitationOnClick = this.sendInvitationOnClick.bind(this);
-    this.changeShareType = this.changeShareType.bind(this);
-    this.updateInputValue = this.updateInputValue.bind(this);
-    this.sendNewInvitation = this.sendNewInvitation.bind(this);
-  }
+  public state: ILocalState = {
+    emailValue: '',
+    userAccess: UserAccess.Read
+  };
 
   public render() {
     const { status } = this.props;
@@ -90,6 +83,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
     }
   }
 
+  @bind
   private changeShareType() {
     if (this.props.currentUserAccess === UserAccess.Read) {
       return;
@@ -104,15 +98,18 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
     }
   }
 
+  @bind
   private sendInvitationOnClick() {
     this.props.dispatch(sendInvitationForUser(this.props.projectId, this.state.emailValue, this.state.userAccess));
   }
 
+  @bind
   private sendNewInvitation() {
     this.props.dispatch(resetInvitationState());
     this.setState({ emailValue: '', userAccess: UserAccess.Read });
   }
 
+  @bind
   private updateInputValue(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({
       emailValue: event.target.value

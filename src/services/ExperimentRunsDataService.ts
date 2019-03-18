@@ -1,9 +1,11 @@
 import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
 import { JsonConvert } from 'json2typescript';
-import { ComparisonType, IFilterData, PropertyType } from '../models/Filters';
-import { IHyperparameter } from '../models/HyperParameters';
-import { IMetric } from '../models/Metrics';
-import ModelRecord from '../models/ModelRecord';
+
+import { ComparisonType, IFilterData, PropertyType } from 'models/Filters';
+import { IHyperparameter } from 'models/HyperParameters';
+import { IMetric } from 'models/Metrics';
+import ModelRecord from 'models/ModelRecord';
+
 import { BaseDataService } from './BaseDataService';
 import { IExperimentRunsDataService } from './IExperimentRunsDataService';
 

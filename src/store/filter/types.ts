@@ -1,5 +1,5 @@
 import { IFilterContext } from 'models/FilterContextPool';
-import { IFilterData } from '../../models/Filters';
+import { IFilterData } from 'models/Filters';
 
 export interface IFilterContextData {
   appliedFilters: IFilterData[];

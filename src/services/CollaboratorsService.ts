@@ -1,4 +1,4 @@
-import { UserAccess } from '../models/Project';
+import { UserAccess } from 'models/Project';
 import { ICollaboratorsService } from './ICollaboratorsService';
 
 export default class CollaboratorsService implements ICollaboratorsService {
