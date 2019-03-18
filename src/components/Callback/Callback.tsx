@@ -5,8 +5,7 @@ import { RouteComponentProps } from 'react-router';
 import { IConnectedReduxProps } from 'store/store';
 import { handleUserAuthentication } from 'store/user';
 
-import loader from '../images/loader.gif';
-import styles from './Callback.module.css';
+import GlobalPreloader from '../GlobalPreloader/GlobalPreloader';
 
 type AllProps = IConnectedReduxProps & RouteComponentProps;
 
@@ -16,11 +15,7 @@ class Callback extends React.Component<AllProps> {
   }
 
   public render() {
-    return (
-      <div className={styles.center}>
-        <img src={loader} alt="loading" />
-      </div>
-    );
+    return <GlobalPreloader />;
   }
 }
 
