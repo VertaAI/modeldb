@@ -1,5 +1,8 @@
 import * as React from 'react';
+import { bind } from 'decko';
+
 import { IStringFilterData } from 'models/Filters';
+
 import styles from './StringFilterEditor.module.css';
 
 interface ILocalProps {
@@ -8,14 +11,6 @@ interface ILocalProps {
 }
 
 export default class StringFilterEditor extends React.Component<ILocalProps> {
-  public constructor(props: ILocalProps) {
-    super(props);
-    this.onSubmit = this.onSubmit.bind(this);
-    this.onInvertChanged = this.onInvertChanged.bind(this);
-    this.onSave = this.onSave.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-  }
-
   public render() {
     return (
       <div className={styles.root}>
@@ -29,12 +24,15 @@ export default class StringFilterEditor extends React.Component<ILocalProps> {
       </div>
     );
   }
+
+  @bind
   private onSave(data: IStringFilterData) {
     if (this.props.onChange) {
       this.props.onChange(data);
     }
   }
 
+  @bind
   private onInvertChanged(event: React.ChangeEvent<HTMLInputElement>) {
     const newData = {
       ...this.props.data,
@@ -42,6 +40,8 @@ export default class StringFilterEditor extends React.Component<ILocalProps> {
     };
     this.onSave(newData);
   }
+
+  @bind
   private onSubmit(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
       const newData = { ...this.props.data, value: event.currentTarget.value };
@@ -49,6 +49,7 @@ export default class StringFilterEditor extends React.Component<ILocalProps> {
     }
   }
 
+  @bind
   private onBlur(event: React.ChangeEvent<HTMLInputElement>) {
     const newData = { ...this.props.data, value: event.target.value };
     this.onSave(newData);

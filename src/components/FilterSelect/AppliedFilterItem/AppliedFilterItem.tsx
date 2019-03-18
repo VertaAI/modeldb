@@ -1,5 +1,8 @@
 import * as React from 'react';
+import { bind } from 'decko';
+
 import { IFilterData, PropertyType } from 'models/Filters';
+
 import MetricFilterEditor from '../MetricFilterEditor/MetricFilterEditor';
 import NumberFilterEditor from '../NumberFilterEditor/NumberFilterEditor';
 import StringFilterEditor from '../StringFilterEditor/StringFilterEditor';
@@ -17,12 +20,6 @@ interface ILocalState {
 
 export default class AppliedFilterItem extends React.Component<ILocalProps, ILocalState> {
   public state: ILocalState = { isEditorShown: false };
-
-  public constructor(props: ILocalProps) {
-    super(props);
-    this.onClickRemove = this.onClickRemove.bind(this);
-    this.onClickShowEditor = this.onClickShowEditor.bind(this);
-  }
 
   public render() {
     return (
@@ -53,12 +50,14 @@ export default class AppliedFilterItem extends React.Component<ILocalProps, ILoc
     );
   }
 
+  @bind
   private onClickRemove() {
     if (this.props.onRemoveFilter) {
       this.props.onRemoveFilter(this.props.data);
     }
   }
 
+  @bind
   private onClickShowEditor() {
     this.setState({ ...this.state, isEditorShown: !this.state.isEditorShown });
   }

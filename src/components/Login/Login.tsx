@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import { bind } from 'decko';
 
 import User from 'models/User';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
@@ -15,12 +16,6 @@ interface IPropsFromState {
 type AllProps = IPropsFromState & IConnectedReduxProps;
 
 class Login extends React.Component<AllProps> {
-  public constructor(props: AllProps) {
-    super(props);
-
-    this.authenticateViaGithub = this.authenticateViaGithub.bind(this);
-  }
-
   public render() {
     return (
       <div className={styles.content}>
@@ -40,6 +35,7 @@ class Login extends React.Component<AllProps> {
     );
   }
 
+  @bind
   private authenticateViaGithub(event: React.SyntheticEvent<HTMLButtonElement>) {
     this.props.dispatch(authenticateUser());
   }

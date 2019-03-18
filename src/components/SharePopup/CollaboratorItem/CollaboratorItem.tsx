@@ -1,6 +1,7 @@
 import React from 'react';
 import Avatar from 'react-avatar';
 import { connect } from 'react-redux';
+import { bind } from 'decko';
 
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
@@ -25,14 +26,6 @@ interface ILocalProps {
 type AllProps = IConnectedReduxProps & ILocalProps;
 
 class CollaboratorItem extends React.Component<AllProps> {
-  constructor(props: AllProps) {
-    super(props);
-
-    this.setWriteAccessToProject = this.setWriteAccessToProject.bind(this);
-    this.setReadAccessToProject = this.setReadAccessToProject.bind(this);
-    this.removeAccessToProject = this.removeAccessToProject.bind(this);
-  }
-
   public render() {
     const { currentUserAccess, user, userAccess } = this.props;
 
@@ -119,14 +112,17 @@ class CollaboratorItem extends React.Component<AllProps> {
     );
   }
 
+  @bind
   private setWriteAccessToProject() {
     this.props.dispatch(changeAccessToProject(this.props.projectId, this.props.user, UserAccess.Write));
   }
 
+  @bind
   private setReadAccessToProject() {
     this.props.dispatch(changeAccessToProject(this.props.projectId, this.props.user, UserAccess.Read));
   }
 
+  @bind
   private removeAccessToProject() {
     this.props.dispatch(removeAccessFromProject(this.props.projectId, this.props.user));
   }

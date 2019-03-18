@@ -1,6 +1,7 @@
 import React from 'react';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars';
 import { connect } from 'react-redux';
+import { bind } from 'decko';
 
 import { IConnectedReduxProps } from 'store/store';
 import { UserAccess } from 'models/Project';
@@ -27,22 +28,12 @@ interface ILocalState {
 type AllProps = IConnectedReduxProps & ILocalProps;
 
 class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
-  constructor(props: AllProps) {
-    super(props);
-
-    this.state = {
-      changeOwnerMode: false,
-      emailValue: '',
-      shadowBottomOpacity: 0,
-      shadowTopOpacity: 0
-    };
-
-    this.handleScrollbarUpdate = this.handleScrollbarUpdate.bind(this);
-    this.showChangeOwnerMode = this.showChangeOwnerMode.bind(this);
-    this.hideChangeOwnerMode = this.hideChangeOwnerMode.bind(this);
-    this.updateInputValue = this.updateInputValue.bind(this);
-    this.changeOwnerOnClick = this.changeOwnerOnClick.bind(this);
-  }
+  public state: ILocalState = {
+    changeOwnerMode: false,
+    emailValue: '',
+    shadowBottomOpacity: 0,
+    shadowTopOpacity: 0
+  };
 
   public render() {
     return this.state.changeOwnerMode ? (
@@ -105,6 +96,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
     );
   }
 
+  @bind
   private handleScrollbarUpdate(values: positionValues) {
     const { scrollTop, scrollHeight, clientHeight } = values;
     const shadowTopOpacity1 = (1 / 20) * Math.min(scrollTop, 20);
@@ -117,14 +109,17 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
     });
   }
 
+  @bind
   private showChangeOwnerMode() {
     this.setState({ ...this.state, changeOwnerMode: true });
   }
 
+  @bind
   private hideChangeOwnerMode() {
     this.setState({ ...this.state, changeOwnerMode: false, emailValue: '' });
   }
 
+  @bind
   private updateInputValue(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({
       emailValue: event.target.value
@@ -132,6 +127,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
     event.preventDefault();
   }
 
+  @bind
   private changeOwnerOnClick() {
     this.props.dispatch(changeProjectOwner(this.props.projectId, this.state.emailValue));
     this.hideChangeOwnerMode();

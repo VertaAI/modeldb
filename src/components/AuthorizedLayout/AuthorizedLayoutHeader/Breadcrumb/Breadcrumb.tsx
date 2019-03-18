@@ -3,6 +3,7 @@ import { Project } from 'models/Project';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
+import { bind } from 'decko';
 
 import { BreadcrumbItem } from 'models/BreadcrumbItem';
 import ModelRecord from 'models/ModelRecord';
@@ -25,21 +26,15 @@ interface ILocalState {
 type AllProps = IPropsFromState & IConnectedReduxProps & RouteComponentProps;
 
 class Breadcrumb extends React.Component<AllProps, ILocalState> {
+  public state: ILocalState = {
+    url: this.props.history.location.pathname.toLowerCase()
+  };
+
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   private indexBreadcrumbItem = new BreadcrumbItem(/^\/$/, routes.mainPage.getRedirectPath({}), 'PROJECTS');
   private projectBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-runs.?$/);
   private modelBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/);
-
-  public constructor(props: AllProps) {
-    super(props);
-
-    this.state = {
-      url: this.props.history.location.pathname.toLowerCase()
-    };
-
-    this.prepareItem = this.prepareItem.bind(this);
-  }
 
   public componentDidMount() {
     this.unlistenCallback = this.props.history.listen((location, action) => {
@@ -81,6 +76,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     );
   }
 
+  @bind
   private prepareItem(): BreadcrumbItem | undefined {
     const { experimentRuns, modelRecord, projects } = this.props;
     let projectName = 'experiment runs';
@@ -111,6 +107,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     return breadcrumbItems.find(x => x.shouldMatch.test(this.state.url));
   }
 
+  @bind
   private renderItem(item: BreadcrumbItem) {
     return (
       <Link className={styles.link} to={item.path}>

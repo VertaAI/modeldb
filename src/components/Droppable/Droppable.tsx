@@ -1,4 +1,5 @@
 import React from 'react';
+import { bind } from 'decko';
 
 interface ILocalProps {
   type: string;
@@ -6,13 +7,6 @@ interface ILocalProps {
 }
 
 export default class Droppable extends React.Component<ILocalProps> {
-  constructor(props: ILocalProps) {
-    super(props);
-    this.onDrop = this.onDrop.bind(this);
-    this.onDragEnter = this.onDragEnter.bind(this);
-    this.onDragOver = this.onDragOver.bind(this);
-  }
-
   public render() {
     return (
       <div onDrop={this.onDrop} onDragEnter={this.onDragEnter} onDragOver={this.onDragOver}>
@@ -21,15 +15,18 @@ export default class Droppable extends React.Component<ILocalProps> {
     );
   }
 
+  @bind
   private onDrop(e: React.DragEvent) {
     this.props.onDrop(JSON.parse(e.dataTransfer.getData(this.props.type)));
     e.stopPropagation();
   }
 
+  @bind
   private onDragEnter(e: React.DragEvent) {
     return true;
   }
 
+  @bind
   private onDragOver(e: React.DragEvent) {
     if (e.dataTransfer.types.includes(this.props.type)) {
       e.preventDefault();
