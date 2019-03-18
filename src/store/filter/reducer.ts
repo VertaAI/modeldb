@@ -62,8 +62,6 @@ const manageFiltersReducer: Reducer<IFilterState, manageFiltersAction> = (state 
       return state;
     }
   }
-
-  localStorage.setItem(`${ctx}_filter`, JSON.stringify(newState.contexts[ctx].appliedFilters));
   return newState;
 };
 

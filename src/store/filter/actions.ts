@@ -67,17 +67,20 @@ export function changeContext(ctx?: string): ActionResult<void, initContextActio
 export function addFilter(filter: IFilterData, ctx: string): ActionResult<void, manageFiltersAction> {
   return async (dispatch, getState) => {
     dispatch(action(manageFiltersTypes.ADD_FILTER, { filter, ctx }));
+    localStorage.setItem(`${ctx}_filter`, JSON.stringify(getState().filters.contexts[ctx].appliedFilters));
   };
 }
 
 export function editFilter(index: number, filter: IFilterData, ctx: string): ActionResult<void, manageFiltersAction> {
   return async (dispatch, getState) => {
     dispatch(action(manageFiltersTypes.EDIT_FILTER, { index, filter, ctx }));
+    localStorage.setItem(`${ctx}_filter`, JSON.stringify(getState().filters.contexts[ctx].appliedFilters));
   };
 }
 
 export function removeFilter(filter: IFilterData, ctx: string): ActionResult<void, manageFiltersAction> {
   return async (dispatch, getState) => {
     dispatch(action(manageFiltersTypes.REMOVE_FILTER, { filter, ctx }));
+    localStorage.setItem(`${ctx}_filter`, JSON.stringify(getState().filters.contexts[ctx].appliedFilters));
   };
 }
