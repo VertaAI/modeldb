@@ -50,23 +50,17 @@ var strategy = new Auth0Strategy(
 passport.use(strategy);
 
 passport.serializeUser(function (user, done) {
+  console.log('serializeUser');
   done(null, user);
 });
 
 passport.deserializeUser(function (user, done) {
+  console.log('deserializeUser');
   done(null, user);
 });
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Serve static files from the React app
-// app.use(express.static(path.join(__dirname, 'client/build'),
-//     {
-//     setHeaders: function (res, path, stat) {
-//       res.set('Set-Cookie', "myCookie=cookieValue;Path=/")
-//     }
-//   }));
 
 app.get('/api/getProjects', (req, res) => {
   api.getFromAPI('/v1/project/getProjects', req.headers)
@@ -92,6 +86,21 @@ app.get('/api/getExperimentRunsInProject', (req, res) => {
 });
 
 app.use('/api/auth/', auth);
+
+app.get('/api/getUser',
+  (req, res, next) => {
+    if (req.user) {
+      console.log('user is auth');
+      next();
+    } else {
+      res.send(401, 'user is not authorized');
+    }
+  },
+  (req, res) => {
+    console.log('QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ');
+    res.json({ user: req.user });
+  }
+);
 
 console.log("hello");
 // The "catchall" handler: for any request that doesn't

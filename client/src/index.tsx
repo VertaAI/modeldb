@@ -55,6 +55,7 @@ const initialState: IApplicationState = {
   layout: {
     authenticated: false,
     loading: false,
+    checkingUserAuthentication: false,
     user: getUser()
   },
   modelRecord: {

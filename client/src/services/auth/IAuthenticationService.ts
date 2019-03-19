@@ -10,4 +10,5 @@ export interface IAuthenticationService {
   getProfile(): Promise<User>;
   setSession(authResult: Auth0DecodedHash): Promise<void>;
   logout(): void;
+  loadUser(): Promise<User>;
 }

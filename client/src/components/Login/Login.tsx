@@ -20,18 +20,6 @@ class Login extends React.Component<AllProps> {
     this.authenticateViaGithub = this.authenticateViaGithub.bind(this);
   }
 
-  //<Route path="/" render={(props) => <ButtonToNavigate {...props} title="Navigate elsewhere" />} />
-
-  //         // <Route render={({ history}) => (
-  //   <button
-  //     type='button'
-  //     onClick={() => { history.push('/new-location') }}
-  //   >
-  //     Click Me!
-  //   </button>
-  // )} />
-
-  // <a href="/api/auth/login">Login</a>
   public render() {
     return (
       <div className={styles.content}>

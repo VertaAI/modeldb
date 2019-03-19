@@ -34,4 +34,8 @@ export default class MockAuthenticationService implements IAuthenticationService
   public logout(): void {
     this.authenticated = false;
   }
+
+  public loadUser(): any {
+    return {};
+  }
 }

@@ -18,9 +18,9 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   private user: User | null = null;
   private auth0: WebAuth = new WebAuth({
     audience: 'https://verta.ai/api/v1',
-    clientID: AUTH_CONFIG.clientId,
-    domain: AUTH_CONFIG.domain,
-    redirectUri: AUTH_CONFIG.callbackUrl,
+    clientID: '',
+    domain: '',
+    redirectUri: '',
     responseType: 'id_token token',
     scope: 'openid profile email'
   });
@@ -35,10 +35,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
 
   get accessToken(): string {
     const accessToken = Cookies.get(this.auth0accessTokenName);
-    if (!accessToken) {
-      throw new Error('No access token found');
-    }
-    return accessToken;
+    return '';
   }
 
   get idToken(): string {
@@ -63,6 +60,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     // call the backend server
     // console.log('called login on Auth0AuthenticationService');
     // axios.get('/api/auth/login', { crossdomain: true });
+    console.log('adf');
     window.location.replace('/api/auth/login');
     // history.push('api/auth/login');
   }
@@ -78,6 +76,11 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
         }
       });
     });
+  }
+
+  public async loadUser(): Promise<User> {
+    const res = await axios.get<User>('/api/getUser');
+    return res.data;
   }
 
   public getProfile(): Promise<User> {

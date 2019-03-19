@@ -13,7 +13,7 @@ import { ProjectDataService } from './ProjectDataService';
 
 export default class ServiceFactory {
   public static getProjectsService(): IProjectDataService {
-    if (JSON.parse(process.env.REACT_APP_USE_API_DATA)) {
+    if (true) {
       return new ProjectDataService();
     }
     return new MockProjectDataService();
