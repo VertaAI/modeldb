@@ -1,32 +1,32 @@
+import { bind, debounce } from 'decko';
+import { UnregisterCallback } from 'history';
 import _ from 'lodash';
 import * as React from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
-import { bind, debounce } from 'decko';
-import { UnregisterCallback } from 'history';
 
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
+import { IFilterData } from 'models/Filters';
+import ModelRecord from 'models/ModelRecord';
+import { Project } from 'models/Project';
 import {
   addFilter,
   applyFilters,
   changeContext,
   editFilter,
+  IFilterContextData,
   initContexts,
   removeFilter,
   search,
-  suggestFilters,
-  IFilterContextData
+  suggestFilters
 } from 'store/filter';
-import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
-import { IFilterData } from 'models/Filters';
-import ModelRecord from 'models/ModelRecord';
-import { Project } from 'models/Project';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import FilterItem from './FilterItem/FilterItem';
-import styles from './FilterSelect.module.css';
 import Droppable from '../Droppable/Droppable';
 import AppliedFilterItem from './AppliedFilterItem/AppliedFilterItem';
+import FilterItem from './FilterItem/FilterItem';
+import styles from './FilterSelect.module.css';
 
 const contextMap: Map<string, string> = new Map();
 contextMap.set('/', Project.name);
@@ -199,13 +199,13 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
 
 const mapStateToProps = ({ filters }: IApplicationState) => {
   if (filters.context !== undefined) {
-    const currentContext: IFilterContextData | undefined = filters.contexts[filters.context];
-    if (currentContext) {
+    const fcData: IFilterContextData | undefined = filters.contexts[filters.context];
+    if (fcData) {
       return {
-        appliedFilters: currentContext.appliedFilters,
+        appliedFilters: fcData.appliedFilters,
         ctx: filters.context,
         foundFilters: filters.foundFilters,
-        isFiltersSupporting: currentContext.ctx.isFilteringSupport
+        isFiltersSupporting: fcData.ctx.isFilteringSupport
       };
     }
   }

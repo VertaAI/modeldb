@@ -9,12 +9,12 @@ import { IFilterContextData } from 'store/filter';
 import ISearchAndFilterService from '../ISearchAndFilterService';
 
 export default class MockSFService implements ISearchAndFilterService {
-  public searchFilterSuggestions(searchString: string, ctx?: IFilterContextData): Promise<IFilterData[]> {
+  public searchFilterSuggestions(searchString: string, data?: IFilterContextData): Promise<IFilterData[]> {
     return new Promise<IFilterData[]>((resolve, reject) => {
-      if (ctx === undefined) {
+      if (data === undefined) {
         reject();
       } else {
-        const metadata: IMetaData[] = ctx.ctx.getMetadata();
+        const metadata: IMetaData[] = data.ctx.getMetadata();
         if (metadata !== undefined) {
           resolve(this.tryFindFilters(searchString, metadata));
         } else {
