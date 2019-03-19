@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { bind } from 'decko';
+import * as React from 'react';
 
 import { IFilterData, PropertyType } from 'models/Filters';
 
@@ -28,7 +28,7 @@ export default class AppliedFilterItem extends React.Component<ILocalProps, ILoc
           <div className={styles.remove_button} onClick={this.onClickRemove}>
             {/* <i className="fa fa-filter" aria-hidden="true" /> */}x
           </div>
-          <div className={styles.filter_text}>{`${this.props.data.name}${this.props.data.value ? `: ${this.props.data.value}` : ''}`}</div>
+          <div className={styles.filter_text}>{this.getFormatedFilterName(this.props.data)}</div>
           <div className={styles.edit_button} onClick={this.onClickShowEditor}>
             <i className={this.state.isEditorShown ? 'fa fa-caret-up' : 'fa fa-caret-down'} aria-hidden="true" />
           </div>
@@ -48,6 +48,19 @@ export default class AppliedFilterItem extends React.Component<ILocalProps, ILoc
         )}
       </div>
     );
+  }
+
+  private getFormatedFilterName(filter: IFilterData): string {
+    let result = filter.caption;
+    if (result === undefined) {
+      result = filter.name;
+    }
+
+    if (filter.value !== undefined) {
+      result = `${result}: ${filter.value}`;
+    }
+
+    return result;
   }
 
   @bind

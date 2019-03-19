@@ -24,28 +24,26 @@ const manageFiltersReducer: Reducer<IFilterState, manageFiltersAction> = (state 
     throw new Error('Current filters context is undefined');
   }
 
+  const newState = { ...state };
   switch (action.type) {
     case manageFiltersTypes.ADD_FILTER: {
-      const newState: IFilterState = { ...state };
       const currentCtx: IFilterContextData | undefined = newState.contexts[ctx];
       if (currentCtx !== undefined) {
         currentCtx.appliedFilters = [...currentCtx.appliedFilters, action.payload.filter];
         newState.contexts[ctx] = currentCtx;
-        return newState;
       }
+      break;
     }
     case manageFiltersTypes.REMOVE_FILTER: {
-      const newState: IFilterState = { ...state };
       const currentCtx: IFilterContextData | undefined = newState.contexts[ctx];
       if (currentCtx !== undefined) {
         currentCtx.appliedFilters = [...currentCtx.appliedFilters];
         currentCtx.appliedFilters.splice(currentCtx.appliedFilters.indexOf(action.payload.filter), 1);
         newState.contexts[ctx] = currentCtx;
-        return newState;
       }
+      break;
     }
     case manageFiltersTypes.EDIT_FILTER: {
-      const newState = { ...state };
       const ctxData = newState.contexts[ctx];
       if (ctx !== undefined && action.payload.index !== undefined) {
         const newAppliedFilters = Array<IFilterData>();
@@ -57,13 +55,14 @@ const manageFiltersReducer: Reducer<IFilterState, manageFiltersAction> = (state 
         );
         ctxData.appliedFilters = newAppliedFilters;
         newState.contexts[ctx] = ctxData;
-        return newState;
       }
+      break;
     }
     default: {
       return state;
     }
   }
+  return newState;
 };
 
 const initReducer: Reducer<IFilterState, initContextAction> = (state = filterInitialState, action: initContextAction) => {
@@ -72,7 +71,7 @@ const initReducer: Reducer<IFilterState, initContextAction> = (state = filterIni
       const data: IFilterContextData[] = action.payload;
       const newMap: { [index: string]: IFilterContextData } = {};
       for (const ctxData of data) {
-        newMap[ctxData.ctx] = ctxData;
+        newMap[ctxData.name] = ctxData;
       }
 
       return { ...state, contexts: newMap };

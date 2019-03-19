@@ -1,18 +1,18 @@
+import { GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
+import { AgGridReact } from 'ag-grid-react';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { AgGridReact } from 'ag-grid-react';
-import { GridReadyEvent } from 'ag-grid-community';
 
+import { FilterContextPool } from 'models/FilterContextPool';
+import { PropertyType } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
+import routes, { GetRouteParams } from 'routes';
 import { IColumnMetaData } from 'store/dashboard-config';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { FilterContextPool } from 'models/FilterContextPool';
-import { PropertyType } from 'models/Filters';
-import routes, { GetRouteParams } from 'routes';
 
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
@@ -24,13 +24,12 @@ import DashboardConfig from './DashboardConfig/DashboardConfig';
 let currentProjectID: string;
 const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
 FilterContextPool.registerContext({
-  metadata: [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
-
+  getMetadata: () => [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
     return locationRegEx.test(location);
   },
-  name: ModelRecord.name,
+  name: 'ModelRecord',
   onApplyFilters: (filters, dispatch) => {
     dispatch(fetchExperimentRuns(currentProjectID, filters));
   },
