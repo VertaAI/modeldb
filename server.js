@@ -24,12 +24,19 @@ if (app.get('env') === 'production') {
 
 app.use(cookieParser());
 app.use(session(sess));
-
 app.use(cors());
 
 // Load Passport
 var passport = require('passport');
 var Auth0Strategy = require('passport-auth0');
+
+const secured = (req, res, next) => {
+  if (req.isAuthorized() || req.user) {
+    return next();
+  } else {
+    res.send(401, 'user is not authorized');
+  }
+};
 
 // Configure Passport to use Auth0
 var strategy = new Auth0Strategy(
@@ -44,6 +51,7 @@ var strategy = new Auth0Strategy(
     // accessToken is the token to call Auth0 API (not needed in the most cases)
     // extraParams.id_token has the JSON Web Token
     // profile has all the information from the user
+    console.log('callback Auth0Strategy', accessToken, refreshToken, extraParams, profile);
     return done(null, profile);
   }
 );
@@ -86,13 +94,7 @@ app.get('/api/getExperimentRunsInProject', (req, res) => {
 app.use('/api/auth/', auth);
 
 app.get('/api/getUser',
-  (req, res, next) => {
-    if (req) {
-      next();
-    } else {
-      res.send(401, 'user is not authorized');
-    }
-  },
+  secured,
   (req, res) => {
     res.json({ user: req.user });
   }
