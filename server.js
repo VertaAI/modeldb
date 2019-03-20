@@ -53,6 +53,11 @@ const secured = (req, res, next) => {
     res.status(401).send('user is not authorized');
   }
 };
+const setPrivateHeader = (req, res, next) => {
+  req.set('Grpc-Metadata-bearer_access_token', req.session.passport.extraInfo.access_token);
+  req.set('Grpc-Metadata-source', 'WebApp');
+  next();
+}
 passport.use(strategy);
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -64,7 +69,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/api/getProjects', (req, res) => {
-  secured,
+  [secured, setPrivateHeader],
   api.getFromAPI('/v1/project/getProjects', req.headers)
   .then(response => {
     res.send(response.data);
@@ -75,7 +80,7 @@ app.get('/api/getProjects', (req, res) => {
 });
 
 app.get('/api/getExperimentRunsInProject', (req, res) => {
-  secured,
+  [secured, setPrivateHeader],
   api.getFromAPI(
     '/v1/experiment-run/getExperimentRunsInProject', 
     req.headers,

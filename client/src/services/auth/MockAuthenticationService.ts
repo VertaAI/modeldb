@@ -3,9 +3,6 @@ import User from '../../models/User';
 import { IAuthenticationService } from './IAuthenticationService';
 
 export default class MockAuthenticationService implements IAuthenticationService {
-  public idToken: string = '';
-  public authenticated: boolean = false;
-  public accessToken: string = '';
   public user: User | null;
 
   constructor() {
@@ -14,17 +11,6 @@ export default class MockAuthenticationService implements IAuthenticationService
   }
 
   public login(): void {
-    this.authenticated = true;
-  }
-
-  public handleAuthentication(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  public getProfile(): Promise<User> {
-    return new Promise<User>((resolve, reject) => {
-      resolve(this.user!);
-    });
   }
 
   public setSession(authResult: Auth0DecodedHash): Promise<void> {
@@ -32,7 +18,6 @@ export default class MockAuthenticationService implements IAuthenticationService
   }
 
   public logout(): void {
-    this.authenticated = false;
   }
 
   public loadUser(): any {
