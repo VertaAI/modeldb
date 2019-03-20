@@ -23,7 +23,7 @@ export const authenticateUser = (): ActionResult<void, userAuthenticateAction> =
 export const logoutUser = (): ActionResult<void, IUserLogoutAction> => async (dispatch, getState) => {
   dispatch(action(userLogoutActionTypes.LOGOUT_USER));
 
-  ServiceFactory.getAuthenticationService().logout();
+  await ServiceFactory.getAuthenticationService().logout();
 };
 
 export const handleUserAuthentication = (): ActionResult<void, userAuthenticateAction> => async (dispatch, getState) => {
@@ -55,6 +55,7 @@ export const checkUserAuthentication = (): ActionResult<void, ICheckUserAuthenti
 
   try {
     const user = await ServiceFactory.getAuthenticationService().loadUser();
+    console.log('user', user);
     dispatch(action(checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_SUCCESS, user));
   } catch {
     dispatch(action(checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_FAILURE));

@@ -34,7 +34,6 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   get accessToken(): string {
-    const accessToken = Cookies.get(this.auth0accessTokenName);
     return '';
   }
 
@@ -56,13 +55,7 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   }
 
   public login(): void {
-    // this.auth0.authorize();
-    // call the backend server
-    // console.log('called login on Auth0AuthenticationService');
-    // axios.get('/api/auth/login', { crossdomain: true });
-    console.log('adf');
     window.location.replace('/api/auth/login');
-    // history.push('api/auth/login');
   }
 
   public async handleAuthentication(): Promise<void> {
@@ -123,10 +116,11 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
     });
   }
 
-  public logout(): void {
-    Cookies.remove(this.idTokenName);
-    Cookies.remove(this.auth0accessTokenName);
-    this.user = null;
+  public async logout() {
+    try {
+      await axios.get('auth/logout');
+    } catch {
+    }
   }
 
   private convertAuth0UserToUser(auth0User: Auth0UserProfile): User {

@@ -20,7 +20,6 @@ router.get('/callback', function (req, res, next) {
       return res.redirect('/login'); 
     }
     req.logIn(user, function (err) {
-      console.log('logIn');
       if (err) { return next(err); }
       const returnTo = req.session.returnTo;
       delete req.session.returnTo;
@@ -32,7 +31,7 @@ router.get('/callback', function (req, res, next) {
 // Perform session logout and redirect to homepage
 router.get('/logout', (req, res) => {
   req.logout();
-  res.redirect('/');
+  res.status(204).end();
 });
 
 module.exports = router;
