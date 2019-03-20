@@ -75,6 +75,7 @@ app.get('/api/getProjects', (req, res) => {
 });
 
 app.get('/api/getExperimentRunsInProject', (req, res) => {
+  secured,
   api.getFromAPI(
     '/v1/experiment-run/getExperimentRunsInProject', 
     req.headers,
@@ -87,8 +88,6 @@ app.get('/api/getExperimentRunsInProject', (req, res) => {
   })
 });
 
-app.use('/api/auth/', auth);
-
 app.get('/api/getUser',
   secured,
   (req, res) => {
@@ -96,6 +95,8 @@ app.get('/api/getUser',
     res.json(_json);
   }
 );
+
+app.use('/api/auth/', auth);
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
