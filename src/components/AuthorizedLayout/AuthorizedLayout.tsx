@@ -3,6 +3,7 @@ import { Route, RouteComponentProps, RouteProps, Switch, withRouter } from 'reac
 import Charts from '../Charts/Charts';
 import routes from '../../routes';
 import ExperimentRuns from '../ExperimentRuns/ExperimentRuns';
+import ExperimentSummary from '../ExperimentSummary/ExperimentSummary';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
 import { GenericNotFound } from '../GenericNotFound/GenericNotFound';
 import ModelRecord from '../ModelRecord/ModelRecord';
@@ -46,6 +47,8 @@ class AuthorizedLayout extends React.Component<RouteComponentProps> {
           <RouteWithFilter path={routes.expirementRuns.getPath()} component={ExperimentRuns} />
           <RouteWithFilter path={routes.charts.getPath()} component={Charts} />
           <RouteWithFilter path={routes.modelRecord.getPath()} component={ModelRecord} />
+          <RouteWithFilter path={'/damal'} component={ExperimentSummary} />
+
           <Route component={GenericNotFound} />
         </Switch>
       </div>

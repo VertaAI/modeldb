@@ -47,6 +47,10 @@ export default class ScatterChart extends React.Component<IProps> {
 
     // const Val1 = this.extentDate[0].setMonth(this.extentDate[0].getMonth() - 1);
     // const Val2 = this.extentDate[1].setMonth(this.extentDate[1].getMonth() + 1);
+    // unoda yela feature wan la irundhu copy apo yena dha poi kalata poreyo therila
+
+    // sami potu savadikra da
+    // seri apo onum periya solution ila idhuku, ore vali ipo yena na poi palar nu aparadhu dhan
 
     const xScale = d3
       .scaleTime()
@@ -114,7 +118,78 @@ export default class ScatterChart extends React.Component<IProps> {
     });
   }
 
+  /// makrs ipo update pananumay
+  // indha poochi payan vera type adichute poitu irukan patu patu nu
+  // namaku vechu seium pola iruke, end of the day namaku innum onumay mudiayala seri papom
+  // apppa sona mari oofer ku poi apiru
+  // adha ore vali
+
   public render() {
     return <svg width={wrapper} height={chartHeight} ref={ref => (this.svgRef = ref)} style={{ marginLeft: '40px' }} />;
   }
 }
+
+// public makeFlatArray = (records: ModelRecord[]) => {
+//   return _.map( records, obj => {
+//     const
+//   })
+// }
+
+// the constraint of x axis is that it should be a category to render a y aggrigate so check for the type of it
+// the four categories are :
+//        -> categories in outer variables
+//        -> inner vars has 2 types - numeric and categorical although some might have num as the value
+
+// our plan was to use catigorical to summarize with aggregation
+// but to ward out the numerical entity is the task,
+
+// so num I need to gte a list of variables to be whitelisted as fine one
+// they seem to have everything as a category
+// now
+// for dataset the path is unique item ilaya which is the categorical value
+// ppppo we have two types of file types
+// the problem with numeric data ie continuous data is that it cannot be plotted in charts of bar etc so yena panlam
+// therilaye boss
+// seri imagign the continuous is takle care of then figure out a result for other categories in the slicing and dicing
+// coz you need to prepare an agggrigate for sure now or it wont work
+// sema mass ipo paren
+// now then ipo yena pana porom
+
+// this computation should get bigger over time la
+// apo dha idhu veliya pogum or adhu apdiye ua vandhurum
+// yaxis jus assign to y variable
+// and for the yaxis get the list of hyperboys
+// if it is from hyperparams then ok but if they r from other
+// so ipo nama or black box pana porom which can slap in the form of a module and be called as a function
+// then send it dynamically the inouts at all times
+// flact array os the solution
+
+// flat array for all columns to render and rerender
+
+// yaxis and xaxis
+// y axis is the same for both the charts
+// so ipo yena panlam
+// now you need to aggregate all the rows in the hyperparameters
+// yena panlam
+// bet a better way to do data updation in d3 examples as I see there are good ways that we dont fully understand now so lets go with that
+// date and keys for the values  seri papom indha pakam vandha solu nu soli vita
+// ivanuga yena dha pesikranuga nu therilaye this is a flat array ilaya
+//  so       / namakum flat boy irukan // indha flat vechu  yen pana if the data changes apo dhana namaku new item varum
+// basically  oru new set of data ula varum la , bassed on selection the variable itself changes
+// fuck looks like we have a very nice way of doing the same thisg
+// sema da
+// ipo ni poi tap tappu nu vangu ok va
+// apo next paycheck la 5k va complete pani vechuko
+// pathukala
+// idhula yena matter na the value of the coin can skyrockt beacure it is capped to 21milliom
+// so idhu oru nalla usecase
+// yevano vithurukan but perusa vikala just namala yenamath vikran
+// randomly oru amount potu buy order pani vidu sandy pathukalam
+// namaku yena
+
+// 1.349 / 0.00114    1.349 / 0.0012 paru 86 dha difference so adichu thuku
+
+// indha coin yen yenaku pidichuruku na pathuko iva oru vidyasamanavan dha adha solren
+// ivan good ra sandy so idhe vechukalam
+
+// somehow we need to curb the number of items in the category so may be not less than 6/8 is a constraint to impose

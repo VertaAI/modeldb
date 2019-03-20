@@ -1,0 +1,20 @@
+.nav_menu {
+  grid-area: urls;
+  justify-self: end;
+}
+
+.nav_menu a {
+  margin: 0 18px;
+  text-decoration: none;
+  color: #444;
+  padding: 2px;
+  border-bottom: 2px solid transparent;
+}
+
+.nav_menu a:hover {
+  border-bottom: 2px solid #23d8c0;
+}
+
+.nav_menu .active {
+  border-bottom: 2px solid #23d8c0 !important;
+}

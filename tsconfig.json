@@ -20,7 +20,8 @@
     "jsx": "preserve",
     "experimentalDecorators": true,
     "diagnostics": true,
-    "extendedDiagnostics": true
+    "extendedDiagnostics": true,
+    "downlevelIteration": true
   },
   "include": [
     "src"

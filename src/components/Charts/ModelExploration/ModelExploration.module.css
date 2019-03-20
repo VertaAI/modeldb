@@ -4,19 +4,6 @@
   border: 1px solid var(--bg-color3);
 }
 
-.bar-xaxis text {
-  fill: rgb(196, 196, 196);
-  color: rgb(196, 196, 196);
-}
-
-.bar-label {
-  font-size: 9px;
-}
-
-.sub_menu {
-  margin: 0 0 20px 0;
-}
-
 .chart_selector {
   padding: 10px;
 }
