@@ -6,6 +6,7 @@ import { IApplicationState, IConnectedReduxProps } from './store/store';
 import { selectIsCheckingUserAuthentication, checkUserAuthentication, selectIsUserAuthenticated } from './store/user';
 import AnonymousLayout from './components/AnonymousLayout/AnonymousLayout';
 import AuthorizedLayout from './components/AuthorizedLayout/AuthorizedLayout';
+import GlobalPreloader from './components/GlobalPreloader/GlobalPreloader';
 
 interface IPropsFromState {
   isUserAuthenticated: boolean;
@@ -23,7 +24,7 @@ class App extends React.Component<AllProps> {
   public render() {
     const { isCheckingUserAuthentication, isUserAuthenticated } = this.props;
     if (isCheckingUserAuthentication) {
-      return 'Loading123';
+      return <GlobalPreloader />;
     }
     return isUserAuthenticated ? <AuthorizedLayout /> : <AnonymousLayout />;
   }

@@ -1,4 +1,3 @@
-import { Auth0DecodedHash } from 'auth0-js';
 import User from '../../models/User';
 import { IAuthenticationService } from './IAuthenticationService';
 
@@ -10,15 +9,9 @@ export default class MockAuthenticationService implements IAuthenticationService
     this.user.name = 'Manasi Vartak';
   }
 
-  public login(): void {
-  }
+  public login(): void {}
 
-  public setSession(authResult: Auth0DecodedHash): Promise<void> {
-    return Promise.resolve();
-  }
-
-  public logout(): void {
-  }
+  public logout(): void {}
 
   public loadUser(): any {
     return {};

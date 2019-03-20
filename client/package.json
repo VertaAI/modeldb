@@ -5,13 +5,10 @@
   "dependencies": {
     "ag-grid-community": "^20.1.0",
     "ag-grid-react": "^20.1.0",
-    "auth0-js": "^9.10.0",
     "axios": "^0.18.0",
     "connected-react-router": "^6.2.2",
     "es-cookie": "^1.2.0",
-    "jose-jwe-jws": "^0.1.6",
     "json2typescript": "^1.0.6",
-    "jwt-decode": "^2.2.0",
     "lodash": "^4.17.11",
     "normalize.css": "^8.0.1",
     "rc-tooltip": "^3.7.3",
@@ -51,9 +48,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@types/auth0-js": "^8.11.11",
     "@types/jest": "^24.0.9",
-    "@types/jwt-decode": "^2.2.1",
     "@types/lodash": "^4.14.122",
     "@types/node": "^11.10.4",
     "@types/rc-tooltip": "^3.7.1",
