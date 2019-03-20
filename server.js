@@ -27,16 +27,8 @@ app.use(session(sess));
 app.use(cors());
 
 // Load Passport
-var passport = require('passport');
-var Auth0Strategy = require('passport-auth0');
-
-const secured = (req, res, next) => {
-  if (req.user) {
-    return next();
-  } else {
-    res.status(401).send('user is not authorized');
-  }
-};
+const passport = require('passport');
+const Auth0Strategy = require('passport-auth0');
 // Configure Passport to use Auth0
 const strategy = new Auth0Strategy(
   {
@@ -49,10 +41,18 @@ const strategy = new Auth0Strategy(
   function (accessToken, refreshToken, extraParams, user, done) {
     // accessToken is the token to call Auth0 API (not needed in the most cases)
     // extraParams.id_token has the JSON Web Token
+    // extraParams have id_token, access_token, scope
     // profile has all the information from the user
     return done(null, user, extraParams);
   }
 );
+const secured = (req, res, next) => {
+  if (req.user) {
+    return next();
+  } else {
+    res.status(401).send('user is not authorized');
+  }
+};
 passport.use(strategy);
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -64,11 +64,17 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/api/getProjects', (req, res) => {
-  res.send([]);
+  secured,
+  api.getFromAPI('/v1/project/getProjects', req.headers)
+  .then(response => {
+    res.send(response.data);
+  })
+  .catch(error => {
+    res.status(500).send("Internal Server Error");
+  })
 });
 
 app.get('/api/getExperimentRunsInProject', (req, res) => {
-  secured,
   api.getFromAPI(
     '/v1/experiment-run/getExperimentRunsInProject', 
     req.headers,
@@ -77,7 +83,7 @@ app.get('/api/getExperimentRunsInProject', (req, res) => {
     res.send(response.data);
   })
   .catch(error => {
-    res.send(error);
+    res.status(500).send("Internal Server Error");
   })
 });
 

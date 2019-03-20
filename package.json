@@ -1,14 +1,20 @@
 {
+  "name": "VertaWebApp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/VertaAI/VertaWebApp.git",
+  "author": "kirill.gulyaev <kirill.gulyaev@quantumsoft.ru>",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
-    "circular-json": "^0.5.9",
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
+    "jose-jwe-jws": "^0.1.7",
+    "jwt-decode": "^2.2.0",
     "passport": "^0.4.0",
-    "passport-auth0": "^1.1.0",
-    "request": "^2.88.0"
+    "passport-auth0": "^1.1.0"
   }
 }
