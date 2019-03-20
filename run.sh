@@ -4,4 +4,4 @@ yarn install
 yarn build
 cd ..
 yarn install
-nodemon ./server.js
+yarn start
