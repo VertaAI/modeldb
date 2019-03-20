@@ -67,6 +67,7 @@ passport.deserializeUser(function (user, done) {
 });
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(express.static('client/build'));
 
 app.get('/api/getProjects', (req, res) => {
   [secured, setPrivateHeader],
@@ -108,15 +109,11 @@ app.use('/api/auth/', auth);
 app.get('*', (req, res) => {
   tmpPath = req.path;
 
-  if (tmpPath == '/') {
-    tmpPath = '/index.html';
-  }
-
   res.header("Cache-Control", "no-cache, no-store, must-revalidate");
   res.header("Pragma", "no-cache");
   res.header("Expires", 0);
 
-  res.sendFile(path.join(__dirname + '/client/build' + tmpPath));
+  res.sendFile(path.join(__dirname + '/client/build' + '/index.html'));
 });
 
 app.disable('etags');
