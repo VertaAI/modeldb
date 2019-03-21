@@ -7,3 +7,26 @@
 .chart_selector {
   padding: 10px;
 }
+
+.dropdown {
+  padding: 10px;
+  outline: none;
+}
+
+.compute_button {
+  padding: 10px;
+}
+
+.compute_button button {
+  color: var(--bg-color3);
+  background-color: var(--bg-color2);
+  border-radius: 2px;
+  padding: 8px 25px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.compute_button button:hover {
+  background-color: #6a84ff;
+}

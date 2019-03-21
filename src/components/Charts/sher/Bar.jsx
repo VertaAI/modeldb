@@ -17,9 +17,6 @@ class BarChart extends Component {
     if (!data) return {};
     // 1. map date to x-position
     // get min and max of date
-    // ayr ya ishiu namale sanavadikran
-    // potu thakaran da sami but vegama panu sandy
-    // time tak nu poiruvan konjam vita alreadt 2 aaiatan
     const extent = d3.extent(data, d => d.date);
     const xScale = d3
       .scaleTime()

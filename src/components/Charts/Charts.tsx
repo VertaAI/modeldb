@@ -81,64 +81,6 @@ class Charts extends React.Component<AllProps, ILocalState> {
         <div className={styles.sub_menu}>
           <ExpSubMenu projectId={this.props.match.params.projectId} active="charts" />
         </div>
-        <ModelExploration expRuns={experimentRuns} />
-        <br />
-        <div className={styles.summary_wrapper}>
-          <div className={styles.chart_selector}>
-            Y Axis: {'  '}
-            <select name="selected-yaxis">
-              {[...paramList].map((param: string, i: number) => {
-                return (
-                  <option key={i} value={param}>
-                    {param}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          <div className={styles.chart_selector}>
-            X Axis: {'  '}
-            <select name="selected-xaxis">
-              {[...xAxisParams].map((param: string, i: number) => {
-                return (
-                  <option key={i} value={param}>
-                    {param}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-          {/* 
-          <div className={styles.chart_selector}>
-            Group By: {'  '}
-            <select name="selected-groupby">
-              {[...paramList].map((param: string, i: number) => {
-                return (
-                  <option key={i} value={param}>
-                    {param}
-                  </option>
-                );
-              })}
-            </select>
-          </div> */}
-
-          <div className={styles.chart_selector}>
-            Aggregate: {'  '}
-            <select name="selected-aggregate">
-              {enumListAgg.map((param: string, i: number) => {
-                return (
-                  <option key={i} value={param}>
-                    {param}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        </div>
-
-        <br />
-
         <div className={styles.summary_wrapper}>
           {this.timeProj !== undefined && this.timeProj !== null ? (
             <div>
@@ -176,28 +118,32 @@ class Charts extends React.Component<AllProps, ILocalState> {
 
 </div> */}
 
-          <select name="selected-metric" onChange={this.handleMetricChange}>
-            {[...paramList].map((param: string, i: number) => {
-              return (
-                <option key={i} value={param}>
-                  {param}
-                </option>
-              );
-            })}
-          </select>
-
+          <div className={styles.chart_selector}>
+            <select name="selected-metric" onChange={this.handleMetricChange} className={styles.dropdown}>
+              {[...paramList].map((param: string, i: number) => {
+                return (
+                  <option key={i} value={param}>
+                    {param}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
           {/* <Shirley /> */}
           <BarChart flatdata={this.flatArray} selectedMetric={this.state.selectedMetric} />
+
           {/* <SomeChart data={this.flatArray} selectedMetric={this.state.selectedMetric} /> */}
           {/* <ScatterChart data={this.flatArray} paramList={paramList} /> */}
         </div>
+        <br />
+        <ModelExploration expRuns={experimentRuns} />
 
-        <div className={styles.summary_wrapper}>
+        {/* <div className={styles.summary_wrapper}>
           <h5>Explore Metrics</h5>
           {[...paramList].map((param: string, i: number) => {
             return <MetricBar key={i} data={param} />;
           })}
-        </div>
+        </div> */}
       </div>
     ) : (
       ''

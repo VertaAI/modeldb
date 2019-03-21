@@ -20,3 +20,8 @@
 .chart_selector {
   padding: 10px;
 }
+
+.dropdown {
+  padding: 10px;
+  outline: none;
+}
