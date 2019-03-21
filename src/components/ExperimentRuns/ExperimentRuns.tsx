@@ -1,11 +1,10 @@
-import { GridReadyEvent } from 'ag-grid-community';
+import { ColumnApi, GridApi, GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-
 import { FilterContextPool } from 'models/FilterContextPool';
 import { PropertyType } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
@@ -13,11 +12,8 @@ import routes, { GetRouteParams } from 'routes';
 import { IColumnMetaData } from 'store/dashboard-config';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
-import './ExperimentRuns.module.css';
-
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 
@@ -65,27 +61,23 @@ interface IOperator {
 }
 
 type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedReduxProps;
-
 class ExperimentRuns extends React.Component<AllProps> {
   public gridApi: any;
   public columnApi: any;
-  public data: any;
 
-  public constructor(props: AllProps) {
-    super(props);
+  public componentDidMount() {
     currentProjectID = this.props.match.params.projectId;
+    this.props.dispatch(fetchExperimentRuns(currentProjectID));
   }
 
   public callFilterUpdate = () => {
     this.gridApi.onFilterChanged();
   };
 
-  public componentWillReceiveProps() {
-    if (this.gridApi !== undefined) {
-      setTimeout(this.callFilterUpdate, 100);
-    }
+  public componentWillReceiveProps(newProps: AllProps) {
     const updatedConfig = this.props.columnConfig;
     if (this.gridApi && updatedConfig !== undefined) {
+      setTimeout(this.callFilterUpdate, 100);
       this.gridApi.setColumnDefs(returnColumnDefs(updatedConfig));
       const el = document.getElementsByClassName('ag-center-cols-viewport');
       if (el !== undefined && el[0] !== undefined) {
@@ -117,8 +109,6 @@ class ExperimentRuns extends React.Component<AllProps> {
             rowData={undefined}
             domLayout="autoHeight"
             defaultColDef={this.props.defaultColDefinitions}
-            isExternalFilterPresent={this.isExternalFilterPresent}
-            doesExternalFilterPass={this.doesExternalFilterPass}
           />
         </div>
       </div>
@@ -148,48 +138,6 @@ class ExperimentRuns extends React.Component<AllProps> {
 
     return 200;
   };
-
-  public isExternalFilterPresent = () => {
-    return this.props.filtered;
-  };
-
-  public funEvaluate(filter: any) {
-    // this.data is from the bind(node) where node is table row data
-    // **ts forced creation of public data var to be able access node
-    const operators: IOperator = {
-      '<': (a: number, b: number) => a < b,
-      '>': (a: number, b: number) => a > b
-    };
-    switch (filter.type) {
-      case 'tag':
-        return this.data.tags.includes(filter.key);
-      case 'param':
-        return this.data[filter.subtype].find((params: any) => params.key === filter.param)
-          ? operators[filter.operator](
-              Number(
-                this.data[filter.subtype].find((params: any) => {
-                  if (params.key === filter.param) {
-                    return params.value;
-                  }
-                }).value
-              ),
-              Number(filter.value)
-            )
-          : false;
-      default:
-        return true;
-    }
-  }
-
-  public doesExternalFilterPass = (node: any) => {
-    return Object.values(this.props.filterState)
-      .map(this.funEvaluate.bind(node))
-      .every(val => val === true);
-  };
-
-  public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(currentProjectID));
-  }
 }
 
 // filterState and filtered should be provided by from IApplicationState -> customFilter
