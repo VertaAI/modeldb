@@ -54,8 +54,8 @@ const secured = (req, res, next) => {
   }
 };
 const setPrivateHeader = (req, res, next) => {
-  req.set('Grpc-Metadata-bearer_access_token', req.session.passport.extraInfo.access_token);
-  req.set('Grpc-Metadata-source', 'WebApp');
+  req.headers['Grpc-Metadata-bearer_access_token'] = req.session.passport.extraInfo.access_token;
+  req.headers['Grpc-Metadata-source'] = 'WebApp';
   next();
 }
 passport.use(strategy);
@@ -69,8 +69,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static('client/build'));
 
-app.get('/api/getProjects', (req, res) => {
-  [secured, setPrivateHeader],
+app.get('/api/getProjects', [secured, setPrivateHeader], (req, res) => {
   api.getFromAPI('/v1/project/getProjects', req.headers)
   .then(response => {
     res.send(response.data);
@@ -80,8 +79,7 @@ app.get('/api/getProjects', (req, res) => {
   })
 });
 
-app.get('/api/getExperimentRunsInProject', (req, res) => {
-  [secured, setPrivateHeader],
+app.get('/api/getExperimentRunsInProject', [secured, setPrivateHeader], (req, res) => {
   api.getFromAPI(
     '/v1/experiment-run/getExperimentRunsInProject', 
     req.headers,
