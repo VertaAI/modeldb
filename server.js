@@ -75,6 +75,7 @@ app.get('/api/getProjects', [secured, setPrivateHeader], (req, res) => {
     res.send(response.data);
   })
   .catch(error => {
+    console.log(error);
     res.status(500).send("Internal Server Error");
   })
 });
@@ -88,6 +89,7 @@ app.get('/api/getExperimentRunsInProject', [secured, setPrivateHeader], (req, re
     res.send(response.data);
   })
   .catch(error => {
+    console.log(error);
     res.status(500).send("Internal Server Error");
   })
 });

@@ -1,10 +1,4 @@
 {
-  "name": "VertaWebApp",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": "https://github.com/VertaAI/VertaWebApp.git",
-  "author": "kirill.gulyaev <kirill.gulyaev@quantumsoft.ru>",
-  "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
     "cookie-parser": "^1.4.4",
