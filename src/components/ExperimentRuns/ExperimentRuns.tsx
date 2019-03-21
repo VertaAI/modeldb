@@ -1,7 +1,7 @@
+import { GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
-import { GridReadyEvent } from 'ag-grid-community';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
