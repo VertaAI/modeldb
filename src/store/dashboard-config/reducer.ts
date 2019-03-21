@@ -19,7 +19,7 @@ export const dashboardConfigReducer: Reducer<IDashboardConfigState, IUpdateDashb
 ) => {
   switch (action.type) {
     case updateDashboardConfigActionTypes.UPDATE_DASHBOARD: {
-      return { columnConfig: action.payload };
+      return { ...state, columnConfig: action.payload };
     }
     default: {
       return state;

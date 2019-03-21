@@ -1,7 +1,7 @@
-import { ColumnApi, GridApi, GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
+import { GridReadyEvent } from 'ag-grid-community';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
@@ -74,7 +74,7 @@ class ExperimentRuns extends React.Component<AllProps> {
     this.gridApi.onFilterChanged();
   };
 
-  public componentWillReceiveProps(newProps: AllProps) {
+  public componentWillReceiveProps() {
     const updatedConfig = this.props.columnConfig;
     if (this.gridApi && updatedConfig !== undefined) {
       setTimeout(this.callFilterUpdate, 100);
