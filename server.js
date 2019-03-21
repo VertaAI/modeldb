@@ -1,14 +1,14 @@
+var dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const path = require('path');
 const app = express();
 const api = require('./api');
-var dotenv = require('dotenv');
 var session = require('express-session');
 var auth = require('./routes/auth.js');
 var cors = require('cors');
 var cookieParser = require('cookie-parser');
-
-dotenv.config();
 
 // config express-session
 var sess = {
