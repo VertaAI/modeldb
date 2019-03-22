@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { bind } from 'decko';
 
-import { IProps as ITabProps } from './Tab/Tab';
+import Tab, { IProps as ITabProps } from './Tab/Tab';
 
 import styles from './Tabs.module.css';
 
@@ -14,12 +14,15 @@ interface IProps<T> {
 const whiteSpace = '\u00A0';
 
 class Tabs<T> extends React.Component<IProps<T>> {
+  public static Tab: typeof Tab = Tab;
+
   public render() {
     const { active } = this.props;
+    const activeTabProps = this.getActiveTabProps();
     return (
       <div className={styles.tabs}>
         <div className={styles.titles}>
-          {this.getTabsProps().map(({ type, title, badge }) => (
+          {this.getTabsProps().map(({ type, title, badge, centered }) => (
             <button
               className={`${styles.title} ${type === active ? styles.title_active : ''}`}
               key={String(type)}
@@ -31,7 +34,7 @@ class Tabs<T> extends React.Component<IProps<T>> {
             </button>
           ))}
         </div>
-        <div className={styles.content}>{this.getActiveTabContent()}</div>
+        <div className={`${styles.content} ${activeTabProps.centered ? styles.content_centered : ''}`}>{activeTabProps.children}</div>
       </div>
     );
   }
@@ -42,10 +45,10 @@ class Tabs<T> extends React.Component<IProps<T>> {
   }
 
   @bind
-  private getActiveTabContent() {
+  private getActiveTabProps(): ITabProps<T> {
     const { active, children } = this.props;
     const activeTab = React.Children.toArray(children).find(child => child.props.type === active)!;
-    return activeTab.props.children;
+    return activeTab.props;
   }
 
   @bind

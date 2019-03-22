@@ -30,6 +30,7 @@
 .title {
   font-size: var(--font-size1);
   color: #000000;
+  text-transform: capitalize;
 }
 
 .close {

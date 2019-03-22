@@ -25,9 +25,10 @@
   align-items: center;
   border: 1px solid var(--border-color1);
   border-radius: 4px;
-  background-color: var(--main-color3);
-  cursor: pointer;
   font-size: var(--font-size4);
+  background-color: var(--main-color3);
+  color: var(--text-color3);
+  cursor: pointer;
   z-index: 1;
 }
 .title:hover {
@@ -46,10 +47,20 @@
   border-color: #6863ff;
   color: var(--main-color2);
 }
+.title_active:nth-child(2) {
+  border-left-width: 1px;
+  border-left-style: solid;
+}
 .title_badge {
   opacity: 0.5;
 }
 
 .content {
   padding-top: 25px;
+}
+.content_centered {
+  display: flex;
+  width: 360px;
+  margin-left: auto;
+  margin-right: auto;
 }

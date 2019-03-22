@@ -3,8 +3,9 @@ import * as React from 'react';
 export interface IProps<T> {
   title: string;
   type: T;
-  children: React.ReactChild | React.ReactChildren;
+  children: any;
   badge?: number;
+  centered?: boolean; // todo rename
 }
 
 class Tab<T> extends React.Component<IProps<T>> {
