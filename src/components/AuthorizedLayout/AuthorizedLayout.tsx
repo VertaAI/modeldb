@@ -9,6 +9,8 @@ import Projects from '../Projects/Projects';
 import styles from './AuthorizedLayout.module.css';
 import AuthorizedLayoutHeader from './AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 
+import DeployWizard from '../DeployWizard/DeployWizard';
+
 // tslint:disable-next-line:variable-name
 export const RouteWithFilter = ({ component, ...rest }: RouteProps) => {
   if (!component) {
@@ -37,6 +39,7 @@ class AuthorizedLayout extends React.Component<RouteComponentProps> {
   public render() {
     return (
       <div className={styles.layout}>
+        <DeployWizard />
         <div className={styles.header}>
           <AuthorizedLayoutHeader />
         </div>

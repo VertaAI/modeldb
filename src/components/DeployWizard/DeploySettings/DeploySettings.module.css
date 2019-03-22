@@ -1,0 +1,40 @@
+.deploy_settings {
+  padding-bottom: 27px;
+}
+
+.rows {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color1);
+}
+.row:last-child {
+  border-bottom: none;
+}
+.row_title {
+  color: var(--main-color5);
+  font-size: var(--font-size3);
+  font-weight: 500;
+}
+.row_content {
+  display: inline-block;
+}
+/* todo move to component */
+.select_CSV_file_button {
+  font-size: var(--font-size4);
+  color: var(--main-color2);
+  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
+  cursor: pointer;
+}
+
+.deploy_button {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
