@@ -1,0 +1,5 @@
+.select {
+  border: none;
+  background-color: var(--main-color3);
+  font-size: var(--font-size3);
+}
