@@ -1,4 +1,5 @@
 import React from 'react';
+import { bind } from 'decko';
 
 interface ILocalProps {
   type: string;
@@ -7,10 +8,6 @@ interface ILocalProps {
 }
 
 export default class Draggable extends React.Component<ILocalProps> {
-  constructor(props: ILocalProps) {
-    super(props);
-    this.onDragStart = this.onDragStart.bind(this);
-  }
   public render() {
     return (
       <div style={{ cursor: 'move' }} draggable={true} onDragStart={this.onDragStart} className={this.props.additionalClassName}>
@@ -19,6 +16,7 @@ export default class Draggable extends React.Component<ILocalProps> {
     );
   }
 
+  @bind
   private onDragStart(e: React.DragEvent) {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData(this.props.type, JSON.stringify(this.props.data));

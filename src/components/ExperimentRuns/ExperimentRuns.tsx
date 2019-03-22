@@ -1,39 +1,41 @@
+import { GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import ModelRecord from '../../models/ModelRecord';
-import { IColumnMetaData } from '../../store/dashboard-config';
-import { fetchExperimentRuns } from '../../store/experiment-runs';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+
+import { FilterContextPool } from 'models/FilterContextPool';
+import { PropertyType } from 'models/Filters';
+import ModelRecord from 'models/ModelRecord';
+import routes, { GetRouteParams } from 'routes';
+import { IColumnMetaData } from 'store/dashboard-config';
+import { fetchExperimentRuns } from 'store/experiment-runs';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
 
-import { GridReadyEvent, DisplayedColumnsChangedEvent } from 'ag-grid-community';
-import { FilterContextPool } from '../../models/FilterContextPool';
-import { PropertyType } from '../../models/Filters';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 
+let currentProjectID: string;
 const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
 FilterContextPool.registerContext({
-  metadata: [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
-
+  getMetadata: () => [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
     return locationRegEx.test(location);
   },
-  name: ModelRecord.name,
+  name: 'ModelRecord',
   onApplyFilters: (filters, dispatch) => {
-    dispatch(fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', filters));
+    dispatch(fetchExperimentRuns(currentProjectID, filters));
   },
   onSearch: (text: string, dispatch) => {
     dispatch(
-      fetchExperimentRuns('6a95fea8-5167-4046-ab0c-ef44ce229a78', [
+      fetchExperimentRuns(currentProjectID, [
         {
           invert: false,
           name: 'Name',
@@ -45,9 +47,7 @@ FilterContextPool.registerContext({
   }
 });
 
-export interface IUrlProps {
-  projectId: string;
-}
+type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
 interface IPropsFromState {
   data?: ModelRecord[] | undefined;
@@ -73,6 +73,7 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public constructor(props: AllProps) {
     super(props);
+    currentProjectID = this.props.match.params.projectId;
   }
 
   public callFilterUpdate = () => {
@@ -187,7 +188,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   };
 
   public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
+    this.props.dispatch(fetchExperimentRuns(currentProjectID));
   }
 }
 

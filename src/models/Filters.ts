@@ -12,13 +12,15 @@ export enum ComparisonType {
 }
 export interface IStringFilterData {
   type: PropertyType.STRING;
-  name: string;
+  caption?: string; // custom filter caption. If it is blank will be used `name`
+  name: string; // property name
   value: string;
   invert: boolean;
 }
 
 export interface INumberFilterData {
   type: PropertyType.NUMBER;
+  caption?: string;
   name: string;
   value: number;
   invert: boolean;
@@ -26,12 +28,14 @@ export interface INumberFilterData {
 
 export interface IBooleanFilterData {
   type: PropertyType.BOOLEAN;
+  caption?: string;
   name: string;
   value: boolean;
 }
 
 export interface IMetricFilterData {
   type: PropertyType.METRIC;
+  caption?: string;
   name: string;
   value: number;
   comparisonType: ComparisonType;

@@ -1,6 +1,6 @@
 import { JsonObject, JsonProperty } from 'json2typescript';
 
-import { StringToDateConverter } from '../utils/MapperConverters';
+import { StringToDateConverter } from 'utils/MapperConverters';
 import User from './User';
 
 export enum UserAccess {
@@ -13,7 +13,7 @@ export enum UserAccess {
 export class Project {
   @JsonProperty('id', String)
   public id: string;
-  @JsonProperty('name', String)
+  @JsonProperty('name', String, true)
   public name: string;
   @JsonProperty('description', String, true)
   public description: string = '';

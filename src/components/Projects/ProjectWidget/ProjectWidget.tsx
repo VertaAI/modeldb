@@ -1,12 +1,15 @@
+import { bind } from 'decko';
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
-import { PropertyType } from '../../../models/Filters';
-import { Project, UserAccess } from '../../../models/Project';
-import User from '../../../models/User';
-import Draggable from '../../Draggable/Draggable';
-import SharePopup from '../../SharePopup/SharePopup';
-import tstyles from '../../TagBlock/TagBlock.module.css';
+
+import { PropertyType } from 'models/Filters';
+import { Project, UserAccess } from 'models/Project';
+import User from 'models/User';
+
+import Draggable from 'components/Draggable/Draggable';
+import SharePopup from 'components/SharePopup/SharePopup';
+import routes from 'routes';
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
 
@@ -19,16 +22,7 @@ interface ILocalState {
 }
 
 export default class ProjectWidget extends React.Component<ILocalProps, ILocalState> {
-  public constructor(props: ILocalProps) {
-    super(props);
-
-    this.state = {
-      showModal: false
-    };
-
-    this.showCollaborators = this.showCollaborators.bind(this);
-    this.handleCloseModal = this.handleCloseModal.bind(this);
-  }
+  public state: ILocalState = { showModal: false };
 
   public render() {
     const project = this.props.project;
@@ -44,7 +38,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
           onRequestClose={this.handleCloseModal}
           collaborators={new Map<User, UserAccess>(project.collaborators)}
         />
-        <Link className={styles.project_link} to={`/project/${project.id}/exp-runs`}>
+        <Link className={styles.project_link} to={routes.expirementRuns.getRedirectPath({ projectId: project.id })}>
           <div className={styles.project_widget}>
             <div className={styles.title_block}>
               <div className={styles.title}>{project.name}</div>
@@ -140,11 +134,13 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
     );
   }
 
+  @bind
   private showCollaborators(event: React.SyntheticEvent<HTMLButtonElement>) {
     event.preventDefault();
     this.setState({ showModal: true });
   }
 
+  @bind
   private handleCloseModal() {
     this.setState({ showModal: false });
   }

@@ -1,8 +1,8 @@
-import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
-import { UserAccess } from '../../models/Project';
-import User from '../../models/User';
-import ServiceFactory from '../../services/ServiceFactory';
+import { ActionResult } from 'store/store';
+import { UserAccess } from 'models/Project';
+import User from 'models/User';
+import ServiceFactory from 'services/ServiceFactory';
 import { removeCollaboratorFromProject, updateProjectCollaboratorAccess } from '../projects';
 import {
   changeAccessAction,

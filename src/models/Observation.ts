@@ -1,7 +1,7 @@
 import { JsonObject, JsonProperty } from 'json2typescript';
 import { DataAttribute } from './DataAttribute';
 
-import { StringToDateConverter } from '../utils/MapperConverters';
+import { StringToDateConverter } from 'utils/MapperConverters';
 
 export interface IObservation {
   attribute: DataAttribute;
@@ -10,9 +10,9 @@ export interface IObservation {
 
 @JsonObject('observation')
 export class Observation implements IObservation {
-  @JsonProperty('attribute', DataAttribute)
+  @JsonProperty('attribute', DataAttribute, true)
   public readonly attribute: DataAttribute;
-  @JsonProperty('timestamp', StringToDateConverter)
+  @JsonProperty('timestamp', StringToDateConverter, true)
   public readonly timestamp: Date;
 
   constructor(attribute?: DataAttribute, timestamp?: Date) {

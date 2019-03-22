@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Project } from '../../models/Project';
 
-import { FilterContextPool, IFilterContext } from '../../models/FilterContextPool';
-import { IFilterData, PropertyType } from '../../models/Filters';
-import { fetchProjects } from '../../store/projects';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+import { FilterContextPool } from 'models/FilterContextPool';
+import { PropertyType } from 'models/Filters';
+import { Project } from 'models/Project';
+import routes from 'routes';
+import { fetchProjects } from 'store/projects';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import styles from './Projects.module.css';
 import ProjectWidget from './ProjectWidget/ProjectWidget';
 
@@ -17,7 +19,7 @@ interface IPropsFromState {
 type AllProps = IPropsFromState & IConnectedReduxProps;
 
 FilterContextPool.registerContext({
-  metadata: [
+  getMetadata: () => [
     { propertyName: 'Name', type: PropertyType.STRING },
     { propertyName: 'Description', type: PropertyType.STRING },
     { propertyName: 'Tag', type: PropertyType.STRING }
@@ -25,9 +27,9 @@ FilterContextPool.registerContext({
 
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
-    return location === '/';
+    return location === routes.mainPage.getRedirectPath({});
   },
-  name: Project.name,
+  name: 'Project',
   onApplyFilters: (filters, dispatch) => {
     dispatch(fetchProjects(filters));
   },
@@ -46,10 +48,6 @@ FilterContextPool.registerContext({
 });
 
 class Projects extends React.Component<AllProps> {
-  public componentDidMount() {
-    this.props.dispatch(fetchProjects());
-  }
-
   public render() {
     return (
       <div className={styles.projects}>

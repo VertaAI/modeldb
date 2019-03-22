@@ -4,8 +4,12 @@ import Avatar from 'react-avatar';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { IApplicationState, IConnectedReduxProps } from '../../../../store/store';
-import { logoutUser } from '../../../../store/user/actions';
+import { bind } from 'decko';
+
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { logoutUser } from 'store/user/actions';
+import routes from 'routes';
+
 import styles from './UserBar.module.css';
 
 interface ILocalState {
@@ -19,11 +23,10 @@ interface IPropsFromState {
 type AllProps = IConnectedReduxProps & IPropsFromState;
 
 class UserBar extends React.Component<AllProps, ILocalState> {
-  public constructor(props: AllProps) {
-    super(props);
-    this.state = { isOpened: false };
-    this.toggleMenu = this.toggleMenu.bind(this);
-    this.logout = this.logout.bind(this);
+  public state: ILocalState = { isOpened: false };
+
+  public componentDidMount() {
+    this.setState({ isOpened: false });
   }
 
   public render() {
@@ -64,12 +67,12 @@ class UserBar extends React.Component<AllProps, ILocalState> {
               </div>
             </div>
             <div className={styles.menu_item}>
-              <Link onClick={this.toggleMenu} to="/settings">
+              <Link onClick={this.toggleMenu} to={routes.settings.getRedirectPath({})}>
                 Settings
               </Link>
             </div>
             <div className={styles.menu_item}>
-              <Link onClick={this.logout} to={'/'}>
+              <Link onClick={this.logout} to={routes.mainPage.getRedirectPath({})}>
                 Log out
               </Link>
             </div>
@@ -81,18 +84,17 @@ class UserBar extends React.Component<AllProps, ILocalState> {
     );
   }
 
-  public componentDidMount() {
+  @bind
+  private handleClickOutside() {
     this.setState({ isOpened: false });
   }
 
-  public handleClickOutside(ev: MouseEvent) {
-    this.setState({ isOpened: false });
-  }
-
+  @bind
   private toggleMenu(): void {
     this.setState(prevState => ({ isOpened: !prevState.isOpened }));
   }
 
+  @bind
   private logout(): void {
     this.toggleMenu();
     this.props.dispatch(logoutUser());

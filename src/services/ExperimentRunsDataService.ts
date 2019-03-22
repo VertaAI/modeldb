@@ -1,9 +1,11 @@
 import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
 import { JsonConvert } from 'json2typescript';
-import { ComparisonType, IFilterData, PropertyType } from '../models/Filters';
-import { IHyperparameter } from '../models/HyperParameters';
-import { IMetric } from '../models/Metrics';
-import ModelRecord from '../models/ModelRecord';
+
+import { ComparisonType, IFilterData, PropertyType } from 'models/Filters';
+import { IHyperparameter } from 'models/HyperParameters';
+import { IMetric } from 'models/Metrics';
+import ModelRecord from 'models/ModelRecord';
+
 import { BaseDataService } from './BaseDataService';
 import { IExperimentRunsDataService } from './IExperimentRunsDataService';
 
@@ -35,6 +37,10 @@ export default class ExperimentRunsDataService extends BaseDataService implement
       transformResponse: [
         (data: any) => {
           try {
+            if (!data || !data.experiment_runs) {
+              return Array<ModelRecord>();
+            }
+
             const jsonConvert = new JsonConvert();
             let experimentRuns = jsonConvert.deserializeArray(data.experiment_runs, ModelRecord) as ModelRecord[];
             if (filters && filters.length > 0) {

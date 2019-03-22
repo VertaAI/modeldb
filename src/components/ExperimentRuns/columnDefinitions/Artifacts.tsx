@@ -1,6 +1,9 @@
 import * as React from 'react';
-import styles from './ColumnDefs.module.css';
 import { Link } from 'react-router-dom';
+
+import routes from 'routes';
+
+import styles from './ColumnDefs.module.css';
 
 class ArtifactsColDef extends React.Component<any> {
   public render() {
@@ -9,7 +12,7 @@ class ArtifactsColDef extends React.Component<any> {
       <div>
         {artifacts.map((artifact: any, i: number) => {
           return (
-            <Link key={i} className={styles.model_link} to={`/project/${projectId}/exp-run/${id}`}>
+            <Link key={i} className={styles.model_link} to={routes.modelRecord.getRedirectPath({ projectId, modelRecordId: id })}>
               <div className={styles.artifact_wrapper} title="view ModelRecord">
                 <div className={styles.notif}>
                   {artifact.type === 'IMAGE' ? (
