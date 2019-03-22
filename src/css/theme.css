@@ -4,6 +4,7 @@
   --bg-color3: #ffffff;
   --bg-color4: #f3f3f3;
   --bg-color5: rgba(0, 0, 0, 0.9);
+  --bg-color6: rgba(0, 0, 0, 0.2);
 
   --fr-color1: #5457e3;
   --fr-color2: rgba(0, 0, 0, 0.9);
@@ -40,6 +41,8 @@
 
   --vgreen-lighter: #d6fff9;
   --vgreen-light: #b8fff4;
+
+  --border-color1: #dedede;
 }
 
 .ag-header-cell-label .ag-header-cell-text {
