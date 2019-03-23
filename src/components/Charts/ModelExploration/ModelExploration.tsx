@@ -92,9 +92,9 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
               })}
             </select>
           </div>
-          <div className={styles.compute_button}>
+          {/* <div className={styles.compute_button}>
             <button>Compute Charts</button>
-          </div>
+          </div> */}
         </div>
         <div>
           {console.log(this.state)}

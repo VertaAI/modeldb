@@ -4,13 +4,51 @@
   border: 1px solid var(--bg-color3);
 }
 
-.chart_selector {
-  padding: 10px;
-}
-
 .dropdown {
   padding: 10px;
   outline: none;
+  margin-top: 5px;
+}
+
+select {
+  outline: none;
+  background: #f0f3fb;
+  border: 1px solid #f0f3fb;
+  border-radius: 4px;
+  width: 100%;
+  padding: 20px;
+  font-size: 16px;
+  color: var(--bg-color2);
+  max-width: 180px;
+  cursor: pointer;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  -o-appearance: none;
+  appearance: none;
+}
+
+.chart_selector {
+  padding: 10px;
+  cursor: pointer;
+  position: relative;
+  max-width: 180px;
+}
+
+.chart_selector:after {
+  font-family: FontAwesome;
+  content: '\f107';
+  font-size: 28px;
+  position: absolute;
+  top: 36px;
+  right: 24px;
+  color: var(--bg-color2);
+  pointer-events: none;
+}
+
+select::-ms-expand {
+  display: none;
 }
 
 .compute_button {
@@ -25,6 +63,7 @@
   border: none;
   outline: none;
   cursor: pointer;
+  float: bottom;
 }
 
 .compute_button button:hover {

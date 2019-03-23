@@ -8,19 +8,14 @@ import ModelRecord from '../../models/ModelRecord';
 import { Project } from '../../models/Project';
 import loader from '../images/loader.gif';
 import styles from './Charts.module.css';
-import ScatterChart from './ScatterChart/ScatterChart';
-import MetricBar from './MetricBar/MetricBar';
 import ExpSubMenu from '../ExpSubMenu/ExpSubMenu';
 import Tag from '../TagBlock/Tag';
 import tag_styles from '../TagBlock/TagBlock.module.css';
-import SomeChart from './ScatterChart/SomeChart';
-import Shirley from './Shirley';
-import BarChart from './sher/Chart';
+import ScatterPlot from './ModelSummary/Chart';
 import ModelExploration from './ModelExploration/ModelExploration';
 
 let paramList: any = new Set();
 const xAxisParams: any = new Set();
-const enumListAgg: string[] = ['average', 'sum', 'median', 'variance', 'stdev', 'count'];
 export interface IUrlProps {
   projectId: string;
 }
@@ -68,7 +63,6 @@ class Charts extends React.Component<AllProps, ILocalState> {
       this.expName = experimentRuns[0].name;
       this.flatArray = this.dataCompute(experimentRuns);
       this.flatFields = this.computeFlatFields(experimentRuns);
-      // this.damalFlat = this.generateMetricObjs(experimentRuns);
     }
     if (projects !== undefined && projects !== null) {
       this.timeProj = projects.filter(d => d.name === 'Timeseries')[0];
@@ -109,16 +103,9 @@ class Charts extends React.Component<AllProps, ILocalState> {
           ) : (
             ''
           )}
-          {/* {console.log(paramList)}
-          {console.log(this.flatArray)}
-          {console.log(this.flatFields)} */}
-          {/* dei yena savadikreane ivan, mudiyala da saami, yenala mudiyala;a */}
           <p style={{ fontSize: '1.15em' }}>Summary Chart</p>
-          {/* <div>
-
-</div> */}
-
           <div className={styles.chart_selector}>
+            Metric :{' '}
             <select name="selected-metric" onChange={this.handleMetricChange} className={styles.dropdown}>
               {[...paramList].map((param: string, i: number) => {
                 return (
@@ -129,28 +116,15 @@ class Charts extends React.Component<AllProps, ILocalState> {
               })}
             </select>
           </div>
-          {/* <Shirley /> */}
-          <BarChart flatdata={this.flatArray} selectedMetric={this.state.selectedMetric} />
-
-          {/* <SomeChart data={this.flatArray} selectedMetric={this.state.selectedMetric} /> */}
-          {/* <ScatterChart data={this.flatArray} paramList={paramList} /> */}
+          <ScatterPlot flatdata={this.flatArray} selectedMetric={this.state.selectedMetric} />
         </div>
         <br />
         <ModelExploration expRuns={experimentRuns} />
-
-        {/* <div className={styles.summary_wrapper}>
-          <h5>Explore Metrics</h5>
-          {[...paramList].map((param: string, i: number) => {
-            return <MetricBar key={i} data={param} />;
-          })}
-        </div> */}
       </div>
     ) : (
       ''
     );
   }
-
-  // /react by default handle the proces of enter update
 
   public handleMetricChange = (event: React.FormEvent<HTMLSelectElement>) => {
     const element = event.target as HTMLSelectElement;
@@ -161,16 +135,6 @@ class Charts extends React.Component<AllProps, ILocalState> {
   public dataCompute = (arr: ModelRecord[]) => {
     return _.map(arr, obj => {
       const metricField = _.pick(obj, 'startTime', 'metrics');
-      // console.log(metricField);
-      // const list = ['kgf_32323', 'lkg_637334', 'kgf_dheera'];
-      // list.forEach((lstr: string) => {
-      //   const matched = lstr.match(/(kgf)/i);
-      //   if (matched) {
-      //     // console.log(matched.input);
-      //   }
-      //   return lstr.match(/(kgf)/g);
-      // });
-      // console.log('damal_shot'.match(/(damal)/g));
       const flatMetric: any = { date: metricField.startTime };
       paramList = new Set();
       metricField.metrics.forEach((kvPair: any) => {

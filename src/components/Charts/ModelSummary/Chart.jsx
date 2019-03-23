@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import styles from '../ModelExploration/ModelExploration.module.css';
 import * as d3 from 'd3';
 const width = 650;
 const height = 400;

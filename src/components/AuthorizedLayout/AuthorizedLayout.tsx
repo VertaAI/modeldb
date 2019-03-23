@@ -47,7 +47,7 @@ class AuthorizedLayout extends React.Component<RouteComponentProps> {
           <RouteWithFilter path={routes.expirementRuns.getPath()} component={ExperimentRuns} />
           <RouteWithFilter path={routes.charts.getPath()} component={Charts} />
           <RouteWithFilter path={routes.modelRecord.getPath()} component={ModelRecord} />
-          <RouteWithFilter path={'/damal'} component={ExperimentSummary} />
+          {/* <RouteWithFilter path={'/'} component={ExperimentSummary} /> */}
 
           <Route component={GenericNotFound} />
         </Switch>
