@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "axios": "^0.18.0",
+    "circular-json": "^0.5.9",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4"
+  }
+}
