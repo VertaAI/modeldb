@@ -23,7 +23,7 @@
   line-height: 30px;
   border: solid 1px lightgrey;
   border-radius: 3px;
-  padding: 0 20px;
+  padding: 0 5px;
   max-width: 150px;
   text-align: center;
   float: none;
@@ -68,9 +68,7 @@
 }
 
 .record_label {
-  color: var(--grey-light);
   font-size: 14px;
-  /* color: #bebebe; */
   color: rgb(141, 141, 141);
 }
 
@@ -84,7 +82,7 @@
 .record_header {
   grid-row: 2;
   color: var(--fr-color2);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 18px;
 }
@@ -92,8 +90,8 @@
 .record_value {
   grid-row: 2;
   color: var(--fr-color3);
-  font-size: 15px;
-  line-height: 18px;
+  font-size: 16px;
+  line-height: 16px;
 }
 
 .record_value.name {
