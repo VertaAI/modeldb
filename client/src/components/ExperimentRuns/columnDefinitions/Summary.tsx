@@ -1,7 +1,7 @@
-import Tag from 'components/TagBlock/Tag';
-import tag_styles from 'components/TagBlock/TagBlock.module.css';
-import * as React from 'react';
-import styles from './ColumnDefs.module.css';
+import Tag from "components/TagBlock/Tag";
+import tag_styles from "components/TagBlock/TagBlock.module.css";
+import * as React from "react";
+import styles from "./ColumnDefs.module.css";
 
 class SummaryColDef extends React.Component<any> {
   public render() {
@@ -9,24 +9,31 @@ class SummaryColDef extends React.Component<any> {
     return (
       <div className={styles.summary_cell}>
         <p>
-          Name: <span className={styles.highlight_summary}>{modelRecord.name}</span>
+          Name:{" "}
+          <span className={styles.highlight_summary}>{modelRecord.name}</span>
         </p>
-        <p>
-          Code Version: <span className={styles.highlight_summary}>{modelRecord.codeVersion}</span>
-        </p>
-        <p>Tags:</p>
-        <div className={tag_styles.tag_block}>
-          <ul className={tag_styles.tags}>
-            {modelRecord.tags &&
-              modelRecord.tags.map((tag: string, i: number) => {
+        {modelRecord.codeVersion && (
+          <p>
+            Code Version:{" "}
+            <span className={styles.highlight_summary}>
+              {modelRecord.codeVersion}
+            </span>
+          </p>
+        )}
+        {modelRecord.tags && (
+          <div className={tag_styles.tag_block}>
+            <p>Tags:</p>
+            <ul className={tag_styles.tags}>
+              {modelRecord.tags.map((tag: string, i: number) => {
                 return (
                   <li key={i}>
                     <Tag tag={tag} />
                   </li>
                 );
               })}
-          </ul>
-        </div>
+            </ul>
+          </div>
+        )}
       </div>
     );
   }
