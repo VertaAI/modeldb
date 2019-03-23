@@ -1,9 +1,7 @@
 .cell {
   margin-top: 1em;
-  /* line-height: 10px; */
   border: none !important;
   outline: none;
-  /* padding: 0 15px !important; */
 }
 
 .summary_cell {
@@ -13,7 +11,6 @@
 
 .param_draggable {
   padding: 5px;
-  /* display: none; */
 }
 .param_draggable:hover {
   border-radius: 5px;
@@ -43,8 +40,6 @@
 }
 
 .param_val {
-  /* font-family: monospace; */
-  /* font-family: sans-serif; */
   color: #000;
   word-break: break-all;
   word-wrap: break-word;
@@ -52,7 +47,7 @@
 
 .param_cell {
   display: grid;
-  justify-content: 'unset';
+  justify-content: "unset";
   outline: none;
 }
 .param_cell:focus {
@@ -71,7 +66,6 @@
 }
 
 .experiment_link {
-  color: var(--text-color1);
   text-decoration: none;
   line-height: 30px;
   border: solid 1px lightgrey;
@@ -85,6 +79,15 @@
 
 .experiment_link:hover {
   background-color: #e6e6e6;
+}
+
+.parma_link_label {
+  color: rgb(141, 141, 141);
+}
+
+.parma_link_value {
+  font-weight: 500;
+  color: var(--text-color1);
 }
 
 .modelDescription {
