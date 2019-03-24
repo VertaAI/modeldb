@@ -152,8 +152,8 @@ class ExperimentRuns extends React.Component<AllProps> {
       }
       return data.hyperparameters.length * 5 + 220;
     }
-    if (data.tags && data.tags.length >= 1) {
-      return 220;
+    if (data.tags && data.tags.length >= 6) {
+      return 240;
     }
 
     return 200;
