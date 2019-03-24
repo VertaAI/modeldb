@@ -20,7 +20,7 @@
 .param_grid_hyp {
   line-height: 20px !important;
   display: grid;
-  grid-template-columns: 100px 60px;
+  grid-template-columns: 100px 50px;
   grid-gap: 10px;
   white-space: pre-wrap;
 }
@@ -28,7 +28,7 @@
 .param_grid_metric {
   line-height: 20px !important;
   display: grid;
-  grid-template-columns: 60px 80px;
+  grid-template-columns: 100px 50px;
   grid-gap: 10px;
   white-space: pre-wrap;
 }
