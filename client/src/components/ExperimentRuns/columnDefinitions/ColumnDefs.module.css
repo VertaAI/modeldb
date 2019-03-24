@@ -69,6 +69,7 @@
   white-space: -webkit-pre-wrap;
   word-break: break-all;
   white-space: normal;
+  margin-top: 5px;
 }
 
 .experiment_link {

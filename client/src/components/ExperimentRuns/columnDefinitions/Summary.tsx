@@ -8,12 +8,12 @@ class SummaryColDef extends React.Component<any> {
     const modelRecord = this.props.data;
     return (
       <div className={styles.summary_cell}>
-        <p>
+        <div style={{ marginBottom: "10px" }}>
           Name:{" "}
           <div className={styles.highlight_summary}>{modelRecord.name}</div>
-        </p>
+        </div>
         {modelRecord.codeVersion && (
-          <div>
+          <div style={{ marginBottom: "10px" }}>
             Code Version:{" "}
             <div className={styles.highlight_summary}>
               {modelRecord.codeVersion}

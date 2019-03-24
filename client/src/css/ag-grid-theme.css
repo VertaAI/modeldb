@@ -18,3 +18,11 @@
 .ag-center-cols-viewport {
   scroll-behavior: smooth;
 }
+
+.ag-theme-material .ag-cell {
+  padding-right: 13px;
+}
+
+.ag-row {
+  padding: 0 23px;
+}
