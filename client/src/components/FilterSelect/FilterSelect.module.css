@@ -48,7 +48,7 @@
 }
 
 .applied_filters:empty::after {
-  content: "Drag and drop parameters here";
+  content: "Drag and drop parameters and tags here";
   position: absolute;
   top: 205px;
   left: 52px;

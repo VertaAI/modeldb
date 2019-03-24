@@ -16,7 +16,6 @@ import { IApplicationState, IConnectedReduxProps } from "store/store";
 
 import loader from "components/images/loader.gif";
 import styles from "./ExperimentRuns.module.css";
-import "./ExperimentRuns.module.css";
 
 import {
   defaultColDefinitions,

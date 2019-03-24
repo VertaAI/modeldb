@@ -10,19 +10,19 @@ class SummaryColDef extends React.Component<any> {
       <div className={styles.summary_cell}>
         <p>
           Name:{" "}
-          <span className={styles.highlight_summary}>{modelRecord.name}</span>
+          <div className={styles.highlight_summary}>{modelRecord.name}</div>
         </p>
         {modelRecord.codeVersion && (
-          <p>
+          <div>
             Code Version:{" "}
-            <span className={styles.highlight_summary}>
+            <div className={styles.highlight_summary}>
               {modelRecord.codeVersion}
-            </span>
-          </p>
+            </div>
+          </div>
         )}
         {modelRecord.tags && (
           <div className={tag_styles.tag_block}>
-            <p>Tags:</p>
+            <div>Tags:</div>
             <ul className={tag_styles.tags}>
               {modelRecord.tags.map((tag: string, i: number) => {
                 return (

@@ -63,6 +63,12 @@
 
 .highlight_summary {
   color: #000;
+  max-width: 134px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: -webkit-pre-wrap;
+  word-break: break-all;
+  white-space: normal;
 }
 
 .experiment_link {
@@ -74,11 +80,6 @@
   text-align: center;
   float: none;
   margin: 5px 0;
-  cursor: move;
-}
-
-.experiment_link:hover {
-  background-color: #e6e6e6;
 }
 
 .parma_link_label {
