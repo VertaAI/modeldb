@@ -1,11 +1,15 @@
-import * as React from 'react';
-import onClickOutside from 'react-onclickoutside';
-import { connect } from 'react-redux';
+import * as React from "react";
+import onClickOutside from "react-onclickoutside";
+import { connect } from "react-redux";
 
-import { IDashboardConfigState, updateDashboardConfig } from 'store/dashboard-config';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import {
+  IDashboardConfigState,
+  updateDashboardConfig
+} from "store/dashboard-config";
+import { IApplicationState, IConnectedReduxProps } from "store/store";
+import ModelRecord from "models/ModelRecord";
 
-import styles from './DashboardConfig.module.css';
+import styles from "./DashboardConfig.module.css";
 
 interface ILocalState {
   isOpened: boolean;
@@ -13,6 +17,7 @@ interface ILocalState {
 
 interface IPropsFromState {
   dashboardConfig: IDashboardConfigState;
+  experimentRuns: ModelRecord[] | undefined;
 }
 
 type AllProps = IConnectedReduxProps & IPropsFromState;
@@ -38,7 +43,11 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
             <h4 className={styles.title}> Add/Drop Columns </h4>
             <div className={styles.menu_item}>
               {Array.from(dashboardConfigMap.values()).map((element: any) => (
-                <label key={element.name} style={{ display: 'block' }} className={styles.container}>
+                <label
+                  key={element.name}
+                  style={{ display: "block" }}
+                  className={styles.container}
+                >
                   <input
                     className={styles.input_style}
                     type="checkbox"
@@ -54,7 +63,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
             </div>
           </div>
         ) : (
-          ''
+          ""
         )}
       </div>
     );
@@ -83,8 +92,12 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
   };
 }
 
-const mapStateToProps = ({ dashboardConfig }: IApplicationState) => ({
-  dashboardConfig
+const mapStateToProps = ({
+  dashboardConfig,
+  experimentRuns
+}: IApplicationState) => ({
+  dashboardConfig,
+  experimentRuns: experimentRuns.data
 });
 
 export default connect(mapStateToProps)(onClickOutside(DashboardConfig));

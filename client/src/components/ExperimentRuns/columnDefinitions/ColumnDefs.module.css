@@ -1,9 +1,7 @@
 .cell {
   margin-top: 1em;
-  /* line-height: 10px; */
   border: none !important;
   outline: none;
-  /* padding: 0 15px !important; */
 }
 
 .summary_cell {
@@ -13,7 +11,6 @@
 
 .param_draggable {
   padding: 5px;
-  /* display: none; */
 }
 .param_draggable:hover {
   border-radius: 5px;
@@ -23,7 +20,7 @@
 .param_grid_hyp {
   line-height: 20px !important;
   display: grid;
-  grid-template-columns: 100px 60px;
+  grid-template-columns: 100px 50px;
   grid-gap: 10px;
   white-space: pre-wrap;
 }
@@ -31,7 +28,7 @@
 .param_grid_metric {
   line-height: 20px !important;
   display: grid;
-  grid-template-columns: 60px 80px;
+  grid-template-columns: 100px 50px;
   grid-gap: 10px;
   white-space: pre-wrap;
 }
@@ -43,8 +40,6 @@
 }
 
 .param_val {
-  /* font-family: monospace; */
-  /* font-family: sans-serif; */
   color: #000;
   word-break: break-all;
   word-wrap: break-word;
@@ -52,7 +47,7 @@
 
 .param_cell {
   display: grid;
-  justify-content: 'unset';
+  justify-content: "unset";
   outline: none;
 }
 .param_cell:focus {
@@ -68,10 +63,16 @@
 
 .highlight_summary {
   color: #000;
+  max-width: 134px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: -webkit-pre-wrap;
+  word-break: break-all;
+  white-space: normal;
+  margin-top: 5px;
 }
 
 .experiment_link {
-  color: var(--text-color1);
   text-decoration: none;
   line-height: 30px;
   border: solid 1px lightgrey;
@@ -80,11 +81,15 @@
   text-align: center;
   float: none;
   margin: 5px 0;
-  cursor: move;
 }
 
-.experiment_link:hover {
-  background-color: #e6e6e6;
+.parma_link_label {
+  color: rgb(141, 141, 141);
+}
+
+.parma_link_value {
+  font-weight: 500;
+  color: var(--text-color1);
 }
 
 .modelDescription {
