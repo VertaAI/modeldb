@@ -1,0 +1,20 @@
+.fab {
+  display: inline-flex;
+  height: 36px;
+  width: 87px;
+  padding: 0 13px;
+  align-items: center;
+  justify-content: space-between;
+  border: none;
+  border-radius: 20px;
+  font-size: var(--font-size4);
+  background: none;
+  color: white;
+  background-color: var(--bg-color2);
+  cursor: pointer;
+}
+
+.icon {
+  width: 15px;
+  height: 15px;
+}
