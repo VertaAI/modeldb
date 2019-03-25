@@ -15,7 +15,7 @@ class Tooltip extends React.Component<IProps> {
     const { visible, content, children } = this.props;
     return (
       <RCTooltip
-        visible={visible}
+        {...(visible !== undefined ? { visible } : {})}
         overlay={content}
         placement={'top'}
         arrowContent={<div className="rc-tooltip-arrow-inner" />}
