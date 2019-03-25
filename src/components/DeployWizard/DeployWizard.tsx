@@ -6,7 +6,7 @@ import styles from './DeployWizard.module.css';
 
 class DeployWizard extends React.PureComponent {
   public render() {
-    return <DeploySettings />;
+    return <DeploymentResult />;
   }
 }
 

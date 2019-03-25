@@ -74,9 +74,9 @@ class DeploySettings extends React.PureComponent<{}, ILocalState> {
                 <Form.Item label="Name for CSV file uploading?">
                   <FileUploader acceptFileTypes={['csv']} onUpload={console.log}>
                     {onSelectFile => (
-                      <div className={styles.select_CSV_file_button} onClick={onSelectFile}>
+                      <Button variant="like-link" onClick={onSelectFile}>
                         Select .CSV
-                      </div>
+                      </Button>
                     )}
                   </FileUploader>
                 </Form.Item>

@@ -1,3 +1,11 @@
 .deployment_result {
   padding: 52px 90px 73px;
 }
+
+.url {
+  display: inline-block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
