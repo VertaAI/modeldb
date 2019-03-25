@@ -99,6 +99,7 @@ class ExperimentRuns extends React.Component<AllProps> {
       this.gridApi.setRowData(this.props.data);
     }
   }
+
   public render() {
     const { data, loading, columnConfig } = this.props;
 

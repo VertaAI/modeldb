@@ -5,16 +5,16 @@ import DeploySettings from './DeploySettings/DeploySettings';
 import Deploying from './Deploying/Deploying';
 import DeployResult from './DeployResult/DeployResult';
 
-interface ILocalState {
-  step: 'setting' | 'deploying' | 'deployed';
+interface IProps {
   isShown: boolean;
+  step: 'setting' | 'deploying' | 'deployed';
+  onClose(): void;
+  onDeploy(): void;
 }
 
-class DeployWizard extends React.PureComponent<{}, ILocalState> {
-  public state: ILocalState = { step: 'setting', isShown: true };
-
+class DeployWizard extends React.PureComponent<IProps> {
   public render() {
-    const { step, isShown } = this.state;
+    const { isShown, step, onClose, onDeploy } = this.props;
 
     if (!isShown) {
       return null;
@@ -22,23 +22,12 @@ class DeployWizard extends React.PureComponent<{}, ILocalState> {
 
     switch (step) {
       case 'setting':
-        return <DeploySettings onDeploy={this.onDeploy} onClose={this.onClose} />;
+        return <DeploySettings onDeploy={onDeploy} onClose={onClose} />;
       case 'deploying':
-        return <Deploying onClose={this.onClose} />;
+        return <Deploying onClose={onClose} />;
       case 'deployed':
-        return <DeployResult onClose={this.onClose} />;
+        return <DeployResult onClose={onClose} />;
     }
-  }
-
-  @bind
-  private onDeploy() {
-    this.setState({ step: 'deploying' });
-    setTimeout(() => this.setState({ step: 'deployed' }), 600);
-  }
-
-  @bind
-  private onClose() {
-    this.setState({ isShown: false });
   }
 }
 

@@ -6,6 +6,7 @@ import DatasetsColDef from './Datasets';
 import MetricsColDef from './Metrics';
 import ModelRecordColDef from './ModelRecord';
 import SummaryColDef from './Summary';
+import Actions from './Actions';
 
 export const defaultColDefinitions = {
   autoHeight: true
@@ -60,6 +61,13 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 240,
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked
+    },
+    {
+      headerName: '',
+      field: 'data',
+      cellRendererFramework: Actions,
+      width: 140,
+      cellClass: styles.cell
     }
     // {
     //   headerName: 'Observations',
