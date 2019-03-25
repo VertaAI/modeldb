@@ -7,6 +7,7 @@ import styles from './Popup.module.css';
 interface IProps {
   title: React.ReactChild;
   isOpen: boolean;
+  height?: number;
   contentLabel?: string;
   children: React.ReactChild | React.ReactChildren;
   onRequestClose(): void;
@@ -16,7 +17,7 @@ const appElement = document.getElementById('root')!;
 
 class Popup extends React.Component<IProps> {
   public render() {
-    const { title, isOpen, contentLabel, children, onRequestClose } = this.props;
+    const { title, height, isOpen, contentLabel, children, onRequestClose } = this.props;
     return (
       <ReactModal
         className={styles.popup}
@@ -24,6 +25,7 @@ class Popup extends React.Component<IProps> {
         appElement={appElement}
         isOpen={isOpen}
         contentLabel={contentLabel}
+        style={{ content: { height } }}
         onRequestClose={onRequestClose}
       >
         <div className={styles.header}>

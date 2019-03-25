@@ -12,6 +12,11 @@ import Form from 'components/shared/Form/Form';
 import { DeployType } from 'models/Deploy';
 import styles from './DeploySettings.module.css';
 
+interface IProps {
+  onDeploy(): void;
+  onClose(): void;
+}
+
 interface ILocalState {
   currentDeployType: DeployType;
   forms: {
@@ -21,7 +26,7 @@ interface ILocalState {
   };
 }
 
-class DeploySettings extends React.PureComponent<{}, ILocalState> {
+class DeploySettings extends React.PureComponent<IProps, ILocalState> {
   public state: ILocalState = {
     currentDeployType: 'rest',
     forms: {
@@ -32,9 +37,10 @@ class DeploySettings extends React.PureComponent<{}, ILocalState> {
   };
 
   public render() {
+    const { onClose } = this.props;
     const { currentDeployType, forms } = this.state;
     return (
-      <Popup title="Deploy Confirmation" isOpen={true} onRequestClose={console.log}>
+      <Popup title="Deploy Confirmation" isOpen={true} onRequestClose={onClose}>
         <div className={styles.deploy_settings}>
           <Tabs<DeployType> active={currentDeployType} onSelectTab={this.onChangeDeployType}>
             <Tabs.Tab title="REST" type="rest" centered>
@@ -113,7 +119,7 @@ class DeploySettings extends React.PureComponent<{}, ILocalState> {
 
   @bind
   private onDeploy() {
-    console.log('deploy');
+    this.props.onDeploy();
   }
 }
 

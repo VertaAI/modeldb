@@ -1,12 +1,44 @@
 import * as React from 'react';
+import { bind } from 'decko';
 
 import DeploySettings from './DeploySettings/DeploySettings';
-import DeploymentResult from './DeploymentResult/DeploymentResult';
-import styles from './DeployWizard.module.css';
+import Deploying from './Deploying/Deploying';
+import DeployResult from './DeployResult/DeployResult';
 
-class DeployWizard extends React.PureComponent {
+interface ILocalState {
+  step: 'setting' | 'deploying' | 'deployed';
+  isShown: boolean;
+}
+
+class DeployWizard extends React.PureComponent<{}, ILocalState> {
+  public state: ILocalState = { step: 'setting', isShown: true };
+
   public render() {
-    return <DeploymentResult />;
+    const { step, isShown } = this.state;
+
+    if (!isShown) {
+      return null;
+    }
+
+    switch (step) {
+      case 'setting':
+        return <DeploySettings onDeploy={this.onDeploy} onClose={this.onClose} />;
+      case 'deploying':
+        return <Deploying onClose={this.onClose} />;
+      case 'deployed':
+        return <DeployResult onClose={this.onClose} />;
+    }
+  }
+
+  @bind
+  private onDeploy() {
+    this.setState({ step: 'deploying' });
+    setTimeout(() => this.setState({ step: 'deployed' }), 600);
+  }
+
+  @bind
+  private onClose() {
+    this.setState({ isShown: false });
   }
 }
 
