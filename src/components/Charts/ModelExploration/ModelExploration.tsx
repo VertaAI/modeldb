@@ -153,18 +153,35 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
     return map;
   }
 
-  public average = (array: any) => array.reduce((a: number, b: number) => a + b) / array.length;
   public sum = (array: any) => array.reduce((a: number, b: number) => a + b);
+  public average = (array: any) => this.sum(array) / array.length;
   public median = (array: any) => {
     array.sort((a: number, b: number) => a - b);
     const lowMiddle = Math.floor((array.length - 1) / 2);
     const highMiddle = Math.ceil((array.length - 1) / 2);
-    console.log((array[lowMiddle] + array[highMiddle]) / 2);
     return (array[lowMiddle] + array[highMiddle]) / 2;
   };
-  public variance = (array: any) => array.reduce((a: any, b: any) => a * b);
-  public stdev = (array: any) => array.reduce((a: any, b: any) => a * b);
-  public count = (array: any) => array.reduce((a: any, b: any) => a * b);
+  public variance = (array: any) => {
+    const mean = this.average(array);
+    return this.average(
+      array.map((num: number) => {
+        return Math.pow(num - mean, 2);
+      })
+    );
+  };
+  public stdev = (array: any) => Math.sqrt(this.variance(array));
+  public count = (array: any) => array.length;
+
+  // variance: function(array) {
+  // 	var mean = arr.mean(array);
+  // 	return arr.mean(array.map(function(num) {
+  // 		return Math.pow(num - mean, 2);
+  // 	}));
+  // },
+
+  // standardDeviation: function(array) {
+  // 	return Math.sqrt(arr.variance(array));
+  // },
 
   // to be used to refactor the aggregate workflow
   // public reduceByAggType = (aggType: string, array: any[]) => {

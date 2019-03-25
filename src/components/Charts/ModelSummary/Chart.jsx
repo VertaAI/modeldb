@@ -46,13 +46,14 @@ class BarChart extends Component {
 
     d3.select(this.refs.yAxis)
       .append('text')
+      .attr('id', 'scatterYLabel')
       .attr('transform', 'rotate(-90)')
       .attr('y', -margin.left)
       .attr('x', -height / 2)
       .attr('dy', '1em')
       .style('text-anchor', 'middle')
       .style('fill', '#444')
-      .text('Metric');
+      .text(this.props.selectedMetric);
 
     d3.select(this.refs.xAxis)
       .append('text')
@@ -67,6 +68,8 @@ class BarChart extends Component {
     d3.select(this.refs.xAxis).call(this.xAxis);
     this.yAxis.scale(this.state.yScale);
     d3.select(this.refs.yAxis).call(this.yAxis);
+
+    d3.select('#scatterYLabel').text(this.props.selectedMetric);
   }
 
   render() {
