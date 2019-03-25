@@ -1,0 +1,32 @@
+.model_input {
+}
+
+.title {
+  padding: 9px;
+  font-size: var(--font-size1);
+  text-align: center;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 39px;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--border-color1);
+  font-size: var(--font-size3);
+}
+
+.header {
+  composes: cell;
+  font-weight: 500;
+  color: var(--main-color5);
+}
+
+.content {
+  composes: cell;
+  color: var(--text-color2);
+}

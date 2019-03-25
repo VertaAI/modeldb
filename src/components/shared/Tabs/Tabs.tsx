@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { bind } from 'decko';
+import cn from 'classnames';
 
 import Tab, { IProps as ITabProps } from './Tab/Tab';
 
@@ -14,7 +15,7 @@ interface IProps<T> {
 const whiteSpace = '\u00A0';
 
 class Tabs<T> extends React.Component<IProps<T>> {
-  public static Tab: typeof Tab = Tab;
+  public static Tab = Tab;
 
   public render() {
     const { active } = this.props;
@@ -22,9 +23,9 @@ class Tabs<T> extends React.Component<IProps<T>> {
     return (
       <div className={styles.tabs}>
         <div className={styles.titles}>
-          {this.getTabsProps().map(({ type, title, badge, centered }) => (
+          {this.getTabsProps().map(({ type, title, badge }) => (
             <button
-              className={`${styles.title} ${type === active ? styles.title_active : ''}`}
+              className={cn(styles.title, { [styles.title_active]: type === active })}
               key={String(type)}
               onClick={this.makeOnSelectTab(type)}
             >
@@ -34,7 +35,7 @@ class Tabs<T> extends React.Component<IProps<T>> {
             </button>
           ))}
         </div>
-        <div className={`${styles.content} ${activeTabProps.centered ? styles.content_centered : ''}`}>{activeTabProps.children}</div>
+        <div className={cn(styles.content, { [styles.content_centered]: activeTabProps.centered })}>{activeTabProps.children}</div>
       </div>
     );
   }

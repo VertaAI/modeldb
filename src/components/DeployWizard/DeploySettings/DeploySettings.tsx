@@ -7,68 +7,80 @@ import Button from 'components/shared/Button/Button';
 import Select from 'components/shared/Select/Select';
 import Checkbox from 'components/shared/Checkbox/Checkbox';
 import FileUploader from 'components/shared/FileUploader/FileUploader';
+import Form from 'components/shared/Form/Form';
 
 import { DeployType } from 'models/Deploy';
 import styles from './DeploySettings.module.css';
 
 interface ILocalState {
   currentDeployType: DeployType;
+  forms: {
+    replicas: number;
+    withLogs: boolean;
+    withServiceMonitoring: boolean;
+  };
 }
 
 class DeploySettings extends React.PureComponent<{}, ILocalState> {
-  public state: ILocalState = { currentDeployType: 'rest' };
+  public state: ILocalState = {
+    currentDeployType: 'rest',
+    forms: {
+      replicas: 2,
+      withLogs: false,
+      withServiceMonitoring: false
+    }
+  };
 
   public render() {
-    const { currentDeployType } = this.state;
+    const { currentDeployType, forms } = this.state;
     return (
       <Popup title="Deploy Confirmation" isOpen={true} onRequestClose={console.log}>
         <div className={styles.deploy_settings}>
           <Tabs<DeployType> active={currentDeployType} onSelectTab={this.onChangeDeployType}>
             <Tabs.Tab title="REST" type="rest" centered>
-              <div className={styles.rows}>
-                <this.Row title="model ID" content={22} />
-                <this.Row
-                  title="Replicas"
-                  content={
-                    <Select<number>
-                      value={3}
-                      options={[{ value: 3, label: '3' }, { value: 4, label: '4' }]}
-                      onChange={this.onChangeRepliceCount}
-                    />
-                  }
-                />
-                <this.Row title="Logs" content={<Checkbox value={true} onChange={this.onToggleLogs} />} />
-                <this.Row title="Service Monitoring" content={<Checkbox value={false} onChange={this.onToggleServiceMonitoring} />} />
-              </div>
+              <Form>
+                <Form.Item label="Model ID">22</Form.Item>
+                <Form.Item label="Replicas">
+                  <Select<number>
+                    value={forms.replicas}
+                    options={[{ value: 3, label: '3' }, { value: 4, label: '4' }]}
+                    onChange={this.onChangeRepliceCount}
+                  />
+                </Form.Item>
+                <Form.Item label="Logs">
+                  <Checkbox value={forms.withLogs} onChange={this.onToggleLogs} />
+                </Form.Item>
+                <Form.Item label="Service Monitoring">
+                  <Checkbox value={forms.withServiceMonitoring} onChange={this.onToggleServiceMonitoring} />
+                </Form.Item>
+              </Form>
             </Tabs.Tab>
             <Tabs.Tab title="BATCH" type="batch" centered>
-              <div className={styles.rows}>
-                <this.Row title="Model ID" content={22} />
-                <this.Row
-                  title="Replicas"
-                  content={
-                    <Select<number>
-                      value={3}
-                      options={[{ value: 3, label: '3' }, { value: 4, label: '4' }]}
-                      onChange={this.onChangeRepliceCount}
-                    />
-                  }
-                />
-                <this.Row title="Logs" content={<Checkbox value={true} onChange={this.onToggleLogs} />} />
-                <this.Row title="Service Monitoring" content={<Checkbox value={false} onChange={this.onToggleServiceMonitoring} />} />
-                <this.Row
-                  title="Name for CSV file uploading?"
-                  content={
-                    <FileUploader acceptFileTypes={['csv']} onUpload={console.log}>
-                      {onSelectFile => (
-                        <div className={styles.select_CSV_file_button} onClick={onSelectFile}>
-                          Select .CSV
-                        </div>
-                      )}
-                    </FileUploader>
-                  }
-                />
-              </div>
+              <Form>
+                <Form.Item label="Model ID">22</Form.Item>
+                <Form.Item label="Replicas">
+                  <Select<number>
+                    value={forms.replicas}
+                    options={[{ value: 3, label: '3' }, { value: 4, label: '4' }]}
+                    onChange={this.onChangeRepliceCount}
+                  />
+                </Form.Item>
+                <Form.Item label="Logs">
+                  <Checkbox value={forms.withLogs} onChange={this.onToggleLogs} />
+                </Form.Item>
+                <Form.Item label="Service Monitoring">
+                  <Checkbox value={forms.withServiceMonitoring} onChange={this.onToggleServiceMonitoring} />
+                </Form.Item>
+                <Form.Item label="Name for CSV file uploading?">
+                  <FileUploader acceptFileTypes={['csv']} onUpload={console.log}>
+                    {onSelectFile => (
+                      <div className={styles.select_CSV_file_button} onClick={onSelectFile}>
+                        Select .CSV
+                      </div>
+                    )}
+                  </FileUploader>
+                </Form.Item>
+              </Form>
             </Tabs.Tab>
           </Tabs>
           <div className={styles.deploy_button}>
@@ -79,17 +91,6 @@ class DeploySettings extends React.PureComponent<{}, ILocalState> {
     );
   }
 
-  // todo rename
-  @bind
-  private Row({ title, content }: { title: string; content: React.ReactChild }) {
-    return (
-      <div className={styles.row}>
-        <div className={styles.row_title}>{title}</div>
-        <div className={styles.row_content}>{content}</div>
-      </div>
-    );
-  }
-
   @bind
   private onChangeDeployType(type: DeployType) {
     this.setState({ currentDeployType: type });
@@ -97,17 +98,17 @@ class DeploySettings extends React.PureComponent<{}, ILocalState> {
 
   @bind
   private onToggleLogs() {
-    console.log('toggle logs');
+    this.setState(prev => ({ forms: { ...prev.forms, withLogs: !this.state.forms.withLogs } }));
   }
 
   @bind
   private onToggleServiceMonitoring() {
-    console.log('toggle service monitoring');
+    this.setState(prev => ({ forms: { ...prev.forms, withServiceMonitoring: !this.state.forms.withServiceMonitoring } }));
   }
 
   @bind
   private onChangeRepliceCount(value: number) {
-    console.log('change replice count', value);
+    this.setState(prev => ({ forms: { ...prev.forms, replicas: value } }));
   }
 
   @bind

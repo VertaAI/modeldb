@@ -2,29 +2,6 @@
   padding-bottom: 27px;
 }
 
-.rows {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-}
-.row {
-  display: flex;
-  height: 58px;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-color1);
-}
-.row:last-child {
-  border-bottom: none;
-}
-.row_title {
-  color: var(--main-color5);
-  font-size: var(--font-size3);
-  font-weight: 500;
-}
-.row_content {
-  display: inline-block;
-}
 /* todo move to component */
 .select_CSV_file_button {
   font-size: var(--font-size4);
