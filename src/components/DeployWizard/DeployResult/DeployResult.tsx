@@ -6,15 +6,20 @@ import Button from 'components/shared/Button/Button';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
 
 import ModelInput from './ModelInput/ModelInput';
-import styles from './DeploymentResult.module.css';
+import styles from './DeployResult.module.css';
 
 const url = 'https://verta.io/234wfogsfas/fsfbgs';
 
-class DeploymentResult extends React.PureComponent {
+interface IProps {
+  onClose(): void;
+}
+
+class DeployResult extends React.PureComponent<IProps> {
   public render() {
+    const { onClose } = this.props;
     return (
-      <Popup title="Successful deployment" isOpen={true} onRequestClose={console.log}>
-        <div className={styles.deployment_result}>
+      <Popup title="Deployed" isOpen={true} onRequestClose={onClose}>
+        <div className={styles.deploy_result}>
           <div className={styles.commonInfo}>
             <Form>
               <Form.Item label="Model ID">22</Form.Item>
@@ -46,4 +51,4 @@ class DeploymentResult extends React.PureComponent {
   }
 }
 
-export default DeploymentResult;
+export default DeployResult;
