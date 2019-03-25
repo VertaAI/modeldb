@@ -16,18 +16,20 @@ interface ILocalState {
   selectedXAxis: string;
   selectedYAxis: string;
   selectedAggregate: string;
-  computedData: any;
 }
+
+// requirements:
+//      we need an aggregate switching mechanism
+//      groupby involve a new chart type
 
 export default class ModelExploration extends React.Component<ILocalProps, ILocalState> {
   public xAxisParams: Set<string> = new Set(); // computed fields from ModelRecord object
-  public yAxisParams: Set<string> = new Set(); // metric fields
+  public yAxisParams: Set<string> = new Set(); // metric fields only for Y axis
   public constructor(props: ILocalProps) {
     super(props);
     this.state = {
       aggType: ['average', 'sum', 'median', 'variance', 'stdev', 'count'],
       computeXAxisFields: this.computeXAxisFields(props.expRuns),
-      computedData: {},
       flatMetric: this.computeFlatMetric(props.expRuns),
       selectedAggregate: 'average',
       selectedXAxis: 'n_valid', // initial val for testing
@@ -37,10 +39,12 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
 
   public render() {
     const { expRuns } = this.props;
+    // let constVal = 'averageReduceMetrics';
     // console.log(this.state.computeXAxisFields);
     // this.setState({
     //   computedData: this.reduceMetricsAvg(this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis]))
     // });
+    // console.log(this.state);
     // this.state.computedData = this.reduceMetricsAvg(
     //   this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis])
     // );
@@ -82,7 +86,12 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
 
           <div className={styles.chart_selector}>
             Aggregate: {'  '}
-            <select name="selected-aggregate" value={this.state.selectedXAxis} onChange={this.setLocalAggState} className={styles.dropdown}>
+            <select
+              name="selected-aggregate"
+              value={this.state.selectedAggregate}
+              onChange={this.setLocalAggState}
+              className={styles.dropdown}
+            >
               {this.state.aggType.map((param: string, i: number) => {
                 return (
                   <option key={i} value={param}>
@@ -98,11 +107,14 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
         </div>
         <div>
           {console.log(this.state)}
+
           <BarChart
             xLabel={this.state.selectedXAxis}
             yLabel={this.state.selectedYAxis}
-            // data={this.state.computedData}
-            data={this.reduceMetricsAvg(this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis]))}
+            data={this.returnAggResults(
+              this.state.selectedAggregate,
+              this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis])
+            )}
           />
         </div>
       </div>
@@ -141,17 +153,40 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
     return map;
   }
 
-  public average = (array: any) => array.reduce((a: any, b: any) => a + b) / array.length;
-  public sum = (array: any) => array.reduce((a: any, b: any) => a + b);
-  // console.log(average([1,2,3,4,5]));
+  public average = (array: any) => array.reduce((a: number, b: number) => a + b) / array.length;
+  public sum = (array: any) => array.reduce((a: number, b: number) => a + b);
+  public median = (array: any) => {
+    array.sort((a: number, b: number) => a - b);
+    const lowMiddle = Math.floor((array.length - 1) / 2);
+    const highMiddle = Math.ceil((array.length - 1) / 2);
+    console.log((array[lowMiddle] + array[highMiddle]) / 2);
+    return (array[lowMiddle] + array[highMiddle]) / 2;
+  };
+  public variance = (array: any) => array.reduce((a: any, b: any) => a * b);
+  public stdev = (array: any) => array.reduce((a: any, b: any) => a * b);
+  public count = (array: any) => array.reduce((a: any, b: any) => a * b);
 
-  // const grouped = groupBy(pets, pet => pet.type);
-  // console.log(grouped.get("Dog")); // -> [{type:"Dog", name:"Spot"}, {type:"Dog", name:"Rover"}]
-  // console.log(grouped.get("Cat"));
+  // to be used to refactor the aggregate workflow
+  // public reduceByAggType = (aggType: string, array: any[]) => {
+  //   return
+  // }
 
-  //   public computeReducedMetrics = (flatFields: object[]) => {
-
-  //   }
+  public returnAggResults = (selected: string, arrayGpBy: any) => {
+    switch (selected) {
+      case 'average':
+        return this.averageReduceMetrics(arrayGpBy);
+      case 'sum':
+        return this.sumReduceMetrics(arrayGpBy);
+      case 'median':
+        return this.medianReduceMetrics(arrayGpBy);
+      case 'variance':
+        return this.varianceReduceMetrics(arrayGpBy);
+      case 'stdev':
+        return this.stdevReduceMetrics(arrayGpBy);
+      case 'count':
+        return this.countReduceMetrics(arrayGpBy);
+    }
+  };
 
   public computeFlatMetric = (arr: ModelRecord[]) => {
     return arr.map(obj => {
@@ -165,16 +200,68 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
     });
   };
 
-  public reduceMetricsAvg = (mapObj: any) => {
+  public averageReduceMetrics = (mapObj: any) => {
     return [...mapObj].map(obj => {
       return { key: obj[0], value: this.average(obj[1]) };
     });
   };
 
-  public reduceMetricsSum = (mapObj: any) => {
+  public sumReduceMetrics = (mapObj: any) => {
     return [...mapObj].map(obj => {
       return { key: obj[0], value: this.sum(obj[1]) };
     });
+  };
+
+  public medianReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.median(obj[1]) };
+    });
+  };
+
+  public varianceReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.variance(obj[1]) };
+    });
+  };
+
+  public stdevReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.stdev(obj[1]) };
+    });
+  };
+
+  public countReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.count(obj[1]) };
+    });
+  };
+
+  public reduceMetricForAgg = (groupedParams: any, selectedAgg: string) => {
+    const reduceAverage = (array: any) => array.reduce((a: any, b: any) => a + b) / array.length;
+    const reduceSum = (array: any) => array.reduce((a: any, b: any) => a + b);
+
+    // const dogSwitch = (breed: any) =>
+    //   ({
+    //     border: 'Border Collies are good boys and girls.',
+    //     pitbull: 'Pit Bulls are good boys and girls.',
+    //     german: 'German Shepherds are good boys and girls.'
+    //   }[breed]);
+    // dogSwitch('border');
+
+    // const returnReduceBySelection = (obj:any) => {
+    //   switch (selectedAgg) {
+    //     case 'average':
+    // }
+    // switch (selectedAgg) {
+    //   case 'average':
+    //     return [...groupedParams].map(obj => {
+    //       return { key: obj[0], value: reduceAverage(obj[1]) };
+    //     });
+    //   case 'sum':
+    //   return [...groupedParams].map(obj => {
+    //     return { key: obj[0], value: reduceSum(obj[1]) };
+    //   });
+    // }
   };
 
   public computeXAxisFields = (expRuns: ModelRecord[]) => {

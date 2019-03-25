@@ -74,7 +74,7 @@ class BarChart extends Component {
 
   render() {
     return (
-      <svg width={width} height={height} class={'expChart'}>
+      <svg width={width} height={height} className={'expChart'}>
         {this.state.bars.map(d => (
           <rect x={d.x} y={d.y} width={barWidth} height={d.height} fill={'#5fe6c9'} key={Math.random() + d.y} />
         ))}
