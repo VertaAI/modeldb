@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
-const width = 600;
-const height = 300;
+const width = 680;
+const height = 340;
 const barWidth = 20;
-const margin = { top: 20, right: 5, bottom: 20, left: 55 };
+const margin = { top: 20, right: 5, bottom: 40, left: 65 };
 
 class BarChart extends Component {
   state = {
@@ -14,7 +14,7 @@ class BarChart extends Component {
   yAxis = d3.axisLeft();
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { data, xLabel, yLabel } = nextProps;
+    const { data } = nextProps;
     if (!data) return {};
 
     const xScale = d3
@@ -27,7 +27,7 @@ class BarChart extends Component {
       .range([margin.left, width - margin.right])
       .padding(0.1);
 
-    const [min, max] = d3.extent(data, d => d.value);
+    const [, max] = d3.extent(data, d => d.value);
     const yScale = d3
       .scaleLinear()
       .domain([0, max + max * 0.2])
@@ -49,6 +49,9 @@ class BarChart extends Component {
     d3.select(this.refs.xAxis).call(this.xAxis);
     this.yAxis.scale(this.state.yScale);
     d3.select(this.refs.yAxis).call(this.yAxis);
+
+    d3.select('#yLabel').text(this.props.yLabel);
+    d3.select('#xLabel').text(this.props.xLabel);
   }
 
   componentDidMount() {
@@ -56,19 +59,23 @@ class BarChart extends Component {
     d3.select(this.refs.xAxis).call(this.xAxis);
     this.yAxis.scale(this.state.yScale);
     d3.select(this.refs.yAxis).call(this.yAxis);
-    d3.select('.expChart')
+    d3.select(this.refs.yAxis)
       .append('text')
+      .attr('id', 'yLabel')
       .attr('transform', 'rotate(-90)')
-      .attr('y', margin.left)
-      .attr('x', height / 2)
+      .attr('x', -height / 2)
+      .attr('y', -margin.left / 2 - 10)
       .style('text-anchor', 'middle')
+      .style('fill', '#444')
       .text(this.props.yLabel);
 
-    d3.select('.expChart')
+    d3.select(this.refs.xAxis)
       .append('text')
-      .attr('y', height + margin.top)
+      .attr('id', 'xLabel')
+      .attr('y', margin.top + 10)
       .attr('x', width / 2)
       .style('text-anchor', 'middle')
+      .style('fill', '#444')
       .text(this.props.xLabel);
   }
 

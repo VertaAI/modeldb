@@ -103,7 +103,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
           ) : (
             ''
           )}
-          <p style={{ fontSize: '1.15em' }}>Summary Chart</p>
+          <h3>Summary Chart</h3>
           <div className={styles.chart_selector}>
             Metric :{' '}
             <select name="selected-metric" onChange={this.handleMetricChange} className={styles.dropdown}>

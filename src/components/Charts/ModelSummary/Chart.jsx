@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as d3 from 'd3';
 const width = 650;
 const height = 400;
-const margin = { top: 20, right: 5, bottom: 20, left: 55 };
+const margin = { top: 20, right: 5, bottom: 40, left: 55 };
 
 class BarChart extends Component {
   state = {
@@ -44,14 +44,23 @@ class BarChart extends Component {
     this.yAxis.scale(this.state.yScale);
     d3.select(this.refs.yAxis).call(this.yAxis);
 
-    d3.select('svg')
+    d3.select(this.refs.yAxis)
       .append('text')
       .attr('transform', 'rotate(-90)')
-      .attr('y', 0 - margin.left)
-      .attr('x', 0 - height / 2)
+      .attr('y', -margin.left)
+      .attr('x', -height / 2)
       .attr('dy', '1em')
       .style('text-anchor', 'middle')
+      .style('fill', '#444')
       .text('Metric');
+
+    d3.select(this.refs.xAxis)
+      .append('text')
+      .attr('y', margin.top + 10)
+      .attr('x', width / 2)
+      .style('text-anchor', 'middle')
+      .style('fill', '#444')
+      .text('Time Range');
   }
   componentDidUpdate() {
     this.xAxis.scale(this.state.xScale);
