@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500');
 @import url('https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
 @import './css/theme.css';
+@import './css/ag-grid-theme.css';
 
 body {
   margin: 0;
