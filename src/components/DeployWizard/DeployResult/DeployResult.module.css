@@ -5,6 +5,7 @@
 .url {
   display: inline-block;
   width: 100%;
+  line-height: 0.9;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
