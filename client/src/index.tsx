@@ -1,6 +1,5 @@
 import { ConnectedRouter } from 'connected-react-router';
 import { createBrowserHistory } from 'history';
-import jwtDecode from 'jwt-decode';
 import 'normalize.css';
 import React from 'react';
 import ReactDOM from 'react-dom';

@@ -9,6 +9,6 @@ export class MockProjectDataService extends ProjectDataService implements IProje
     super();
 
     const mock = new MockAdapter(axios);
-    mock.onGet('/v1/project/getProjects').reply(200, { projects: projectsMock });
+    mock.onGet('/getProjects').reply(200, { projects: projectsMock });
   }
 }

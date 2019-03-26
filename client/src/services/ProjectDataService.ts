@@ -13,12 +13,12 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
   }
 
   public getProjects(filter?: IFilterData[]): AxiosPromise<Project[]> {
-    return axios.get<Project[]>('/v1/project/getProjects', this.responseToProjectConfig(filter));
+    return axios.get<Project[]>('/getProjects', this.responseToProjectConfig(filter));
   }
 
   public mapProjectAuthors(): AxiosPromise<Project[]> {
     // implement mapping for author if any
-    return axios.get<Project[]>('/v1/project/getProjects', this.responseToProjectConfig());
+    return axios.get<Project[]>('/getProjects', this.responseToProjectConfig());
   }
 
   private responseToProjectConfig(filters?: IFilterData[]): AxiosRequestConfig {

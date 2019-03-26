@@ -6,13 +6,10 @@ const apiAddress = process.env.BACKEND_API_PROTOCOL + "://" +
 
 module.exports = {
   getFromAPI : function(url, headers, query) {
-    console.log("********************CALLING FUNCTION***************", url)
-
-    return axios({
-        method: 'get',
-        url: apiAddress + url,
+    return axios.get(apiAddress + url, 
+      {
         headers: headers,
         params : query
-    });
+      });
   }
 }

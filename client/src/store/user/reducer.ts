@@ -5,15 +5,15 @@ import {
   userAuthenticateAction,
   userAuthenticateActionTypes,
   userLogoutActionTypes,
-  ICheckUserAuthenticationAction,
-  checkUserAuthenticationActionTypes
+  checkUserAuthenticationActionTypes,
+  ICheckUserAuthenticationAction
 } from './types';
 
 const initialState: IUserState = {
   authenticated: false,
   loading: false,
-  checkingUserAuthentication: false,
-  user: null
+  user: null,
+  checkingUserAuthentication: false
 };
 
 const userAuthenticateReducer: Reducer<IUserState> = (state = initialState, action: userAuthenticateAction) => {
