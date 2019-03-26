@@ -78,7 +78,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
         <div className={styles.summary_wrapper}>
           {this.timeProj !== undefined && this.timeProj !== null ? (
             <div>
-              <h3>{this.timeProj.name}</h3>
+              <p style={{ fontSize: '20px', fontWeight: 500 }}>{this.timeProj.name}</p>
               <div style={{ float: 'right', marginTop: '-40px', marginLeft: '-60px', padding: '0 50px 0 0px' }}>
                 <div>
                   <span style={{ fontSize: '0.85em' }}>Author:</span> {this.timeProj.Author.name}
@@ -103,7 +103,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
           ) : (
             ''
           )}
-          <h3>Summary Chart</h3>
+          <p style={{ fontSize: '1.2em' }}>Summary Chart</p>
           <div className={styles.chart_selector}>
             Metric :{' '}
             <select name="selected-metric" onChange={this.handleMetricChange} className={styles.dropdown}>

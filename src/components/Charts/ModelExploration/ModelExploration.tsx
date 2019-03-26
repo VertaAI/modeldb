@@ -18,10 +18,6 @@ interface ILocalState {
   selectedAggregate: string;
 }
 
-// requirements:
-//      we need an aggregate switching mechanism
-//      groupby involve a new chart type
-
 export default class ModelExploration extends React.Component<ILocalProps, ILocalState> {
   public xAxisParams: Set<string> = new Set(); // computed fields from ModelRecord object
   public yAxisParams: Set<string> = new Set(); // metric fields only for Y axis
@@ -39,15 +35,6 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
 
   public render() {
     const { expRuns } = this.props;
-    // let constVal = 'averageReduceMetrics';
-    // console.log(this.state.computeXAxisFields);
-    // this.setState({
-    //   computedData: this.reduceMetricsAvg(this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis]))
-    // });
-    // console.log(this.state);
-    // this.state.computedData = this.reduceMetricsAvg(
-    //   this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis])
-    // );
 
     return expRuns ? (
       <div className={styles.summary_wrapper}>
@@ -107,7 +94,6 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
         </div>
         <div>
           {console.log(this.state)}
-
           <BarChart
             xLabel={this.state.selectedXAxis}
             yLabel={this.state.selectedYAxis}
@@ -171,17 +157,6 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
   };
   public stdev = (array: any) => Math.sqrt(this.variance(array));
   public count = (array: any) => array.length;
-
-  // variance: function(array) {
-  // 	var mean = arr.mean(array);
-  // 	return arr.mean(array.map(function(num) {
-  // 		return Math.pow(num - mean, 2);
-  // 	}));
-  // },
-
-  // standardDeviation: function(array) {
-  // 	return Math.sqrt(arr.variance(array));
-  // },
 
   // to be used to refactor the aggregate workflow
   // public reduceByAggType = (aggType: string, array: any[]) => {
@@ -256,36 +231,13 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
   public reduceMetricForAgg = (groupedParams: any, selectedAgg: string) => {
     const reduceAverage = (array: any) => array.reduce((a: any, b: any) => a + b) / array.length;
     const reduceSum = (array: any) => array.reduce((a: any, b: any) => a + b);
-
-    // const dogSwitch = (breed: any) =>
-    //   ({
-    //     border: 'Border Collies are good boys and girls.',
-    //     pitbull: 'Pit Bulls are good boys and girls.',
-    //     german: 'German Shepherds are good boys and girls.'
-    //   }[breed]);
-    // dogSwitch('border');
-
-    // const returnReduceBySelection = (obj:any) => {
-    //   switch (selectedAgg) {
-    //     case 'average':
-    // }
-    // switch (selectedAgg) {
-    //   case 'average':
-    //     return [...groupedParams].map(obj => {
-    //       return { key: obj[0], value: reduceAverage(obj[1]) };
-    //     });
-    //   case 'sum':
-    //   return [...groupedParams].map(obj => {
-    //     return { key: obj[0], value: reduceSum(obj[1]) };
-    //   });
-    // }
   };
 
   public computeXAxisFields = (expRuns: ModelRecord[]) => {
-    this.xAxisParams.add('experimentId');
-    this.xAxisParams.add('projectId');
+    this.xAxisParams.add('experiment_id');
+    this.xAxisParams.add('project_id');
     this.xAxisParams.add('id');
-    this.xAxisParams.add('startTime');
+    this.xAxisParams.add('start_time');
     return expRuns.map(modeRecord => {
       const fields: any = {};
       if (modeRecord.metrics) {
@@ -319,7 +271,7 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
 
       if (modeRecord.codeVersion) {
         fields.code_version = modeRecord.codeVersion;
-        this.xAxisParams.add('codeVersion');
+        this.xAxisParams.add('code_version');
       }
       if (modeRecord.owner) {
         fields.owner = modeRecord.owner;
