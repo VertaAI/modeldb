@@ -1,6 +1,7 @@
 import { JsonObject, JsonProperty } from 'json2typescript';
 
 import { StringToDateConverter } from 'utils/MapperConverters';
+
 import User from './User';
 
 @JsonObject('project')

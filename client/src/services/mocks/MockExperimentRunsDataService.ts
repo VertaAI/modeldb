@@ -1,9 +1,8 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
-import ExperimentRunsDataService from 'services/ExperimentRunsDataService';
-import { IExperimentRunsDataService } from 'services/IExperimentRunsDataService';
-
+import ExperimentRunsDataService from '../ExperimentRunsDataService';
+import { IExperimentRunsDataService } from '../IExperimentRunsDataService';
 import { expRunsMocks } from './expRunsMock';
 
 export class MockExperimentRunsDataService extends ExperimentRunsDataService implements IExperimentRunsDataService {

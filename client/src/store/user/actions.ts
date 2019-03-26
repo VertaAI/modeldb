@@ -1,8 +1,8 @@
-import ServiceFactory from 'services/ServiceFactory';
 import { action } from 'typesafe-actions';
 
 import { history } from 'index';
 import User from 'models/User';
+import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 
 import routes from 'routes';
