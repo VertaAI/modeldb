@@ -41,7 +41,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
 
     switch (status) {
       case InvitationStatus.None:
-        return this.props.currentUserAccess !== UserAccess.Read ? (
+        return this.props.currentUserAccess === UserAccess.Read ? (
           <div className={styles.share_result_content}>
             <img src={read_only_icon} />
             <span className={styles.share_result_header}>Read-only</span>
