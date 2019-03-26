@@ -1,8 +1,10 @@
+import { action } from 'typesafe-actions';
+
 import { FilterContextPool } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
 import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
-import { action } from 'typesafe-actions';
+
 import {
   applyFiltersAction,
   IFilterContextData,

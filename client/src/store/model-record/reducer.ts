@@ -1,4 +1,5 @@
 import { Reducer } from 'redux';
+
 import { fetchModelRecordAction, fetchModelRecordActionTypes, IModelRecordState } from './types';
 
 const modelInitialState: IModelRecordState = {

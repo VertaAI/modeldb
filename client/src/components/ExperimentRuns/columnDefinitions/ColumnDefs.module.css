@@ -47,7 +47,7 @@
 
 .param_cell {
   display: grid;
-  justify-content: "unset";
+  justify-content: 'unset';
   outline: none;
 }
 .param_cell:focus {

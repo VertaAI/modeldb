@@ -1,14 +1,14 @@
-import User from 'models/User';
+import { bind } from 'decko';
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { bind } from 'decko';
 
+import User from 'models/User';
+import routes from 'routes';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { logoutUser } from 'store/user/actions';
-import routes from 'routes';
 
 import styles from './UserBar.module.css';
 

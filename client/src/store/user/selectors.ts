@@ -1,6 +1,6 @@
 import User from 'models/User';
-
 import { IApplicationState } from 'store/store';
+
 import { IUserState } from './types';
 
 const selectState = (state: IApplicationState): IUserState => state.layout;

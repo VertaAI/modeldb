@@ -1,8 +1,10 @@
-import Callback from 'components/Callback/Callback';
-import Login from 'components/Login/Login';
 import React from 'react';
 import { Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
+
+import Callback from 'components/Callback/Callback';
+import Login from 'components/Login/Login';
 import routes from 'routes';
+
 import styles from './AnonymousLayout.module.css';
 import AnonymousLayoutHeader from './AnonymousLayoutHeader/AnonymousLayoutHeader';
 import { Footer } from './Footer/Footer';

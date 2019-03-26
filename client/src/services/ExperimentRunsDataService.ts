@@ -1,33 +1,26 @@
-import axios, { AxiosPromise, AxiosRequestConfig } from "axios";
-import { JsonConvert } from "json2typescript";
+import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
+import { JsonConvert } from 'json2typescript';
 
-import { ComparisonType, IFilterData, PropertyType } from "models/Filters";
-import { IHyperparameter } from "models/HyperParameters";
-import { IMetric } from "models/Metrics";
-import ModelRecord from "models/ModelRecord";
+import { ComparisonType, IFilterData, PropertyType } from 'models/Filters';
+import { IHyperparameter } from 'models/HyperParameters';
+import { IMetric } from 'models/Metrics';
+import ModelRecord from 'models/ModelRecord';
 
-import { BaseDataService } from "./BaseDataService";
-import { IExperimentRunsDataService } from "./IExperimentRunsDataService";
+import { BaseDataService } from './BaseDataService';
+import { IExperimentRunsDataService } from './IExperimentRunsDataService';
 
-export default class ExperimentRunsDataService extends BaseDataService
-  implements IExperimentRunsDataService {
+export default class ExperimentRunsDataService extends BaseDataService implements IExperimentRunsDataService {
   constructor() {
     super();
   }
 
-  public getExperimentRuns(
-    projectId: string,
-    filters?: IFilterData[]
-  ): AxiosPromise<ModelRecord[]> {
+  public getExperimentRuns(projectId: string, filters?: IFilterData[]): AxiosPromise<ModelRecord[]> {
     const axiosConfig = this.responseToExperimentRunsConfig(filters);
     axiosConfig.params = { project_id: projectId };
-    return axios.get<ModelRecord[]>("/getExperimentRunsInProject", axiosConfig);
+    return axios.get<ModelRecord[]>('/getExperimentRunsInProject', axiosConfig);
   }
 
-  public getModelRecord(
-    modelId: string,
-    storeExperimentRuns: ModelRecord[]
-  ): Promise<ModelRecord> {
+  public getModelRecord(modelId: string, storeExperimentRuns: ModelRecord[]): Promise<ModelRecord> {
     return new Promise<ModelRecord>(resolve => {
       let modelRecord;
       storeExperimentRuns.forEach(model => {
@@ -39,9 +32,7 @@ export default class ExperimentRunsDataService extends BaseDataService
     });
   }
 
-  private responseToExperimentRunsConfig(
-    filters?: IFilterData[]
-  ): AxiosRequestConfig {
+  private responseToExperimentRunsConfig(filters?: IFilterData[]): AxiosRequestConfig {
     return {
       transformResponse: [
         (data: any) => {
@@ -51,14 +42,9 @@ export default class ExperimentRunsDataService extends BaseDataService
             }
 
             const jsonConvert = new JsonConvert();
-            let experimentRuns = jsonConvert.deserializeArray(
-              data.experiment_runs,
-              ModelRecord
-            ) as ModelRecord[];
+            let experimentRuns = jsonConvert.deserializeArray(data.experiment_runs, ModelRecord) as ModelRecord[];
             if (filters && filters.length > 0) {
-              experimentRuns = experimentRuns.filter(model =>
-                this.checkExperimentRun(model, filters)
-              );
+              experimentRuns = experimentRuns.filter(model => this.checkExperimentRun(model, filters));
             }
 
             return experimentRuns;
@@ -76,25 +62,25 @@ export default class ExperimentRunsDataService extends BaseDataService
       const propName: string = filter.name.toLocaleLowerCase();
       const filterValue = filter.value;
 
-      if (propName === "tag") {
+      if (propName === 'tag') {
         if (modelRecord.tags.includes(filter.value.toString())) {
           return true;
         }
       }
 
-      if (propName === "name") {
+      if (propName === 'name') {
         if (modelRecord.name === filter.value.toString()) {
           return true;
         }
       }
 
-      if (propName === "id") {
+      if (propName === 'id') {
         if (modelRecord.id === filter.value.toString()) {
           return true;
         }
       }
 
-      if (propName === "ProjectId") {
+      if (propName === 'ProjectId') {
         if (modelRecord.projectId === filter.value.toString()) {
           return true;
         }
@@ -102,16 +88,12 @@ export default class ExperimentRunsDataService extends BaseDataService
 
       if (filter.type === PropertyType.METRIC) {
         let val;
-        const m: IMetric | undefined = modelRecord.metrics.find(
-          metric => metric.key === filter.name
-        );
+        const m: IMetric | undefined = modelRecord.metrics.find(metric => metric.key === filter.name);
         if (m !== undefined) {
           val = m.value;
         }
 
-        const h: IHyperparameter | undefined = modelRecord.hyperparameters.find(
-          metric => metric.key === filter.name
-        );
+        const h: IHyperparameter | undefined = modelRecord.hyperparameters.find(metric => metric.key === filter.name);
         if (h !== undefined) {
           val = h.value;
         }

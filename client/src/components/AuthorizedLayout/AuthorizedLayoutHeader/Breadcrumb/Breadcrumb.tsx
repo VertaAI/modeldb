@@ -1,14 +1,14 @@
+import { bind } from 'decko';
 import { UnregisterCallback } from 'history';
 import { Project } from 'models/Project';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
-import { bind } from 'decko';
 
 import { BreadcrumbItem } from 'models/BreadcrumbItem';
 import ModelRecord from 'models/ModelRecord';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import routes from 'routes';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './Breadcrumb.module.css';
 import headerArrow from './images/header-arrow.svg';

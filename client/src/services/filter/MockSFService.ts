@@ -6,7 +6,7 @@ import ModelRecord from 'models/ModelRecord';
 import { Project } from 'models/Project';
 import { IFilterContextData } from 'store/filter';
 
-import ISearchAndFilterService from 'services/ISearchAndFilterService';
+import ISearchAndFilterService from '../ISearchAndFilterService';
 
 export default class MockSFService implements ISearchAndFilterService {
   public searchFilterSuggestions(searchString: string, data?: IFilterContextData): Promise<IFilterData[]> {

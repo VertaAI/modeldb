@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+
 import routes from 'routes';
+
 import styles from './GenericNotFound.module.css';
 import notFoundImg from './images/404img.svg';
 

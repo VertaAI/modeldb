@@ -1,16 +1,15 @@
-@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500");
-@import url("https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css");
-@import "./css/theme.css";
-@import "./css/ag-grid-theme.css";
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500');
+@import url('https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+@import './css/theme.css';
+@import './css/ag-grid-theme.css';
 
 body {
   margin: 0;
   padding: 0;
-  font-family: "Roboto";
+  font-family: 'Roboto';
   background-color: var(--bg-color4);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

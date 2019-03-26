@@ -1,5 +1,7 @@
-import loader from 'components/images/loader.gif';
 import * as React from 'react';
+
+import loader from 'components/images/loader.gif';
+
 import styles from './GlobalPreloader.module.css';
 
 const GlobalPreloader = React.memo(() => {

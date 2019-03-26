@@ -1,12 +1,13 @@
 import { Reducer } from 'redux';
+
 import {
+  checkUserAuthenticationActionTypes,
+  ICheckUserAuthenticationAction,
   IUserLogoutAction,
   IUserState,
   userAuthenticateAction,
   userAuthenticateActionTypes,
-  userLogoutActionTypes,
-  ICheckUserAuthenticationAction,
-  checkUserAuthenticationActionTypes
+  userLogoutActionTypes
 } from './types';
 
 const initialState: IUserState = {

@@ -1,4 +1,5 @@
 import { Reducer } from 'redux';
+
 import { fetchProjectsAction, fetchProjectsActionTypes, IProjectsState, IUpdateProjectAction, updateProjectActionTypes } from './types';
 
 const projectsInitialState: IProjectsState = {

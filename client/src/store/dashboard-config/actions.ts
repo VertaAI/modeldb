@@ -1,5 +1,7 @@
-import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
+
+import { ActionResult } from 'store/store';
+
 import { IColumnMetaData, IUpdateDashboardConfigAction, updateDashboardConfigActionTypes } from './types';
 
 export const updateDashboardConfig = (

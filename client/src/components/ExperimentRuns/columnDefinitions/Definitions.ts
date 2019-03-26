@@ -1,11 +1,11 @@
-import ArtifactsColDef from "./Artifacts";
-import styles from "./ColumnDefs.module.css";
-import DatasetsColDef from "./Datasets";
-import HyperparamsColDef from "./Hyperparams";
+import ArtifactsColDef from './Artifacts';
+import styles from './ColumnDefs.module.css';
+import DatasetsColDef from './Datasets';
+import HyperparamsColDef from './Hyperparams';
 // import ObservationsColDef from './Observations';
-import MetricsColDef from "./Metrics";
-import ModelRecordColDef from "./ModelRecord";
-import SummaryColDef from "./Summary";
+import MetricsColDef from './Metrics';
+import ModelRecordColDef from './ModelRecord';
+import SummaryColDef from './Summary';
 
 export const defaultColDefinitions = {
   autoHeight: true,
@@ -15,52 +15,52 @@ export const defaultColDefinitions = {
 export const returnColumnDefs = (updatedConfig: any) => {
   return [
     {
-      headerName: "IDs",
-      field: "data",
+      headerName: 'IDs',
+      field: 'data',
       width: 190,
       cellRendererFramework: ModelRecordColDef,
       cellClass: [styles.cell, styles.modelDescription],
-      hide: !updatedConfig.get("id").checked
+      hide: !updatedConfig.get('id').checked
     },
     {
-      headerName: "Summary",
-      field: "data",
+      headerName: 'Summary',
+      field: 'data',
       cellRendererFramework: SummaryColDef,
       width: 180,
       cellClass: styles.cell,
-      hide: !updatedConfig.get("summary").checked
+      hide: !updatedConfig.get('summary').checked
     },
     {
-      headerName: "Metrics",
-      field: "metrics",
+      headerName: 'Metrics',
+      field: 'metrics',
       cellRendererFramework: MetricsColDef,
       width: 200,
       cellClass: styles.cell,
-      hide: !updatedConfig.get("metrics").checked
+      hide: !updatedConfig.get('metrics').checked
     },
     {
-      headerName: "Hyperparameters",
+      headerName: 'Hyperparameters',
       width: 230,
-      field: "hyperparameters",
+      field: 'hyperparameters',
       cellRendererFramework: HyperparamsColDef,
       cellClass: styles.cell,
-      hide: !updatedConfig.get("hyperparameters").checked
+      hide: !updatedConfig.get('hyperparameters').checked
     },
     {
-      headerName: "Artifacts",
-      field: "artifacts",
+      headerName: 'Artifacts',
+      field: 'artifacts',
       cellRendererFramework: ArtifactsColDef,
       width: 260,
       cellClass: styles.cell,
-      hide: !updatedConfig.get("artifacts").checked
+      hide: !updatedConfig.get('artifacts').checked
     },
     {
-      headerName: "Datasets",
-      field: "datasets",
+      headerName: 'Datasets',
+      field: 'datasets',
       cellRendererFramework: DatasetsColDef,
       width: 240,
       cellClass: styles.cell,
-      hide: !updatedConfig.get("datasets").checked
+      hide: !updatedConfig.get('datasets').checked
     }
     // {
     //   headerName: 'Observations',
