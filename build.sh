@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t webapp:latest -f Dockerfile-local .
+docker build -t modeldb-frontend:latest -f Dockerfile .
