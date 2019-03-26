@@ -2,11 +2,11 @@ import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
 
+import Draggable from 'components/Draggable/Draggable';
 import { PropertyType } from 'models/Filters';
 import { Project } from 'models/Project';
-
-import Draggable from 'components/Draggable/Draggable';
 import routes from 'routes';
+
 import styles from './ProjectWidget.module.css';
 
 interface ILocalProps {
