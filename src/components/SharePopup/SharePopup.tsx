@@ -28,7 +28,6 @@ interface ILocalProps {
 
 interface IPropsFromState {
   currentUser: User;
-  status: InvitationStatus;
 }
 
 interface ILocalState {
@@ -49,7 +48,6 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
   }
 
   public render() {
-    const { status } = this.props;
     let currentUserAccess = UserAccess.Read;
     Array.from(this.props.collaborators.entries()).forEach((value: [User, UserAccess], index: number) => {
       const [user, userAccess] = value;
@@ -90,7 +88,7 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
         </div>
         <div className={styles.content}>
           {this.state.activeTab === Tabs.share ? (
-            <ShareTab currentUserAccess={currentUserAccess} status={status} projectId={this.props.projectId} />
+            <ShareTab currentUserAccess={currentUserAccess} projectId={this.props.projectId} />
           ) : this.state.activeTab === Tabs.collaborators ? (
             <CollaboratorsTab
               currentUserAccess={currentUserAccess}
@@ -130,9 +128,8 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ collaboration, layout }: IApplicationState) => ({
-  currentUser: layout.user!,
-  status: collaboration.inviteNewCollaborator.status
+const mapStateToProps = ({ layout }: IApplicationState) => ({
+  currentUser: layout.user!
 });
 
 export default connect(mapStateToProps)(SharePopup);

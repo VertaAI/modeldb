@@ -34,11 +34,11 @@ export const sendInvitationForUser = (
   await ServiceFactory.getCollaboratorsService()
     .sendInvitation(projectId, email, userAccess)
     .then(res => {
-      dispatch(action(sendInvitationActionTypes.SEND_INVITATION_SUCCESS, InvitationStatus.Success));
+      dispatch(action(sendInvitationActionTypes.SEND_INVITATION_SUCCESS));
       dispatch(updateProjectCollaboratorAccess(projectId, new User(undefined, email), userAccess));
     })
     .catch(err => {
-      dispatch(action(sendInvitationActionTypes.SEND_INVITATION_FAILURE));
+      dispatch(action(sendInvitationActionTypes.SEND_INVITATION_FAILURE, err));
     });
 };
 
@@ -55,11 +55,11 @@ export const changeProjectOwner = (projectId: string, email: string): ActionResu
   await ServiceFactory.getCollaboratorsService()
     .changeOwner(projectId, email)
     .then(res => {
-      dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_SUCCESS, InvitationStatus.Success));
+      dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_SUCCESS));
       dispatch(updateProjectCollaboratorAccess(projectId, new User(undefined, email), UserAccess.Owner));
     })
     .catch(err => {
-      dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_FAILURE));
+      dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_FAILURE, err));
     });
 };
 
@@ -77,11 +77,11 @@ export const changeAccessToProject = (
   await ServiceFactory.getCollaboratorsService()
     .changeAccessToProject(projectId, user.email, userAccess)
     .then(res => {
-      dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_SUCCESS, InvitationStatus.Success));
+      dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_SUCCESS));
       dispatch(updateProjectCollaboratorAccess(projectId, user, userAccess));
     })
     .catch(err => {
-      dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_FAILURE));
+      dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_FAILURE, err));
     });
 };
 
@@ -98,11 +98,11 @@ export const removeAccessFromProject = (projectId: string, user: User): ActionRe
   await ServiceFactory.getCollaboratorsService()
     .removeAccessFromProject(projectId, user.email)
     .then(res => {
-      dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_SUCCESS, InvitationStatus.Success));
+      dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_SUCCESS));
       dispatch(removeCollaboratorFromProject(projectId, user));
     })
     .catch(err => {
-      dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_FAILURE));
+      dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_FAILURE, err));
     });
 };
 

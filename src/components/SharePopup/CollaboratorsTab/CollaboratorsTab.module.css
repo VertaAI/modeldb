@@ -65,3 +65,36 @@
 .change_owner_confirm_button:hover {
   background-color: #6a84ff;
 }
+
+.share_result_content {
+  margin-top: 35px;
+  display: grid;
+  margin-bottom: 55px;
+  justify-items: center;
+  grid-template-rows: 71px 22px auto;
+}
+
+.share_result_header {
+  font-size: 15px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.share_result_text {
+  font-size: 13px;
+  line-height: 15px;
+  text-align: center;
+}
+
+.share_result_button {
+  text-align: center;
+  background: var(--main-color3);
+  cursor: pointer;
+  border: none;
+}
+
+.share_result_button_text {
+  color: var(--main-color2);
+  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
+  cursor: pointer;
+}

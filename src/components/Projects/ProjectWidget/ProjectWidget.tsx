@@ -1,18 +1,17 @@
+import { bind } from 'decko';
 import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
-import { bind } from 'decko';
 
 import { PropertyType } from 'models/Filters';
 import { Project, UserAccess } from 'models/Project';
 import User from 'models/User';
 
-import Draggable from '../../Draggable/Draggable';
-import SharePopup from '../../SharePopup/SharePopup';
-import routes from '../../../routes';
+import Draggable from 'components/Draggable/Draggable';
+import SharePopup from 'components/SharePopup/SharePopup';
+import routes from 'routes';
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
-import tstyles from '../../TagBlock/TagBlock.module.css';
 
 interface ILocalProps {
   project: Project;
@@ -45,7 +44,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
               <div className={styles.title}>{project.name}</div>
               <div className={styles.description}>{project.description}</div>
             </div>
-            <ul className={tstyles.tags}>
+            <div className={styles.tags_block}>
               {this.props.project.tags &&
                 this.props.project.tags.map((tag: string, i: number) => {
                   return (
@@ -59,7 +58,7 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                     </Draggable>
                   );
                 })}
-            </ul>
+            </div>
             <div className={styles.metrics_block} />
             <div className={styles.author_block}>
               <div className={styles.author_name}>
