@@ -26,8 +26,8 @@ class ArtifactsColDef extends React.Component<any> {
                     {artifact.type === 'IMAGE' ? (
                       <i className="fa fa-image" style={{ color: '#6863ff' }} />
                     ) : (
-                      <i className="fa fa-codepen" style={{ color: '#6863ff' }} />
-                    )}
+                        <i className="fa fa-codepen" style={{ color: '#6863ff' }} />
+                      )}
                   </div>
                   <div className={styles.type}>{artifact.type} &nbsp; &nbsp; &nbsp; -> </div>
                   <div className={styles.key}>{artifact.key}</div>

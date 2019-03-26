@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+
+import routes from 'routes';
+
 import styles from './GenericNotFound.module.css';
 import notFoundImg from './images/404img.svg';
-import routes from '../../routes';
 
 // tslint:disable-next-line:variable-name
 export const GenericNotFound = () => {

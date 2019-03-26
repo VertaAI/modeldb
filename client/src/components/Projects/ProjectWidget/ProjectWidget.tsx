@@ -3,13 +3,13 @@ import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
 
+import Draggable from 'components/Draggable/Draggable';
+import SharePopup from 'components/SharePopup/SharePopup';
 import { PropertyType } from 'models/Filters';
 import { Project, UserAccess } from 'models/Project';
 import User from 'models/User';
-
-import Draggable from 'components/Draggable/Draggable';
-import SharePopup from 'components/SharePopup/SharePopup';
 import routes from 'routes';
+
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
 
@@ -102,8 +102,8 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                           src={user.picture ? user.picture : ''}
                         />
                       ) : (
-                        ''
-                      );
+                          ''
+                        );
                     })}
                     {project.collaborators.size > 3 ? (
                       <Avatar
@@ -116,12 +116,12 @@ export default class ProjectWidget extends React.Component<ILocalProps, ILocalSt
                         fgColor="#666666"
                       />
                     ) : (
-                      ''
-                    )}
+                        ''
+                      )}
                   </span>
                 ) : (
-                  ''
-                )}
+                    ''
+                  )}
               </button>
             </div>
             <div className={styles.created_date_block}>

@@ -1,6 +1,7 @@
 import { JsonObject, JsonProperty } from 'json2typescript';
 
 import { StringToDateConverter } from 'utils/MapperConverters';
+
 import { Artifact, IArtifact } from './Artifact';
 import { Dataset, IDataset } from './Dataset';
 import { PropertyType } from './Filters';

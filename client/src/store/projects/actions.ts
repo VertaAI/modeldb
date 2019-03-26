@@ -1,9 +1,11 @@
-import { IFilterData } from 'models/Filters';
-import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
+
+import { IFilterData } from 'models/Filters';
 import { Project, UserAccess } from 'models/Project';
 import User from 'models/User';
 import ServiceFactory from 'services/ServiceFactory';
+import { ActionResult } from 'store/store';
+
 import { fetchProjectsAction, fetchProjectsActionTypes, IUpdateProjectAction, updateProjectActionTypes } from './types';
 
 export const fetchProjects = (filters?: IFilterData[]): ActionResult<void, fetchProjectsAction> => async (dispatch, getState) => {

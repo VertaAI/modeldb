@@ -1,4 +1,5 @@
 import { Reducer } from 'redux';
+
 import { IFilterData } from 'models/Filters';
 
 import {

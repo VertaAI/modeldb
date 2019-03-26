@@ -1,8 +1,8 @@
 import { action } from 'typesafe-actions';
 
-import { ActionResult } from 'store/store';
 import { IFilterData } from 'models/Filters';
 import ServiceFactory from 'services/ServiceFactory';
+import { ActionResult } from 'store/store';
 
 import { fetchExperimentRunsAction, fetchExperimentRunsActionTypes } from './types';
 

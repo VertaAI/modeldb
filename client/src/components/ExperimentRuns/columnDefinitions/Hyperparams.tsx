@@ -1,8 +1,8 @@
 import * as React from 'react';
 
+import Draggable from 'components/Draggable/Draggable';
 import { ComparisonType, PropertyType } from 'models/Filters';
 
-import Draggable from 'components/Draggable/Draggable';
 import styles from './ColumnDefs.module.css';
 
 const ModelProperty: React.SFC<any> = props => {

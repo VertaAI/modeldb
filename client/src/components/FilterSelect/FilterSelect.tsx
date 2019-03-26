@@ -6,6 +6,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
+import Droppable from 'components/Droppable/Droppable';
 import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
@@ -23,7 +24,6 @@ import {
 } from 'store/filter';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import Droppable from 'components/Droppable/Droppable';
 import AppliedFilterItem from './AppliedFilterItem/AppliedFilterItem';
 import FilterItem from './FilterItem/FilterItem';
 import styles from './FilterSelect.module.css';

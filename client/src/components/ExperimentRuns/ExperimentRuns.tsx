@@ -6,6 +6,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import loader from 'components/images/loader.gif';
 import { FilterContextPool } from 'models/FilterContextPool';
 import { PropertyType } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
@@ -14,11 +15,9 @@ import { IColumnMetaData } from 'store/dashboard-config';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import loader from 'components/images/loader.gif';
-import styles from './ExperimentRuns.module.css';
-
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
+import styles from './ExperimentRuns.module.css';
 
 let currentProjectID: string;
 const locationRegEx = /\/project\/([a-z0-9\-]+)\/exp-runs/im;
@@ -123,8 +122,8 @@ class ExperimentRuns extends React.Component<AllProps> {
         </div>
       </div>
     ) : (
-      ''
-    );
+          ''
+        );
   }
 
   public onGridReady = (event: GridReadyEvent) => {
@@ -165,15 +164,15 @@ class ExperimentRuns extends React.Component<AllProps> {
       case 'param':
         return this.data[filter.subtype].find((params: any) => params.key === filter.param)
           ? operators[filter.operator](
-              Number(
-                this.data[filter.subtype].find((params: any) => {
-                  if (params.key === filter.param) {
-                    return params.value;
-                  }
-                }).value
-              ),
-              Number(filter.value)
-            )
+            Number(
+              this.data[filter.subtype].find((params: any) => {
+                if (params.key === filter.param) {
+                  return params.value;
+                }
+              }).value
+            ),
+            Number(filter.value)
+          )
           : false;
       default:
         return true;

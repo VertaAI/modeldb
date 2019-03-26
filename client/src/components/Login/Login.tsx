@@ -1,6 +1,6 @@
+import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { bind } from 'decko';
 
 import User from 'models/User';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
@@ -8,7 +8,6 @@ import { authenticateUser } from 'store/user';
 
 import logo from './images/logo.svg';
 import styles from './Login.module.css';
-import { Route } from 'react-router-dom';
 
 interface IPropsFromState {
   user?: User | null;

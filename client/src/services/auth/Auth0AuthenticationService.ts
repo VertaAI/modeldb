@@ -1,5 +1,7 @@
 import axios from 'axios';
+
 import User from 'models/User';
+
 import { IAuthenticationService } from './IAuthenticationService';
 
 export default class Auth0AuthenticationService implements IAuthenticationService {
@@ -20,6 +22,6 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   public async logout() {
     try {
       await axios.get('auth/logout');
-    } catch {}
+    } catch { }
   }
 }

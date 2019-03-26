@@ -1,9 +1,9 @@
+import CollaboratorsService from './CollaboratorsService';
 import Auth0AuthenticationService from './auth/Auth0AuthenticationService';
 import { IAuthenticationService } from './auth/IAuthenticationService';
-import CollaboratorsService from './CollaboratorsService';
+import MockAuthenticationService from './auth/MockAuthenticationService';
 import ExperimentRunsDataService from './ExperimentRunsDataService';
 import MockSFService from './filter/MockSFService';
-import { ICollaboratorsService } from './ICollaboratorsService';
 import { IExperimentRunsDataService } from './IExperimentRunsDataService';
 import { IProjectDataService } from './IProjectDataService';
 import ISearchAndFilterService from './ISearchAndFilterService';

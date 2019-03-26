@@ -1,6 +1,8 @@
+import * as React from 'react';
+
 import Tag from 'components/TagBlock/Tag';
 import tag_styles from 'components/TagBlock/TagBlock.module.css';
-import * as React from 'react';
+
 import styles from './ColumnDefs.module.css';
 
 class SummaryColDef extends React.Component<any> {

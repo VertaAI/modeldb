@@ -2,7 +2,6 @@ import ArtifactsColDef from './Artifacts';
 import styles from './ColumnDefs.module.css';
 import DatasetsColDef from './Datasets';
 import HyperparamsColDef from './Hyperparams';
-
 // import ObservationsColDef from './Observations';
 import MetricsColDef from './Metrics';
 import ModelRecordColDef from './ModelRecord';

@@ -1,6 +1,8 @@
-import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
+
+import { ActionResult } from 'store/store';
 import ServiceFactory from 'services/ServiceFactory';
+
 import {
   IUserLogoutAction,
   userAuthenticateAction,

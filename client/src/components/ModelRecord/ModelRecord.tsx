@@ -2,6 +2,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import loader from 'components/images/loader.gif';
+import tagStyles from 'components/TagBlock/TagBlock.module.css';
 import { IArtifact } from 'models/Artifact';
 import { IHyperparameter } from 'models/HyperParameters';
 import { IMetric } from 'models/Metrics';
@@ -10,8 +12,6 @@ import routes, { GetRouteParams } from 'routes';
 import { fetchModelRecord } from 'store/model-record';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import loader from 'components/images/loader.gif';
-import tagStyles from 'components/TagBlock/TagBlock.module.css';
 import styles from './ModelRecord.module.css';
 import ShowContentBasedOnUrl from './ShowContentBasedOnUrl/ShowContentBasedOnUrl';
 
@@ -101,8 +101,8 @@ class ModelRecordLayout extends React.Component<AllProps> {
           )}
       </div>
     ) : (
-      ''
-    );
+          ''
+        );
   }
 
   public componentDidMount() {
@@ -116,8 +116,8 @@ class ModelRecordLayout extends React.Component<AllProps> {
         <div className={`${styles.record_value} ${additionalValueClassName}`}>{content}</div>
       </div>
     ) : (
-      ''
-    );
+        ''
+      );
   }
 
   private renderTextRecord(header: string, value: string, additionalValueClassName: string = '') {

@@ -2,11 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import { IApplicationState, IConnectedReduxProps } from './store/store';
-import { selectIsCheckingUserAuthentication, checkUserAuthentication, selectIsUserAuthenticated } from './store/user';
 import AnonymousLayout from 'components/AnonymousLayout/AnonymousLayout';
 import AuthorizedLayout from 'components/AuthorizedLayout/AuthorizedLayout';
 import GlobalPreloader from 'components/GlobalPreloader/GlobalPreloader';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { checkUserAuthentication, selectIsCheckingUserAuthentication, selectIsUserAuthenticated } from 'store/user';
 
 interface IPropsFromState {
   isUserAuthenticated: boolean;

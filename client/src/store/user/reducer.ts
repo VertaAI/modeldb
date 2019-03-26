@@ -1,4 +1,5 @@
 import { Reducer } from 'redux';
+
 import {
   IUserLogoutAction,
   IUserState,

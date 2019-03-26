@@ -2,9 +2,9 @@ import * as React from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
+import ModelRecord from 'models/ModelRecord';
 import { IDashboardConfigState, updateDashboardConfig } from 'store/dashboard-config';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import ModelRecord from 'models/ModelRecord';
 
 import styles from './DashboardConfig.module.css';
 
@@ -56,8 +56,8 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
             </div>
           </div>
         ) : (
-          ''
-        )}
+            ''
+          )}
       </div>
     );
   }

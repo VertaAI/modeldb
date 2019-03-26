@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { bind } from 'decko';
+import * as React from 'react';
 
 import { IFilterData } from 'models/Filters';
 

@@ -1,5 +1,5 @@
-import React from 'react';
 import { bind } from 'decko';
+import React from 'react';
 
 interface ILocalProps {
   type: string;

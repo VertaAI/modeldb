@@ -42,8 +42,8 @@ export default class AppliedFilterItem extends React.Component<ILocalProps, ILoc
             ) : this.props.data.type === PropertyType.METRIC ? (
               <MetricFilterEditor onChange={this.props.onChange} data={this.props.data} />
             ) : (
-              ''
-            )}
+                    ''
+                  )}
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { Reducer } from 'redux';
+
 import { IDashboardConfigState, IUpdateDashboardConfigAction, updateDashboardConfigActionTypes } from './types';
 
 const dashboardInitialState: IDashboardConfigState = {
