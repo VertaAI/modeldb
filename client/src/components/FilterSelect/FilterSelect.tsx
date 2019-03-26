@@ -1,15 +1,15 @@
-import { bind, debounce } from "decko";
-import { UnregisterCallback } from "history";
-import _ from "lodash";
-import * as React from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
-import { RouteComponentProps, withRouter } from "react-router-dom";
+import { bind, debounce } from 'decko';
+import { UnregisterCallback } from 'history';
+import _ from 'lodash';
+import * as React from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import { FilterContextPool, IFilterContext } from "models/FilterContextPool";
-import { IFilterData } from "models/Filters";
-import ModelRecord from "models/ModelRecord";
-import { Project } from "models/Project";
+import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
+import { IFilterData } from 'models/Filters';
+import ModelRecord from 'models/ModelRecord';
+import { Project } from 'models/Project';
 import {
   addFilter,
   applyFilters,
@@ -20,17 +20,17 @@ import {
   removeFilter,
   search,
   suggestFilters
-} from "store/filter";
-import { IApplicationState, IConnectedReduxProps } from "store/store";
+} from 'store/filter';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import Droppable from "components/Droppable/Droppable";
-import AppliedFilterItem from "./AppliedFilterItem/AppliedFilterItem";
-import FilterItem from "./FilterItem/FilterItem";
-import styles from "./FilterSelect.module.css";
+import Droppable from 'components/Droppable/Droppable';
+import AppliedFilterItem from './AppliedFilterItem/AppliedFilterItem';
+import FilterItem from './FilterItem/FilterItem';
+import styles from './FilterSelect.module.css';
 
 const contextMap: Map<string, string> = new Map();
-contextMap.set("/", Project.name);
-contextMap.set("", ModelRecord.name);
+contextMap.set('/', Project.name);
+contextMap.set('', ModelRecord.name);
 
 interface ILocalProps {
   appliedFilters: IFilterData[];
@@ -50,14 +50,12 @@ type AllProps = ILocalProps & IConnectedReduxProps & RouteComponentProps;
 class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
     isOpened: false,
-    txt: ""
+    txt: ''
   };
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   public componentDidMount() {
-    this.unlistenCallback = this.props.history.listen((location, action) =>
-      this.changeContext(location.pathname)
-    );
+    this.unlistenCallback = this.props.history.listen((location, action) => this.changeContext(location.pathname));
     this.props.dispatch(initContexts());
     this.changeContext(this.props.history.location.pathname);
   }
@@ -69,10 +67,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   }
 
   public render() {
-    const projectPage =
-      this.props.history.location.pathname.split("/").length === 2
-        ? true
-        : false;
+    const projectPage = this.props.history.location.pathname.split('/').length === 2 ? true : false;
     return (
       <div className={styles.root}>
         <div>
@@ -90,13 +85,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
         {this.props.isFiltersSupporting && (
           <div>
             <Droppable type="filter" onDrop={this.onCreateFilter}>
-              <div
-                className={
-                  !projectPage
-                    ? styles.applied_filters
-                    : styles.applied_filters_proj
-                }
-              >
+              <div className={!projectPage ? styles.applied_filters : styles.applied_filters_proj}>
                 {this.props.appliedFilters.map((filter, index) => (
                   <AppliedFilterItem
                     key={index}
@@ -126,15 +115,13 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   @bind
   private onApplyFilters() {
     if (this.props.ctx !== undefined) {
-      this.props.dispatch(
-        applyFilters(this.props.ctx, this.props.appliedFilters)
-      );
+      this.props.dispatch(applyFilters(this.props.ctx, this.props.appliedFilters));
     }
   }
 
   @bind
   private onSearch(ev: React.KeyboardEvent<HTMLInputElement>) {
-    if (ev.key === "Enter") {
+    if (ev.key === 'Enter') {
       if (this.props.ctx !== undefined) {
         this.props.dispatch(search(this.props.ctx, this.state.txt));
       }
@@ -155,9 +142,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
 
   @bind
   private changeContext(pathname: string) {
-    const ctx:
-      | IFilterContext
-      | undefined = FilterContextPool.findContextByLocation(pathname);
+    const ctx: IFilterContext | undefined = FilterContextPool.findContextByLocation(pathname);
     if (ctx !== undefined) {
       this.props.dispatch(changeContext(ctx.name));
     } else {
@@ -173,11 +158,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
       this.state.isOpened && (
         <div className={styles.found_filters_popup}>
           {this.props.foundFilters!.map((filter, index) => (
-            <FilterItem
-              key={index}
-              data={filter}
-              onCreateFilter={this.onCreateFilter}
-            />
+            <FilterItem key={index} data={filter} onCreateFilter={this.onCreateFilter} />
           ))}
         </div>
       )
@@ -219,8 +200,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
 
 const mapStateToProps = ({ filters }: IApplicationState) => {
   if (filters.context !== undefined) {
-    const fcData: IFilterContextData | undefined =
-      filters.contexts[filters.context];
+    const fcData: IFilterContextData | undefined = filters.contexts[filters.context];
     if (fcData) {
       return {
         appliedFilters: fcData.appliedFilters,
@@ -240,8 +220,6 @@ const mapStateToProps = ({ filters }: IApplicationState) => {
 };
 
 // export connect(mapStateToProps)(FilterSelect);
-const filterSelect = withRouter(
-  connect(mapStateToProps)(onClickOutside(FilterSelectComponent))
-);
+const filterSelect = withRouter(connect(mapStateToProps)(onClickOutside(FilterSelectComponent)));
 // const filterSelect = connect(mapStateToProps)(FilterSelectComponent);
 export { filterSelect as FilterSelect };
