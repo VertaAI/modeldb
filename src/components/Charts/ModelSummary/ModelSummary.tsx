@@ -26,7 +26,6 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
   }
 
   public render() {
-    // const project = this.props.project;
     console.log(this.state);
     return <div>damal</div>;
   }

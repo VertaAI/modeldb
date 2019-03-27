@@ -11,7 +11,7 @@ import styles from './Charts.module.css';
 import ExpSubMenu from '../ExpSubMenu/ExpSubMenu';
 import Tag from '../TagBlock/Tag';
 import tag_styles from '../TagBlock/TagBlock.module.css';
-import ScatterPlot from './ModelSummary/Chart';
+import ScatterChart from './ModelSummary/ScatterChart';
 import ModelExploration from './ModelExploration/ModelExploration';
 
 let paramList: any = new Set();
@@ -44,16 +44,16 @@ type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedRed
 class Charts extends React.Component<AllProps, ILocalState> {
   public flatArray: any;
   public expName: string = '';
+  public initialMetric: string = '';
+  public initialBarSelection: any;
   public timeProj: any;
-  public flatFields: any = [];
-  public damalFlat: any;
   public exploreSelector = { yAxis: {}, xAxis: {}, aggregate: Aggregate };
 
   public constructor(props: AllProps) {
     super(props);
     this.state = {
       chartData: {},
-      selectedMetric: 'val_acc'
+      selectedMetric: 'test_loss' // imopse a condition that this is the first val in the set
     };
   }
 
@@ -61,8 +61,9 @@ class Charts extends React.Component<AllProps, ILocalState> {
     const { experimentRuns, loading, projects } = this.props;
     if (experimentRuns !== undefined) {
       this.expName = experimentRuns[0].name;
+      // this.setState({ selectedMetric: experimentRuns[0].metrics[0].key })
+      this.initialBarSelection = { initialMetric: this.state.selectedMetric, initialHyperparam: experimentRuns[0].hyperparameters[0].key };
       this.flatArray = this.dataCompute(experimentRuns);
-      this.flatFields = this.computeFlatFields(experimentRuns);
     }
     if (projects !== undefined && projects !== null) {
       this.timeProj = projects.filter(d => d.name === 'Timeseries')[0];
@@ -116,10 +117,10 @@ class Charts extends React.Component<AllProps, ILocalState> {
               })}
             </select>
           </div>
-          <ScatterPlot flatdata={this.flatArray} selectedMetric={this.state.selectedMetric} />
+          <ScatterChart flatdata={this.flatArray} selectedMetric={this.state.selectedMetric} />
         </div>
         <br />
-        <ModelExploration expRuns={experimentRuns} />
+        <ModelExploration expRuns={experimentRuns} initialSelection={this.initialBarSelection} />
       </div>
     ) : (
       ''
@@ -142,75 +143,6 @@ class Charts extends React.Component<AllProps, ILocalState> {
         flatMetric[kvPair.key] = kvPair.value;
       });
       return flatMetric;
-    });
-  };
-
-  public generateMetricObjs = (arr: any[]) => {
-    return _.map(arr, obj => {
-      const metricField = _.pick(obj, 'startTime', 'metrics');
-      const flatMetric: any = { date: metricField.startTime };
-      paramList = new Set();
-      metricField.metrics.forEach((kvPair: any) => {
-        paramList.add(kvPair.key);
-        if (kvPair.key === 'val_acc') {
-          flatMetric.high = +kvPair.value;
-        } else {
-          return '';
-        }
-      });
-      return flatMetric;
-    });
-  };
-
-  public computeFlatFields = (arr: ModelRecord[]) => {
-    return _.map(arr, obj => {
-      const fields: any = {};
-      if (obj.metrics) {
-        obj.metrics.forEach((kvPair: any) => {
-          xAxisParams.add(kvPair.key);
-          fields[`metrics_${kvPair.key}`] = kvPair.value;
-        });
-      }
-      if (obj.hyperparameters) {
-        obj.hyperparameters.forEach((kvPair: any) => {
-          xAxisParams.add(kvPair.key);
-          fields[`hyperparameters_${kvPair.key}`] = kvPair.value;
-        });
-      }
-      if (obj.datasets) {
-        obj.datasets.forEach((kvPair: any) => {
-          xAxisParams.add(kvPair.key);
-          fields[`dataset_${kvPair.key}`] = kvPair.path;
-        });
-      }
-      if (obj.artifacts) {
-        obj.artifacts.forEach((kvPair: any) => {
-          xAxisParams.add(kvPair.key);
-          fields[`artifact_${kvPair.key}`] = kvPair.path;
-        });
-      }
-      fields.experiment_id = obj.experimentId;
-      xAxisParams.add('experimentId');
-      fields.project_id = obj.projectId;
-      xAxisParams.add('projectId');
-      fields.exp_run_id = obj.id;
-      xAxisParams.add('id');
-      fields.start_time = obj.startTime;
-      xAxisParams.add('startTime');
-      if (obj.codeVersion) {
-        fields.code_version = obj.codeVersion;
-        xAxisParams.add('codeVersion');
-      }
-      if (obj.owner) {
-        fields.owner = obj.owner;
-        fields.code_version = obj.owner;
-      }
-      if (obj.tags) {
-        obj.tags.forEach((tag: string) => {
-          fields[`tag_${tag}`] = tag;
-        });
-      }
-      return fields;
     });
   };
 

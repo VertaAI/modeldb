@@ -7,6 +7,7 @@ import styles from './ModelExploration.module.css';
 
 interface ILocalProps {
   expRuns: ModelRecord[];
+  initialSelection: any;
 }
 
 interface ILocalState {
@@ -28,9 +29,12 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
       computeXAxisFields: this.computeXAxisFields(props.expRuns),
       flatMetric: this.computeFlatMetric(props.expRuns),
       selectedAggregate: 'average',
-      selectedXAxis: 'n_valid', // initial val for testing
-      selectedYAxis: 'val_acc' // initial val for testing
+      selectedXAxis: 'hidden_size', // initial val for testing //
+      selectedYAxis: 'test_loss' // initial val for testing / first metric
+      // flat metric yenga da
     };
+    // console.log(this.computeXAxisFields(props.expRuns));
+    // console.log(this.computeFlatMetric(props.expRuns));
   }
 
   public render() {
@@ -97,9 +101,9 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
           <BarChart
             xLabel={this.state.selectedXAxis}
             yLabel={this.state.selectedYAxis}
-            data={this.returnAggResults(
-              this.state.selectedAggregate,
-              this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis])
+            data={this.reduceMetricForAgg(
+              this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis]),
+              this.state.selectedAggregate
             )}
           />
         </div>
@@ -108,7 +112,7 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
       ''
     );
   }
-
+  // event handler to set user selection fields for bar chart
   public setLocalYState = (event: React.FormEvent<HTMLSelectElement>) => {
     const element = event.target as HTMLSelectElement;
     this.setState({ selectedYAxis: element.value });
@@ -124,7 +128,7 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
     this.setState({ selectedAggregate: element.value });
   };
 
-  // Utilities
+  // Utility Functions
   public groupBy(list: object[], keyGetter: any) {
     const map = new Map();
     list.forEach((item: any) => {
@@ -139,6 +143,7 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
     return map;
   }
 
+  // functions to compute basic aggregation types
   public sum = (array: any) => array.reduce((a: number, b: number) => a + b);
   public average = (array: any) => this.sum(array) / array.length;
   public median = (array: any) => {
@@ -158,28 +163,6 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
   public stdev = (array: any) => Math.sqrt(this.variance(array));
   public count = (array: any) => array.length;
 
-  // to be used to refactor the aggregate workflow
-  // public reduceByAggType = (aggType: string, array: any[]) => {
-  //   return
-  // }
-
-  public returnAggResults = (selected: string, arrayGpBy: any) => {
-    switch (selected) {
-      case 'average':
-        return this.averageReduceMetrics(arrayGpBy);
-      case 'sum':
-        return this.sumReduceMetrics(arrayGpBy);
-      case 'median':
-        return this.medianReduceMetrics(arrayGpBy);
-      case 'variance':
-        return this.varianceReduceMetrics(arrayGpBy);
-      case 'stdev':
-        return this.stdevReduceMetrics(arrayGpBy);
-      case 'count':
-        return this.countReduceMetrics(arrayGpBy);
-    }
-  };
-
   public computeFlatMetric = (arr: ModelRecord[]) => {
     return arr.map(obj => {
       const metricField = _.pick(obj, 'startTime', 'metrics');
@@ -192,48 +175,31 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
     });
   };
 
-  public averageReduceMetrics = (mapObj: any) => {
-    return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.average(obj[1]) };
+  // reduce data based on aggigation type
+  public reduceMetricForAgg = (groupByResult: any, selectedAggType: string) => {
+    let aggFun: any;
+    switch (selectedAggType) {
+      case 'sum':
+        aggFun = this.sum;
+      case 'median':
+        aggFun = this.median;
+      case 'variance':
+        aggFun = this.variance;
+      case 'stdev':
+        aggFun = this.stdev;
+      case 'count':
+        aggFun = this.count;
+      default:
+        aggFun = this.average;
+    }
+    return [...groupByResult].map(obj => {
+      return { key: obj[0], value: aggFun(obj[1]) };
     });
   };
 
-  public sumReduceMetrics = (mapObj: any) => {
-    return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.sum(obj[1]) };
-    });
-  };
-
-  public medianReduceMetrics = (mapObj: any) => {
-    return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.median(obj[1]) };
-    });
-  };
-
-  public varianceReduceMetrics = (mapObj: any) => {
-    return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.variance(obj[1]) };
-    });
-  };
-
-  public stdevReduceMetrics = (mapObj: any) => {
-    return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.stdev(obj[1]) };
-    });
-  };
-
-  public countReduceMetrics = (mapObj: any) => {
-    return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.count(obj[1]) };
-    });
-  };
-
-  public reduceMetricForAgg = (groupedParams: any, selectedAgg: string) => {
-    const reduceAverage = (array: any) => array.reduce((a: any, b: any) => a + b) / array.length;
-    const reduceSum = (array: any) => array.reduce((a: any, b: any) => a + b);
-  };
-
+  // compute flat data and set unique xAxisParams to render dropdown
   public computeXAxisFields = (expRuns: ModelRecord[]) => {
+    // hard coded with an assumption that these ids will always be present with the data
     this.xAxisParams.add('experiment_id');
     this.xAxisParams.add('project_id');
     this.xAxisParams.add('id');
