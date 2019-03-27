@@ -7,13 +7,17 @@ export default class MockAuthenticationService
   public user: User | null;
 
   constructor() {
-    this.user = new User('testid', 'Manasi.Vartak@verta.ai');
-    this.user.name = 'Manasi Vartak';
+    this.user = new User('testid', process.env.REACT_APP_USER_EMAIL);
+    this.user.name = process.env.REACT_APP_USERNAME;
   }
 
-  public login(): void {}
+  public async login(): Promise<User> {
+    return this.user!;
+  }
 
-  public logout(): void {}
+  public logout(): void {
+    window.location.replace('/');
+  }
 
   public loadUser(): any {
     return {};
