@@ -32,22 +32,30 @@ class ModelRecordLayout extends React.Component<AllProps> {
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <div className={styles.model_layout}>
-        {this.renderTextRecord('Name', data.name, styles.name)}
-        {this.renderTextRecord('Model Id', data.id)}
-        {this.renderTextRecord('Project Id', data.projectId)}
-        {this.renderTextRecord('Experiment Id', data.experimentId)}
+        <div className={styles.record_summary}>
+          <div className={styles.record_summary_main}>
+            <div className={styles.record_label}>Name</div>
+            <div className={styles.record_name}>{data.name}</div>
+            <br />
+            <div className={styles.record_label}>Tags</div>
+            <div>
+              {data.tags &&
+                data.tags.map((value: string, key: number) => {
+                  return (
+                    <div className={styles.tags} key={key}>
+                      <span className={tagStyles.staticTag}>{value}</span>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+          <div className={styles.record_summary_meta}>
+            {this.renderParmaLink('Model ID:', data.id.slice(0, 4) + '..')}
+            {this.renderParmaLink('Project ID:', data.projectId.slice(0, 4) + '..')}
+            {this.renderParmaLink('Experiment ID:', data.experimentId.slice(0, 4) + '..')}
+          </div>
+        </div>
         {this.renderTextRecord('Code version', data.codeVersion)}
-        {data.tags &&
-          this.renderRecord(
-            'Tags',
-            data.tags.map((value: string, key: number) => {
-              return (
-                <div style={{ marginTop: '7px' }} key={key}>
-                  <span className={tagStyles.staticTag}>{value}</span>
-                </div>
-              );
-            })
-          )}
         {data.hyperparameters &&
           this.renderListRecord(
             'Hyperparameters',
@@ -99,6 +107,14 @@ class ModelRecordLayout extends React.Component<AllProps> {
       </div>
     ) : (
       ''
+    );
+  }
+
+  private renderParmaLink(label: string, value: string) {
+    return (
+      <div className={styles.experiment_link}>
+        <span className={styles.parma_link_label}>{label}</span> <span className={styles.parma_link_value}>{value}</span>
+      </div>
     );
   }
 

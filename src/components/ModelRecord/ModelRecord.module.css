@@ -17,10 +17,72 @@
   border: none;
 }
 
+.experiment_link {
+  font-size: 13px;
+  text-decoration: none;
+  line-height: 30px;
+  border: solid 1px lightgrey;
+  border-radius: 3px;
+  padding: 0 5px;
+  max-width: 150px;
+  text-align: center;
+  float: none;
+  margin: 5px 0;
+  cursor: move;
+}
+
+.experiment_link:hover {
+  background-color: #e6e6e6;
+}
+
+.parma_link_label {
+  color: rgb(141, 141, 141);
+}
+
+.parma_link_value {
+  font-weight: 500;
+  color: var(--text-color1);
+}
+
+.record_summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 13px auto 12px;
+  align-items: top;
+}
+
+.tags {
+  display: inline-block;
+  padding: 5px 3px;
+}
+
+.record_summary_main {
+  grid-row: 2;
+  color: var(--fr-color2);
+  line-height: 18px;
+}
+
+.record_name {
+  font-size: 22px;
+  margin-top: 5px;
+}
+
+.record_label {
+  font-size: 14px;
+  color: rgb(141, 141, 141);
+}
+
+.record_summary_meta {
+  grid-row: 2;
+  color: #7c7c7c;
+  font-size: 15px;
+  line-height: 18px;
+}
+
 .record_header {
   grid-row: 2;
   color: var(--fr-color2);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 18px;
 }
@@ -28,8 +90,8 @@
 .record_value {
   grid-row: 2;
   color: var(--fr-color3);
-  font-size: 15px;
-  line-height: 18px;
+  font-size: 16px;
+  line-height: 16px;
 }
 
 .record_value.name {
