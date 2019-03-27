@@ -35,7 +35,7 @@
     "test": "react-app-rewired test --modulePaths=src",
     "lint": "tslint -p .",
     "eject": "react-scripts eject",
-    "pretty": "prettier --write \"src/**/*.{ts*,css,js*}\"",
+    "pretty": "prettier --config ../.prettierrc.json --write \"src/**/*.{ts*,css,js*}\"",
     "analyze": "source-map-explorer build/static/js/main.*",
     "lint-fix": "tslint -p . --fix"
   },
