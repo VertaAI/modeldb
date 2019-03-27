@@ -74,7 +74,6 @@
 }
 
 .experiment_link {
-  color: var(--text-color1);
   text-decoration: none;
   line-height: 30px;
   border: solid 1px lightgrey;
@@ -88,6 +87,15 @@
 
 .experiment_link:hover {
   background-color: #e6e6e6;
+}
+
+.parma_link_label {
+  color: rgb(141, 141, 141);
+}
+
+.parma_link_value {
+  font-weight: 500;
+  color: var(--text-color1);
 }
 
 .modelDescription {

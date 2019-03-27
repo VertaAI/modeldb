@@ -1,30 +1,32 @@
+import { bind, debounce } from 'decko';
+import { UnregisterCallback } from 'history';
 import _ from 'lodash';
 import * as React from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
-import { IFilterData } from '../../models/Filters';
+
+import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
+import { IFilterData } from 'models/Filters';
+import ModelRecord from 'models/ModelRecord';
+import { Project } from 'models/Project';
 import {
   addFilter,
   applyFilters,
   changeContext,
   editFilter,
+  IFilterContextData,
   initContexts,
   removeFilter,
   search,
   suggestFilters
-} from '../../store/filter/actions';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import FilterItem from './FilterItem/FilterItem';
-import styles from './FilterSelect.module.css';
+} from 'store/filter';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import { UnregisterCallback } from 'history';
-import { FilterContextPool, IFilterContext } from '../../models/FilterContextPool';
-import ModelRecord from '../../models/ModelRecord';
-import { Project } from '../../models/Project';
-import { IFilterContextData } from '../../store/filter';
 import Droppable from '../Droppable/Droppable';
 import AppliedFilterItem from './AppliedFilterItem/AppliedFilterItem';
+import FilterItem from './FilterItem/FilterItem';
+import styles from './FilterSelect.module.css';
 
 const contextMap: Map<string, string> = new Map();
 contextMap.set('/', Project.name);
@@ -52,21 +54,6 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   };
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
-  public constructor(props: AllProps) {
-    super(props);
-    this.onChange = this.onChange.bind(this);
-
-    this.renderPopup = this.renderPopup.bind(this);
-    this.onShowPopup = this.onShowPopup.bind(this);
-    this.onCreateFilter = this.onCreateFilter.bind(this);
-    this.onRemoveFilter = this.onRemoveFilter.bind(this);
-    this.onSaveFilterData = this.onSaveFilterData.bind(this);
-    this.changeContext = this.changeContext.bind(this);
-    this.searchFilterSuggestions = _.debounce(this.searchFilterSuggestions.bind(this), 500);
-    this.onApplyFilters = this.onApplyFilters.bind(this);
-    this.onSearch = this.onSearch.bind(this);
-  }
-
   public componentDidMount() {
     this.unlistenCallback = this.props.history.listen((location, action) => this.changeContext(location.pathname));
     this.props.dispatch(initContexts());
@@ -77,10 +64,6 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     if (this.unlistenCallback) {
       this.unlistenCallback();
     }
-  }
-  public onChange(event: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({ ...this.state, txt: event.target.value });
-    this.searchFilterSuggestions(event.target.value);
   }
 
   public render() {
@@ -122,13 +105,21 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     );
   }
 
-  public onApplyFilters() {
+  @bind
+  private onChange(event: React.ChangeEvent<HTMLInputElement>) {
+    this.setState({ ...this.state, txt: event.target.value });
+    this.searchFilterSuggestions(event.target.value);
+  }
+
+  @bind
+  private onApplyFilters() {
     if (this.props.ctx !== undefined) {
       this.props.dispatch(applyFilters(this.props.ctx, this.props.appliedFilters));
     }
   }
 
-  public onSearch(ev: React.KeyboardEvent<HTMLInputElement>) {
+  @bind
+  private onSearch(ev: React.KeyboardEvent<HTMLInputElement>) {
     if (ev.key === 'Enter') {
       if (this.props.ctx !== undefined) {
         this.props.dispatch(search(this.props.ctx, this.state.txt));
@@ -136,15 +127,19 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     }
   }
 
-  public handleClickOutside(ev: MouseEvent) {
+  @bind
+  private handleClickOutside(ev: MouseEvent) {
     this.setState({ ...this.state, isOpened: false });
   }
 
+  @bind
+  @debounce(500)
   private searchFilterSuggestions(txt: string) {
     this.props.dispatch(suggestFilters(txt));
     this.onShowPopup();
   }
 
+  @bind
   private changeContext(pathname: string) {
     const ctx: IFilterContext | undefined = FilterContextPool.findContextByLocation(pathname);
     if (ctx !== undefined) {
@@ -154,6 +149,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     }
   }
 
+  @bind
   private renderPopup(): JSX.Element | false | undefined {
     return (
       this.props.foundFilters &&
@@ -168,6 +164,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     );
   }
 
+  @bind
   private onCreateFilter(data: IFilterData) {
     if (this.props.ctx !== undefined) {
       this.props.dispatch(addFilter(data, this.props.ctx));
@@ -175,12 +172,14 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     this.setState({ ...this.state, isOpened: false });
   }
 
+  @bind
   private onRemoveFilter(data: IFilterData) {
     if (this.props.ctx !== undefined) {
       this.props.dispatch(removeFilter(data, this.props.ctx));
     }
   }
 
+  @bind
   private onSaveFilterData(index: number, ctx?: string) {
     return (data: IFilterData) => {
       if (ctx !== undefined) {
@@ -189,6 +188,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     };
   }
 
+  @bind
   private onShowPopup() {
     this.setState({
       ...this.state,
@@ -199,13 +199,13 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
 
 const mapStateToProps = ({ filters }: IApplicationState) => {
   if (filters.context !== undefined) {
-    const currentContext: IFilterContextData | undefined = filters.contexts[filters.context];
-    if (currentContext) {
+    const fcData: IFilterContextData | undefined = filters.contexts[filters.context];
+    if (fcData) {
       return {
-        appliedFilters: currentContext.appliedFilters,
+        appliedFilters: fcData.appliedFilters,
         ctx: filters.context,
         foundFilters: filters.foundFilters,
-        isFiltersSupporting: currentContext.isFiltersSupporting
+        isFiltersSupporting: fcData.ctx.isFilteringSupport
       };
     }
   }

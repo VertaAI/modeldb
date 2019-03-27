@@ -2,8 +2,8 @@ import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
 import { JsonConvert } from 'json2typescript';
 
 import { IFilterData } from 'models/Filters';
-import { Project } from '../models/Project';
-import User from '../models/User';
+import { Project } from 'models/Project';
+import User from 'models/User';
 import { BaseDataService } from './BaseDataService';
 import { IProjectDataService } from './IProjectDataService';
 
@@ -50,9 +50,7 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
               let result: Project[] = projects;
               for (const filter of filters) {
                 if (filter.name === 'Name') {
-                  result = result.filter(
-                    item => item.name.localeCompare(filter.value.toString(), undefined, { sensitivity: 'accent' }) === 0
-                  );
+                  result = result.filter(item => item.name.toLowerCase().includes(filter.value.toString().toLowerCase()));
                 }
 
                 if (filter.name === 'Tag') {
@@ -74,6 +72,7 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
             }
             return projects;
           } catch (error) {
+            console.log(error);
             return data;
           }
         }

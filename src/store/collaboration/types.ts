@@ -1,3 +1,5 @@
+import User from '../../models/User';
+
 export enum InvitationStatus {
   None,
   Sending,
@@ -7,6 +9,8 @@ export enum InvitationStatus {
 
 interface IInvitationState {
   readonly status: InvitationStatus;
+  // should be changed to actual type after getting format from the backend
+  readonly error?: any;
 }
 
 export interface ICollaborationState {
@@ -24,8 +28,9 @@ export enum sendInvitationActionTypes {
 
 export type sendInvitationAction =
   | { type: sendInvitationActionTypes.SEND_INVITATION_REQUEST }
-  | { type: sendInvitationActionTypes.SEND_INVITATION_SUCCESS; payload: InvitationStatus }
-  | { type: sendInvitationActionTypes.SEND_INVITATION_FAILURE };
+  | { type: sendInvitationActionTypes.SEND_INVITATION_SUCCESS }
+  // should be changed to actual type after getting format from the backend
+  | { type: sendInvitationActionTypes.SEND_INVITATION_FAILURE; payload?: any };
 
 export enum resetInvitationActionTypes {
   RESET_INVITATION_STATE = '@@collaboration/RESET_INVITATION_STATE'
@@ -43,8 +48,9 @@ export enum changeOwnerActionTypes {
 
 export type changeOwnerAction =
   | { type: changeOwnerActionTypes.CHANGE_OWNER_REQUEST }
-  | { type: changeOwnerActionTypes.CHANGE_OWNER_SUCCESS; payload: InvitationStatus }
-  | { type: changeOwnerActionTypes.CHANGE_OWNER_FAILURE };
+  | { type: changeOwnerActionTypes.CHANGE_OWNER_SUCCESS }
+  // should be changed to actual type after getting format from the backend
+  | { type: changeOwnerActionTypes.CHANGE_OWNER_FAILURE; payload?: any };
 
 export enum resetChangeOwnerActionTypes {
   RESET_CHANGE_OWNER = '@@collaboration/RESET_CHANGE_OWNER'
@@ -62,8 +68,9 @@ export enum changeAccessActionTypes {
 
 export type changeAccessAction =
   | { type: changeAccessActionTypes.CHANGE_ACCESS_REQUEST }
-  | { type: changeAccessActionTypes.CHANGE_ACCESS_SUCCESS; payload: InvitationStatus }
-  | { type: changeAccessActionTypes.CHANGE_ACCESS_FAILURE };
+  | { type: changeAccessActionTypes.CHANGE_ACCESS_SUCCESS }
+  // should be changed to actual type after getting format from the backend
+  | { type: changeAccessActionTypes.CHANGE_ACCESS_FAILURE; payload?: any };
 
 export enum resetChangeAccessActionTypes {
   RESET_CHANGE_ACCESS = '@@collaboration/RESET_CHANGE_ACCESS'
@@ -81,8 +88,9 @@ export enum removeAccessActionTypes {
 
 export type removeAccessAction =
   | { type: removeAccessActionTypes.REMOVE_ACCESS_REQUEST }
-  | { type: removeAccessActionTypes.REMOVE_ACCESS_SUCCESS; payload: InvitationStatus }
-  | { type: removeAccessActionTypes.REMOVE_ACCESS_FAILURE };
+  | { type: removeAccessActionTypes.REMOVE_ACCESS_SUCCESS }
+  // should be changed to actual type after getting format from the backend
+  | { type: removeAccessActionTypes.REMOVE_ACCESS_FAILURE; payload?: any };
 
 export enum resetRemoveAccessActionTypes {
   RESET_REMOVE_ACCESS = '@@collaboration/RESET_REMOVE_ACCESS'

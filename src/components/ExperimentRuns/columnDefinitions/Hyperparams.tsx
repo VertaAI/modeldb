@@ -1,5 +1,7 @@
 import * as React from 'react';
-import { ComparisonType, PropertyType } from '../../../models/Filters';
+
+import { ComparisonType, PropertyType } from 'models/Filters';
+
 import Draggable from '../../Draggable/Draggable';
 import styles from './ColumnDefs.module.css';
 
@@ -12,7 +14,7 @@ const ModelProperty: React.SFC<any> = props => {
     >
       <div className={styles.param_grid_hyp}>
         <div className={styles.param_key}>{props.property.key}</div>
-        <div className={styles.param_val}>{props.property.value}</div>
+        <div className={styles.param_val}>{Math.round(props.property.value * 10000) / 10000}</div>
       </div>
     </Draggable>
   );

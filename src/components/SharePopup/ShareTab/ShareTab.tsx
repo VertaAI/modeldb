@@ -1,11 +1,15 @@
+import { bind } from 'decko';
 import React from 'react';
 import { connect } from 'react-redux';
-import { UserAccess } from '../../../models/Project';
-import User from '../../../models/User';
-import { InvitationStatus, resetInvitationState, sendInvitationForUser } from '../../../store/collaboration';
-import { IApplicationState, IConnectedReduxProps } from '../../../store/store';
+
+import { UserAccess } from 'models/Project';
+import { InvitationStatus, resetInvitationState, sendInvitationForUser } from 'store/collaboration';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
+import error_icon from '../images/error-icon.svg';
 import icon_check from '../images/icon-check.svg';
+import read_only_icon from '../images/read-only-icon.svg';
 import share_read_icon from '../images/share-r-icon.svg';
 import share_write_icon from '../images/share-wr-icon.svg';
 import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
@@ -13,6 +17,8 @@ import styles from './ShareTab.module.css';
 
 interface ILocalProps {
   currentUserAccess: UserAccess;
+  // should be changed to actual type after getting format from the backend
+  error?: any;
   status: InvitationStatus;
   projectId: string;
 }
@@ -25,26 +31,23 @@ interface ILocalState {
 type AllProps = IConnectedReduxProps & ILocalProps;
 
 class ShareTab extends React.Component<AllProps, ILocalState> {
-  constructor(props: AllProps) {
-    super(props);
-
-    this.state = {
-      emailValue: '',
-      userAccess: UserAccess.Read
-    };
-
-    this.sendInvitationOnClick = this.sendInvitationOnClick.bind(this);
-    this.changeShareType = this.changeShareType.bind(this);
-    this.updateInputValue = this.updateInputValue.bind(this);
-    this.sendNewInvitation = this.sendNewInvitation.bind(this);
-  }
+  public state: ILocalState = {
+    emailValue: '',
+    userAccess: UserAccess.Read
+  };
 
   public render() {
-    const { status } = this.props;
+    const { status, error } = this.props;
 
     switch (status) {
       case InvitationStatus.None:
-        return (
+        return this.props.currentUserAccess !== UserAccess.Read ? (
+          <div className={styles.share_result_content}>
+            <img src={read_only_icon} />
+            <span className={styles.share_result_header}>Read-only</span>
+            <span className={styles.share_result_text}>You're restricted to share project</span>
+          </div>
+        ) : (
           <div className={styles.content_share}>
             <div className={styles.content_header}>Invite People to the Project</div>
             <div>
@@ -71,18 +74,32 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
             </div>
           </div>
         );
+      case InvitationStatus.Failure:
+        return (
+          <div className={styles.share_result_content}>
+            <img src={error_icon} />
+            <span className={styles.share_result_header}>{error}</span>
+            <div>
+              <button className={styles.share_result_button} onClick={this.trySendInvitationAgain}>
+                <span className={`${styles.share_result_button_text} ${styles.share_result_text}`}>Try Again</span>
+              </button>
+              <span className={styles.share_result_text}>or</span>
+              <button className={styles.share_result_button} onClick={this.sendNewInvitation}>
+                <span className={`${styles.share_result_button_text} ${styles.share_result_text}`}>Send New Invitation</span>
+              </button>
+            </div>
+          </div>
+        );
       case InvitationStatus.Success:
         return (
-          <div className={styles.content_share_sucess}>
+          <div className={styles.share_result_content}>
             <img src={icon_check} />
-            <span className={styles.invitation_success_header}>Invitation to {this.state.emailValue} sent!</span>
-            <button className={styles.invitation_success_button} onClick={this.sendNewInvitation}>
-              <span className={styles.invitation_success_button_text}>Send New Invitation</span>
+            <span className={styles.share_result_header}>Invitation to {this.state.emailValue} sent!</span>
+            <button className={styles.share_result_button} onClick={this.sendNewInvitation}>
+              <span className={`${styles.share_result_button_text} ${styles.share_result_text}`}>Send New Invitation</span>
             </button>
           </div>
         );
-      case InvitationStatus.Failure:
-        return '';
       case InvitationStatus.Sending:
         return '';
       default:
@@ -90,6 +107,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
     }
   }
 
+  @bind
   private changeShareType() {
     if (this.props.currentUserAccess === UserAccess.Read) {
       return;
@@ -104,25 +122,33 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
     }
   }
 
+  @bind
   private sendInvitationOnClick() {
     this.props.dispatch(sendInvitationForUser(this.props.projectId, this.state.emailValue, this.state.userAccess));
   }
 
+  @bind
   private sendNewInvitation() {
     this.props.dispatch(resetInvitationState());
     this.setState({ emailValue: '', userAccess: UserAccess.Read });
   }
 
+  @bind
   private updateInputValue(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({
       emailValue: event.target.value
     });
     event.preventDefault();
   }
+
+  private trySendInvitationAgain() {
+    this.props.dispatch(sendInvitationForUser(this.props.projectId, this.state.emailValue, this.state.userAccess));
+  }
 }
 
-const mapStateToProps = ({ layout }: IApplicationState) => ({
-  currentUser: layout.user!
+const mapStateToProps = ({ collaboration }: IApplicationState) => ({
+  error: collaboration.inviteNewCollaborator.error,
+  status: collaboration.inviteNewCollaborator.status
 });
 
 export default connect(mapStateToProps)(ShareTab);

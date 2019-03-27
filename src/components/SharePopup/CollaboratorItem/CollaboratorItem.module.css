@@ -42,6 +42,10 @@
   background-color: var(--main-color3);
 }
 
+.collaborator_button.without_active_button {
+  opacity: 0.5;
+}
+
 .collaborator_button.without_active_button:active {
   background: none;
   padding: 0;

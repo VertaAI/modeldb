@@ -15,11 +15,7 @@ enum ContentType {
 }
 
 export default class ShowContentBasedOnUrl extends React.Component<ILocalProps, ILocalState> {
-  constructor(props: ILocalProps) {
-    super(props);
-
-    this.state = { urlContentType: ContentType.OTHER };
-  }
+  public state: ILocalState = { urlContentType: ContentType.OTHER };
 
   public componentDidMount() {
     const configInit: RequestInit = {

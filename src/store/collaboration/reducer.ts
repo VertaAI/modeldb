@@ -21,10 +21,10 @@ import {
 } from './types';
 
 const collaborationInitialState: ICollaborationState = {
-  changeAccess: { status: InvitationStatus.None },
-  changeOwner: { status: InvitationStatus.None },
-  inviteNewCollaborator: { status: InvitationStatus.None },
-  removeAccess: { status: InvitationStatus.None }
+  changeAccess: { status: InvitationStatus.None, error: undefined },
+  changeOwner: { status: InvitationStatus.None, error: undefined },
+  inviteNewCollaborator: { status: InvitationStatus.None, error: undefined },
+  removeAccess: { status: InvitationStatus.None, error: undefined }
 };
 
 const sendInvitationReducer: Reducer<ICollaborationState> = (state = collaborationInitialState, action: sendInvitationAction) => {
@@ -36,7 +36,7 @@ const sendInvitationReducer: Reducer<ICollaborationState> = (state = collaborati
       return { ...state, inviteNewCollaborator: { status: InvitationStatus.Success } };
     }
     case sendInvitationActionTypes.SEND_INVITATION_FAILURE: {
-      return { ...state, inviteNewCollaborator: { status: InvitationStatus.Failure } };
+      return { ...state, inviteNewCollaborator: { status: InvitationStatus.Failure, error: action.payload } };
     }
     default: {
       return state;
@@ -47,7 +47,7 @@ const sendInvitationReducer: Reducer<ICollaborationState> = (state = collaborati
 const resetInvitationReducer: Reducer<ICollaborationState> = (state = collaborationInitialState, action: IResetInvitationAction) => {
   switch (action.type) {
     case resetInvitationActionTypes.RESET_INVITATION_STATE: {
-      return { ...state, inviteNewCollaborator: { status: InvitationStatus.None } };
+      return { ...state, inviteNewCollaborator: collaborationInitialState.inviteNewCollaborator };
     }
     default: {
       return state;
@@ -64,7 +64,7 @@ const changeOwnerReducer: Reducer<ICollaborationState> = (state = collaborationI
       return { ...state, changeOwner: { status: InvitationStatus.Success } };
     }
     case changeOwnerActionTypes.CHANGE_OWNER_FAILURE: {
-      return { ...state, changeOwner: { status: InvitationStatus.Failure } };
+      return { ...state, changeOwner: { status: InvitationStatus.Failure, error: action.payload } };
     }
     default: {
       return state;
@@ -75,7 +75,7 @@ const changeOwnerReducer: Reducer<ICollaborationState> = (state = collaborationI
 const resetChangeOwnerReducer: Reducer<ICollaborationState> = (state = collaborationInitialState, action: IResetChangeOwnerAction) => {
   switch (action.type) {
     case resetChangeOwnerActionTypes.RESET_CHANGE_OWNER: {
-      return { ...state, changeOwner: { status: InvitationStatus.None } };
+      return { ...state, changeOwner: collaborationInitialState.changeOwner };
     }
     default: {
       return state;
@@ -92,7 +92,7 @@ const changeAccessReducer: Reducer<ICollaborationState> = (state = collaboration
       return { ...state, changeAccess: { status: InvitationStatus.Success } };
     }
     case changeAccessActionTypes.CHANGE_ACCESS_FAILURE: {
-      return { ...state, changeAccess: { status: InvitationStatus.Failure } };
+      return { ...state, changeAccess: { status: InvitationStatus.Failure, error: action.payload } };
     }
     default: {
       return state;
@@ -103,7 +103,7 @@ const changeAccessReducer: Reducer<ICollaborationState> = (state = collaboration
 const resetChangeAccessReducer: Reducer<ICollaborationState> = (state = collaborationInitialState, action: IResetChangeAccessAction) => {
   switch (action.type) {
     case resetChangeAccessActionTypes.RESET_CHANGE_ACCESS: {
-      return { ...state, changeAccess: { status: InvitationStatus.None } };
+      return { ...state, changeAccess: collaborationInitialState.changeAccess };
     }
     default: {
       return state;
@@ -114,13 +114,13 @@ const resetChangeAccessReducer: Reducer<ICollaborationState> = (state = collabor
 const removeAccessReducer: Reducer<ICollaborationState> = (state = collaborationInitialState, action: removeAccessAction) => {
   switch (action.type) {
     case removeAccessActionTypes.REMOVE_ACCESS_REQUEST: {
-      return { ...state, changeAccess: { status: InvitationStatus.Sending } };
+      return { ...state, removeAccess: { status: InvitationStatus.Sending } };
     }
     case removeAccessActionTypes.REMOVE_ACCESS_SUCCESS: {
-      return { ...state, changeAccess: { status: InvitationStatus.Success } };
+      return { ...state, removeAccess: { status: InvitationStatus.Success } };
     }
     case removeAccessActionTypes.REMOVE_ACCESS_FAILURE: {
-      return { ...state, changeAccess: { status: InvitationStatus.Failure } };
+      return { ...state, removeAccess: { status: InvitationStatus.Failure, error: action.payload } };
     }
     default: {
       return state;
@@ -131,7 +131,7 @@ const removeAccessReducer: Reducer<ICollaborationState> = (state = collaboration
 const resetRemoveAccessReducer: Reducer<ICollaborationState> = (state = collaborationInitialState, action: IResetRemoveAccessAction) => {
   switch (action.type) {
     case resetRemoveAccessActionTypes.RESET_REMOVE_ACCESS: {
-      return { ...state, changeAccess: { status: InvitationStatus.None } };
+      return { ...state, removeAccess: collaborationInitialState.removeAccess };
     }
     default: {
       return state;

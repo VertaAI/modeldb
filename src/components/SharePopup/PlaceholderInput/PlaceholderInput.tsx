@@ -1,4 +1,5 @@
 import React from 'react';
+import { bind } from 'decko';
 import styles from './PlaceholderInput.module.css';
 
 interface ILocalProps {
@@ -11,11 +12,6 @@ interface ILocalProps {
 
 export class PlaceholderInput extends React.Component<ILocalProps> {
   private input?: HTMLInputElement;
-  constructor(props: ILocalProps) {
-    super(props);
-
-    this.focusOnInputLabelClick = this.focusOnInputLabelClick.bind(this);
-  }
 
   public render() {
     return (
@@ -37,6 +33,7 @@ export class PlaceholderInput extends React.Component<ILocalProps> {
     );
   }
 
+  @bind
   private focusOnInputLabelClick() {
     this.input!.focus();
   }
