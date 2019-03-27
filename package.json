@@ -1,6 +1,5 @@
 {
   "scripts": {
-    "start": "bash run.sh",
     "pretty": "prettier --write \"client/src/**/*.{ts*,css,js*}\""
   },
   "dependencies": {
