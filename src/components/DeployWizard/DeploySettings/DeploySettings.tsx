@@ -9,55 +9,52 @@ import Checkbox from 'components/shared/Checkbox/Checkbox';
 import FileUploader from 'components/shared/FileUploader/FileUploader';
 import Form from 'components/shared/Form/Form';
 
-import { DeployType } from 'models/Deploy';
+import { DeployType, IDeployConfig } from 'models/Deploy';
 import styles from './DeploySettings.module.css';
 
 interface IProps {
-  onDeploy(): void;
+  status: any;
+  onDeploy(config: IDeployConfig): void;
   onClose(): void;
 }
 
 interface ILocalState {
-  currentDeployType: DeployType;
-  forms: {
-    replicas: number;
-    withLogs: boolean;
-    withServiceMonitoring: boolean;
-  };
+  deployType: DeployType;
+  replicas: number;
+  withLogs: boolean;
+  withServiceMonitoring: boolean;
 }
 
 class DeploySettings extends React.PureComponent<IProps, ILocalState> {
   public state: ILocalState = {
-    currentDeployType: 'rest',
-    forms: {
-      replicas: 2,
-      withLogs: false,
-      withServiceMonitoring: false
-    }
+    deployType: 'rest',
+    replicas: 2,
+    withLogs: false,
+    withServiceMonitoring: false
   };
 
   public render() {
     const { onClose } = this.props;
-    const { currentDeployType, forms } = this.state;
+    const { deployType, replicas, withLogs, withServiceMonitoring } = this.state;
     return (
       <Popup title="Deploy Confirmation" isOpen={true} onRequestClose={onClose}>
         <div className={styles.deploy_settings}>
-          <Tabs<DeployType> active={currentDeployType} onSelectTab={this.onChangeDeployType}>
-            <Tabs.Tab title="REST" type="rest" centered>
+          <Tabs<DeployType> active={deployType} onSelectTab={this.onChangeDeployType}>
+            <Tabs.Tab title="REST" type="rest" centered={true}>
               <Form>
                 <Form.Item label="Model ID">22</Form.Item>
                 <Form.Item label="Replicas">
                   <Select<number>
-                    value={forms.replicas}
+                    value={replicas}
                     options={[{ value: 3, label: '3' }, { value: 4, label: '4' }]}
                     onChange={this.onChangeRepliceCount}
                   />
                 </Form.Item>
                 <Form.Item label="Logs">
-                  <Checkbox value={forms.withLogs} onChange={this.onToggleLogs} />
+                  <Checkbox value={withLogs} onChange={this.onToggleLogs} />
                 </Form.Item>
                 <Form.Item label="Service Monitoring">
-                  <Checkbox value={forms.withServiceMonitoring} onChange={this.onToggleServiceMonitoring} />
+                  <Checkbox value={withServiceMonitoring} onChange={this.onToggleServiceMonitoring} />
                 </Form.Item>
               </Form>
             </Tabs.Tab>
@@ -66,16 +63,16 @@ class DeploySettings extends React.PureComponent<IProps, ILocalState> {
                 <Form.Item label="Model ID">22</Form.Item>
                 <Form.Item label="Replicas">
                   <Select<number>
-                    value={forms.replicas}
+                    value={replicas}
                     options={[{ value: 3, label: '3' }, { value: 4, label: '4' }]}
                     onChange={this.onChangeRepliceCount}
                   />
                 </Form.Item>
                 <Form.Item label="Logs">
-                  <Checkbox value={forms.withLogs} onChange={this.onToggleLogs} />
+                  <Checkbox value={withLogs} onChange={this.onToggleLogs} />
                 </Form.Item>
                 <Form.Item label="Service Monitoring">
-                  <Checkbox value={forms.withServiceMonitoring} onChange={this.onToggleServiceMonitoring} />
+                  <Checkbox value={withServiceMonitoring} onChange={this.onToggleServiceMonitoring} />
                 </Form.Item>
                 <Form.Item label="Name for CSV file uploading?">
                   <FileUploader acceptFileTypes={['csv']} onUpload={console.log}>
@@ -99,27 +96,34 @@ class DeploySettings extends React.PureComponent<IProps, ILocalState> {
 
   @bind
   private onChangeDeployType(type: DeployType) {
-    this.setState({ currentDeployType: type });
+    this.setState({ deployType: type });
   }
 
   @bind
   private onToggleLogs() {
-    this.setState(prev => ({ forms: { ...prev.forms, withLogs: !this.state.forms.withLogs } }));
+    this.setState(prev => ({ withLogs: !prev.withLogs }));
   }
 
   @bind
   private onToggleServiceMonitoring() {
-    this.setState(prev => ({ forms: { ...prev.forms, withServiceMonitoring: !this.state.forms.withServiceMonitoring } }));
+    this.setState(prev => ({ withServiceMonitoring: !prev.withServiceMonitoring }));
   }
 
   @bind
   private onChangeRepliceCount(value: number) {
-    this.setState(prev => ({ forms: { ...prev.forms, replicas: value } }));
+    this.setState({ replicas: value });
   }
 
   @bind
   private onDeploy() {
-    this.props.onDeploy();
+    const { deployType, replicas, withLogs, withServiceMonitoring } = this.state;
+    const config: IDeployConfig = {
+      type: deployType,
+      replicas,
+      withLogs,
+      withServiceMonitoring
+    };
+    this.props.onDeploy(config);
   }
 }
 

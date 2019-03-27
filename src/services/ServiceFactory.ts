@@ -10,6 +10,8 @@ import ISearchAndFilterService from './ISearchAndFilterService';
 import { MockExperimentRunsDataService } from './mocks/MockExperimentRunsDataService';
 import { MockProjectDataService } from './mocks/MockProjectDataService';
 import { ProjectDataService } from './ProjectDataService';
+import { IDeployService } from './IDeployService';
+import DeployService from './DeployService';
 
 export default class ServiceFactory {
   public static getProjectsService(): IProjectDataService {
@@ -36,5 +38,9 @@ export default class ServiceFactory {
 
   public static getCollaboratorsService(): ICollaboratorsService {
     return new CollaboratorsService();
+  }
+
+  public static getDeployService(): IDeployService {
+    return new DeployService();
   }
 }

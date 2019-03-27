@@ -1,22 +1,28 @@
 import * as React from 'react';
+import { connect } from 'react-redux';
 
 import Popup from 'components/shared/Popup/Popup';
 import Form from 'components/shared/Form/Form';
 import Button from 'components/shared/Button/Button';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
+import { IDeployResult } from 'models/Deploy';
 
 import ModelInput from './ModelInput/ModelInput';
 import styles from './DeployResult.module.css';
+import { IApplicationState } from 'store/store';
 
 const url = 'https://verta.io/234wfogsfas/fsfbgs';
 
 interface IProps {
+  deployResult: IDeployResult;
   onClose(): void;
 }
 
-class DeployResult extends React.PureComponent<IProps> {
+type AllProps = IProps;
+
+class DeployResult extends React.Component<AllProps> {
   public render() {
-    const { onClose } = this.props;
+    const { deployResult, onClose } = this.props;
     return (
       <Popup title="Deployed" isOpen={true} onRequestClose={onClose}>
         <div className={styles.deploy_result}>
@@ -43,7 +49,7 @@ class DeployResult extends React.PureComponent<IProps> {
             </Form>
           </div>
           <div className={styles.model_input}>
-            <ModelInput />
+            <ModelInput input={deployResult.modelApi.input} />
           </div>
         </div>
       </Popup>

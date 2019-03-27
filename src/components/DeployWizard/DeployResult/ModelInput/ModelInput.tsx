@@ -1,36 +1,41 @@
+import { bind } from 'decko';
 import * as React from 'react';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars';
-import { bind } from 'decko';
+
+import { IModelApi } from 'models/Deploy';
 
 import styles from './ModelInput.module.css';
+
+interface IProps {
+  input: IModelApi['input'];
+}
 
 interface ILocalState {
   shadowBottomOpacity: number;
   shadowTopOpacity: number;
 }
 
-class ModelInput extends React.PureComponent<{}, ILocalState> {
+class ModelInput extends React.PureComponent<IProps, ILocalState> {
   public state: ILocalState = { shadowBottomOpacity: 0, shadowTopOpacity: 0 };
 
   public render() {
+    const {
+      input: { fields }
+    } = this.props;
     return (
       <div className={styles.model_input}>
         <div className={styles.title}>How to use</div>
         <div style={{ position: 'relative' }}>
-          <Scrollbars autoHeightMax="200px" autoHeight={true} onScrollFrame={this.handleScrollbarUpdate}>
+          <Scrollbars autoHeightMax="257px" autoHeight={true} onScrollFrame={this.handleScrollbarUpdate}>
             <div className={styles.fields}>
               <div className={styles.header}>Name</div>
               <div className={styles.header}>Type</div>
-              <div className={styles.content}>Cell Name</div>
-              <div className={styles.content}>Cell Type</div>
-              <div className={styles.content}>Cell Name</div>
-              <div className={styles.content}>Cell Type</div>
-              <div className={styles.content}>Cell Name</div>
-              <div className={styles.content}>Cell Type</div>
-              <div className={styles.content}>Cell Name</div>
-              <div className={styles.content}>Cell Type</div>
-              <div className={styles.content}>Cell Name</div>
-              <div className={styles.content}>Cell Type</div>
+              {fields.map(({ name, type }) => (
+                <>
+                  <div className={styles.content}>{name}</div>
+                  <div className={styles.content}>{type}</div>
+                </>
+              ))}
             </div>
             <div
               className={styles.shadowBottom}

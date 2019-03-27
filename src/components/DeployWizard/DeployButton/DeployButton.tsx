@@ -1,42 +1,56 @@
-import * as React from 'react';
 import { bind } from 'decko';
+import * as React from 'react';
+import { connect } from 'react-redux';
 
 import Fab from 'components/shared/Fab/Fab';
+import { IDeployInfo, IDeployConfig } from 'models/Deploy';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { selectDeployInfo, deploy } from 'store/deploy';
 
 import DeployWizard from '../DeployWizard';
 
-interface IProps {}
+interface IProps {
+  modelId: string;
+}
+
+interface IPropsFromState {
+  deployInfo: IDeployInfo;
+}
 
 interface ILocalState {
   isDeployWizardShown: boolean;
-  step: 'setting' | 'deploying' | 'deployed';
 }
 
-class DeployButton extends React.PureComponent<IProps, ILocalState> {
-  public state: ILocalState = { isDeployWizardShown: false, step: 'setting' };
+export type AllProps = IProps & IPropsFromState & IConnectedReduxProps;
+
+// todo rename. maybe DeployManager?
+class DeployButton extends React.PureComponent<AllProps, ILocalState> {
+  public state: ILocalState = { isDeployWizardShown: false };
 
   public render() {
-    const { isDeployWizardShown, step } = this.state;
+    const { deployInfo } = this.props;
+    const { isDeployWizardShown } = this.state;
+
     return (
       <div>
-        <DeployWizard isShown={isDeployWizardShown} step={step} onDeploy={this.onDeploy} onClose={this.onHideDeployWizard} />
+        <DeployWizard isShown={isDeployWizardShown} deployInfo={deployInfo} onDeploy={this.onDeploy} onClose={this.onHideDeployWizard} />
         {(() => {
-          switch (step) {
-            case 'setting': {
+          switch (deployInfo.status) {
+            case 'not-deployed': {
               return (
                 <Fab theme="blue" icon="upload" onClick={this.onShowDeployWizard}>
                   Deploy
                 </Fab>
               );
             }
-            case 'deploying': {
+            case 'building': {
               return (
                 <Fab variant="outlined" theme="green" onClick={this.onShowDeployWizard}>
                   Deploying...
                 </Fab>
               );
             }
-            case 'deployed': {
+            case 'running': {
               return (
                 <Fab theme="green" onClick={this.onShowDeployWizard}>
                   Deployed
@@ -60,10 +74,15 @@ class DeployButton extends React.PureComponent<IProps, ILocalState> {
   }
 
   @bind
-  private onDeploy() {
-    this.setState({ step: 'deploying' });
-    setTimeout(() => this.setState({ step: 'deployed' }), 600);
+  private onDeploy(config: IDeployConfig) {
+    this.props.dispatch(deploy(this.props.modelId, config));
   }
 }
 
-export default DeployButton;
+const mapStateToProps = (state: IApplicationState, ownProps: IProps): IPropsFromState => {
+  return {
+    deployInfo: selectDeployInfo(state, ownProps.modelId)
+  };
+};
+
+export default connect(mapStateToProps)(DeployButton);

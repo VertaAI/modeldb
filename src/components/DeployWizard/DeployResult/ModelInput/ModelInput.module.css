@@ -19,6 +19,7 @@
   align-items: center;
   border-top: 1px solid var(--border-color1);
   font-size: var(--font-size3);
+  text-transform: capitalize;
 }
 
 .header {

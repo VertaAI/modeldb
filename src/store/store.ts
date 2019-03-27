@@ -3,6 +3,7 @@ import { History } from 'history';
 import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
 import { collaborationReducer, ICollaborationState } from './collaboration';
+import { deployReducer, IDeployState } from './deploy';
 import { dashboardConfigReducer, IDashboardConfigState } from './dashboard-config';
 import { experimentRunsReducer, IExperimentRunsState } from './experiment-runs';
 import { filtersReducer, IFilterState } from './filter';
@@ -11,6 +12,7 @@ import { IProjectsState, projectsReducer } from './projects';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
+  deploy: IDeployState;
   collaboration: ICollaborationState;
   dashboardConfig: IDashboardConfigState;
   experimentRuns: IExperimentRunsState;
@@ -28,6 +30,7 @@ export interface IConnectedReduxProps<A extends Action = any> {
 
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
+    deploy: deployReducer,
     collaboration: collaborationReducer,
     dashboardConfig: dashboardConfigReducer,
     experimentRuns: experimentRunsReducer,
