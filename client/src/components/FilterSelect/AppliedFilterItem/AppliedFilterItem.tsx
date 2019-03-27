@@ -3,9 +3,9 @@ import * as React from 'react';
 
 import { IFilterData, PropertyType } from 'models/Filters';
 
-import MetricFilterEditor from 'components/FilterSelect/MetricFilterEditor/MetricFilterEditor';
-import NumberFilterEditor from 'components/FilterSelect/NumberFilterEditor/NumberFilterEditor';
-import StringFilterEditor from 'components/FilterSelect/StringFilterEditor/StringFilterEditor';
+import MetricFilterEditor from '../MetricFilterEditor/MetricFilterEditor';
+import NumberFilterEditor from '../NumberFilterEditor/NumberFilterEditor';
+import StringFilterEditor from '../StringFilterEditor/StringFilterEditor';
 import styles from './AppliedFilterItem.module.css';
 
 interface ILocalProps {
@@ -42,8 +42,8 @@ export default class AppliedFilterItem extends React.Component<ILocalProps, ILoc
             ) : this.props.data.type === PropertyType.METRIC ? (
               <MetricFilterEditor onChange={this.props.onChange} data={this.props.data} />
             ) : (
-              ''
-            )}
+                    ''
+                  )}
           </div>
         )}
       </div>
