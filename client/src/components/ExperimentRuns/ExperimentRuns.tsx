@@ -15,14 +15,20 @@ import { IColumnMetaData } from 'store/dashboard-config';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
+import {
+  defaultColDefinitions,
+  returnColumnDefs,
+} from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 import styles from './ExperimentRuns.module.css';
 
 let currentProjectID: string;
 const locationRegEx = /\/project\/([a-z0-9\-]+)\/exp-runs/im;
 FilterContextPool.registerContext({
-  getMetadata: () => [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
+  getMetadata: () => [
+    { propertyName: 'Name', type: PropertyType.STRING },
+    { propertyName: 'Tag', type: PropertyType.STRING },
+  ],
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
     if (locationRegEx.test(location)) {
@@ -44,11 +50,11 @@ FilterContextPool.registerContext({
           invert: false,
           name: 'Name',
           type: PropertyType.STRING,
-          value: text
-        }
+          value: text,
+        },
       ])
     );
-  }
+  },
 });
 
 type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
@@ -68,7 +74,9 @@ interface IOperator {
   [key: string]: any;
 }
 
-type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedReduxProps;
+type AllProps = RouteComponentProps<IUrlProps> &
+  IPropsFromState &
+  IConnectedReduxProps;
 
 class ExperimentRuns extends React.Component<AllProps> {
   public gridApi: any;
@@ -134,7 +142,10 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public gridRowHeight = (params: any) => {
     const data = params.node.data;
-    if ((data.metrics && data.metrics.length > 3) || (data.hyperparameters && data.hyperparameters.length > 3)) {
+    if (
+      (data.metrics && data.metrics.length > 3) ||
+      (data.hyperparameters && data.hyperparameters.length > 3)
+    ) {
       if (data.metrics.length > data.hyperparameters.length) {
         return (data.metric.length - 3) * 5 + 220;
       }
@@ -156,13 +167,15 @@ class ExperimentRuns extends React.Component<AllProps> {
     // **ts forced creation of public data var to be able access node
     const operators: IOperator = {
       '<': (a: number, b: number) => a < b,
-      '>': (a: number, b: number) => a > b
+      '>': (a: number, b: number) => a > b,
     };
     switch (filter.type) {
       case 'tag':
         return this.data.tags.includes(filter.key);
       case 'param':
-        return this.data[filter.subtype].find((params: any) => params.key === filter.param)
+        return this.data[filter.subtype].find(
+          (params: any) => params.key === filter.param
+        )
           ? operators[filter.operator](
               Number(
                 this.data[filter.subtype].find((params: any) => {
@@ -187,13 +200,16 @@ class ExperimentRuns extends React.Component<AllProps> {
 }
 
 // filterState and filtered should be provided by from IApplicationState -> customFilter
-const mapStateToProps = ({ experimentRuns, dashboardConfig }: IApplicationState) => ({
+const mapStateToProps = ({
+  experimentRuns,
+  dashboardConfig,
+}: IApplicationState) => ({
   defaultColDefinitions,
   columnConfig: dashboardConfig.columnConfig,
   data: experimentRuns.data,
   loading: experimentRuns.loading,
   filterState: {},
-  filtered: false
+  filtered: false,
 });
 
 export default connect(mapStateToProps)(ExperimentRuns);

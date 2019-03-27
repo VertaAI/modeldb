@@ -8,13 +8,17 @@ import User from 'models/User';
 import { BaseDataService } from './BaseDataService';
 import { IProjectDataService } from './IProjectDataService';
 
-export class ProjectDataService extends BaseDataService implements IProjectDataService {
+export class ProjectDataService extends BaseDataService
+  implements IProjectDataService {
   public constructor() {
     super();
   }
 
   public getProjects(filter?: IFilterData[]): AxiosPromise<Project[]> {
-    return axios.get<Project[]>('/getProjects', this.responseToProjectConfig(filter));
+    return axios.get<Project[]>(
+      '/getProjects',
+      this.responseToProjectConfig(filter)
+    );
   }
 
   public mapProjectAuthors(): AxiosPromise<Project[]> {
@@ -31,11 +35,17 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
               return Array<Project>();
             }
             const jsonConvert = new JsonConvert();
-            const projects = jsonConvert.deserializeArray(data.projects, Project) as Project[];
+            const projects = jsonConvert.deserializeArray(
+              data.projects,
+              Project
+            ) as Project[];
 
             for (const project of projects) {
               // remove this after get real User API
-              project.Author = new User(project.authorId, process.env.REACT_APP_USER_EMAIL);
+              project.Author = new User(
+                project.authorId,
+                process.env.REACT_APP_USER_EMAIL
+              );
               project.Author.name = process.env.REACT_APP_USERNAME;
             }
 
@@ -43,20 +53,35 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
               let result: Project[] = projects;
               for (const filter of filters) {
                 if (filter.name === 'Name') {
-                  result = result.filter(item => item.name.toLowerCase().includes(filter.value.toString().toLowerCase()));
+                  result = result.filter(item =>
+                    item.name
+                      .toLowerCase()
+                      .includes(filter.value.toString().toLowerCase())
+                  );
                 }
 
                 if (filter.name === 'Tag') {
                   result = result.filter(
                     item =>
-                      item.tags.findIndex(tag => tag.localeCompare(filter.value.toString(), undefined, { sensitivity: 'accent' }) === 0) !==
-                      -1
+                      item.tags.findIndex(
+                        tag =>
+                          tag.localeCompare(
+                            filter.value.toString(),
+                            undefined,
+                            { sensitivity: 'accent' }
+                          ) === 0
+                      ) !== -1
                   );
                 }
 
                 if (filter.name === 'Description') {
                   result = result.filter(
-                    item => item.description.localeCompare(filter.value.toString(), undefined, { sensitivity: 'accent' }) === 0
+                    item =>
+                      item.description.localeCompare(
+                        filter.value.toString(),
+                        undefined,
+                        { sensitivity: 'accent' }
+                      ) === 0
                   );
                 }
               }
@@ -68,8 +93,8 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
             console.log(error);
             return data;
           }
-        }
-      ]
+        },
+      ],
     };
   }
 }

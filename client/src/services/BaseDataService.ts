@@ -8,6 +8,9 @@ export class BaseDataService {
 
     axios.defaults.baseURL = '/api';
     axios.defaults.responseType = 'json';
-    axios.defaults.headers = { 'Grpc-Metadata-bearer_access_token': authenticationService.accessToken, 'Grpc-Metadata-source': 'WebApp' };
+    axios.defaults.headers = {
+      'Grpc-Metadata-bearer_access_token': authenticationService.accessToken,
+      'Grpc-Metadata-source': 'WebApp',
+    };
   }
 }

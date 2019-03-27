@@ -10,16 +10,22 @@ import {
   manageFiltersAction,
   manageFiltersTypes,
   suggestFiltersAction,
-  suggestFiltersActionTypes
+  suggestFiltersActionTypes,
 } from './types';
 
 const filterInitialState: IFilterState = {
-  contexts: {}
+  contexts: {},
 };
 
-type allFilterActions = suggestFiltersAction | initContextAction | manageFiltersAction;
+type allFilterActions =
+  | suggestFiltersAction
+  | initContextAction
+  | manageFiltersAction;
 
-const manageFiltersReducer: Reducer<IFilterState, manageFiltersAction> = (state = filterInitialState, action: manageFiltersAction) => {
+const manageFiltersReducer: Reducer<IFilterState, manageFiltersAction> = (
+  state = filterInitialState,
+  action: manageFiltersAction
+) => {
   const ctx = action.payload.ctx;
   if (ctx === undefined || state.contexts[ctx] === undefined) {
     throw new Error('Current filters context is undefined');
@@ -30,7 +36,10 @@ const manageFiltersReducer: Reducer<IFilterState, manageFiltersAction> = (state 
     case manageFiltersTypes.ADD_FILTER: {
       const currentCtx: IFilterContextData | undefined = newState.contexts[ctx];
       if (currentCtx !== undefined) {
-        currentCtx.appliedFilters = [...currentCtx.appliedFilters, action.payload.filter];
+        currentCtx.appliedFilters = [
+          ...currentCtx.appliedFilters,
+          action.payload.filter,
+        ];
         newState.contexts[ctx] = currentCtx;
       }
       break;
@@ -39,7 +48,10 @@ const manageFiltersReducer: Reducer<IFilterState, manageFiltersAction> = (state 
       const currentCtx: IFilterContextData | undefined = newState.contexts[ctx];
       if (currentCtx !== undefined) {
         currentCtx.appliedFilters = [...currentCtx.appliedFilters];
-        currentCtx.appliedFilters.splice(currentCtx.appliedFilters.indexOf(action.payload.filter), 1);
+        currentCtx.appliedFilters.splice(
+          currentCtx.appliedFilters.indexOf(action.payload.filter),
+          1
+        );
         newState.contexts[ctx] = currentCtx;
       }
       break;
@@ -66,7 +78,10 @@ const manageFiltersReducer: Reducer<IFilterState, manageFiltersAction> = (state 
   return newState;
 };
 
-const initReducer: Reducer<IFilterState, initContextAction> = (state = filterInitialState, action: initContextAction) => {
+const initReducer: Reducer<IFilterState, initContextAction> = (
+  state = filterInitialState,
+  action: initContextAction
+) => {
   switch (action.type) {
     case initActionTypes.REGISTER_CONTEXT_SUCCESS: {
       const data: IFilterContextData[] = action.payload;
@@ -91,7 +106,10 @@ const initReducer: Reducer<IFilterState, initContextAction> = (state = filterIni
   }
 };
 
-const suggestReducer: Reducer<IFilterState, suggestFiltersAction> = (state = filterInitialState, action: suggestFiltersAction) => {
+const suggestReducer: Reducer<IFilterState, suggestFiltersAction> = (
+  state = filterInitialState,
+  action: suggestFiltersAction
+) => {
   switch (action.type) {
     case suggestFiltersActionTypes.SUGGEST_FILTERS_RESULT: {
       return { ...state, foundFilters: action.payload };
@@ -102,7 +120,10 @@ const suggestReducer: Reducer<IFilterState, suggestFiltersAction> = (state = fil
   }
 };
 
-export const filtersReducer: Reducer<IFilterState, allFilterActions> = (state = filterInitialState, action: allFilterActions) => {
+export const filtersReducer: Reducer<IFilterState, allFilterActions> = (
+  state = filterInitialState,
+  action: allFilterActions
+) => {
   if (Object.values(manageFiltersTypes).includes(action.type)) {
     return manageFiltersReducer(state, action as manageFiltersAction);
   }

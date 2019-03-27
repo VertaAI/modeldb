@@ -18,7 +18,10 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
     const project = this.props.project;
 
     return (
-      <Link className={styles.project_link} to={routes.expirementRuns.getRedirectPath({ projectId: project.id })}>
+      <Link
+        className={styles.project_link}
+        to={routes.expirementRuns.getRedirectPath({ projectId: project.id })}
+      >
         <div className={styles.project_widget}>
           <div className={styles.title_block}>
             <div className={styles.title}>{project.name}</div>
@@ -31,7 +34,11 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
                   <Draggable
                     key={i}
                     type="filter"
-                    data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}
+                    data={{
+                      type: PropertyType.STRING,
+                      name: 'Tag',
+                      value: tag,
+                    }}
                     additionalClassName={styles.tag}
                   >
                     <span className={styles.tag_text}>{tag}</span>
@@ -59,7 +66,9 @@ export default class ProjectWidget extends React.Component<ILocalProps> {
             <span>model</span>
           </div>
           <div className={styles.created_date_block}>
-            <div className={styles.created_date}>Created: {project.dateCreated.toLocaleDateString()}</div>
+            <div className={styles.created_date}>
+              Created: {project.dateCreated.toLocaleDateString()}
+            </div>
             <div>Updated: {project.dateUpdated.toLocaleDateString()}</div>
           </div>
         </div>

@@ -1,5 +1,11 @@
 import React from 'react';
-import { Route, RouteComponentProps, RouteProps, Switch, withRouter } from 'react-router-dom';
+import {
+  Route,
+  RouteComponentProps,
+  RouteProps,
+  Switch,
+  withRouter,
+} from 'react-router-dom';
 
 import ExperimentRuns from 'components/ExperimentRuns/ExperimentRuns';
 import { FilterSelect } from 'components/FilterSelect/FilterSelect';
@@ -43,9 +49,19 @@ class AuthorizedLayout extends React.Component<RouteComponentProps> {
           <AuthorizedLayoutHeader />
         </div>
         <Switch>
-          <RouteWithFilter exact={true} path={routes.mainPage.getPath()} component={Projects} />
-          <RouteWithFilter path={routes.expirementRuns.getPath()} component={ExperimentRuns} />
-          <RouteWithFilter path={routes.modelRecord.getPath()} component={ModelRecord} />
+          <RouteWithFilter
+            exact={true}
+            path={routes.mainPage.getPath()}
+            component={Projects}
+          />
+          <RouteWithFilter
+            path={routes.expirementRuns.getPath()}
+            component={ExperimentRuns}
+          />
+          <RouteWithFilter
+            path={routes.modelRecord.getPath()}
+            component={ModelRecord}
+          />
           <Route component={GenericNotFound} />
         </Switch>
       </div>

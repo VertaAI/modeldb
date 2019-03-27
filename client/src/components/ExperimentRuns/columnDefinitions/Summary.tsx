@@ -11,11 +11,15 @@ class SummaryColDef extends React.Component<any> {
     return (
       <div className={styles.summary_cell}>
         <div style={{ marginBottom: '10px' }}>
-          Name: <div className={styles.highlight_summary}>{modelRecord.name}</div>
+          Name:{' '}
+          <div className={styles.highlight_summary}>{modelRecord.name}</div>
         </div>
         {modelRecord.codeVersion && (
           <div style={{ marginBottom: '10px' }}>
-            Code Version: <div className={styles.highlight_summary}>{modelRecord.codeVersion}</div>
+            Code Version:{' '}
+            <div className={styles.highlight_summary}>
+              {modelRecord.codeVersion}
+            </div>
           </div>
         )}
         {modelRecord.tags && (

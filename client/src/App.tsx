@@ -6,7 +6,11 @@ import AnonymousLayout from 'components/AnonymousLayout/AnonymousLayout';
 import AuthorizedLayout from 'components/AuthorizedLayout/AuthorizedLayout';
 import GlobalPreloader from 'components/GlobalPreloader/GlobalPreloader';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { checkUserAuthentication, selectIsCheckingUserAuthentication, selectIsUserAuthenticated } from 'store/user';
+import {
+  checkUserAuthentication,
+  selectIsCheckingUserAuthentication,
+  selectIsUserAuthenticated,
+} from 'store/user';
 
 interface IPropsFromState {
   isUserAuthenticated: boolean;
@@ -32,7 +36,7 @@ class App extends React.Component<AllProps> {
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
   isUserAuthenticated: selectIsUserAuthenticated(state),
-  isCheckingUserAuthentication: selectIsCheckingUserAuthentication(state)
+  isCheckingUserAuthentication: selectIsCheckingUserAuthentication(state),
 });
 
 export default withRouter(connect(mapStateToProps)(App));

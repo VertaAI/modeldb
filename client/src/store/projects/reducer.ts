@@ -1,16 +1,22 @@
 import { Reducer } from 'redux';
 
-import { fetchProjectsAction, fetchProjectsActionTypes, IProjectsState, IUpdateProjectAction, updateProjectActionTypes } from './types';
+import {
+  fetchProjectsAction,
+  fetchProjectsActionTypes,
+  IProjectsState,
+  IUpdateProjectAction,
+  updateProjectActionTypes,
+} from './types';
 
 const projectsInitialState: IProjectsState = {
   data: null,
-  loading: false
+  loading: false,
 };
 
-export const updateProjectsReducer: Reducer<IProjectsState, IUpdateProjectAction> = (
-  state = projectsInitialState,
-  action: IUpdateProjectAction
-) => {
+export const updateProjectsReducer: Reducer<
+  IProjectsState,
+  IUpdateProjectAction
+> = (state = projectsInitialState, action: IUpdateProjectAction) => {
   switch (action.type) {
     case updateProjectActionTypes.UPDATE_PROJECT_STATE: {
       return { ...state, data: [...action.payload] };
@@ -21,10 +27,10 @@ export const updateProjectsReducer: Reducer<IProjectsState, IUpdateProjectAction
   }
 };
 
-export const fetchProjectsReducer: Reducer<IProjectsState, fetchProjectsAction> = (
-  state = projectsInitialState,
-  action: fetchProjectsAction
-) => {
+export const fetchProjectsReducer: Reducer<
+  IProjectsState,
+  fetchProjectsAction
+> = (state = projectsInitialState, action: fetchProjectsAction) => {
   switch (action.type) {
     case fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST: {
       return { ...state, loading: true };
@@ -41,7 +47,10 @@ export const fetchProjectsReducer: Reducer<IProjectsState, fetchProjectsAction> 
   }
 };
 
-export const projectsReducer: Reducer<IProjectsState> = (state = projectsInitialState, action) => {
+export const projectsReducer: Reducer<IProjectsState> = (
+  state = projectsInitialState,
+  action
+) => {
   if (Object.values(updateProjectActionTypes).includes(action.type)) {
     return updateProjectsReducer(state, action as IUpdateProjectAction);
   }

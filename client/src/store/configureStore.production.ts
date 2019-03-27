@@ -5,11 +5,16 @@ import reduxThunk, { ThunkMiddleware } from 'redux-thunk';
 
 import { createRootReducer, IApplicationState } from './store';
 
-export default function configureStore(history: History, initialState: IApplicationState): Store<IApplicationState> {
+export default function configureStore(
+  history: History,
+  initialState: IApplicationState
+): Store<IApplicationState> {
   const store = createStore(
     createRootReducer(history),
     initialState,
-    applyMiddleware(routerMiddleware(history), reduxThunk as ThunkMiddleware<IApplicationState>)
+    applyMiddleware(routerMiddleware(history), reduxThunk as ThunkMiddleware<
+      IApplicationState
+    >)
   );
 
   return store;

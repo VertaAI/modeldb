@@ -63,16 +63,24 @@ class UserBar extends React.Component<AllProps, ILocalState> {
                 src={user ? user.picture : ''}
               />
               <div>
-                <div className={styles.menu_header_user_name}>{user ? user.name : ''}</div>
+                <div className={styles.menu_header_user_name}>
+                  {user ? user.name : ''}
+                </div>
               </div>
             </div>
             <div className={styles.menu_item}>
-              <Link onClick={this.toggleMenu} to={routes.settings.getRedirectPath({})}>
+              <Link
+                onClick={this.toggleMenu}
+                to={routes.settings.getRedirectPath({})}
+              >
                 Settings
               </Link>
             </div>
             <div className={styles.menu_item}>
-              <Link onClick={this.logout} to={routes.mainPage.getRedirectPath({})}>
+              <Link
+                onClick={this.logout}
+                to={routes.mainPage.getRedirectPath({})}
+              >
                 Log out
               </Link>
             </div>
@@ -102,7 +110,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
 }
 
 const mapStateToProps = ({ layout }: IApplicationState) => ({
-  user: layout.user
+  user: layout.user,
 });
 
 export default connect(mapStateToProps)(onClickOutside(UserBar));

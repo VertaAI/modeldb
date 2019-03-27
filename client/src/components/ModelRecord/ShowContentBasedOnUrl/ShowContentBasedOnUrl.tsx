@@ -12,16 +12,19 @@ interface ILocalState {
 
 enum ContentType {
   IMAGE = 'image',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
-export default class ShowContentBasedOnUrl extends React.Component<ILocalProps, ILocalState> {
+export default class ShowContentBasedOnUrl extends React.Component<
+  ILocalProps,
+  ILocalState
+> {
   public state: ILocalState = { urlContentType: ContentType.OTHER };
 
   public componentDidMount() {
     const configInit: RequestInit = {
       cache: 'default',
-      method: 'HEAD'
+      method: 'HEAD',
     };
 
     fetch(this.props.path, configInit).then((value: Response) => {

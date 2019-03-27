@@ -1,5 +1,10 @@
 import React from 'react';
-import { Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
+import {
+  Route,
+  RouteComponentProps,
+  Switch,
+  withRouter,
+} from 'react-router-dom';
 
 import Callback from 'components/Callback/Callback';
 import Login from 'components/Login/Login';

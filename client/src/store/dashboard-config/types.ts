@@ -9,7 +9,7 @@ export interface IDashboardConfigState {
 }
 
 export enum updateDashboardConfigActionTypes {
-  UPDATE_DASHBOARD = '@@configDashboard/UPDATE_DASHBOARD'
+  UPDATE_DASHBOARD = '@@configDashboard/UPDATE_DASHBOARD',
 }
 
 export interface IUpdateDashboardConfigAction {

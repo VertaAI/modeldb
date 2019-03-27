@@ -11,8 +11,14 @@ export interface IFilterContext {
   isFilteringSupport: boolean;
   name: string;
   getMetadata(): IMetaData[];
-  onSearch(text: string, dispatch: ThunkDispatch<IApplicationState, undefined, AnyAction>): void;
-  onApplyFilters(filters: IFilterData[], dispatch: ThunkDispatch<IApplicationState, undefined, AnyAction>): void;
+  onSearch(
+    text: string,
+    dispatch: ThunkDispatch<IApplicationState, undefined, AnyAction>
+  ): void;
+  onApplyFilters(
+    filters: IFilterData[],
+    dispatch: ThunkDispatch<IApplicationState, undefined, AnyAction>
+  ): void;
   isValidLocation(location: string): boolean;
 }
 

@@ -9,7 +9,7 @@ import SummaryColDef from './Summary';
 
 export const defaultColDefinitions = {
   autoHeight: true,
-  resizable: true
+  resizable: true,
 };
 
 export const returnColumnDefs = (updatedConfig: any) => {
@@ -20,7 +20,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 190,
       cellRendererFramework: ModelRecordColDef,
       cellClass: [styles.cell, styles.modelDescription],
-      hide: !updatedConfig.get('id').checked
+      hide: !updatedConfig.get('id').checked,
     },
     {
       headerName: 'Summary',
@@ -28,7 +28,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellRendererFramework: SummaryColDef,
       width: 180,
       cellClass: styles.cell,
-      hide: !updatedConfig.get('summary').checked
+      hide: !updatedConfig.get('summary').checked,
     },
     {
       headerName: 'Metrics',
@@ -36,7 +36,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellRendererFramework: MetricsColDef,
       width: 200,
       cellClass: styles.cell,
-      hide: !updatedConfig.get('metrics').checked
+      hide: !updatedConfig.get('metrics').checked,
     },
     {
       headerName: 'Hyperparameters',
@@ -44,7 +44,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       field: 'hyperparameters',
       cellRendererFramework: HyperparamsColDef,
       cellClass: styles.cell,
-      hide: !updatedConfig.get('hyperparameters').checked
+      hide: !updatedConfig.get('hyperparameters').checked,
     },
     {
       headerName: 'Artifacts',
@@ -52,7 +52,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellRendererFramework: ArtifactsColDef,
       width: 260,
       cellClass: styles.cell,
-      hide: !updatedConfig.get('artifacts').checked
+      hide: !updatedConfig.get('artifacts').checked,
     },
     {
       headerName: 'Datasets',
@@ -60,8 +60,8 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellRendererFramework: DatasetsColDef,
       width: 240,
       cellClass: styles.cell,
-      hide: !updatedConfig.get('datasets').checked
-    }
+      hide: !updatedConfig.get('datasets').checked,
+    },
     // {
     //   headerName: 'Observations',
     //   field: 'observations',
