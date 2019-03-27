@@ -4,11 +4,10 @@ import 'normalize.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+
 import App from './App';
-
-import configureStore from './store/configureStore';
-
 import './index.css';
+import configureStore from './store/configureStore';
 
 export const history = createBrowserHistory();
 

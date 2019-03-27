@@ -18,7 +18,10 @@ interface ILocalState {
   isEditorShown: boolean;
 }
 
-export default class AppliedFilterItem extends React.Component<ILocalProps, ILocalState> {
+export default class AppliedFilterItem extends React.Component<
+  ILocalProps,
+  ILocalState
+> {
   public state: ILocalState = { isEditorShown: false };
 
   public render() {
@@ -28,22 +31,38 @@ export default class AppliedFilterItem extends React.Component<ILocalProps, ILoc
           <div className={styles.remove_button} onClick={this.onClickRemove}>
             {/* <i className="fa fa-filter" aria-hidden="true" /> */}x
           </div>
-          <div className={styles.filter_text}>{this.getFormatedFilterName(this.props.data)}</div>
+          <div className={styles.filter_text}>
+            {this.getFormatedFilterName(this.props.data)}
+          </div>
           <div className={styles.edit_button} onClick={this.onClickShowEditor}>
-            <i className={this.state.isEditorShown ? 'fa fa-caret-up' : 'fa fa-caret-down'} aria-hidden="true" />
+            <i
+              className={
+                this.state.isEditorShown ? 'fa fa-caret-up' : 'fa fa-caret-down'
+              }
+              aria-hidden="true"
+            />
           </div>
         </div>
         {this.state.isEditorShown && (
           <div className={styles.editor}>
             {this.props.data.type === PropertyType.STRING ? (
-              <StringFilterEditor onChange={this.props.onChange} data={this.props.data} />
+              <StringFilterEditor
+                onChange={this.props.onChange}
+                data={this.props.data}
+              />
             ) : this.props.data.type === PropertyType.NUMBER ? (
-              <NumberFilterEditor onChange={this.props.onChange} data={this.props.data} />
+              <NumberFilterEditor
+                onChange={this.props.onChange}
+                data={this.props.data}
+              />
             ) : this.props.data.type === PropertyType.METRIC ? (
-              <MetricFilterEditor onChange={this.props.onChange} data={this.props.data} />
+              <MetricFilterEditor
+                onChange={this.props.onChange}
+                data={this.props.data}
+              />
             ) : (
-                    ''
-                  )}
+              ''
+            )}
           </div>
         )}
       </div>

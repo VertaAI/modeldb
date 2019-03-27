@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { bind } from 'decko';
+import * as React from 'react';
 
 import { ComparisonType, IMetricFilterData } from 'models/Filters';
 
@@ -14,13 +14,20 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
   public render() {
     return (
       <div className={styles.root}>
-        <select defaultValue={this.props.data.comparisonType.toString()} onChange={this.onComparisonChanged}>
+        <select
+          defaultValue={this.props.data.comparisonType.toString()}
+          onChange={this.onComparisonChanged}
+        >
           <option value={ComparisonType.MORE}>&gt;</option>
           <option value={ComparisonType.EQUALS}>=</option>
           <option value={ComparisonType.LESS}>&lt;</option>
         </select>
 
-        <input defaultValue={this.props.data.value.toString()} onBlur={this.onBlur} onKeyUp={this.onSubmit} />
+        <input
+          defaultValue={this.props.data.value.toString()}
+          onBlur={this.onBlur}
+          onKeyUp={this.onSubmit}
+        />
       </div>
     );
   }
@@ -37,7 +44,7 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
     const cmp: ComparisonType = event.target.selectedIndex;
     const newData = {
       ...this.props.data,
-      comparisonType: cmp
+      comparisonType: cmp,
     };
 
     this.onSave(newData);
@@ -46,7 +53,10 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
   @bind
   private onSubmit(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
-      const newData = { ...this.props.data, value: Number(event.currentTarget.value) };
+      const newData = {
+        ...this.props.data,
+        value: Number(event.currentTarget.value),
+      };
       this.onSave(newData);
     }
   }

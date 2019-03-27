@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+
 import styles from './Footer.module.css';
 import facebook_logo from './images/facebook_logo.svg';
 import github_logo from './images/github_logo.svg';

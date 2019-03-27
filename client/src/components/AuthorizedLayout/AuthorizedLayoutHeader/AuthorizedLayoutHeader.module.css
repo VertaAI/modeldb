@@ -4,7 +4,10 @@
   height: 56px;
   font-size: 16px;
   display: grid;
-  grid-template-columns: 300px minmax(20px, 40px) auto minmax(940px, 1060px) auto minmax(20px, 40px);
+  grid-template-columns: 300px minmax(20px, 40px) auto minmax(940px, 1060px) auto minmax(
+      20px,
+      40px
+    );
   padding: 0;
   align-items: center;
   grid-template-areas: 'logo . . header_content header_content header_content';

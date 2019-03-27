@@ -1,19 +1,19 @@
-import * as React from "react";
-import { connect } from "react-redux";
-import { RouteComponentProps } from "react-router";
+import * as React from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
 
-import { IArtifact } from "models/Artifact";
-import { IHyperparameter } from "models/HyperParameters";
-import { IMetric } from "models/Metrics";
-import ModelRecord from "models/ModelRecord";
-import routes, { GetRouteParams } from "routes";
-import { fetchModelRecord } from "store/model-record";
-import { IApplicationState, IConnectedReduxProps } from "store/store";
+import loader from 'components/images/loader.gif';
+import tagStyles from 'components/TagBlock/TagBlock.module.css';
+import { IArtifact } from 'models/Artifact';
+import { IHyperparameter } from 'models/HyperParameters';
+import { IMetric } from 'models/Metrics';
+import ModelRecord from 'models/ModelRecord';
+import routes, { GetRouteParams } from 'routes';
+import { fetchModelRecord } from 'store/model-record';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import loader from "components/images/loader.gif";
-import tagStyles from "components/TagBlock/TagBlock.module.css";
-import styles from "./ModelRecord.module.css";
-import ShowContentBasedOnUrl from "./ShowContentBasedOnUrl/ShowContentBasedOnUrl";
+import styles from './ModelRecord.module.css';
+import ShowContentBasedOnUrl from './ShowContentBasedOnUrl/ShowContentBasedOnUrl';
 
 type IUrlProps = GetRouteParams<typeof routes.modelRecord>;
 
@@ -53,30 +53,30 @@ class ModelRecordLayout extends React.Component<AllProps> {
           </div>
           <div className={styles.record_summary_meta}>
             <div className={styles.experiment_link}>
-              <span className={styles.parma_link_label}> Model ID:</span>{" "}
+              <span className={styles.parma_link_label}> Model ID:</span>{' '}
               <span className={styles.parma_link_value}>
-                {data.id.slice(0, 4) + ".."}
+                {data.id.slice(0, 4) + '..'}
               </span>
             </div>
             <div className={styles.experiment_link}>
-              <span className={styles.parma_link_label}> Project ID:</span>{" "}
+              <span className={styles.parma_link_label}> Project ID:</span>{' '}
               <span className={styles.parma_link_value}>
-                {data.projectId.slice(0, 4) + ".."}
+                {data.projectId.slice(0, 4) + '..'}
               </span>
             </div>
             <div className={styles.experiment_link}>
-              <span className={styles.parma_link_label}> Experiment ID:</span>{" "}
+              <span className={styles.parma_link_label}> Experiment ID:</span>{' '}
               <span className={styles.parma_link_value}>
-                {data.experimentId.slice(0, 4) + ".."}
+                {data.experimentId.slice(0, 4) + '..'}
               </span>
             </div>
           </div>
         </div>
-        {this.renderTextRecord("Code version", data.codeVersion)}
+        {this.renderTextRecord('Code version', data.codeVersion)}
 
         {data.hyperparameters &&
           this.renderListRecord(
-            "Hyperparameters",
+            'Hyperparameters',
             data.hyperparameters.map((value: IHyperparameter, key: number) => {
               return (
                 <div key={key}>
@@ -87,7 +87,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
           )}
         {data.metrics &&
           this.renderListRecord(
-            "Metrics",
+            'Metrics',
             data.metrics.map((value: IMetric, key: number) => {
               return (
                 <div key={key}>
@@ -98,7 +98,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
           )}
         {data.artifacts &&
           this.renderListRecord(
-            "Artifacts",
+            'Artifacts',
             data.artifacts.map((value: IArtifact, key: number) => {
               return (
                 <div key={key}>
@@ -109,7 +109,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
           )}
       </div>
     ) : (
-      ""
+      ''
     );
   }
 
@@ -122,7 +122,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
   private renderRecord(
     header: string,
     content: JSX.Element[],
-    additionalValueClassName: string = ""
+    additionalValueClassName: string = ''
   ) {
     return content && content.length > 0 ? (
       <div className={styles.record}>
@@ -132,14 +132,14 @@ class ModelRecordLayout extends React.Component<AllProps> {
         </div>
       </div>
     ) : (
-      ""
+      ''
     );
   }
 
   private renderTextRecord(
     header: string,
     value: string,
-    additionalValueClassName: string = ""
+    additionalValueClassName: string = ''
   ) {
     return value
       ? this.renderRecord(
@@ -147,7 +147,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
           [<span key={0}>{value}</span>],
           additionalValueClassName
         )
-      : "";
+      : '';
   }
 
   private renderListRecord(header: string, content: JSX.Element[]) {
@@ -157,7 +157,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
 
 const mapStateToProps = ({ modelRecord }: IApplicationState) => ({
   data: modelRecord.data,
-  loading: modelRecord.loading
+  loading: modelRecord.loading,
 });
 
 export default connect(mapStateToProps)(ModelRecordLayout);

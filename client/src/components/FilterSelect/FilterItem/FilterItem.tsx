@@ -17,7 +17,9 @@ export default class FilterItem extends React.Component<ILocalProps> {
         <div className={styles.filter_icon}>
           <i className="fa fa-filter" aria-hidden="true" />
         </div>
-        <div className={styles.prop_text}>{`${this.props.data.name}${this.props.data.value ? `: ${this.props.data.value}` : ''}`}</div>
+        <div className={styles.prop_text}>{`${this.props.data.name}${
+          this.props.data.value ? `: ${this.props.data.value}` : ''
+        }`}</div>
         <div className={styles.add_button} onClick={this.onClick}>
           +
         </div>

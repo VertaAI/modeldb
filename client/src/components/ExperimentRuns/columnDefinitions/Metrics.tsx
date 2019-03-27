@@ -1,9 +1,9 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { ComparisonType, PropertyType } from "models/Filters";
+import Draggable from 'components/Draggable/Draggable';
+import { ComparisonType, PropertyType } from 'models/Filters';
 
-import Draggable from "components/Draggable/Draggable";
-import styles from "./ColumnDefs.module.css";
+import styles from './ColumnDefs.module.css';
 
 const ModelProperty: React.SFC<any> = props => {
   return (
@@ -14,7 +14,7 @@ const ModelProperty: React.SFC<any> = props => {
         type: PropertyType.METRIC,
         name: props.property.key,
         value: props.property.value,
-        comparisonType: ComparisonType.MORE
+        comparisonType: ComparisonType.MORE,
       }}
     >
       <div className={styles.param_grid_metric}>

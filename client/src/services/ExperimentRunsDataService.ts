@@ -1,13 +1,13 @@
-import axios, { AxiosPromise, AxiosRequestConfig } from "axios";
-import { JsonConvert } from "json2typescript";
+import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
+import { JsonConvert } from 'json2typescript';
 
-import { ComparisonType, IFilterData, PropertyType } from "models/Filters";
-import { IHyperparameter } from "models/HyperParameters";
-import { IMetric } from "models/Metrics";
-import ModelRecord from "models/ModelRecord";
+import { ComparisonType, IFilterData, PropertyType } from 'models/Filters';
+import { IHyperparameter } from 'models/HyperParameters';
+import { IMetric } from 'models/Metrics';
+import ModelRecord from 'models/ModelRecord';
 
-import { BaseDataService } from "./BaseDataService";
-import { IExperimentRunsDataService } from "./IExperimentRunsDataService";
+import { BaseDataService } from './BaseDataService';
+import { IExperimentRunsDataService } from './IExperimentRunsDataService';
 
 export default class ExperimentRunsDataService extends BaseDataService
   implements IExperimentRunsDataService {
@@ -21,7 +21,7 @@ export default class ExperimentRunsDataService extends BaseDataService
   ): AxiosPromise<ModelRecord[]> {
     const axiosConfig = this.responseToExperimentRunsConfig(filters);
     axiosConfig.params = { project_id: projectId };
-    return axios.get<ModelRecord[]>("/getExperimentRunsInProject", axiosConfig);
+    return axios.get<ModelRecord[]>('/getExperimentRunsInProject', axiosConfig);
   }
 
   public getModelRecord(
@@ -66,8 +66,8 @@ export default class ExperimentRunsDataService extends BaseDataService
             console.log(error);
             return data;
           }
-        }
-      ]
+        },
+      ],
     };
   }
 
@@ -76,25 +76,25 @@ export default class ExperimentRunsDataService extends BaseDataService
       const propName: string = filter.name.toLocaleLowerCase();
       const filterValue = filter.value;
 
-      if (propName === "tag") {
+      if (propName === 'tag') {
         if (modelRecord.tags.includes(filter.value.toString())) {
           return true;
         }
       }
 
-      if (propName === "name") {
+      if (propName === 'name') {
         if (modelRecord.name === filter.value.toString()) {
           return true;
         }
       }
 
-      if (propName === "id") {
+      if (propName === 'id') {
         if (modelRecord.id === filter.value.toString()) {
           return true;
         }
       }
 
-      if (propName === "ProjectId") {
+      if (propName === 'ProjectId') {
         if (modelRecord.projectId === filter.value.toString()) {
           return true;
         }

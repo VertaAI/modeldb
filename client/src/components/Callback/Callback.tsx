@@ -2,10 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import GlobalPreloader from 'components/GlobalPreloader/GlobalPreloader';
 import { IConnectedReduxProps } from 'store/store';
 import { handleUserAuthentication } from 'store/user';
-
-import GlobalPreloader from 'components/GlobalPreloader/GlobalPreloader';
 
 type AllProps = IConnectedReduxProps & RouteComponentProps;
 

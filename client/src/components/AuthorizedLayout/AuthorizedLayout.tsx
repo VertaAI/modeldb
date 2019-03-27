@@ -1,11 +1,19 @@
+import React from 'react';
+import {
+  Route,
+  RouteComponentProps,
+  RouteProps,
+  Switch,
+  withRouter,
+} from 'react-router-dom';
+
 import ExperimentRuns from 'components/ExperimentRuns/ExperimentRuns';
 import { FilterSelect } from 'components/FilterSelect/FilterSelect';
 import { GenericNotFound } from 'components/GenericNotFound/GenericNotFound';
 import ModelRecord from 'components/ModelRecord/ModelRecord';
 import Projects from 'components/Projects/Projects';
-import React from 'react';
-import { Route, RouteComponentProps, RouteProps, Switch, withRouter } from 'react-router-dom';
 import routes from 'routes';
+
 import styles from './AuthorizedLayout.module.css';
 import AuthorizedLayoutHeader from './AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 
@@ -41,9 +49,19 @@ class AuthorizedLayout extends React.Component<RouteComponentProps> {
           <AuthorizedLayoutHeader />
         </div>
         <Switch>
-          <RouteWithFilter exact={true} path={routes.mainPage.getPath()} component={Projects} />
-          <RouteWithFilter path={routes.expirementRuns.getPath()} component={ExperimentRuns} />
-          <RouteWithFilter path={routes.modelRecord.getPath()} component={ModelRecord} />
+          <RouteWithFilter
+            exact={true}
+            path={routes.mainPage.getPath()}
+            component={Projects}
+          />
+          <RouteWithFilter
+            path={routes.expirementRuns.getPath()}
+            component={ExperimentRuns}
+          />
+          <RouteWithFilter
+            path={routes.modelRecord.getPath()}
+            component={ModelRecord}
+          />
           <Route component={GenericNotFound} />
         </Switch>
       </div>

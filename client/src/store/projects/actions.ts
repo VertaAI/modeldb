@@ -1,8 +1,10 @@
-import { IFilterData } from "models/Filters";
-import ServiceFactory from "services/ServiceFactory";
-import { ActionResult } from "store/store";
-import { action } from "typesafe-actions";
-import { fetchProjectsAction, fetchProjectsActionTypes } from "./types";
+import { action } from 'typesafe-actions';
+
+import { IFilterData } from 'models/Filters';
+import ServiceFactory from 'services/ServiceFactory';
+import { ActionResult } from 'store/store';
+
+import { fetchProjectsAction, fetchProjectsActionTypes } from './types';
 
 export const fetchProjects = (
   filters?: IFilterData[]

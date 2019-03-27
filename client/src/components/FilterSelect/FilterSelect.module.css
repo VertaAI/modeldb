@@ -28,7 +28,7 @@
 }
 
 .input + label:before {
-  content: "\f002";
+  content: '\f002';
   position: absolute;
   left: -31px;
   top: -1px;
@@ -48,7 +48,7 @@
 }
 
 .applied_filters:empty::after {
-  content: "Drag and drop parameters and tags here";
+  content: 'Drag and drop parameters and tags here';
   position: absolute;
   top: 205px;
   left: 52px;
@@ -62,7 +62,7 @@
 .applied_filters:empty {
   background-position-x: 50%;
   background-position-y: 100px;
-  background-image: url("/images/drag-and-drop.png");
+  background-image: url('/images/drag-and-drop.png');
   background-repeat: no-repeat;
   background-size: 46px;
 }
@@ -98,7 +98,7 @@
 }
 
 .applied_filters_proj:empty::after {
-  content: "Drag and drop tags here";
+  content: 'Drag and drop tags here';
   position: absolute;
   top: 205px;
   left: 52px;
@@ -112,7 +112,7 @@
 .applied_filters_proj:empty {
   background-position-x: 50%;
   background-position-y: 100px;
-  background-image: url("/images/drag-and-drop.png");
+  background-image: url('/images/drag-and-drop.png');
   background-repeat: no-repeat;
   background-size: 46px;
 }

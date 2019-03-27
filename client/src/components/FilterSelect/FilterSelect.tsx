@@ -1,15 +1,16 @@
-import { bind, debounce } from "decko";
-import { UnregisterCallback } from "history";
-import _ from "lodash";
-import * as React from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
-import { RouteComponentProps, withRouter } from "react-router-dom";
+import { bind, debounce } from 'decko';
+import { UnregisterCallback } from 'history';
+import _ from 'lodash';
+import * as React from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import { FilterContextPool, IFilterContext } from "models/FilterContextPool";
-import { IFilterData } from "models/Filters";
-import ModelRecord from "models/ModelRecord";
-import { Project } from "models/Project";
+import Droppable from 'components/Droppable/Droppable';
+import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
+import { IFilterData } from 'models/Filters';
+import ModelRecord from 'models/ModelRecord';
+import { Project } from 'models/Project';
 import {
   addFilter,
   applyFilters,
@@ -19,18 +20,17 @@ import {
   initContexts,
   removeFilter,
   search,
-  suggestFilters
-} from "store/filter";
-import { IApplicationState, IConnectedReduxProps } from "store/store";
+  suggestFilters,
+} from 'store/filter';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import Droppable from "components/Droppable/Droppable";
-import AppliedFilterItem from "./AppliedFilterItem/AppliedFilterItem";
-import FilterItem from "./FilterItem/FilterItem";
-import styles from "./FilterSelect.module.css";
+import AppliedFilterItem from './AppliedFilterItem/AppliedFilterItem';
+import FilterItem from './FilterItem/FilterItem';
+import styles from './FilterSelect.module.css';
 
 const contextMap: Map<string, string> = new Map();
-contextMap.set("/", Project.name);
-contextMap.set("", ModelRecord.name);
+contextMap.set('/', Project.name);
+contextMap.set('', ModelRecord.name);
 
 interface ILocalProps {
   appliedFilters: IFilterData[];
@@ -50,7 +50,7 @@ type AllProps = ILocalProps & IConnectedReduxProps & RouteComponentProps;
 class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
     isOpened: false,
-    txt: ""
+    txt: '',
   };
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
@@ -70,7 +70,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
 
   public render() {
     const projectPage =
-      this.props.history.location.pathname.split("/").length === 2
+      this.props.history.location.pathname.split('/').length === 2
         ? true
         : false;
     return (
@@ -134,7 +134,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
 
   @bind
   private onSearch(ev: React.KeyboardEvent<HTMLInputElement>) {
-    if (ev.key === "Enter") {
+    if (ev.key === 'Enter') {
       if (this.props.ctx !== undefined) {
         this.props.dispatch(search(this.props.ctx, this.state.txt));
       }
@@ -212,7 +212,7 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   private onShowPopup() {
     this.setState({
       ...this.state,
-      isOpened: true
+      isOpened: true,
     });
   }
 }
@@ -226,7 +226,7 @@ const mapStateToProps = ({ filters }: IApplicationState) => {
         appliedFilters: fcData.appliedFilters,
         ctx: filters.context,
         foundFilters: filters.foundFilters,
-        isFiltersSupporting: fcData.ctx.isFilteringSupport
+        isFiltersSupporting: fcData.ctx.isFilteringSupport,
       };
     }
   }
@@ -235,7 +235,7 @@ const mapStateToProps = ({ filters }: IApplicationState) => {
     appliedFilters: [],
     isFiltersSupporting: false,
     foundFilters: filters.foundFilters,
-    ctx: undefined
+    ctx: undefined,
   };
 };
 

@@ -1,46 +1,45 @@
-import { GridReadyEvent } from "ag-grid-community";
-import "ag-grid-community/dist/styles/ag-grid.css";
-import "ag-grid-community/dist/styles/ag-theme-material.css";
-import { AgGridReact } from "ag-grid-react";
-import * as React from "react";
-import { connect } from "react-redux";
-import { RouteComponentProps } from "react-router";
+import { GridReadyEvent } from 'ag-grid-community';
+import 'ag-grid-community/dist/styles/ag-grid.css';
+import 'ag-grid-community/dist/styles/ag-theme-material.css';
+import { AgGridReact } from 'ag-grid-react';
+import * as React from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
 
-import { FilterContextPool } from "models/FilterContextPool";
-import { PropertyType } from "models/Filters";
-import ModelRecord from "models/ModelRecord";
-import routes, { GetRouteParams } from "routes";
-import { IColumnMetaData } from "store/dashboard-config";
-import { fetchExperimentRuns } from "store/experiment-runs";
-import { IApplicationState, IConnectedReduxProps } from "store/store";
-
-import loader from "components/images/loader.gif";
-import styles from "./ExperimentRuns.module.css";
+import loader from 'components/images/loader.gif';
+import { FilterContextPool } from 'models/FilterContextPool';
+import { PropertyType } from 'models/Filters';
+import ModelRecord from 'models/ModelRecord';
+import routes, { GetRouteParams } from 'routes';
+import { IColumnMetaData } from 'store/dashboard-config';
+import { fetchExperimentRuns } from 'store/experiment-runs';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import {
   defaultColDefinitions,
-  returnColumnDefs
-} from "./columnDefinitions/Definitions";
-import DashboardConfig from "./DashboardConfig/DashboardConfig";
+  returnColumnDefs,
+} from './columnDefinitions/Definitions';
+import DashboardConfig from './DashboardConfig/DashboardConfig';
+import styles from './ExperimentRuns.module.css';
 
 let currentProjectID: string;
 const locationRegEx = /\/project\/([a-z0-9\-]+)\/exp-runs/im;
 FilterContextPool.registerContext({
   getMetadata: () => [
-    { propertyName: "Name", type: PropertyType.STRING },
-    { propertyName: "Tag", type: PropertyType.STRING }
+    { propertyName: 'Name', type: PropertyType.STRING },
+    { propertyName: 'Tag', type: PropertyType.STRING },
   ],
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
     if (locationRegEx.test(location)) {
       const match = location.match(locationRegEx);
-      currentProjectID = match ? match[1] : "";
+      currentProjectID = match ? match[1] : '';
       return true;
     } else {
       return false;
     }
   },
-  name: "ModelRecord",
+  name: 'ModelRecord',
   onApplyFilters: (filters, dispatch) => {
     dispatch(fetchExperimentRuns(currentProjectID, filters));
   },
@@ -49,13 +48,13 @@ FilterContextPool.registerContext({
       fetchExperimentRuns(currentProjectID, [
         {
           invert: false,
-          name: "Name",
+          name: 'Name',
           type: PropertyType.STRING,
-          value: text
-        }
+          value: text,
+        },
       ])
     );
-  }
+  },
 });
 
 type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
@@ -70,8 +69,8 @@ interface IPropsFromState {
 }
 
 interface IOperator {
-  ">": any;
-  "<": any;
+  '>': any;
+  '<': any;
   [key: string]: any;
 }
 
@@ -95,7 +94,7 @@ class ExperimentRuns extends React.Component<AllProps> {
     const updatedConfig = this.props.columnConfig;
     if (this.gridApi && updatedConfig !== undefined) {
       this.gridApi.setColumnDefs(returnColumnDefs(updatedConfig));
-      const el = document.getElementsByClassName("ag-center-cols-viewport");
+      const el = document.getElementsByClassName('ag-center-cols-viewport');
       if (el !== undefined && el[0] !== undefined) {
         el[0].scrollLeft += 200;
       }
@@ -131,7 +130,7 @@ class ExperimentRuns extends React.Component<AllProps> {
         </div>
       </div>
     ) : (
-      ""
+      ''
     );
   }
 
@@ -167,13 +166,13 @@ class ExperimentRuns extends React.Component<AllProps> {
     // this.data is from the bind(node) where node is table row data
     // **ts forced creation of public data var to be able access node
     const operators: IOperator = {
-      "<": (a: number, b: number) => a < b,
-      ">": (a: number, b: number) => a > b
+      '<': (a: number, b: number) => a < b,
+      '>': (a: number, b: number) => a > b,
     };
     switch (filter.type) {
-      case "tag":
+      case 'tag':
         return this.data.tags.includes(filter.key);
-      case "param":
+      case 'param':
         return this.data[filter.subtype].find(
           (params: any) => params.key === filter.param
         )
@@ -203,14 +202,14 @@ class ExperimentRuns extends React.Component<AllProps> {
 // filterState and filtered should be provided by from IApplicationState -> customFilter
 const mapStateToProps = ({
   experimentRuns,
-  dashboardConfig
+  dashboardConfig,
 }: IApplicationState) => ({
   defaultColDefinitions,
   columnConfig: dashboardConfig.columnConfig,
   data: experimentRuns.data,
   loading: experimentRuns.loading,
   filterState: {},
-  filtered: false
+  filtered: false,
 });
 
 export default connect(mapStateToProps)(ExperimentRuns);

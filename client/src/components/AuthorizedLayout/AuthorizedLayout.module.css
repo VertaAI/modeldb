@@ -12,7 +12,10 @@
 .content_area {
   grid-area: content_area;
   display: grid;
-  grid-template-columns: 300px minmax(20px, 40px) auto minmax(940px, 1060px) auto minmax(20px, 40px);
+  grid-template-columns: 300px minmax(20px, 40px) auto minmax(940px, 1060px) auto minmax(
+      20px,
+      40px
+    );
   grid-template-areas: 'filtersBar . . content . .';
 }
 

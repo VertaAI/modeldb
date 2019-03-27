@@ -1,15 +1,15 @@
-import * as React from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
+import * as React from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
+import ModelRecord from 'models/ModelRecord';
 import {
   IDashboardConfigState,
-  updateDashboardConfig
-} from "store/dashboard-config";
-import { IApplicationState, IConnectedReduxProps } from "store/store";
-import ModelRecord from "models/ModelRecord";
+  updateDashboardConfig,
+} from 'store/dashboard-config';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import styles from "./DashboardConfig.module.css";
+import styles from './DashboardConfig.module.css';
 
 interface ILocalState {
   isOpened: boolean;
@@ -25,7 +25,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
   public constructor(props: AllProps) {
     super(props);
     this.state = {
-      isOpened: false
+      isOpened: false,
     };
   }
 
@@ -45,7 +45,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
               {Array.from(dashboardConfigMap.values()).map((element: any) => (
                 <label
                   key={element.name}
-                  style={{ display: "block" }}
+                  style={{ display: 'block' }}
                   className={styles.container}
                 >
                   <input
@@ -63,7 +63,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
             </div>
           </div>
         ) : (
-          ""
+          ''
         )}
       </div>
     );
@@ -94,10 +94,10 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
 
 const mapStateToProps = ({
   dashboardConfig,
-  experimentRuns
+  experimentRuns,
 }: IApplicationState) => ({
   dashboardConfig,
-  experimentRuns: experimentRuns.data
+  experimentRuns: experimentRuns.data,
 });
 
 export default connect(mapStateToProps)(onClickOutside(DashboardConfig));

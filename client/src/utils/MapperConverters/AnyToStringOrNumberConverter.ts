@@ -1,7 +1,8 @@
 import { JsonConverter, JsonCustomConvert } from 'json2typescript';
 
 @JsonConverter
-export class AnyToStringOrNumberConverter implements JsonCustomConvert<string | number> {
+export class AnyToStringOrNumberConverter
+  implements JsonCustomConvert<string | number> {
   public serialize(data: string | number): any {
     return data.toString();
   }

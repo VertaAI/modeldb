@@ -1,9 +1,14 @@
 import { Reducer } from 'redux';
-import { fetchExperimentRunsAction, fetchExperimentRunsActionTypes, IExperimentRunsState } from './types';
+
+import {
+  fetchExperimentRunsAction,
+  fetchExperimentRunsActionTypes,
+  IExperimentRunsState,
+} from './types';
 
 const experimentRunsInitialState: IExperimentRunsState = {
   data: undefined,
-  loading: false
+  loading: false,
 };
 
 export const experimentRunsReducer: Reducer<IExperimentRunsState> = (

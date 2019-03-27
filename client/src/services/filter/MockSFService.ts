@@ -6,10 +6,13 @@ import ModelRecord from 'models/ModelRecord';
 import { Project } from 'models/Project';
 import { IFilterContextData } from 'store/filter';
 
-import ISearchAndFilterService from 'services/ISearchAndFilterService';
+import ISearchAndFilterService from '../ISearchAndFilterService';
 
 export default class MockSFService implements ISearchAndFilterService {
-  public searchFilterSuggestions(searchString: string, data?: IFilterContextData): Promise<IFilterData[]> {
+  public searchFilterSuggestions(
+    searchString: string,
+    data?: IFilterContextData
+  ): Promise<IFilterData[]> {
     return new Promise<IFilterData[]>((resolve, reject) => {
       if (data === undefined) {
         reject();
@@ -24,8 +27,13 @@ export default class MockSFService implements ISearchAndFilterService {
     });
   }
 
-  private tryFindFilters(searchString: string, metadata: IMetaData[]): IFilterData[] {
-    const filters: IFilterData[] = metadata.map(data => this.createDefaultFilterDataByType(data.type, data.propertyName));
+  private tryFindFilters(
+    searchString: string,
+    metadata: IMetaData[]
+  ): IFilterData[] {
+    const filters: IFilterData[] = metadata.map(data =>
+      this.createDefaultFilterDataByType(data.type, data.propertyName)
+    );
 
     const searchParts: string[] = searchString
       .trim()
@@ -40,12 +48,18 @@ export default class MockSFService implements ISearchAndFilterService {
       searchParts.forEach(searchPart => {
         potentialFilterName = `${potentialFilterName} ${searchPart}`.trim();
 
-        let potentialFilters = foundFilters.length === 0 ? filters : foundFilters;
-        potentialFilters = potentialFilters.filter(filterData => filterData.name.toUpperCase().indexOf(potentialFilterName) > -1);
+        let potentialFilters =
+          foundFilters.length === 0 ? filters : foundFilters;
+        potentialFilters = potentialFilters.filter(
+          filterData =>
+            filterData.name.toUpperCase().indexOf(potentialFilterName) > -1
+        );
 
         if (potentialFilters.length > 0) {
           foundFilters = potentialFilters;
-          endIdx = searchString.toUpperCase().indexOf(potentialFilterName) + potentialFilterName.length;
+          endIdx =
+            searchString.toUpperCase().indexOf(potentialFilterName) +
+            potentialFilterName.length;
         }
       });
 
@@ -54,7 +68,13 @@ export default class MockSFService implements ISearchAndFilterService {
 
       if (value.length > 0) {
         foundFilters.forEach(foundFilter => {
-          result.push(this.createDefaultFilterDataByType(foundFilter.type, foundFilter.name, value));
+          result.push(
+            this.createDefaultFilterDataByType(
+              foundFilter.type,
+              foundFilter.name,
+              value
+            )
+          );
         });
 
         return result;
@@ -63,7 +83,11 @@ export default class MockSFService implements ISearchAndFilterService {
     return [];
   }
 
-  private createDefaultFilterDataByType(type: PropertyType, name: string, value?: string): IFilterData {
+  private createDefaultFilterDataByType(
+    type: PropertyType,
+    name: string,
+    value?: string
+  ): IFilterData {
     if (type === PropertyType.STRING) {
       return { name, type, invert: false, value: (value as unknown) as '' };
     }
@@ -73,7 +97,12 @@ export default class MockSFService implements ISearchAndFilterService {
     }
 
     if (type === PropertyType.METRIC) {
-      return { name, type, value: (value as unknown) as number, comparisonType: ComparisonType.MORE };
+      return {
+        name,
+        type,
+        value: (value as unknown) as number,
+        comparisonType: ComparisonType.MORE,
+      };
     }
 
     throw Error('Unknown type');

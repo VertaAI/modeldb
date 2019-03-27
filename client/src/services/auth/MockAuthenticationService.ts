@@ -1,8 +1,10 @@
 import { history } from 'index';
 import User from 'models/User';
+
 import { IAuthenticationService } from './IAuthenticationService';
 
-export default class MockAuthenticationService implements IAuthenticationService {
+export default class MockAuthenticationService
+  implements IAuthenticationService {
   public jwtToken: string = '';
   public authenticated: boolean = false;
   public accessToken: string = '';
