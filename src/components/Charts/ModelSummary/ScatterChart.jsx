@@ -64,8 +64,7 @@ class BarChart extends Component {
       .style('fill', '#444')
       .text('Time Range');
 
-    const annotationLayer = d3
-      .select(this.refs.annotation)
+    d3.select(this.refs.annotation)
       .append('rect')
       .attr('width', '160px')
       .attr('height', '300px')

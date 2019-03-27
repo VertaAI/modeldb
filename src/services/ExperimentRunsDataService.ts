@@ -47,7 +47,6 @@ export default class ExperimentRunsDataService extends BaseDataService implement
             }
             return experimentRuns;
           } catch (error) {
-            console.log(error);
             return data;
           }
         }
