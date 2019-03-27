@@ -16,7 +16,7 @@ export default class ModelRecord {
     { propertyName: 'Name', type: PropertyType.STRING },
     { propertyName: 'ID', type: PropertyType.NUMBER },
     { propertyName: 'Experiment ID', type: PropertyType.NUMBER },
-    { propertyName: 'Experiment Run ID', type: PropertyType.NUMBER }
+    { propertyName: 'Experiment Run ID', type: PropertyType.NUMBER },
   ];
 
   @JsonProperty('id', String, true)

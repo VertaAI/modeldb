@@ -8,13 +8,17 @@ import User from 'models/User';
 import { BaseDataService } from './BaseDataService';
 import { IProjectDataService } from './IProjectDataService';
 
-export class ProjectDataService extends BaseDataService implements IProjectDataService {
+export class ProjectDataService extends BaseDataService
+  implements IProjectDataService {
   public constructor() {
     super();
   }
 
   public getProjects(filter?: IFilterData[]): AxiosPromise<Project[]> {
-    return axios.get<Project[]>('/getProjects', this.responseToProjectConfig(filter));
+    return axios.get<Project[]>(
+      '/getProjects',
+      this.responseToProjectConfig(filter)
+    );
   }
 
   public mapProjectAuthors(): AxiosPromise<Project[]> {
@@ -32,16 +36,29 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
             }
 
             const jsonConvert = new JsonConvert();
-            const projects = jsonConvert.deserializeArray(data.projects, Project) as Project[];
+            const projects = jsonConvert.deserializeArray(
+              data.projects,
+              Project
+            ) as Project[];
 
             for (const project of projects) {
               // remove this after get real User API
-              project.Author = new User(project.authorId, 'Manasi.Vartak@verta.ai');
+              project.Author = new User(
+                project.authorId,
+                'Manasi.Vartak@verta.ai'
+              );
               project.Author.name = 'Manasi Vartak';
 
               // remove this after get real Collaborators API
-              for (let index = 0; index < Math.round(Math.random() * 10); index++) {
-                const user = new User(project.authorId, 'Manasi.Vartak@verta.ai');
+              for (
+                let index = 0;
+                index < Math.round(Math.random() * 10);
+                index++
+              ) {
+                const user = new User(
+                  project.authorId,
+                  'Manasi.Vartak@verta.ai'
+                );
                 const rand = Math.floor(Math.random() * 2) + 1;
                 user.name = `Collaborator ${rand === 2 ? 'Read' : 'Write'}`;
                 project.collaborators.set(user, rand);
@@ -52,20 +69,35 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
               let result: Project[] = projects;
               for (const filter of filters) {
                 if (filter.name === 'Name') {
-                  result = result.filter(item => item.name.toLowerCase().includes(filter.value.toString().toLowerCase()));
+                  result = result.filter(item =>
+                    item.name
+                      .toLowerCase()
+                      .includes(filter.value.toString().toLowerCase())
+                  );
                 }
 
                 if (filter.name === 'Tag') {
                   result = result.filter(
                     item =>
-                      item.tags.findIndex(tag => tag.localeCompare(filter.value.toString(), undefined, { sensitivity: 'accent' }) === 0) !==
-                      -1
+                      item.tags.findIndex(
+                        tag =>
+                          tag.localeCompare(
+                            filter.value.toString(),
+                            undefined,
+                            { sensitivity: 'accent' }
+                          ) === 0
+                      ) !== -1
                   );
                 }
 
                 if (filter.name === 'Description') {
                   result = result.filter(
-                    item => item.description.localeCompare(filter.value.toString(), undefined, { sensitivity: 'accent' }) === 0
+                    item =>
+                      item.description.localeCompare(
+                        filter.value.toString(),
+                        undefined,
+                        { sensitivity: 'accent' }
+                      ) === 0
                   );
                 }
               }
@@ -76,8 +108,8 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
           } catch (error) {
             return data;
           }
-        }
-      ]
+        },
+      ],
     };
   }
 }

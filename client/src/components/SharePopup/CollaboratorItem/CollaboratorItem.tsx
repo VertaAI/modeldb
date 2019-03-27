@@ -1,11 +1,14 @@
+import { bind } from 'decko';
 import React from 'react';
 import Avatar from 'react-avatar';
 import { connect } from 'react-redux';
-import { bind } from 'decko';
 
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
-import { changeAccessToProject, removeAccessFromProject } from 'store/collaboration';
+import {
+  changeAccessToProject,
+  removeAccessFromProject,
+} from 'store/collaboration';
 import { IConnectedReduxProps } from 'store/store';
 
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
@@ -41,7 +44,11 @@ class CollaboratorItem extends React.Component<AllProps> {
         />
         <div className={styles.user_name}>
           <div>{user.getNameOrEmail()}</div>
-          {userAccess === UserAccess.Owner ? <div className={styles.user_name_title}>Owner</div> : ''}
+          {userAccess === UserAccess.Owner ? (
+            <div className={styles.user_name_title}>Owner</div>
+          ) : (
+            ''
+          )}
         </div>
         <div className={styles.collaborator_buttons}>
           <div>
@@ -49,7 +56,9 @@ class CollaboratorItem extends React.Component<AllProps> {
               ''
             ) : userAccess === UserAccess.Read ? (
               <ButtonTooltip
-                additionalClassName={`${styles.collaborator_button} ${styles.blue_button}`}
+                additionalClassName={`${styles.collaborator_button} ${
+                  styles.blue_button
+                }`}
                 imgSrc={share_read_icon}
                 toolTipContent={'Read only'}
                 onButtonClick={this.setWriteAccessToProject}
@@ -57,7 +66,9 @@ class CollaboratorItem extends React.Component<AllProps> {
               />
             ) : userAccess === UserAccess.Write ? (
               <ButtonTooltip
-                additionalClassName={`${styles.collaborator_button} ${styles.blue_button}`}
+                additionalClassName={`${styles.collaborator_button} ${
+                  styles.blue_button
+                }`}
                 imgSrc={share_write_icon}
                 toolTipContent={'Read / Write'}
                 onButtonClick={this.setReadAccessToProject}
@@ -69,9 +80,12 @@ class CollaboratorItem extends React.Component<AllProps> {
           </div>
           <div />
           <div>
-            {userAccess === UserAccess.Owner && currentUserAccess === UserAccess.Owner ? (
+            {userAccess === UserAccess.Owner &&
+            currentUserAccess === UserAccess.Owner ? (
               <ButtonTooltip
-                additionalClassName={`${styles.collaborator_button} ${styles.blue_button}`}
+                additionalClassName={`${styles.collaborator_button} ${
+                  styles.blue_button
+                }`}
                 imgSrc={share_change_icon}
                 toolTipContent={'Change owner'}
                 onButtonClick={this.props.onChangeOwner}
@@ -80,14 +94,18 @@ class CollaboratorItem extends React.Component<AllProps> {
             ) : currentUserAccess === UserAccess.Read ? (
               userAccess === UserAccess.Read ? (
                 <ButtonTooltip
-                  additionalClassName={`${styles.collaborator_button} ${styles.without_active_button}`}
+                  additionalClassName={`${styles.collaborator_button} ${
+                    styles.without_active_button
+                  }`}
                   imgSrc={share_read_icon}
                   toolTipContent={'Read only'}
                   width={79}
                 />
               ) : userAccess === UserAccess.Write ? (
                 <ButtonTooltip
-                  additionalClassName={`${styles.collaborator_button} ${styles.without_active_button}`}
+                  additionalClassName={`${styles.collaborator_button} ${
+                    styles.without_active_button
+                  }`}
                   imgSrc={share_write_icon}
                   toolTipContent={'Read / Write'}
                   width={93}
@@ -95,9 +113,12 @@ class CollaboratorItem extends React.Component<AllProps> {
               ) : (
                 ''
               )
-            ) : userAccess === UserAccess.Read || userAccess === UserAccess.Write ? (
+            ) : userAccess === UserAccess.Read ||
+              userAccess === UserAccess.Write ? (
               <ButtonTooltip
-                additionalClassName={`${styles.collaborator_button} ${styles.red_button}`}
+                additionalClassName={`${styles.collaborator_button} ${
+                  styles.red_button
+                }`}
                 imgSrc={share_delete_icon}
                 toolTipContent={'Delete'}
                 onButtonClick={this.removeAccessToProject}
@@ -114,17 +135,31 @@ class CollaboratorItem extends React.Component<AllProps> {
 
   @bind
   private setWriteAccessToProject() {
-    this.props.dispatch(changeAccessToProject(this.props.projectId, this.props.user, UserAccess.Write));
+    this.props.dispatch(
+      changeAccessToProject(
+        this.props.projectId,
+        this.props.user,
+        UserAccess.Write
+      )
+    );
   }
 
   @bind
   private setReadAccessToProject() {
-    this.props.dispatch(changeAccessToProject(this.props.projectId, this.props.user, UserAccess.Read));
+    this.props.dispatch(
+      changeAccessToProject(
+        this.props.projectId,
+        this.props.user,
+        UserAccess.Read
+      )
+    );
   }
 
   @bind
   private removeAccessToProject() {
-    this.props.dispatch(removeAccessFromProject(this.props.projectId, this.props.user));
+    this.props.dispatch(
+      removeAccessFromProject(this.props.projectId, this.props.user)
+    );
   }
 }
 

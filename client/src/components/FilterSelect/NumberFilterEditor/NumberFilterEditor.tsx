@@ -15,7 +15,12 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
     return (
       <div className={styles.root}>
         <div className={styles.input}>
-          <input type="number" defaultValue={this.props.data.value.toString()} onBlur={this.onBlur} onKeyUp={this.onSubmit} />
+          <input
+            type="number"
+            defaultValue={this.props.data.value.toString()}
+            onBlur={this.onBlur}
+            onKeyUp={this.onSubmit}
+          />
         </div>
         <div className={styles.invert}>
           <input type="checkbox" defaultChecked={this.props.data.invert} />
@@ -43,7 +48,7 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
   private onInvertChanged(event: React.ChangeEvent<HTMLInputElement>) {
     const newData = {
       ...this.props.data,
-      invert: event.target.checked
+      invert: event.target.checked,
     };
     this.onSave(newData);
   }
@@ -51,7 +56,10 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
   @bind
   private onSubmit(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
-      const newData = { ...this.props.data, value: Number(event.currentTarget.value) };
+      const newData = {
+        ...this.props.data,
+        value: Number(event.currentTarget.value),
+      };
       this.onSave(newData);
     }
   }

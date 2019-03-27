@@ -15,10 +15,19 @@ export default class StringFilterEditor extends React.Component<ILocalProps> {
     return (
       <div className={styles.root}>
         <div className={styles.input}>
-          <input type="text" defaultValue={this.props.data.value} onBlur={this.onBlur} onKeyUp={this.onSubmit} />
+          <input
+            type="text"
+            defaultValue={this.props.data.value}
+            onBlur={this.onBlur}
+            onKeyUp={this.onSubmit}
+          />
         </div>
         <div className={styles.invert}>
-          <input type="checkbox" defaultChecked={this.props.data.invert} onChange={this.onInvertChanged} />
+          <input
+            type="checkbox"
+            defaultChecked={this.props.data.invert}
+            onChange={this.onInvertChanged}
+          />
           <label>invert</label>
         </div>
       </div>
@@ -36,7 +45,7 @@ export default class StringFilterEditor extends React.Component<ILocalProps> {
   private onInvertChanged(event: React.ChangeEvent<HTMLInputElement>) {
     const newData = {
       ...this.props.data,
-      invert: event.target.checked
+      invert: event.target.checked,
     };
     this.onSave(newData);
   }

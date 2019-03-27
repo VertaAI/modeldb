@@ -27,14 +27,22 @@ type AllProps = IPropsFromState & IConnectedReduxProps & RouteComponentProps;
 
 class Breadcrumb extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
-    url: this.props.history.location.pathname.toLowerCase()
+    url: this.props.history.location.pathname.toLowerCase(),
   };
 
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
-  private indexBreadcrumbItem = new BreadcrumbItem(/^\/$/, routes.mainPage.getRedirectPath({}), 'PROJECTS');
-  private projectBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-runs.?$/);
-  private modelBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/);
+  private indexBreadcrumbItem = new BreadcrumbItem(
+    /^\/$/,
+    routes.mainPage.getRedirectPath({}),
+    'PROJECTS'
+  );
+  private projectBreadcrumbItem = new BreadcrumbItem(
+    /^\/project\/([\w-]*)\/exp-runs.?$/
+  );
+  private modelBreadcrumbItem = new BreadcrumbItem(
+    /^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/
+  );
 
   public componentDidMount() {
     this.unlistenCallback = this.props.history.listen((location, action) => {
@@ -62,15 +70,18 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
       <div className={styles.content}>
         {content.reverse().map((value: JSX.Element, index: number) => {
           return index === content.length - 1 ? (
-            <div className={`${styles.breadcrumb_item} ${styles.active_link}`} key={index}>
+            <div
+              className={`${styles.breadcrumb_item} ${styles.active_link}`}
+              key={index}
+            >
               {value}
             </div>
           ) : (
-              <React.Fragment key={index}>
-                <div className={styles.breadcrumb_item}>{value}</div>
-                <img className={styles.arrow} src={headerArrow} />
-              </React.Fragment>
-            );
+            <React.Fragment key={index}>
+              <div className={styles.breadcrumb_item}>{value}</div>
+              <img className={styles.arrow} src={headerArrow} />
+            </React.Fragment>
+          );
         })}
       </div>
     );
@@ -80,8 +91,15 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private prepareItem(): BreadcrumbItem | undefined {
     const { experimentRuns, modelRecord, projects } = this.props;
     let projectName = 'experiment runs';
-    if (projects && projects.length > 0 && experimentRuns && experimentRuns.length > 0) {
-      const neededProject = projects.find((project: Project) => project.id === experimentRuns[0].projectId);
+    if (
+      projects &&
+      projects.length > 0 &&
+      experimentRuns &&
+      experimentRuns.length > 0
+    ) {
+      const neededProject = projects.find(
+        (project: Project) => project.id === experimentRuns[0].projectId
+      );
       if (neededProject) {
         projectName = neededProject.name;
       }
@@ -89,13 +107,21 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     this.projectBreadcrumbItem.name = projectName;
 
     this.projectBreadcrumbItem.path = routes.expirementRuns.getRedirectPath({
-      projectId: experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].projectId : modelRecord ? modelRecord.projectId : ''
+      projectId:
+        experimentRuns && experimentRuns.length > 0
+          ? experimentRuns[0].projectId
+          : modelRecord
+          ? modelRecord.projectId
+          : '',
     });
     this.projectBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
 
     this.modelBreadcrumbItem.name = modelRecord ? modelRecord.name : '';
     this.modelBreadcrumbItem.path = modelRecord
-      ? routes.modelRecord.getRedirectPath({ projectId: modelRecord.projectId, modelRecordId: modelRecord.id })
+      ? routes.modelRecord.getRedirectPath({
+          projectId: modelRecord.projectId,
+          modelRecordId: modelRecord.id,
+        })
       : '';
     this.modelBreadcrumbItem.previousItem = this.projectBreadcrumbItem;
 
@@ -117,10 +143,14 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ experimentRuns, modelRecord, projects }: IApplicationState) => ({
+const mapStateToProps = ({
+  experimentRuns,
+  modelRecord,
+  projects,
+}: IApplicationState) => ({
   experimentRuns: experimentRuns.data,
   modelRecord: modelRecord.data,
-  projects: projects.data
+  projects: projects.data,
 });
 
 export default withRouter(connect(mapStateToProps)(Breadcrumb));

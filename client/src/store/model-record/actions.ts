@@ -6,14 +6,20 @@ import { ActionResult } from 'store/store';
 
 import { fetchModelRecordAction, fetchModelRecordActionTypes } from './types';
 
-export const fetchModelRecord = (modelId: string): ActionResult<void, fetchModelRecordAction> => async (dispatch, getState) => {
+export const fetchModelRecord = (
+  modelId: string
+): ActionResult<void, fetchModelRecordAction> => async (dispatch, getState) => {
   dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_REQUEST));
 
-  const storeExperimentRuns = getState().experimentRuns.data || [new ModelRecord()];
+  const storeExperimentRuns = getState().experimentRuns.data || [
+    new ModelRecord(),
+  ];
   await ServiceFactory.getExperimentRunsService()
     .getModelRecord(modelId, storeExperimentRuns)
     .then(res => {
-      dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCCESS, res));
+      dispatch(
+        action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCCESS, res)
+      );
     })
     .catch(err => {
       dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_FAILURE));

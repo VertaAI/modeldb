@@ -4,7 +4,7 @@ export enum InvitationStatus {
   None,
   Sending,
   Success,
-  Failure
+  Failure,
 }
 
 interface IInvitationState {
@@ -23,7 +23,7 @@ export interface ICollaborationState {
 export enum sendInvitationActionTypes {
   SEND_INVITATION_REQUEST = '@@collaboration/SEND_INVITATION_REQUEST',
   SEND_INVITATION_SUCCESS = '@@collaboration/SEND_INVITATION_SUCCESS',
-  SEND_INVITATION_FAILURE = '@@collaboration/SEND_INVITATION_FAILURE'
+  SEND_INVITATION_FAILURE = '@@collaboration/SEND_INVITATION_FAILURE',
 }
 
 export type sendInvitationAction =
@@ -33,7 +33,7 @@ export type sendInvitationAction =
   | { type: sendInvitationActionTypes.SEND_INVITATION_FAILURE; payload?: any };
 
 export enum resetInvitationActionTypes {
-  RESET_INVITATION_STATE = '@@collaboration/RESET_INVITATION_STATE'
+  RESET_INVITATION_STATE = '@@collaboration/RESET_INVITATION_STATE',
 }
 
 export interface IResetInvitationAction {
@@ -43,7 +43,7 @@ export interface IResetInvitationAction {
 export enum changeOwnerActionTypes {
   CHANGE_OWNER_REQUEST = '@@collaboration/CHANGE_OWNER_REQUEST',
   CHANGE_OWNER_SUCCESS = '@@collaboration/CHANGE_OWNER_SUCCESS',
-  CHANGE_OWNER_FAILURE = '@@collaboration/CHANGE_OWNER_FAILURE'
+  CHANGE_OWNER_FAILURE = '@@collaboration/CHANGE_OWNER_FAILURE',
 }
 
 export type changeOwnerAction =
@@ -53,7 +53,7 @@ export type changeOwnerAction =
   | { type: changeOwnerActionTypes.CHANGE_OWNER_FAILURE; payload?: any };
 
 export enum resetChangeOwnerActionTypes {
-  RESET_CHANGE_OWNER = '@@collaboration/RESET_CHANGE_OWNER'
+  RESET_CHANGE_OWNER = '@@collaboration/RESET_CHANGE_OWNER',
 }
 
 export interface IResetChangeOwnerAction {
@@ -63,7 +63,7 @@ export interface IResetChangeOwnerAction {
 export enum changeAccessActionTypes {
   CHANGE_ACCESS_REQUEST = '@@collaboration/CHANGE_ACCESS_REQUEST',
   CHANGE_ACCESS_SUCCESS = '@@collaboration/CHANGE_ACCESS_SUCCESS',
-  CHANGE_ACCESS_FAILURE = '@@collaboration/CHANGE_ACCESS_FAILURE'
+  CHANGE_ACCESS_FAILURE = '@@collaboration/CHANGE_ACCESS_FAILURE',
 }
 
 export type changeAccessAction =
@@ -73,7 +73,7 @@ export type changeAccessAction =
   | { type: changeAccessActionTypes.CHANGE_ACCESS_FAILURE; payload?: any };
 
 export enum resetChangeAccessActionTypes {
-  RESET_CHANGE_ACCESS = '@@collaboration/RESET_CHANGE_ACCESS'
+  RESET_CHANGE_ACCESS = '@@collaboration/RESET_CHANGE_ACCESS',
 }
 
 export interface IResetChangeAccessAction {
@@ -83,7 +83,7 @@ export interface IResetChangeAccessAction {
 export enum removeAccessActionTypes {
   REMOVE_ACCESS_REQUEST = '@@collaboration/REMOVE_ACCESS_REQUEST',
   REMOVE_ACCESS_SUCCESS = '@@collaboration/REMOVE_ACCESS_SUCCESS',
-  REMOVE_ACCESS_FAILURE = '@@collaboration/REMOVE_ACCESS_FAILURE'
+  REMOVE_ACCESS_FAILURE = '@@collaboration/REMOVE_ACCESS_FAILURE',
 }
 
 export type removeAccessAction =
@@ -93,7 +93,7 @@ export type removeAccessAction =
   | { type: removeAccessActionTypes.REMOVE_ACCESS_FAILURE; payload?: any };
 
 export enum resetRemoveAccessActionTypes {
-  RESET_REMOVE_ACCESS = '@@collaboration/RESET_REMOVE_ACCESS'
+  RESET_REMOVE_ACCESS = '@@collaboration/RESET_REMOVE_ACCESS',
 }
 
 export interface IResetRemoveAccessAction {

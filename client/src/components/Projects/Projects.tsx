@@ -22,7 +22,7 @@ FilterContextPool.registerContext({
   getMetadata: () => [
     { propertyName: 'Name', type: PropertyType.STRING },
     { propertyName: 'Description', type: PropertyType.STRING },
-    { propertyName: 'Tag', type: PropertyType.STRING }
+    { propertyName: 'Tag', type: PropertyType.STRING },
   ],
 
   isFilteringSupport: true,
@@ -40,11 +40,11 @@ FilterContextPool.registerContext({
           invert: false,
           name: 'Name',
           type: PropertyType.STRING,
-          value: text
-        }
+          value: text,
+        },
       ])
     );
-  }
+  },
 });
 
 class Projects extends React.Component<AllProps> {
@@ -52,7 +52,11 @@ class Projects extends React.Component<AllProps> {
     return (
       <div className={styles.projects}>
         <div className={styles.widgets_list}>
-          {this.props.data ? this.props.data.map((proj, i) => <ProjectWidget project={proj} key={i} />) : ''}
+          {this.props.data
+            ? this.props.data.map((proj, i) => (
+                <ProjectWidget project={proj} key={i} />
+              ))
+            : ''}
         </div>
       </div>
     );
@@ -61,7 +65,7 @@ class Projects extends React.Component<AllProps> {
 
 const mapStateToProps = ({ projects }: IApplicationState) => ({
   data: projects.data,
-  loading: projects.loading
+  loading: projects.loading,
 });
 
 export default connect(mapStateToProps)(Projects);

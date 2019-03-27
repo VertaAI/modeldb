@@ -10,7 +10,12 @@ interface ILocalProps {
 export default class Draggable extends React.Component<ILocalProps> {
   public render() {
     return (
-      <div style={{ cursor: 'move' }} draggable={true} onDragStart={this.onDragStart} className={this.props.additionalClassName}>
+      <div
+        style={{ cursor: 'move' }}
+        draggable={true}
+        onDragStart={this.onDragStart}
+        className={this.props.additionalClassName}
+      >
         {this.props.children}
       </div>
     );

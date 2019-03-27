@@ -7,7 +7,7 @@ import User from './User';
 export enum UserAccess {
   Owner = 0,
   Write = 1,
-  Read = 2
+  Read = 2,
 }
 
 @JsonObject('project')

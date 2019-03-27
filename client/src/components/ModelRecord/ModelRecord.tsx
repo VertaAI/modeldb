@@ -22,7 +22,9 @@ interface IPropsFromState {
   loading: boolean;
 }
 
-type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedReduxProps;
+type AllProps = RouteComponentProps<IUrlProps> &
+  IPropsFromState &
+  IConnectedReduxProps;
 
 class ModelRecordLayout extends React.Component<AllProps> {
   public render() {
@@ -52,15 +54,21 @@ class ModelRecordLayout extends React.Component<AllProps> {
           <div className={styles.record_summary_meta}>
             <div className={styles.experiment_link}>
               <span className={styles.parma_link_label}> Model ID:</span>{' '}
-              <span className={styles.parma_link_value}>{data.id.slice(0, 4) + '..'}</span>
+              <span className={styles.parma_link_value}>
+                {data.id.slice(0, 4) + '..'}
+              </span>
             </div>
             <div className={styles.experiment_link}>
               <span className={styles.parma_link_label}> Project ID:</span>{' '}
-              <span className={styles.parma_link_value}>{data.projectId.slice(0, 4) + '..'}</span>
+              <span className={styles.parma_link_value}>
+                {data.projectId.slice(0, 4) + '..'}
+              </span>
             </div>
             <div className={styles.experiment_link}>
               <span className={styles.parma_link_label}> Experiment ID:</span>{' '}
-              <span className={styles.parma_link_value}>{data.experimentId.slice(0, 4) + '..'}</span>
+              <span className={styles.parma_link_value}>
+                {data.experimentId.slice(0, 4) + '..'}
+              </span>
             </div>
           </div>
         </div>
@@ -101,27 +109,45 @@ class ModelRecordLayout extends React.Component<AllProps> {
           )}
       </div>
     ) : (
-          ''
-        );
+      ''
+    );
   }
 
   public componentDidMount() {
-    this.props.dispatch(fetchModelRecord(this.props.match.params.modelRecordId));
+    this.props.dispatch(
+      fetchModelRecord(this.props.match.params.modelRecordId)
+    );
   }
 
-  private renderRecord(header: string, content: JSX.Element[], additionalValueClassName: string = '') {
+  private renderRecord(
+    header: string,
+    content: JSX.Element[],
+    additionalValueClassName: string = ''
+  ) {
     return content && content.length > 0 ? (
       <div className={styles.record}>
         <div className={styles.record_header}>{header}</div>
-        <div className={`${styles.record_value} ${additionalValueClassName}`}>{content}</div>
+        <div className={`${styles.record_value} ${additionalValueClassName}`}>
+          {content}
+        </div>
       </div>
     ) : (
-        ''
-      );
+      ''
+    );
   }
 
-  private renderTextRecord(header: string, value: string, additionalValueClassName: string = '') {
-    return value ? this.renderRecord(header, [<span key={0}>{value}</span>], additionalValueClassName) : '';
+  private renderTextRecord(
+    header: string,
+    value: string,
+    additionalValueClassName: string = ''
+  ) {
+    return value
+      ? this.renderRecord(
+          header,
+          [<span key={0}>{value}</span>],
+          additionalValueClassName
+        )
+      : '';
   }
 
   private renderListRecord(header: string, content: JSX.Element[]) {
@@ -131,7 +157,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
 
 const mapStateToProps = ({ modelRecord }: IApplicationState) => ({
   data: modelRecord.data,
-  loading: modelRecord.loading
+  loading: modelRecord.loading,
 });
 
 export default connect(mapStateToProps)(ModelRecordLayout);

@@ -14,12 +14,14 @@ const ModelProperty: React.SFC<any> = props => {
         type: PropertyType.METRIC,
         name: props.property.key,
         value: props.property.value,
-        comparisonType: ComparisonType.MORE
+        comparisonType: ComparisonType.MORE,
       }}
     >
       <div className={styles.param_grid_metric}>
         <div className={styles.param_key}>{props.property.key}</div>
-        <div className={styles.param_val}>{Math.round(props.property.value * 10000) / 10000}</div>
+        <div className={styles.param_val}>
+          {Math.round(props.property.value * 10000) / 10000}
+        </div>
       </div>
     </Draggable>
   );

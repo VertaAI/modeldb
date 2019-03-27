@@ -3,12 +3,17 @@ import { UserAccess } from 'models/Project';
 import { BaseDataService } from './BaseDataService';
 import { ICollaboratorsService } from './ICollaboratorsService';
 
-export default class CollaboratorsService extends BaseDataService implements ICollaboratorsService {
+export default class CollaboratorsService extends BaseDataService
+  implements ICollaboratorsService {
   constructor() {
     super();
   }
 
-  public sendInvitation(projectId: string, email: string, userAccess: UserAccess): Promise<void> {
+  public sendInvitation(
+    projectId: string,
+    email: string,
+    userAccess: UserAccess
+  ): Promise<void> {
     return Promise.resolve();
   }
 
@@ -16,11 +21,18 @@ export default class CollaboratorsService extends BaseDataService implements ICo
     return Promise.resolve();
   }
 
-  public changeAccessToProject(projectId: string, email: string, userAccess: UserAccess): Promise<void> {
+  public changeAccessToProject(
+    projectId: string,
+    email: string,
+    userAccess: UserAccess
+  ): Promise<void> {
     return Promise.resolve();
   }
 
-  public removeAccessFromProject(projectId: string, email: string): Promise<void> {
+  public removeAccessFromProject(
+    projectId: string,
+    email: string
+  ): Promise<void> {
     return Promise.resolve();
   }
 }

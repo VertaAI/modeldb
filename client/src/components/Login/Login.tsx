@@ -23,11 +23,18 @@ class Login extends React.Component<AllProps> {
           <img src={logo} height={61} width={254} />
         </div>
         <div className={styles.login_slogan}>
-          Models are the new code. Let’s show them some <i className="fa fa-heart" style={{ opacity: 0.5 }} />
+          Models are the new code. Let’s show them some{' '}
+          <i className="fa fa-heart" style={{ opacity: 0.5 }} />
         </div>
         <div className={styles.form_login}>
-          <button className={styles.create_button} onClick={this.authenticateViaGithub}>
-            <i className={`fa fa-github fa-fw ${styles.github_icon}`} style={{ fontSize: '30px', verticalAlign: 'middle' }} />
+          <button
+            className={styles.create_button}
+            onClick={this.authenticateViaGithub}
+          >
+            <i
+              className={`fa fa-github fa-fw ${styles.github_icon}`}
+              style={{ fontSize: '30px', verticalAlign: 'middle' }}
+            />
             <span>Login with Github</span>
           </button>
         </div>
@@ -36,13 +43,17 @@ class Login extends React.Component<AllProps> {
   }
 
   @bind
-  private authenticateViaGithub(event: React.SyntheticEvent<HTMLButtonElement>) {
+  private authenticateViaGithub(
+    event: React.SyntheticEvent<HTMLButtonElement>
+  ) {
     this.props.dispatch(authenticateUser());
   }
 }
 
 const mapStateToProps = ({ layout }: IApplicationState) => ({
-  user: layout.user
+  user: layout.user,
 });
 
-export default connect<IPropsFromState, {}, {}, IApplicationState>(mapStateToProps)(Login);
+export default connect<IPropsFromState, {}, {}, IApplicationState>(
+  mapStateToProps
+)(Login);

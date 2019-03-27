@@ -1,13 +1,20 @@
 import { Reducer } from 'redux';
 
-import { fetchModelRecordAction, fetchModelRecordActionTypes, IModelRecordState } from './types';
+import {
+  fetchModelRecordAction,
+  fetchModelRecordActionTypes,
+  IModelRecordState,
+} from './types';
 
 const modelInitialState: IModelRecordState = {
   data: null,
-  loading: false
+  loading: false,
 };
 
-export const modelRecordReducer: Reducer<IModelRecordState> = (state = modelInitialState, action: fetchModelRecordAction) => {
+export const modelRecordReducer: Reducer<IModelRecordState> = (
+  state = modelInitialState,
+  action: fetchModelRecordAction
+) => {
   switch (action.type) {
     case fetchModelRecordActionTypes.FETCH_MODEL_RECORD_REQUEST: {
       return { ...state, loading: true };

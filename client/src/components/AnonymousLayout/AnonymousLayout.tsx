@@ -1,5 +1,10 @@
 import React from 'react';
-import { Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
+import {
+  Route,
+  RouteComponentProps,
+  Switch,
+  withRouter,
+} from 'react-router-dom';
 
 import Login from 'components/Login/Login';
 import routes from 'routes';

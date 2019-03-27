@@ -4,7 +4,8 @@ import User from 'models/User';
 
 import { IAuthenticationService } from './IAuthenticationService';
 
-export default class Auth0AuthenticationService implements IAuthenticationService {
+export default class Auth0AuthenticationService
+  implements IAuthenticationService {
   constructor() {
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
@@ -22,6 +23,6 @@ export default class Auth0AuthenticationService implements IAuthenticationServic
   public async logout() {
     try {
       await axios.get('auth/logout');
-    } catch { }
+    } catch {}
   }
 }

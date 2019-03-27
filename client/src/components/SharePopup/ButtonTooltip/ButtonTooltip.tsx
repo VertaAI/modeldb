@@ -19,14 +19,16 @@ export class ButtonTooltip extends React.Component<ILocalProps> {
         placement={'top'}
         arrowContent={<div className="rc-tooltip-arrow-inner" />}
         align={{
-          offset: [0, -9]
+          offset: [0, -9],
         }}
         overlayStyle={{ width: this.props.width }}
         mouseEnterDelay={0.1}
         destroyTooltipOnHide={true}
       >
         <button
-          className={`${styles.tooltip_button} ${this.props.additionalClassName ? this.props.additionalClassName : ''}`}
+          className={`${styles.tooltip_button} ${
+            this.props.additionalClassName ? this.props.additionalClassName : ''
+          }`}
           onClick={this.props.onButtonClick}
         >
           <img className={styles.tooltip_button_icon} src={this.props.imgSrc} />

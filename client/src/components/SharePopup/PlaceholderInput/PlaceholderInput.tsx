@@ -1,5 +1,5 @@
-import React from 'react';
 import { bind } from 'decko';
+import React from 'react';
 import styles from './PlaceholderInput.module.css';
 
 interface ILocalProps {
@@ -16,7 +16,9 @@ export class PlaceholderInput extends React.Component<ILocalProps> {
   public render() {
     return (
       <label
-        className={`${styles.form_group} ${styles.content_label} ${this.props.additionalClassName}`}
+        className={`${styles.form_group} ${styles.content_label} ${
+          this.props.additionalClassName
+        }`}
         onClick={this.focusOnInputLabelClick}
       >
         <input
@@ -27,7 +29,11 @@ export class PlaceholderInput extends React.Component<ILocalProps> {
           onChange={this.props.onInputChange}
           ref={c => (this.input = c!)}
         />
-        <label className={`${styles.content_label} ${styles.content_placeholder}`}>{this.props.placeholderValue}</label>
+        <label
+          className={`${styles.content_label} ${styles.content_placeholder}`}
+        >
+          {this.props.placeholderValue}
+        </label>
         {this.props.additionalControl}
       </label>
     );

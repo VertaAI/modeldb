@@ -18,7 +18,10 @@ export default class Tags extends React.Component<ILocalProps> {
         {tags.map((tag: string, i: number) => {
           return (
             <li key={i}>
-              <Draggable type="Filter" data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}>
+              <Draggable
+                type="Filter"
+                data={{ type: PropertyType.STRING, name: 'Tag', value: tag }}
+              >
                 <Tag tag={tag} />
               </Draggable>
             </li>

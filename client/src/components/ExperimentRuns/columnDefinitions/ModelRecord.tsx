@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import routes from 'routes';
@@ -14,7 +13,7 @@ class ModelRecordColDef extends React.Component<any> {
           className={styles.model_link}
           to={routes.modelRecord.getRedirectPath({
             projectId,
-            modelRecordId: id
+            modelRecordId: id,
           })}
         >
           <strong>Model ID</strong> {' : '}
@@ -22,11 +21,15 @@ class ModelRecordColDef extends React.Component<any> {
         </Link>
         <div className={styles.experiment_link}>
           <span className={styles.parma_link_label}> Project ID:</span>
-          <span className={styles.parma_link_value}>{projectId.slice(0, 4) + '..'}</span>
+          <span className={styles.parma_link_value}>
+            {projectId.slice(0, 4) + '..'}
+          </span>
         </div>
         <div className={styles.experiment_link}>
           <span className={styles.parma_link_label}> Experiment ID:</span>
-          <span className={styles.parma_link_value}>{experimentId.slice(0, 4) + '..'}</span>
+          <span className={styles.parma_link_value}>
+            {experimentId.slice(0, 4) + '..'}
+          </span>
         </div>
       </div>
     );

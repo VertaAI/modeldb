@@ -35,16 +35,27 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
     changeOwnerMode: false,
     emailValue: '',
     shadowBottomOpacity: 0,
-    shadowTopOpacity: 0
+    shadowTopOpacity: 0,
   };
 
   public render() {
     return this.props.error ? (
       <div className={styles.share_result_content}>
         <img src={error_icon} />
-        <span className={styles.share_result_header}>There are some errors happened…</span>
-        <button className={styles.share_result_button} onClick={this.refreshPage}>
-          <span className={`${styles.share_result_button_text} ${styles.share_result_text}`}>Refresh page</span>
+        <span className={styles.share_result_header}>
+          There are some errors happened…
+        </span>
+        <button
+          className={styles.share_result_button}
+          onClick={this.refreshPage}
+        >
+          <span
+            className={`${styles.share_result_button_text} ${
+              styles.share_result_text
+            }`}
+          >
+            Refresh page
+          </span>
         </button>
       </div>
     ) : this.state.changeOwnerMode ? (
@@ -59,10 +70,20 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
           />
         </div>
         <div>
-          <button className={`${styles.change_owner_button} ${styles.change_owner_cancel_button}`} onClick={this.hideChangeOwnerMode}>
+          <button
+            className={`${styles.change_owner_button} ${
+              styles.change_owner_cancel_button
+            }`}
+            onClick={this.hideChangeOwnerMode}
+          >
             Cancel
           </button>
-          <button className={`${styles.change_owner_button} ${styles.change_owner_confirm_button}`} onClick={this.changeOwnerOnClick}>
+          <button
+            className={`${styles.change_owner_button} ${
+              styles.change_owner_confirm_button
+            }`}
+            onClick={this.changeOwnerOnClick}
+          >
             Confirm
           </button>
         </div>
@@ -75,32 +96,36 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
           style={{ margin: '30px 16px 0px 40px', width: 'auto' }}
           onScrollFrame={this.handleScrollbarUpdate}
         >
-          {Array.from(this.props.collaborators.entries()).map((value: [User, UserAccess], index: number) => {
-            const [user, userAccess] = value;
-            return (
-              <CollaboratorItem
-                key={index}
-                currentUserAccess={this.props.currentUserAccess}
-                projectId={this.props.projectId}
-                user={user}
-                userAccess={userAccess}
-                onChangeOwner={this.showChangeOwnerMode}
-              />
-            );
-          })}
+          {Array.from(this.props.collaborators.entries()).map(
+            (value: [User, UserAccess], index: number) => {
+              const [user, userAccess] = value;
+              return (
+                <CollaboratorItem
+                  key={index}
+                  currentUserAccess={this.props.currentUserAccess}
+                  projectId={this.props.projectId}
+                  user={user}
+                  userAccess={userAccess}
+                  onChangeOwner={this.showChangeOwnerMode}
+                />
+              );
+            }
+          )}
         </Scrollbars>
         <div
           className={styles.shadowTop}
           style={{
             opacity: this.state.shadowTopOpacity,
-            visibility: this.state.shadowTopOpacity > 0 ? 'visible' : 'collapse'
+            visibility:
+              this.state.shadowTopOpacity > 0 ? 'visible' : 'collapse',
           }}
         />
         <div
           className={styles.shadowBottom}
           style={{
             opacity: this.state.shadowBottomOpacity,
-            visibility: this.state.shadowBottomOpacity > 0 ? 'visible' : 'collapse'
+            visibility:
+              this.state.shadowBottomOpacity > 0 ? 'visible' : 'collapse',
           }}
         />
       </div>
@@ -112,11 +137,12 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
     const { scrollTop, scrollHeight, clientHeight } = values;
     const shadowTopOpacity1 = (1 / 20) * Math.min(scrollTop, 20);
     const bottomScrollTop = scrollHeight - clientHeight;
-    const shadowBottomOpacity1 = (1 / 20) * (bottomScrollTop - Math.max(scrollTop, bottomScrollTop - 20));
+    const shadowBottomOpacity1 =
+      (1 / 20) * (bottomScrollTop - Math.max(scrollTop, bottomScrollTop - 20));
     this.setState({
       ...this.state,
       shadowBottomOpacity: shadowBottomOpacity1,
-      shadowTopOpacity: shadowTopOpacity1
+      shadowTopOpacity: shadowTopOpacity1,
     });
   }
 
@@ -133,14 +159,16 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
   @bind
   private updateInputValue(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({
-      emailValue: event.target.value
+      emailValue: event.target.value,
     });
     event.preventDefault();
   }
 
   @bind
   private changeOwnerOnClick() {
-    this.props.dispatch(changeProjectOwner(this.props.projectId, this.state.emailValue));
+    this.props.dispatch(
+      changeProjectOwner(this.props.projectId, this.state.emailValue)
+    );
     this.hideChangeOwnerMode();
   }
 
@@ -150,7 +178,10 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
 }
 
 const mapStateToProps = ({ collaboration }: IApplicationState) => ({
-  error: collaboration.changeAccess.error || collaboration.changeOwner.error || collaboration.removeAccess.error
+  error:
+    collaboration.changeAccess.error ||
+    collaboration.changeOwner.error ||
+    collaboration.removeAccess.error,
 });
 
 export default connect(mapStateToProps)(CollaboratorsTab);

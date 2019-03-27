@@ -5,7 +5,8 @@ import { IProjectDataService } from '../IProjectDataService';
 import { ProjectDataService } from '../ProjectDataService';
 import { projectsMock } from './projectsMock';
 
-export class MockProjectDataService extends ProjectDataService implements IProjectDataService {
+export class MockProjectDataService extends ProjectDataService
+  implements IProjectDataService {
   public constructor() {
     super();
 

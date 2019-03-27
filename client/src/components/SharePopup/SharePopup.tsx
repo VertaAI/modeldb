@@ -1,7 +1,7 @@
+import { bind } from 'decko';
 import React from 'react';
 import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
-import { bind } from 'decko';
 
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
@@ -15,7 +15,7 @@ import ShareTab from './ShareTab/ShareTab';
 
 enum Tabs {
   collaborators = 0,
-  share = 1
+  share = 1,
 }
 
 interface ILocalProps {
@@ -38,24 +38,26 @@ interface ILocalState {
 type AllProps = IConnectedReduxProps & ILocalProps & IPropsFromState;
 
 class SharePopup extends React.Component<AllProps, ILocalState> {
-  public state: ILocalState = {
-    activeTab: this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share,
-    showModal: this.props.showModal
-  };
-
   public static getDerivedStateFromProps(nextProps: AllProps) {
     return { showModal: nextProps.showModal };
   }
+  public state: ILocalState = {
+    activeTab:
+      this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share,
+    showModal: this.props.showModal,
+  };
 
   public render() {
     let currentUserAccess = UserAccess.Read;
-    Array.from(this.props.collaborators.entries()).forEach((value: [User, UserAccess], index: number) => {
-      const [user, userAccess] = value;
+    Array.from(this.props.collaborators.entries()).forEach(
+      (value: [User, UserAccess], index: number) => {
+        const [user, userAccess] = value;
 
-      if (user.email === this.props.currentUser.email) {
-        currentUserAccess = userAccess;
+        if (user.email === this.props.currentUser.email) {
+          currentUserAccess = userAccess;
+        }
       }
-    });
+    );
 
     return (
       <ReactModal
@@ -68,18 +70,31 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
       >
         <div className={styles.header}>
           <div className={styles.title}>{this.props.projectName}</div>
-          <img src={close} className={styles.icon} onClick={this.handleCloseModal} />
+          <img
+            src={close}
+            className={styles.icon}
+            onClick={this.handleCloseModal}
+          />
         </div>
         <div className={styles.tabs}>
           <div className={styles.tabs_buttons}>
             <button
-              className={`${styles.button_collaborators} ${this.state.activeTab === Tabs.collaborators ? styles.activeTab : ''}`}
+              className={`${styles.button_collaborators} ${
+                this.state.activeTab === Tabs.collaborators
+                  ? styles.activeTab
+                  : ''
+              }`}
               onClick={this.selectCollaboratorsTab}
             >
-              Collaborators <span className={styles.collaborators_count}>{this.props.collaborators.size}</span>
+              Collaborators{' '}
+              <span className={styles.collaborators_count}>
+                {this.props.collaborators.size}
+              </span>
             </button>
             <button
-              className={`${styles.button_share} ${this.state.activeTab === Tabs.share ? styles.activeTab : ''}`}
+              className={`${styles.button_share} ${
+                this.state.activeTab === Tabs.share ? styles.activeTab : ''
+              }`}
               onClick={this.selectShareTab}
             >
               Share Project
@@ -88,7 +103,10 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
         </div>
         <div className={styles.content}>
           {this.state.activeTab === Tabs.share ? (
-            <ShareTab currentUserAccess={currentUserAccess} projectId={this.props.projectId} />
+            <ShareTab
+              currentUserAccess={currentUserAccess}
+              projectId={this.props.projectId}
+            />
           ) : this.state.activeTab === Tabs.collaborators ? (
             <CollaboratorsTab
               currentUserAccess={currentUserAccess}
@@ -123,13 +141,15 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
     if (this.props.onRequestClose) {
       this.props.onRequestClose();
       this.props.dispatch(resetInvitationState());
-      this.changeTab(this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share);
+      this.changeTab(
+        this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share
+      );
     }
   }
 }
 
 const mapStateToProps = ({ layout }: IApplicationState) => ({
-  currentUser: layout.user!
+  currentUser: layout.user!,
 });
 
 export default connect(mapStateToProps)(SharePopup);

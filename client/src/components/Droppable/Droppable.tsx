@@ -9,7 +9,11 @@ interface ILocalProps {
 export default class Droppable extends React.Component<ILocalProps> {
   public render() {
     return (
-      <div onDrop={this.onDrop} onDragEnter={this.onDragEnter} onDragOver={this.onDragOver}>
+      <div
+        onDrop={this.onDrop}
+        onDragEnter={this.onDragEnter}
+        onDragOver={this.onDragOver}
+      >
         {this.props.children}
       </div>
     );

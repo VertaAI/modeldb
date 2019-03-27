@@ -2,13 +2,13 @@ export enum PropertyType {
   NUMBER,
   STRING,
   METRIC,
-  BOOLEAN
+  BOOLEAN,
 }
 
 export enum ComparisonType {
   MORE,
   EQUALS,
-  LESS
+  LESS,
 }
 export interface IStringFilterData {
   type: PropertyType.STRING;
@@ -41,4 +41,8 @@ export interface IMetricFilterData {
   comparisonType: ComparisonType;
 }
 
-export type IFilterData = IStringFilterData | INumberFilterData | IBooleanFilterData | IMetricFilterData;
+export type IFilterData =
+  | IStringFilterData
+  | INumberFilterData
+  | IBooleanFilterData
+  | IMetricFilterData;

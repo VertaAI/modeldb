@@ -20,7 +20,7 @@ import {
   initContexts,
   removeFilter,
   search,
-  suggestFilters
+  suggestFilters,
 } from 'store/filter';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
@@ -50,12 +50,14 @@ type AllProps = ILocalProps & IConnectedReduxProps & RouteComponentProps;
 class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
     isOpened: false,
-    txt: ''
+    txt: '',
   };
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   public componentDidMount() {
-    this.unlistenCallback = this.props.history.listen((location, action) => this.changeContext(location.pathname));
+    this.unlistenCallback = this.props.history.listen((location, action) =>
+      this.changeContext(location.pathname)
+    );
     this.props.dispatch(initContexts());
     this.changeContext(this.props.history.location.pathname);
   }
@@ -67,7 +69,10 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   }
 
   public render() {
-    const projectPage = this.props.history.location.pathname.split('/').length === 2 ? true : false;
+    const projectPage =
+      this.props.history.location.pathname.split('/').length === 2
+        ? true
+        : false;
     return (
       <div className={styles.root}>
         <div>
@@ -85,7 +90,13 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
         {this.props.isFiltersSupporting && (
           <div>
             <Droppable type="filter" onDrop={this.onCreateFilter}>
-              <div className={!projectPage ? styles.applied_filters : styles.applied_filters_proj}>
+              <div
+                className={
+                  !projectPage
+                    ? styles.applied_filters
+                    : styles.applied_filters_proj
+                }
+              >
                 {this.props.appliedFilters.map((filter, index) => (
                   <AppliedFilterItem
                     key={index}
@@ -115,7 +126,9 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   @bind
   private onApplyFilters() {
     if (this.props.ctx !== undefined) {
-      this.props.dispatch(applyFilters(this.props.ctx, this.props.appliedFilters));
+      this.props.dispatch(
+        applyFilters(this.props.ctx, this.props.appliedFilters)
+      );
     }
   }
 
@@ -142,7 +155,9 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
 
   @bind
   private changeContext(pathname: string) {
-    const ctx: IFilterContext | undefined = FilterContextPool.findContextByLocation(pathname);
+    const ctx:
+      | IFilterContext
+      | undefined = FilterContextPool.findContextByLocation(pathname);
     if (ctx !== undefined) {
       this.props.dispatch(changeContext(ctx.name));
     } else {
@@ -158,7 +173,11 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
       this.state.isOpened && (
         <div className={styles.found_filters_popup}>
           {this.props.foundFilters!.map((filter, index) => (
-            <FilterItem key={index} data={filter} onCreateFilter={this.onCreateFilter} />
+            <FilterItem
+              key={index}
+              data={filter}
+              onCreateFilter={this.onCreateFilter}
+            />
           ))}
         </div>
       )
@@ -193,20 +212,21 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   private onShowPopup() {
     this.setState({
       ...this.state,
-      isOpened: true
+      isOpened: true,
     });
   }
 }
 
 const mapStateToProps = ({ filters }: IApplicationState) => {
   if (filters.context !== undefined) {
-    const fcData: IFilterContextData | undefined = filters.contexts[filters.context];
+    const fcData: IFilterContextData | undefined =
+      filters.contexts[filters.context];
     if (fcData) {
       return {
         appliedFilters: fcData.appliedFilters,
         ctx: filters.context,
         foundFilters: filters.foundFilters,
-        isFiltersSupporting: fcData.ctx.isFilteringSupport
+        isFiltersSupporting: fcData.ctx.isFilteringSupport,
       };
     }
   }
@@ -215,11 +235,13 @@ const mapStateToProps = ({ filters }: IApplicationState) => {
     appliedFilters: [],
     isFiltersSupporting: false,
     foundFilters: filters.foundFilters,
-    ctx: undefined
+    ctx: undefined,
   };
 };
 
 // export connect(mapStateToProps)(FilterSelect);
-const filterSelect = withRouter(connect(mapStateToProps)(onClickOutside(FilterSelectComponent)));
+const filterSelect = withRouter(
+  connect(mapStateToProps)(onClickOutside(FilterSelectComponent))
+);
 // const filterSelect = connect(mapStateToProps)(FilterSelectComponent);
 export { filterSelect as FilterSelect };

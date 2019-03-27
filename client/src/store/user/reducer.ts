@@ -1,29 +1,37 @@
 import { Reducer } from 'redux';
 
 import {
+  checkUserAuthenticationActionTypes,
+  ICheckUserAuthenticationAction,
   IUserLogoutAction,
   IUserState,
   userAuthenticateAction,
   userAuthenticateActionTypes,
   userLogoutActionTypes,
-  checkUserAuthenticationActionTypes,
-  ICheckUserAuthenticationAction
 } from './types';
 
 const initialState: IUserState = {
   authenticated: false,
   loading: false,
   user: null,
-  checkingUserAuthentication: false
+  checkingUserAuthentication: false,
 };
 
-const userAuthenticateReducer: Reducer<IUserState> = (state = initialState, action: userAuthenticateAction) => {
+const userAuthenticateReducer: Reducer<IUserState> = (
+  state = initialState,
+  action: userAuthenticateAction
+) => {
   switch (action.type) {
     case userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST: {
       return { ...state, loading: true };
     }
     case userAuthenticateActionTypes.AUTHENTICATE_USER_SUCCESS: {
-      return { ...state, authenticated: true, loading: false, user: action.payload };
+      return {
+        ...state,
+        authenticated: true,
+        loading: false,
+        user: action.payload,
+      };
     }
     default: {
       return state;
@@ -31,7 +39,10 @@ const userAuthenticateReducer: Reducer<IUserState> = (state = initialState, acti
   }
 };
 
-const userLogoutReducer: Reducer<IUserState> = (state = initialState, action: IUserLogoutAction) => {
+const userLogoutReducer: Reducer<IUserState> = (
+  state = initialState,
+  action: IUserLogoutAction
+) => {
   switch (action.type) {
     case userLogoutActionTypes.LOGOUT_USER: {
       return { ...state, authenticated: false, loading: false, user: null };
@@ -42,13 +53,21 @@ const userLogoutReducer: Reducer<IUserState> = (state = initialState, action: IU
   }
 };
 
-const checkUserAuthReducer: Reducer<IUserState> = (state = initialState, action: ICheckUserAuthenticationAction) => {
+const checkUserAuthReducer: Reducer<IUserState> = (
+  state = initialState,
+  action: ICheckUserAuthenticationAction
+) => {
   switch (action.type) {
     case checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_REQUEST: {
       return { ...state, checkingUserAuthentication: true };
     }
     case checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_SUCCESS: {
-      return { ...state, authenticated: Boolean(action.payload), checkingUserAuthentication: false, user: action.payload };
+      return {
+        ...state,
+        authenticated: Boolean(action.payload),
+        checkingUserAuthentication: false,
+        user: action.payload,
+      };
     }
     case checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_FAILURE: {
       return { ...state, checkingUserAuthentication: false };
@@ -59,7 +78,10 @@ const checkUserAuthReducer: Reducer<IUserState> = (state = initialState, action:
   }
 };
 
-export const userReducer: Reducer<IUserState> = (state = initialState, action) => {
+export const userReducer: Reducer<IUserState> = (
+  state = initialState,
+  action
+) => {
   if (Object.values(userAuthenticateActionTypes).includes(action.type)) {
     return userAuthenticateReducer(state, action);
   }

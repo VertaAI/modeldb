@@ -4,7 +4,10 @@ import { Action, AnyAction, combineReducers, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
 
 import { collaborationReducer, ICollaborationState } from './collaboration';
-import { dashboardConfigReducer, IDashboardConfigState } from './dashboard-config';
+import {
+  dashboardConfigReducer,
+  IDashboardConfigState,
+} from './dashboard-config';
 import { experimentRunsReducer, IExperimentRunsState } from './experiment-runs';
 import { filtersReducer, IFilterState } from './filter';
 import { IModelRecordState, modelRecordReducer } from './model-record';
@@ -36,7 +39,12 @@ export const createRootReducer = (history: History) =>
     layout: userReducer,
     modelRecord: modelRecordReducer,
     projects: projectsReducer,
-    router: connectRouter(history)
+    router: connectRouter(history),
   });
 
-export type ActionResult<R = void, A extends Action = AnyAction> = ThunkAction<R, IApplicationState, undefined, A>;
+export type ActionResult<R = void, A extends Action = AnyAction> = ThunkAction<
+  R,
+  IApplicationState,
+  undefined,
+  A
+>;

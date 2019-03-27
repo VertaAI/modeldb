@@ -3,7 +3,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { UserAccess } from 'models/Project';
-import { InvitationStatus, resetInvitationState, sendInvitationForUser } from 'store/collaboration';
+import {
+  InvitationStatus,
+  resetInvitationState,
+  sendInvitationForUser,
+} from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
@@ -33,7 +37,7 @@ type AllProps = IConnectedReduxProps & ILocalProps;
 class ShareTab extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
     emailValue: '',
-    userAccess: UserAccess.Read
+    userAccess: UserAccess.Read,
   };
 
   public render() {
@@ -45,11 +49,15 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
           <div className={styles.share_result_content}>
             <img src={read_only_icon} />
             <span className={styles.share_result_header}>Read-only</span>
-            <span className={styles.share_result_text}>You're restricted to share project</span>
+            <span className={styles.share_result_text}>
+              You're restricted to share project
+            </span>
           </div>
         ) : (
           <div className={styles.content_share}>
-            <div className={styles.content_header}>Invite People to the Project</div>
+            <div className={styles.content_header}>
+              Invite People to the Project
+            </div>
             <div>
               <PlaceholderInput
                 additionalClassName={styles.form_group}
@@ -59,8 +67,16 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
                 additionalControl={
                   <ButtonTooltip
                     additionalClassName={styles.share_button}
-                    imgSrc={this.state.userAccess === UserAccess.Read ? share_read_icon : share_write_icon}
-                    toolTipContent={`Access type ${this.state.userAccess === UserAccess.Read ? 'Read Only' : 'Read / Write'}`}
+                    imgSrc={
+                      this.state.userAccess === UserAccess.Read
+                        ? share_read_icon
+                        : share_write_icon
+                    }
+                    toolTipContent={`Access type ${
+                      this.state.userAccess === UserAccess.Read
+                        ? 'Read Only'
+                        : 'Read / Write'
+                    }`}
                     onButtonClick={this.changeShareType}
                     width={93}
                   />
@@ -68,7 +84,10 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
               />
             </div>
             <div>
-              <button className={styles.send_invitation_button} onClick={this.sendInvitationOnClick}>
+              <button
+                className={styles.send_invitation_button}
+                onClick={this.sendInvitationOnClick}
+              >
                 Send Invitation
               </button>
             </div>
@@ -80,12 +99,30 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
             <img src={error_icon} />
             <span className={styles.share_result_header}>{error}</span>
             <div>
-              <button className={styles.share_result_button} onClick={this.trySendInvitationAgain}>
-                <span className={`${styles.share_result_button_text} ${styles.share_result_text}`}>Try Again</span>
+              <button
+                className={styles.share_result_button}
+                onClick={this.trySendInvitationAgain}
+              >
+                <span
+                  className={`${styles.share_result_button_text} ${
+                    styles.share_result_text
+                  }`}
+                >
+                  Try Again
+                </span>
               </button>
               <span className={styles.share_result_text}>or</span>
-              <button className={styles.share_result_button} onClick={this.sendNewInvitation}>
-                <span className={`${styles.share_result_button_text} ${styles.share_result_text}`}>Send New Invitation</span>
+              <button
+                className={styles.share_result_button}
+                onClick={this.sendNewInvitation}
+              >
+                <span
+                  className={`${styles.share_result_button_text} ${
+                    styles.share_result_text
+                  }`}
+                >
+                  Send New Invitation
+                </span>
               </button>
             </div>
           </div>
@@ -94,9 +131,20 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
         return (
           <div className={styles.share_result_content}>
             <img src={icon_check} />
-            <span className={styles.share_result_header}>Invitation to {this.state.emailValue} sent!</span>
-            <button className={styles.share_result_button} onClick={this.sendNewInvitation}>
-              <span className={`${styles.share_result_button_text} ${styles.share_result_text}`}>Send New Invitation</span>
+            <span className={styles.share_result_header}>
+              Invitation to {this.state.emailValue} sent!
+            </span>
+            <button
+              className={styles.share_result_button}
+              onClick={this.sendNewInvitation}
+            >
+              <span
+                className={`${styles.share_result_button_text} ${
+                  styles.share_result_text
+                }`}
+              >
+                Send New Invitation
+              </span>
             </button>
           </div>
         );
@@ -124,7 +172,13 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
 
   @bind
   private sendInvitationOnClick() {
-    this.props.dispatch(sendInvitationForUser(this.props.projectId, this.state.emailValue, this.state.userAccess));
+    this.props.dispatch(
+      sendInvitationForUser(
+        this.props.projectId,
+        this.state.emailValue,
+        this.state.userAccess
+      )
+    );
   }
 
   @bind
@@ -136,19 +190,25 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   @bind
   private updateInputValue(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({
-      emailValue: event.target.value
+      emailValue: event.target.value,
     });
     event.preventDefault();
   }
 
   private trySendInvitationAgain() {
-    this.props.dispatch(sendInvitationForUser(this.props.projectId, this.state.emailValue, this.state.userAccess));
+    this.props.dispatch(
+      sendInvitationForUser(
+        this.props.projectId,
+        this.state.emailValue,
+        this.state.userAccess
+      )
+    );
   }
 }
 
 const mapStateToProps = ({ collaboration }: IApplicationState) => ({
   error: collaboration.inviteNewCollaborator.error,
-  status: collaboration.inviteNewCollaborator.status
+  status: collaboration.inviteNewCollaborator.status,
 });
 
 export default connect(mapStateToProps)(ShareTab);
