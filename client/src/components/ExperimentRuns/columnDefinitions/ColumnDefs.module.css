@@ -92,6 +92,15 @@
   color: var(--text-color1);
 }
 
+.parma_link_label {
+  color: rgb(141, 141, 141);
+}
+
+.parma_link_value {
+  font-weight: 500;
+  color: var(--text-color1);
+}
+
 .modelDescription {
   line-height: 10px !important;
 }

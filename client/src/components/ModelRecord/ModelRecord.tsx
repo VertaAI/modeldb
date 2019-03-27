@@ -52,28 +52,12 @@ class ModelRecordLayout extends React.Component<AllProps> {
             </div>
           </div>
           <div className={styles.record_summary_meta}>
-            <div className={styles.experiment_link}>
-              <span className={styles.parma_link_label}> Model ID:</span>{' '}
-              <span className={styles.parma_link_value}>
-                {data.id.slice(0, 4) + '..'}
-              </span>
-            </div>
-            <div className={styles.experiment_link}>
-              <span className={styles.parma_link_label}> Project ID:</span>{' '}
-              <span className={styles.parma_link_value}>
-                {data.projectId.slice(0, 4) + '..'}
-              </span>
-            </div>
-            <div className={styles.experiment_link}>
-              <span className={styles.parma_link_label}> Experiment ID:</span>{' '}
-              <span className={styles.parma_link_value}>
-                {data.experimentId.slice(0, 4) + '..'}
-              </span>
-            </div>
+            {this.renderParmaLink('Model ID:', data.id.slice(0, 4) + '..')}
+            {this.renderParmaLink('Project ID:', data.projectId.slice(0, 4) + '..')}
+            {this.renderParmaLink('Experiment ID:', data.experimentId.slice(0, 4) + '..')}
           </div>
         </div>
         {this.renderTextRecord('Code version', data.codeVersion)}
-
         {data.hyperparameters &&
           this.renderListRecord(
             'Hyperparameters',
@@ -109,8 +93,8 @@ class ModelRecordLayout extends React.Component<AllProps> {
           )}
       </div>
     ) : (
-      ''
-    );
+          ''
+        );
   }
 
   public componentDidMount() {
@@ -132,22 +116,20 @@ class ModelRecordLayout extends React.Component<AllProps> {
         </div>
       </div>
     ) : (
-      ''
+        ''
+      );
+  }
+
+  private renderParmaLink(label: string, value: string) {
+    return (
+      <div className={styles.experiment_link}>
+        <span className={styles.parma_link_label}>{label}</span> <span className={styles.parma_link_value}>{value}</span>
+      </div>
     );
   }
 
-  private renderTextRecord(
-    header: string,
-    value: string,
-    additionalValueClassName: string = ''
-  ) {
-    return value
-      ? this.renderRecord(
-          header,
-          [<span key={0}>{value}</span>],
-          additionalValueClassName
-        )
-      : '';
+  private renderTextRecord(header: string, value: string, additionalValueClassName: string = '') {
+    return value ? this.renderRecord(header, [<span key={0}>{value}</span>], additionalValueClassName) : '';
   }
 
   private renderListRecord(header: string, content: JSX.Element[]) {
