@@ -72,6 +72,7 @@ export class ProjectDataService extends BaseDataService implements IProjectDataS
             }
             return projects;
           } catch (error) {
+            console.log(error);
             return data;
           }
         }
