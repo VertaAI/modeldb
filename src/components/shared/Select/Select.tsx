@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { bind } from 'decko';
+import cn from 'classnames';
+import onClickOutside, { HandleClickOutside } from 'react-onclickoutside';
 
 import styles from './Select.module.css';
 
@@ -14,25 +16,63 @@ interface IOption<T> {
   label: string;
 }
 
-class Select<T> extends React.PureComponent<IProps<T>> {
+interface ILocalState {
+  isOpen: boolean;
+}
+
+class Select<T> extends React.PureComponent<IProps<T>, ILocalState> implements HandleClickOutside<any> {
+  public state: ILocalState = { isOpen: false };
+
   public render() {
     const { value, options } = this.props;
+    const { isOpen } = this.state;
+
+    const selectedOption = options.find(option => option.value === value)!;
+
     return (
-      <select className={styles.select} value={String(value)} onChange={this.onChange}>
-        {options.map(({ value, label }) => (
-          <option value={String(value)} key={String(value)}>
-            {label}
-          </option>
-        ))}
-      </select>
+      <div className={cn(styles.select, { [styles.select_open]: isOpen })}>
+        <div className={styles.input} onClick={this.onOpen}>
+          {selectedOption.label}
+          <div className={styles.arrow}>
+            <i className="fa fa-caret-down" />
+          </div>
+        </div>
+        <div className={styles.options}>
+          {options.map((option, i) => (
+            <div
+              className={cn(styles.option, { [styles.option_selected]: option.value === value })}
+              key={i}
+              onClick={this.makeOnChange(option.value)}
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
 
+  public handleClickOutside() {
+    this.onClose();
+  }
+
   @bind
-  private onChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const realValue = this.props.options.find(option => String(option.value) === e.target.value)!.value;
-    this.props.onChange(realValue);
+  private onOpen() {
+    this.setState({ isOpen: true });
+  }
+
+  @bind
+  private onClose() {
+    this.setState({ isOpen: false });
+  }
+
+  @bind
+  private makeOnChange(value: T) {
+    return () => {
+      this.props.onChange(value);
+      this.onClose();
+    };
   }
 }
 
-export default Select;
+export default onClickOutside(Select);

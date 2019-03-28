@@ -28,7 +28,7 @@ interface ILocalState {
 class DeploySettings extends React.PureComponent<IProps, ILocalState> {
   public state: ILocalState = {
     deployType: 'rest',
-    replicas: 2,
+    replicas: 3,
     withLogs: false,
     withServiceMonitoring: false
   };
@@ -44,7 +44,7 @@ class DeploySettings extends React.PureComponent<IProps, ILocalState> {
               <Form>
                 <Form.Item label="Model ID">22</Form.Item>
                 <Form.Item label="Replicas">
-                  <Select<number>
+                  <Select
                     value={replicas}
                     options={[{ value: 3, label: '3' }, { value: 4, label: '4' }]}
                     onChange={this.onChangeRepliceCount}
@@ -58,11 +58,11 @@ class DeploySettings extends React.PureComponent<IProps, ILocalState> {
                 </Form.Item>
               </Form>
             </Tabs.Tab>
-            <Tabs.Tab title="BATCH" type="batch" centered>
+            <Tabs.Tab title="BATCH" type="batch" centered={true}>
               <Form>
                 <Form.Item label="Model ID">22</Form.Item>
                 <Form.Item label="Replicas">
-                  <Select<number>
+                  <Select
                     value={replicas}
                     options={[{ value: 3, label: '3' }, { value: 4, label: '4' }]}
                     onChange={this.onChangeRepliceCount}
