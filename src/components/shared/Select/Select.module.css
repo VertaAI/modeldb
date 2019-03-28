@@ -46,6 +46,7 @@
   padding: 10px;
   color: rgba(0, 0, 0, 0.7);
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 .option:first-child {
   border-radius: 3px 3px 0 0;

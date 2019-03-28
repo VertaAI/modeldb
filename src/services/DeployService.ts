@@ -24,6 +24,9 @@ export default class DeployService extends BaseDataService {
             { name: 'age', type: 'float' },
             { name: 'gender', type: 'float' },
             { name: 'zipcode', type: 'float' },
+            { name: 'city', type: 'float' },
+            { name: 'gender', type: 'float' },
+            { name: 'zipcode', type: 'float' },
             { name: 'city', type: 'float' }
           ]
         },
