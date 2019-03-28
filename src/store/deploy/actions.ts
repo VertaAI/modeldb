@@ -32,7 +32,7 @@ export const deploy = (modelId: string): ActionResult<void, deployAction> => asy
       dispatch(action(deployActionTypes.DEPLOY_SUCCESS, modelId));
     })
     .catch(err => {
-      dispatch(action(deployActionTypes.DEPLOY_FAILURE, { modelId, error: 'error' }));
+      dispatch(action(deployActionTypes.DEPLOY_FAILURE, { modelId, error: err }));
     });
 };
 
@@ -79,11 +79,11 @@ export const loadDeployStatus = (modelId: string): ActionResult<void, loadDeploy
   return await ServiceFactory.getDeployService()
     .loadStatus(modelId)
     .then(res => {
-      dispatch(action(loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_SUCCESS, { modelId, info: res }));
-      return res;
+      dispatch(action(loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_SUCCESS, { modelId, info: res.data }));
+      return res.data;
     })
     .catch(err => {
       dispatch(action(loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_FAILURE, { modelId, error: 'error' }));
-      return err;
+      return err.data;
     });
 };

@@ -1,4 +1,4 @@
-import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
+import _axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
 import { JsonConvert } from 'json2typescript';
 
 import { ComparisonType, IFilterData, PropertyType } from 'models/Filters';
@@ -8,6 +8,15 @@ import ModelRecord from 'models/ModelRecord';
 
 import { BaseDataService } from './BaseDataService';
 import { IExperimentRunsDataService } from './IExperimentRunsDataService';
+
+import MockAdapter from 'axios-mock-adapter';
+import { expRunsMocks } from './mocks/expRunsMock';
+const axios = _axios.create();
+
+const mock = new MockAdapter(axios);
+mock.onGet('/v1/experiment-run/getExperimentRunsInProject').reply(config => {
+  return [200, { experiment_runs: expRunsMocks.filter(x => x.project_id === config.params.project_id).slice(0, 1) }];
+});
 
 export default class ExperimentRunsDataService extends BaseDataService implements IExperimentRunsDataService {
   constructor() {

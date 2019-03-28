@@ -6,9 +6,51 @@ import { URL } from 'utils/types';
 import { BaseDataService } from './BaseDataService';
 import { IDeployService } from './IDeployService';
 
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+export class DeployService extends BaseDataService implements IDeployService {
+  constructor() {
+    super();
+  }
 
-let isDeployed = false;
+  public deploy(request: IDeployRequest): AxiosPromise<void> {
+    const serverRequest = {
+      api: 's3://vertaai-deploymentservice-test/model_api.json',
+      id: '1234',
+      model: 's3://vertaai-deploymentservice-test/model.pkl',
+      requirements: 's3://vertaai-deploymentservice-test/requirements.txt'
+    };
+
+    return axios.post('/api/v1/controller/deploy', serverRequest);
+  }
+
+  public delete(modelId: string): AxiosPromise<void> {
+    return axios.post('/api/v1/controller/delete', { id: modelId });
+  }
+
+  public loadStatus(modelId: string): AxiosPromise<IDeployStatusInfo> {
+    return axios.get<IDeployStatusInfo>(`/api/v1/controller/status/1234`, {
+      transformResponse: res => {
+        if (res.status === 'not deployed') {
+          return { status: 'notDeployed' } as IDeployStatusInfo;
+        }
+        if (res.status === 'deploying') {
+          return { status: 'deploying' } as IDeployStatusInfo;
+        }
+        if (res.status === 'live') {
+          return {
+            status: 'deployed',
+            data: {
+              api: res.api,
+              token: res.token,
+              uptime: 100,
+              type: 'rest',
+              modelApi: result.modelApi
+            }
+          } as IDeployStatusInfo;
+        }
+      }
+    });
+  }
+}
 
 const result: IDeployedStatusInfo['data'] = {
   token: 'token',
@@ -36,30 +78,6 @@ const result: IDeployedStatusInfo['data'] = {
   type: 'rest',
   api: 'https://verta.io/234wfogsfas/fsfbgs'
 };
-
-export default class DeployService extends BaseDataService implements IDeployService {
-  constructor() {
-    super();
-  }
-
-  public async deploy(request: IDeployRequest): Promise<void> {
-    await delay(100);
-  }
-
-  public async delete(modelId: string): Promise<void> {}
-
-  public async loadStatus(modelId: string): Promise<IDeployStatusInfo> {
-    if (!isDeployed) {
-      setTimeout(() => {
-        isDeployed = true;
-      }, 600);
-    }
-    if (isDeployed) {
-      return { status: 'deployed', data: result };
-    }
-    return { status: 'deploying' };
-  }
-}
 
 export interface IDeployRequest {
   modelId: string;
