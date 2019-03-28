@@ -30,10 +30,14 @@ class ModelInput extends React.PureComponent<IProps, ILocalState> {
             <div className={styles.fields}>
               <div className={styles.header}>Name</div>
               <div className={styles.header}>Type</div>
-              {fields.map(({ name, type }) => (
+              {fields.map(({ name, type }, i) => (
                 <>
-                  <div className={styles.content}>{name}</div>
-                  <div className={styles.content}>{type}</div>
+                  <div className={styles.content} key={`${name}-${i}`}>
+                    {name}
+                  </div>
+                  <div className={styles.content} key={`${type}-${i}`}>
+                    {type}
+                  </div>
                 </>
               ))}
             </div>

@@ -1,10 +1,6 @@
+import { Timestamp, URL } from 'utils/types';
+
 export type DeployType = 'rest' | 'batch';
-
-export type ModelType = 'scikit' | 'xgboost';
-
-export type DeployStatus = 'not-deployed' | 'building' | 'stopped' | 'running' | 'stopping' | 'error';
-
-export type IDeployInfo = { status: 'not-deployed' } | { status: 'building' } | { status: 'running'; result: IDeployResult };
 
 export interface IDeployConfig {
   type: DeployType;
@@ -13,12 +9,17 @@ export interface IDeployConfig {
   withServiceMonitoring: boolean;
 }
 
-export interface IDeployResult {
-  modelId: string;
-  type: DeployType;
-  url: string;
-  modelApi: IModelApi;
+export interface INotDeployedStatusInfo {
+  status: 'notDeployed';
 }
+export interface IDeployingStatusInfo {
+  status: 'deploying';
+}
+export interface IDeployedStatusInfo {
+  status: 'deployed';
+  data: { uptime: Timestamp; type: DeployType; token: string; api: URL; modelApi: IModelApi };
+}
+export type IDeployStatusInfo = INotDeployedStatusInfo | IDeployingStatusInfo | IDeployedStatusInfo;
 
 export interface IModelApi {
   modelType: 'scikit' | 'xgboost';

@@ -3,9 +3,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import Fab from 'components/shared/Fab/Fab';
-import { IDeployInfo, IDeployConfig } from 'models/Deploy';
+import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { selectDeployInfo, deploy } from 'store/deploy';
+import { deploy, checkDeployStatusUntilDeployed, selectDeployStatusInfo, deployWithCheckingStatus, checkDeployStatus } from 'store/deploy';
 
 import DeployWizard from '../DeployWizard';
 
@@ -14,7 +14,7 @@ interface IProps {
 }
 
 interface IPropsFromState {
-  deployInfo: IDeployInfo;
+  deployStatusInfo: IDeployStatusInfo;
 }
 
 interface ILocalState {
@@ -28,29 +28,34 @@ class DeployManager extends React.PureComponent<AllProps, ILocalState> {
   public state: ILocalState = { isDeployWizardShown: false };
 
   public render() {
-    const { deployInfo } = this.props;
+    const { deployStatusInfo } = this.props;
     const { isDeployWizardShown } = this.state;
 
     return (
       <div>
-        <DeployWizard isShown={isDeployWizardShown} deployInfo={deployInfo} onDeploy={this.onDeploy} onClose={this.onHideDeployWizard} />
+        <DeployWizard
+          isShown={isDeployWizardShown}
+          deployStatusInfo={deployStatusInfo}
+          onDeploy={this.onDeploy}
+          onClose={this.onHideDeployWizard}
+        />
         {(() => {
-          switch (deployInfo.status) {
-            case 'not-deployed': {
+          switch (deployStatusInfo.status) {
+            case 'notDeployed': {
               return (
                 <Fab theme="blue" icon="upload" onClick={this.onShowDeployWizard}>
                   Deploy
                 </Fab>
               );
             }
-            case 'building': {
+            case 'deploying': {
               return (
                 <Fab variant="outlined" theme="green" onClick={this.onShowDeployWizard}>
                   Deploying...
                 </Fab>
               );
             }
-            case 'running': {
+            case 'deployed': {
               return (
                 <Fab theme="green" onClick={this.onShowDeployWizard}>
                   Deployed
@@ -65,6 +70,7 @@ class DeployManager extends React.PureComponent<AllProps, ILocalState> {
 
   @bind
   private onShowDeployWizard() {
+    // this.props.dispatch(deployWithCheckingStatus(this.props.modelId));
     this.setState({ isDeployWizardShown: true });
   }
 
@@ -74,14 +80,14 @@ class DeployManager extends React.PureComponent<AllProps, ILocalState> {
   }
 
   @bind
-  private onDeploy(config: IDeployConfig) {
-    this.props.dispatch(deploy(this.props.modelId, config));
+  private onDeploy() {
+    this.props.dispatch(deployWithCheckingStatus(this.props.modelId));
   }
 }
 
 const mapStateToProps = (state: IApplicationState, ownProps: IProps): IPropsFromState => {
   return {
-    deployInfo: selectDeployInfo(state, ownProps.modelId)
+    deployStatusInfo: selectDeployStatusInfo(state, ownProps.modelId)
   };
 };
 

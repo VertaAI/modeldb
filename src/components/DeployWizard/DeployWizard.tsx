@@ -2,34 +2,34 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import { IDeployConfig, IDeployResult, IDeployInfo } from 'models/Deploy';
+import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
 
-import DeploySettings from './DeploySettings/DeploySettings';
 import Deploying from './Deploying/Deploying';
 import DeployResult from './DeployResult/DeployResult';
+import DeploySettings from './DeploySettings/DeploySettings';
 
 interface IProps {
   isShown: boolean;
-  deployInfo: IDeployInfo;
+  deployStatusInfo: IDeployStatusInfo;
   onClose(): void;
   onDeploy(config: IDeployConfig): void;
 }
 
 class DeployWizard extends React.PureComponent<IProps> {
   public render() {
-    const { isShown, deployInfo, onClose, onDeploy } = this.props;
+    const { isShown, deployStatusInfo, onClose, onDeploy } = this.props;
 
     if (!isShown) {
       return null;
     }
 
-    switch (deployInfo.status) {
-      case 'not-deployed':
-        return <DeploySettings status={deployInfo.status} onDeploy={onDeploy} onClose={onClose} />;
-      case 'building':
+    switch (deployStatusInfo.status) {
+      case 'notDeployed':
+        return <DeploySettings status={deployStatusInfo.status} onDeploy={onDeploy} onClose={onClose} />;
+      case 'deploying':
         return <Deploying onClose={onClose} />;
-      case 'running':
-        return <DeployResult deployResult={deployInfo.result} onClose={onClose} />;
+      case 'deployed':
+        return <DeployResult data={deployStatusInfo.data} onClose={onClose} />;
     }
   }
 }

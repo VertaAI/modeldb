@@ -1,34 +1,96 @@
-import { Reducer } from 'redux';
+import { Reducer, combineReducers } from 'redux';
 
-import { deployAction, deployActionTypes, IDeployState } from './types';
+import {
+  IDeployState,
+  loadDeployStatusAction,
+  loadDeployStatusActionTypes,
+  deployAction,
+  deployActionTypes,
+  allActions,
+  checkDeployStatusAction,
+  checkDeployStatusActionTypes
+} from './types';
 
 const deployInitialState: IDeployState = {
   data: {},
-  deploying: {}
+  requestingToDeploy: {},
+  loadingDeployStatus: {},
+  checkingDeployStatus: {}
 };
 
-export const deployReducer: Reducer<IDeployState, deployAction> = (state = deployInitialState, action) => {
+const requestingToDeployReducer: Reducer<IDeployState['requestingToDeploy'], deployAction> = (
+  state = deployInitialState.requestingToDeploy,
+  action
+) => {
   switch (action.type) {
     case deployActionTypes.DEPLOY_REQUEST: {
-      return { ...state, deploying: { ...state.deploying, [action.payload]: { isRequesting: true, error: '' } } };
+      return { ...state, [action.payload]: { isRequesting: true, error: '' } };
     }
     case deployActionTypes.DEPLOY_SUCCESS: {
-      return {
-        ...state,
-        data: {
-          [action.payload.modelId]: action.payload
-        },
-        deploying: { ...state.deploying, [action.payload.modelId]: { isRequesting: false, error: '' } }
-      };
+      return { ...state, [action.payload]: { isRequesting: false, error: '' } };
     }
     case deployActionTypes.DEPLOY_FAILURE: {
-      return {
-        ...state,
-        deploying: { ...state.deploying, [action.payload.modelId]: { isRequesting: false, error: action.payload.error } }
-      };
+      return { ...state, [action.payload.modelId]: { isRequesting: false, error: action.payload.error } };
     }
-    default: {
+    default:
       return state;
-    }
   }
 };
+
+const loadingDeployStatusReducer: Reducer<IDeployState['loadingDeployStatus'], loadDeployStatusAction> = (
+  state = deployInitialState.loadingDeployStatus,
+  action
+) => {
+  switch (action.type) {
+    case loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_REQUEST: {
+      return { ...state, [action.payload]: { isRequesting: true, error: '' } };
+    }
+    case loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_SUCCESS: {
+      return { ...state, [action.payload.modelId]: { isRequesting: false, error: '' } };
+    }
+    case loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_FAILURE: {
+      return { ...state, [action.payload.modelId]: { isRequesting: false, error: action.payload.error } };
+    }
+    default:
+      return state;
+  }
+};
+
+const checkingDeployStatusReducer: Reducer<IDeployState['checkingDeployStatus'], checkDeployStatusAction> = (
+  state = deployInitialState.loadingDeployStatus,
+  action
+) => {
+  switch (action.type) {
+    case checkDeployStatusActionTypes.CHECK_DEPLOY_STATUS_REQUEST: {
+      return { ...state, [action.payload]: { isRequesting: true, error: '' } };
+    }
+    case checkDeployStatusActionTypes.CHECK_DEPLOY_STATUS_SUCCESS: {
+      return { ...state, [action.payload]: { isRequesting: false, error: '' } };
+    }
+    case checkDeployStatusActionTypes.CHECK_DEPLOY_STATUS_FAILURE: {
+      return { ...state, [action.payload.modelId]: { isRequesting: false, error: action.payload.error } };
+    }
+    default:
+      return state;
+  }
+};
+
+const deployStatusInfoReducer: Reducer<IDeployState['data'], allActions> = (state = deployInitialState.data, action) => {
+  switch (action.type) {
+    case deployActionTypes.DEPLOY_SUCCESS: {
+      return { ...state, [action.payload]: { status: 'deploying' } };
+    }
+    case loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_SUCCESS: {
+      return { ...state, [action.payload.modelId]: action.payload.info };
+    }
+    default:
+      return state;
+  }
+};
+
+export const deployReducer = combineReducers<IDeployState>({
+  checkingDeployStatus: checkingDeployStatusReducer,
+  data: deployStatusInfoReducer,
+  loadingDeployStatus: loadingDeployStatusReducer,
+  requestingToDeploy: requestingToDeployReducer
+});

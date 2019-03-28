@@ -1,5 +1,9 @@
-import { IDeployConfig, IDeployResult } from 'models/Deploy';
+import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
+
+import { IDeployRequest } from './DeployService';
 
 export interface IDeployService {
-  deploy(modelId: string, config: IDeployConfig): Promise<IDeployResult>;
+  deploy(req: IDeployRequest): Promise<void>;
+  delete(modelId: string): Promise<void>;
+  loadStatus(modelId: string): Promise<IDeployStatusInfo>;
 }

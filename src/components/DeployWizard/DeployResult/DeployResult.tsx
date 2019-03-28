@@ -5,16 +5,14 @@ import Popup from 'components/shared/Popup/Popup';
 import Form from 'components/shared/Form/Form';
 import Button from 'components/shared/Button/Button';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
-import { IDeployResult } from 'models/Deploy';
+import { IDeployedStatusInfo } from 'models/Deploy';
 
 import ModelInput from './ModelInput/ModelInput';
 import styles from './DeployResult.module.css';
 import { IApplicationState } from 'store/store';
 
-const url = 'https://verta.io/234wfogsfas/fsfbgs';
-
 interface IProps {
-  deployResult: IDeployResult;
+  data: IDeployedStatusInfo['data'];
   onClose(): void;
 }
 
@@ -22,7 +20,10 @@ type AllProps = IProps;
 
 class DeployResult extends React.Component<AllProps> {
   public render() {
-    const { deployResult, onClose } = this.props;
+    const {
+      data: { api, modelApi },
+      onClose
+    } = this.props;
     return (
       <Popup title="Deployed" isOpen={true} onRequestClose={onClose}>
         <div className={styles.deploy_result}>
@@ -33,12 +34,12 @@ class DeployResult extends React.Component<AllProps> {
               <Form.Item
                 label="URL"
                 additionalContent={
-                  <Button variant="like-link" fullWidth to={url}>
-                    <span className={styles.url}>{url}</span>
+                  <Button variant="like-link" fullWidth to={api}>
+                    <span className={styles.url}>{api}</span>
                   </Button>
                 }
               >
-                <CopyToClipboard text={url}>
+                <CopyToClipboard text={api}>
                   {onCopy => (
                     <Button variant="like-link" onClick={onCopy}>
                       Copy
@@ -49,7 +50,7 @@ class DeployResult extends React.Component<AllProps> {
             </Form>
           </div>
           <div className={styles.model_input}>
-            <ModelInput input={deployResult.modelApi.input} />
+            <ModelInput input={modelApi.input} />
           </div>
         </div>
       </Popup>
