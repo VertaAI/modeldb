@@ -25,7 +25,7 @@ export class Project {
   public collaborators: Map<User, UserAccess> = new Map<User, UserAccess>();
   @JsonProperty('tags', [String], true)
   public tags: string[] = [];
-  @JsonProperty('owner', String)
+  @JsonProperty('owner', String, true)
   public authorId: string;
   private author: User = new User('', '');
 
