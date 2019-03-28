@@ -24,7 +24,7 @@ interface ILocalState {
 export type AllProps = IProps & IPropsFromState & IConnectedReduxProps;
 
 // todo rename. maybe DeployManager?
-class DeployButton extends React.PureComponent<AllProps, ILocalState> {
+class DeployManager extends React.PureComponent<AllProps, ILocalState> {
   public state: ILocalState = { isDeployWizardShown: false };
 
   public render() {
@@ -85,4 +85,4 @@ const mapStateToProps = (state: IApplicationState, ownProps: IProps): IPropsFrom
   };
 };
 
-export default connect(mapStateToProps)(DeployButton);
+export default connect(mapStateToProps)(DeployManager);

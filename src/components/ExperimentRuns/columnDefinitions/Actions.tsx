@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import DeployButton from 'components/DeployWizard/DeployButton/DeployButton';
+import DeployManager from 'components/DeployWizard/DeployManager/DeployManager';
 
 class Actions extends React.Component<any> {
   public render() {
     return (
       <div>
-        <DeployButton modelId={this.props.data.id} />
+        <DeployManager modelId={this.props.data.id} />
       </div>
     );
   }
