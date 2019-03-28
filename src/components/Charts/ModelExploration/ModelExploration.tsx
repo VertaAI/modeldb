@@ -22,6 +22,9 @@ interface ILocalState {
 export default class ModelExploration extends React.Component<ILocalProps, ILocalState> {
   public xAxisParams: Set<string> = new Set(); // computed fields from ModelRecord object
   public yAxisParams: Set<string> = new Set(); // metric fields only for Y axis
+  public summaryParams: Set<string> = new Set();
+  public hyperParams: Set<string> = new Set();
+  public mapOptGroup = { metric: false, hyper: false };
   public constructor(props: ILocalProps) {
     super(props);
     this.state = {
@@ -30,16 +33,12 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
       flatMetric: this.computeFlatMetric(props.expRuns),
       selectedAggregate: 'average',
       selectedXAxis: 'hidden_size', // initial val for testing //
-      selectedYAxis: 'test_loss' // initial val for testing / first metric
-      // flat metric yenga da
+      selectedYAxis: 'test_loss' // initial val for testing - first metric
     };
-    // console.log(this.computeXAxisFields(props.expRuns));
-    // console.log(this.computeFlatMetric(props.expRuns));
   }
 
   public render() {
     const { expRuns } = this.props;
-
     return expRuns ? (
       <div className={styles.summary_wrapper}>
         <h3>Explore Visualizations</h3>
@@ -65,13 +64,22 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
           <div className={styles.chart_selector}>
             X Axis: {'  '}
             <select name="selected-xaxis" value={this.state.selectedXAxis} onChange={this.setLocalXState} className={styles.dropdown}>
-              {Array.from(this.xAxisParams).map((param: string, i: number) => {
+              {Array.from(this.summaryParams).map((param: string, i: number) => {
                 return (
                   <option key={i} value={param}>
                     {param}
                   </option>
                 );
               })}
+              <optgroup key={'hyper-param'} label={'Hyperparameters'}>
+                {Array.from(this.hyperParams).map((param: string, i: number) => {
+                  return (
+                    <option key={i} value={param}>
+                      {param}
+                    </option>
+                  );
+                })}
+              </optgroup>
             </select>
           </div>
 
@@ -101,9 +109,13 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
           <BarChart
             xLabel={this.state.selectedXAxis}
             yLabel={this.state.selectedYAxis}
-            data={this.reduceMetricForAgg(
-              this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis]),
-              this.state.selectedAggregate
+            // data={this.reduceMetricForAgg(
+            //   this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis]),
+            //   this.state.selectedAggregate
+            // )}
+            data={this.returnAggResults(
+              this.state.selectedAggregate,
+              this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis])
             )}
           />
         </div>
@@ -164,6 +176,7 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
   public count = (array: any) => array.length;
 
   public computeFlatMetric = (arr: ModelRecord[]) => {
+    console.log(arr);
     return arr.map(obj => {
       const metricField = _.pick(obj, 'startTime', 'metrics');
       const flatMetric: any = { date: metricField.startTime };
@@ -176,24 +189,77 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
   };
 
   // reduce data based on aggigation type
-  public reduceMetricForAgg = (groupByResult: any, selectedAggType: string) => {
-    let aggFun: any;
-    switch (selectedAggType) {
+  // public reduceMetricForAgg = (groupByResult: any, selectedAggType: string) => {
+  //   let aggFun: any;
+  //   switch (selectedAggType) {
+  //     case 'sum':
+  //       aggFun = this.sum;
+  //     case 'median':
+  //       aggFun = this.median;
+  //     case 'variance':
+  //       aggFun = this.variance;
+  //     case 'stdev':
+  //       aggFun = this.stdev;
+  //     case 'count':
+  //       aggFun = this.count;
+  //     default:
+  //       aggFun = this.average;
+  //   }
+  //   return [...groupByResult].map(obj => {
+  //     return { key: obj[0], value: aggFun(obj[1]) };
+  //   });
+  // };
+
+  public returnAggResults = (selected: string, arrayGpBy: any) => {
+    switch (selected) {
+      case 'average':
+        return this.averageReduceMetrics(arrayGpBy);
       case 'sum':
-        aggFun = this.sum;
+        return this.sumReduceMetrics(arrayGpBy);
       case 'median':
-        aggFun = this.median;
+        return this.medianReduceMetrics(arrayGpBy);
       case 'variance':
-        aggFun = this.variance;
+        return this.varianceReduceMetrics(arrayGpBy);
       case 'stdev':
-        aggFun = this.stdev;
+        return this.stdevReduceMetrics(arrayGpBy);
       case 'count':
-        aggFun = this.count;
-      default:
-        aggFun = this.average;
+        return this.countReduceMetrics(arrayGpBy);
     }
-    return [...groupByResult].map(obj => {
-      return { key: obj[0], value: aggFun(obj[1]) };
+  };
+
+  public averageReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.average(obj[1]) };
+    });
+  };
+
+  public sumReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.sum(obj[1]) };
+    });
+  };
+
+  public medianReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.median(obj[1]) };
+    });
+  };
+
+  public varianceReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.variance(obj[1]) };
+    });
+  };
+
+  public stdevReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.stdev(obj[1]) };
+    });
+  };
+
+  public countReduceMetrics = (mapObj: any) => {
+    return [...mapObj].map(obj => {
+      return { key: obj[0], value: this.count(obj[1]) };
     });
   };
 
@@ -201,35 +267,39 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
   public computeXAxisFields = (expRuns: ModelRecord[]) => {
     // hard coded with an assumption that these ids will always be present with the data
     this.xAxisParams.add('experiment_id');
+    this.summaryParams.add('experiment_id');
     this.xAxisParams.add('project_id');
-    this.xAxisParams.add('id');
-    this.xAxisParams.add('start_time');
+    this.summaryParams.add('project_id');
+    // this.xAxisParams.add('id');
+    // this.xAxisParams.add('start_time');
     return expRuns.map(modeRecord => {
       const fields: any = {};
-      if (modeRecord.metrics) {
-        modeRecord.metrics.forEach((kvPair: any) => {
-          this.xAxisParams.add(kvPair.key);
-          fields[kvPair.key] = kvPair.value;
-        });
-      }
       if (modeRecord.hyperparameters) {
         modeRecord.hyperparameters.forEach((kvPair: any) => {
-          this.xAxisParams.add(kvPair.key);
-          fields[kvPair.key] = kvPair.value;
+          this.xAxisParams.add(`${kvPair.key}`);
+          this.hyperParams.add(kvPair.key);
+          fields[`${kvPair.key}`] = kvPair.value;
         });
       }
-      if (modeRecord.datasets) {
-        modeRecord.datasets.forEach((kvPair: any) => {
-          this.xAxisParams.add(kvPair.key);
-          fields[`dataset_${kvPair.key}`] = kvPair.path;
+
+      if (modeRecord.metrics) {
+        modeRecord.metrics.forEach((kvPair: any) => {
+          // this.xAxisParams.add(`${kvPair.key}`);
+          fields[`${kvPair.key}`] = kvPair.value;
         });
       }
-      if (modeRecord.artifacts) {
-        modeRecord.artifacts.forEach((kvPair: any) => {
-          this.xAxisParams.add(kvPair.key);
-          fields[`artifact_${kvPair.key}`] = kvPair.path;
-        });
-      }
+      // if (modeRecord.datasets) {
+      //   modeRecord.datasets.forEach((kvPair: any) => {
+      //     this.xAxisParams.add(kvPair.key);
+      //     fields[`dataset_${kvPair.key}`] = kvPair.path;
+      //   });
+      // }
+      // if (modeRecord.artifacts) {
+      //   modeRecord.artifacts.forEach((kvPair: any) => {
+      //     this.xAxisParams.add(kvPair.key);
+      //     fields[`artifact_${kvPair.key}`] = kvPair.path;
+      //   });
+      // }
       fields.experiment_id = modeRecord.experimentId;
       fields.project_id = modeRecord.projectId;
       fields.exp_run_id = modeRecord.id;
@@ -242,6 +312,7 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
       if (modeRecord.owner) {
         fields.owner = modeRecord.owner;
         this.xAxisParams.add('owner');
+        this.summaryParams.add('owner');
       }
       if (modeRecord.tags) {
         modeRecord.tags.forEach((tag: string) => {
