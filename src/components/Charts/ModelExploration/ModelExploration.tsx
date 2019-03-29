@@ -49,19 +49,6 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
 
         <div style={{ display: 'flex' }}>
           <div className={styles.chart_selector}>
-            Y Axis: {'  '}
-            <select name="selected-yaxis" value={this.state.selectedYAxis} onChange={this.setLocalYState} className={styles.dropdown}>
-              {Array.from(this.yAxisParams).map((param: string, i: number) => {
-                return (
-                  <option key={i} value={param}>
-                    {param}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          <div className={styles.chart_selector}>
             X Axis: {'  '}
             <select name="selected-xaxis" value={this.state.selectedXAxis} onChange={this.setLocalXState} className={styles.dropdown}>
               {Array.from(this.summaryParams).map((param: string, i: number) => {
@@ -73,6 +60,21 @@ export default class ModelExploration extends React.Component<ILocalProps, ILoca
               })}
               <optgroup key={'hyper-param'} label={'Hyperparameters'}>
                 {Array.from(this.hyperParams).map((param: string, i: number) => {
+                  return (
+                    <option key={i} value={param}>
+                      {param}
+                    </option>
+                  );
+                })}
+              </optgroup>
+            </select>
+          </div>
+
+          <div className={styles.chart_selector}>
+            Y Axis: {'  '}
+            <select name="selected-yaxis" value={this.state.selectedYAxis} onChange={this.setLocalYState} className={styles.dropdown}>
+              <optgroup key={'metric'} label={'Metrics'}>
+                {Array.from(this.yAxisParams).map((param: string, i: number) => {
                   return (
                     <option key={i} value={param}>
                       {param}

@@ -1,9 +1,23 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
-const width = 680;
-const height = 340;
+const width = 800;
+const height = 360;
 const barWidth = 20;
-const margin = { top: 20, right: 5, bottom: 40, left: 65 };
+const margin = { top: 25, right: 35, bottom: 45, left: 65 };
+
+// d3.selection.prototype.bringElementAsTopLayer = function() {
+//   return this.each(function(){
+//   this.parentNode.appendChild(this);
+// });
+// };
+
+// d3.selection.prototype.pushElementAsBackLayer = function() {
+// return this.each(function() {
+// var firstChild = this.parentNode.firstChild;
+// if (firstChild) {
+//    this.parentNode.insertBefore(this, firstChild);
+// }
+// });
 
 class BarChart extends Component {
   state = {
@@ -11,6 +25,7 @@ class BarChart extends Component {
   };
 
   xAxis = d3.axisBottom();
+
   yAxis = d3.axisLeft();
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -58,7 +73,8 @@ class BarChart extends Component {
     this.xAxis.scale(this.state.xScale);
     d3.select(this.refs.xAxis).call(this.xAxis);
     this.yAxis.scale(this.state.yScale);
-    d3.select(this.refs.yAxis).call(this.yAxis);
+    d3.select(this.refs.yAxis).call(this.yAxis.ticks(6));
+
     d3.select(this.refs.yAxis)
       .append('text')
       .attr('id', 'yLabel')
@@ -77,16 +93,28 @@ class BarChart extends Component {
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text(this.props.xLabel);
+
+    d3.select(this.refs.yAxis)
+      .append('g')
+      .attr('class', 'grid')
+      .call(
+        this.yAxis
+          .ticks(6)
+          .tickSize(-width + margin.right + margin.left)
+          .tickFormat('')
+      );
   }
 
   render() {
     return (
       <svg width={width} height={height} className={'expChart'}>
-        {this.state.bars.map(d => (
-          <rect x={d.x} y={d.y} width={barWidth} height={d.height} fill={'#5fe6c9'} key={Math.random() + d.y} />
-        ))}
         <g ref="xAxis" transform={`translate(0, ${height - margin.bottom})`} />
         <g ref="yAxis" transform={`translate(${margin.left}, 0)`} />
+        <g ref="bars">
+          {this.state.bars.map(d => (
+            <rect x={d.x} y={d.y} width={barWidth} height={d.height} fill={'#5fe6c9'} key={Math.random() + d.y} />
+          ))}
+        </g>
       </svg>
     );
   }
