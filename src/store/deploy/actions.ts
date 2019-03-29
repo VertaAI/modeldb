@@ -13,8 +13,19 @@ import {
   loadDeployStatusAction,
   loadDeployStatusActionTypes,
   checkDeployStatusAction,
-  checkDeployStatusActionTypes
+  checkDeployStatusActionTypes,
+  toggleWizardActionTypes
 } from './types';
+
+export const showDeployWizardForModel = (modelID: string) => ({ type: toggleWizardActionTypes.OPEN_WIZARD, payload: modelID });
+
+export const closeDeployWizardForModel = (modelID: string) => ({ type: toggleWizardActionTypes.CLOSE_WIZARD });
+
+export const loadDeployStatusForModels = (modelIds: string[]): ActionResult<void, any> => async (dispatch, getState) => {
+  modelIds
+    .filter(modelId => selectDeployStatusInfo(getState(), modelId).status === 'unknown')
+    .forEach(modelId => loadDeployStatus(modelId)(dispatch, getState, undefined));
+};
 
 // todo rename
 // todo handle error
@@ -36,7 +47,6 @@ export const deploy = (modelId: string): ActionResult<void, deployAction> => asy
     });
 };
 
-// todo rename
 export const checkDeployStatus = (modelId: string): ActionResult<void, checkDeployStatusAction> => async (dispatch, getState) => {
   const isCheckingStatusInfo = selectIsLoadingDeployStatusInfo(getState(), modelId);
   // because now is running checkinging deploy status
@@ -54,21 +64,7 @@ export const checkDeployStatus = (modelId: string): ActionResult<void, checkDepl
   setTimeout(async () => {
     await loadDeployStatus(modelId)(dispatch, getState, undefined);
     checkDeployStatus(modelId)(dispatch, getState, undefined);
-  }, 300);
-};
-
-// todo rename and refactor
-// todo handle error
-export const checkDeployStatusUntilDeployed = (modelId: string): ActionResult<void, loadDeployStatusAction> => async (
-  dispatch,
-  getState
-) => {
-  const currentDeployStatus: IDeployStatusInfo = (await loadDeployStatus(modelId)(dispatch, getState, undefined)) as any;
-  if (currentDeployStatus.status === 'deploying') {
-    setTimeout(() => {
-      checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined);
-    }, 300);
-  }
+  }, 1000);
 };
 
 export const loadDeployStatus = (modelId: string): ActionResult<void, loadDeployStatusAction> => async (

@@ -6,12 +6,24 @@ import { IDeployState } from './types';
 const selectState = (state: IApplicationState): IDeployState => state.deploy;
 
 export const selectDeployStatusInfo = (state: IApplicationState, modelId: string): IDeployStatusInfo => {
-  return selectState(state).data[modelId] || { status: 'notDeployed' };
+  return selectState(state).data[modelId] || { status: 'unknown' };
+};
+
+export const needCheckDeployStatus = (state: IApplicationState, modelId: string) => {
+  const deployStatusInfo = selectDeployStatusInfo(state, modelId);
+  if (deployStatusInfo.status === 'unknown') {
+    return true;
+  }
+  return false;
 };
 
 export const selectIsLoadingDeployStatusInfo = (state: IApplicationState, modelId: string): boolean => {
   const loadingModelDeployStatus = selectState(state).loadingDeployStatus[modelId];
   return Boolean(loadingModelDeployStatus && loadingModelDeployStatus.isRequesting);
+};
+
+export const selectModelId = (state: IApplicationState) => {
+  return selectState(state).showWizardForModel;
 };
 
 export const selectIsCheckingDeployStatusInfo = selectIsLoadingDeployStatusInfo;

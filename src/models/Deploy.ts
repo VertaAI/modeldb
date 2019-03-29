@@ -19,7 +19,10 @@ export interface IDeployedStatusInfo {
   status: 'deployed';
   data: { uptime: Timestamp; type: DeployType; token: string; api: URL; modelApi: IModelApi };
 }
-export type IDeployStatusInfo = INotDeployedStatusInfo | IDeployingStatusInfo | IDeployedStatusInfo;
+export interface IUnknownStatusInfo {
+  status: 'unknown';
+}
+export type IDeployStatusInfo = IUnknownStatusInfo | INotDeployedStatusInfo | IDeployingStatusInfo | IDeployedStatusInfo;
 
 export interface IModelApi {
   modelType: 'scikit' | 'xgboost';

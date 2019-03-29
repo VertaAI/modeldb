@@ -1,10 +1,12 @@
 import { IDeployStatusInfo } from 'models/Deploy';
 
 export interface IDeployState {
+  // todo rename
+  showWizardForModel: ModelID | null;
   data: IDeployStatusInfoByModelId;
+  // todo rename
   requestingToDeploy: Record<ModelID, { isRequesting: boolean; error: string }>;
   loadingDeployStatus: Record<ModelID, { isRequesting: boolean; error: string }>;
-  // todo rename
   checkingDeployStatus: Record<ModelID, { isRequesting: boolean; error: string }>;
 }
 
@@ -45,4 +47,12 @@ export type checkDeployStatusAction =
   | { type: checkDeployStatusActionTypes.CHECK_DEPLOY_STATUS_SUCCESS; payload: ModelID }
   | { type: checkDeployStatusActionTypes.CHECK_DEPLOY_STATUS_FAILURE; payload: { modelId: ModelID; error: string } };
 
-export type allActions = deployAction | loadDeployStatusAction | checkDeployStatusAction;
+export enum toggleWizardActionTypes {
+  OPEN_WIZARD = '@@deploy/OPEN_WIZARD',
+  CLOSE_WIZARD = '@@deploy/CLOSE_WIZARD'
+}
+export type toggleWizardAction =
+  | { type: toggleWizardActionTypes.OPEN_WIZARD; payload: ModelID }
+  | { type: toggleWizardActionTypes.CLOSE_WIZARD };
+
+export type allActions = deployAction | loadDeployStatusAction | checkDeployStatusAction | toggleWizardAction;

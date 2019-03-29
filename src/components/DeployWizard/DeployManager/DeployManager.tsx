@@ -7,11 +7,11 @@ import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import {
   deploy,
-  checkDeployStatusUntilDeployed,
   selectDeployStatusInfo,
   deployWithCheckingStatus,
   checkDeployStatus,
-  loadDeployStatus
+  loadDeployStatus,
+  showDeployWizardForModel
 } from 'store/deploy';
 
 import DeployWizard from '../DeployWizard';
@@ -40,15 +40,10 @@ class DeployManager extends React.PureComponent<AllProps, ILocalState> {
 
     return (
       <div>
-        <DeployWizard
-          isShown={isDeployWizardShown}
-          deployStatusInfo={deployStatusInfo}
-          onDeploy={this.onDeploy}
-          onClose={this.onHideDeployWizard}
-        />
         {(() => {
           switch (deployStatusInfo.status) {
-            case 'notDeployed': {
+            case 'notDeployed':
+            case 'unknown': {
               return (
                 <Fab theme="blue" icon="upload" onClick={this.onShowDeployWizard}>
                   Deploy
@@ -77,7 +72,7 @@ class DeployManager extends React.PureComponent<AllProps, ILocalState> {
 
   @bind
   private onShowDeployWizard() {
-    this.setState({ isDeployWizardShown: true });
+    this.props.dispatch(showDeployWizardForModel(this.props.modelId));
   }
 
   @bind

@@ -13,11 +13,12 @@ import routes, { GetRouteParams } from 'routes';
 import { IColumnMetaData } from 'store/dashboard-config';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { loadDeployStatusForModels } from 'store/deploy';
+import DeployWizard from 'components/DeployWizard/DeployWizard';
 
 import loader from '../images/loader.gif';
 import styles from './ExperimentRuns.module.css';
 import './ExperimentRuns.module.css';
-
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 
@@ -76,9 +77,9 @@ class ExperimentRuns extends React.Component<AllProps> {
     currentProjectID = this.props.match.params.projectId;
   }
 
-  public callFilterUpdate = () => {
-    this.gridApi.onFilterChanged();
-  };
+  public componentDidMount() {
+    this.props.dispatch(fetchExperimentRuns(currentProjectID));
+  }
 
   public componentWillReceiveProps() {
     if (this.gridApi !== undefined) {
@@ -94,9 +95,12 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
   }
 
-  public componentDidUpdate() {
+  public componentDidUpdate(prevProps: AllProps) {
     if (this.props.data !== undefined && this.gridApi !== undefined) {
       this.gridApi.setRowData(this.props.data);
+    }
+    if (this.props.data && prevProps.data !== this.props.data) {
+      this.props.dispatch(loadDeployStatusForModels(this.props.data.map(({ id }) => id)));
     }
   }
 
@@ -107,6 +111,7 @@ class ExperimentRuns extends React.Component<AllProps> {
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <div>
+        <DeployWizard />
         <DashboardConfig />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
@@ -128,6 +133,10 @@ class ExperimentRuns extends React.Component<AllProps> {
       ''
     );
   }
+
+  public callFilterUpdate = () => {
+    this.gridApi.onFilterChanged();
+  };
 
   public onGridReady = (event: GridReadyEvent) => {
     this.gridApi = event.api;
@@ -188,10 +197,6 @@ class ExperimentRuns extends React.Component<AllProps> {
       .map(this.funEvaluate.bind(node))
       .every(val => val === true);
   };
-
-  public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(currentProjectID));
-  }
 }
 
 // filterState and filtered should be provided by from IApplicationState -> customFilter

@@ -8,14 +8,33 @@ import {
   deployActionTypes,
   allActions,
   checkDeployStatusAction,
-  checkDeployStatusActionTypes
+  checkDeployStatusActionTypes,
+  toggleWizardAction,
+  toggleWizardActionTypes
 } from './types';
 
 const deployInitialState: IDeployState = {
+  showWizardForModel: null,
   data: {},
   requestingToDeploy: {},
   loadingDeployStatus: {},
   checkingDeployStatus: {}
+};
+
+const showWizardForModelReducer: Reducer<IDeployState['showWizardForModel'], toggleWizardAction> = (
+  state = deployInitialState.showWizardForModel,
+  action
+) => {
+  switch (action.type) {
+    case toggleWizardActionTypes.OPEN_WIZARD: {
+      return action.payload;
+    }
+    case toggleWizardActionTypes.CLOSE_WIZARD: {
+      return null;
+    }
+    default:
+      return state;
+  }
 };
 
 const requestingToDeployReducer: Reducer<IDeployState['requestingToDeploy'], deployAction> = (
@@ -89,6 +108,7 @@ const deployStatusInfoReducer: Reducer<IDeployState['data'], allActions> = (stat
 };
 
 export const deployReducer = combineReducers<IDeployState>({
+  showWizardForModel: showWizardForModelReducer,
   checkingDeployStatus: checkingDeployStatusReducer,
   data: deployStatusInfoReducer,
   loadingDeployStatus: loadingDeployStatusReducer,
