@@ -6,7 +6,12 @@ import { UserAccess } from 'models/Project';
 import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
 import { IDeployRequest } from 'services/DeployService';
 
-import { selectIsCheckingDeployStatusInfo, selectDeployStatusInfo, selectIsLoadingDeployStatusInfo } from './selectors';
+import {
+  selectIsCheckingDeployStatusInfo,
+  selectDeployStatusInfo,
+  selectIsLoadingDeployStatusInfo,
+  needCheckDeployStatus
+} from './selectors';
 import {
   deployAction,
   deployActionTypes,
@@ -23,18 +28,18 @@ export const closeDeployWizardForModel = (modelID: string) => ({ type: toggleWiz
 
 export const loadDeployStatusForModels = (modelIds: string[]): ActionResult<void, any> => async (dispatch, getState) => {
   modelIds
-    .filter(modelId => selectDeployStatusInfo(getState(), modelId).status === 'unknown')
+    .filter(modelId => needCheckDeployStatus(getState(), modelId))
     .forEach(modelId => loadDeployStatus(modelId)(dispatch, getState, undefined));
 };
 
 // todo rename
 // todo handle error
-export const deployWithCheckingStatus = (modelId: string): ActionResult<void, deployAction> => async (dispatch, getState) => {
+export const deployWithCheckingStatusUntilDeployed = (modelId: string): ActionResult<void, deployAction> => async (dispatch, getState) => {
   await deploy(modelId)(dispatch, getState, undefined);
-  await checkDeployStatus(modelId)(dispatch, getState, undefined);
+  await checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined);
 };
 
-export const deploy = (modelId: string): ActionResult<void, deployAction> => async dispatch => {
+const deploy = (modelId: string): ActionResult<void, deployAction> => async dispatch => {
   dispatch(action(deployActionTypes.DEPLOY_REQUEST, modelId));
 
   await ServiceFactory.getDeployService()
@@ -47,7 +52,7 @@ export const deploy = (modelId: string): ActionResult<void, deployAction> => asy
     });
 };
 
-export const checkDeployStatus = (modelId: string): ActionResult<void, checkDeployStatusAction> => async (dispatch, getState) => {
+const checkDeployStatusUntilDeployed = (modelId: string): ActionResult<void, checkDeployStatusAction> => async (dispatch, getState) => {
   const isCheckingStatusInfo = selectIsLoadingDeployStatusInfo(getState(), modelId);
   // because now is running checkinging deploy status
   if (isCheckingStatusInfo) {
@@ -55,15 +60,12 @@ export const checkDeployStatus = (modelId: string): ActionResult<void, checkDepl
   }
 
   const modelDeployStatusInfo = selectDeployStatusInfo(getState(), modelId);
-  if (modelDeployStatusInfo.status === 'notDeployed') {
-    return;
-  }
   if (modelDeployStatusInfo.status === 'deployed') {
     return;
   }
   setTimeout(async () => {
     await loadDeployStatus(modelId)(dispatch, getState, undefined);
-    checkDeployStatus(modelId)(dispatch, getState, undefined);
+    checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined);
   }, 1000);
 };
 

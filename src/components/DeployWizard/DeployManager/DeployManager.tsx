@@ -5,14 +5,7 @@ import { connect } from 'react-redux';
 import Fab from 'components/shared/Fab/Fab';
 import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import {
-  deploy,
-  selectDeployStatusInfo,
-  deployWithCheckingStatus,
-  checkDeployStatus,
-  loadDeployStatus,
-  showDeployWizardForModel
-} from 'store/deploy';
+import { selectDeployStatusInfo, deployWithCheckingStatusUntilDeployed, loadDeployStatus, showDeployWizardForModel } from 'store/deploy';
 
 import DeployWizard from '../DeployWizard';
 
@@ -82,7 +75,7 @@ class DeployManager extends React.PureComponent<AllProps, ILocalState> {
 
   @bind
   private onDeploy() {
-    this.props.dispatch(deployWithCheckingStatus(this.props.modelId));
+    this.props.dispatch(deployWithCheckingStatusUntilDeployed(this.props.modelId));
   }
 }
 

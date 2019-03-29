@@ -6,7 +6,7 @@ import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
 import { IConnectedReduxProps, IApplicationState } from 'store/store';
 import {
   closeDeployWizardForModel,
-  deployWithCheckingStatus,
+  deployWithCheckingStatusUntilDeployed,
   selectModelId,
   selectDeployStatusInfo,
   needCheckDeployStatus
@@ -45,7 +45,7 @@ class DeployWizard extends React.PureComponent<AllProps> {
 
   @bind
   private onDeploy() {
-    this.props.dispatch(deployWithCheckingStatus(this.props.modelId!));
+    this.props.dispatch(deployWithCheckingStatusUntilDeployed(this.props.modelId!));
   }
 
   @bind

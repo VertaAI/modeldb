@@ -10,7 +10,8 @@ export class MockExperimentRunsDataService extends ExperimentRunsDataService imp
 
     const mock = new MockAdapter(axios);
     mock.onGet('/v1/experiment-run/getExperimentRunsInProject').reply(config => {
-      return [200, { experiment_runs: expRunsMocks.filter(x => x.project_id === config.params.project_id).slice(0, 1) }];
+      console.log(expRunsMocks.filter(x => x.project_id === config.params.project_id));
+      return [200, { experiment_runs: expRunsMocks.filter(x => x.project_id === config.params.project_id) }];
     });
   }
 }

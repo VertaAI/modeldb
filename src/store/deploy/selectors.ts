@@ -11,10 +11,8 @@ export const selectDeployStatusInfo = (state: IApplicationState, modelId: string
 
 export const needCheckDeployStatus = (state: IApplicationState, modelId: string) => {
   const deployStatusInfo = selectDeployStatusInfo(state, modelId);
-  if (deployStatusInfo.status === 'unknown') {
-    return true;
-  }
-  return false;
+  const isLoadingDeployStatusInfo = selectIsLoadingDeployStatusInfo(state, modelId);
+  return deployStatusInfo.status === 'unknown' && !isLoadingDeployStatusInfo;
 };
 
 export const selectIsLoadingDeployStatusInfo = (state: IApplicationState, modelId: string): boolean => {
