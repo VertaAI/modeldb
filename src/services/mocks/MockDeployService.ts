@@ -27,6 +27,13 @@ export default class MockDeployService extends DeployService implements IDeployS
       const deployStatus = deployStatusInfoByModels[modelId]
         ? deployStatusInfoByModels[modelId]
         : getRandomItem([{ status: 'not deployed' }, { status: 'live', data: deployedStatusInfoData }, { status: 'deploying' }]);
+
+      if (deployStatus.status === 'deploying') {
+        setTimeout(() => {
+          deployStatusInfoByModels[modelId] = { status: 'live', data: deployedStatusInfoData };
+        }, 400);
+      }
+
       return [200, deployStatus];
     });
   }
