@@ -56,7 +56,7 @@ select {
   position: absolute;
   top: 36px;
   right: 24px;
-  color: var(--bg-color2);
+  color: rgb(114, 114, 114);
   pointer-events: none;
 }
 

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
 const width = 650;
-const svg_width = 900;
+const svg_width = 660;
 const height = 400;
 const margin = { top: 20, right: 5, bottom: 40, left: 55 };
 
@@ -64,20 +64,20 @@ class BarChart extends Component {
       .style('fill', '#444')
       .text('Time Range');
 
-    d3.select(this.refs.annotation)
-      .append('rect')
-      .attr('width', '160px')
-      .attr('height', '300px')
-      .attr('fill', '#f9f9f9');
+    // d3.select(this.refs.annotation)
+    //   .append('rect')
+    //   .attr('width', '160px')
+    //   .attr('height', '300px')
+    //   .attr('fill', '#f9f9f9');
     // .attr('opacity', 0);
 
-    d3.select(this.refs.annotation)
-      .append('text')
-      .attr('fill', '#444')
-      .attr('x', 20)
-      .attr('y', 20)
-      .attr('font-size', '11px')
-      .text('Model Metadata');
+    // d3.select(this.refs.annotation)
+    //   .append('text')
+    //   .attr('fill', '#444')
+    //   .attr('x', 20)
+    //   .attr('y', 20)
+    //   .attr('font-size', '11px')
+    //   .text('Model Metadata');
 
     // d3.selectAll('circle')
     //   .on('mouseover', d => {
@@ -87,6 +87,16 @@ class BarChart extends Component {
     //   .on('mouseout', d => {
     //     d3.select(this.refs.annotation).attr('opacity', 0);
     //   });
+
+    d3.select(this.refs.yAxis)
+      .append('g')
+      .attr('class', 'grid')
+      .call(
+        this.yAxis
+          .ticks(6)
+          .tickSize(-width + margin.right + margin.left)
+          .tickFormat('')
+      );
   }
   componentDidUpdate() {
     this.xAxis.scale(this.state.xScale);
@@ -98,12 +108,12 @@ class BarChart extends Component {
 
   render() {
     return (
-      <svg width={svg_width} height={height}>
+      <svg width={svg_width} height={height} className={'summaryChart'}>
+        <g ref="xAxis" transform={`translate(0, ${height - margin.bottom})`} />
+        <g ref="yAxis" transform={`translate(${margin.left}, 0)`} />
         {this.state.marks.map(d => (
           <circle cx={d.cx} cy={d.cy} fill={'#6863ff'} r={7} key={Math.random() * d.cx} />
         ))}
-        <g ref="xAxis" transform={`translate(0, ${height - margin.bottom})`} />
-        <g ref="yAxis" transform={`translate(${margin.left}, 0)`} />
         <g ref="annotation" transform={`translate(${width + 20}, 50)`} />
       </svg>
     );
