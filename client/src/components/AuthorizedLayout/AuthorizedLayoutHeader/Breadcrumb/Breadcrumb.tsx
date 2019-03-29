@@ -33,16 +33,14 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   private indexBreadcrumbItem = new BreadcrumbItem(
-    /^\/$/,
+    routes.mainPage,
     routes.mainPage.getRedirectPath({}),
     'PROJECTS'
   );
-  private projectBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/exp-runs.?$/
+  private experimentRunsBreadcrumbItem = new BreadcrumbItem(
+    routes.expirementRuns
   );
-  private modelBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/
-  );
+  private modelBreadcrumbItem = new BreadcrumbItem(routes.modelRecord);
 
   public componentDidMount() {
     this.unlistenCallback = this.props.history.listen((location, action) => {
@@ -104,17 +102,19 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
         projectName = neededProject.name;
       }
     }
-    this.projectBreadcrumbItem.name = projectName;
+    this.experimentRunsBreadcrumbItem.name = projectName;
 
-    this.projectBreadcrumbItem.path = routes.expirementRuns.getRedirectPath({
-      projectId:
-        experimentRuns && experimentRuns.length > 0
-          ? experimentRuns[0].projectId
-          : modelRecord
-          ? modelRecord.projectId
-          : '',
-    });
-    this.projectBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
+    this.experimentRunsBreadcrumbItem.path = routes.expirementRuns.getRedirectPath(
+      {
+        projectId:
+          experimentRuns && experimentRuns.length > 0
+            ? experimentRuns[0].projectId
+            : modelRecord
+            ? modelRecord.projectId
+            : '',
+      }
+    );
+    this.experimentRunsBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
 
     this.modelBreadcrumbItem.name = modelRecord ? modelRecord.name : '';
     this.modelBreadcrumbItem.path = modelRecord
@@ -123,14 +123,16 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
           modelRecordId: modelRecord.id,
         })
       : '';
-    this.modelBreadcrumbItem.previousItem = this.projectBreadcrumbItem;
+    this.modelBreadcrumbItem.previousItem = this.experimentRunsBreadcrumbItem;
 
     const breadcrumbItems: BreadcrumbItem[] = [];
     breadcrumbItems.push(this.indexBreadcrumbItem);
-    breadcrumbItems.push(this.projectBreadcrumbItem);
+    breadcrumbItems.push(this.experimentRunsBreadcrumbItem);
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
-    return breadcrumbItems.find(x => x.shouldMatch.test(this.state.url));
+    return breadcrumbItems.find(x => {
+      return x.shouldMatch.getMatch(this.state.url) !== null;
+    });
   }
 
   @bind

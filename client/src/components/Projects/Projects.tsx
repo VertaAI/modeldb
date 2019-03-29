@@ -27,7 +27,7 @@ FilterContextPool.registerContext({
 
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
-    return location === routes.mainPage.getRedirectPath({});
+    return routes.mainPage.getMatch(location) !== null;
   },
   name: 'Project',
   onApplyFilters: (filters, dispatch) => {
