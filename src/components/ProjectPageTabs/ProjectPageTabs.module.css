@@ -1,6 +1,7 @@
 .nav_menu {
   grid-area: urls;
   justify-self: end;
+  margin-bottom: 26px;
 }
 
 .nav_menu a {

@@ -2,47 +2,20 @@ import { GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
-import * as React from 'react';
-import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router';
 import { FilterContextPool } from 'models/FilterContextPool';
 import { PropertyType } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
+import * as React from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
 import { IColumnMetaData } from 'store/dashboard-config';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import loader from '../images/loader.gif';
-import styles from './ExperimentRuns.module.css';
 import { defaultColDefinitions, returnColumnDefs } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
-import ExpSubMenu from '../ExpSubMenu/ExpSubMenu';
-
-let currentProjectID: string;
-const locationRegEx = /\/project\/[a-z0-9\-]+\/exp-runs/gim;
-FilterContextPool.registerContext({
-  getMetadata: () => [{ propertyName: 'Name', type: PropertyType.STRING }, { propertyName: 'Tag', type: PropertyType.STRING }],
-  isFilteringSupport: true,
-  isValidLocation: (location: string) => {
-    return locationRegEx.test(location);
-  },
-  name: 'ModelRecord',
-  onApplyFilters: (filters, dispatch) => {
-    dispatch(fetchExperimentRuns(currentProjectID, filters));
-  },
-  onSearch: (text: string, dispatch) => {
-    dispatch(
-      fetchExperimentRuns(currentProjectID, [
-        {
-          invert: false,
-          name: 'Name',
-          type: PropertyType.STRING,
-          value: text
-        }
-      ])
-    );
-  }
-});
+import styles from './ExperimentRuns.module.css';
 
 type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
@@ -65,11 +38,6 @@ type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedRed
 class ExperimentRuns extends React.Component<AllProps> {
   public gridApi: any;
   public columnApi: any;
-
-  public componentDidMount() {
-    currentProjectID = this.props.match.params.projectId;
-    this.props.dispatch(fetchExperimentRuns(currentProjectID));
-  }
 
   public callFilterUpdate = () => {
     this.gridApi.onFilterChanged();
@@ -94,12 +62,10 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
   public render() {
     const { data, loading, columnConfig } = this.props;
-    currentProjectID = this.props.match.params.projectId;
     return loading ? (
       <img src={loader} className={styles.loader} />
     ) : data ? (
-      <div>
-        <ExpSubMenu projectId={currentProjectID} active="exp-runs" />
+      <React.Fragment>
         <DashboardConfig />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
@@ -113,7 +79,7 @@ class ExperimentRuns extends React.Component<AllProps> {
             defaultColDef={this.props.defaultColDefinitions}
           />
         </div>
-      </div>
+      </React.Fragment>
     ) : (
       ''
     );
