@@ -24,7 +24,6 @@ export default class ServiceFactory {
   }
 
   public static getExperimentRunsService(): IExperimentRunsDataService {
-    console.log(JSON.parse(process.env.REACT_APP_USE_API_DATA));
     if (JSON.parse(process.env.REACT_APP_USE_API_DATA)) {
       return new ExperimentRunsDataService();
     }

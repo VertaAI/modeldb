@@ -1,11 +1,6 @@
-import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
-import {
-  IDeployConfig,
-  IDeployedStatusInfo,
-  IDeployStatusInfo,
-} from 'models/Deploy';
 import { URL } from 'utils/types';
 
 import { DeployService } from '../DeployService';

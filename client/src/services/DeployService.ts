@@ -1,10 +1,6 @@
-import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
+import axios, { AxiosPromise } from 'axios';
 
-import {
-  IDeployConfig,
-  IDeployedStatusInfo,
-  IDeployStatusInfo,
-} from 'models/Deploy';
+import { IDeployStatusInfo } from 'models/Deploy';
 import { URL } from 'utils/types';
 
 import { BaseDataService } from './BaseDataService';

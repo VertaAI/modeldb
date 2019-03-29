@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { connect } from 'react-redux';
 
 import Button from 'components/shared/Button/Button';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';

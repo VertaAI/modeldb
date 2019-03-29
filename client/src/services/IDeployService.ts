@@ -1,6 +1,6 @@
 import { AxiosPromise } from 'axios';
 
-import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
+import { IDeployStatusInfo } from 'models/Deploy';
 
 import { IDeployRequest } from './DeployService';
 
