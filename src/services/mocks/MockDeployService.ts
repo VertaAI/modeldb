@@ -5,39 +5,15 @@ import { URL } from 'utils/types';
 
 import { BaseDataService } from '../BaseDataService';
 import { IDeployService } from '../IDeployService';
+import { deployedStatusInfoData } from './deployMock';
 
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 let isDeployed = false;
 
-const result: IDeployedStatusInfo['data'] = {
-  token: 'token',
-  uptime: 34,
-  modelApi: {
-    modelType: 'scikit',
-    pythonVersion: 2,
-    input: {
-      type: 'list',
-      fields: [
-        { name: 'age', type: 'float' },
-        { name: 'gender', type: 'float' },
-        { name: 'zipcode', type: 'float' },
-        { name: 'city', type: 'float' },
-        { name: 'gender', type: 'float' },
-        { name: 'zipcode', type: 'float' },
-        { name: 'city', type: 'float' }
-      ]
-    },
-    output: {
-      name: 'class1_prob',
-      type: 'float'
-    }
-  },
-  type: 'rest',
-  api: 'https://verta.io/234wfogsfas/fsfbgs'
-};
-
 export default class DeployService extends BaseDataService implements IDeployService {
+  private deployStatusInfoByModels: Record<string, IDeployStatusInfo> = {};
+
   constructor() {
     super();
   }
@@ -58,7 +34,7 @@ export default class DeployService extends BaseDataService implements IDeploySer
       }, 600);
     }
     if (isDeployed) {
-      return { status: 'deployed', data: result } as any;
+      return { status: 'deployed', data: deployedStatusInfoData } as any;
     }
     return { status: 'deploying' } as any;
   }

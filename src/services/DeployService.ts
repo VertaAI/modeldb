@@ -5,6 +5,7 @@ import { URL } from 'utils/types';
 
 import { BaseDataService } from './BaseDataService';
 import { IDeployService } from './IDeployService';
+import { deployedStatusInfoData } from './mocks/deployMock';
 
 export class DeployService extends BaseDataService implements IDeployService {
   constructor() {
@@ -14,7 +15,7 @@ export class DeployService extends BaseDataService implements IDeployService {
   public deploy(request: IDeployRequest): AxiosPromise<void> {
     const serverRequest = {
       api: 's3://vertaai-deploymentservice-test/model_api.json',
-      id: '1234',
+      id: request.modelId,
       model: 's3://vertaai-deploymentservice-test/model.pkl',
       requirements: 's3://vertaai-deploymentservice-test/requirements.txt'
     };
@@ -27,7 +28,7 @@ export class DeployService extends BaseDataService implements IDeployService {
   }
 
   public loadStatus(modelId: string): AxiosPromise<IDeployStatusInfo> {
-    return axios.get<IDeployStatusInfo>(`/api/v1/controller/status/1234`, {
+    return axios.get<IDeployStatusInfo>(`/api/v1/controller/status/${modelId}`, {
       transformResponse: res => {
         if (res.status === 'not deployed') {
           return { status: 'notDeployed' } as IDeployStatusInfo;
@@ -38,46 +39,13 @@ export class DeployService extends BaseDataService implements IDeployService {
         if (res.status === 'live') {
           return {
             status: 'deployed',
-            data: {
-              api: res.api,
-              token: res.token,
-              uptime: 100,
-              type: 'rest',
-              modelApi: result.modelApi
-            }
+            data: deployedStatusInfoData
           } as IDeployStatusInfo;
         }
       }
     });
   }
 }
-
-const result: IDeployedStatusInfo['data'] = {
-  token: 'token',
-  uptime: 34,
-  modelApi: {
-    modelType: 'scikit',
-    pythonVersion: 2,
-    input: {
-      type: 'list',
-      fields: [
-        { name: 'age', type: 'float' },
-        { name: 'gender', type: 'float' },
-        { name: 'zipcode', type: 'float' },
-        { name: 'city', type: 'float' },
-        { name: 'gender', type: 'float' },
-        { name: 'zipcode', type: 'float' },
-        { name: 'city', type: 'float' }
-      ]
-    },
-    output: {
-      name: 'class1_prob',
-      type: 'float'
-    }
-  },
-  type: 'rest',
-  api: 'https://verta.io/234wfogsfas/fsfbgs'
-};
 
 export interface IDeployRequest {
   modelId: string;

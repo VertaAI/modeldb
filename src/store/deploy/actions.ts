@@ -43,7 +43,7 @@ const deploy = (modelId: string): ActionResult<void, deployAction> => async disp
   dispatch(action(deployActionTypes.DEPLOY_REQUEST, modelId));
 
   await ServiceFactory.getDeployService()
-    .deploy({} as any)
+    .deploy({ modelId } as any)
     .then(res => {
       dispatch(action(deployActionTypes.DEPLOY_SUCCESS, modelId));
     })

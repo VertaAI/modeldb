@@ -15,7 +15,7 @@ const axios = _axios.create();
 
 const mock = new MockAdapter(axios);
 mock.onGet('/v1/experiment-run/getExperimentRunsInProject').reply(config => {
-  return [200, { experiment_runs: expRunsMocks.filter(x => x.project_id === config.params.project_id).slice(0, 1) }];
+  return [200, { experiment_runs: expRunsMocks.filter(x => x.project_id === config.params.project_id) }];
 });
 
 export default class ExperimentRunsDataService extends BaseDataService implements IExperimentRunsDataService {
