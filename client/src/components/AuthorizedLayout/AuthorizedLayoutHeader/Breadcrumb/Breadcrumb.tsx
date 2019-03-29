@@ -3,12 +3,7 @@ import { UnregisterCallback } from 'history';
 import { Project } from 'models/Project';
 import React from 'react';
 import { connect } from 'react-redux';
-import {
-  Link,
-  matchPath,
-  RouteComponentProps,
-  withRouter,
-} from 'react-router-dom';
+import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 
 import { BreadcrumbItem } from 'models/BreadcrumbItem';
 import ModelRecord from 'models/ModelRecord';
@@ -38,16 +33,14 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   private indexBreadcrumbItem = new BreadcrumbItem(
-    routes.mainPage.getPath(),
+    routes.mainPage,
     routes.mainPage.getRedirectPath({}),
     'PROJECTS'
   );
   private experimentRunsBreadcrumbItem = new BreadcrumbItem(
-    routes.expirementRuns.getPath()
+    routes.expirementRuns
   );
-  private modelBreadcrumbItem = new BreadcrumbItem(
-    routes.modelRecord.getPath()
-  );
+  private modelBreadcrumbItem = new BreadcrumbItem(routes.modelRecord);
 
   public componentDidMount() {
     this.unlistenCallback = this.props.history.listen((location, action) => {
@@ -138,9 +131,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
     return breadcrumbItems.find(x => {
-      return (
-        matchPath(this.state.url, { path: x.shouldMatch, exact: true }) !== null
-      );
+      return x.shouldMatch.getMatch(this.state.url) !== null;
     });
   }
 
