@@ -3,7 +3,12 @@ import { UnregisterCallback } from 'history';
 import { Project } from 'models/Project';
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
+import {
+  Link,
+  matchPath,
+  RouteComponentProps,
+  withRouter,
+} from 'react-router-dom';
 
 import { BreadcrumbItem } from 'models/BreadcrumbItem';
 import ModelRecord from 'models/ModelRecord';
@@ -33,15 +38,15 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   private indexBreadcrumbItem = new BreadcrumbItem(
-    /^\/$/,
+    routes.mainPage.getPath(),
     routes.mainPage.getRedirectPath({}),
     'PROJECTS'
   );
-  private projectBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/exp-runs.?$/
+  private experimentRunsBreadcrumbItem = new BreadcrumbItem(
+    routes.expirementRuns.getPath()
   );
   private modelBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/
+    routes.modelRecord.getPath()
   );
 
   public componentDidMount() {
@@ -104,17 +109,19 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
         projectName = neededProject.name;
       }
     }
-    this.projectBreadcrumbItem.name = projectName;
+    this.experimentRunsBreadcrumbItem.name = projectName;
 
-    this.projectBreadcrumbItem.path = routes.expirementRuns.getRedirectPath({
-      projectId:
-        experimentRuns && experimentRuns.length > 0
-          ? experimentRuns[0].projectId
-          : modelRecord
-          ? modelRecord.projectId
-          : '',
-    });
-    this.projectBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
+    this.experimentRunsBreadcrumbItem.path = routes.expirementRuns.getRedirectPath(
+      {
+        projectId:
+          experimentRuns && experimentRuns.length > 0
+            ? experimentRuns[0].projectId
+            : modelRecord
+            ? modelRecord.projectId
+            : '',
+      }
+    );
+    this.experimentRunsBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
 
     this.modelBreadcrumbItem.name = modelRecord ? modelRecord.name : '';
     this.modelBreadcrumbItem.path = modelRecord
@@ -123,14 +130,18 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
           modelRecordId: modelRecord.id,
         })
       : '';
-    this.modelBreadcrumbItem.previousItem = this.projectBreadcrumbItem;
+    this.modelBreadcrumbItem.previousItem = this.experimentRunsBreadcrumbItem;
 
     const breadcrumbItems: BreadcrumbItem[] = [];
     breadcrumbItems.push(this.indexBreadcrumbItem);
-    breadcrumbItems.push(this.projectBreadcrumbItem);
+    breadcrumbItems.push(this.experimentRunsBreadcrumbItem);
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
-    return breadcrumbItems.find(x => x.shouldMatch.test(this.state.url));
+    return breadcrumbItems.find(x => {
+      return (
+        matchPath(this.state.url, { path: x.shouldMatch, exact: true }) !== null
+      );
+    });
   }
 
   @bind

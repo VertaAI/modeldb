@@ -4,7 +4,7 @@ import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router';
+import { matchPath, RouteComponentProps } from 'react-router';
 
 import loader from 'components/images/loader.gif';
 import { FilterContextPool } from 'models/FilterContextPool';
@@ -23,7 +23,6 @@ import DashboardConfig from './DashboardConfig/DashboardConfig';
 import styles from './ExperimentRuns.module.css';
 
 let currentProjectID: string;
-const locationRegEx = /\/project\/([a-z0-9\-]+)\/exp-runs/im;
 FilterContextPool.registerContext({
   getMetadata: () => [
     { propertyName: 'Name', type: PropertyType.STRING },
@@ -31,13 +30,15 @@ FilterContextPool.registerContext({
   ],
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
-    if (locationRegEx.test(location)) {
-      const match = location.match(locationRegEx);
-      currentProjectID = match ? match[1] : '';
+    const match = matchPath<GetRouteParams<typeof routes.expirementRuns>>(
+      location,
+      { path: routes.expirementRuns.getPath(), exact: true }
+    );
+    if (match) {
+      currentProjectID = match.params.projectId;
       return true;
-    } else {
-      return false;
     }
+    return false;
   },
   name: 'ModelRecord',
   onApplyFilters: (filters, dispatch) => {

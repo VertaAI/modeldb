@@ -8,6 +8,7 @@ import routes from 'routes';
 import { fetchProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
+import { matchPath } from 'react-router';
 import styles from './Projects.module.css';
 import ProjectWidget from './ProjectWidget/ProjectWidget';
 
@@ -27,7 +28,12 @@ FilterContextPool.registerContext({
 
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
-    return location === routes.mainPage.getRedirectPath({});
+    return (
+      matchPath(location, {
+        exact: true,
+        path: routes.mainPage.getPath(),
+      }) !== null
+    );
   },
   name: 'Project',
   onApplyFilters: (filters, dispatch) => {
