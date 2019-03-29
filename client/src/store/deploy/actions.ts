@@ -84,7 +84,7 @@ const checkDeployStatusUntilDeployed = (
   setTimeout(async () => {
     await loadDeployStatus(modelId)(dispatch, getState, undefined);
     checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined);
-  }, 1000);
+  }, 1500);
 };
 
 export const loadDeployStatus = (

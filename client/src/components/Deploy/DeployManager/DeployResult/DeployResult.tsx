@@ -48,9 +48,9 @@ class DeployResult extends React.Component<AllProps> {
               </Form.Item>
             </Form>
           </div>
-          <div className={styles.model_input}>
+          {/* <div className={styles.model_input}>
             <ModelInput input={modelApi.input} />
-          </div>
+          </div> */}
         </div>
       </Popup>
     );

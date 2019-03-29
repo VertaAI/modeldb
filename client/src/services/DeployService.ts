@@ -20,33 +20,30 @@ export class DeployService extends BaseDataService implements IDeployService {
       requirements: 's3://vertaai-deploymentservice-test/requirements.txt',
     };
 
-    return axios.post('/api/v1/controller/deploy', serverRequest);
+    return axios.post('/v1/controller/deploy', serverRequest);
   }
 
   public delete(modelId: string): AxiosPromise<void> {
-    return axios.post('/api/v1/controller/delete', { id: modelId });
+    return axios.post('/v1/controller/delete', { id: modelId });
   }
 
   public loadStatus(modelId: string): AxiosPromise<IDeployStatusInfo> {
-    return axios.get<IDeployStatusInfo>(
-      `/api/v1/controller/status/${modelId}`,
-      {
-        transformResponse: res => {
-          if (res.status === 'not deployed') {
-            return { status: 'notDeployed' } as IDeployStatusInfo;
-          }
-          if (res.status === 'deploying') {
-            return { status: 'deploying' } as IDeployStatusInfo;
-          }
-          if (res.status === 'live') {
-            return {
-              status: 'deployed',
-              data: deployedStatusInfoData,
-            } as IDeployStatusInfo;
-          }
-        },
-      }
-    );
+    return axios.get<IDeployStatusInfo>(`/v1/controller/status/${modelId}`, {
+      transformResponse: res => {
+        if (res.status === 'not deployed') {
+          return { status: 'notDeployed' } as IDeployStatusInfo;
+        }
+        if (res.status === 'deploying') {
+          return { status: 'deploying' } as IDeployStatusInfo;
+        }
+        if (res.status === 'live') {
+          return {
+            status: 'deployed',
+            data: { ...deployedStatusInfoData, api: res.api },
+          } as IDeployStatusInfo;
+        }
+      },
+    });
   }
 }
 
