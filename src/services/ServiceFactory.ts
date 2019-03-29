@@ -12,6 +12,7 @@ import { MockProjectDataService } from './mocks/MockProjectDataService';
 import { ProjectDataService } from './ProjectDataService';
 import { IDeployService } from './IDeployService';
 import { DeployService } from './DeployService';
+import MockDeployService from './mocks/MockDeployService';
 
 export default class ServiceFactory {
   public static getProjectsService(): IProjectDataService {
@@ -22,7 +23,7 @@ export default class ServiceFactory {
   }
 
   public static getExperimentRunsService(): IExperimentRunsDataService {
-    if (true) {
+    if (JSON.parse(process.env.REACT_APP_USE_API_DATA)) {
       return new ExperimentRunsDataService();
     }
     return new MockExperimentRunsDataService();
@@ -41,6 +42,9 @@ export default class ServiceFactory {
   }
 
   public static getDeployService(): IDeployService {
-    return new DeployService();
+    if (JSON.parse(process.env.REACT_APP_USE_API_DATA)) {
+      return new DeployService();
+    }
+    return new MockDeployService();
   }
 }

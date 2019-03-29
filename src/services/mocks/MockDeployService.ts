@@ -1,44 +1,42 @@
 import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
+import MockAdapter from 'axios-mock-adapter';
 
 import { IDeployConfig, IDeployedStatusInfo, IDeployStatusInfo } from 'models/Deploy';
 import { URL } from 'utils/types';
 
-import { BaseDataService } from '../BaseDataService';
+import { DeployService } from '../DeployService';
 import { IDeployService } from '../IDeployService';
 import { deployedStatusInfoData } from './deployMock';
 
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
-let isDeployed = false;
-
-export default class DeployService extends BaseDataService implements IDeployService {
-  private deployStatusInfoByModels: Record<string, IDeployStatusInfo> = {};
-
+const deployStatusInfoByModels: Record<string, any> = {};
+export default class MockDeployService extends DeployService implements IDeployService {
   constructor() {
     super();
-  }
-
-  public deploy(request: IDeployRequest): AxiosPromise<void> {
-    // delay(100).then();
-    return {} as any;
-  }
-
-  public delete(modelId: string): AxiosPromise<void> {
-    return {} as any;
-  }
-
-  public loadStatus(modelId: string): AxiosPromise<IDeployStatusInfo> {
-    if (!isDeployed) {
+    const mock = new MockAdapter(axios);
+    mock.onPost('/api/v1/controller/deploy').reply(config => {
+      const modelId: string = JSON.parse(config.data).id;
+      deployStatusInfoByModels[modelId] = { status: 'deploying' };
       setTimeout(() => {
-        isDeployed = true;
+        deployStatusInfoByModels[modelId] = { status: 'live', data: deployedStatusInfoData };
       }, 600);
-    }
-    if (isDeployed) {
-      return { status: 'deployed', data: deployedStatusInfoData } as any;
-    }
-    return { status: 'deploying' } as any;
+      return [200, {}];
+    });
+
+    mock.onGet(/\/api\/v1\/controller\/status\/.+/).reply(config => {
+      const modelId = last(config.url!.split('/'));
+      const deployStatus = deployStatusInfoByModels[modelId]
+        ? deployStatusInfoByModels[modelId]
+        : getRandomItem([{ status: 'not deployed' }, { status: 'live', data: deployedStatusInfoData }, { status: 'deploying' }]);
+      return [200, deployStatus];
+    });
   }
 }
+
+const getRandomItem = <T>(items: T[]): T => {
+  return items[Math.floor(Math.random() * items.length)];
+};
+
+const last = <T>(arr: T[]): T => arr[arr.length - 1];
 
 export interface IDeployRequest {
   modelId: string;
