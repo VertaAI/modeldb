@@ -5,6 +5,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const api = require('./api');
+var bodyParser = require('body-parser')
 var session = require('express-session');
 var auth = require('./routes/auth.js');
 var cors = require('cors');
@@ -22,6 +23,7 @@ if (app.get('env') === 'production') {
   sess.cookie.secure = true; // serve secure cookies, requires https
 }
 
+app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(session(sess));
 app.use(cors());
@@ -70,7 +72,7 @@ app.use(passport.session());
 app.use(express.static('client/build'));
 
 app.get('/api/getProjects', [secured, setPrivateHeader], (req, res) => {
-  api.getFromAPI('/v1/project/getProjects', req.headers)
+  api.getFromAPI('/v1/project/getProjects', 'get', req.headers)
   .then(response => {
     res.send(response.data);
   })
@@ -82,9 +84,47 @@ app.get('/api/getProjects', [secured, setPrivateHeader], (req, res) => {
 
 app.get('/api/getExperimentRunsInProject', [secured, setPrivateHeader], (req, res) => {
   api.getFromAPI(
-    '/v1/experiment-run/getExperimentRunsInProject', 
+    '/v1/experiment-run/getExperimentRunsInProject',
+    'get', 
     req.headers,
     req.query) // also req.params for post
+  .then(response => {
+    res.send(response.data);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
+  })
+});
+
+app.post('/api/v1/controller/deploy', [secured, setPrivateHeader], (req, res) => {
+  api.getFromAPI(
+    '/api/v1/controller/deploy',
+    'post',
+    req.headers,
+    req.query,
+    req.body,
+  )
+  .then(response => {
+    res.send(response.data);
+  })
+  .catch(error => {
+    res.status(500).send("Internal Server Error");
+  })
+});
+
+app.get('/api/v1/controller/status/:modelId', [secured, setPrivateHeader], (req, res) => {
+  // Disable caching for content files
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+
+  api.getFromAPI(
+    `/api/v1/controller/status/${req.params.modelId}`,
+    'get',
+    req.headers,
+    req.query,
+  )
   .then(response => {
     res.send(response.data);
   })
@@ -113,8 +153,6 @@ app.get('*', (req, res) => {
 
   res.sendFile(path.join(__dirname + '/client/build' + '/index.html'));
 });
-
-app.disable('etags');
 
 const port = process.env.PORT || 3000;
 app.listen(port);
