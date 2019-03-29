@@ -21,6 +21,7 @@ class DeployResult extends React.Component<AllProps> {
   public render() {
     const {
       data: { api, modelApi },
+      data,
       onClose,
     } = this.props;
     return (
@@ -34,7 +35,9 @@ class DeployResult extends React.Component<AllProps> {
                 label="URL"
                 additionalContent={
                   <Button variant="like-link" fullWidth={true} to={api}>
-                    <span className={styles.url}>{api}</span>
+                    <span className={styles.url}>
+                      {api || 'https://verta.io/234wfogsfas/fsfbgs'}
+                    </span>
                   </Button>
                 }
               >

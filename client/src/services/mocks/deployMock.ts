@@ -3,6 +3,8 @@ import { IDeployedStatusInfo } from 'models/Deploy';
 export const deployedStatusInfoData: IDeployedStatusInfo['data'] = {
   token: 'token',
   uptime: 34,
+  type: 'rest',
+  api: 'https://verta.io/234wfogsfas/fsfbgs',
   modelApi: {
     modelType: 'scikit',
     pythonVersion: 2,
@@ -23,6 +25,4 @@ export const deployedStatusInfoData: IDeployedStatusInfo['data'] = {
       type: 'float',
     },
   },
-  type: 'rest',
-  api: 'https://verta.io/234wfogsfas/fsfbgs',
 };
