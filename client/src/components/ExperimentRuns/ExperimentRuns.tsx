@@ -6,7 +6,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
-import DeployWizard from 'components/DeployWizard/DeployWizard';
+import { DeployManager } from 'components/Deploy';
 import loader from 'components/images/loader.gif';
 import { FilterContextPool } from 'models/FilterContextPool';
 import { PropertyType } from 'models/Filters';
@@ -121,7 +121,7 @@ class ExperimentRuns extends React.Component<AllProps> {
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <div>
-        <DeployWizard />
+        <DeployManager />
         <DashboardConfig />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact

@@ -3,14 +3,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import { IDeployStatusInfo } from 'models/Deploy';
-import { IConnectedReduxProps, IApplicationState } from 'store/store';
 import {
   closeDeployWizardForModel,
   deployWithCheckingStatusUntilDeployed,
-  selectModelId,
   selectDeployStatusInfo,
-  needCheckDeployStatus,
+  selectModelId,
 } from 'store/deploy';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import Deploying from './Deploying/Deploying';
 import DeployResult from './DeployResult/DeployResult';
@@ -23,7 +22,7 @@ interface IPropsFromState {
 
 type AllProps = IPropsFromState & IConnectedReduxProps;
 
-class DeployWizard extends React.PureComponent<AllProps> {
+class DeployManager extends React.PureComponent<AllProps> {
   public render() {
     const { modelId, deployStatusInfo } = this.props;
     const isShown = Boolean(modelId);
@@ -72,4 +71,4 @@ const mapStateToProps = (state: IApplicationState): IPropsFromState => {
   };
 };
 
-export default connect(mapStateToProps)(DeployWizard);
+export default connect(mapStateToProps)(DeployManager);

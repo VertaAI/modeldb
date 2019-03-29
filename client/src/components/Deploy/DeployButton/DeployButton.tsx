@@ -3,16 +3,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import Fab from 'components/shared/Fab/Fab';
-import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
-import {
-  deployWithCheckingStatusUntilDeployed,
-  loadDeployStatus,
-  selectDeployStatusInfo,
-  showDeployWizardForModel,
-} from 'store/deploy';
+import { IDeployStatusInfo } from 'models/Deploy';
+import { selectDeployStatusInfo, showDeployWizardForModel } from 'store/deploy';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-
-import DeployWizard from '../DeployWizard';
 
 interface IProps {
   modelId: string;
@@ -22,19 +15,11 @@ interface IPropsFromState {
   deployStatusInfo: IDeployStatusInfo;
 }
 
-interface ILocalState {
-  isDeployWizardShown: boolean;
-}
-
 export type AllProps = IProps & IPropsFromState & IConnectedReduxProps;
 
-// todo rename. maybe DeployManager?
-class DeployManager extends React.PureComponent<AllProps, ILocalState> {
-  public state: ILocalState = { isDeployWizardShown: false };
-
+class DeployButton extends React.PureComponent<AllProps> {
   public render() {
     const { deployStatusInfo } = this.props;
-    const { isDeployWizardShown } = this.state;
 
     return (
       <div>
@@ -80,18 +65,6 @@ class DeployManager extends React.PureComponent<AllProps, ILocalState> {
   private onShowDeployWizard() {
     this.props.dispatch(showDeployWizardForModel(this.props.modelId));
   }
-
-  @bind
-  private onHideDeployWizard() {
-    this.setState({ isDeployWizardShown: false });
-  }
-
-  @bind
-  private onDeploy() {
-    this.props.dispatch(
-      deployWithCheckingStatusUntilDeployed(this.props.modelId)
-    );
-  }
 }
 
 const mapStateToProps = (
@@ -103,4 +76,4 @@ const mapStateToProps = (
   };
 };
 
-export default connect(mapStateToProps)(DeployManager);
+export default connect(mapStateToProps)(DeployButton);
