@@ -1,6 +1,6 @@
-import * as React from 'react';
-import { bind } from 'decko';
 import copy from 'copy-to-clipboard';
+import { bind } from 'decko';
+import * as React from 'react';
 
 import Tooltip from '../Tooltip/Tooltip';
 

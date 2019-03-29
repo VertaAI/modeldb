@@ -2,7 +2,7 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
+import { IDeployStatusInfo } from 'models/Deploy';
 import { IConnectedReduxProps, IApplicationState } from 'store/store';
 import {
   closeDeployWizardForModel,

@@ -9,7 +9,11 @@ export const selectDeployStatusInfo = (
   state: IApplicationState,
   modelId: string
 ): IDeployStatusInfo => {
-  return selectState(state).data[modelId] || { status: 'unknown' };
+  return (
+    selectState(state).deployStatusInfoByModelId[modelId] || {
+      status: 'unknown',
+    }
+  );
 };
 
 export const needCheckDeployStatus = (

@@ -1,16 +1,16 @@
-import * as React from 'react';
 import cn from 'classnames';
+import * as React from 'react';
 
 import styles from './Button.module.css';
 
 interface IProps {
   children: React.ReactChild | React.ReactChildren;
   disabled?: boolean;
-  onClick?(): void;
   to?: string;
   // todo rename
   variant?: 'like-link' | 'default';
   fullWidth?: boolean;
+  onClick?(): void;
 }
 
 class Button extends React.PureComponent<IProps> {

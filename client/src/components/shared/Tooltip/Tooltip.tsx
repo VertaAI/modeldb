@@ -1,5 +1,5 @@
-import * as React from 'react';
 import RCTooltip from 'rc-tooltip';
+import * as React from 'react';
 
 import './tooltip.css';
 

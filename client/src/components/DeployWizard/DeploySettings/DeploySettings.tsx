@@ -1,13 +1,13 @@
-import * as React from 'react';
 import { bind } from 'decko';
+import * as React from 'react';
 
-import Popup from 'components/shared/Popup/Popup';
-import Tabs from 'components/shared/Tabs/Tabs';
 import Button from 'components/shared/Button/Button';
-import Select from 'components/shared/Select/Select';
 import Checkbox from 'components/shared/Checkbox/Checkbox';
 import FileUploader from 'components/shared/FileUploader/FileUploader';
 import Form from 'components/shared/Form/Form';
+import Popup from 'components/shared/Popup/Popup';
+import Select from 'components/shared/Select/Select';
+import Tabs from 'components/shared/Tabs/Tabs';
 
 import { DeployType, IDeployConfig } from 'models/Deploy';
 import styles from './DeploySettings.module.css';

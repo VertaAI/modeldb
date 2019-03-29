@@ -2,8 +2,8 @@ import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
 
 import {
   IDeployConfig,
-  IDeployStatusInfo,
   IDeployedStatusInfo,
+  IDeployStatusInfo,
 } from 'models/Deploy';
 import { URL } from 'utils/types';
 

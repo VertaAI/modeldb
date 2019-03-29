@@ -2,18 +2,18 @@ import Auth0AuthenticationService from './auth/Auth0AuthenticationService';
 import { IAuthenticationService } from './auth/IAuthenticationService';
 import MockAuthenticationService from './auth/MockAuthenticationService';
 import CollaboratorsService from './CollaboratorsService';
+import { DeployService } from './DeployService';
 import ExperimentRunsDataService from './ExperimentRunsDataService';
 import MockSFService from './filter/MockSFService';
 import { ICollaboratorsService } from './ICollaboratorsService';
+import { IDeployService } from './IDeployService';
 import { IExperimentRunsDataService } from './IExperimentRunsDataService';
 import { IProjectDataService } from './IProjectDataService';
 import ISearchAndFilterService from './ISearchAndFilterService';
+import MockDeployService from './mocks/MockDeployService';
 import { MockExperimentRunsDataService } from './mocks/MockExperimentRunsDataService';
 import { MockProjectDataService } from './mocks/MockProjectDataService';
 import { ProjectDataService } from './ProjectDataService';
-import { IDeployService } from './IDeployService';
-import { DeployService } from './DeployService';
-import MockDeployService from './mocks/MockDeployService';
 
 export default class ServiceFactory {
   public static getProjectsService(): IProjectDataService {

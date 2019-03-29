@@ -1,9 +1,9 @@
-import * as React from 'react';
-import { bind } from 'decko';
 import cn from 'classnames';
+import { bind } from 'decko';
+import * as React from 'react';
 
-import uploadSrc from './imgs/upload.svg';
 import styles from './Fab.module.css';
+import uploadSrc from './imgs/upload.svg';
 
 interface IProps {
   children: React.ReactNode;

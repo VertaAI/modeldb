@@ -4,13 +4,13 @@ import { connect } from 'react-redux';
 
 import Fab from 'components/shared/Fab/Fab';
 import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import {
-  selectDeployStatusInfo,
   deployWithCheckingStatusUntilDeployed,
   loadDeployStatus,
+  selectDeployStatusInfo,
   showDeployWizardForModel,
 } from 'store/deploy';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import DeployWizard from '../DeployWizard';
 

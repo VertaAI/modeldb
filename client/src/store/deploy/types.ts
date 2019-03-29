@@ -3,17 +3,15 @@ import { IDeployStatusInfo } from 'models/Deploy';
 export interface IDeployState {
   // todo rename
   showWizardForModel: ModelID | null;
-  data: IDeployStatusInfoByModelId;
-  // todo rename
-  requestingToDeploy: Record<ModelID, { isRequesting: boolean; error: string }>;
-  loadingDeployStatus: Record<
-    ModelID,
-    { isRequesting: boolean; error: string }
-  >;
-  checkingDeployStatus: Record<
-    ModelID,
-    { isRequesting: boolean; error: string }
-  >;
+  deployStatusInfoByModelId: IDeployStatusInfoByModelId;
+  deploying: Record<ModelID, ICommunication>;
+  loadingDeployStatus: Record<ModelID, ICommunication>;
+  checkingDeployStatus: Record<ModelID, ICommunication>;
+}
+
+interface ICommunication {
+  isRequesting: boolean;
+  error: string;
 }
 
 type ModelID = string;

@@ -1,6 +1,6 @@
-import * as React from 'react';
-import { bind } from 'decko';
 import cn from 'classnames';
+import { bind } from 'decko';
+import * as React from 'react';
 import onClickOutside, { HandleClickOutside } from 'react-onclickoutside';
 
 import styles from './Select.module.css';

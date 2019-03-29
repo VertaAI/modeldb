@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import Popup from 'components/shared/Popup/Popup';
-import Form from 'components/shared/Form/Form';
 import Button from 'components/shared/Button/Button';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
+import Form from 'components/shared/Form/Form';
+import Popup from 'components/shared/Popup/Popup';
 import { IDeployedStatusInfo } from 'models/Deploy';
 
-import ModelInput from './ModelInput/ModelInput';
-import styles from './DeployResult.module.css';
 import { IApplicationState } from 'store/store';
+import styles from './DeployResult.module.css';
+import ModelInput from './ModelInput/ModelInput';
 
 interface IProps {
   data: IDeployedStatusInfo['data'];
@@ -34,7 +34,7 @@ class DeployResult extends React.Component<AllProps> {
               <Form.Item
                 label="URL"
                 additionalContent={
-                  <Button variant="like-link" fullWidth to={api}>
+                  <Button variant="like-link" fullWidth={true} to={api}>
                     <span className={styles.url}>{api}</span>
                   </Button>
                 }

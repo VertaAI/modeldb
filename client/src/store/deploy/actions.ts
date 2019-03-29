@@ -1,30 +1,26 @@
 import { action } from 'typesafe-actions';
 
-import { ActionResult } from 'store/store';
+import { IDeployStatusInfo } from 'models/Deploy';
 import ServiceFactory from 'services/ServiceFactory';
-import { UserAccess } from 'models/Project';
-import { IDeployConfig, IDeployStatusInfo } from 'models/Deploy';
-import { IDeployRequest } from 'services/DeployService';
+import { ActionResult } from 'store/store';
 
 import {
-  selectIsCheckingDeployStatusInfo,
+  needCheckDeployStatus,
   selectDeployStatusInfo,
   selectIsLoadingDeployStatusInfo,
-  needCheckDeployStatus,
 } from './selectors';
 import {
+  checkDeployStatusAction,
   deployAction,
   deployActionTypes,
   loadDeployStatusAction,
   loadDeployStatusActionTypes,
-  checkDeployStatusAction,
-  checkDeployStatusActionTypes,
   toggleWizardActionTypes,
 } from './types';
 
 export const showDeployWizardForModel = (modelID: string) => ({
-  type: toggleWizardActionTypes.OPEN_WIZARD,
   payload: modelID,
+  type: toggleWizardActionTypes.OPEN_WIZARD,
 });
 
 export const closeDeployWizardForModel = (modelID: string) => ({
@@ -42,7 +38,6 @@ export const loadDeployStatusForModels = (
 };
 
 // todo rename
-// todo handle error
 export const deployWithCheckingStatusUntilDeployed = (
   modelId: string
 ): ActionResult<void, deployAction> => async (dispatch, getState) => {

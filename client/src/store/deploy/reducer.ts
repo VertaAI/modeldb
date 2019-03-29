@@ -1,24 +1,24 @@
-import { Reducer, combineReducers } from 'redux';
+import { combineReducers, Reducer } from 'redux';
 
 import {
-  IDeployState,
-  loadDeployStatusAction,
-  loadDeployStatusActionTypes,
-  deployAction,
-  deployActionTypes,
   allActions,
   checkDeployStatusAction,
   checkDeployStatusActionTypes,
+  deployAction,
+  deployActionTypes,
+  IDeployState,
+  loadDeployStatusAction,
+  loadDeployStatusActionTypes,
   toggleWizardAction,
   toggleWizardActionTypes,
 } from './types';
 
 const deployInitialState: IDeployState = {
-  showWizardForModel: null,
-  data: {},
-  requestingToDeploy: {},
-  loadingDeployStatus: {},
   checkingDeployStatus: {},
+  deployStatusInfoByModelId: {},
+  deploying: {},
+  loadingDeployStatus: {},
+  showWizardForModel: null,
 };
 
 const showWizardForModelReducer: Reducer<
@@ -37,10 +37,10 @@ const showWizardForModelReducer: Reducer<
   }
 };
 
-const requestingToDeployReducer: Reducer<
-  IDeployState['requestingToDeploy'],
-  deployAction
-> = (state = deployInitialState.requestingToDeploy, action) => {
+const deployingReducer: Reducer<IDeployState['deploying'], deployAction> = (
+  state = deployInitialState.deploying,
+  action
+) => {
   switch (action.type) {
     case deployActionTypes.DEPLOY_REQUEST: {
       return { ...state, [action.payload]: { isRequesting: true, error: '' } };
@@ -52,8 +52,8 @@ const requestingToDeployReducer: Reducer<
       return {
         ...state,
         [action.payload.modelId]: {
-          isRequesting: false,
           error: action.payload.error,
+          isRequesting: false,
         },
       };
     }
@@ -80,8 +80,8 @@ const loadingDeployStatusReducer: Reducer<
       return {
         ...state,
         [action.payload.modelId]: {
-          isRequesting: false,
           error: action.payload.error,
+          isRequesting: false,
         },
       };
     }
@@ -105,8 +105,8 @@ const checkingDeployStatusReducer: Reducer<
       return {
         ...state,
         [action.payload.modelId]: {
-          isRequesting: false,
           error: action.payload.error,
+          isRequesting: false,
         },
       };
     }
@@ -115,10 +115,10 @@ const checkingDeployStatusReducer: Reducer<
   }
 };
 
-const deployStatusInfoReducer: Reducer<IDeployState['data'], allActions> = (
-  state = deployInitialState.data,
-  action
-) => {
+const deployStatusInfoReducer: Reducer<
+  IDeployState['deployStatusInfoByModelId'],
+  allActions
+> = (state = deployInitialState.deployStatusInfoByModelId, action) => {
   switch (action.type) {
     case deployActionTypes.DEPLOY_SUCCESS: {
       return { ...state, [action.payload]: { status: 'deploying' } };
@@ -132,9 +132,9 @@ const deployStatusInfoReducer: Reducer<IDeployState['data'], allActions> = (
 };
 
 export const deployReducer = combineReducers<IDeployState>({
-  showWizardForModel: showWizardForModelReducer,
   checkingDeployStatus: checkingDeployStatusReducer,
-  data: deployStatusInfoReducer,
+  deployStatusInfoByModelId: deployStatusInfoReducer,
+  deploying: deployingReducer,
   loadingDeployStatus: loadingDeployStatusReducer,
-  requestingToDeploy: requestingToDeployReducer,
+  showWizardForModel: showWizardForModelReducer,
 });

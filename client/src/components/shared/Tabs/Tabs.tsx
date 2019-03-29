@@ -1,6 +1,6 @@
-import * as React from 'react';
-import { bind } from 'decko';
 import cn from 'classnames';
+import { bind } from 'decko';
+import * as React from 'react';
 
 import Tab, { IProps as ITabProps } from './Tab/Tab';
 
@@ -49,11 +49,11 @@ class Tabs<T> extends React.Component<IProps<T>> {
   }
 
   @bind
-  private getTabsProps(): ITabProps<T>[] {
+  private getTabsProps(): Array<ITabProps<T>> {
     return React.Children.map(
       this.props.children,
       child => child.props
-    ) as ITabProps<T>[];
+    ) as Array<ITabProps<T>>;
   }
 
   @bind
