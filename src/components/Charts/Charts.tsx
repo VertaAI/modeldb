@@ -11,17 +11,14 @@ import styles from './Charts.module.css';
 import ExpSubMenu from '../ExpSubMenu/ExpSubMenu';
 import Tag from '../TagBlock/Tag';
 import tag_styles from '../TagBlock/TagBlock.module.css';
-import ScatterChart from './ModelSummary/ScatterChart';
 import ModelExploration from './ModelExploration/ModelExploration';
+import ModelSummary from './ModelSummary/ModelSummary';
 
-let paramList: any = new Set();
-const xAxisParams: any = new Set();
 export interface IUrlProps {
   projectId: string;
 }
 
 interface ILocalState {
-  chartData: any;
   selectedMetric: string;
 }
 
@@ -31,28 +28,15 @@ interface IPropsFromState {
   loading: boolean;
 }
 
-enum Aggregate {
-  average,
-  sum,
-  median,
-  variance,
-  stdev,
-  count
-}
-
 type AllProps = RouteComponentProps<IUrlProps> & IPropsFromState & IConnectedReduxProps;
 class Charts extends React.Component<AllProps, ILocalState> {
-  public flatArray: any;
-  public expName: string = '';
   public initialMetric: string = '';
   public initialBarSelection: any;
   public timeProj: any;
-  public exploreSelector = { yAxis: {}, xAxis: {}, aggregate: Aggregate };
 
   public constructor(props: AllProps) {
     super(props);
     this.state = {
-      chartData: {},
       selectedMetric: 'test_loss' // imopse a condition that this is the first val in the set
     };
   }
@@ -60,10 +44,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
   public render() {
     const { experimentRuns, loading, projects } = this.props;
     if (experimentRuns !== undefined) {
-      this.expName = experimentRuns[0].name;
-      // this.setState({ selectedMetric: experimentRuns[0].metrics[0].key })
       this.initialBarSelection = { initialMetric: this.state.selectedMetric, initialHyperparam: experimentRuns[0].hyperparameters[0].key };
-      this.flatArray = this.dataCompute(experimentRuns);
     }
     if (projects !== undefined && projects !== null) {
       this.timeProj = projects.filter(d => d.name === 'Timeseries')[0];
@@ -105,19 +86,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
             ''
           )}
           <p style={{ fontSize: '1.2em' }}>Summary Chart</p>
-          <div className={styles.chart_selector}>
-            Metric :{' '}
-            <select name="selected-metric" onChange={this.handleMetricChange} className={styles.dropdown}>
-              {[...paramList].map((param: string, i: number) => {
-                return (
-                  <option key={i} value={param}>
-                    {param}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-          <ScatterChart flatdata={this.flatArray} selectedMetric={this.state.selectedMetric} />
+          <ModelSummary experimentRuns={experimentRuns} />
         </div>
         <br />
         <ModelExploration expRuns={experimentRuns} initialSelection={this.initialBarSelection} />
@@ -127,33 +96,14 @@ class Charts extends React.Component<AllProps, ILocalState> {
     );
   }
 
-  public handleMetricChange = (event: React.FormEvent<HTMLSelectElement>) => {
-    const element = event.target as HTMLSelectElement;
-    this.setState({ selectedMetric: element.value });
-  };
-
-  // utility functions
-  public dataCompute = (arr: ModelRecord[]) => {
-    return _.map(arr, obj => {
-      const metricField = _.pick(obj, 'startTime', 'metrics');
-      const flatMetric: any = { date: metricField.startTime };
-      paramList = new Set();
-      metricField.metrics.forEach((kvPair: any) => {
-        paramList.add(kvPair.key);
-        flatMetric[kvPair.key] = kvPair.value;
-      });
-      return flatMetric;
-    });
-  };
-
   public componentDidMount() {
     this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
   }
 }
 
 const mapStateToProps = ({ experimentRuns, projects }: IApplicationState) => ({
-  projects: projects.data,
   experimentRuns: experimentRuns.data,
+  projects: projects.data,
   loading: experimentRuns.loading
 });
 
