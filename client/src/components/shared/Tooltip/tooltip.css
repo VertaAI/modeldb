@@ -1,0 +1,50 @@
+.rc-tooltip {
+  position: absolute;
+  z-index: 1070;
+  display: block;
+  visibility: visible;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.rc-tooltip-hidden {
+  display: none;
+}
+
+.rc-tooltip-inner {
+  padding: 5px 10px;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  text-decoration: none;
+  background-color: rgba(51, 51, 51, 0.9);
+  border-radius: 4px;
+}
+
+.rc-tooltip-arrow,
+.rc-tooltip-arrow-inner {
+  position: absolute;
+  z-index: 1070;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.rc-tooltip-placement-top .rc-tooltip-arrow {
+  bottom: -7px;
+  margin-left: -6px;
+  border-width: 6px 6px 0;
+}
+
+.rc-tooltip-placement-top .rc-tooltip-arrow-inner,
+.rc-tooltip-placement-topLeft .rc-tooltip-arrow-inner,
+.rc-tooltip-placement-topRight .rc-tooltip-arrow-inner {
+  bottom: 1px;
+  margin-left: -6px;
+  border-width: 6px 6px 0;
+  border-top-color: rgba(51, 51, 51, 0.9);
+}
+
+.rc-tooltip-placement-top .rc-tooltip-arrow {
+  left: 50%;
+}

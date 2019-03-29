@@ -1,0 +1,46 @@
+:root {
+  --bg-color1: #5fe6c9;
+  --bg-color2: #6863ff;
+  --bg-color3: #ffffff;
+  --bg-color4: #f3f3f3;
+  --bg-color5: rgba(0, 0, 0, 0.9);
+  --bg-color6: rgba(0, 0, 0, 0.2);
+
+  --fr-color1: #5457e3;
+  --fr-color2: rgba(0, 0, 0, 0.9);
+  --fr-color3: rgba(0, 0, 0, 0.7);
+  --fr-color4: rgba(0, 0, 0, 0.5);
+  --fr-color5: rgba(0, 0, 0, 0.2);
+
+  --blue-color: #6863ff;
+
+  --main-color1: #5fe6c9;
+  --main-color2: #6863ff;
+  --main-color3: #ffffff;
+  --main-color4: #f3f3f3;
+  --main-color5: rgba(0, 0, 0, 0.9);
+
+  --text-color1: #5457e3;
+  --text-color2: rgba(0, 0, 0, 0.7);
+  --text-color3: rgba(0, 0, 0, 0.5);
+  --text-color4: rgba(0, 0, 0, 0.2);
+
+  --line-color1: rgba(0, 0, 0, 0.3);
+  --line-color2: rgba(0, 0, 0, 0.15);
+  --error-color1: #ff787f;
+
+  --font-size1: 20px;
+  --font-size2: 16px;
+  --font-size3: 15px;
+  --font-size4: 13px;
+  --font-size5: 12px;
+
+  --grey-light: #dae1e7;
+  --grey-lighter: #f1f5f8;
+  --grey-lightest: #f8fafc;
+
+  --vgreen-lighter: #d6fff9;
+  --vgreen-light: #b8fff4;
+
+  --border-color1: #dedede;
+}
