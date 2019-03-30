@@ -32,6 +32,7 @@ export default class MockDeployService extends DeployService
         : getRandomItem([
             { status: 'not deployed' },
             { status: 'live', data: deployedStatusInfoData },
+            { status: 'deploying' },
           ]);
 
       if (deployStatus.status === 'deploying') {

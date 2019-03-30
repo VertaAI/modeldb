@@ -32,7 +32,7 @@ export const loadDeployStatusForModelsIfNeed = (
   modelIds
     .filter(modelId => needCheckDeployStatus(getState(), modelId))
     .forEach(modelId =>
-      loadDeployStatus(modelId)(dispatch, getState, undefined)
+      checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined)
     );
 };
 
