@@ -1,4 +1,8 @@
-import { IDeployStatusInfo } from 'models/Deploy';
+import {
+  IDataStatistics,
+  IDeployStatusInfo,
+  IServiceStatistics,
+} from 'models/Deploy';
 
 import { IApplicationState } from '../store';
 import { IDeployState } from './types';
@@ -38,6 +42,36 @@ export const selectIsLoadingDeployStatusInfo = (
   return Boolean(
     loadingModelDeployStatus && loadingModelDeployStatus.isRequesting
   );
+};
+
+export const selectIsLoadingDataStatistics = (
+  state: IApplicationState
+): boolean => {
+  const loadingDataStatistics = selectState(state).loadingDataStatistics;
+  return Boolean(loadingDataStatistics && loadingDataStatistics.isRequesting);
+};
+
+export const selectIsLoadingServiceStatistics = (
+  state: IApplicationState
+): boolean => {
+  const loadingServiceStatistics = selectState(state).loadingServiceStatistics;
+  return Boolean(
+    loadingServiceStatistics && loadingServiceStatistics.isRequesting
+  );
+};
+
+export const selectServiceStatistics = (
+  state: IApplicationState
+): IServiceStatistics | null => {
+  const serviceStatistics = selectState(state).serviceStatistics;
+  return serviceStatistics;
+};
+
+export const selectDataStatistics = (
+  state: IApplicationState
+): IDataStatistics | null => {
+  const dataStatistics = selectState(state).dataStatistics;
+  return dataStatistics;
 };
 
 export const selectModelId = (state: IApplicationState) => {

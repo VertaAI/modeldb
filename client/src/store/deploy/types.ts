@@ -1,4 +1,8 @@
-import { IDeployStatusInfo } from 'models/Deploy';
+import {
+  IDataStatistics,
+  IDeployStatusInfo,
+  IServiceStatistics,
+} from 'models/Deploy';
 
 export interface IDeployState {
   // todo rename
@@ -7,6 +11,10 @@ export interface IDeployState {
   deploying: Record<ModelID, ICommunication>;
   loadingDeployStatus: Record<ModelID, ICommunication>;
   checkingDeployStatus: Record<ModelID, ICommunication>;
+  loadingServiceStatistics: ICommunication;
+  serviceStatistics: IServiceStatistics | null;
+  loadingDataStatistics: ICommunication;
+  dataStatistics: IDataStatistics | null;
 }
 
 interface ICommunication {
@@ -80,8 +88,46 @@ export type toggleWizardAction =
   | { type: toggleWizardActionTypes.OPEN_WIZARD; payload: ModelID }
   | { type: toggleWizardActionTypes.CLOSE_WIZARD };
 
+export enum fetchServiceStatisticsActionTypes {
+  FETCH_SERVICE_STATISTICS_REQUEST = '@@deploy/FETCH_SERVICE_STATISTICS_REQUEST',
+  FETCH_SERVICE_STATISTICS_SUCCESS = '@@deploy/FETCH_SERVICE_STATISTICS_SUCCESS',
+  FETCH_SERVICE_STATISTICS_FAILURE = '@@deploy/FETCH_SERVICE_STATISTICS_FAILURE',
+}
+export type fetchServiceStatisticsAction =
+  | {
+      type: fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_REQUEST;
+    }
+  | {
+      type: fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_SUCCESS;
+      payload: IServiceStatistics;
+    }
+  | {
+      type: fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_FAILURE;
+      payload: string;
+    };
+
+export enum fetchDataStatisticsActionTypes {
+  FETCH_DATA_STATISTICS_REQUEST = '@@deploy/FETCH_DATA_STATISTICS_REQUEST',
+  FETCH_DATA_STATISTICS_SUCCESS = '@@deploy/FETCH_DATA_STATISTICS_SUCCESS',
+  FETCH_DATA_STATISTICS_FAILURE = '@@deploy/FETCH_DATA_STATISTICS_FAILURE',
+}
+export type fetchDataStatisticsAction =
+  | {
+      type: fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_REQUEST;
+    }
+  | {
+      type: fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_SUCCESS;
+      payload: IDataStatistics;
+    }
+  | {
+      type: fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_FAILURE;
+      payload: string;
+    };
+
 export type allActions =
   | deployAction
   | loadDeployStatusAction
   | checkDeployStatusAction
-  | toggleWizardAction;
+  | toggleWizardAction
+  | fetchServiceStatisticsAction
+  | fetchDataStatisticsAction;
