@@ -1,7 +1,7 @@
 .project_widget {
   display: grid;
   grid-template-columns: 310px auto auto 180px;
-  grid-template-rows: 50px 28px auto 48px;
+  grid-template-rows: 50px auto auto 48px;
   padding: 30px;
   font-size: 13px;
   color: var(--fr-color3);
