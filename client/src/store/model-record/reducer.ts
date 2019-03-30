@@ -20,7 +20,7 @@ export const modelRecordReducer: Reducer<IModelRecordState> = (
       return { ...state, loading: true };
     }
     case fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCCESS: {
-      return { ...state, loading: false, data: action.payload || mock };
+      return { ...state, loading: false, data: action.payload };
     }
     case fetchModelRecordActionTypes.FETCH_MODEL_RECORD_FAILURE: {
       return { ...state };
