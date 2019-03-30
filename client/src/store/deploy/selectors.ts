@@ -75,7 +75,7 @@ export const selectDataStatistics = (
 };
 
 export const selectModelId = (state: IApplicationState) => {
-  return selectState(state).showWizardForModel;
+  return selectState(state).shownDeployManagerModelId;
 };
 
 export const selectIsCheckingDeployStatusInfo = selectIsLoadingDeployStatusInfo;

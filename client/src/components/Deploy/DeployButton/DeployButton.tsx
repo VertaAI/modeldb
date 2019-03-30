@@ -4,7 +4,10 @@ import { connect } from 'react-redux';
 
 import Fab from 'components/shared/Fab/Fab';
 import { IDeployStatusInfo } from 'models/Deploy';
-import { selectDeployStatusInfo, showDeployWizardForModel } from 'store/deploy';
+import {
+  selectDeployStatusInfo,
+  showDeployManagerForModel,
+} from 'store/deploy';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 interface ILocalProps {
@@ -33,7 +36,7 @@ class DeployButton extends React.PureComponent<AllProps> {
                   icon="upload"
                   isLoading={deployStatusInfo.status === 'unknown'}
                   disabled={deployStatusInfo.status === 'unknown'}
-                  onClick={this.onShowDeployWizard}
+                  onClick={this.onShowDeployManager}
                 >
                   Deploy
                 </Fab>
@@ -44,7 +47,7 @@ class DeployButton extends React.PureComponent<AllProps> {
                 <Fab
                   variant="outlined"
                   theme="green"
-                  onClick={this.onShowDeployWizard}
+                  onClick={this.onShowDeployManager}
                 >
                   Deploying...
                 </Fab>
@@ -52,7 +55,7 @@ class DeployButton extends React.PureComponent<AllProps> {
             }
             case 'deployed': {
               return (
-                <Fab theme="green" onClick={this.onShowDeployWizard}>
+                <Fab theme="green" onClick={this.onShowDeployManager}>
                   Deployed
                 </Fab>
               );
@@ -64,8 +67,8 @@ class DeployButton extends React.PureComponent<AllProps> {
   }
 
   @bind
-  private onShowDeployWizard() {
-    this.props.dispatch(showDeployWizardForModel(this.props.modelId));
+  private onShowDeployManager() {
+    this.props.dispatch(showDeployManagerForModel(this.props.modelId));
   }
 }
 

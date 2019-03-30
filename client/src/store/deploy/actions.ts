@@ -19,15 +19,15 @@ import {
   fetchServiceStatisticsActionTypes,
   loadDeployStatusAction,
   loadDeployStatusActionTypes,
-  toggleWizardActionTypes,
+  toggleDeployManagerActionTypes,
 } from './types';
 
-export const showDeployWizardForModel = (modelID: string) => ({
+export const showDeployManagerForModel = (modelID: string) => ({
   payload: modelID,
-  type: toggleWizardActionTypes.OPEN_WIZARD,
+  type: toggleDeployManagerActionTypes.OPEN_DEPLOY_MANAGER,
 });
-export const closeDeployWizardForModel = (modelID: string) => ({
-  type: toggleWizardActionTypes.CLOSE_WIZARD,
+export const closeDeployManagerForModel = (modelID: string) => ({
+  type: toggleDeployManagerActionTypes.CLOSE_DEPLOY_MANAGER,
 });
 
 export const checkDeployStatusForModelsIfNeed = (

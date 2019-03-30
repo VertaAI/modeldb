@@ -11,8 +11,8 @@ import {
   IDeployState,
   loadDeployStatusAction,
   loadDeployStatusActionTypes,
-  toggleWizardAction,
-  toggleWizardActionTypes,
+  toggleDeployManagerAction,
+  toggleDeployManagerActionTypes,
 } from './types';
 
 const deployInitialState: IDeployState = {
@@ -24,18 +24,18 @@ const deployInitialState: IDeployState = {
   loadingDeployStatus: {},
   loadingServiceStatistics: { isRequesting: false, error: '' },
   serviceStatistics: null,
-  showWizardForModel: null,
+  shownDeployManagerModelId: null,
 };
 
-const showWizardForModelReducer: Reducer<
-  IDeployState['showWizardForModel'],
-  toggleWizardAction
-> = (state = deployInitialState.showWizardForModel, action) => {
+const deployManagerReducer: Reducer<
+  IDeployState['shownDeployManagerModelId'],
+  toggleDeployManagerAction
+> = (state = deployInitialState.shownDeployManagerModelId, action) => {
   switch (action.type) {
-    case toggleWizardActionTypes.OPEN_WIZARD: {
+    case toggleDeployManagerActionTypes.OPEN_DEPLOY_MANAGER: {
       return action.payload;
     }
-    case toggleWizardActionTypes.CLOSE_WIZARD: {
+    case toggleDeployManagerActionTypes.CLOSE_DEPLOY_MANAGER: {
       return null;
     }
     default:
@@ -210,5 +210,5 @@ export const deployReducer = combineReducers<IDeployState>({
   loadingDeployStatus: loadingDeployStatusReducer,
   loadingServiceStatistics: loadingServiceStatisticsReducer,
   serviceStatistics: serviceStatisticsReducer,
-  showWizardForModel: showWizardForModelReducer,
+  shownDeployManagerModelId: deployManagerReducer,
 });

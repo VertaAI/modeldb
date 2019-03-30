@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { IDeployStatusInfo } from 'models/Deploy';
 import {
-  closeDeployWizardForModel,
+  closeDeployManagerForModel,
   deployWithCheckingStatusUntilDeployed,
   selectDeployStatusInfo,
   selectModelId,
@@ -61,7 +61,7 @@ class DeployManager extends React.PureComponent<AllProps> {
 
   @bind
   private onClose() {
-    this.props.dispatch(closeDeployWizardForModel(this.props.modelId!));
+    this.props.dispatch(closeDeployManagerForModel(this.props.modelId!));
   }
 }
 

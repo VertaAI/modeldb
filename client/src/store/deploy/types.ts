@@ -5,8 +5,7 @@ import {
 } from 'models/Deploy';
 
 export interface IDeployState {
-  // todo rename
-  showWizardForModel: ModelID | null;
+  shownDeployManagerModelId: ModelID | null;
   deployStatusInfoByModelId: IDeployStatusInfoByModelId;
   deploying: Record<ModelID, ICommunication>;
   loadingDeployStatus: Record<ModelID, ICommunication>;
@@ -79,13 +78,16 @@ export type checkDeployStatusAction =
       payload: { modelId: ModelID; error: string };
     };
 
-export enum toggleWizardActionTypes {
-  OPEN_WIZARD = '@@deploy/OPEN_WIZARD',
-  CLOSE_WIZARD = '@@deploy/CLOSE_WIZARD',
+export enum toggleDeployManagerActionTypes {
+  OPEN_DEPLOY_MANAGER = '@@deploy/OPEN_DEPLOY_MANAGER',
+  CLOSE_DEPLOY_MANAGER = '@@deploy/CLOSE_DEPLOY_MANAGER',
 }
-export type toggleWizardAction =
-  | { type: toggleWizardActionTypes.OPEN_WIZARD; payload: ModelID }
-  | { type: toggleWizardActionTypes.CLOSE_WIZARD };
+export type toggleDeployManagerAction =
+  | {
+      type: toggleDeployManagerActionTypes.OPEN_DEPLOY_MANAGER;
+      payload: ModelID;
+    }
+  | { type: toggleDeployManagerActionTypes.CLOSE_DEPLOY_MANAGER };
 
 export enum fetchServiceStatisticsActionTypes {
   FETCH_SERVICE_STATISTICS_REQUEST = '@@deploy/FETCH_SERVICE_STATISTICS_REQUEST',
@@ -127,6 +129,6 @@ export type allActions =
   | deployAction
   | loadDeployStatusAction
   | checkDeployStatusAction
-  | toggleWizardAction
+  | toggleDeployManagerAction
   | fetchServiceStatisticsAction
   | fetchDataStatisticsAction;
