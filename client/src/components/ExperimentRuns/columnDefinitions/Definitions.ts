@@ -16,13 +16,6 @@ export const defaultColDefinitions = {
 export const returnColumnDefs = (updatedConfig: any) => {
   return [
     {
-      headerName: '',
-      field: 'data',
-      cellRendererFramework: Actions,
-      width: 140,
-      cellClass: styles.cell,
-    },
-    {
       headerName: 'IDs',
       field: 'data',
       width: 190,
@@ -69,6 +62,13 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 240,
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked,
+    },
+    {
+      headerName: '',
+      field: 'data',
+      cellRendererFramework: Actions,
+      width: 140,
+      cellClass: styles.cell,
     },
     // {
     //   headerName: 'Observations',
