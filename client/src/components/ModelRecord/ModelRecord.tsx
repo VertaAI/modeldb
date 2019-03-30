@@ -73,8 +73,8 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
 
     if (
       this.props.data &&
-      prevProps.deployState &&
-      prevProps.deployState.status !== 'deployed' &&
+      ((prevProps.deployState && prevProps.deployState.status !== 'deployed') ||
+        !prevProps.deployState) &&
       this.props.deployState &&
       this.props.deployState.status === 'deployed'
     ) {
