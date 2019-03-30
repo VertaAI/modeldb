@@ -10,3 +10,10 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.modelId {
+  max-width: 225px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

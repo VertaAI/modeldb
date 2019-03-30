@@ -9,6 +9,7 @@ import { IDeployedStatusInfo } from 'models/Deploy';
 import styles from './DeployResult.module.css';
 
 interface ILocalProps {
+  modelId: string;
   data: IDeployedStatusInfo['data'];
   onClose(): void;
 }
@@ -18,8 +19,8 @@ type AllProps = ILocalProps;
 class DeployResult extends React.Component<AllProps> {
   public render() {
     const {
-      data: { api, modelApi },
-      data,
+      data: { api },
+      modelId,
       onClose,
     } = this.props;
     return (
@@ -27,7 +28,9 @@ class DeployResult extends React.Component<AllProps> {
         <div className={styles.deploy_result}>
           <div className={styles.commonInfo}>
             <Form>
-              <Form.Item label="Model ID">22</Form.Item>
+              <Form.Item label="Model ID">
+                <div className={styles.modelId}>{modelId}</div>
+              </Form.Item>
               <Form.Item label="Type">REST</Form.Item>
               <Form.Item
                 label="URL"

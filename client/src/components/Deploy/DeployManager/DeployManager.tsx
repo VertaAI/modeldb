@@ -25,9 +25,8 @@ type AllProps = IPropsFromState & IConnectedReduxProps;
 class DeployManager extends React.PureComponent<AllProps> {
   public render() {
     const { modelId, deployStatusInfo } = this.props;
-    const isShown = Boolean(modelId);
 
-    if (!isShown || !deployStatusInfo) {
+    if (!modelId || !deployStatusInfo) {
       return null;
     }
 
@@ -45,7 +44,11 @@ class DeployManager extends React.PureComponent<AllProps> {
         return <Deploying onClose={this.onClose} />;
       case 'deployed':
         return (
-          <DeployResult data={deployStatusInfo.data} onClose={this.onClose} />
+          <DeployResult
+            modelId={modelId}
+            data={deployStatusInfo.data}
+            onClose={this.onClose}
+          />
         );
     }
   }
