@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export interface IProps<T> {
+export interface ILocalProps<T> {
   title: string;
   type: T;
   children: any;
@@ -8,7 +8,7 @@ export interface IProps<T> {
   centered?: boolean; // todo rename
 }
 
-class Tab<T> extends React.Component<IProps<T>> {
+class Tab<T> extends React.Component<ILocalProps<T>> {
   public render() {
     return this.props.children;
   }

@@ -21,11 +21,9 @@ class CopyToClipboard extends React.Component<ILocalProps, ILocalState> {
     const { isShownNotificationAboutCopied } = this.state;
 
     return (
-      <>
-        <Tooltip visible={isShownNotificationAboutCopied} content="Copied">
-          <div>{children(this.onCopy)}</div>
-        </Tooltip>
-      </>
+      <Tooltip visible={isShownNotificationAboutCopied} content="Copied">
+        <div>{children(this.onCopy)}</div>
+      </Tooltip>
     );
   }
 

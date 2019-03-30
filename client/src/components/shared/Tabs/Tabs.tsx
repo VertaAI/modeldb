@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import Tab, { IProps as ITabProps } from './Tab/Tab';
+import Tab, { ILocalProps as ITabProps } from './Tab/Tab';
 
 import styles from './Tabs.module.css';
 
