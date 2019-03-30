@@ -12,7 +12,7 @@ import Tabs from 'components/shared/Tabs/Tabs';
 import { DeployType, IDeployConfig } from 'models/Deploy';
 import styles from './DeploySettings.module.css';
 
-interface IProps {
+interface ILocalProps {
   status: any;
   onDeploy(config: IDeployConfig): void;
   onClose(): void;
@@ -25,7 +25,7 @@ interface ILocalState {
   withServiceMonitoring: boolean;
 }
 
-class DeploySettings extends React.PureComponent<IProps, ILocalState> {
+class DeploySettings extends React.PureComponent<ILocalProps, ILocalState> {
   public state: ILocalState = {
     deployType: 'rest',
     replicas: 3,

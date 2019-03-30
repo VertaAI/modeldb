@@ -6,7 +6,7 @@ import Tab, { IProps as ITabProps } from './Tab/Tab';
 
 import styles from './Tabs.module.css';
 
-interface IProps<T> {
+interface ILocalProps<T> {
   active: T;
   children: any;
   onSelectTab(type: T): void;
@@ -14,7 +14,7 @@ interface IProps<T> {
 
 const whiteSpace = '\u00A0';
 
-class Tabs<T> extends React.Component<IProps<T>> {
+class Tabs<T> extends React.Component<ILocalProps<T>> {
   public static Tab = Tab;
 
   public render() {

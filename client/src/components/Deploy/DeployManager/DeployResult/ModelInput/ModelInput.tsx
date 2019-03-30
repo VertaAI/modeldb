@@ -6,7 +6,7 @@ import { IModelApi } from 'models/Deploy';
 
 import styles from './ModelInput.module.css';
 
-interface IProps {
+interface ILocalProps {
   input: IModelApi['input'];
 }
 
@@ -15,7 +15,7 @@ interface ILocalState {
   shadowTopOpacity: number;
 }
 
-class ModelInput extends React.PureComponent<IProps, ILocalState> {
+class ModelInput extends React.PureComponent<ILocalProps, ILocalState> {
   public state: ILocalState = { shadowBottomOpacity: 0, shadowTopOpacity: 0 };
 
   public render() {

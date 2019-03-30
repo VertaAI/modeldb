@@ -5,7 +5,7 @@ import * as React from 'react';
 import styles from './Fab.module.css';
 import uploadSrc from './imgs/upload.svg';
 
-interface IProps {
+interface ILocalProps {
   children: React.ReactNode;
   theme: 'blue' | 'green';
   variant?: 'outlined' | 'default';
@@ -16,7 +16,7 @@ interface IProps {
 type Icon = 'upload';
 
 // float action button
-class Fab extends React.Component<IProps> {
+class Fab extends React.Component<ILocalProps> {
   public render() {
     const { children, icon, theme, variant = 'default', onClick } = this.props;
     return (

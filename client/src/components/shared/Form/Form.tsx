@@ -3,11 +3,11 @@ import * as React from 'react';
 import styles from './Form.module.css';
 import FormItem from './FormItem/FormItem';
 
-interface IProps {
+interface ILocalProps {
   children: any[];
 }
 
-class Form extends React.Component<IProps> {
+class Form extends React.Component<ILocalProps> {
   public static Item = FormItem;
 
   public render() {

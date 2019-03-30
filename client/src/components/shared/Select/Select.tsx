@@ -5,7 +5,7 @@ import onClickOutside, { HandleClickOutside } from 'react-onclickoutside';
 
 import styles from './Select.module.css';
 
-interface IProps<T> {
+interface ILocalProps<T> {
   options: Array<IOption<T>>;
   value: T;
   onChange(value: T): void;
@@ -20,7 +20,7 @@ interface ILocalState {
   isOpen: boolean;
 }
 
-class Select<T> extends React.PureComponent<IProps<T>, ILocalState>
+class Select<T> extends React.PureComponent<ILocalProps<T>, ILocalState>
   implements HandleClickOutside<any> {
   public state: ILocalState = { isOpen: false };
 

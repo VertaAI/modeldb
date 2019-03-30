@@ -3,12 +3,12 @@ import * as React from 'react';
 
 import styles from './Checkbox.module.css';
 
-interface IProps {
+interface ILocalProps {
   value: boolean;
   onChange(value: boolean): void;
 }
 
-class Checkbox extends React.PureComponent<IProps> {
+class Checkbox extends React.PureComponent<ILocalProps> {
   public render() {
     const { value } = this.props;
     return (

@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { bind } from 'decko';
 
-interface IProps {
+interface ILocalProps {
   acceptFileTypes?: AcceptFileTypes[];
   children(onSelectFile: () => void, isUploading: boolean): React.ReactNode;
   onUpload(file: any): void;
@@ -14,7 +14,7 @@ interface ILocalState {
 
 type AcceptFileTypes = 'csv';
 
-class FileUploader extends React.Component<IProps, ILocalState> {
+class FileUploader extends React.Component<ILocalProps, ILocalState> {
   public state: ILocalState = { isUploading: false };
 
   private fileInput = React.createRef<HTMLInputElement>();

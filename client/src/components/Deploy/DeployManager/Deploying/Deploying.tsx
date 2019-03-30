@@ -5,11 +5,11 @@ import Popup from 'components/shared/Popup/Popup';
 import styles from './Deploying.module.css';
 import preloaderSrc from './imgs/preloader.svg';
 
-interface IProps {
+interface ILocalProps {
   onClose(): void;
 }
 
-class Deploying extends React.PureComponent<IProps> {
+class Deploying extends React.PureComponent<ILocalProps> {
   public render() {
     const { onClose } = this.props;
     return (

@@ -6,16 +6,14 @@ import Form from 'components/shared/Form/Form';
 import Popup from 'components/shared/Popup/Popup';
 import { IDeployedStatusInfo } from 'models/Deploy';
 
-import { IApplicationState } from 'store/store';
 import styles from './DeployResult.module.css';
-import ModelInput from './ModelInput/ModelInput';
 
-interface IProps {
+interface ILocalProps {
   data: IDeployedStatusInfo['data'];
   onClose(): void;
 }
 
-type AllProps = IProps;
+type AllProps = ILocalProps;
 
 class DeployResult extends React.Component<AllProps> {
   public render() {

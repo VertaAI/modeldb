@@ -3,14 +3,14 @@ import * as React from 'react';
 
 import './tooltip.css';
 
-interface IProps {
+interface ILocalProps {
   content: string;
   children: React.ReactNode;
   width?: number;
   visible?: boolean;
 }
 
-class Tooltip extends React.Component<IProps> {
+class Tooltip extends React.Component<ILocalProps> {
   public render() {
     const { visible, content, children } = this.props;
     return (

@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import Tooltip from '../Tooltip/Tooltip';
 
-interface IProps {
+interface ILocalProps {
   text: string;
   children: (onCopy: () => void) => React.ReactNode;
 }
@@ -13,7 +13,7 @@ interface ILocalState {
   isShownNotificationAboutCopied: boolean;
 }
 
-class CopyToClipboard extends React.Component<IProps, ILocalState> {
+class CopyToClipboard extends React.Component<ILocalProps, ILocalState> {
   public state: ILocalState = { isShownNotificationAboutCopied: false };
 
   public render() {

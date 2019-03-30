@@ -7,7 +7,7 @@ import { IDeployStatusInfo } from 'models/Deploy';
 import { selectDeployStatusInfo, showDeployWizardForModel } from 'store/deploy';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-interface IProps {
+interface ILocalProps {
   modelId: string;
 }
 
@@ -15,7 +15,7 @@ interface IPropsFromState {
   deployStatusInfo: IDeployStatusInfo;
 }
 
-export type AllProps = IProps & IPropsFromState & IConnectedReduxProps;
+export type AllProps = ILocalProps & IPropsFromState & IConnectedReduxProps;
 
 class DeployButton extends React.PureComponent<AllProps> {
   public render() {
@@ -69,7 +69,7 @@ class DeployButton extends React.PureComponent<AllProps> {
 
 const mapStateToProps = (
   state: IApplicationState,
-  ownProps: IProps
+  ownProps: ILocalProps
 ): IPropsFromState => {
   return {
     deployStatusInfo: selectDeployStatusInfo(state, ownProps.modelId),

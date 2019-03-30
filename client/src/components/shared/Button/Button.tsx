@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import styles from './Button.module.css';
 
-interface IProps {
+interface ILocalProps {
   children: React.ReactChild | React.ReactChildren;
   disabled?: boolean;
   to?: string;
@@ -13,7 +13,7 @@ interface IProps {
   onClick?(): void;
 }
 
-class Button extends React.PureComponent<IProps> {
+class Button extends React.PureComponent<ILocalProps> {
   public render() {
     const {
       children,

@@ -4,7 +4,7 @@ import ReactModal from 'react-modal';
 import closeIcon from './images/close.svg';
 import styles from './Popup.module.css';
 
-interface IProps {
+interface ILocalProps {
   title: React.ReactChild;
   isOpen: boolean;
   height?: number;
@@ -15,7 +15,7 @@ interface IProps {
 
 const appElement = document.getElementById('root')!;
 
-class Popup extends React.Component<IProps> {
+class Popup extends React.Component<ILocalProps> {
   public render() {
     const {
       title,
