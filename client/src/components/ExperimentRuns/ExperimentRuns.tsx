@@ -85,10 +85,6 @@ class ExperimentRuns extends React.Component<AllProps> {
   public columnApi: any;
   public data: any;
 
-  public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(currentProjectID));
-  }
-
   public componentWillReceiveProps(nextProps: AllProps) {
     if (this.gridApi) {
       setTimeout(this.callFilterUpdate, 100);
