@@ -16,10 +16,12 @@ interface ILocalProps {
 
 type AllProps = ILocalProps;
 
+const mockApi = 'https://verta.io/234wfogsfas/fsfbgs';
+
 class DeployResult extends React.Component<AllProps> {
   public render() {
     const {
-      data: { api },
+      data: { api = mockApi },
       modelId,
       onClose,
     } = this.props;
@@ -36,9 +38,7 @@ class DeployResult extends React.Component<AllProps> {
                 label="URL"
                 additionalContent={
                   <Button variant="like-link" fullWidth={true} to={api}>
-                    <span className={styles.url}>
-                      {api || 'https://verta.io/234wfogsfas/fsfbgs'}
-                    </span>
+                    <span className={styles.url}>{api}</span>
                   </Button>
                 }
               >
