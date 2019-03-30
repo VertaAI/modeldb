@@ -36,13 +36,14 @@ class FileUploader extends React.Component<ILocalProps, ILocalState> {
   }
 
   @bind
-  public onSelectFile() {
+  private onSelectFile() {
     this.fileInput.current!.click();
   }
 
   @bind
-  public onChange(e: React.ChangeEvent<HTMLInputElement>) {
+  private onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files![0];
+    this.props.onUpload(file);
   }
 
   @bind

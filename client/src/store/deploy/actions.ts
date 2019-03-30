@@ -71,7 +71,6 @@ export const checkDeployStatusUntilDeployed = (
     getState(),
     modelId
   );
-  // because now is running checkinging deploy status
   if (isCheckingStatusInfo) {
     return;
   }

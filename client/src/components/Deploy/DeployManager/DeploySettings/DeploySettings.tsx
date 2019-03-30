@@ -13,7 +13,7 @@ import { DeployType, IDeployConfig } from 'models/Deploy';
 import styles from './DeploySettings.module.css';
 
 interface ILocalProps {
-  status: any;
+  modelId: string;
   onDeploy(config: IDeployConfig): void;
   onClose(): void;
 }
@@ -34,7 +34,7 @@ class DeploySettings extends React.PureComponent<ILocalProps, ILocalState> {
   };
 
   public render() {
-    const { onClose } = this.props;
+    const { modelId, onClose } = this.props;
     const {
       deployType,
       replicas,
@@ -50,7 +50,9 @@ class DeploySettings extends React.PureComponent<ILocalProps, ILocalState> {
           >
             <Tabs.Tab title="REST" type="rest" centered={true}>
               <Form>
-                <Form.Item label="Model ID">22</Form.Item>
+                <Form.Item label="Model ID">
+                  <div className={styles.model_id}>{modelId}</div>
+                </Form.Item>
                 <Form.Item label="Replicas">
                   <Select
                     value={replicas}
@@ -74,7 +76,9 @@ class DeploySettings extends React.PureComponent<ILocalProps, ILocalState> {
             </Tabs.Tab>
             <Tabs.Tab title="BATCH" type="batch" centered={true}>
               <Form>
-                <Form.Item label="Model ID">22</Form.Item>
+                <Form.Item label="Model ID">
+                  <div className={styles.model_id}>{modelId}</div>
+                </Form.Item>
                 <Form.Item label="Replicas">
                   <Select
                     value={replicas}

@@ -34,13 +34,12 @@ class DeployManager extends React.PureComponent<AllProps> {
       case 'notDeployed':
         return (
           <DeploySettings
-            status={deployStatusInfo.status}
+            modelId={modelId}
             onDeploy={this.onDeploy}
             onClose={this.onClose}
           />
         );
       case 'deploying':
-      case 'unknown':
         return <Deploying onClose={this.onClose} />;
       case 'deployed':
         return (

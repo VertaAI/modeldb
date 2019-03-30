@@ -29,7 +29,7 @@ class DeployResult extends React.Component<AllProps> {
           <div className={styles.commonInfo}>
             <Form>
               <Form.Item label="Model ID">
-                <div className={styles.modelId}>{modelId}</div>
+                <div className={styles.model_id}>{modelId}</div>
               </Form.Item>
               <Form.Item label="Type">REST</Form.Item>
               <Form.Item

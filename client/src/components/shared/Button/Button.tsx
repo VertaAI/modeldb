@@ -7,7 +7,6 @@ interface ILocalProps {
   children: React.ReactChild | React.ReactChildren;
   disabled?: boolean;
   to?: string;
-  // todo rename
   variant?: 'like-link' | 'default';
   fullWidth?: boolean;
   onClick?(): void;
@@ -22,7 +21,7 @@ class Button extends React.PureComponent<ILocalProps> {
       variant = 'default',
       onClick,
     } = this.props;
-    const Elem = (props: any) =>
+    const Elem = (props: React.HTMLProps<any>) =>
       to ? (
         <a href={to} {...props}>
           {children}

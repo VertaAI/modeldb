@@ -11,7 +11,7 @@
   text-overflow: ellipsis;
 }
 
-.modelId {
+.model_id {
   max-width: 225px;
   overflow: hidden;
   white-space: nowrap;

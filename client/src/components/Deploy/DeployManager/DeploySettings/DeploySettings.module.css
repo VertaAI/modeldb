@@ -15,3 +15,10 @@
   justify-content: center;
   margin-top: 20px;
 }
+
+.model_id {
+  max-width: 225px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

@@ -8,7 +8,6 @@ interface IProps {
   children: React.ReactNode;
 }
 
-// todo rename
 const FormItem = ({ label, additionalContent, children }: IProps) => {
   return (
     <div className={styles.form_item}>

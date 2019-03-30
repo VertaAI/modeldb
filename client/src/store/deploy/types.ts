@@ -20,7 +20,6 @@ export interface IDeployStatusInfoByModelId {
   [modelId: string]: IDeployStatusInfo;
 }
 
-// todo rename
 export enum deployActionTypes {
   DEPLOY_REQUEST = '@@deploy/DEPLOY_REQUEST',
   DEPLOY_SUCCESS = '@@deploy/DEPLOY_SUCCESS',

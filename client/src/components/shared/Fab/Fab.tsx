@@ -3,8 +3,8 @@ import { bind } from 'decko';
 import * as React from 'react';
 
 import styles from './Fab.module.css';
-import uploadSrc from './imgs/upload.svg';
 import loaderSrc from './imgs/preloader.svg';
+import uploadSrc from './imgs/upload.svg';
 
 interface ILocalProps {
   children: React.ReactNode;
