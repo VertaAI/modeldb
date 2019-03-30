@@ -56,8 +56,13 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     );
     if (this.props.data) {
       this.props.dispatch(checkDeployStatusUntilDeployed(this.props.data.id));
-      this.props.dispatch(getServiceStatistics(this.props.data.id));
-      this.props.dispatch(getDataStatistics(this.props.data.id));
+      if (
+        this.props.deployState &&
+        this.props.deployState.status === 'deployed'
+      ) {
+        this.props.dispatch(getServiceStatistics(this.props.data.id));
+        this.props.dispatch(getDataStatistics(this.props.data.id));
+      }
     }
   }
 
@@ -104,15 +109,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             </div>
           </div>
           <div className={styles.record_summary_meta}>
-            {this.renderParmaLink('Model ID:', `${data.id.slice(0, 4)}..`)}
-            {this.renderParmaLink(
-              'Project ID:',
-              `${data.projectId.slice(0, 4)}..`
-            )}
-            {this.renderParmaLink(
-              'Experiment ID:',
-              `${data.experimentId.slice(0, 4)}..`
-            )}
+            <this.ParmaLink label="Model ID:" value={data.id} />
+            <this.ParmaLink label="Project ID:" value={data.projectId} />
+            <this.ParmaLink label="Experiment ID:" value={data.experimentId} />
           </div>
         </div>
         <this.Record header="Code version">{data.codeVersion}</this.Record>
@@ -191,7 +190,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     );
   }
 
-  // tslint:disable-next-line: function-name
+  // tslint:disable-next-line:function-name
   private Record(props: {
     header: string;
     children?: React.ReactNode;
@@ -218,11 +217,13 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     );
   }
 
-  private renderParmaLink(label: string, value: string) {
+  // tslint:disable-next-line:function-name
+  private ParmaLink(props: { label: string; value: string }) {
+    const { label, value } = props;
     return (
       <div className={styles.experiment_link}>
         <span className={styles.parma_link_label}>{label}</span>{' '}
-        <span className={styles.parma_link_value}>{value}</span>
+        <span className={styles.parma_link_value}>{value.slice(0, 4)}..</span>
       </div>
     );
   }

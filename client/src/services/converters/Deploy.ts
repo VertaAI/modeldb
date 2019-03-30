@@ -24,18 +24,15 @@ export function convertServerServiceStatisticsToClient(
 export function convertServerDataStatisticsToClient(
   serverResponse: IServerServiceData
 ): IDataStatistics {
-  const features: Array<Record<string, IServiceDataFeature>> = [];
-  for (const feature of Object.keys(serverResponse)) {
-    const dataFeature: IServiceDataFeature = {
-      bucketLimits: serverResponse[feature].bucket_limits,
-      count: serverResponse[feature].count,
-      reference: serverResponse[feature].reference,
-    };
-    const record: Record<string, IServiceDataFeature> = {
-      [feature]: dataFeature,
-    };
+  const features: Array<Record<string, IServiceDataFeature>> = Object.entries(
+    serverResponse
+  ).map(([feature, data]) => ({
+    [feature]: {
+      bucketLimits: data.bucket_limits,
+      count: data.count,
+      reference: data.reference,
+    },
+  }));
 
-    features.push(record);
-  }
   return { features };
 }
