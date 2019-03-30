@@ -13,7 +13,7 @@ import { PropertyType } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
 import { IColumnMetaData } from 'store/dashboard-config';
-import { loadDeployStatusForModels } from 'store/deploy';
+import { loadDeployStatusForModelsIfNeed } from 'store/deploy';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
@@ -89,13 +89,12 @@ class ExperimentRuns extends React.Component<AllProps> {
     this.props.dispatch(fetchExperimentRuns(currentProjectID));
   }
 
-  public componentWillReceiveProps() {
-    if (this.gridApi !== undefined) {
+  public componentWillReceiveProps(nextProps: AllProps) {
+    if (this.gridApi) {
       setTimeout(this.callFilterUpdate, 100);
     }
-    const updatedConfig = this.props.columnConfig;
-    if (this.gridApi && updatedConfig !== undefined) {
-      this.gridApi.setColumnDefs(returnColumnDefs(updatedConfig));
+    if (this.gridApi && this.props.columnConfig !== nextProps.columnConfig) {
+      this.gridApi.setColumnDefs(returnColumnDefs(nextProps.columnConfig));
     }
     // const el = document.getElementsByClassName('ag-center-cols-viewport');
     // if (el !== undefined && el[0] !== undefined) {
@@ -104,12 +103,12 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
 
   public componentDidUpdate(prevProps: AllProps) {
-    if (this.props.data !== undefined && this.gridApi !== undefined) {
+    if (this.gridApi && this.props.data && prevProps.data !== this.props.data) {
       this.gridApi.setRowData(this.props.data);
     }
     if (this.props.data && prevProps.data !== this.props.data) {
       this.props.dispatch(
-        loadDeployStatusForModels(this.props.data.map(({ id }) => id))
+        loadDeployStatusForModelsIfNeed(this.props.data.map(({ id }) => id))
       );
     }
   }
