@@ -22,7 +22,6 @@ export const showDeployWizardForModel = (modelID: string) => ({
   payload: modelID,
   type: toggleWizardActionTypes.OPEN_WIZARD,
 });
-
 export const closeDeployWizardForModel = (modelID: string) => ({
   type: toggleWizardActionTypes.CLOSE_WIZARD,
 });
@@ -62,7 +61,7 @@ const deploy = (
     });
 };
 
-const checkDeployStatusUntilDeployed = (
+export const checkDeployStatusUntilDeployed = (
   modelId: string
 ): ActionResult<void, checkDeployStatusAction> => async (
   dispatch,
@@ -78,13 +77,16 @@ const checkDeployStatusUntilDeployed = (
   }
 
   const modelDeployStatusInfo = selectDeployStatusInfo(getState(), modelId);
-  if (modelDeployStatusInfo.status === 'deployed') {
+  if (
+    modelDeployStatusInfo.status === 'deployed' ||
+    modelDeployStatusInfo.status === 'notDeployed'
+  ) {
     return;
   }
   setTimeout(async () => {
     await loadDeployStatus(modelId)(dispatch, getState, undefined);
     checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined);
-  }, 1500);
+  }, 1000);
 };
 
 export const loadDeployStatus = (

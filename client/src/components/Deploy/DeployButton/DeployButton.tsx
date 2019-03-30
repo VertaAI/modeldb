@@ -25,12 +25,14 @@ class DeployButton extends React.PureComponent<AllProps> {
       <div>
         {(() => {
           switch (deployStatusInfo.status) {
-            case 'notDeployed':
-            case 'unknown': {
+            case 'unknown':
+            case 'notDeployed': {
               return (
                 <Fab
                   theme="blue"
                   icon="upload"
+                  isLoading={deployStatusInfo.status === 'unknown'}
+                  disabled={deployStatusInfo.status === 'unknown'}
                   onClick={this.onShowDeployWizard}
                 >
                   Deploy

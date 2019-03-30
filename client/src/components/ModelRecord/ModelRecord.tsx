@@ -2,6 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import { DeployButton, DeployManager } from 'components/Deploy';
 import loader from 'components/images/loader.gif';
 import tagStyles from 'components/TagBlock/TagBlock.module.css';
 import { IArtifact } from 'models/Artifact';
@@ -9,6 +10,7 @@ import { IHyperparameter } from 'models/HyperParameters';
 import { IMetric } from 'models/Metrics';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
+import { checkDeployStatusUntilDeployed } from 'store/deploy';
 import { fetchModelRecord } from 'store/model-record';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
@@ -26,7 +28,22 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IPropsFromState &
   IConnectedReduxProps;
 
-class ModelRecordLayout extends React.Component<AllProps> {
+class ModelRecordLayout extends React.PureComponent<AllProps> {
+  public componentDidMount() {
+    this.props.dispatch(
+      fetchModelRecord(this.props.match.params.modelRecordId)
+    );
+    if (this.props.data) {
+      this.props.dispatch(checkDeployStatusUntilDeployed(this.props.data.id));
+    }
+  }
+
+  public componentDidUpdate(prevProps: AllProps) {
+    if (this.props.data && prevProps.data !== this.props.data) {
+      this.props.dispatch(checkDeployStatusUntilDeployed(this.props.data.id));
+    }
+  }
+
   public render() {
     const { data, loading } = this.props;
 
@@ -97,15 +114,13 @@ class ModelRecordLayout extends React.Component<AllProps> {
               );
             })
           )}
+        {this.renderRecord('Deploy info', [
+          <DeployButton modelId={data.id} key={0} />,
+          <DeployManager key={1} />,
+        ])}
       </div>
     ) : (
       ''
-    );
-  }
-
-  public componentDidMount() {
-    this.props.dispatch(
-      fetchModelRecord(this.props.match.params.modelRecordId)
     );
   }
 

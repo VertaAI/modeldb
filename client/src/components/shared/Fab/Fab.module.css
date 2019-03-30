@@ -32,6 +32,15 @@
 .variant_outlined {
 }
 
+.loader {
+  display: none;
+  width: 40px;
+  height: 90%;
+}
+.loading .loader {
+  display: block;
+}
+
 .icon {
   width: 15px;
   height: 15px;

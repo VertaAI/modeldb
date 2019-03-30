@@ -1,3 +1,5 @@
+import ModelRecord from 'models/ModelRecord';
+
 export const expRunsMocks = [
   {
     id: '556c26a1-781b-420f-9343-77cad7c22f9e',
