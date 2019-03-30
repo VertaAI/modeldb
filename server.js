@@ -32,13 +32,11 @@ app.use(cors());
 const passport = require('passport');
 const Auth0Strategy = require('passport-auth0');
 // Configure Passport to use Auth0
-const strategy = new Auth0Strategy(
-  {
+const strategy = new Auth0Strategy({
     domain: process.env.AUTH0_DOMAIN,
     clientID: process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL:
-      process.env.AUTH0_CALLBACK_URL
+    callbackURL: process.env.AUTH0_CALLBACK_URL
   },
   function (accessToken, refreshToken, extraParams, user, done) {
     // accessToken is the token to call Auth0 API (not needed in the most cases)
@@ -73,44 +71,84 @@ app.use(express.static('client/build'));
 
 app.get('/api/getProjects', [secured, setPrivateHeader], (req, res) => {
   api.getFromAPI('/v1/project/getProjects', 'get', req.headers)
-  .then(response => {
-    res.send(response.data);
-  })
-  .catch(error => {
-    console.log(error);
-    res.status(500).send("Internal Server Error");
-  })
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    })
 });
 
 app.get('/api/getExperimentRunsInProject', [secured, setPrivateHeader], (req, res) => {
   api.getFromAPI(
-    '/v1/experiment-run/getExperimentRunsInProject',
-    'get', 
-    req.headers,
-    req.query) // also req.params for post
-  .then(response => {
-    res.send(response.data);
-  })
-  .catch(error => {
-    console.log(error);
-    res.status(500).send("Internal Server Error");
-  })
+      '/v1/experiment-run/getExperimentRunsInProject',
+      'get',
+      req.headers,
+      req.query) // also req.params for post
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    })
+});
+
+app.get('/api/v1/getServiceStatistics/:modelId', [secured, setPrivateHeader], (req, res) => {
+  // Disable caching for content files
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+
+  api.getFromAPI(
+      `/api/v1/controller/statistics/service/${req.params.modelId}`,
+      'get',
+      req.headers,
+      req.query)
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    })
+});
+
+app.get('/api/v1/getDataStatistics/:modelId', [secured, setPrivateHeader], (req, res) => {
+  // Disable caching for content files
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+
+  api.getFromAPI(
+      `/api/v1/controller/data/service/${req.params.modelId}`,
+      'get',
+      req.headers,
+      req.query)
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    })
 });
 
 app.post('/api/v1/controller/deploy', [secured, setPrivateHeader], (req, res) => {
   api.getFromAPI(
-    '/api/v1/controller/deploy',
-    'post',
-    req.headers,
-    req.query,
-    req.body,
-  )
-  .then(response => {
-    res.send(response.data);
-  })
-  .catch(error => {
-    res.status(500).send("Internal Server Error");
-  })
+      '/api/v1/controller/deploy',
+      'post',
+      req.headers,
+      req.query,
+      req.body,
+    )
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      res.status(500).send("Internal Server Error");
+    })
 });
 
 app.get('/api/v1/controller/status/:modelId', [secured, setPrivateHeader], (req, res) => {
@@ -120,24 +158,26 @@ app.get('/api/v1/controller/status/:modelId', [secured, setPrivateHeader], (req,
   res.header("Expires", 0);
 
   api.getFromAPI(
-    `/api/v1/controller/status/${req.params.modelId}`,
-    'get',
-    req.headers,
-    req.query,
-  )
-  .then(response => {
-    res.send(response.data);
-  })
-  .catch(error => {
-    console.log(error);
-    res.status(500).send("Internal Server Error");
-  })
+      `/api/v1/controller/status/${req.params.modelId}`,
+      'get',
+      req.headers,
+      req.query,
+    )
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    })
 });
 
 app.get('/api/getUser',
   secured,
   (req, res) => {
-    const { _json } = req.user;
+    const {
+      _json
+    } = req.user;
     res.json(_json);
   }
 );

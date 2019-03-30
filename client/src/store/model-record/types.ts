@@ -2,7 +2,7 @@ import ModelRecord from 'models/ModelRecord';
 
 export interface IModelRecordState {
   readonly loading: boolean;
-  readonly data?: ModelRecord | null;
+  readonly data: ModelRecord | null;
 }
 
 export enum fetchModelRecordActionTypes {

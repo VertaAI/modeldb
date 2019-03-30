@@ -1,15 +1,37 @@
 import axios, { AxiosPromise } from 'axios';
 
-import { IDeployStatusInfo } from 'models/Deploy';
+import {
+  IDataStatistics,
+  IDeployStatusInfo,
+  IServiceStatistics,
+} from 'models/Deploy';
 import { URL } from 'utils/types';
 
 import { BaseDataService } from './BaseDataService';
+import {
+  convertServerDataStatisticsToClient,
+  convertServerServiceStatisticsToClient,
+} from './converters/Deploy';
 import { IDeployService } from './IDeployService';
 import { deployedStatusInfoData } from './mocks/deployMock';
 
 export class DeployService extends BaseDataService implements IDeployService {
   constructor() {
     super();
+  }
+
+  public getServiceStatistics(
+    modelId: string
+  ): AxiosPromise<IServiceStatistics> {
+    return axios.get(`/v1/getServiceStatistics/${modelId}/`, {
+      transformResponse: convertServerServiceStatisticsToClient,
+    });
+  }
+
+  public getDataStatistics(modelId: string): AxiosPromise<IDataStatistics> {
+    return axios.get(`/v1/getDataStatistics/${modelId}/`, {
+      transformResponse: convertServerDataStatisticsToClient,
+    });
   }
 
   public deploy(request: IDeployRequest): AxiosPromise<void> {

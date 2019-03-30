@@ -13,6 +13,10 @@ import {
   checkDeployStatusAction,
   deployAction,
   deployActionTypes,
+  fetchDataStatisticsAction,
+  fetchDataStatisticsActionTypes,
+  fetchServiceStatisticsAction,
+  fetchServiceStatisticsActionTypes,
   loadDeployStatusAction,
   loadDeployStatusActionTypes,
   toggleWizardActionTypes,
@@ -116,5 +120,62 @@ export const loadDeployStatus = (
         })
       );
       return err.data;
+    });
+};
+
+export const getServiceStatistics = (
+  modelId: string
+): ActionResult<void, fetchServiceStatisticsAction> => async dispatch => {
+  dispatch(
+    action(fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_REQUEST)
+  );
+
+  await ServiceFactory.getDeployService()
+    .getServiceStatistics(modelId)
+    .then(res => {
+      dispatch(
+        action(
+          fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_SUCCESS,
+          res.data
+        )
+      );
+    })
+    .catch(err => {
+      dispatch(
+        action(
+          fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_FAILURE,
+          err as string
+        )
+      );
+    });
+};
+
+export const getDataStatistics = (
+  modelId: string
+): ActionResult<void, fetchDataStatisticsAction> => async dispatch => {
+  dispatch(
+    action(
+      fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_REQUEST,
+      modelId
+    )
+  );
+
+  await ServiceFactory.getDeployService()
+    .getDataStatistics(modelId)
+    .then(res => {
+      dispatch(
+        action(
+          fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_SUCCESS,
+          res.data
+        )
+      );
+    })
+    .catch(err => {
+      dispatch(
+        action(
+          fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_FAILURE,
+          err as string
+        )
+      );
     });
 };

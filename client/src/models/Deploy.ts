@@ -52,3 +52,23 @@ export interface IInputField {
 }
 
 export type IOutputField = IInputField;
+
+export interface IServiceStatistics {
+  averageLatency: number[];
+  p50Latency: number[];
+  p90Latency: number[];
+  p99Latency: number[];
+  throughput: number[];
+  time: number[];
+}
+
+export interface IServiceDataFeature {
+  count: number[];
+  bucketLimits: number[];
+  reference: number[];
+}
+
+export interface IDataStatistics {
+  // tslint:disable-next-line:prefer-array-literal
+  features: Array<Record<string, IServiceDataFeature>>;
+}

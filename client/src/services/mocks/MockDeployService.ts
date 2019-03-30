@@ -5,7 +5,11 @@ import { URL } from 'utils/types';
 
 import { DeployService } from '../DeployService';
 import { IDeployService } from '../IDeployService';
-import { deployedStatusInfoData } from './deployMock';
+import {
+  deployedStatusInfoData,
+  mockDataStatistics,
+  mockServiceStatistics,
+} from './deployMock';
 
 const deployStatusInfoByModels: Record<string, any> = {};
 export default class MockDeployService extends DeployService
@@ -45,6 +49,14 @@ export default class MockDeployService extends DeployService
       }
 
       return [200, deployStatus];
+    });
+
+    mock.onGet(/\/api\/v1\/getDataStatistics\/.+/).reply(config => {
+      return [200, mockDataStatistics];
+    });
+
+    mock.onGet(/\/api\/v1\/getServiceStatistics\/.+/).reply(config => {
+      return [200, mockServiceStatistics];
     });
   }
 }

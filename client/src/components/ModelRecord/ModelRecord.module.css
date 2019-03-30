@@ -17,6 +17,10 @@
   border: none;
 }
 
+.record_divider {
+  grid-template-columns: auto;
+}
+
 .experiment_link {
   font-size: 13px;
   text-decoration: none;
@@ -84,6 +88,11 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 18px;
+}
+
+.record_header_divider {
+  font-size: 18px;
+  margin: 5px 0;
 }
 
 .record_value {
