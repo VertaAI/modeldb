@@ -13,7 +13,7 @@ import { PropertyType } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
 import { IColumnMetaData } from 'store/dashboard-config';
-import { loadDeployStatusForModelsIfNeed } from 'store/deploy';
+import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
@@ -108,7 +108,7 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
     if (this.props.data && prevProps.data !== this.props.data) {
       this.props.dispatch(
-        loadDeployStatusForModelsIfNeed(this.props.data.map(({ id }) => id))
+        checkDeployStatusForModelsIfNeed(this.props.data.map(({ id }) => id))
       );
     }
   }

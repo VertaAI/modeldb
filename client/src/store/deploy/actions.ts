@@ -26,7 +26,7 @@ export const closeDeployWizardForModel = (modelID: string) => ({
   type: toggleWizardActionTypes.CLOSE_WIZARD,
 });
 
-export const loadDeployStatusForModelsIfNeed = (
+export const checkDeployStatusForModelsIfNeed = (
   modelIds: string[]
 ): ActionResult<void, any> => async (dispatch, getState) => {
   modelIds
