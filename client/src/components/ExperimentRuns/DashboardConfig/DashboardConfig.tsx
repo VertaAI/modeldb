@@ -78,7 +78,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
   }
 
   public handleColumnsUpdate = (ev: any) => {
-    let activeColumns = this.props.dashboardConfig.columnConfig;
+    let activeColumns = new Map(this.props.dashboardConfig.columnConfig);
     const checkedElement = activeColumns.get(ev.target.name);
     if (checkedElement !== undefined) {
       checkedElement.checked = !checkedElement.checked;
