@@ -16,14 +16,17 @@ export class ProjectDataService extends BaseDataService
 
   public getProjects(filter?: IFilterData[]): AxiosPromise<Project[]> {
     return axios.get<Project[]>(
-      '/getProjects',
+      '/v1/modeldb/project/getProjects',
       this.responseToProjectConfig(filter)
     );
   }
 
   public mapProjectAuthors(): AxiosPromise<Project[]> {
     // implement mapping for author if any
-    return axios.get<Project[]>('/getProjects', this.responseToProjectConfig());
+    return axios.get<Project[]>(
+      '/v1/modeldb/project/getProjects',
+      this.responseToProjectConfig()
+    );
   }
 
   private responseToProjectConfig(filters?: IFilterData[]): AxiosRequestConfig {
