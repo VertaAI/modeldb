@@ -90,6 +90,7 @@ class ExperimentRuns extends React.Component<AllProps> {
         <DeployManager />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
+            reactNext={true}
             pagination={true}
             onGridReady={this.onGridReady}
             animateRows={true}
