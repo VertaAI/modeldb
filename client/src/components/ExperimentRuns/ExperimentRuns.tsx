@@ -59,7 +59,7 @@ class ExperimentRuns extends React.Component<AllProps> {
     // if (el !== undefined && el[0] !== undefined) {
     //   el[0].scrollLeft += 200;
     // }
-    // <DeployManager />
+    //
   }
 
   public componentDidUpdate(prevProps: AllProps) {
@@ -80,6 +80,7 @@ class ExperimentRuns extends React.Component<AllProps> {
     ) : data ? (
       <React.Fragment>
         <DashboardConfig />
+        <DeployManager />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
             pagination={true}
@@ -101,7 +102,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
 
   public callFilterUpdate = () => {
-    this.gridApi.onFilterChanged();
+    // this.gridApi.onFilterChanged();
   };
 
   public onGridReady = (event: GridReadyEvent) => {

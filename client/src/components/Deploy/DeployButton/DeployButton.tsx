@@ -74,17 +74,17 @@ class DeployButton extends React.PureComponent<AllProps> {
     this.props.dispatch(showDeployManagerForModel(this.props.modelId));
   }
 
-  @bind
-  public componentDidMount() {
-    this.intervalId = window.setInterval(() => {
-      this.props.dispatch(loadDeployStatus(this.props.modelId));
-    }, 5000);
-  }
+  //   @bind
+  //   public componentDidMount() {
+  //     this.intervalId = window.setInterval(() => {
+  //       this.props.dispatch(loadDeployStatus(this.props.modelId));
+  //     }, 5000);
+  //   }
 
-  @bind
-  public componentWillUnmount() {
-    window.clearInterval(this.intervalId);
-  }
+  //   @bind
+  //   public componentWillUnmount() {
+  //     window.clearInterval(this.intervalId);
+  //   }
 }
 
 const mapStateToProps = (
