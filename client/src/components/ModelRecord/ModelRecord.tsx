@@ -190,6 +190,12 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     );
   }
 
+  //   public componentDidMount() {
+  //     this.props.dispatch(
+  //       fetchModelRecord(this.props.match.params.modelRecordId)
+  //     );
+  //   }
+
   // tslint:disable-next-line:function-name
   private Record(props: {
     header: string;
@@ -214,6 +220,8 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           {children}
         </div>
       </div>
+      // ) : (
+      //   ''
     );
   }
 
@@ -227,6 +235,28 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
       </div>
     );
   }
+  //       <span className={styles.parma_link_value}>{value}</span>
+  //     </div>
+  //   );
+  // }
+
+  // private renderTextRecord(
+  //   header: string,
+  //   value: string,
+  //   additionalValueClassName: string = ''
+  // ) {
+  //   return value
+  //     ? this.renderRecord(
+  //         header,
+  //         [<span key={0}>{value}</span>],
+  //         additionalValueClassName
+  //       )
+  //     : '';
+  // }
+
+  // private renderListRecord(header: string, content: JSX.Element[]) {
+  //   return this.renderRecord(header, content, styles.list);
+  // }
 }
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => {

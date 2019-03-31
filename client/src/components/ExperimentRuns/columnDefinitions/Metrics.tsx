@@ -20,7 +20,9 @@ const ModelProperty: React.SFC<any> = props => {
       <div className={styles.param_grid_metric}>
         <div className={styles.param_key}>{props.property.key}</div>
         <div className={styles.param_val}>
-          {Math.round(props.property.value * 10000) / 10000}
+          {typeof props.property.value === 'number'
+            ? Math.round(props.property.value * 10000) / 10000
+            : props.property.value}
         </div>
       </div>
     </Draggable>
