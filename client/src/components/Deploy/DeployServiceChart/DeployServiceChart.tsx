@@ -8,6 +8,7 @@ import {
   IServiceDataFeature,
   IServiceStatistics,
 } from 'models/Deploy';
+import { Color } from 'csstype';
 
 interface ILocalProps {
   height: number;
@@ -22,6 +23,10 @@ interface ILocalProps {
 class Point {
   time!: Date;
   throughput!: number;
+  averageLatency!: number;
+  p50Latency!: number;
+  p90Latency!: number;
+  p99Latency!: number;
 }
 
 interface IPropsFromState {}
@@ -43,6 +48,10 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       points.push({
         time: convertTime(metrics.time[i]),
         throughput: metrics.throughput[i * 2], // TODO: figure out why
+        averageLatency: metrics.averageLatency[i],
+        p50Latency: metrics.p50Latency[i],
+        p90Latency: metrics.p90Latency[i],
+        p99Latency: metrics.p99Latency[i],
       });
     }
     console.log(this.props.metrics);
@@ -84,7 +93,7 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
     // Y axis
     const y = d3.scaleLinear().range([height, 0]);
 
-    y.domain([0, 1.2 * Math.max(...points.map(p => p.throughput))]);
+    y.domain([0, 1.2 * Math.max(...points.map(p => p.p99Latency))]);
 
     // Add axes
     const yAxis = d3.axisLeft(y).tickFormat(d3.format('.2s'));
@@ -96,10 +105,33 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       .html('State Population Over Time')
       .attr('x', 200);
 
+    const drawLine = (extractor: (p: Point) => number, color: Color) => {
+      const line = d3
+        .line<Point>()
+        .x(p => x(p.time))
+        .y(p => y(extractor(p)));
+
+      chart
+        .selectAll()
+        .data([points])
+        .enter()
+        .append('path')
+        .attr('fill', 'none')
+        .attr('stroke', color)
+        .attr('stroke-width', 1)
+        .attr('d', line)
+        .attr('shape-rendering', 'auto');
+    };
+
+    drawLine(p => p.p99Latency, 'red');
+    drawLine(p => p.p90Latency, 'blue');
+    drawLine(p => p.p50Latency, 'black');
+
+    /*
     const line = d3
       .line<Point>()
       .x(p => x(p.time))
-      .y(p => y(p.throughput));
+      .y(p => y(p.p99Latency));
 
     chart
       .selectAll()
@@ -108,8 +140,9 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       .append('path')
       .attr('fill', 'none')
       .attr('stroke', 'black')
-      .attr('stroke-width', 2)
-      .attr('d', line);
+      .attr('stroke-width', 1)
+      .attr('d', line)
+      .attr('shape-rendering', 'auto')*/
   }
 
   render() {
@@ -117,6 +150,7 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       <svg
         className="container"
         ref={(ref: SVGSVGElement) => (this.ref = ref)}
+        shapeRendering={'optimizeQuality'}
         width={this.props.width}
         height={this.props.height}
       />
