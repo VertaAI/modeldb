@@ -59,13 +59,13 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         'translate(' + this.props.marginLeft + ',' + this.props.marginTop + ')'
       );
 
+    // X axis
     const x = d3
       .scaleTime()
       //.domain([1910, 2010])
       .range([0, width]);
 
     x.domain([points[0].time, points[points.length - 1].time]);
-    //x.domain(d3.extent(points, d => d.time))
 
     const xAxis = d3
       .axisBottom(x)
@@ -81,10 +81,10 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       .attr('dy', '.15em')
       .attr('transform', 'rotate(-55)');
 
-    const y = d3
-      .scaleLinear()
-      .domain([0, 40000000])
-      .range([height, 0]);
+    // Y axis
+    const y = d3.scaleLinear().range([height, 0]);
+
+    y.domain([0, 1.2 * Math.max(...points.map(p => p.throughput))]);
 
     // Add axes
     const yAxis = d3.axisLeft(y).tickFormat(d3.format('.2s'));
@@ -95,6 +95,21 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       .append('text')
       .html('State Population Over Time')
       .attr('x', 200);
+
+    const line = d3
+      .line<Point>()
+      .x(p => x(p.time))
+      .y(p => y(p.throughput));
+
+    chart
+      .selectAll()
+      .data([points])
+      .enter()
+      .append('path')
+      .attr('fill', 'none')
+      .attr('stroke', 'black')
+      .attr('stroke-width', 2)
+      .attr('d', line);
   }
 
   render() {
