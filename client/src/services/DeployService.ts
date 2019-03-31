@@ -23,7 +23,7 @@ export class DeployService extends BaseDataService implements IDeployService {
   public getServiceStatistics(
     modelId: string
   ): AxiosPromise<IServiceStatistics> {
-    return axios.get(`/v1/getServiceStatistics/${modelId}/`, {
+    return axios.get(`/v1/statistics/service/${modelId}/`, {
       transformResponse: convertServerServiceStatisticsToClient,
     });
   }
