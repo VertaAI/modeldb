@@ -33,7 +33,6 @@ class DeployButton extends React.PureComponent<AllProps> {
           switch (deployStatusInfo.status) {
             case 'unknown':
             case 'notDeployed': {
-              console.log('notDeployed');
               return (
                 <Fab
                   theme="blue"
@@ -47,7 +46,6 @@ class DeployButton extends React.PureComponent<AllProps> {
               );
             }
             case 'deploying': {
-              console.log('deploying');
               return (
                 <Fab
                   variant="outlined"
@@ -59,7 +57,6 @@ class DeployButton extends React.PureComponent<AllProps> {
               );
             }
             case 'deployed': {
-              console.log('deployed');
               return (
                 <Fab theme="green" onClick={this.onShowDeployManager}>
                   Deployed
