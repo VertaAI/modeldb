@@ -42,15 +42,15 @@ export class DeployService extends BaseDataService implements IDeployService {
       requirements: 's3://vertaai-deploymentservice-test/requirements.txt',
     };
 
-    return axios.post('/v1/controller/deploy', serverRequest);
+    return axios.post('/v1/deployment/deploy', serverRequest);
   }
 
   public delete(modelId: string): AxiosPromise<void> {
-    return axios.post('/v1/controller/delete', { id: modelId });
+    return axios.post('/v1/deployment/delete', { id: modelId });
   }
 
   public loadStatus(modelId: string): AxiosPromise<IDeployStatusInfo> {
-    return axios.get<IDeployStatusInfo>(`/v1/controller/status/${modelId}`, {
+    return axios.get<IDeployStatusInfo>(`/v1/deployment/status/${modelId}`, {
       transformResponse: res => {
         if (res.status === 'not deployed') {
           return { status: 'notDeployed' } as IDeployStatusInfo;
