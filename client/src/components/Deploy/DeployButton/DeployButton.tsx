@@ -7,6 +7,7 @@ import { IDeployStatusInfo } from 'models/Deploy';
 import {
   selectDeployStatusInfo,
   showDeployManagerForModel,
+  loadDeployStatus,
 } from 'store/deploy';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
@@ -21,6 +22,8 @@ interface IPropsFromState {
 type AllProps = ILocalProps & IPropsFromState & IConnectedReduxProps;
 
 class DeployButton extends React.PureComponent<AllProps> {
+  intervalId: number = 0;
+
   public render() {
     const { deployStatusInfo } = this.props;
 
@@ -69,6 +72,18 @@ class DeployButton extends React.PureComponent<AllProps> {
   @bind
   private onShowDeployManager() {
     this.props.dispatch(showDeployManagerForModel(this.props.modelId));
+  }
+
+  @bind
+  public componentDidMount() {
+    this.intervalId = window.setInterval(() => {
+      this.props.dispatch(loadDeployStatus(this.props.modelId));
+    }, 5000);
+  }
+
+  @bind
+  public componentWillUnmount() {
+    window.clearInterval(this.intervalId);
   }
 }
 
