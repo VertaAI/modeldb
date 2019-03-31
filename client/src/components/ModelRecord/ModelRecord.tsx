@@ -2,7 +2,11 @@ import * as React from 'react';
 import { connect, ReactReduxContextValue } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
-import { DeployButton, DeployManager } from 'components/Deploy';
+import {
+  DeployButton,
+  DeployManager,
+  DeployServiceChart,
+} from 'components/Deploy';
 import loader from 'components/images/loader.gif';
 import tagStyles from 'components/TagBlock/TagBlock.module.css';
 import { IArtifact } from 'models/Artifact';
@@ -167,7 +171,8 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             {this.props.loadingServiceStatistics ? (
               <img src={loader} className={styles.loader} />
             ) : this.props.serviceStatistics ? (
-              JSON.stringify(this.props.serviceStatistics)
+              //JSON.stringify(this.props.serviceStatistics)
+              <DeployServiceChart />
             ) : (
               ''
             )}
