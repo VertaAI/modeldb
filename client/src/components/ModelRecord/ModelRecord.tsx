@@ -172,7 +172,14 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
               <img src={loader} className={styles.loader} />
             ) : this.props.serviceStatistics ? (
               //JSON.stringify(this.props.serviceStatistics)
-              <DeployServiceChart />
+              <DeployServiceChart
+                height={400}
+                width={800}
+                marginBottom={30}
+                marginLeft={40}
+                marginTop={40}
+                maginRight={120}
+              />
             ) : (
               ''
             )}
