@@ -14,6 +14,7 @@ import { filtersReducer, IFilterState } from './filter';
 import { IModelRecordState, modelRecordReducer } from './model-record';
 import { IProjectsState, projectsReducer } from './projects';
 import { IUserState, userReducer } from './user';
+import { ILocationState, locationReducer } from './location';
 
 export interface IApplicationState {
   deploy: IDeployState;
@@ -25,6 +26,7 @@ export interface IApplicationState {
   projects: IProjectsState;
   router?: RouterState;
   filters: IFilterState;
+  location: ILocationState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -43,6 +45,7 @@ export const createRootReducer = (history: History) =>
     modelRecord: modelRecordReducer,
     projects: projectsReducer,
     router: connectRouter(history),
+    location: locationReducer,
   });
 
 export type ActionResult<R = void, A extends Action = AnyAction> = ThunkAction<
