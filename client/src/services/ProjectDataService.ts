@@ -106,7 +106,7 @@ export class ProjectDataService extends BaseDataService
             }
             return projects;
           } catch (error) {
-            console.log(error);
+            //console.log(error);
             return data;
           }
         },

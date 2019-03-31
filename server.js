@@ -10,6 +10,7 @@ var session = require('express-session');
 var auth = require('./routes/auth.js');
 var cors = require('cors');
 var cookieParser = require('cookie-parser');
+var proxy = require('http-proxy-middleware');
 
 // config express-session
 var sess = {
@@ -186,6 +187,7 @@ app.use('/api/auth/', auth);
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
+/*
 app.get('*', (req, res) => {
   res.header("Cache-Control", "no-cache, no-store, must-revalidate");
   res.header("Pragma", "no-cache");
@@ -193,6 +195,13 @@ app.get('*', (req, res) => {
 
   res.sendFile(path.join(__dirname + '/client/build' + '/index.html'));
 });
+*/
+
+const local_proxy = proxy({target: 'http://localhost:3001', changeOrigin: false, ws: true})
+app.use('*', (req, res, next) => {
+  return local_proxy(req, res, next);
+})
+
 
 const port = process.env.PORT || 3000;
 app.listen(port);
