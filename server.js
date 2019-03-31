@@ -24,7 +24,6 @@ if (app.get('env') === 'production') {
   sess.cookie.secure = true; // serve secure cookies, requires https
 }
 
-app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(session(sess));
 app.use(cors());
@@ -47,6 +46,17 @@ const strategy = new Auth0Strategy({
     return done(null, user, extraParams);
   }
 );
+
+passport.use(strategy);
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+passport.deserializeUser(function (user, done) {
+  done(null, user);
+});
+app.use(passport.initialize());
+app.use(passport.session());
+
 const secured = (req, res, next) => {
   if (req.user) {
     return next();
@@ -67,18 +77,19 @@ const disableCache = (req, res, next) => {
 }
 const printer = (req, res, next) => {
   console.log('Requesting', req.originalUrl)
+  res.on('finish', () => {
+    console.info(`Returning ${res.statusCode} ${res.statusMessage}; ${res.get('Content-Length') || 0}b sent`)
+  })
   next()
 }
 
-passport.use(strategy);
-passport.serializeUser(function (user, done) {
-  done(null, user);
-});
-passport.deserializeUser(function (user, done) {
-  done(null, user);
-});
-app.use(passport.initialize());
-app.use(passport.session());
+const aws_proxy = proxy({target: 'http://eks-alb-http-altair-prod-2046585597.us-east-1.elb.amazonaws.com:6244', changeOrigin: false, ws: true})
+app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
+  return aws_proxy(req, res, next);
+})
+
+app.use(bodyParser.json());
+
 //app.use(express.static('client/build'));
 
 /*
@@ -209,11 +220,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build' + '/index.html'));
 });
 */
-
-const aws_proxy = proxy({target: 'http://eks-alb-http-altair-prod-2046585597.us-east-1.elb.amazonaws.com:6244', changeOrigin: false, ws: true})
-app.use('/api/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
-  return aws_proxy(req, res, next);
-})
 
 const local_proxy = proxy({target: 'http://localhost:3001', changeOrigin: false, ws: true})
 app.use('*', (req, res, next) => {
