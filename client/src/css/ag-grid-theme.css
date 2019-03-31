@@ -1,0 +1,42 @@
+.ag-header-cell-label .ag-header-cell-text {
+  font-size: 14px;
+  color: var(--text-color2);
+}
+.ag-header-container,
+.ag-floating-top-container,
+.ag-header-cell {
+  cursor: col-resize;
+  border-right: 1px solid transparent;
+  border-left: 1px solid transparent;
+}
+
+.ag-header-cell:hover {
+  border-right: 1px solid rgb(170, 170, 170);
+  border-left: 1px solid rgb(170, 170, 170);
+}
+
+.ag-center-cols-viewport {
+  scroll-behavior: smooth;
+}
+
+.ag-theme-material .ag-cell {
+  padding-right: 13px;
+}
+
+.ag-row {
+  padding: 0 23px;
+}
+
+.grid line {
+  stroke: rgb(255, 255, 255);
+}
+
+.grid > .domain {
+  display: none;
+}
+
+.expChart,
+.summaryChart {
+  background-color: #f7f8fc;
+  border-radius: 10px;
+}
