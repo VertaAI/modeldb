@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import routes from '../../../routes';
+import routes from 'routes';
 import styles from './AuthorizedLayoutHeader.module.css';
 import Breadcrumb from './Breadcrumb/Breadcrumb';
 import logo from './images/Verta_logo.svg';

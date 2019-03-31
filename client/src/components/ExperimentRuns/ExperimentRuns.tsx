@@ -54,12 +54,9 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public componentWillReceiveProps(nextProps: AllProps) {
     if (this.props !== nextProps && this.gridApi !== undefined) {
-      // setTimeout(this.callFilterUpdate, 1000);
+      setTimeout(this.callFilterUpdate, 1000);
     }
 
-    // if (this.gridApi !== undefined) {
-    //   setTimeout(this.callFilterUpdate, 1000);
-    // }
     if (this.gridApi && this.props.columnConfig !== nextProps.columnConfig) {
       this.gridApi.setColumnDefs(returnColumnDefs(nextProps.columnConfig));
       const el = document.getElementsByClassName('ag-center-cols-viewport');
