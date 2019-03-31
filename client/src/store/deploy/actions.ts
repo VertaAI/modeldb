@@ -13,6 +13,8 @@ import {
   checkDeployStatusAction,
   deployAction,
   deployActionTypes,
+  deleteAction,
+  deleteActionTypes,
   fetchDataStatisticsAction,
   fetchDataStatisticsActionTypes,
   fetchServiceStatisticsAction,
@@ -61,6 +63,24 @@ const deploy = (
     .catch(err => {
       dispatch(
         action(deployActionTypes.DEPLOY_FAILURE, { modelId, error: err })
+      );
+    });
+};
+
+export const delete_ = (
+  modelId: string
+): ActionResult<void, deleteAction> => async dispatch => {
+  dispatch(action(deleteActionTypes.DELETE_REQUEST, modelId));
+
+  await ServiceFactory.getDeployService()
+    .delete(modelId as any)
+    .then(res => {
+      dispatch(action(deleteActionTypes.DELETE_SUCCESS, modelId));
+      dispatch(loadDeployStatus(modelId));
+    })
+    .catch(err => {
+      dispatch(
+        action(deleteActionTypes.DELETE_FAILURE, { modelId, error: err })
       );
     });
 };

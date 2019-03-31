@@ -47,6 +47,7 @@ class DeployManager extends React.PureComponent<AllProps> {
             modelId={modelId}
             data={deployStatusInfo.data}
             onClose={this.onClose}
+            dispatch={this.props.dispatch}
           />
         );
     }

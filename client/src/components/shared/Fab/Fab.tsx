@@ -8,7 +8,7 @@ import uploadSrc from './imgs/upload.svg';
 
 interface ILocalProps {
   children: React.ReactNode;
-  theme: 'blue' | 'green';
+  theme: 'blue' | 'green' | 'red';
   disabled?: boolean;
   isLoading?: boolean;
   variant?: 'outlined' | 'default';
@@ -38,6 +38,7 @@ class Fab extends React.Component<ILocalProps> {
           [styles.variant_default]: variant === 'default',
           [styles.theme_blue]: theme === 'blue',
           [styles.theme_green]: theme === 'green',
+          [styles.theme_red]: theme === 'red',
         })}
         disabled={disabled}
         onClick={onClick}

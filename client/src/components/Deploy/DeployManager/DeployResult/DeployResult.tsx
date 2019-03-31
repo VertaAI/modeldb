@@ -5,6 +5,10 @@ import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
 import Form from 'components/shared/Form/Form';
 import Popup from 'components/shared/Popup/Popup';
 import { IDeployedStatusInfo } from 'models/Deploy';
+import Fab from 'components/shared/Fab/Fab';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { delete_ } from 'store/deploy';
+import { bind } from 'decko';
 
 import styles from './DeployResult.module.css';
 
@@ -14,7 +18,7 @@ interface ILocalProps {
   onClose(): void;
 }
 
-type AllProps = ILocalProps;
+type AllProps = ILocalProps & IConnectedReduxProps;
 
 const mockApi = 'https://verta.io/234wfogsfas/fsfbgs';
 
@@ -52,12 +56,20 @@ class DeployResult extends React.Component<AllProps> {
               </Form.Item>
             </Form>
           </div>
+          <Fab theme="red" onClick={this.onShutdown}>
+            Shutdown
+          </Fab>
           {/* <div className={styles.model_input}>
             <ModelInput input={modelApi.input} />
           </div> */}
         </div>
       </Popup>
     );
+  }
+
+  @bind
+  private onShutdown() {
+    this.props.dispatch(delete_(this.props.modelId));
   }
 }
 

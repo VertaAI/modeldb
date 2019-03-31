@@ -40,6 +40,19 @@ export type deployAction =
       payload: { modelId: ModelID; error: string };
     };
 
+export enum deleteActionTypes {
+  DELETE_REQUEST = '@@deploy/DELETE_REQUEST',
+  DELETE_SUCCESS = '@@deploy/DELETE_SUCCESS',
+  DELETE_FAILURE = '@@deploy/DELETE_FAILURE',
+}
+export type deleteAction =
+  | { type: deleteActionTypes.DELETE_REQUEST; payload: ModelID }
+  | { type: deleteActionTypes.DELETE_SUCCESS; payload: ModelID }
+  | {
+      type: deleteActionTypes.DELETE_FAILURE;
+      payload: { modelId: ModelID; error: string };
+    };
+
 export enum loadDeployStatusActionTypes {
   LOAD_DEPLOY_STATUS_REQUEST = '@@deploy/LOAD_DEPLOY_STATUS_REQUEST',
   LOAD_DEPLOY_STATUS_SUCCESS = '@@deploy/LOAD_DEPLOY_STATUS_SUCCESS',
