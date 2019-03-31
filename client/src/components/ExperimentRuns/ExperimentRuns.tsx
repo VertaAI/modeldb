@@ -59,6 +59,7 @@ class ExperimentRuns extends React.Component<AllProps> {
     // if (el !== undefined && el[0] !== undefined) {
     //   el[0].scrollLeft += 200;
     // }
+    // <DeployManager />
   }
 
   public componentDidUpdate(prevProps: AllProps) {
@@ -78,8 +79,21 @@ class ExperimentRuns extends React.Component<AllProps> {
       <img src={loader} className={styles.loader} />
     ) : data ? (
       <React.Fragment>
-        <DeployManager />
         <DashboardConfig />
+        <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
+          <AgGridReact
+            pagination={true}
+            onGridReady={this.onGridReady}
+            animateRows={true}
+            getRowHeight={this.gridRowHeight}
+            columnDefs={returnColumnDefs(columnConfig)}
+            rowData={undefined}
+            domLayout="autoHeight"
+            defaultColDef={this.props.defaultColDefinitions}
+            isExternalFilterPresent={this.isExternalFilterPresent}
+            doesExternalFilterPass={this.doesExternalFilterPass}
+          />
+        </div>
       </React.Fragment>
     ) : (
       ''
