@@ -3,6 +3,7 @@ import { action } from 'typesafe-actions';
 import { IFilterData } from 'models/Filters';
 import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
+import { fetchProjects } from 'store/projects';
 
 import {
   fetchExperimentRunsAction,
@@ -16,6 +17,9 @@ export const fetchExperimentRuns = (
   dispatch,
   getState
 ) => {
+  if (getState().projects.data == null) {
+    dispatch(fetchProjects());
+  }
   dispatch(action(fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_REQUEST));
 
   await ServiceFactory.getExperimentRunsService()
