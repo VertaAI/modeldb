@@ -21,11 +21,12 @@ interface ILocalProps {
 type AllProps = ILocalProps & IConnectedReduxProps;
 
 const mockApi = 'https://verta.io/234wfogsfas/fsfbgs';
+const mockToken = '42';
 
 class DeployResult extends React.Component<AllProps> {
   public render() {
     const {
-      data: { api = mockApi },
+      data: { api = mockApi, token = mockToken },
       modelId,
       onClose,
     } = this.props;
@@ -47,6 +48,20 @@ class DeployResult extends React.Component<AllProps> {
                 }
               >
                 <CopyToClipboard text={api}>
+                  {onCopy => (
+                    <Button variant="like-link" onClick={onCopy}>
+                      Copy
+                    </Button>
+                  )}
+                </CopyToClipboard>
+              </Form.Item>
+              <Form.Item
+                label="Token"
+                additionalContent={
+                  <div className={styles.model_id}>{token}</div>
+                }
+              >
+                <CopyToClipboard text={token}>
                   {onCopy => (
                     <Button variant="like-link" onClick={onCopy}>
                       Copy

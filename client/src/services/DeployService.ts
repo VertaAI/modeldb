@@ -61,7 +61,7 @@ export class DeployService extends BaseDataService implements IDeployService {
         if (res.status === 'live') {
           return {
             status: 'deployed',
-            data: { ...deployedStatusInfoData, api: res.api },
+            data: { ...deployedStatusInfoData, api: res.api, token: res.token },
           } as IDeployStatusInfo;
         }
       },
