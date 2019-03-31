@@ -2,15 +2,13 @@ import _ from 'lodash';
 import React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
-import { fetchExperimentRuns } from '../../store/experiment-runs';
 import ModelRecord from '../../models/ModelRecord';
 import { Project } from '../../models/Project';
+import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import loader from '../images/loader.gif';
-import styles from './Charts.module.css';
-import ExpSubMenu from '../ExpSubMenu/ExpSubMenu';
 import Tag from '../TagBlock/Tag';
 import tag_styles from '../TagBlock/TagBlock.module.css';
+import styles from './Charts.module.css';
 import ModelExploration from './ModelExploration/ModelExploration';
 import ModelSummary from './ModelSummary/ModelSummary';
 
@@ -43,6 +41,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
 
   public render() {
     const { experimentRuns, loading, projects } = this.props;
+
     if (experimentRuns !== undefined) {
       this.initialBarSelection = { initialMetric: this.state.selectedMetric, initialHyperparam: experimentRuns[0].hyperparameters[0].key };
     }
@@ -54,9 +53,6 @@ class Charts extends React.Component<AllProps, ILocalState> {
       <img src={loader} className={styles.loader} />
     ) : experimentRuns ? (
       <div>
-        <div className={styles.sub_menu}>
-          <ExpSubMenu projectId={this.props.match.params.projectId} active="charts" />
-        </div>
         <div className={styles.summary_wrapper}>
           {this.timeProj !== undefined && this.timeProj !== null ? (
             <div>
@@ -94,10 +90,6 @@ class Charts extends React.Component<AllProps, ILocalState> {
     ) : (
       ''
     );
-  }
-
-  public componentDidMount() {
-    this.props.dispatch(fetchExperimentRuns(this.props.match.params.projectId));
   }
 }
 

@@ -1,14 +1,14 @@
+import { bind } from 'decko';
 import { UnregisterCallback } from 'history';
 import { Project } from 'models/Project';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
-import { bind } from 'decko';
 
 import { BreadcrumbItem } from 'models/BreadcrumbItem';
 import ModelRecord from 'models/ModelRecord';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import routes from 'routes';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './Breadcrumb.module.css';
 import headerArrow from './images/header-arrow.svg';
@@ -33,7 +33,8 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   private indexBreadcrumbItem = new BreadcrumbItem(/^\/$/, routes.mainPage.getRedirectPath({}), 'PROJECTS');
-  private projectBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-runs.?$/);
+  private experimentRunsBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-runs.?$/);
+  private chartsBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/charts.?$/);
   private modelBreadcrumbItem = new BreadcrumbItem(/^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/);
 
   public componentDidMount() {
@@ -86,22 +87,29 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
         projectName = neededProject.name;
       }
     }
-    this.projectBreadcrumbItem.name = projectName;
+    this.experimentRunsBreadcrumbItem.name = projectName;
+    this.chartsBreadcrumbItem.name = projectName;
 
-    this.projectBreadcrumbItem.path = routes.expirementRuns.getRedirectPath({
+    this.experimentRunsBreadcrumbItem.path = routes.expirementRuns.getRedirectPath({
       projectId: experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].projectId : modelRecord ? modelRecord.projectId : ''
     });
-    this.projectBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
+    this.experimentRunsBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
+
+    this.chartsBreadcrumbItem.path = routes.charts.getRedirectPath({
+      projectId: experimentRuns && experimentRuns.length > 0 ? experimentRuns[0].projectId : modelRecord ? modelRecord.projectId : ''
+    });
+    this.chartsBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
 
     this.modelBreadcrumbItem.name = modelRecord ? modelRecord.name : '';
     this.modelBreadcrumbItem.path = modelRecord
       ? routes.modelRecord.getRedirectPath({ projectId: modelRecord.projectId, modelRecordId: modelRecord.id })
       : '';
-    this.modelBreadcrumbItem.previousItem = this.projectBreadcrumbItem;
+    this.modelBreadcrumbItem.previousItem = this.experimentRunsBreadcrumbItem;
 
     const breadcrumbItems: BreadcrumbItem[] = [];
     breadcrumbItems.push(this.indexBreadcrumbItem);
-    breadcrumbItems.push(this.projectBreadcrumbItem);
+    breadcrumbItems.push(this.experimentRunsBreadcrumbItem);
+    breadcrumbItems.push(this.chartsBreadcrumbItem);
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
     return breadcrumbItems.find(x => x.shouldMatch.test(this.state.url));
