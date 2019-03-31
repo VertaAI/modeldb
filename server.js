@@ -4,7 +4,7 @@ dotenv.config();
 const express = require('express');
 const path = require('path');
 const app = express();
-const api = require('./api');
+//const api = require('./api');
 var bodyParser = require('body-parser')
 var session = require('express-session');
 var auth = require('./routes/auth.js');
@@ -59,6 +59,13 @@ const setPrivateHeader = (req, res, next) => {
   req.headers['Grpc-Metadata-source'] = 'WebApp';
   next();
 }
+const disableCache = (req, res, next) => {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+  next();
+}
+
 passport.use(strategy);
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -68,8 +75,9 @@ passport.deserializeUser(function (user, done) {
 });
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.static('client/build'));
+//app.use(express.static('client/build'));
 
+/*
 app.get('/api/getProjects', [secured, setPrivateHeader], (req, res) => {
   api.getFromAPI('/v1/project/getProjects', 'get', req.headers)
     .then(response => {
@@ -172,6 +180,7 @@ app.get('/api/v1/controller/status/:modelId', [secured, setPrivateHeader], (req,
       res.status(500).send("Internal Server Error");
     })
 });
+*/
 
 app.get('/api/getUser',
   secured,
@@ -197,11 +206,15 @@ app.get('*', (req, res) => {
 });
 */
 
+const aws_proxy = proxy({target: 'http://eks-alb-http-altair-prod-2046585597.us-east-1.elb.amazonaws.com:6244', changeOrigin: false, ws: true})
+app.use('/api/*', [secured, setPrivateHeader, disableCache], (req, res, next) => {
+  return aws_proxy(req, res, next);
+})
+
 const local_proxy = proxy({target: 'http://localhost:3001', changeOrigin: false, ws: true})
 app.use('*', (req, res, next) => {
   return local_proxy(req, res, next);
 })
-
 
 const port = process.env.PORT || 3000;
 app.listen(port);
