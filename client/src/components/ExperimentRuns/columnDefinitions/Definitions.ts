@@ -24,12 +24,11 @@ export const returnColumnDefs = (updatedConfig: any) => {
       hide: !updatedConfig.get('id').checked,
     },
     {
-      headerName: 'Summary',
+      headerName: 'Deploy',
       field: 'data',
-      cellRendererFramework: SummaryColDef,
-      width: 180,
+      cellRendererFramework: Actions,
+      width: 140,
       cellClass: styles.cell,
-      hide: !updatedConfig.get('summary').checked,
     },
     {
       headerName: 'Metrics',
@@ -38,6 +37,14 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 200,
       cellClass: styles.cell,
       hide: !updatedConfig.get('metrics').checked,
+    },
+    {
+      headerName: 'Summary',
+      field: 'data',
+      cellRendererFramework: SummaryColDef,
+      width: 180,
+      cellClass: styles.cell,
+      hide: !updatedConfig.get('summary').checked,
     },
     {
       headerName: 'Hyperparameters',
@@ -62,13 +69,6 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 240,
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked,
-    },
-    {
-      headerName: '',
-      field: 'data',
-      cellRendererFramework: Actions,
-      width: 140,
-      cellClass: styles.cell,
     },
     // {
     //   headerName: 'Observations',

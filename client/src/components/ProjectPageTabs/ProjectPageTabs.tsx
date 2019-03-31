@@ -16,7 +16,7 @@ export default class ProjectPageTabs extends React.Component<ILocalProps> {
     return (
       <nav className={styles.nav_menu}>
         {this.renderActiveLink(
-          routes.expirementRuns,
+          routes.experimentRuns,
           { projectId },
           'Experiment Runs',
           activeRoute

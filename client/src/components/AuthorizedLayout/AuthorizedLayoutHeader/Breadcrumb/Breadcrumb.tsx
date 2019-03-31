@@ -110,7 +110,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     this.experimentRunsBreadcrumbItem.name = projectName;
     this.chartsBreadcrumbItem.name = projectName;
 
-    this.experimentRunsBreadcrumbItem.path = routes.expirementRuns.getRedirectPath(
+    this.experimentRunsBreadcrumbItem.path = routes.experimentRuns.getRedirectPath(
       {
         projectId:
           experimentRuns && experimentRuns.length > 0

@@ -22,7 +22,7 @@ import {
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 import styles from './ExperimentRuns.module.css';
 
-type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
+type IUrlProps = GetRouteParams<typeof routes.experimentRuns>;
 
 interface IPropsFromState {
   data?: ModelRecord[] | undefined;
@@ -48,18 +48,25 @@ class ExperimentRuns extends React.Component<AllProps> {
   public columnApi: any;
   public data: any;
 
+  public callFilterUpdate = () => {
+    this.gridApi.onFilterChanged();
+  };
+
   public componentWillReceiveProps(nextProps: AllProps) {
-    if (this.gridApi) {
-      setTimeout(this.callFilterUpdate, 100);
+    if (this.props !== nextProps && this.gridApi !== undefined) {
+      // setTimeout(this.callFilterUpdate, 1000);
     }
+
+    // if (this.gridApi !== undefined) {
+    //   setTimeout(this.callFilterUpdate, 1000);
+    // }
     if (this.gridApi && this.props.columnConfig !== nextProps.columnConfig) {
       this.gridApi.setColumnDefs(returnColumnDefs(nextProps.columnConfig));
+      const el = document.getElementsByClassName('ag-center-cols-viewport');
+      if (el !== undefined && el[0] !== undefined) {
+        el[0].scrollLeft += 200;
+      }
     }
-    // const el = document.getElementsByClassName('ag-center-cols-viewport');
-    // if (el !== undefined && el[0] !== undefined) {
-    //   el[0].scrollLeft += 200;
-    // }
-    //
   }
 
   public componentDidUpdate(prevProps: AllProps) {
@@ -100,10 +107,6 @@ class ExperimentRuns extends React.Component<AllProps> {
       ''
     );
   }
-
-  public callFilterUpdate = () => {
-    // this.gridApi.onFilterChanged();
-  };
 
   public onGridReady = (event: GridReadyEvent) => {
     this.gridApi = event.api;

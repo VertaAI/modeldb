@@ -43,7 +43,7 @@ export default class ProjectWidget extends React.Component<
         />
         <Link
           className={styles.project_link}
-          to={routes.expirementRuns.getRedirectPath({ projectId: project.id })}
+          to={routes.experimentRuns.getRedirectPath({ projectId: project.id })}
         >
           <div className={styles.project_widget}>
             <div className={styles.title_block}>

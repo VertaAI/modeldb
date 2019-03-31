@@ -83,7 +83,9 @@ const printer = (req, res, next) => {
   next()
 }
 
-const aws_proxy = proxy({target: 'http://eks-alb-http-altair-prod-2046585597.us-east-1.elb.amazonaws.com:6244', changeOrigin: false, ws: true})
+const aws_proxy = proxy({target: process.env.BACKEND_API_PROTOCOL + '://' +
+  process.env.BACKEND_API_DOMAIN + ':' + process.env.BACKEND_API_PORT,
+  changeOrigin: false, ws: true})
 app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
   return aws_proxy(req, res, next);
 })
