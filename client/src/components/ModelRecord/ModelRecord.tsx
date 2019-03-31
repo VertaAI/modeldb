@@ -175,10 +175,11 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
               <DeployServiceChart
                 height={400}
                 width={800}
-                marginBottom={30}
+                marginBottom={80}
                 marginLeft={40}
                 marginTop={40}
                 maginRight={120}
+                metrics={this.props.serviceStatistics}
               />
             ) : (
               ''
