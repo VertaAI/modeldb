@@ -65,6 +65,10 @@ const disableCache = (req, res, next) => {
   res.header("Expires", 0);
   next();
 }
+const printer = (req, res, next) => {
+  console.log('Requesting', req.originalUrl)
+  next()
+}
 
 passport.use(strategy);
 passport.serializeUser(function (user, done) {
@@ -207,7 +211,7 @@ app.get('*', (req, res) => {
 */
 
 const aws_proxy = proxy({target: 'http://eks-alb-http-altair-prod-2046585597.us-east-1.elb.amazonaws.com:6244', changeOrigin: false, ws: true})
-app.use('/api/*', [secured, setPrivateHeader, disableCache], (req, res, next) => {
+app.use('/api/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
   return aws_proxy(req, res, next);
 })
 
