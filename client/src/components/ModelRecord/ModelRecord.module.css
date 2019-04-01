@@ -134,3 +134,10 @@
   display: block;
   margin: 0 auto;
 }
+
+.chart {
+  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}

@@ -164,27 +164,27 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           additionalContainerClassName={styles.record_divider}
         />
         {(!deployState || deployState.status !== 'deployed') && (
-          <this.Record header="No monitoring information" />
+          <div className={styles.record_header}>No monitoring information</div>
         )}
         {alreadyDeployed && (
-          <this.Record header="Latency and service metrics">
+          <div className={styles.chart}>
             {this.props.loadingServiceStatistics ? (
               <img src={loader} className={styles.loader} />
             ) : this.props.serviceStatistics ? (
               //JSON.stringify(this.props.serviceStatistics)
               <DeployServiceChart
                 height={400}
-                width={800}
+                width={600}
                 marginBottom={80}
-                marginLeft={40}
+                marginLeft={60}
                 marginTop={40}
-                maginRight={120}
+                marginRight={60}
                 metrics={this.props.serviceStatistics}
               />
             ) : (
               ''
             )}
-          </this.Record>
+          </div>
         )}
         {alreadyDeployed && (
           <this.Record header="Data metrics">

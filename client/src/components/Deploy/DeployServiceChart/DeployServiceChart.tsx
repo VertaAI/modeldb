@@ -16,7 +16,7 @@ interface ILocalProps {
   width: number;
   marginLeft: number;
   marginTop: number;
-  maginRight: number;
+  marginRight: number;
   marginBottom: number;
   metrics: IServiceStatistics;
 }
@@ -57,7 +57,7 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
     }
     console.log(this.props.metrics);
     const width =
-      this.props.width - this.props.marginLeft - this.props.maginRight;
+      this.props.width - this.props.marginLeft - this.props.marginRight;
     const height =
       this.props.height - this.props.marginTop - this.props.marginBottom;
 
@@ -92,25 +92,59 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       .attr('transform', 'rotate(-55)');
 
     // Y axis
-    const y = d3.scaleLinear().range([height, 0]);
+    const yLatency = d3.scaleLinear().range([height, 0]);
+    yLatency.domain([0, 1.2 * Math.max(...points.map(p => p.p99Latency))]);
+    const yLatencyAxis = d3.axisLeft(yLatency).tickFormat(d3.format('.2s'));
+    chart.append('g').call(yLatencyAxis);
 
-    y.domain([0, 1.2 * Math.max(...points.map(p => p.p99Latency))]);
+    // text label for the y axis
+    chart
+      .append('text')
+      .attr('transform', 'rotate(-90)')
+      .attr('y', 0 - this.props.marginLeft)
+      .attr('x', 0 - height / 2)
+      .attr('dy', '1em')
+      .style('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .text('Latency');
 
-    // Add axes
-    const yAxis = d3.axisLeft(y).tickFormat(d3.format('.2s'));
-    chart.append('g').call(yAxis);
+    const yThroughput = d3.scaleLinear().range([height, 0]);
+    yThroughput.domain([0, 1.2 * Math.max(...points.map(p => p.throughput))]);
+    const yThroughputAxis = d3
+      .axisRight(yThroughput)
+      .tickFormat(d3.format('.2s'));
+    chart
+      .append('g')
+      .attr('transform', 'translate(' + width + ' ,0)')
+      .call(yThroughputAxis);
+
+    // text label for the y axis
+    chart
+      .append('text')
+      .attr('transform', 'rotate(90)')
+      .attr('y', -width - this.props.marginRight)
+      .attr('x', 0 + height / 2)
+      .attr('dy', '1em')
+      .style('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .text('Throughput');
 
     // Add title
     chart
       .append('text')
-      .html('State Population Over Time')
-      .attr('x', 200);
+      .html('Service behavior')
+      .attr('x', width / 2)
+      .style('text-anchor', 'middle');
 
-    const drawLine = (extractor: (p: Point) => number, color: Color) => {
+    const drawLine = (
+      extractor: (p: Point) => number,
+      color: Color,
+      yScale: (value: number) => number
+    ) => {
       const line = d3
         .line<Point>()
         .x(p => x(p.time))
-        .y(p => y(extractor(p)));
+        .y(p => yScale(extractor(p)));
 
       chart
         .selectAll()
@@ -120,13 +154,14 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         .attr('fill', 'none')
         .attr('stroke', color)
         .attr('stroke-width', 1)
-        .attr('d', line)
-        .attr('shape-rendering', 'auto');
+        .attr('d', line);
+      //.attr('shape-rendering', 'auto');
     };
 
-    drawLine(p => p.p99Latency, 'red');
-    drawLine(p => p.p90Latency, 'blue');
-    drawLine(p => p.p50Latency, 'black');
+    drawLine(p => p.p99Latency, 'red', yLatency);
+    drawLine(p => p.p90Latency, '#BDB76B', yLatency);
+    drawLine(p => p.p50Latency, 'darkgreen', yLatency);
+    drawLine(p => p.throughput, 'black', yThroughput);
 
     const tooltip = d3.select('#tooltip');
     const tooltipLine = chart.append('line');
@@ -169,7 +204,7 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
   */
 
       tooltipLine
-        .attr('stroke', 'black')
+        .attr('stroke', '#6863ff')
         .attr('x1', x(closestRoundedDate))
         .attr('x2', x(closestRoundedDate))
         .attr('y1', 0)
@@ -179,6 +214,18 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         .style('left', d3.event.pageX + 20)
         .style('top', d3.event.pageY - 20);
 
+      //const closestPoint = points.find(p => p.time == closestRoundedDate) as Point
+      const closestPoint = points
+        .map(p => {
+          return {
+            timeDiff: Math.abs(p.time.getTime() - closestRoundedDate.getTime()),
+            p: p,
+          };
+        })
+        .sort((a, b) => {
+          return a.timeDiff - b.timeDiff;
+        })[0].p;
+
       console.log(d3.event.pageX, d3.event.pageY);
       tooltip
         .html('')
@@ -186,10 +233,46 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         .style('left', d3.event.pageX + 20 + 'px')
         .style('top', d3.event.pageY - 20 + 'px')
         .selectAll()
-        .data([1, 2, 3])
+        .data([
+          {
+            title: 'Latency p99:',
+            color: 'black',
+            value: closestPoint.p99Latency,
+            unit: 'ms',
+            scale: 1000,
+            fixed: 0,
+          },
+          {
+            title: 'Latency p90:',
+            color: 'black',
+            value: closestPoint.p90Latency,
+            unit: 'ms',
+            scale: 1000,
+            fixed: 0,
+          },
+          {
+            title: 'Latency p50:',
+            color: 'black',
+            value: closestPoint.p50Latency,
+            unit: 'ms',
+            scale: 1000,
+            fixed: 0,
+          },
+          {
+            title: 'Throughput:',
+            color: 'black',
+            value: closestPoint.throughput,
+            unit: ' qps',
+            scale: 1,
+            fixed: 3,
+          },
+        ])
         .enter()
         .append('div')
-        .html(d => '' + d);
+        .style('color', d => d.color)
+        .html(
+          d => d.title + ' ' + (d.value * d.scale).toFixed(d.fixed) + d.unit
+        );
       //.style('color', d => d.color)
       //.html(d => d.name + ': ' + d.history.find(h => h.year == year).population);
     }
@@ -216,7 +299,7 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
     return (
       <React.Fragment>
         <svg
-          className="container"
+          className={`container ${styles.chart}`}
           ref={(ref: SVGSVGElement) => (this.ref = ref)}
           shapeRendering={'optimizeQuality'}
           width={this.props.width}
