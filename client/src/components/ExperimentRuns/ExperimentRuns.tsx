@@ -2,60 +2,21 @@ import { GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
+import ModelRecord from 'models/ModelRecord';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-
-import loader from 'components/images/loader.gif';
-import { FilterContextPool } from 'models/FilterContextPool';
-import { PropertyType } from 'models/Filters';
-import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
 import { IColumnMetaData } from 'store/dashboard-config';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-
+import loader from '../images/loader.gif';
 import {
   defaultColDefinitions,
   returnColumnDefs,
 } from './columnDefinitions/Definitions';
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 import styles from './ExperimentRuns.module.css';
-
-let currentProjectID: string;
-const locationRegEx = /\/project\/([a-z0-9\-]+)\/exp-runs/im;
-FilterContextPool.registerContext({
-  getMetadata: () => [
-    { propertyName: 'Name', type: PropertyType.STRING },
-    { propertyName: 'Tag', type: PropertyType.STRING },
-  ],
-  isFilteringSupport: true,
-  isValidLocation: (location: string) => {
-    if (locationRegEx.test(location)) {
-      const match = location.match(locationRegEx);
-      currentProjectID = match ? match[1] : '';
-      return true;
-    } else {
-      return false;
-    }
-  },
-  name: 'ModelRecord',
-  onApplyFilters: (filters, dispatch) => {
-    dispatch(fetchExperimentRuns(currentProjectID, filters));
-  },
-  onSearch: (text: string, dispatch) => {
-    dispatch(
-      fetchExperimentRuns(currentProjectID, [
-        {
-          invert: false,
-          name: 'Name',
-          type: PropertyType.STRING,
-          value: text,
-        },
-      ])
-    );
-  },
-});
 
 type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
@@ -107,11 +68,10 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
   public render() {
     const { data, loading, columnConfig } = this.props;
-
     return loading ? (
       <img src={loader} className={styles.loader} />
     ) : data ? (
-      <div>
+      <React.Fragment>
         <DashboardConfig />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
@@ -127,7 +87,7 @@ class ExperimentRuns extends React.Component<AllProps> {
             doesExternalFilterPass={this.doesExternalFilterPass}
           />
         </div>
-      </div>
+      </React.Fragment>
     ) : (
       ''
     );

@@ -49,7 +49,6 @@ export default class ExperimentRunsDataService extends BaseDataService
             if (!data || !data.experiment_runs) {
               return Array<ModelRecord>();
             }
-
             const jsonConvert = new JsonConvert();
             let experimentRuns = jsonConvert.deserializeArray(
               data.experiment_runs,
@@ -60,7 +59,6 @@ export default class ExperimentRunsDataService extends BaseDataService
                 this.checkExperimentRun(model, filters)
               );
             }
-
             return experimentRuns;
           } catch (error) {
             return data;

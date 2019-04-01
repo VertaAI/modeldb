@@ -6,14 +6,12 @@ import {
   Switch,
   withRouter,
 } from 'react-router-dom';
-
-import ExperimentRuns from 'components/ExperimentRuns/ExperimentRuns';
-import { FilterSelect } from 'components/FilterSelect/FilterSelect';
-import { GenericNotFound } from 'components/GenericNotFound/GenericNotFound';
-import ModelRecord from 'components/ModelRecord/ModelRecord';
-import Projects from 'components/Projects/Projects';
 import routes from 'routes';
-
+import ExperimentSummary from '../ExperimentSummary/ExperimentSummary';
+import { FilterSelect } from '../FilterSelect/FilterSelect';
+import { GenericNotFound } from '../GenericNotFound/GenericNotFound';
+import ModelRecord from '../ModelRecord/ModelRecord';
+import Projects from '../Projects/Projects';
 import styles from './AuthorizedLayout.module.css';
 import AuthorizedLayoutHeader from './AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 
@@ -55,13 +53,19 @@ class AuthorizedLayout extends React.Component<RouteComponentProps> {
             component={Projects}
           />
           <RouteWithFilter
-            path={routes.expirementRuns.getPath()}
-            component={ExperimentRuns}
-          />
-          <RouteWithFilter
             path={routes.modelRecord.getPath()}
             component={ModelRecord}
           />
+          <RouteWithFilter
+            path={routes.expirementRuns.getPath()}
+            component={ExperimentSummary}
+          />
+          <RouteWithFilter
+            path={routes.charts.getPath()}
+            component={ExperimentSummary}
+          />
+          {/* <RouteWithFilter path={'/'} component={ExperimentSummary} /> */}
+
           <Route component={GenericNotFound} />
         </Switch>
       </div>
