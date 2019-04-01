@@ -83,119 +83,16 @@ const printer = (req, res, next) => {
   next()
 }
 
-const aws_proxy = proxy({target: 'http://eks-alb-http-altair-prod-2046585597.us-east-1.elb.amazonaws.com:6244', changeOrigin: false, ws: true})
+const apiAddress = `${process.env.BACKEND_API_PROTOCOL}://${process.env.BACKEND_API_DOMAIN}${
+  process.env.BACKEND_API_PORT ? `:${process.env.BACKEND_API_PORT}` : ''
+}`;
+
+const aws_proxy = proxy({target: apiAddress, changeOrigin: false, ws: true})
 app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
   return aws_proxy(req, res, next);
 })
 
 app.use(bodyParser.json());
-
-//app.use(express.static('client/build'));
-
-/*
-app.get('/api/getProjects', [secured, setPrivateHeader], (req, res) => {
-  api.getFromAPI('/v1/project/getProjects', 'get', req.headers)
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.get('/api/getExperimentRunsInProject', [secured, setPrivateHeader], (req, res) => {
-  api.getFromAPI(
-      '/v1/experiment-run/getExperimentRunsInProject',
-      'get',
-      req.headers,
-      req.query) // also req.params for post
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.get('/api/v1/getServiceStatistics/:modelId', [secured, setPrivateHeader], (req, res) => {
-  // Disable caching for content files
-  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.header("Pragma", "no-cache");
-  res.header("Expires", 0);
-
-  api.getFromAPI(
-      `/api/v1/controller/statistics/service/${req.params.modelId}`,
-      'get',
-      req.headers,
-      req.query)
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.get('/api/v1/getDataStatistics/:modelId', [secured, setPrivateHeader], (req, res) => {
-  // Disable caching for content files
-  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.header("Pragma", "no-cache");
-  res.header("Expires", 0);
-
-  api.getFromAPI(
-      `/api/v1/controller/data/service/${req.params.modelId}`,
-      'get',
-      req.headers,
-      req.query)
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.post('/api/v1/controller/deploy', [secured, setPrivateHeader], (req, res) => {
-  api.getFromAPI(
-      '/api/v1/controller/deploy',
-      'post',
-      req.headers,
-      req.query,
-      req.body,
-    )
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.get('/api/v1/controller/status/:modelId', [secured, setPrivateHeader], (req, res) => {
-  // Disable caching for content files
-  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.header("Pragma", "no-cache");
-  res.header("Expires", 0);
-
-  api.getFromAPI(
-      `/api/v1/controller/status/${req.params.modelId}`,
-      'get',
-      req.headers,
-      req.query,
-    )
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
-*/
 
 app.get('/api/getUser',
   secured,
@@ -208,18 +105,6 @@ app.get('/api/getUser',
 );
 
 app.use('/api/auth/', auth);
-
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-/*
-app.get('*', (req, res) => {
-  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.header("Pragma", "no-cache");
-  res.header("Expires", 0);
-
-  res.sendFile(path.join(__dirname + '/client/build' + '/index.html'));
-});
-*/
 
 const local_proxy = proxy({target: 'http://localhost:3001', changeOrigin: false, ws: true})
 app.use('*', (req, res, next) => {
