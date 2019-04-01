@@ -23,7 +23,6 @@ import DashboardConfig from './DashboardConfig/DashboardConfig';
 import styles from './ExperimentRuns.module.css';
 
 let currentProjectID: string;
-const locationRegEx = /\/project\/([a-z0-9\-]+)\/exp-runs/im;
 FilterContextPool.registerContext({
   getMetadata: () => [
     { propertyName: 'Name', type: PropertyType.STRING },
@@ -31,13 +30,12 @@ FilterContextPool.registerContext({
   ],
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
-    if (locationRegEx.test(location)) {
-      const match = location.match(locationRegEx);
-      currentProjectID = match ? match[1] : '';
+    const match = routes.expirementRuns.getMatch(location);
+    if (match) {
+      currentProjectID = match.projectId;
       return true;
-    } else {
-      return false;
     }
+    return false;
   },
   name: 'ModelRecord',
   onApplyFilters: (filters, dispatch) => {
