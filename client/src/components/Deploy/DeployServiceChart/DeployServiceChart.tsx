@@ -9,6 +9,7 @@ import {
   IServiceStatistics,
 } from 'models/Deploy';
 import { Color } from 'csstype';
+import styles from './DeployServiceChart.module.css';
 
 interface ILocalProps {
   height: number;
@@ -39,8 +40,8 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
   componentDidMount() {
     const metrics = this.props.metrics;
     const convertTime = (v: number) => {
-      var t = new Date(1970, 0, 1);
-      t.setSeconds(v);
+      var t = new Date(0);
+      t.setUTCSeconds(v);
       return t;
     };
     var points: Point[] = [];
@@ -127,6 +128,72 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
     drawLine(p => p.p90Latency, 'blue');
     drawLine(p => p.p50Latency, 'black');
 
+    const tooltip = d3.select('#tooltip');
+    const tooltipLine = chart.append('line');
+
+    const tipBox = chart
+      .append('rect')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('opacity', 0)
+      .on('mousemove', drawTooltip)
+      .on('mouseout', removeTooltip);
+
+    function removeTooltip() {
+      if (tooltip) tooltip.style('display', 'none');
+      if (tooltipLine) tooltipLine.attr('stroke', 'none');
+    }
+
+    function drawTooltip() {
+      //const year = Math.floor((x.invert(d3.mouse(tipBox.node())[0]) + 5) / 10) * 10;
+      //const time = x.invert(d3.mouse(tipBox.node() as SVGRectElement)[0]);
+
+      const closestTime = x.invert(
+        d3.mouse(tipBox.node() as SVGRectElement)[0]
+      );
+      const closestSecond =
+        Math.floor((closestTime.getTime() + 2500) / 5000) * 5;
+      const closestRoundedDate = convertTime(closestSecond);
+
+      //const time = convertTime(Math.floor(x.invert(d3.mouse(tipBox.node() as SVGRectElement)[0]).getTime() / 1000) * 1);
+      console.log(closestRoundedDate.getTime());
+      console.log(closestTime.getTime());
+      console.log(x(closestTime));
+      console.log(x(closestRoundedDate));
+      //console.log(time.getTime())
+
+      /*
+  states.sort((a, b) => {
+    return b.history.find(h => h.year == year).population - a.history.find(h => h.year == year).population;
+  })  
+  */
+
+      tooltipLine
+        .attr('stroke', 'black')
+        .attr('x1', x(closestRoundedDate))
+        .attr('x2', x(closestRoundedDate))
+        .attr('y1', 0)
+        .attr('y2', height);
+
+      tooltip
+        .style('left', d3.event.pageX + 20)
+        .style('top', d3.event.pageY - 20);
+
+      console.log(d3.event.pageX, d3.event.pageY);
+      tooltip
+        .html('')
+        .style('display', 'block')
+        .style('left', d3.event.pageX + 20 + 'px')
+        .style('top', d3.event.pageY - 20 + 'px')
+        .selectAll()
+        .data([1, 2, 3])
+        .enter()
+        .append('div')
+        .html(d => '' + d);
+      //.style('color', d => d.color)
+      //.html(d => d.name + ': ' + d.history.find(h => h.year == year).population);
+    }
+
     /*
     const line = d3
       .line<Point>()
@@ -147,13 +214,16 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
 
   render() {
     return (
-      <svg
-        className="container"
-        ref={(ref: SVGSVGElement) => (this.ref = ref)}
-        shapeRendering={'optimizeQuality'}
-        width={this.props.width}
-        height={this.props.height}
-      />
+      <React.Fragment>
+        <svg
+          className="container"
+          ref={(ref: SVGSVGElement) => (this.ref = ref)}
+          shapeRendering={'optimizeQuality'}
+          width={this.props.width}
+          height={this.props.height}
+        />
+        <div id="tooltip" className={styles.tooltip} />
+      </React.Fragment>
     );
   }
 }
