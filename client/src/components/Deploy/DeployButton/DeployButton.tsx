@@ -74,6 +74,7 @@ class DeployButton extends React.PureComponent<AllProps> {
     this.props.dispatch(showDeployManagerForModel(this.props.modelId));
   }
 
+  /*
   @bind
   public componentDidMount() {
     this.intervalId = window.setInterval(() => {
@@ -85,6 +86,7 @@ class DeployButton extends React.PureComponent<AllProps> {
   public componentWillUnmount() {
     window.clearInterval(this.intervalId);
   }
+  */
 }
 
 const mapStateToProps = (
