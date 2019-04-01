@@ -2,19 +2,18 @@ import _ from 'lodash';
 import React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
+import routes, { GetRouteParams } from 'routes';
 import ModelRecord from '../../models/ModelRecord';
 import { Project } from '../../models/Project';
 import { IApplicationState, IConnectedReduxProps } from '../../store/store';
 import loader from '../images/loader.gif';
 import Tag from '../TagBlock/Tag';
-import tag_styles from '../TagBlock/TagBlock.module.css';
+import tagStyles from '../TagBlock/TagBlock.module.css';
 import styles from './Charts.module.css';
 import ModelExploration from './ModelExploration/ModelExploration';
 import ModelSummary from './ModelSummary/ModelSummary';
 
-export interface IUrlProps {
-  projectId: string;
-}
+export type IUrlProps = GetRouteParams<typeof routes.charts>;
 
 interface ILocalState {
   selectedMetric: string;
@@ -30,24 +29,19 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IPropsFromState &
   IConnectedReduxProps;
 class Charts extends React.Component<AllProps, ILocalState> {
-  public initialMetric: string = '';
-  public initialBarSelection: any;
-  public timeProj: any;
-
-  public constructor(props: AllProps) {
-    super(props);
-    this.state = {
-      selectedMetric: 'test_loss', // imopse a condition that this is the first val in the set
-    };
-  }
+  public state: ILocalState = { selectedMetric: 'test_loss' };
+  private initialMetric: string = '';
+  private initialBarSelection: any;
+  private timeProj: any;
 
   public render() {
     const { experimentRuns, loading, projects } = this.props;
+    const projectId = this.props.match.params.projectId;
 
     if (experimentRuns !== undefined) {
       this.initialBarSelection = {
-        initialMetric: this.state.selectedMetric,
         initialHyperparam: experimentRuns[0].hyperparameters[0].key,
+        initialMetric: this.state.selectedMetric,
       };
     }
     if (projects !== undefined && projects !== null) {
@@ -61,26 +55,16 @@ class Charts extends React.Component<AllProps, ILocalState> {
         <div className={styles.summary_wrapper}>
           {this.timeProj !== undefined && this.timeProj !== null ? (
             <div>
-              <p style={{ fontSize: '20px', fontWeight: 500 }}>
-                {this.timeProj.name}
-              </p>
-              <div
-                style={{
-                  float: 'right',
-                  marginTop: '-40px',
-                  marginLeft: '-60px',
-                  padding: '0 50px 0 0px',
-                }}
-              >
+              <p className={styles.chartsHeading}>{this.timeProj.name}</p>
+              <div className={styles.chartsBlock}>
                 <div>
-                  <span style={{ fontSize: '0.85em' }}>Author:</span>{' '}
-                  {this.timeProj.Author.name}
+                  <span>Author:</span> {this.timeProj.Author.name}
                 </div>
                 <br />
                 <div>
-                  <span style={{ fontSize: '0.85em' }}>Tags:</span>
-                  <div className={tag_styles.tag_block}>
-                    <ul className={tag_styles.tags}>
+                  <span>Tags:</span>
+                  <div className={tagStyles.tag_block}>
+                    <ul className={tagStyles.tags}>
                       {this.timeProj.tags.map((tag: string, i: number) => {
                         return (
                           <li key={i}>
@@ -96,7 +80,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
           ) : (
             ''
           )}
-          <p style={{ fontSize: '1.2em' }}>Summary Chart</p>
+          <p>Summary Chart</p>
           <ModelSummary experimentRuns={experimentRuns} />
         </div>
         <br />
