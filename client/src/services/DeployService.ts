@@ -36,10 +36,14 @@ export class DeployService extends BaseDataService implements IDeployService {
 
   public deploy(request: IDeployRequest): AxiosPromise<void> {
     const serverRequest = {
-      api: 's3://vertaai-deploymentservice-test/model_api.json',
+      api:
+        's3://verta-condacon/model-api/' + request.modelId + '/model_api.json',
       id: request.modelId,
-      model: 's3://vertaai-deploymentservice-test/model.pkl',
-      requirements: 's3://vertaai-deploymentservice-test/requirements.txt',
+      model: 's3://verta-condacon/models/' + request.modelId + '/model.pkl',
+      requirements:
+        's3://verta-condacon/requirements/' +
+        request.modelId +
+        '/requirements.txt',
     };
 
     return axios.post('/v1/deployment/deploy', serverRequest);
