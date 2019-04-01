@@ -9,6 +9,7 @@ import { PropertyType } from 'models/Filters';
 import { Project, UserAccess } from 'models/Project';
 import User from 'models/User';
 import routes from 'routes';
+import Tag from 'components/TagBlock/TagProject';
 
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
@@ -54,18 +55,19 @@ export default class ProjectWidget extends React.Component<
               {this.props.project.tags &&
                 this.props.project.tags.map((tag: string, i: number) => {
                   return (
-                    <Draggable
-                      key={i}
-                      type="filter"
-                      data={{
-                        type: PropertyType.STRING,
-                        name: 'Tag',
-                        value: tag,
-                      }}
-                      additionalClassName={styles.tag}
-                    >
-                      <span className={styles.tag_text}>{tag}</span>
-                    </Draggable>
+                    // <Draggable
+                    //   key={i}
+                    //   type="filter"
+                    //   data={{
+                    //     type: PropertyType.STRING,
+                    //     name: 'Tag',
+                    //     value: tag,
+                    //   }}
+                    //   additionalClassName={styles.tag}
+                    // >
+                    //   <span className={styles.tag_text}>{tag}</span>
+                    // </Draggable>
+                    <Tag tag={tag} key={i} />
                   );
                 })}
             </div>
