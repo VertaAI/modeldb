@@ -91,11 +91,11 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
     if (this.gridApi && this.props.columnConfig !== nextProps.columnConfig) {
       this.gridApi.setColumnDefs(returnColumnDefs(nextProps.columnConfig));
+      const el = document.getElementsByClassName('ag-center-cols-viewport');
+      if (el !== undefined && el[0] !== undefined) {
+        el[0].scrollLeft += 200;
+      }
     }
-    // const el = document.getElementsByClassName('ag-center-cols-viewport');
-    // if (el !== undefined && el[0] !== undefined) {
-    //   el[0].scrollLeft += 200;
-    // }
   }
 
   public componentDidUpdate(prevProps: AllProps) {
