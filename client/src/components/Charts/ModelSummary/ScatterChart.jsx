@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 const width = 650;
 const svg_width = 660;
 const height = 400;
-const margin = { top: 20, right: 5, bottom: 40, left: 55 };
+const margin = { top: 20, right: 25, bottom: 40, left: 55 };
 
 class BarChart extends Component {
   state = {

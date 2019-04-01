@@ -73,7 +73,7 @@
   margin-top: 5px;
 }
 
-.experiment_link {
+/* .experiment_link {
   text-decoration: none;
   line-height: 30px;
   border: solid 1px lightgrey;
@@ -82,24 +82,54 @@
   text-align: center;
   float: none;
   margin: 5px 0;
+} */
+
+/* new from model record */
+.experiment_link {
+  font-size: 13px;
+  text-decoration: none;
+  line-height: 30px;
+  border: solid 1px lightgrey;
+  border-radius: 3px;
+  padding: 0 5px;
+  max-width: 150px;
+  text-align: center;
+  float: none;
+  margin: 5px 0;
 }
 
-.parma_link_label {
-  color: rgb(141, 141, 141);
+.modelId_link {
+  font-size: 13px;
+  text-decoration: none;
+  line-height: 30px;
+  border: solid 1px lightgrey;
+  border-radius: 3px;
+  padding: 0 5px;
+  max-width: 150px;
+  text-align: center;
+  float: none;
+  margin: 5px 0;
+}
+
+.modelId_link:hover {
+  background-color: #e6e6e6;
 }
 
 .parma_link_value {
-  font-weight: 500;
-  color: var(--text-color1);
-}
-
-.parma_link_label {
+  font-size: 0.8em;
   color: rgb(141, 141, 141);
 }
 
-.parma_link_value {
+.parma_link_label {
   font-weight: 500;
   color: var(--text-color1);
+}
+/* end model record */
+
+.deploy_link {
+  text-align: center;
+  float: center;
+  margin: 10px 0;
 }
 
 .modelDescription {

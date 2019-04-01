@@ -61,7 +61,7 @@ class ExperimentRuns extends React.Component<AllProps> {
       this.gridApi.setColumnDefs(returnColumnDefs(nextProps.columnConfig));
       const el = document.getElementsByClassName('ag-center-cols-viewport');
       if (el !== undefined && el[0] !== undefined) {
-        el[0].scrollLeft += 200;
+        el[0].scrollLeft += 300;
       }
     }
   }
