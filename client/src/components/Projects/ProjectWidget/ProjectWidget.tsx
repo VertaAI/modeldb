@@ -86,10 +86,6 @@ export default class ProjectWidget extends React.Component<
                 src={project.Author.picture ? project.Author.picture : ''}
               />
             </div>
-            <div className={styles.model_count_block}>
-              <span className={styles.model_counter}>{12}</span>
-              <span>model</span>
-            </div>
             <div className={styles.collaborators}>
               <button
                 className={styles.collaborate_button}
