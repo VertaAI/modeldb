@@ -49,7 +49,7 @@ class ModelRecordColDef extends React.Component<any> {
               </span>
             </Link>
           </div>
-          <this.parmaLink label="Project ID:" value={projectId.slice(0, 4)} />
+          {/* <this.parmaLink label="Project ID:" value={projectId.slice(0, 4)} /> */}
           <this.parmaLink
             label="Experiment ID:"
             value={experimentId.slice(0, 4)}
