@@ -166,26 +166,35 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
         {(!deployState || deployState.status !== 'deployed') && (
           <div className={styles.record_header}>No monitoring information</div>
         )}
-        {alreadyDeployed && (
-          <div className={styles.chart}>
-            {this.props.loadingServiceStatistics ? (
-              <img src={loader} className={styles.loader} />
-            ) : this.props.serviceStatistics ? (
-              //JSON.stringify(this.props.serviceStatistics)
-              <DeployServiceChart
-                height={400}
-                width={600}
-                marginBottom={80}
-                marginLeft={60}
-                marginTop={40}
-                marginRight={60}
-                metrics={this.props.serviceStatistics}
-              />
-            ) : (
-              ''
-            )}
-          </div>
-        )}
+        {alreadyDeployed &&
+          (!this.props.serviceStatistics ||
+            !this.props.serviceStatistics.time) && (
+            <div className={styles.record_header}>
+              No monitoring information in the time window considered
+            </div>
+          )}
+        {alreadyDeployed &&
+          this.props.serviceStatistics &&
+          this.props.serviceStatistics.time && (
+            <div className={styles.chart}>
+              {this.props.loadingServiceStatistics ? (
+                <img src={loader} className={styles.loader} />
+              ) : this.props.serviceStatistics ? (
+                //JSON.stringify(this.props.serviceStatistics)
+                <DeployServiceChart
+                  height={400}
+                  width={600}
+                  marginBottom={80}
+                  marginLeft={60}
+                  marginTop={40}
+                  marginRight={60}
+                  metrics={this.props.serviceStatistics}
+                />
+              ) : (
+                ''
+              )}
+            </div>
+          )}
         {alreadyDeployed && (
           <this.Record header="Data metrics">
             {this.props.loadingDataStatistics ? (

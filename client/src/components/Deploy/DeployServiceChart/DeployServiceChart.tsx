@@ -60,6 +60,8 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
   }
 
   componentDidMount() {
+    if (!this.props.metrics.time) return;
+    console.log(this.props.metrics);
     const points = this.transposePoints();
     const width =
       this.props.width - this.props.marginLeft - this.props.marginRight;
