@@ -37,17 +37,18 @@ type AllProps = ILocalProps & IPropsFromState;
 class DeployServiceChart extends React.PureComponent<AllProps> {
   ref!: SVGSVGElement;
 
-  componentDidMount() {
+  convertTime(v: number) {
+    var t = new Date(0);
+    t.setUTCSeconds(v);
+    return t;
+  }
+
+  transposePoints() {
     const metrics = this.props.metrics;
-    const convertTime = (v: number) => {
-      var t = new Date(0);
-      t.setUTCSeconds(v);
-      return t;
-    };
     var points: Point[] = [];
     for (var i = 0; i < metrics.time.length; i++) {
       points.push({
-        time: convertTime(metrics.time[i]),
+        time: this.convertTime(metrics.time[i]),
         throughput: metrics.throughput[i * 2], // TODO: figure out why
         averageLatency: metrics.averageLatency[i],
         p50Latency: metrics.p50Latency[i],
@@ -55,7 +56,11 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         p99Latency: metrics.p99Latency[i],
       });
     }
-    console.log(this.props.metrics);
+    return points;
+  }
+
+  componentDidMount() {
+    const points = this.transposePoints();
     const width =
       this.props.width - this.props.marginLeft - this.props.marginRight;
     const height =
@@ -155,7 +160,6 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         .attr('stroke', color)
         .attr('stroke-width', 1)
         .attr('d', line);
-      //.attr('shape-rendering', 'auto');
     };
 
     drawLine(p => p.p99Latency, 'red', yLatency);
@@ -179,29 +183,15 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       if (tooltipLine) tooltipLine.attr('stroke', 'none');
     }
 
-    function drawTooltip() {
-      //const year = Math.floor((x.invert(d3.mouse(tipBox.node())[0]) + 5) / 10) * 10;
-      //const time = x.invert(d3.mouse(tipBox.node() as SVGRectElement)[0]);
+    const convertTime = this.convertTime;
 
+    function drawTooltip() {
       const closestTime = x.invert(
         d3.mouse(tipBox.node() as SVGRectElement)[0]
       );
       const closestSecond =
         Math.floor((closestTime.getTime() + 2500) / 5000) * 5;
       const closestRoundedDate = convertTime(closestSecond);
-
-      //const time = convertTime(Math.floor(x.invert(d3.mouse(tipBox.node() as SVGRectElement)[0]).getTime() / 1000) * 1);
-      console.log(closestRoundedDate.getTime());
-      console.log(closestTime.getTime());
-      console.log(x(closestTime));
-      console.log(x(closestRoundedDate));
-      //console.log(time.getTime())
-
-      /*
-  states.sort((a, b) => {
-    return b.history.find(h => h.year == year).population - a.history.find(h => h.year == year).population;
-  })  
-  */
 
       tooltipLine
         .attr('stroke', '#6863ff')
@@ -214,7 +204,6 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         .style('left', d3.event.pageX + 20)
         .style('top', d3.event.pageY - 20);
 
-      //const closestPoint = points.find(p => p.time == closestRoundedDate) as Point
       const closestPoint = points
         .map(p => {
           return {
@@ -226,7 +215,6 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
           return a.timeDiff - b.timeDiff;
         })[0].p;
 
-      console.log(d3.event.pageX, d3.event.pageY);
       tooltip
         .html('')
         .style('display', 'block')
@@ -236,7 +224,6 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         .data([
           {
             title: 'Latency p99:',
-            color: 'black',
             value: closestPoint.p99Latency,
             unit: 'ms',
             scale: 1000,
@@ -244,7 +231,6 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
           },
           {
             title: 'Latency p90:',
-            color: 'black',
             value: closestPoint.p90Latency,
             unit: 'ms',
             scale: 1000,
@@ -252,7 +238,6 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
           },
           {
             title: 'Latency p50:',
-            color: 'black',
             value: closestPoint.p50Latency,
             unit: 'ms',
             scale: 1000,
@@ -260,7 +245,6 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
           },
           {
             title: 'Throughput:',
-            color: 'black',
             value: closestPoint.throughput,
             unit: ' qps',
             scale: 1,
@@ -269,30 +253,10 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
         ])
         .enter()
         .append('div')
-        .style('color', d => d.color)
         .html(
           d => d.title + ' ' + (d.value * d.scale).toFixed(d.fixed) + d.unit
         );
-      //.style('color', d => d.color)
-      //.html(d => d.name + ': ' + d.history.find(h => h.year == year).population);
     }
-
-    /*
-    const line = d3
-      .line<Point>()
-      .x(p => x(p.time))
-      .y(p => y(p.p99Latency));
-
-    chart
-      .selectAll()
-      .data([points])
-      .enter()
-      .append('path')
-      .attr('fill', 'none')
-      .attr('stroke', 'black')
-      .attr('stroke-width', 1)
-      .attr('d', line)
-      .attr('shape-rendering', 'auto')*/
   }
 
   render() {
