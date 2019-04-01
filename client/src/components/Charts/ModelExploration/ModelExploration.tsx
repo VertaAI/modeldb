@@ -207,7 +207,6 @@ export default class ModelExploration extends React.Component<
   public count = (array: any) => array.length;
 
   public computeFlatMetric = (arr: ModelRecord[]) => {
-    console.log(arr);
     return arr.map(obj => {
       const metricField = _.pick(obj, 'startTime', 'metrics');
       const flatMetric: any = { date: metricField.startTime };

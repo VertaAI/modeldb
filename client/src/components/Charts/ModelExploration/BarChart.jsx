@@ -45,7 +45,7 @@ class BarChart extends Component {
     const [, max] = d3.extent(data, d => d.value);
     const yScale = d3
       .scaleLinear()
-      .domain([0, max + max * 0.2])
+      .domain([0, max * 1.25])
       .range([height - margin.bottom, margin.top]);
 
     const bars = data.map(d => {
@@ -94,15 +94,15 @@ class BarChart extends Component {
       .style('fill', '#444')
       .text(this.props.xLabel);
 
-    d3.select(this.refs.yAxis)
-      .append('g')
-      .attr('class', 'grid')
-      .call(
-        this.yAxis
-          .ticks(6)
-          .tickSize(-width + margin.right + margin.left)
-          .tickFormat('')
-      );
+    // d3.select(this.refs.yAxis)
+    //   .append('g')
+    //   .attr('class', 'grid')
+    //   .call(
+    //     this.yAxis
+    //       .ticks(6)
+    //       .tickSize(-width + margin.right + margin.left)
+    //       .tickFormat('')
+    //   );
   }
 
   render() {

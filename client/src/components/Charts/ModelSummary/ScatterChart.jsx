@@ -26,7 +26,7 @@ class BarChart extends Component {
     const [min, max] = d3.extent(flatdata, d => d[selectedMetric]);
     const yScale = d3
       .scaleLinear()
-      .domain([min, max])
+      .domain([0, max * 1.25])
       .range([height - margin.bottom, margin.top]);
 
     const marks = flatdata.map(d => {
@@ -88,15 +88,15 @@ class BarChart extends Component {
     //     d3.select(this.refs.annotation).attr('opacity', 0);
     //   });
 
-    d3.select(this.refs.yAxis)
-      .append('g')
-      .attr('class', 'grid')
-      .call(
-        this.yAxis
-          .ticks(6)
-          .tickSize(-width + margin.right + margin.left)
-          .tickFormat('')
-      );
+    // d3.select(this.refs.yAxis)
+    //   .append('g')
+    //   .attr('class', 'grid')
+    //   .call(
+    //     this.yAxis
+    //       .ticks(6)
+    //       .tickSize(-width + margin.right + margin.left)
+    //       .tickFormat('')
+    //   );
   }
   componentDidUpdate() {
     this.xAxis.scale(this.state.xScale);
