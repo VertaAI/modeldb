@@ -16,3 +16,8 @@ export interface IServerFeature {
 export interface IServerServiceData {
   [featureName: string]: IServerFeature;
 }
+
+export type IServerDeployStatusInfo =
+  | { status: 'not deployed' }
+  | { status: 'deploying' }
+  | { status: 'live'; uptime: string; token: string; api: string };

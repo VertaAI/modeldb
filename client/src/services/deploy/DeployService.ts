@@ -7,15 +7,16 @@ import {
 } from 'models/Deploy';
 import { URL } from 'utils/types';
 
-import { BaseDataService } from './BaseDataService';
+import { BaseDataService } from '../BaseDataService';
 import {
   convertServerDataStatisticsToClient,
+  convertServerDeployStatusInfoToClient,
   convertServerServiceStatisticsToClient,
-} from './converters/Deploy';
+} from '../converters/Deploy';
 import { IDeployService } from './IDeployService';
-import { deployedStatusInfoData } from './mocks/deployMock';
 
-export class DeployService extends BaseDataService implements IDeployService {
+export default class DeployService extends BaseDataService
+  implements IDeployService {
   constructor() {
     super();
   }
@@ -51,20 +52,7 @@ export class DeployService extends BaseDataService implements IDeployService {
 
   public loadStatus(modelId: string): AxiosPromise<IDeployStatusInfo> {
     return axios.get<IDeployStatusInfo>(`/v1/controller/status/${modelId}`, {
-      transformResponse: res => {
-        if (res.status === 'not deployed') {
-          return { status: 'notDeployed' } as IDeployStatusInfo;
-        }
-        if (res.status === 'deploying') {
-          return { status: 'deploying' } as IDeployStatusInfo;
-        }
-        if (res.status === 'live') {
-          return {
-            status: 'deployed',
-            data: { ...deployedStatusInfoData, api: res.api },
-          } as IDeployStatusInfo;
-        }
-      },
+      transformResponse: convertServerDeployStatusInfoToClient,
     });
   }
 }
