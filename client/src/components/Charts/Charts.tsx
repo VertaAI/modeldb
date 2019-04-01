@@ -16,10 +16,6 @@ export interface IUrlProps {
   projectId: string;
 }
 
-interface ILocalState {
-  selectedMetric: string;
-}
-
 interface IPropsFromState {
   projects: Project[] | null | undefined;
   experimentRuns?: ModelRecord[] | undefined;
@@ -29,25 +25,17 @@ interface IPropsFromState {
 type AllProps = RouteComponentProps<IUrlProps> &
   IPropsFromState &
   IConnectedReduxProps;
-class Charts extends React.Component<AllProps, ILocalState> {
-  public initialMetric: string = '';
+class Charts extends React.Component<AllProps> {
   public initialBarSelection: any;
   public timeProj: any;
-
-  public constructor(props: AllProps) {
-    super(props);
-    this.state = {
-      selectedMetric: 'test_loss', // imopse a condition that this is the first val in the set
-    };
-  }
 
   public render() {
     const { experimentRuns, loading, projects } = this.props;
 
     if (experimentRuns !== undefined) {
       this.initialBarSelection = {
-        initialMetric: this.state.selectedMetric,
         initialHyperparam: experimentRuns[0].hyperparameters[0].key,
+        initialMetric: experimentRuns[0].metrics[0].key,
       };
     }
     if (projects !== undefined && projects !== null) {
@@ -97,7 +85,10 @@ class Charts extends React.Component<AllProps, ILocalState> {
             ''
           )}
           <p style={{ fontSize: '1.2em' }}>Summary Chart</p>
-          <ModelSummary experimentRuns={experimentRuns} />
+          <ModelSummary
+            experimentRuns={experimentRuns}
+            initialYSelection={this.initialBarSelection.initialMetric}
+          />
         </div>
         <br />
         <ModelExploration

@@ -35,8 +35,8 @@ export default class ModelExploration extends React.Component<
       computeXAxisFields: this.computeXAxisFields(props.expRuns),
       flatMetric: this.computeFlatMetric(props.expRuns),
       selectedAggregate: 'average',
-      selectedXAxis: 'hidden_size', // initial val for testing //
-      selectedYAxis: 'test_loss', // initial val for testing - first metric
+      selectedXAxis: props.initialSelection.initialHyperparam, // initial val for testing //
+      selectedYAxis: props.initialSelection.initialMetric, // initial val for testing - first metric
     };
   }
 
@@ -149,6 +149,12 @@ export default class ModelExploration extends React.Component<
       ''
     );
   }
+
+  // set initial x and y axis
+  public getInitialYAxis(experimentRuns: ModelRecord[]) {
+    return experimentRuns[0].hyperparameters[0].key;
+  }
+
   // event handler to set user selection fields for bar chart
   public setLocalYState = (event: React.FormEvent<HTMLSelectElement>) => {
     const element = event.target as HTMLSelectElement;

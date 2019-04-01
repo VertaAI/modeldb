@@ -6,6 +6,7 @@ import styles from './ModelSummary.module.css';
 
 interface ILocalProps {
   experimentRuns: ModelRecord[];
+  initialYSelection: string;
 }
 
 interface ILocalState {
@@ -22,7 +23,7 @@ export default class ModelExploration extends React.Component<
 
     this.state = {
       chartData: this.computeFlatMetric(props.experimentRuns),
-      selectedMetric: 'test_loss',
+      selectedMetric: props.initialYSelection,
     };
   }
 
