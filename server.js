@@ -20,9 +20,11 @@ var sess = {
   saveUninitialized: true
 };
 
-if (app.get('env') === 'production') {
+/*
+if (process.env.DEPLOYED === 'yes') {
   sess.cookie.secure = true; // serve secure cookies, requires https
 }
+*/
 
 app.use(cookieParser());
 app.use(session(sess));
@@ -87,10 +89,12 @@ const apiAddress = `${process.env.BACKEND_API_PROTOCOL}://${process.env.BACKEND_
   process.env.BACKEND_API_PORT ? `:${process.env.BACKEND_API_PORT}` : ''
 }`;
 
-const aws_proxy = proxy({target: apiAddress, changeOrigin: false, ws: true})
-app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
-  return aws_proxy(req, res, next);
-})
+if (process.env.DEPLOYED !== 'yes') {
+  const aws_proxy = proxy({target: apiAddress, changeOrigin: false, ws: true})
+  app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
+    return aws_proxy(req, res, next);
+  })
+}
 
 app.use(bodyParser.json());
 
@@ -106,10 +110,15 @@ app.get('/api/getUser',
 
 app.use('/api/auth/', auth);
 
-const local_proxy = proxy({target: 'http://localhost:3001', changeOrigin: false, ws: true})
-app.use('*', (req, res, next) => {
-  return local_proxy(req, res, next);
-})
+if (process.env.DEPLOYED === 'yes') {
+  app.use(express.static('client/build'));
+}
+else {
+  const local_proxy = proxy({target: 'http://localhost:3001', changeOrigin: false, ws: true})
+  app.use('*', (req, res, next) => {
+    return local_proxy(req, res, next);
+  })
+}
 
 const port = process.env.PORT || 3000;
 app.listen(port);
