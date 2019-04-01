@@ -3,9 +3,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
-import ModelRecord from '../../models/ModelRecord';
-import { Project } from '../../models/Project';
-import { IApplicationState, IConnectedReduxProps } from '../../store/store';
+
+import ModelRecord from 'models/ModelRecord';
+import { Project } from 'models/Project';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import loader from '../images/loader.gif';
 import Tag from '../TagBlock/Tag';
 import tagStyles from '../TagBlock/TagBlock.module.css';

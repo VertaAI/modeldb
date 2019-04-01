@@ -6,7 +6,7 @@ import {
   Switch,
   withRouter,
 } from 'react-router-dom';
-import routes from '../../routes';
+import routes from 'routes';
 import ExperimentSummary from '../ExperimentSummary/ExperimentSummary';
 import { FilterSelect } from '../FilterSelect/FilterSelect';
 import { GenericNotFound } from '../GenericNotFound/GenericNotFound';
