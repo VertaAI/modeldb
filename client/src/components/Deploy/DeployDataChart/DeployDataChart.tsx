@@ -53,8 +53,11 @@ class DeployDataChart extends React.PureComponent<AllProps> {
       featureName
     ) as IServiceDataFeature;
 
-    const boundary = featureInfo.bucketLimits;
+    var boundary = featureInfo.bucketLimits;
     const count = featureInfo.count;
+    const d_boundary = boundary[2] - boundary[1];
+    boundary[0] = boundary[1] - d_boundary;
+    boundary[boundary.length - 1] = boundary[boundary.length - 2] + d_boundary;
 
     const chart = d3
       .select(this.ref)
@@ -65,14 +68,22 @@ class DeployDataChart extends React.PureComponent<AllProps> {
       );
 
     const x = d3.scaleLinear().range([0, width]);
-    const d_boundary = boundary[1] - boundary[0];
 
     x.domain([
-      boundary[0] + d_boundary / 2,
-      boundary[boundary.length - 1] + d_boundary / 2,
+      boundary[1] - d_boundary,
+      boundary[boundary.length - 2] + d_boundary,
     ]);
 
-    var xAxis = d3.axisBottom(x);
+    console.log('boundary', boundary);
+    console.log('count', count);
+    var xAxis = d3
+      .axisBottom(x)
+      .tickValues(boundary)
+      .tickFormat((v, index) => {
+        if (index == 0) return '-Inf';
+        if (index == boundary.length - 1) return '+Inf';
+        return String(v);
+      });
 
     chart
       .append('g')
@@ -89,7 +100,7 @@ class DeployDataChart extends React.PureComponent<AllProps> {
       .fill(1)
       .map((x, y) => x + y - 1);
     const data = indices.map(i => {
-      const mid_x = (boundary[i] + boundary[i + 1]) / 2;
+      const mid_x = boundary[i]; //(boundary[i] + boundary[i + 1]) / 2;
       const val = count[i];
       return {
         x: mid_x,
@@ -97,6 +108,7 @@ class DeployDataChart extends React.PureComponent<AllProps> {
       };
     });
     //console.log('indices', indices);
+    console.log('data', data);
 
     const color = '#6863ff';
     var colorScale = d3
