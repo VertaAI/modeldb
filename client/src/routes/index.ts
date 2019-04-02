@@ -10,6 +10,11 @@ const routes = {
     getRedirectPath: (p: { projectId: string }) =>
       `/project/${p.projectId}/exp-runs`,
   }),
+  charts: makeRoute({
+    getPath: () => '/project/:projectId/charts',
+    getRedirectPath: (p: { projectId: string }) =>
+      `/project/${p.projectId}/charts`,
+  }),
   modelRecord: makeRoute({
     getPath: () => '/project/:projectId/exp-run/:modelRecordId',
     getRedirectPath: (p: { projectId: string; modelRecordId: string }) =>

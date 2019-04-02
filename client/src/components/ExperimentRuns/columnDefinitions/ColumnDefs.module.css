@@ -7,6 +7,7 @@
 .summary_cell {
   line-height: 15px;
   color: rgb(112, 112, 112);
+  white-space: pre-wrap;
 }
 
 .param_draggable {

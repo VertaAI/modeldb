@@ -34,7 +34,6 @@ export class ProjectDataService extends BaseDataService
             if (!data || !data.projects) {
               return Array<Project>();
             }
-
             const jsonConvert = new JsonConvert();
             const projects = jsonConvert.deserializeArray(
               data.projects,
