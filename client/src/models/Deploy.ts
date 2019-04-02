@@ -68,7 +68,4 @@ export interface IServiceDataFeature {
   reference: number[];
 }
 
-export interface IDataStatistics {
-  // tslint:disable-next-line:prefer-array-literal
-  features: Array<Record<string, IServiceDataFeature>>;
-}
+export type IDataStatistics = Map<string, IServiceDataFeature>;

@@ -18,16 +18,7 @@ interface ILocalProps {
   marginTop: number;
   marginRight: number;
   marginBottom: number;
-  //statistics: IDataStatistics;
-}
-
-class Point {
-  time!: Date;
-  throughput!: number;
-  averageLatency!: number;
-  p50Latency!: number;
-  p90Latency!: number;
-  p99Latency!: number;
+  statistics: IDataStatistics;
 }
 
 interface IPropsFromState {}
@@ -54,6 +45,17 @@ class DeployDataChart extends React.PureComponent<AllProps> {
       },
     };
 
+    //const boundary = fake_data.feature1.boundaries;
+    //const count = fake_data.feature1.count;
+
+    const featureName = this.props.statistics.keys().next().value;
+    const featureInfo = this.props.statistics.get(
+      featureName
+    ) as IServiceDataFeature;
+
+    const boundary = featureInfo.bucketLimits;
+    const count = featureInfo.count;
+
     const chart = d3
       .select(this.ref)
       .append('g')
@@ -61,9 +63,6 @@ class DeployDataChart extends React.PureComponent<AllProps> {
         'transform',
         'translate(' + this.props.marginLeft + ',' + this.props.marginTop + ')'
       );
-
-    const boundary = fake_data.feature1.boundaries;
-    const count = fake_data.feature1.count;
 
     const x = d3.scaleLinear().range([0, width]);
     const d_boundary = boundary[1] - boundary[0];
@@ -97,7 +96,7 @@ class DeployDataChart extends React.PureComponent<AllProps> {
         y: val,
       };
     });
-    console.log('indices', indices);
+    //console.log('indices', indices);
 
     const color = '#6863ff';
     var colorScale = d3
@@ -136,7 +135,7 @@ class DeployDataChart extends React.PureComponent<AllProps> {
   }
 
   render() {
-    console.log('here');
+    //console.log('here');
     return (
       <React.Fragment>
         <svg
