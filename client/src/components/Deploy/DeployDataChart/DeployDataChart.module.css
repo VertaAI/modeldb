@@ -1,0 +1,14 @@
+.tooltip {
+  position: absolute;
+  background-color: #d6fff9;
+  padding: 5px;
+  font-size: 14px;
+  display: none;
+}
+
+.chart {
+  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}

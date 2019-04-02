@@ -6,6 +6,7 @@ import {
   DeployButton,
   DeployManager,
   DeployServiceChart,
+  DeployDataChart,
 } from 'components/Deploy';
 import loader from 'components/images/loader.gif';
 import tagStyles from 'components/TagBlock/TagBlock.module.css';
@@ -196,15 +197,27 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             </div>
           )}
         {alreadyDeployed && (
-          <this.Record header="Data metrics">
-            {this.props.loadingDataStatistics ? (
-              <img src={loader} className={styles.loader} />
-            ) : this.props.dataStatistics ? (
-              JSON.stringify(this.props.dataStatistics)
-            ) : (
-              ''
-            )}
-          </this.Record>
+          //this.props.dataStatistics && (
+          //this.props.dataStatistics.features.length > 0 && (
+          /*<div className={styles.chart}>
+              {this.props.loadingServiceStatistics ? (
+                <img src={loader} className={styles.loader} />
+              ) : this.props.dataStatistics ? (*/
+          //JSON.stringify(this.props.serviceStatistics)
+          <DeployDataChart
+            height={400}
+            width={600}
+            marginBottom={80}
+            marginLeft={60}
+            marginTop={40}
+            marginRight={60}
+            //statistics={this.props.dataStatistics}
+          />
+          /*) : (
+                ''
+              )}
+            </div>
+            */
         )}
       </div>
     ) : (
