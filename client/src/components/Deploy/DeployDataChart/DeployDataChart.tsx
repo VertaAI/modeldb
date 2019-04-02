@@ -59,6 +59,8 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
   }
 
   componentDidMount() {
+    console.log('stats', this.props.statistics);
+
     const width =
       this.props.width - this.props.marginLeft - this.props.marginRight;
     const height =
@@ -86,6 +88,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
 
     var boundary = featureInfo.bucketLimits;
     var count = featureInfo.count;
+    var reference = featureInfo.reference;
     const binary = is_binary(count, boundary);
     if (binary) {
       boundary = [0, 0.5, 1];
@@ -93,12 +96,19 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
         count[0] + count[1],
         count[count.length - 2] + count[count.length - 1],
       ];
+      reference = [
+        reference[0] + reference[1],
+        reference[reference.length - 2] + reference[reference.length - 1],
+      ];
     } else {
       const d_boundary = boundary[2] - boundary[1];
       boundary[0] = boundary[1] - d_boundary;
       boundary[boundary.length - 1] =
         boundary[boundary.length - 2] + d_boundary;
     }
+    var reference_center = [];
+    for (var i = 0; i < count.length; i++)
+      reference_center.push((boundary[i] + boundary[i + 1]) / 2);
 
     d3.select(this.ref)
       .selectAll('g')
@@ -116,8 +126,6 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
 
     x.domain([boundary[0], boundary[boundary.length - 1]]);
 
-    console.log('boundary', boundary);
-    console.log('count', count);
     var xAxis = d3
       .axisBottom(x)
       .tickValues(boundary)
@@ -153,8 +161,6 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
         y: val,
       };
     });
-    //console.log('indices', indices);
-    console.log('data', data);
 
     const color = '#6863ff';
     var colorScale = d3
@@ -190,6 +196,27 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       .attr('font', 'sans-serif')
       .attr('font-size', '10px')
       .text(d => formatCount(d.y));
+
+    const yReference = d3.scaleLinear().range([height, 0]);
+    yReference.domain([0, Math.max(...reference)]);
+
+    const line = d3
+      .line()
+      .x(p => x(p[0]))
+      .y(p => yReference(p[1]));
+    chart
+      .selectAll()
+      .data([
+        reference_center.map((e, i) => {
+          return [e, reference[i]] as [number, number];
+        }),
+      ])
+      .enter()
+      .append('path')
+      .attr('fill', 'none')
+      .attr('stroke', '#5fe6c9')
+      .attr('stroke-width', 2)
+      .attr('d', line);
   }
 
   render() {
