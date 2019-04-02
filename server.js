@@ -112,6 +112,14 @@ app.use('/api/auth/', auth);
 
 if (process.env.DEPLOYED === 'yes') {
   app.use(express.static('client/build'));
+
+  // Any left over is sent to index
+  app.get('*', (req, res) => {
+    res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.header("Pragma", "no-cache");
+    res.header("Expires", 0);
+    res.sendFile(path.join(__dirname + '/client/build' + '/index.html'));
+  });
 }
 else {
   const local_proxy = proxy({target: 'http://localhost:3001', changeOrigin: false, ws: true})
