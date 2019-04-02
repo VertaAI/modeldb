@@ -40,6 +40,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private experimentRunsBreadcrumbItem = new BreadcrumbItem(
     routes.expirementRuns
   );
+  private chartsBreadcrumbItem = new BreadcrumbItem(routes.charts);
   private modelBreadcrumbItem = new BreadcrumbItem(routes.modelRecord);
 
   public componentDidMount() {
@@ -103,6 +104,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
       }
     }
     this.experimentRunsBreadcrumbItem.name = projectName;
+    this.chartsBreadcrumbItem.name = projectName;
 
     this.experimentRunsBreadcrumbItem.path = routes.expirementRuns.getRedirectPath(
       {
@@ -116,6 +118,16 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     );
     this.experimentRunsBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
 
+    this.chartsBreadcrumbItem.path = routes.charts.getRedirectPath({
+      projectId:
+        experimentRuns && experimentRuns.length > 0
+          ? experimentRuns[0].projectId
+          : modelRecord
+          ? modelRecord.projectId
+          : '',
+    });
+    this.chartsBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
+
     this.modelBreadcrumbItem.name = modelRecord ? modelRecord.name : '';
     this.modelBreadcrumbItem.path = modelRecord
       ? routes.modelRecord.getRedirectPath({
@@ -128,6 +140,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     const breadcrumbItems: BreadcrumbItem[] = [];
     breadcrumbItems.push(this.indexBreadcrumbItem);
     breadcrumbItems.push(this.experimentRunsBreadcrumbItem);
+    breadcrumbItems.push(this.chartsBreadcrumbItem);
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
     return breadcrumbItems.find(x => {

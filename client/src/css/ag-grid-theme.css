@@ -26,3 +26,17 @@
 .ag-row {
   padding: 0 23px;
 }
+
+.grid line {
+  stroke: rgb(255, 255, 255);
+}
+
+.grid > .domain {
+  display: none;
+}
+
+.expChart,
+.summaryChart {
+  background-color: #f7f8fc;
+  border-radius: 10px;
+}
