@@ -12,3 +12,29 @@
   margin-right: auto;
   display: block;
 }
+
+.dropdown {
+  padding: 10px;
+  font-size: 12px;
+  outline: none;
+  margin-top: 5px;
+}
+
+.chart_selector {
+  padding: 10px;
+  cursor: pointer;
+  position: relative;
+  max-width: 180px;
+  font-size: 13px;
+}
+
+.chart_selector:after {
+  font-family: FontAwesome;
+  content: '\f107';
+  font-size: 28px;
+  position: absolute;
+  top: 36px;
+  right: 24px;
+  color: rgb(114, 114, 114);
+  pointer-events: none;
+}

@@ -136,13 +136,6 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       .style('font-size', '14px')
       .text('Throughput');
 
-    // Add title
-    chart
-      .append('text')
-      .html('Service behavior')
-      .attr('x', width / 2)
-      .style('text-anchor', 'middle');
-
     const drawLine = (
       extractor: (p: Point) => number,
       color: Color,

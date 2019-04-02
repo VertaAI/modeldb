@@ -193,15 +193,19 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                 <img src={loader} className={styles.loader} />
               ) : this.props.serviceStatistics ? (
                 //JSON.stringify(this.props.serviceStatistics)
-                <DeployServiceChart
-                  height={400}
-                  width={600}
-                  marginBottom={80}
-                  marginLeft={60}
-                  marginTop={40}
-                  marginRight={60}
-                  metrics={this.props.serviceStatistics}
-                />
+                <React.Fragment>
+                  <this.Record header="Service behavior">
+                    <DeployServiceChart
+                      height={400}
+                      width={600}
+                      marginBottom={80}
+                      marginLeft={60}
+                      marginTop={40}
+                      marginRight={60}
+                      metrics={this.props.serviceStatistics}
+                    />
+                  </this.Record>
+                </React.Fragment>
               ) : (
                 ''
               )}
@@ -215,15 +219,19 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                 <img src={loader} className={styles.loader} />
               ) : this.props.dataStatistics ? (
                 //JSON.stringify(this.props.serviceStatistics)
-                <DeployDataChart
-                  height={400}
-                  width={600}
-                  marginBottom={80}
-                  marginLeft={60}
-                  marginTop={40}
-                  marginRight={60}
-                  statistics={this.props.dataStatistics}
-                />
+                <React.Fragment>
+                  <this.Record header="Data behavior">
+                    <DeployDataChart
+                      height={400}
+                      width={600}
+                      marginBottom={20}
+                      marginLeft={60}
+                      marginTop={40}
+                      marginRight={60}
+                      statistics={this.props.dataStatistics}
+                    />
+                  </this.Record>
+                </React.Fragment>
               ) : (
                 ''
               )}

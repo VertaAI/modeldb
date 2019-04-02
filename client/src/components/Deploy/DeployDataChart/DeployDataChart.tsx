@@ -37,7 +37,7 @@ const is_binary = (vals: number[], boundaries: number[]) => {
     boundaries[boundaries.length - 2] == 1 &&
     boundaries[boundaries.length - 1] == 1
   ) {
-    for (var i = 2; i < boundaries.length - 3; i++) {
+    for (var i = 2; i < boundaries.length - 2; i++) {
       if (vals[i] > 0) {
         return false;
       }
@@ -85,12 +85,20 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
     ) as IServiceDataFeature;
 
     var boundary = featureInfo.bucketLimits;
-    const count = featureInfo.count;
-    console.log(is_binary(count, boundary));
-
-    const d_boundary = boundary[2] - boundary[1];
-    boundary[0] = boundary[1] - d_boundary;
-    boundary[boundary.length - 1] = boundary[boundary.length - 2] + d_boundary;
+    var count = featureInfo.count;
+    const binary = is_binary(count, boundary);
+    if (binary) {
+      boundary = [0, 0.5, 1];
+      count = [
+        count[0] + count[1],
+        count[count.length - 2] + count[count.length - 1],
+      ];
+    } else {
+      const d_boundary = boundary[2] - boundary[1];
+      boundary[0] = boundary[1] - d_boundary;
+      boundary[boundary.length - 1] =
+        boundary[boundary.length - 2] + d_boundary;
+    }
 
     d3.select(this.ref)
       .selectAll('g')
@@ -106,10 +114,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
 
     const x = d3.scaleLinear().range([0, width]);
 
-    x.domain([
-      boundary[1] - d_boundary,
-      boundary[boundary.length - 2] + d_boundary,
-    ]);
+    x.domain([boundary[0], boundary[boundary.length - 1]]);
 
     console.log('boundary', boundary);
     console.log('count', count);
@@ -117,9 +122,13 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       .axisBottom(x)
       .tickValues(boundary)
       .tickFormat((v, index) => {
+        if (binary) {
+          return String(v);
+        }
         if (index == 0) return '-Inf';
         if (index == boundary.length - 1) return '+Inf';
-        return String(v);
+        if (v > 100) return String(Math.floor(v as number));
+        return String(Math.floor((v as number) * 1000) / 1000);
       });
 
     chart
@@ -188,7 +197,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
     this.componentDidMount();
     return (
       <React.Fragment>
-        <div className={styles.chart_selector}>
+        <div /*className={styles.chart_selector}*/>
           Feature :{' '}
           <select
             name="selected-metric"
@@ -197,7 +206,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
                 selectedFeature: (e.target as HTMLSelectElement).value,
               })
             }
-            className={chartStyles.dropdown}
+            className={styles.dropdown}
           >
             {[...this.props.statistics.keys()]
               .sort()
