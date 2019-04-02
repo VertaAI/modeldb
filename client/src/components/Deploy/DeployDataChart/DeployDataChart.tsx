@@ -10,6 +10,7 @@ import {
 } from 'models/Deploy';
 import { Color } from 'csstype';
 import styles from './DeployDataChart.module.css';
+import chartStyles from 'components/Charts/ModelSummary/ModelSummary.module.css';
 
 interface ILocalProps {
   height: number;
@@ -23,10 +24,39 @@ interface ILocalProps {
 
 interface IPropsFromState {}
 
+interface ILocalState {
+  selectedFeature: string;
+}
+
 type AllProps = ILocalProps & IPropsFromState;
 
-class DeployDataChart extends React.PureComponent<AllProps> {
+const is_binary = (vals: number[], boundaries: number[]) => {
+  if (
+    boundaries[0] == 0 &&
+    boundaries[1] == 0 &&
+    boundaries[boundaries.length - 2] == 1 &&
+    boundaries[boundaries.length - 1] == 1
+  ) {
+    for (var i = 2; i < boundaries.length - 3; i++) {
+      if (vals[i] > 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
+};
+
+class DeployDataChart extends React.Component<AllProps, ILocalState> {
   ref!: SVGSVGElement;
+
+  public constructor(props: ILocalProps) {
+    super(props);
+
+    this.state = {
+      selectedFeature: [...props.statistics.keys()].sort()[0],
+    };
+  }
 
   componentDidMount() {
     const width =
@@ -48,16 +78,23 @@ class DeployDataChart extends React.PureComponent<AllProps> {
     //const boundary = fake_data.feature1.boundaries;
     //const count = fake_data.feature1.count;
 
-    const featureName = this.props.statistics.keys().next().value;
+    //const featureName = this.props.statistics.keys().next().value;
+    const featureName = this.state.selectedFeature;
     const featureInfo = this.props.statistics.get(
       featureName
     ) as IServiceDataFeature;
 
     var boundary = featureInfo.bucketLimits;
     const count = featureInfo.count;
+    console.log(is_binary(count, boundary));
+
     const d_boundary = boundary[2] - boundary[1];
     boundary[0] = boundary[1] - d_boundary;
     boundary[boundary.length - 1] = boundary[boundary.length - 2] + d_boundary;
+
+    d3.select(this.ref)
+      .selectAll('g')
+      .remove();
 
     const chart = d3
       .select(this.ref)
@@ -148,8 +185,31 @@ class DeployDataChart extends React.PureComponent<AllProps> {
 
   render() {
     //console.log('here');
+    this.componentDidMount();
     return (
       <React.Fragment>
+        <div className={styles.chart_selector}>
+          Feature :{' '}
+          <select
+            name="selected-metric"
+            onChange={e =>
+              this.setState({
+                selectedFeature: (e.target as HTMLSelectElement).value,
+              })
+            }
+            className={chartStyles.dropdown}
+          >
+            {[...this.props.statistics.keys()]
+              .sort()
+              .map((feature: string, i: number) => {
+                return (
+                  <option key={feature} value={feature}>
+                    {feature}
+                  </option>
+                );
+              })}
+          </select>
+        </div>
         <svg
           className={`container ${styles.chart}`}
           ref={(ref: SVGSVGElement) => (this.ref = ref)}
