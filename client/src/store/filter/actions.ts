@@ -70,6 +70,7 @@ export function changeContext(
   ctx?: string
 ): ActionResult<void, initContextAction | suggestFiltersAction> {
   return async (dispatch, getState) => {
+    // @ts-ignore
     dispatch(action(initActionTypes.CHANGE_CONTEXT, ctx));
     dispatch(action(suggestFiltersActionTypes.SUGGEST_FILTERS_RESULT, []));
     if (ctx !== undefined && FilterContextPool.hasContext(ctx)) {

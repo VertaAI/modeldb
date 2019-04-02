@@ -27,6 +27,7 @@ class Button extends React.PureComponent<ILocalProps> {
           {children}
         </a>
       ) : (
+        // @ts-ignore
         <button {...props}>{children}</button>
       );
     return (
