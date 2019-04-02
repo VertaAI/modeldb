@@ -153,6 +153,17 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             })}
           </this.Record>
         )}
+        {data.datasets && (
+          <this.Record header="Datasets">
+            {data.datasets.map((value: IArtifact, key: number) => {
+              return (
+                <div key={key}>
+                  {value.key}: <ShowContentBasedOnUrl path={value.path} />
+                </div>
+              );
+            })}
+          </this.Record>
+        )}
         <this.Record header="Deploy info">
           <>
             <DeployButton modelId={data.id} />
