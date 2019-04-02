@@ -17,3 +17,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.destroy {
+  text-align: center;
+}

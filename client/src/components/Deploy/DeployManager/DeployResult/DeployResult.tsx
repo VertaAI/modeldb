@@ -71,9 +71,11 @@ class DeployResult extends React.Component<AllProps> {
               </Form.Item>
             </Form>
           </div>
-          <Fab theme="red" onClick={this.onShutdown}>
-            Shutdown
-          </Fab>
+          <div className={styles.destroy}>
+            <Fab theme="red" onClick={this.onShutdown}>
+              Shutdown
+            </Fab>
+          </div>
           {/* <div className={styles.model_input}>
             <ModelInput input={modelApi.input} />
           </div> */}
