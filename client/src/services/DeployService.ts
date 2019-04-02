@@ -45,6 +45,8 @@ export class DeployService extends BaseDataService implements IDeployService {
         's3://verta-condacon/requirements/' +
         request.modelId +
         '/requirements.txt',
+      dataset:
+        's3://verta-condacon/datasets/' + request.modelId + '/train_data',
     };
 
     return axios.post('/v1/deployment/deploy', serverRequest);
