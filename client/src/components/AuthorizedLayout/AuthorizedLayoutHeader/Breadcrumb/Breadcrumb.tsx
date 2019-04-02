@@ -33,19 +33,15 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   private indexBreadcrumbItem = new BreadcrumbItem(
-    /^\/$/,
+    routes.mainPage,
     routes.mainPage.getRedirectPath({}),
     'PROJECTS'
   );
   private experimentRunsBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/exp-runs.?$/
+    routes.expirementRuns
   );
-  private chartsBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/charts.?$/
-  );
-  private modelBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/
-  );
+  private chartsBreadcrumbItem = new BreadcrumbItem(routes.charts);
+  private modelBreadcrumbItem = new BreadcrumbItem(routes.modelRecord);
 
   public componentDidMount() {
     this.unlistenCallback = this.props.history.listen((location, action) => {
@@ -147,7 +143,9 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     breadcrumbItems.push(this.chartsBreadcrumbItem);
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
-    return breadcrumbItems.find(x => x.shouldMatch.test(this.state.url));
+    return breadcrumbItems.find(x => {
+      return x.shouldMatch.getMatch(this.state.url) !== null;
+    });
   }
 
   @bind
