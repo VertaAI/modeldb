@@ -5,10 +5,15 @@ const routes = {
   callback: makeRoute({ getPath: () => '/callback' }),
   settings: makeRoute({ getPath: () => '/settings' }),
 
-  expirementRuns: makeRoute({
+  experimentRuns: makeRoute({
     getPath: () => '/project/:projectId/exp-runs',
     getRedirectPath: (p: { projectId: string }) =>
       `/project/${p.projectId}/exp-runs`,
+  }),
+  charts: makeRoute({
+    getPath: () => '/project/:projectId/charts',
+    getRedirectPath: (p: { projectId: string }) =>
+      `/project/${p.projectId}/charts`,
   }),
   modelRecord: makeRoute({
     getPath: () => '/project/:projectId/exp-run/:modelRecordId',

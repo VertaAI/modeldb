@@ -5,7 +5,6 @@ import { AgGridReact } from 'ag-grid-react';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-
 import { DeployManager } from 'components/Deploy';
 import loader from 'components/images/loader.gif';
 import { FilterContextPool } from 'models/FilterContextPool';
@@ -16,7 +15,6 @@ import { IColumnMetaData } from 'store/dashboard-config';
 import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
 import { fetchExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-
 import {
   defaultColDefinitions,
   returnColumnDefs,
@@ -24,42 +22,7 @@ import {
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 import styles from './ExperimentRuns.module.css';
 
-let currentProjectID: string;
-const locationRegEx = /\/project\/([a-z0-9\-]+)\/exp-runs/im;
-FilterContextPool.registerContext({
-  getMetadata: () => [
-    { propertyName: 'Name', type: PropertyType.STRING },
-    { propertyName: 'Tag', type: PropertyType.STRING },
-  ],
-  isFilteringSupport: true,
-  isValidLocation: (location: string) => {
-    if (locationRegEx.test(location)) {
-      const match = location.match(locationRegEx);
-      currentProjectID = match ? match[1] : '';
-      return true;
-    } else {
-      return false;
-    }
-  },
-  name: 'ModelRecord',
-  onApplyFilters: (filters, dispatch) => {
-    dispatch(fetchExperimentRuns(currentProjectID, filters));
-  },
-  onSearch: (text: string, dispatch) => {
-    dispatch(
-      fetchExperimentRuns(currentProjectID, [
-        {
-          invert: false,
-          name: 'Name',
-          type: PropertyType.STRING,
-          value: text,
-        },
-      ])
-    );
-  },
-});
-
-type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
+type IUrlProps = GetRouteParams<typeof routes.experimentRuns>;
 
 interface IPropsFromState {
   data?: ModelRecord[] | undefined;
@@ -85,17 +48,22 @@ class ExperimentRuns extends React.Component<AllProps> {
   public columnApi: any;
   public data: any;
 
+  public callFilterUpdate = () => {
+    this.gridApi.onFilterChanged();
+  };
+
   public componentWillReceiveProps(nextProps: AllProps) {
-    if (this.gridApi) {
-      setTimeout(this.callFilterUpdate, 100);
+    if (this.props !== nextProps && this.gridApi !== undefined) {
+      setTimeout(this.callFilterUpdate, 1000);
     }
+
     if (this.gridApi && this.props.columnConfig !== nextProps.columnConfig) {
       this.gridApi.setColumnDefs(returnColumnDefs(nextProps.columnConfig));
+      const el = document.getElementsByClassName('ag-center-cols-viewport');
+      if (el !== undefined && el[0] !== undefined) {
+        el[0].scrollLeft += 300;
+      }
     }
-    // const el = document.getElementsByClassName('ag-center-cols-viewport');
-    // if (el !== undefined && el[0] !== undefined) {
-    //   el[0].scrollLeft += 200;
-    // }
   }
 
   public componentDidUpdate(prevProps: AllProps) {
@@ -111,13 +79,12 @@ class ExperimentRuns extends React.Component<AllProps> {
 
   public render() {
     const { data, loading, columnConfig } = this.props;
-
     return loading ? (
       <img src={loader} className={styles.loader} />
     ) : data ? (
-      <div>
-        <DeployManager />
+      <React.Fragment>
         <DashboardConfig />
+        <DeployManager />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
             reactNext={true}
@@ -133,15 +100,11 @@ class ExperimentRuns extends React.Component<AllProps> {
             doesExternalFilterPass={this.doesExternalFilterPass}
           />
         </div>
-      </div>
+      </React.Fragment>
     ) : (
       ''
     );
   }
-
-  public callFilterUpdate = () => {
-    this.gridApi.onFilterChanged();
-  };
 
   public onGridReady = (event: GridReadyEvent) => {
     this.gridApi = event.api;

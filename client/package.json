@@ -31,7 +31,9 @@
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0",
     "typesafe-actions": "^2.1.1",
-    "typescript": "^3.2.2"
+    "typescript": "^3.2.2",
+    "@types/d3": "^5.7.1",
+    "d3": "^5.9.1"
   },
   "scripts": {
     "start": "PORT=3001 react-app-rewired start",

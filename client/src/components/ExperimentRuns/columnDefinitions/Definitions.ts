@@ -16,13 +16,20 @@ export const defaultColDefinitions = {
 export const returnColumnDefs = (updatedConfig: any) => {
   return [
     {
-      headerName: 'IDs',
+      headerName: 'Models',
       field: 'data',
       width: 190,
       cellRendererFramework: ModelRecordColDef,
       cellClass: [styles.cell, styles.modelDescription],
       hide: !updatedConfig.get('id').checked,
     },
+    // {
+    //   headerName: 'Deploy',
+    //   field: 'data',
+    //   cellRendererFramework: Actions,
+    //   width: 140,
+    //   cellClass: styles.cell,
+    // },
     {
       headerName: 'Summary',
       field: 'data',
@@ -39,6 +46,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellClass: styles.cell,
       hide: !updatedConfig.get('metrics').checked,
     },
+
     {
       headerName: 'Hyperparameters',
       width: 230,
@@ -62,13 +70,6 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 240,
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked,
-    },
-    {
-      headerName: '',
-      field: 'data',
-      cellRendererFramework: Actions,
-      width: 140,
-      cellClass: styles.cell,
     },
     // {
     //   headerName: 'Observations',

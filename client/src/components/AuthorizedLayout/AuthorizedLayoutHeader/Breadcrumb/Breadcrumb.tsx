@@ -37,8 +37,11 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     routes.mainPage.getRedirectPath({}),
     'PROJECTS'
   );
-  private projectBreadcrumbItem = new BreadcrumbItem(
+  private experimentRunsBreadcrumbItem = new BreadcrumbItem(
     /^\/project\/([\w-]*)\/exp-runs.?$/
+  );
+  private chartsBreadcrumbItem = new BreadcrumbItem(
+    /^\/project\/([\w-]*)\/charts.?$/
   );
   private modelBreadcrumbItem = new BreadcrumbItem(
     /^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/
@@ -104,9 +107,22 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
         projectName = neededProject.name;
       }
     }
-    this.projectBreadcrumbItem.name = projectName;
+    this.experimentRunsBreadcrumbItem.name = projectName;
+    this.chartsBreadcrumbItem.name = projectName;
 
-    this.projectBreadcrumbItem.path = routes.expirementRuns.getRedirectPath({
+    this.experimentRunsBreadcrumbItem.path = routes.experimentRuns.getRedirectPath(
+      {
+        projectId:
+          experimentRuns && experimentRuns.length > 0
+            ? experimentRuns[0].projectId
+            : modelRecord
+            ? modelRecord.projectId
+            : '',
+      }
+    );
+    this.experimentRunsBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
+
+    this.chartsBreadcrumbItem.path = routes.charts.getRedirectPath({
       projectId:
         experimentRuns && experimentRuns.length > 0
           ? experimentRuns[0].projectId
@@ -114,7 +130,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
           ? modelRecord.projectId
           : '',
     });
-    this.projectBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
+    this.chartsBreadcrumbItem.previousItem = this.indexBreadcrumbItem;
 
     this.modelBreadcrumbItem.name = modelRecord ? modelRecord.name : '';
     this.modelBreadcrumbItem.path = modelRecord
@@ -123,11 +139,12 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
           modelRecordId: modelRecord.id,
         })
       : '';
-    this.modelBreadcrumbItem.previousItem = this.projectBreadcrumbItem;
+    this.modelBreadcrumbItem.previousItem = this.experimentRunsBreadcrumbItem;
 
     const breadcrumbItems: BreadcrumbItem[] = [];
     breadcrumbItems.push(this.indexBreadcrumbItem);
-    breadcrumbItems.push(this.projectBreadcrumbItem);
+    breadcrumbItems.push(this.experimentRunsBreadcrumbItem);
+    breadcrumbItems.push(this.chartsBreadcrumbItem);
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
     return breadcrumbItems.find(x => x.shouldMatch.test(this.state.url));
