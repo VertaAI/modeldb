@@ -87,6 +87,7 @@ class DeployResult extends React.Component<AllProps> {
   @bind
   private onShutdown() {
     this.props.dispatch(delete_(this.props.modelId));
+    this.props.onClose();
   }
 }
 
