@@ -8,9 +8,14 @@ const margin = { top: 20, right: 25, bottom: 40, left: 55 };
 class BarChart extends Component {
   state = {
     marks: [],
+    xScale: undefined,
+    yScale: undefined,
   };
 
-  xAxis = d3.axisBottom().tickFormat(d3.timeFormat('%b'));
+  xAxis = d3
+    .axisBottom()
+    .tickFormat(d3.timeFormat('%b/%d %H:%M'))
+    .ticks(10);
   yAxis = d3.axisLeft();
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -23,7 +28,9 @@ class BarChart extends Component {
       .domain(extent)
       .range([margin.left, width - margin.right]);
 
+    console.log('flatdata', flatdata);
     const [min, max] = d3.extent(flatdata, d => d[selectedMetric]);
+    console.log('max', max);
     const yScale = d3
       .scaleLinear()
       .domain([0, max * 1.25])
@@ -99,6 +106,7 @@ class BarChart extends Component {
     //   );
   }
   componentDidUpdate() {
+    console.log('here');
     this.xAxis.scale(this.state.xScale);
     d3.select(this.refs.xAxis).call(this.xAxis);
     this.yAxis.scale(this.state.yScale);
@@ -111,13 +119,13 @@ class BarChart extends Component {
       <svg width={svg_width} height={height} className={'summaryChart'}>
         <g ref="xAxis" transform={`translate(0, ${height - margin.bottom})`} />
         <g ref="yAxis" transform={`translate(${margin.left}, 0)`} />
-        {this.state.marks.map(d => (
+        {this.state.marks.map((d, i) => (
           <circle
             cx={d.cx}
             cy={d.cy}
             fill={'#6863ff'}
             r={7}
-            key={Math.random() * d.cx}
+            key={this.props.selectedMetric + i}
           />
         ))}
         <g ref="annotation" transform={`translate(${width + 20}, 50)`} />

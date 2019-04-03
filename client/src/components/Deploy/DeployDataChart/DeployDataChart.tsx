@@ -73,13 +73,15 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       .then(stat => {
         this.setState({
           statistics: stat.data,
-          possibleFeatures: [...stat.data.keys()].sort(),
+          possibleFeatures: [...stat.data.keys()]
+            .sort()
+            .filter(f => f != '>50k'),
         });
         if (
           this.state.selectedFeature == '' ||
           !stat.data.has(this.state.selectedFeature)
         ) {
-          this.setState({ selectedFeature: [...stat.data.keys()].sort()[0] });
+          this.setState({ selectedFeature: this.state.possibleFeatures[0] });
         }
       });
   }
@@ -185,7 +187,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
     });
     const group_width = width / count.length;
     const bar_width = group_width * 0.4;
-    console.log(reference);
+    //console.log(reference);
 
     var formatCount = d3.format(',.0f');
 
@@ -195,13 +197,18 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       getter: (d: any) => number,
       str: string,
       offset: number,
-      add_text: boolean
+      add_y_axis: boolean
     ) {
       const yMax = Math.max(...values);
       var y = d3
         .scaleLinear()
         .domain([0, yMax])
         .range([height, 0]);
+
+      if (add_y_axis) {
+        const yAxis = d3.axisLeft(y).tickFormat(d3.format('d'));
+        chart.append('g').call(yAxis);
+      }
 
       var colorScale = d3
         .scaleLinear<d3.RGBColor>()
@@ -231,6 +238,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
         .attr('height', d => height - y(getter(d)))
         .attr('fill', d => color);
 
+      /*
       if (add_text) {
         bar
           .append('text')
@@ -243,6 +251,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
           .attr('font-size', '12px')
           .text(d => formatCount(getter(d)));
       }
+      */
     }
 
     //const darkColor = '#6863ff';
@@ -251,6 +260,40 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
     const lightColor = 'darkgreen';
     draw_bars(count, darkColor, d => d.val, '-live', 0.1, true);
     draw_bars(reference, lightColor, d => d.ref, '-ref', 0.5, false);
+
+    var legspacing = 25;
+
+    var legend = chart
+      .selectAll('.legend')
+      .data([1, 2])
+      .enter()
+      .append('g');
+
+    legend
+      .append('rect')
+      .attr('fill', (d, i) => [darkColor, lightColor][i])
+      .attr('width', 20)
+      .attr('height', 20)
+      .attr('y', function(d, i) {
+        return 1 * legspacing - 60;
+      })
+      .attr('x', function(d, i) {
+        return i * 220 + 80;
+      });
+
+    legend
+      .append('text')
+      .attr('class', 'label')
+      .attr('y', function(d, i) {
+        return 1 * legspacing - 46;
+      })
+      .attr('x', function(d, i) {
+        return i * 220 + 80 + 30;
+      })
+      .attr('text-anchor', 'start')
+      .text(function(d, i) {
+        return ['Live', 'Reference'][i];
+      });
 
     /*
     const yMax = Math.max(...count);
@@ -336,7 +379,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
     this.fullRebuild();
     return (
       <React.Fragment>
-        <div /*className={styles.chart_selector}*/>
+        <div className={styles.chart_selector}>
           Feature :{' '}
           <select
             name="selected-metric"

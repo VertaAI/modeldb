@@ -29,7 +29,6 @@ export class DeployService extends BaseDataService implements IDeployService {
   }
 
   public getDataStatistics(modelId: string): AxiosPromise<IDataStatistics> {
-    console.log('getting data statistics');
     return axios.get(`/v1/statistics/data/${modelId}/`, {
       transformResponse: convertServerDataStatisticsToClient,
     });
