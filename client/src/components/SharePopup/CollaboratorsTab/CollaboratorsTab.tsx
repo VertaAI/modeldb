@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
-import { changeProjectOwner } from 'store/collaboration/actions';
+import { changeProjectOwner, selectAnyError } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import CollaboratorItem from '../CollaboratorItem/CollaboratorItem';
@@ -17,7 +17,9 @@ interface ILocalProps {
   collaborators: Map<User, UserAccess>;
   currentUserAccess: UserAccess;
   projectId: string;
-  // should be changed to actual type after getting format from the backend
+}
+
+interface IPropsFromState {
   error?: any;
 }
 
@@ -28,7 +30,7 @@ interface ILocalState {
   shadowBottomOpacity: number;
 }
 
-type AllProps = IConnectedReduxProps & ILocalProps;
+type AllProps = IConnectedReduxProps & ILocalProps & IPropsFromState;
 
 class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
@@ -177,11 +179,8 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ collaboration }: IApplicationState) => ({
-  error:
-    collaboration.changeAccess.error ||
-    collaboration.changeOwner.error ||
-    collaboration.removeAccess.error,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  error: selectAnyError(state),
 });
 
 export default connect(mapStateToProps)(CollaboratorsTab);

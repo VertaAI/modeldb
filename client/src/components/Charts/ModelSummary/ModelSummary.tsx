@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import React from 'react';
 import ModelRecord from '../../../models/ModelRecord';
-import ScatterChart from './ScatterChart';
 import styles from './ModelSummary.module.css';
+import ScatterChart from './ScatterChart';
 
 interface ILocalProps {
   experimentRuns: ModelRecord[];

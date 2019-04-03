@@ -1,13 +1,13 @@
+import { bind } from 'decko';
 import _ from 'lodash';
 import React from 'react';
-import { bind } from 'decko';
 import {
-  listSum,
   listAverage,
-  listMedian,
-  listVariance,
-  listStdev,
   listCount,
+  listMedian,
+  listStdev,
+  listSum,
+  listVariance,
 } from 'utils/StatMethods/AggregationTypes';
 import ModelRecord from '../../../models/ModelRecord';
 import BarChart from './BarChart';

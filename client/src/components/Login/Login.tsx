@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import User from 'models/User';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { authenticateUser } from 'store/user';
+import { authenticateUser, selectCurrentUser } from 'store/user';
 
 import logo from './images/logo.svg';
 import styles from './Login.module.css';
@@ -50,8 +50,8 @@ class Login extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = ({ layout }: IApplicationState) => ({
-  user: layout.user,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  user: selectCurrentUser(state),
 });
 
 export default connect<IPropsFromState, {}, {}, IApplicationState>(

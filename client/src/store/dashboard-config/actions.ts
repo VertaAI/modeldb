@@ -10,10 +10,7 @@ import {
 
 export const updateDashboardConfig = (
   columnConfig: Map<string, IColumnMetaData>
-): ActionResult<void, IUpdateDashboardConfigAction> => async (
-  dispatch,
-  getState
-) => {
+): ActionResult<void, IUpdateDashboardConfigAction> => async dispatch => {
   dispatch(
     action(updateDashboardConfigActionTypes.UPDATE_DASHBOARD, columnConfig)
   );

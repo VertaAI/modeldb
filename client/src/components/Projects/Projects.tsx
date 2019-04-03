@@ -5,7 +5,11 @@ import { FilterContextPool } from 'models/FilterContextPool';
 import { PropertyType } from 'models/Filters';
 import { Project } from 'models/Project';
 import routes from 'routes';
-import { fetchProjects } from 'store/projects';
+import {
+  fetchProjects,
+  selectIsLoadingProjects,
+  selectProjects,
+} from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './Projects.module.css';
@@ -63,9 +67,9 @@ class Projects extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = ({ projects }: IApplicationState) => ({
-  data: projects.data,
-  loading: projects.loading,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  data: selectProjects(state),
+  loading: selectIsLoadingProjects(state),
 });
 
 export default connect(mapStateToProps)(Projects);

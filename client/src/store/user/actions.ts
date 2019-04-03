@@ -15,16 +15,16 @@ import {
 export const authenticateUser = (): ActionResult<
   void,
   userAuthenticateAction
-> => async (dispatch, getState) => {
+> => async dispatch => {
   dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST));
 
   ServiceFactory.getAuthenticationService().login();
 };
 
-export const logoutUser = (): ActionResult<void, IUserLogoutAction> => async (
-  dispatch,
-  getState
-) => {
+export const logoutUser = (): ActionResult<
+  void,
+  IUserLogoutAction
+> => async dispatch => {
   dispatch(action(userLogoutActionTypes.LOGOUT_USER));
 
   await ServiceFactory.getAuthenticationService().logout();
@@ -33,7 +33,7 @@ export const logoutUser = (): ActionResult<void, IUserLogoutAction> => async (
 export const checkUserAuthentication = (): ActionResult<
   void,
   ICheckUserAuthenticationAction
-> => async (dispatch, getState) => {
+> => async dispatch => {
   dispatch(
     action(checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_REQUEST)
   );
