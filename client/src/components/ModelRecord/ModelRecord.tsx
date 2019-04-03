@@ -9,7 +9,11 @@ import { IHyperparameter } from 'models/HyperParameters';
 import { IMetric } from 'models/Metrics';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
-import { fetchModelRecord } from 'store/model-record';
+import {
+  fetchModelRecord,
+  selectIsLoadingModelRecord,
+  selectModelRecord,
+} from 'store/model-record';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './ModelRecord.module.css';
@@ -27,6 +31,12 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IConnectedReduxProps;
 
 class ModelRecordLayout extends React.Component<AllProps> {
+  public componentDidMount() {
+    this.props.dispatch(
+      fetchModelRecord(this.props.match.params.modelRecordId)
+    );
+  }
+
   public render() {
     const { data, loading } = this.props;
 
@@ -103,12 +113,6 @@ class ModelRecordLayout extends React.Component<AllProps> {
     );
   }
 
-  public componentDidMount() {
-    this.props.dispatch(
-      fetchModelRecord(this.props.match.params.modelRecordId)
-    );
-  }
-
   private renderRecord(
     header: string,
     content: JSX.Element[],
@@ -154,9 +158,9 @@ class ModelRecordLayout extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = ({ modelRecord }: IApplicationState) => ({
-  data: modelRecord.data,
-  loading: modelRecord.loading,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  data: selectModelRecord(state),
+  loading: selectIsLoadingModelRecord(state),
 });
 
 export default connect(mapStateToProps)(ModelRecordLayout);

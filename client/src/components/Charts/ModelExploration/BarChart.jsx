@@ -30,7 +30,9 @@ class BarChart extends Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const { data } = nextProps;
-    if (!data) return {};
+    if (!data) {
+      return {};
+    }
 
     const xScale = d3
       .scaleBand()

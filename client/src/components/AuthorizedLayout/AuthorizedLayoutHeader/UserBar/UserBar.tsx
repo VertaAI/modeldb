@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import User from 'models/User';
 import routes from 'routes';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { selectCurrentUser } from 'store/user';
 import { logoutUser } from 'store/user/actions';
 
 import styles from './UserBar.module.css';
@@ -109,8 +110,8 @@ class UserBar extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ layout }: IApplicationState) => ({
-  user: layout.user,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  user: selectCurrentUser(state),
 });
 
 export default connect(mapStateToProps)(onClickOutside(UserBar));

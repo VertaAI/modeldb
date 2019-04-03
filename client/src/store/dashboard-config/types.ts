@@ -4,8 +4,10 @@ export interface IColumnMetaData {
   label: string;
 }
 
+export type IColumnConfig = Map<string, IColumnMetaData>;
+
 export interface IDashboardConfigState {
-  [columnConfig: string]: Map<string, IColumnMetaData>;
+  [columnConfig: string]: IColumnConfig;
 }
 
 export enum updateDashboardConfigActionTypes {
@@ -14,5 +16,5 @@ export enum updateDashboardConfigActionTypes {
 
 export interface IUpdateDashboardConfigAction {
   type: updateDashboardConfigActionTypes.UPDATE_DASHBOARD;
-  payload: Map<string, IColumnMetaData>;
+  payload: IColumnConfig;
 }

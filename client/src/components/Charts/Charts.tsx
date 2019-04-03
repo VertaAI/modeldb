@@ -6,6 +6,11 @@ import routes, { GetRouteParams } from 'routes';
 
 import ModelRecord from 'models/ModelRecord';
 import { Project } from 'models/Project';
+import {
+  selectExperimentRuns,
+  selectIsLoadingExperimentRuns,
+} from 'store/experiment-runs';
+import { selectProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import loader from '../images/loader.gif';
@@ -97,10 +102,10 @@ class Charts extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ experimentRuns, projects }: IApplicationState) => ({
-  experimentRuns: experimentRuns.data,
-  projects: projects.data,
-  loading: experimentRuns.loading,
+const mapStateToProps = (state: IApplicationState) => ({
+  experimentRuns: selectExperimentRuns(state),
+  projects: selectProjects(state),
+  loading: selectIsLoadingExperimentRuns(state),
 });
 
 export default connect(mapStateToProps)(Charts);

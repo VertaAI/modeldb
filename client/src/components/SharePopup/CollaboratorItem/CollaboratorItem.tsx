@@ -163,6 +163,4 @@ class CollaboratorItem extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = () => ({});
-
-export default connect(mapStateToProps)(CollaboratorItem);
+export default connect(null)(CollaboratorItem);

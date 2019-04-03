@@ -1,12 +1,15 @@
+import { bind } from 'decko';
 import * as React from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
 import ModelRecord from 'models/ModelRecord';
 import {
-  IDashboardConfigState,
+  IColumnConfig,
+  selectColumnConfig,
   updateDashboardConfig,
 } from 'store/dashboard-config';
+import { selectExperimentRuns } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './DashboardConfig.module.css';
@@ -16,7 +19,7 @@ interface ILocalState {
 }
 
 interface IPropsFromState {
-  dashboardConfig: IDashboardConfigState;
+  columnConfig: IColumnConfig;
   experimentRuns: ModelRecord[] | undefined;
 }
 
@@ -29,8 +32,12 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
     };
   }
 
+  public componentDidMount() {
+    this.setState({ isOpened: false });
+  }
+
   public render() {
-    const dashboardConfigMap = this.props.dashboardConfig.columnConfig;
+    const { columnConfig } = this.props;
     return (
       <div className={styles.root}>
         <div className={styles.user_bar} onClick={this.toggleMenu}>
@@ -42,7 +49,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
           <div className={styles.drop_down}>
             <h4 className={styles.title}> Add/Drop Columns </h4>
             <div className={styles.menu_item}>
-              {Array.from(dashboardConfigMap.values()).map((element: any) => (
+              {Array.from(columnConfig.values()).map((element: any) => (
                 <label
                   key={element.name}
                   style={{ display: 'block' }}
@@ -69,35 +76,30 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
     );
   }
 
-  public componentDidMount() {
-    this.setState({ isOpened: false });
-  }
-
   public handleClickOutside(ev: MouseEvent) {
     this.setState({ isOpened: false });
   }
 
-  public handleColumnsUpdate = (ev: any) => {
-    let activeColumns = new Map(this.props.dashboardConfig.columnConfig);
+  @bind
+  public handleColumnsUpdate(ev: any) {
+    let activeColumns = new Map(this.props.columnConfig);
     const checkedElement = activeColumns.get(ev.target.name);
     if (checkedElement !== undefined) {
       checkedElement.checked = !checkedElement.checked;
       activeColumns = activeColumns.set(ev.target.name, checkedElement);
     }
     this.props.dispatch(updateDashboardConfig(activeColumns));
-  };
+  }
 
-  private toggleMenu = () => {
+  @bind
+  private toggleMenu() {
     this.setState(prevState => ({ isOpened: !prevState.isOpened }));
-  };
+  }
 }
 
-const mapStateToProps = ({
-  dashboardConfig,
-  experimentRuns,
-}: IApplicationState) => ({
-  dashboardConfig,
-  experimentRuns: experimentRuns.data,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  columnConfig: selectColumnConfig(state),
+  experimentRuns: selectExperimentRuns(state),
 });
 
 export default connect(mapStateToProps)(onClickOutside(DashboardConfig));
