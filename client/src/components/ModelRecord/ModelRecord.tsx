@@ -12,7 +12,6 @@ import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
 import {
   checkDeployStatusUntilDeployed,
-  fetchDataStatisticsActionTypes,
   getDataStatistics,
   getServiceStatistics,
   selectDataStatistics,
@@ -21,14 +20,17 @@ import {
   selectIsLoadingServiceStatistics,
   selectServiceStatistics,
 } from 'store/deploy';
-import { fetchModelRecord } from 'store/model-record';
+import {
+  fetchModelRecord,
+  selectIsLoadingModelRecord,
+  selectModelRecord,
+} from 'store/model-record';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import {
   IDataStatistics,
   IDeployStatusInfo,
   IServiceStatistics,
-  IUnknownStatusInfo,
 } from 'models/Deploy';
 import styles from './ModelRecord.module.css';
 import ShowContentBasedOnUrl from './ShowContentBasedOnUrl/ShowContentBasedOnUrl';
@@ -230,15 +232,15 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
 }
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => {
-  const { modelRecord } = state;
+  const modelRecord = selectModelRecord(state);
   return {
-    data: modelRecord.data,
+    data: modelRecord,
     dataStatistics: selectDataStatistics(state),
-    deployState: modelRecord.data
-      ? selectDeployStatusInfo(state, modelRecord.data.id)
+    deployState: modelRecord
+      ? selectDeployStatusInfo(state, modelRecord.id)
       : null,
     loadingDataStatistics: selectIsLoadingDataStatistics(state),
-    loadingModelRecord: modelRecord.loading,
+    loadingModelRecord: selectIsLoadingModelRecord(state),
     loadingServiceStatistics: selectIsLoadingServiceStatistics(state),
     serviceStatistics: selectServiceStatistics(state),
   };

@@ -1,5 +1,3 @@
-import User from '../../models/User';
-
 export enum InvitationStatus {
   None,
   Sending,

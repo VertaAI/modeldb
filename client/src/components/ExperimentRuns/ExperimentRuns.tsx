@@ -2,18 +2,28 @@ import { GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
+import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
 import { DeployManager } from 'components/Deploy';
-import loader from 'components/images/loader.gif';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
-import { IColumnMetaData } from 'store/dashboard-config';
 import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
 import { fetchExperimentRuns } from 'store/experiment-runs';
+import {
+  IColumnConfig,
+  IColumnMetaData,
+  selectColumnConfig,
+} from 'store/dashboard-config';
+import {
+  selectExperimentRuns,
+  selectIsLoadingExperimentRuns,
+} from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
+import loader from '../images/loader.gif';
 import {
   defaultColDefinitions,
   returnColumnDefs,
@@ -29,7 +39,7 @@ interface IPropsFromState {
   defaultColDefinitions: any;
   filterState: { [index: string]: {} };
   filtered: boolean;
-  columnConfig: Map<string, IColumnMetaData>;
+  columnConfig: IColumnConfig;
 }
 
 interface IOperator {
@@ -43,9 +53,9 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IConnectedReduxProps;
 
 class ExperimentRuns extends React.Component<AllProps> {
-  public gridApi: any;
-  public columnApi: any;
-  public data: any;
+  private gridApi: any;
+  private columnApi: any;
+  private data: any;
 
   public componentWillReceiveProps(nextProps: AllProps) {
     if (this.gridApi) {
@@ -100,17 +110,20 @@ class ExperimentRuns extends React.Component<AllProps> {
     );
   }
 
-  public callFilterUpdate = () => {
+  @bind
+  private callFilterUpdate() {
     this.gridApi.onFilterChanged();
-  };
+  }
 
-  public onGridReady = (event: GridReadyEvent) => {
+  @bind
+  private onGridReady(event: GridReadyEvent) {
     this.gridApi = event.api;
     this.columnApi = event.columnApi;
     this.gridApi.setRowData(this.props.data);
-  };
+  }
 
-  public gridRowHeight = (params: any) => {
+  @bind
+  private gridRowHeight(params: any) {
     const data = params.node.data;
     if (
       (data.metrics && data.metrics.length > 3) ||
@@ -126,13 +139,15 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
 
     return 200;
-  };
+  }
 
-  public isExternalFilterPresent = () => {
+  @bind
+  private isExternalFilterPresent() {
     return this.props.filtered;
-  };
+  }
 
-  public funEvaluate(filter: any) {
+  @bind
+  private funEvaluate(filter: any) {
     // this.data is from the bind(node) where node is table row data
     // **ts forced creation of public data var to be able access node
     const operators: IOperator = {
@@ -162,22 +177,20 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
   }
 
-  public doesExternalFilterPass = (node: any) => {
+  @bind
+  private doesExternalFilterPass(node: any) {
     return Object.values(this.props.filterState)
       .map(this.funEvaluate.bind(node))
       .every(val => val === true);
-  };
+  }
 }
 
 // filterState and filtered should be provided by from IApplicationState -> customFilter
-const mapStateToProps = ({
-  experimentRuns,
-  dashboardConfig,
-}: IApplicationState) => ({
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
   defaultColDefinitions,
-  columnConfig: dashboardConfig.columnConfig,
-  data: experimentRuns.data,
-  loading: experimentRuns.loading,
+  columnConfig: selectColumnConfig(state),
+  data: selectExperimentRuns(state),
+  loading: selectIsLoadingExperimentRuns(state),
   filterState: {},
   filtered: false,
 });

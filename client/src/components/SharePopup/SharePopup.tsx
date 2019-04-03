@@ -7,6 +7,7 @@ import { UserAccess } from 'models/Project';
 import User from 'models/User';
 import { InvitationStatus, resetInvitationState } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { selectCurrentUser } from 'store/user';
 
 import CollaboratorsTab from './CollaboratorsTab/CollaboratorsTab';
 import close from './images/close.svg';
@@ -148,8 +149,8 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ layout }: IApplicationState) => ({
-  currentUser: layout.user!,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  currentUser: selectCurrentUser(state)!,
 });
 
 export default connect(mapStateToProps)(SharePopup);

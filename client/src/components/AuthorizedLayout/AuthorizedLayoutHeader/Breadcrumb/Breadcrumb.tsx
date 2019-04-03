@@ -8,6 +8,9 @@ import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 import { BreadcrumbItem } from 'models/BreadcrumbItem';
 import ModelRecord from 'models/ModelRecord';
 import routes from 'routes';
+import { selectExperimentRuns } from 'store/experiment-runs';
+import { selectModelRecord } from 'store/model-record';
+import { selectProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './Breadcrumb.module.css';
@@ -33,19 +36,15 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   private unlistenCallback: UnregisterCallback | undefined = undefined;
 
   private indexBreadcrumbItem = new BreadcrumbItem(
-    /^\/$/,
+    routes.mainPage,
     routes.mainPage.getRedirectPath({}),
     'PROJECTS'
   );
   private experimentRunsBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/exp-runs.?$/
+    routes.expirementRuns
   );
-  private chartsBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/charts.?$/
-  );
-  private modelBreadcrumbItem = new BreadcrumbItem(
-    /^\/project\/([\w-]*)\/exp-run\/([\w-]*).?$/
-  );
+  private chartsBreadcrumbItem = new BreadcrumbItem(routes.charts);
+  private modelBreadcrumbItem = new BreadcrumbItem(routes.modelRecord);
 
   public componentDidMount() {
     this.unlistenCallback = this.props.history.listen((location, action) => {
@@ -147,7 +146,9 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
     breadcrumbItems.push(this.chartsBreadcrumbItem);
     breadcrumbItems.push(this.modelBreadcrumbItem);
 
-    return breadcrumbItems.find(x => x.shouldMatch.test(this.state.url));
+    return breadcrumbItems.find(x => {
+      return x.shouldMatch.getMatch(this.state.url) !== null;
+    });
   }
 
   @bind
@@ -160,14 +161,10 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({
-  experimentRuns,
-  modelRecord,
-  projects,
-}: IApplicationState) => ({
-  experimentRuns: experimentRuns.data,
-  modelRecord: modelRecord.data,
-  projects: projects.data,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  experimentRuns: selectExperimentRuns(state),
+  modelRecord: selectModelRecord(state),
+  projects: selectProjects(state),
 });
 
 export default withRouter(connect(mapStateToProps)(Breadcrumb));

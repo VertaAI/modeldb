@@ -6,6 +6,7 @@ import User from 'models/User';
 import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 
+import { selectProjects } from './selectors';
 import {
   fetchProjectsAction,
   fetchProjectsActionTypes,
@@ -15,7 +16,7 @@ import {
 
 export const fetchProjects = (
   filters?: IFilterData[]
-): ActionResult<void, fetchProjectsAction> => async (dispatch, getState) => {
+): ActionResult<void, fetchProjectsAction> => async dispatch => {
   dispatch(action(fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST));
 
   await ServiceFactory.getProjectsService()
@@ -35,10 +36,8 @@ export const updateProjectCollaboratorAccess = (
   user: User,
   userAccess: UserAccess
 ): ActionResult<void, IUpdateProjectAction> => async (dispatch, getState) => {
-  const { projects } = getState();
-  const project = projects.data!.find(
-    (value: Project, index: number) => value.id === projectId
-  )!;
+  const projects = selectProjects(getState())!;
+  const project = projects.find(value => value.id === projectId)!;
 
   if (userAccess === UserAccess.Owner) {
     project.Author = user;
@@ -52,30 +51,24 @@ export const updateProjectCollaboratorAccess = (
       project.collaborators.set(collaboratorUser, collaboratorUserAccess);
     }
   } else {
-    const projectIndex = projects.data!.indexOf(project);
+    const projectIndex = projects.indexOf(project);
     project.collaborators.set(user, userAccess);
 
-    projects.data![projectIndex] = project;
+    projects[projectIndex] = project;
   }
-  dispatch(
-    action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects.data!)
-  );
+  dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects));
 };
 
 export const removeCollaboratorFromProject = (
   projectId: string,
   user: User
 ): ActionResult<void, IUpdateProjectAction> => async (dispatch, getState) => {
-  const { projects } = getState();
-  const project = projects.data!.find(
-    (value: Project, index: number) => value.id === projectId
-  )!;
+  const projects = selectProjects(getState())!;
+  const project = projects.find(value => value.id === projectId)!;
   project.collaborators.delete(user);
 
-  const projectIndex = projects.data!.indexOf(project);
-  projects.data![projectIndex] = project;
+  const projectIndex = projects.indexOf(project);
+  projects[projectIndex] = project;
 
-  dispatch(
-    action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects.data!)
-  );
+  dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects));
 };

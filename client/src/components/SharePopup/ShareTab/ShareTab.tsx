@@ -10,6 +10,7 @@ import {
 } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
+import { selectInviteNewCollaborator } from 'store/collaboration/selectors';
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
 import error_icon from '../images/error-icon.svg';
 import icon_check from '../images/icon-check.svg';
@@ -21,10 +22,12 @@ import styles from './ShareTab.module.css';
 
 interface ILocalProps {
   currentUserAccess: UserAccess;
-  // should be changed to actual type after getting format from the backend
+  projectId: string;
+}
+
+interface IPropsFromState {
   error?: any;
   status: InvitationStatus;
-  projectId: string;
 }
 
 interface ILocalState {
@@ -32,7 +35,7 @@ interface ILocalState {
   userAccess: UserAccess;
 }
 
-type AllProps = IConnectedReduxProps & ILocalProps;
+type AllProps = IConnectedReduxProps & ILocalProps & IPropsFromState;
 
 class ShareTab extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
@@ -206,9 +209,9 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ collaboration }: IApplicationState) => ({
-  error: collaboration.inviteNewCollaborator.error,
-  status: collaboration.inviteNewCollaborator.status,
-});
+const mapStateToProps = (state: IApplicationState): IPropsFromState => {
+  const { error, status } = selectInviteNewCollaborator(state);
+  return { error, status };
+};
 
 export default connect(mapStateToProps)(ShareTab);
