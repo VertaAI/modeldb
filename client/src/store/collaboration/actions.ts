@@ -12,7 +12,6 @@ import {
   changeAccessActionTypes,
   changeOwnerAction,
   changeOwnerActionTypes,
-  InvitationStatus,
   IResetChangeAccessAction,
   IResetChangeOwnerAction,
   IResetInvitationAction,
@@ -31,7 +30,7 @@ export const sendInvitationForUser = (
   projectId: string,
   email: string,
   userAccess: UserAccess
-): ActionResult<void, sendInvitationAction> => async (dispatch, getState) => {
+): ActionResult<void, sendInvitationAction> => async dispatch => {
   dispatch(action(sendInvitationActionTypes.SEND_INVITATION_REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
@@ -54,14 +53,14 @@ export const sendInvitationForUser = (
 export const resetInvitationState = (): ActionResult<
   void,
   IResetInvitationAction
-> => async (dispatch, getState) => {
+> => async dispatch => {
   dispatch(action(resetInvitationActionTypes.RESET_INVITATION_STATE));
 };
 
 export const changeProjectOwner = (
   projectId: string,
   email: string
-): ActionResult<void, changeOwnerAction> => async (dispatch, getState) => {
+): ActionResult<void, changeOwnerAction> => async dispatch => {
   dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
@@ -84,7 +83,7 @@ export const changeProjectOwner = (
 export const resetChangeOwnerState = (): ActionResult<
   void,
   IResetChangeOwnerAction
-> => async (dispatch, getState) => {
+> => async dispatch => {
   dispatch(action(resetChangeOwnerActionTypes.RESET_CHANGE_OWNER));
 };
 
@@ -92,7 +91,7 @@ export const changeAccessToProject = (
   projectId: string,
   user: User,
   userAccess: UserAccess
-): ActionResult<void, changeAccessAction> => async (dispatch, getState) => {
+): ActionResult<void, changeAccessAction> => async dispatch => {
   dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
@@ -109,14 +108,14 @@ export const changeAccessToProject = (
 export const resetChangeAccessState = (): ActionResult<
   void,
   IResetChangeAccessAction
-> => async (dispatch, getState) => {
+> => async dispatch => {
   dispatch(action(resetChangeAccessActionTypes.RESET_CHANGE_ACCESS));
 };
 
 export const removeAccessFromProject = (
   projectId: string,
   user: User
-): ActionResult<void, removeAccessAction> => async (dispatch, getState) => {
+): ActionResult<void, removeAccessAction> => async dispatch => {
   dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
@@ -133,6 +132,6 @@ export const removeAccessFromProject = (
 export const resetRemoveAccessState = (): ActionResult<
   void,
   IResetRemoveAccessAction
-> => async (dispatch, getState) => {
+> => async dispatch => {
   dispatch(action(resetRemoveAccessActionTypes.RESET_REMOVE_ACCESS));
 };

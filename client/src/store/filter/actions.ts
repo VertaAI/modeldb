@@ -3,7 +3,8 @@ import { action } from 'typesafe-actions';
 import { FilterContextPool } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
 import ServiceFactory from 'services/ServiceFactory';
-import { ActionResult } from 'store/store';
+import { ActionResult, IApplicationState } from 'store/store';
+import { selectContextDataByName, selectCurrentContextData } from './selectors';
 
 import {
   applyFiltersAction,
@@ -22,13 +23,9 @@ export function suggestFilters(
   return async (dispatch, getState) => {
     dispatch(action(suggestFiltersActionTypes.SUGGEST_FILTERS_REQUEST));
     const svc = ServiceFactory.getSearchAndFiltersService();
-    if (svc != null && getState().filters.context !== undefined) {
-      const ctxName = getState().filters.context;
-      let ctx: IFilterContextData | undefined;
-      if (ctxName !== undefined) {
-        ctx = getState().filters.contexts[ctxName];
-      }
-      await svc.searchFilterSuggestions(searchString, ctx).then(res => {
+    const currentCtx = selectCurrentContextData(getState());
+    if (svc != null && currentCtx !== undefined) {
+      await svc.searchFilterSuggestions(searchString, currentCtx).then(res => {
         dispatch(action(suggestFiltersActionTypes.SUGGEST_FILTERS_RESULT, res));
       });
     }
@@ -39,7 +36,7 @@ export function applyFilters(
   ctxName: string,
   filters: IFilterData[]
 ): ActionResult<void, applyFiltersAction> {
-  return async (dispatch, getState) => {
+  return async dispatch => {
     const ctx = FilterContextPool.getContextByName(ctxName);
     ctx.onApplyFilters(filters, dispatch);
   };
@@ -49,14 +46,14 @@ export function search(
   ctxName: string,
   searchStr: string
 ): ActionResult<void, applyFiltersAction> {
-  return async (dispatch, getState) => {
+  return async dispatch => {
     const ctx = FilterContextPool.getContextByName(ctxName);
     ctx.onSearch(searchStr, dispatch);
   };
 }
 
 export function initContexts(): ActionResult<void, initContextAction> {
-  return async (dispatch, getState) => {
+  return async dispatch => {
     dispatch(
       action(
         initActionTypes.REGISTER_CONTEXT_SUCCESS,
@@ -67,51 +64,56 @@ export function initContexts(): ActionResult<void, initContextAction> {
 }
 
 export function changeContext(
-  ctx?: string
+  ctxName?: string
 ): ActionResult<void, initContextAction | suggestFiltersAction> {
   return async (dispatch, getState) => {
-    dispatch(action(initActionTypes.CHANGE_CONTEXT, ctx));
+    dispatch(action(initActionTypes.CHANGE_CONTEXT, ctxName));
     dispatch(action(suggestFiltersActionTypes.SUGGEST_FILTERS_RESULT, []));
-    if (ctx !== undefined && FilterContextPool.hasContext(ctx)) {
-      const ctxData = FilterContextPool.getContextByName(ctx);
+    if (ctxName !== undefined && FilterContextPool.hasContext(ctxName)) {
+      const ctxData = FilterContextPool.getContextByName(ctxName);
       ctxData.onApplyFilters(
-        getState().filters.contexts[ctx].appliedFilters,
+        selectContextDataByName(getState(), ctxName).appliedFilters,
         dispatch
       );
     }
   };
 }
 
-function saveFilters(ctx: string, filters: IFilterData[]) {
-  localStorage.setItem(`${ctx}_filter`, JSON.stringify(filters));
+function saveFilters(ctxName: string, state: IApplicationState) {
+  const filters = selectContextDataByName(state, ctxName).appliedFilters;
+  localStorage.setItem(`${ctxName}_filter`, JSON.stringify(filters));
 }
 export function addFilter(
   filter: IFilterData,
-  ctx: string
+  ctxName: string
 ): ActionResult<void, manageFiltersAction> {
   return async (dispatch, getState) => {
-    dispatch(action(manageFiltersTypes.ADD_FILTER, { filter, ctx }));
-    saveFilters(ctx, getState().filters.contexts[ctx].appliedFilters);
+    dispatch(action(manageFiltersTypes.ADD_FILTER, { filter, ctx: ctxName }));
+    saveFilters(ctxName, getState());
   };
 }
 
 export function editFilter(
   index: number,
   filter: IFilterData,
-  ctx: string
+  ctxName: string
 ): ActionResult<void, manageFiltersAction> {
   return async (dispatch, getState) => {
-    dispatch(action(manageFiltersTypes.EDIT_FILTER, { index, filter, ctx }));
-    saveFilters(ctx, getState().filters.contexts[ctx].appliedFilters);
+    dispatch(
+      action(manageFiltersTypes.EDIT_FILTER, { index, filter, ctx: ctxName })
+    );
+    saveFilters(ctxName, getState());
   };
 }
 
 export function removeFilter(
   filter: IFilterData,
-  ctx: string
+  ctxName: string
 ): ActionResult<void, manageFiltersAction> {
   return async (dispatch, getState) => {
-    dispatch(action(manageFiltersTypes.REMOVE_FILTER, { filter, ctx }));
-    saveFilters(ctx, getState().filters.contexts[ctx].appliedFilters);
+    dispatch(
+      action(manageFiltersTypes.REMOVE_FILTER, { filter, ctx: ctxName })
+    );
+    saveFilters(ctxName, getState());
   };
 }

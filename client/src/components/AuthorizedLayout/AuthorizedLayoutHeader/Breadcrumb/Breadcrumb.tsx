@@ -8,6 +8,9 @@ import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 import { BreadcrumbItem } from 'models/BreadcrumbItem';
 import ModelRecord from 'models/ModelRecord';
 import routes from 'routes';
+import { selectExperimentRuns } from 'store/experiment-runs';
+import { selectModelRecord } from 'store/model-record';
+import { selectProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './Breadcrumb.module.css';
@@ -158,14 +161,10 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({
-  experimentRuns,
-  modelRecord,
-  projects,
-}: IApplicationState) => ({
-  experimentRuns: experimentRuns.data,
-  modelRecord: modelRecord.data,
-  projects: projects.data,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  experimentRuns: selectExperimentRuns(state),
+  modelRecord: selectModelRecord(state),
+  projects: selectProjects(state),
 });
 
 export default withRouter(connect(mapStateToProps)(Breadcrumb));

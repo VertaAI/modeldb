@@ -12,10 +12,7 @@ import {
 export const fetchExperimentRuns = (
   id: string,
   filters?: IFilterData[]
-): ActionResult<void, fetchExperimentRunsAction> => async (
-  dispatch,
-  getState
-) => {
+): ActionResult<void, fetchExperimentRunsAction> => async dispatch => {
   dispatch(action(fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_REQUEST));
 
   await ServiceFactory.getExperimentRunsService()
