@@ -1,11 +1,11 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
-import { IProjectDataService } from '../IProjectDataService';
-import { ProjectDataService } from '../ProjectDataService';
-import { projectsMock } from './projectsMock';
+import { projectsMock } from '../mocks/projectsMock';
+import { IProjectDataService } from './IProjectDataService';
+import ProjectDataService from './ProjectDataService';
 
-export class MockProjectDataService extends ProjectDataService
+export default class MockProjectDataService extends ProjectDataService
   implements IProjectDataService {
   public constructor() {
     super();

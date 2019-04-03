@@ -1,11 +1,12 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
-import ExperimentRunsDataService from '../ExperimentRunsDataService';
-import { IExperimentRunsDataService } from '../IExperimentRunsDataService';
-import { expRunsMocks } from './expRunsMock';
+import { expRunsMocks } from '../mocks/expRunsMock';
+import ExperimentRunsDataService from './ExperimentRunsDataService';
+import { IExperimentRunsDataService } from './IExperimentRunsDataService';
 
-export class MockExperimentRunsDataService extends ExperimentRunsDataService
+export default class MockExperimentRunsDataService
+  extends ExperimentRunsDataService
   implements IExperimentRunsDataService {
   public constructor() {
     super();

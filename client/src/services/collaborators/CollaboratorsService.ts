@@ -1,6 +1,6 @@
 import { UserAccess } from 'models/Project';
 
-import { BaseDataService } from './BaseDataService';
+import { BaseDataService } from '../BaseDataService';
 import { ICollaboratorsService } from './ICollaboratorsService';
 
 export default class CollaboratorsService extends BaseDataService
