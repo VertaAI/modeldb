@@ -36,7 +36,7 @@ class ArtifactsColDef extends React.Component<any> {
                     )}
                   </div>
                   <div className={styles.type}>
-                    {artifact.type} &nbsp; &nbsp; &nbsp; ->{' '}
+                    {artifact.type} &nbsp; &nbsp; ->{' '}
                   </div>
                   <div className={styles.key}>{artifact.key}</div>
                   <div className={styles.path}>
