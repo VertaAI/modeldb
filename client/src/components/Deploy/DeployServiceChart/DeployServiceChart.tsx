@@ -235,7 +235,7 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       try {
         tipbox_node = tipBox.node();
       } catch {}
-      console.log(tipbox_node);
+      //console.log(tipbox_node);
       const closestTime = x.invert(d3.mouse(tipbox_node as SVGRectElement)[0]);
       const closestSecond =
         Math.floor((closestTime.getTime() + 2500) / 5000) * 5;
