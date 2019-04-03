@@ -170,80 +170,165 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       .attr('transform', 'translate(0,' + height + ')')
       .call(xAxis);
 
-    const yMax = Math.max(...count);
-    var y = d3
-      .scaleLinear()
-      .domain([0, yMax])
-      .range([height, 0]);
-
     const indices = Array(count.length)
       .fill(1)
       .map((x, y) => x + y - 1);
     const data = indices.map(i => {
       const mid_x = boundary[i]; //(boundary[i] + boundary[i + 1]) / 2;
       const val = count[i];
+      const ref = reference[i];
       return {
         x: mid_x,
-        y: val,
+        val: val,
+        ref: ref,
       };
     });
+    const group_width = width / count.length;
+    const bar_width = group_width * 0.4;
+    console.log(reference);
 
-    const color = '#6863ff';
-    var colorScale = d3
+    var formatCount = d3.format(',.0f');
+
+    function draw_bars(
+      values: number[],
+      color: string,
+      getter: (d: any) => number,
+      str: string,
+      offset: number,
+      add_text: boolean
+    ) {
+      const yMax = Math.max(...values);
+      var y = d3
+        .scaleLinear()
+        .domain([0, yMax])
+        .range([height, 0]);
+
+      var colorScale = d3
+        .scaleLinear<d3.RGBColor>()
+        .domain([0, yMax])
+        .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
+
+      var bar = chart
+        .selectAll('.bar' + str)
+        .data(data)
+        .enter()
+        .append('g')
+        .attr('class', 'bar' + str)
+        .attr('transform', function(d) {
+          return (
+            'translate(' +
+            (x(d.x) + offset * group_width) +
+            ',' +
+            y(getter(d)) +
+            ')'
+          );
+        });
+
+      bar
+        .append('rect')
+        .attr('x', 1)
+        .attr('width', bar_width)
+        .attr('height', d => height - y(getter(d)))
+        .attr('fill', d => color);
+
+      if (add_text) {
+        bar
+          .append('text')
+          .attr('dy', '.75em')
+          .attr('y', -12)
+          .attr('x', bar_width / 2)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#999999')
+          .attr('font', 'sans-serif')
+          .attr('font-size', '12px')
+          .text(d => formatCount(getter(d)));
+      }
+    }
+
+    //const darkColor = '#6863ff';
+    //const lightColor = '#5fe6c9'
+    const darkColor = 'blue';
+    const lightColor = 'darkgreen';
+    draw_bars(count, darkColor, d => d.val, '-live', 0.1, true);
+    draw_bars(reference, lightColor, d => d.ref, '-ref', 0.5, false);
+
+    /*
+    const yMax = Math.max(...count);
+    var y = d3
+      .scaleLinear()
+      .domain([0, yMax])
+      .range([height, 0]);
+
+    const yReference = d3.scaleLinear().range([height, 0]);
+    const yRefMax = Math.max(...reference)
+    yReference.domain([0, yRefMax]);
+
+    var darkColorScale = d3
       .scaleLinear<d3.RGBColor>()
       .domain([0, yMax])
-      .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
+      .range([d3.rgb(darkColor).brighter(), d3.rgb(darkColor).darker()]);
 
-    var bar = chart
-      .selectAll('.bar')
+    var lightColorScale = d3
+      .scaleLinear<d3.RGBColor>()
+      .domain([0, yRefMax])
+      .range([d3.rgb(lightColor).brighter(), d3.rgb(lightColor).darker()]);
+
+    var live_bar = chart
+      .selectAll('.live_bar')
       .data(data)
       .enter()
       .append('g')
-      .attr('class', 'bar')
+      .attr('class', 'live_bar')
       .attr('transform', function(d) {
-        return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
+        return 'translate(' + x(d.x) + ',' + y(d.val) + ')';
       });
 
-    bar
+    var reference_bar = chart
+      .selectAll('.reference_bar')
+      .data(data)
+      .enter()
+      .append('g')
+      .attr('class', 'reference_bar')
+      .attr('transform', function(d) {
+        return 'translate(' + x(d.x) + ',' + y(d.ref) + ')';
+      });
+
+      live_bar
       .append('rect')
       .attr('x', 1)
-      .attr('width', width / count.length)
-      .attr('height', d => height - y(d.y))
-      .attr('fill', d => colorScale(d.y).toString());
+      .attr('width', bar_width)
+      .attr('height', d => height - y(d.val))
+      .attr('fill', d => darkColorScale(d.val).toString());
 
-    const yReference = d3.scaleLinear().range([height, 0]);
-    yReference.domain([0, Math.max(...reference)]);
+      reference_bar
+      .append('rect')
+      .attr('x', 1)
+      .attr('width', bar_width)
+      .attr('height', d => height - yReference(d.ref))
+      .attr('fill', d => lightColorScale(d.ref).toString());
 
-    const line = d3
-      .line()
-      .x(p => x(p[0]))
-      .y(p => yReference(p[1]));
-
-    chart
-      .selectAll()
-      .data([
-        reference_center.map((e, i) => {
-          return [e, reference[i]] as [number, number];
-        }),
-      ])
-      .enter()
-      .append('path')
-      .attr('fill', 'none')
-      .attr('stroke', '#5fe6c9')
-      .attr('stroke-width', 2)
-      .attr('d', line);
-
-    var formatCount = d3.format(',.0f');
-    bar
+    live_bar
       .append('text')
       .attr('dy', '.75em')
       .attr('y', -12)
-      .attr('x', width / (count.length * 2))
+      .attr('x', bar_width/2)
       .attr('text-anchor', 'middle')
       .attr('fill', '#999999')
       .attr('font', 'sans-serif')
       .attr('font-size', '10px')
-      .text(d => formatCount(d.y));
+      .text(d => formatCount(d.val));
+
+      reference_bar
+      .append('text')
+      .attr('dy', '.75em')
+      .attr('y', -12)
+      .attr('x', bar_width/2)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#999999')
+      .attr('font', 'sans-serif')
+      .attr('font-size', '10px')
+      .text(d => formatCount(d.ref));
+      */
   }
 
   render() {
