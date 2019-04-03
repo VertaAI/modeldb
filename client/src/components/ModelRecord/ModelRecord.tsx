@@ -202,7 +202,8 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                       marginLeft={60}
                       marginTop={40}
                       marginRight={60}
-                      metrics={this.props.serviceStatistics}
+                      modelId={data.id}
+                      //metrics={this.props.serviceStatistics}
                     />
                   </this.Record>
                 </React.Fragment>
@@ -228,7 +229,8 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                       marginLeft={60}
                       marginTop={40}
                       marginRight={60}
-                      statistics={this.props.dataStatistics}
+                      modelId={data.id}
+                      //statistics={this.props.dataStatistics}
                     />
                   </this.Record>
                 </React.Fragment>

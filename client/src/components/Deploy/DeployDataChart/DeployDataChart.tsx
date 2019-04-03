@@ -11,6 +11,8 @@ import {
 import { Color } from 'csstype';
 import styles from './DeployDataChart.module.css';
 import chartStyles from 'components/Charts/ModelSummary/ModelSummary.module.css';
+import { bind } from 'decko';
+import ServiceFactory from 'services/ServiceFactory';
 
 interface ILocalProps {
   height: number;
@@ -19,13 +21,15 @@ interface ILocalProps {
   marginTop: number;
   marginRight: number;
   marginBottom: number;
-  statistics: IDataStatistics;
+  modelId: string;
 }
 
 interface IPropsFromState {}
 
 interface ILocalState {
   selectedFeature: string;
+  possibleFeatures: string[];
+  statistics: IDataStatistics;
 }
 
 type AllProps = ILocalProps & IPropsFromState;
@@ -54,35 +58,57 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
     super(props);
 
     this.state = {
-      selectedFeature: [...props.statistics.keys()].sort()[0],
+      selectedFeature: '',
+      possibleFeatures: [],
+      statistics: {} as IDataStatistics,
     };
   }
 
-  componentDidMount() {
-    console.log('stats', this.props.statistics);
+  timeout: any = undefined;
 
+  @bind
+  dataRefresh() {
+    ServiceFactory.getDeployService()
+      .getDataStatistics(this.props.modelId)
+      .then(stat => {
+        this.setState({
+          statistics: stat.data,
+          possibleFeatures: [...stat.data.keys()].sort(),
+        });
+        if (
+          this.state.selectedFeature == '' ||
+          !stat.data.has(this.state.selectedFeature)
+        ) {
+          this.setState({ selectedFeature: [...stat.data.keys()].sort()[0] });
+        }
+      });
+  }
+
+  componentDidMount() {
+    this.timeout = setInterval(this.dataRefresh, 60 * 1000);
+    this.dataRefresh();
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timeout);
+  }
+
+  fullRebuild() {
+    if (this.state.statistics.size == 0 || this.state.selectedFeature == '')
+      return;
+
+    //console.log('stats', this.props.statistics)
     const width =
       this.props.width - this.props.marginLeft - this.props.marginRight;
     const height =
       this.props.height - this.props.marginTop - this.props.marginBottom;
-
-    const fake_data = {
-      feature1: {
-        count: Array(10)
-          .fill(1)
-          .map((x, y) => (x + y) * 2),
-        boundaries: Array(11)
-          .fill(1)
-          .map((x, y) => x + y - 1),
-      },
-    };
 
     //const boundary = fake_data.feature1.boundaries;
     //const count = fake_data.feature1.count;
 
     //const featureName = this.props.statistics.keys().next().value;
     const featureName = this.state.selectedFeature;
-    const featureInfo = this.props.statistics.get(
+    const featureInfo = this.state.statistics.get(
       featureName
     ) as IServiceDataFeature;
 
@@ -185,18 +211,6 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       .attr('height', d => height - y(d.y))
       .attr('fill', d => colorScale(d.y).toString());
 
-    var formatCount = d3.format(',.0f');
-    bar
-      .append('text')
-      .attr('dy', '.75em')
-      .attr('y', -12)
-      .attr('x', width / (count.length * 2))
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#999999')
-      .attr('font', 'sans-serif')
-      .attr('font-size', '10px')
-      .text(d => formatCount(d.y));
-
     const yReference = d3.scaleLinear().range([height, 0]);
     yReference.domain([0, Math.max(...reference)]);
 
@@ -204,6 +218,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       .line()
       .x(p => x(p[0]))
       .y(p => yReference(p[1]));
+
     chart
       .selectAll()
       .data([
@@ -217,11 +232,23 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       .attr('stroke', '#5fe6c9')
       .attr('stroke-width', 2)
       .attr('d', line);
+
+    var formatCount = d3.format(',.0f');
+    bar
+      .append('text')
+      .attr('dy', '.75em')
+      .attr('y', -12)
+      .attr('x', width / (count.length * 2))
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#999999')
+      .attr('font', 'sans-serif')
+      .attr('font-size', '10px')
+      .text(d => formatCount(d.y));
   }
 
   render() {
     //console.log('here');
-    this.componentDidMount();
+    this.fullRebuild();
     return (
       <React.Fragment>
         <div /*className={styles.chart_selector}*/>
@@ -235,15 +262,13 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
             }
             className={styles.dropdown}
           >
-            {[...this.props.statistics.keys()]
-              .sort()
-              .map((feature: string, i: number) => {
-                return (
-                  <option key={feature} value={feature}>
-                    {feature}
-                  </option>
-                );
-              })}
+            {this.state.possibleFeatures.map((feature: string, i: number) => {
+              return (
+                <option key={feature} value={feature}>
+                  {feature}
+                </option>
+              );
+            })}
           </select>
         </div>
         <svg

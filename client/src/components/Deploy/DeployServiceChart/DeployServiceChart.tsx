@@ -10,6 +10,8 @@ import {
 } from 'models/Deploy';
 import { Color } from 'csstype';
 import styles from './DeployServiceChart.module.css';
+import ServiceFactory from 'services/ServiceFactory';
+import { bind } from 'decko';
 
 interface ILocalProps {
   height: number;
@@ -18,7 +20,7 @@ interface ILocalProps {
   marginTop: number;
   marginRight: number;
   marginBottom: number;
-  metrics: IServiceStatistics;
+  modelId: string;
 }
 
 class Point {
@@ -32,10 +34,31 @@ class Point {
 
 interface IPropsFromState {}
 
+interface ILocalState {
+  metrics: IServiceStatistics;
+}
+
 type AllProps = ILocalProps & IPropsFromState;
 
-class DeployServiceChart extends React.PureComponent<AllProps> {
+var tipbox_node: any = undefined;
+
+class DeployServiceChart extends React.Component<AllProps, ILocalState> {
   ref!: SVGSVGElement;
+
+  public constructor(props: AllProps) {
+    super(props);
+
+    this.state = {
+      metrics: {
+        averageLatency: [],
+        p99Latency: [],
+        p90Latency: [],
+        p50Latency: [],
+        throughput: [],
+        time: [],
+      } as IServiceStatistics,
+    };
+  }
 
   convertTime(v: number) {
     var t = new Date(0);
@@ -44,7 +67,7 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
   }
 
   transposePoints() {
-    const metrics = this.props.metrics;
+    const metrics = this.state.metrics;
     var points: Point[] = [];
     for (var i = 0; i < metrics.time.length; i++) {
       points.push({
@@ -59,14 +82,40 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
     return points;
   }
 
+  timeout: any = undefined;
+
+  @bind
+  dataRefresh() {
+    ServiceFactory.getDeployService()
+      .getServiceStatistics(this.props.modelId)
+      .then(stat => {
+        this.setState({
+          metrics: stat.data,
+        });
+      });
+  }
+
   componentDidMount() {
-    if (!this.props.metrics.time) return;
-    console.log(this.props.metrics);
+    this.timeout = setInterval(this.dataRefresh, 5 * 1000);
+    this.dataRefresh();
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timeout);
+  }
+
+  fullRebuild() {
+    if (this.state.metrics.time.length == 0) return;
+    //console.log(this.state.metrics);
     const points = this.transposePoints();
     const width =
       this.props.width - this.props.marginLeft - this.props.marginRight;
     const height =
       this.props.height - this.props.marginTop - this.props.marginBottom;
+
+    d3.select(this.ref)
+      .selectAll('g')
+      .remove();
 
     const chart = d3
       .select(this.ref)
@@ -173,6 +222,8 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
       .on('mousemove', drawTooltip)
       .on('mouseout', removeTooltip);
 
+    //if (tooltip) drawTooltip()
+
     function removeTooltip() {
       if (tooltip) tooltip.style('display', 'none');
       if (tooltipLine) tooltipLine.attr('stroke', 'none');
@@ -181,9 +232,11 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
     const convertTime = this.convertTime;
 
     function drawTooltip() {
-      const closestTime = x.invert(
-        d3.mouse(tipBox.node() as SVGRectElement)[0]
-      );
+      try {
+        tipbox_node = tipBox.node();
+      } catch {}
+      console.log(tipbox_node);
+      const closestTime = x.invert(d3.mouse(tipbox_node as SVGRectElement)[0]);
       const closestSecond =
         Math.floor((closestTime.getTime() + 2500) / 5000) * 5;
       const closestRoundedDate = convertTime(closestSecond);
@@ -255,6 +308,7 @@ class DeployServiceChart extends React.PureComponent<AllProps> {
   }
 
   render() {
+    this.fullRebuild();
     return (
       <React.Fragment>
         <svg
