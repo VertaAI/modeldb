@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Draggable from 'components/Draggable/Draggable';
+import Draggable from 'components/shared/Draggable/Draggable';
 import { PropertyType } from 'models/Filters';
 
 import styles from './TagBlock.module.css';

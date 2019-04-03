@@ -6,7 +6,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import Droppable from 'components/Droppable/Droppable';
+import Droppable from 'components/shared/Droppable/Droppable';
 import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';

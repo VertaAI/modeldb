@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
 import loader from 'components/images/loader.gif';
-import tagStyles from 'components/TagBlock/TagBlock.module.css';
+import tagStyles from 'components/TagBlock/TagBlock.module.css'; // !
 import { IArtifact } from 'models/Artifact';
 import { IHyperparameter } from 'models/HyperParameters';
 import { IMetric } from 'models/Metrics';
