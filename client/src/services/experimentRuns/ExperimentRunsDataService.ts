@@ -6,7 +6,7 @@ import { IHyperparameter } from 'models/HyperParameters';
 import { IMetric } from 'models/Metrics';
 import ModelRecord from 'models/ModelRecord';
 
-import { BaseDataService } from './BaseDataService';
+import { BaseDataService } from '../BaseDataService';
 import { IExperimentRunsDataService } from './IExperimentRunsDataService';
 
 export default class ExperimentRunsDataService extends BaseDataService

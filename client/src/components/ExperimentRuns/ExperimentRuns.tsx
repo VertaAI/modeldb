@@ -10,13 +10,13 @@ import { RouteComponentProps } from 'react-router';
 import { DeployManager } from 'components/Deploy';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
-import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
-import { fetchExperimentRuns } from 'store/experiment-runs';
 import {
   IColumnConfig,
   IColumnMetaData,
   selectColumnConfig,
 } from 'store/dashboard-config';
+import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
+import { fetchExperimentRuns } from 'store/experiment-runs';
 import {
   selectExperimentRuns,
   selectIsLoadingExperimentRuns,

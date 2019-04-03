@@ -3,13 +3,13 @@ import MockAdapter from 'axios-mock-adapter';
 
 import { URL } from 'utils/types';
 
-import DeployService from './DeployService';
-import { IDeployService } from './IDeployService';
 import {
   deployedStatusInfoData,
   mockDataStatistics,
   mockServiceStatistics,
 } from '../mocks/deployMock';
+import DeployService from './DeployService';
+import { IDeployService } from './IDeployService';
 
 const deployStatusInfoByModels: Record<string, any> = {};
 export default class MockDeployService extends DeployService

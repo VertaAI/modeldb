@@ -1,12 +1,9 @@
 import { IMetaData } from 'models/IMetaData';
-import { number } from 'prop-types';
 
 import { ComparisonType, IFilterData, PropertyType } from 'models/Filters';
-import ModelRecord from 'models/ModelRecord';
-import { Project } from 'models/Project';
 import { IFilterContextData } from 'store/filter';
 
-import ISearchAndFilterService from '../ISearchAndFilterService';
+import { ISearchAndFilterService } from './ISearchAndFilterService';
 
 export default class MockSFService implements ISearchAndFilterService {
   public searchFilterSuggestions(
