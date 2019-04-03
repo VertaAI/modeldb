@@ -5,10 +5,10 @@ import { IFilterData } from 'models/Filters';
 import { Project } from 'models/Project';
 import User from 'models/User';
 
-import { BaseDataService } from './BaseDataService';
+import { BaseDataService } from '../BaseDataService';
 import { IProjectDataService } from './IProjectDataService';
 
-export class ProjectDataService extends BaseDataService
+export default class ProjectDataService extends BaseDataService
   implements IProjectDataService {
   public constructor() {
     super();
