@@ -1,34 +1,25 @@
-import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import styles from './Checkbox.module.css';
+import styles from './Switch.module.css';
 
 interface ILocalProps {
   value: boolean;
-  size: 'small' | 'medium';
-  id?: string;
   onChange(value: boolean): void;
 }
 
-class Checkbox extends React.PureComponent<ILocalProps> {
+class Switch extends React.PureComponent<ILocalProps> {
   public render() {
-    const { value, size, id } = this.props;
+    const { value } = this.props;
     return (
-      <label
-        className={cn(styles.checkbox, {
-          [styles.size_small]: size === 'small',
-          [styles.size_medium]: size === 'medium',
-        })}
-      >
+      <label className={styles.switch}>
         <input
           className={styles.real_checkbox}
           type="checkbox"
           checked={value}
-          id={id}
           onChange={this.onChange}
         />
-        <span className={styles.checkmark} />
+        <div className={styles.slider} />
       </label>
     );
   }
@@ -39,4 +30,4 @@ class Checkbox extends React.PureComponent<ILocalProps> {
   }
 }
 
-export default Checkbox;
+export default Switch;

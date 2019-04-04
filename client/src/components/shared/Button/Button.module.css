@@ -3,22 +3,39 @@
   border: none;
   background: none;
   cursor: pointer;
+  outline: none;
 }
 
 .default {
-  height: 34px;
-  width: 164px;
-  border-radius: 2px;
   background-color: var(--main-color2);
-  font-size: var(--font-size3);
   font-weight: 500;
   line-height: 18px;
   text-align: center;
-  text-transform: capitalize;
   color: var(--main-color3);
 }
 .default:hover {
   background-color: #6a84ff;
+}
+
+.size_default {
+  font-size: var(--font-size3);
+  height: 34px;
+  width: 164px;
+  border-radius: 2px;
+}
+.size_large {
+  font-weight: 400;
+  font-size: var(--font-size1);
+  height: 56px;
+  width: 276px;
+  border-radius: 4px;
+}
+
+.text_transform_default {
+  text-transform: capitalize;
+}
+.text_transform_none {
+  text-transform: none;
 }
 
 .full_width {
@@ -30,4 +47,8 @@
   font-size: var(--font-size4);
   color: var(--main-color2);
   border-bottom: 1px solid rgb(104, 99, 255, 0.3);
+}
+
+.icon {
+  margin-right: 8px;
 }

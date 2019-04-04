@@ -12,24 +12,6 @@
   text-align: center;
 }
 
-.send_invitation_button {
-  height: 34px;
-  width: 164px;
-  border-radius: 2px;
-  background-color: var(--main-color2);
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 18px;
-  text-align: center;
-  cursor: pointer;
-  border: none;
-  color: var(--main-color3);
-}
-
-.send_invitation_button:hover {
-  background-color: #6a84ff;
-}
-
 .form_group:focus-within .share_button {
   visibility: visible;
 }

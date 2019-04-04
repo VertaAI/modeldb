@@ -19,7 +19,7 @@ interface ILocalProps {
 type Icon = 'upload';
 
 // float action button
-class Fab extends React.Component<ILocalProps> {
+class Fab extends React.PureComponent<ILocalProps> {
   public render() {
     const {
       children,

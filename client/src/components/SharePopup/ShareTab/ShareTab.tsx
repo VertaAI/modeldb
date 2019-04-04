@@ -2,6 +2,7 @@ import { bind } from 'decko';
 import React from 'react';
 import { connect } from 'react-redux';
 
+import Button from 'components/shared/Button/Button';
 import { UserAccess } from 'models/Project';
 import {
   InvitationStatus,
@@ -86,14 +87,9 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
                 }
               />
             </div>
-            <div>
-              <button
-                className={styles.send_invitation_button}
-                onClick={this.sendInvitationOnClick}
-              >
-                Send Invitation
-              </button>
-            </div>
+            <Button onClick={this.sendInvitationOnClick}>
+              Send Invitation
+            </Button>
           </div>
         );
       case InvitationStatus.Failure:

@@ -8,6 +8,7 @@ import { authenticateUser, selectCurrentUser } from 'store/user';
 
 import logo from './images/logo.svg';
 import styles from './Login.module.css';
+import Button from 'components/shared/Button/Button';
 
 interface IPropsFromState {
   user?: User | null;
@@ -27,25 +28,21 @@ class Login extends React.Component<AllProps> {
           <i className="fa fa-heart" style={{ opacity: 0.5 }} />
         </div>
         <div className={styles.form_login}>
-          <button
-            className={styles.create_button}
+          <Button
+            size="large"
+            textTransform="none"
+            icon="github"
             onClick={this.authenticateViaGithub}
           >
-            <i
-              className={`fa fa-github fa-fw ${styles.github_icon}`}
-              style={{ fontSize: '30px', verticalAlign: 'middle' }}
-            />
-            <span>Login with Github</span>
-          </button>
+            Login with Github
+          </Button>
         </div>
       </div>
     );
   }
 
   @bind
-  private authenticateViaGithub(
-    event: React.SyntheticEvent<HTMLButtonElement>
-  ) {
+  private authenticateViaGithub() {
     this.props.dispatch(authenticateUser());
   }
 }

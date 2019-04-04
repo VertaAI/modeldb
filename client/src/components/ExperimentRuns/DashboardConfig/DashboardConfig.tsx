@@ -3,6 +3,7 @@ import * as React from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
+import Checkbox from 'components/shared/Checkbox/Checkbox';
 import ModelRecord from 'models/ModelRecord';
 import {
   IColumnConfig,
@@ -47,24 +48,18 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
         </div>
         {this.state.isOpened ? (
           <div className={styles.drop_down}>
-            <h4 className={styles.title}> Add/Drop Columns </h4>
-            <div className={styles.menu_item}>
-              {Array.from(columnConfig.values()).map((element: any) => (
-                <label
-                  key={element.name}
-                  style={{ display: 'block' }}
-                  className={styles.container}
-                >
-                  <input
-                    className={styles.input_style}
-                    type="checkbox"
-                    name={element.name}
-                    checked={element.checked}
-                    onChange={this.handleColumnsUpdate}
-                  />
-                  <span className={styles.checkmark} />
-                  &nbsp; &nbsp;
-                  {element.label}
+            <h4 className={styles.title}>Add/Drop Columns</h4>
+            <div className={styles.menu_items}>
+              {Array.from(columnConfig.values()).map(element => (
+                <label className={styles.menu_item} key={element.name}>
+                  <div className={styles.menu_item_checkbox}>
+                    <Checkbox
+                      value={element.checked}
+                      size="medium"
+                      onChange={this.makeColumnsUpdateHandler(element.name)}
+                    />
+                  </div>
+                  <div className={styles.menu_item_label}>{element.label}</div>
                 </label>
               ))}
             </div>
@@ -81,14 +76,16 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
   }
 
   @bind
-  public handleColumnsUpdate(ev: any) {
-    let activeColumns = new Map(this.props.columnConfig);
-    const checkedElement = activeColumns.get(ev.target.name);
-    if (checkedElement !== undefined) {
-      checkedElement.checked = !checkedElement.checked;
-      activeColumns = activeColumns.set(ev.target.name, checkedElement);
-    }
-    this.props.dispatch(updateDashboardConfig(activeColumns));
+  public makeColumnsUpdateHandler(checkboxName: string) {
+    return () => {
+      let activeColumns = new Map(this.props.columnConfig);
+      const checkedElement = activeColumns.get(checkboxName);
+      if (checkedElement !== undefined) {
+        checkedElement.checked = !checkedElement.checked;
+        activeColumns = activeColumns.set(checkboxName, checkedElement);
+      }
+      this.props.dispatch(updateDashboardConfig(activeColumns));
+    };
   }
 
   @bind
