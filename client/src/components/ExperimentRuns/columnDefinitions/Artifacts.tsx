@@ -28,6 +28,8 @@ class ArtifactsColDef extends React.Component<any> {
                   <div className={styles.notif}>
                     {artifact.type === 'IMAGE' ? (
                       <i className="fa fa-image" style={{ color: '#6863ff' }} />
+                    ) : artifact.type === 'BINARY' ? (
+                      <i className="fa fa-cube" style={{ color: '#6863ff' }} />
                     ) : (
                       <i
                         className="fa fa-codepen"
@@ -35,14 +37,7 @@ class ArtifactsColDef extends React.Component<any> {
                       />
                     )}
                   </div>
-                  <div className={styles.type}>
-                    {artifact.type} &nbsp; &nbsp; ->{' '}
-                  </div>
-                  <div className={styles.key}>{artifact.key}</div>
-                  <div className={styles.path}>
-                    <span className={styles.path_label}>PATH : &nbsp;</span>
-                    {artifact.path}
-                  </div>
+                  <div className={styles.artifactKey}>{artifact.key}</div>
                 </div>
               </Link>
             );
