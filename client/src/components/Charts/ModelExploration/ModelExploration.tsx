@@ -23,8 +23,8 @@ export default class ModelExploration extends React.Component<
   ILocalProps,
   ILocalState
 > {
-  public xAxisParams: Set<string> = new Set(); // computed fields from ModelRecord object
-  public yAxisParams: Set<string> = new Set(); // metric fields only for Y axis
+  public xAxisParams: Set<string> = new Set();
+  public yAxisParams: Set<string> = new Set();
   public summaryParams: Set<string> = new Set();
   public hyperParams: Set<string> = new Set();
   public mapOptGroup = { metric: false, hyper: false };
@@ -35,8 +35,8 @@ export default class ModelExploration extends React.Component<
       computeXAxisFields: this.computeXAxisFields(props.expRuns),
       flatMetric: this.computeFlatMetric(props.expRuns),
       selectedAggregate: 'average',
-      selectedXAxis: props.initialSelection.initialHyperparam, // initial val for testing //
-      selectedYAxis: props.initialSelection.initialMetric, // initial val for testing - first metric
+      selectedXAxis: props.initialSelection.initialHyperparam,
+      selectedYAxis: props.initialSelection.initialMetric,
     };
   }
 
@@ -308,14 +308,17 @@ export default class ModelExploration extends React.Component<
         modeRecord.hyperparameters.forEach((kvPair: any) => {
           this.xAxisParams.add(`${kvPair.key}`);
           this.hyperParams.add(kvPair.key);
-          fields[`${kvPair.key}`] = kvPair.value;
+          fields[kvPair.key] =
+            kvPair.value.length > 8
+              ? kvPair.value.substring(0, 8)
+              : kvPair.value;
         });
       }
 
       if (modeRecord.metrics) {
         modeRecord.metrics.forEach((kvPair: any) => {
           // this.xAxisParams.add(`${kvPair.key}`);
-          fields[`${kvPair.key}`] = kvPair.value;
+          fields[kvPair.key] = kvPair.value;
         });
       }
       // if (modeRecord.datasets) {
@@ -330,9 +333,9 @@ export default class ModelExploration extends React.Component<
       //     fields[`artifact_${kvPair.key}`] = kvPair.path;
       //   });
       // }
-      fields.experiment_id = modeRecord.experimentId;
-      fields.project_id = modeRecord.projectId;
-      fields.exp_run_id = modeRecord.id;
+      fields.experiment_id = modeRecord.experimentId.substring(0, 8);
+      fields.project_id = modeRecord.projectId.substring(0, 8);
+      fields.exp_run_id = modeRecord.id.substring(0, 8);
       fields.start_time = modeRecord.startTime;
 
       if (modeRecord.codeVersion) {

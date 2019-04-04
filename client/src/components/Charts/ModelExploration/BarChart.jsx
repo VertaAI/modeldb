@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 const width = 800;
 const height = 360;
 const barWidth = 20;
-const margin = { top: 25, right: 35, bottom: 45, left: 65 };
+const margin = { top: 25, right: 35, bottom: 45, left: 85 };
 
 // d3.selection.prototype.bringElementAsTopLayer = function() {
 //   return this.each(function(){
@@ -78,9 +78,10 @@ class BarChart extends Component {
     d3.select(this.refs.yAxis)
       .append('text')
       .attr('id', 'yLabel')
+      .attr('class', 'axisLabel')
       .attr('transform', 'rotate(-90)')
       .attr('x', -height / 2)
-      .attr('y', -margin.left / 2 - 10)
+      .attr('y', -margin.left / 2 - 20)
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text(this.props.yLabel);
@@ -88,6 +89,7 @@ class BarChart extends Component {
     d3.select(this.refs.xAxis)
       .append('text')
       .attr('id', 'xLabel')
+      .attr('class', 'axisLabel')
       .attr('y', margin.top + 10)
       .attr('x', width / 2)
       .style('text-anchor', 'middle')
@@ -108,8 +110,16 @@ class BarChart extends Component {
   render() {
     return (
       <svg width={width} height={height} className={'expChart'}>
-        <g ref="xAxis" transform={`translate(0, ${height - margin.bottom})`} />
-        <g ref="yAxis" transform={`translate(${margin.left}, 0)`} />
+        <g
+          ref="xAxis"
+          className="axis"
+          transform={`translate(0, ${height - margin.bottom})`}
+        />
+        <g
+          ref="yAxis"
+          className="axis"
+          transform={`translate(${margin.left}, 0)`}
+        />
         <g ref="bars">
           {this.state.bars.map(d => (
             <rect

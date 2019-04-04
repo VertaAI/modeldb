@@ -256,8 +256,8 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
 
     //const darkColor = '#6863ff';
     //const lightColor = '#5fe6c9'
-    const darkColor = 'blue';
-    const lightColor = 'darkgreen';
+    const darkColor = '#6863ff';
+    const lightColor = '#5fe6c9';
     draw_bars(count, darkColor, d => d.val, '-live', 0.1, true);
     draw_bars(reference, lightColor, d => d.ref, '-ref', 0.5, false);
 

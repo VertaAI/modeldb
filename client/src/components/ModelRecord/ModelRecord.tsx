@@ -280,7 +280,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     return (
       <div className={styles.experiment_link}>
         <span className={styles.parma_link_label}>{label}</span>{' '}
-        <span className={styles.parma_link_value}>{value.slice(0, 4)}..</span>
+        <span className={styles.parma_link_value}>{value.slice(0, 6)}</span>
       </div>
     );
   }

@@ -39,4 +39,12 @@
 .summaryChart {
   background-color: #f7f8fc;
   border-radius: 10px;
+  margin: 0 10px;
+}
+.axisLabel {
+  font-size: 12px;
+}
+
+.axis {
+  color: #444;
 }
