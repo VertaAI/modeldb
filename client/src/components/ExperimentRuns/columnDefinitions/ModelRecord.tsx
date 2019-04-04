@@ -44,9 +44,7 @@ class ModelRecordColDef extends React.Component<any> {
               })}
             >
               <span className={styles.parma_link_label}>{'Model:'}</span>{' '}
-              <span className={styles.parma_link_value}>
-                {id.slice(0, 6)}...
-              </span>
+              <span className={styles.parma_link_value}>{id.slice(0, 6)}</span>
             </Link>
           </div>
           <this.parmaLink
@@ -67,7 +65,7 @@ class ModelRecordColDef extends React.Component<any> {
     return (
       <div className={styles.experiment_link}>
         <span className={styles.parma_link_label}>{label}</span>{' '}
-        <span className={styles.parma_link_value}>{value.slice(0, 6)}...</span>
+        <span className={styles.parma_link_value}>{value.slice(0, 6)}</span>
       </div>
     );
   };

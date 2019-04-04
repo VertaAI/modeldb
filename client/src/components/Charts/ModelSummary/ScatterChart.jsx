@@ -29,7 +29,7 @@ class BarChart extends Component {
       .range([margin.left, width - margin.right]);
 
     console.log('flatdata', flatdata);
-    const [min, max] = d3.extent(flatdata, d => d[selectedMetric]);
+    const [, max] = d3.extent(flatdata, d => d[selectedMetric]);
     console.log('max', max);
     const yScale = d3
       .scaleLinear()

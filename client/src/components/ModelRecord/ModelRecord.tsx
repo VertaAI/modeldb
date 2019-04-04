@@ -101,7 +101,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             <div className={styles.record_label}>Name</div>
             <div className={styles.record_name}>{data.name}</div>
             <br />
-            <div className={styles.record_label}>Tags</div>
+            {data.tags && <div className={styles.record_label}>Tags</div>}
             <div>
               {data.tags &&
                 data.tags.map((value: string, key: number) => {
@@ -119,7 +119,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             <this.ParmaLink label="Experiment ID:" value={data.experimentId} />
           </div>
         </div>
-        <this.Record header="Code version">{data.codeVersion}</this.Record>
+        {data.codeVersion! && (
+          <this.Record header="Code version">{data.codeVersion}</this.Record>
+        )}
         {data.hyperparameters && (
           <this.Record header="Hyperparameters">
             {data.hyperparameters.map((value: IHyperparameter, key: number) => {
