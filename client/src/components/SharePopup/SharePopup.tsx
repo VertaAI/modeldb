@@ -3,6 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Popup from 'components/shared/Popup/Popup';
+import Tabs from 'components/shared/Tabs/Tabs';
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
 import { resetInvitationState } from 'store/collaboration';
@@ -14,7 +15,7 @@ import close from './images/close.svg';
 import styles from './SharePopup.module.css';
 import ShareTab from './ShareTab/ShareTab';
 
-enum Tabs {
+enum TabsType {
   collaborators = 0,
   share = 1,
 }
@@ -32,7 +33,7 @@ interface IPropsFromState {
 }
 
 interface ILocalState {
-  activeTab: Tabs;
+  activeTab: TabsType;
   showModal: boolean;
 }
 
@@ -44,7 +45,9 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
   }
   public state: ILocalState = {
     activeTab:
-      this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share,
+      this.props.collaborators.size > 1
+        ? TabsType.collaborators
+        : TabsType.share,
     showModal: this.props.showModal,
   };
 
@@ -67,63 +70,34 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
         isOpen={this.state.showModal}
         onRequestClose={this.handleCloseModal}
       >
-        <div className={styles.tabs}>
-          <div className={styles.tabs_buttons}>
-            <button
-              className={`${styles.button_collaborators} ${
-                this.state.activeTab === Tabs.collaborators
-                  ? styles.activeTab
-                  : ''
-              }`}
-              onClick={this.selectCollaboratorsTab}
-            >
-              Collaborators{' '}
-              <span className={styles.collaborators_count}>
-                {this.props.collaborators.size}
-              </span>
-            </button>
-            <button
-              className={`${styles.button_share} ${
-                this.state.activeTab === Tabs.share ? styles.activeTab : ''
-              }`}
-              onClick={this.selectShareTab}
-            >
-              Share Project
-            </button>
-          </div>
-        </div>
-        <div className={styles.content}>
-          {this.state.activeTab === Tabs.share ? (
-            <ShareTab
-              currentUserAccess={currentUserAccess}
-              projectId={this.props.projectId}
-            />
-          ) : this.state.activeTab === Tabs.collaborators ? (
+        <Tabs<TabsType>
+          active={this.state.activeTab}
+          onSelectTab={this.changeTab}
+        >
+          <Tabs.Tab
+            title="Collaborators"
+            type={TabsType.collaborators}
+            badge={this.props.collaborators.size}
+          >
             <CollaboratorsTab
               currentUserAccess={currentUserAccess}
               projectId={this.props.projectId}
               collaborators={this.props.collaborators}
             />
-          ) : (
-            ''
-          )}
-        </div>
+          </Tabs.Tab>
+          <Tabs.Tab title="Share Project" type={TabsType.share} centered={true}>
+            <ShareTab
+              currentUserAccess={currentUserAccess}
+              projectId={this.props.projectId}
+            />
+          </Tabs.Tab>
+        </Tabs>
       </Popup>
     );
   }
 
   @bind
-  private selectCollaboratorsTab() {
-    this.changeTab(Tabs.collaborators);
-  }
-
-  @bind
-  private selectShareTab() {
-    this.changeTab(Tabs.share);
-  }
-
-  @bind
-  private changeTab(tab: Tabs) {
+  private changeTab(tab: TabsType) {
     this.setState({ ...this.state, activeTab: tab });
   }
 
@@ -133,7 +107,9 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
       this.props.onRequestClose();
       this.props.dispatch(resetInvitationState());
       this.changeTab(
-        this.props.collaborators.size > 1 ? Tabs.collaborators : Tabs.share
+        this.props.collaborators.size > 1
+          ? TabsType.collaborators
+          : TabsType.share
       );
     }
   }

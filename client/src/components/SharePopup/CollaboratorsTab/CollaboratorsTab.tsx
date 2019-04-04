@@ -95,7 +95,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
         <Scrollbars
           autoHeightMax={'calc(100vh - 200px)'}
           autoHeight={true}
-          style={{ margin: '30px 16px 0px 40px', width: 'auto' }}
+          style={{ margin: '0 16px 0px 40px', width: 'auto' }}
           onScrollFrame={this.handleScrollbarUpdate}
         >
           {Array.from(this.props.collaborators.entries()).map(

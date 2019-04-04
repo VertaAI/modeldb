@@ -1,7 +1,6 @@
 .content_share {
-  margin-top: 30px;
   display: grid;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
   justify-items: center;
   grid-template-rows: 36px 60px auto;
 }
@@ -38,7 +37,7 @@
 }
 
 .share_result_content {
-  margin-top: 35px;
+  width: 100%;
   display: grid;
   margin-bottom: 55px;
   justify-items: center;
