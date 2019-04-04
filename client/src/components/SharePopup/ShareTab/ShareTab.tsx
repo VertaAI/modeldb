@@ -2,8 +2,8 @@ import { bind } from 'decko';
 import React from 'react';
 import { connect } from 'react-redux';
 
-import ButtonLikeLink from 'components/shared/ButtonLikeLink/ButtonLikeLink';
 import Button from 'components/shared/Button/Button';
+import ButtonLikeLink from 'components/shared/ButtonLikeLink/ButtonLikeLink';
 import { UserAccess } from 'models/Project';
 import {
   InvitationStatus,

@@ -2,13 +2,13 @@ import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
+import Button from 'components/shared/Button/Button';
 import User from 'models/User';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { authenticateUser, selectCurrentUser } from 'store/user';
 
 import logo from './images/logo.svg';
 import styles from './Login.module.css';
-import Button from 'components/shared/Button/Button';
 
 interface IPropsFromState {
   user?: User | null;

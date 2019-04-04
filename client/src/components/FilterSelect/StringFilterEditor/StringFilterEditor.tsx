@@ -4,8 +4,8 @@ import * as React from 'react';
 import Checkbox from 'components/shared/Checkbox/Checkbox';
 import { IStringFilterData } from 'models/Filters';
 
-import styles from './StringFilterEditor.module.css';
 import TextInput from 'components/shared/TextInput/TextInput';
+import styles from './StringFilterEditor.module.css';
 
 interface ILocalProps {
   data: IStringFilterData;

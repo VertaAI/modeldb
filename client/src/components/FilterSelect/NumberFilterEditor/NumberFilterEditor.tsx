@@ -1,9 +1,9 @@
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { INumberFilterData } from 'models/Filters';
-import TextInput from 'components/shared/TextInput/TextInput';
 import Checkbox from 'components/shared/Checkbox/Checkbox';
+import TextInput from 'components/shared/TextInput/TextInput';
+import { INumberFilterData } from 'models/Filters';
 
 import styles from './NumberFilterEditor.module.css';
 
