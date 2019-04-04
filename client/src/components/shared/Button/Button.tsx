@@ -2,17 +2,16 @@ import cn from 'classnames';
 import * as React from 'react';
 
 import styles from './Button.module.css';
-import githubSrc from './imgs/github.svg';
 
 interface ILocalProps {
   children: React.ReactChild | React.ReactChildren;
   disabled?: boolean;
   to?: string;
-  variant?: 'like-link' | 'default';
   fullWidth?: boolean;
   size?: 'default' | 'large'; // todo maybe default rename to medium
   icon?: Icon;
   textTransform?: 'default' | 'none';
+  theme?: 'default' | 'gray';
   onClick?(): void;
 }
 
@@ -25,9 +24,9 @@ class Button extends React.PureComponent<ILocalProps> {
       to,
       icon,
       fullWidth = false,
-      variant = 'default',
       size = 'default',
       textTransform = 'default',
+      theme = 'default',
       onClick,
     } = this.props;
     const Elem = (props: React.HTMLProps<any>) =>
@@ -35,13 +34,13 @@ class Button extends React.PureComponent<ILocalProps> {
     return (
       <Elem
         className={cn(styles.button, {
-          [styles.like_link]: variant === 'like-link',
-          [styles.default]: variant === 'default',
           [styles.full_width]: fullWidth,
           [styles.size_default]: size === 'default',
           [styles.size_large]: size === 'large',
           [styles.text_transform_default]: textTransform === 'default',
           [styles.text_transform_none]: textTransform === 'none',
+          [styles.theme_default]: theme === 'default',
+          [styles.theme_gray]: theme === 'gray',
         })}
         onClick={onClick}
       >

@@ -3,6 +3,8 @@ import React from 'react';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars';
 import { connect } from 'react-redux';
 
+import Button from 'components/shared/Button/Button';
+import ButtonLikeLink from 'components/shared/ButtonLikeLink/ButtonLikeLink';
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
 import { changeProjectOwner, selectAnyError } from 'store/collaboration';
@@ -47,18 +49,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
         <span className={styles.share_result_header}>
           There are some errors happened…
         </span>
-        <button
-          className={styles.share_result_button}
-          onClick={this.refreshPage}
-        >
-          <span
-            className={`${styles.share_result_button_text} ${
-              styles.share_result_text
-            }`}
-          >
-            Refresh page
-          </span>
-        </button>
+        <ButtonLikeLink onClick={this.refreshPage}>Refresh page</ButtonLikeLink>
       </div>
     ) : this.state.changeOwnerMode ? (
       <div className={styles.change_owner_content}>
@@ -72,22 +63,20 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
           />
         </div>
         <div>
-          <button
-            className={`${styles.change_owner_button} ${
-              styles.change_owner_cancel_button
-            }`}
-            onClick={this.hideChangeOwnerMode}
-          >
-            Cancel
-          </button>
-          <button
-            className={`${styles.change_owner_button} ${
-              styles.change_owner_confirm_button
-            }`}
-            onClick={this.changeOwnerOnClick}
-          >
-            Confirm
-          </button>
+          <div className={styles.change_owner_button}>
+            <Button
+              theme="gray"
+              fullWidth={true}
+              onClick={this.hideChangeOwnerMode}
+            >
+              Cancel
+            </Button>
+          </div>
+          <div className={styles.change_owner_button}>
+            <Button fullWidth={true} onClick={this.changeOwnerOnClick}>
+              Confirm
+            </Button>
+          </div>
         </div>
       </div>
     ) : (

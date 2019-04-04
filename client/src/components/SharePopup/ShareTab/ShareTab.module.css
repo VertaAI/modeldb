@@ -57,14 +57,5 @@
 }
 
 .share_result_button {
-  text-align: center;
-  background: var(--main-color3);
-  cursor: pointer;
-  border: none;
-}
-
-.share_result_button_text {
-  color: var(--main-color2);
-  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
-  cursor: pointer;
+  margin-top: 2px;
 }

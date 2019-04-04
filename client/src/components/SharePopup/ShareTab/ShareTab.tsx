@@ -2,6 +2,7 @@ import { bind } from 'decko';
 import React from 'react';
 import { connect } from 'react-redux';
 
+import ButtonLikeLink from 'components/shared/ButtonLikeLink/ButtonLikeLink';
 import Button from 'components/shared/Button/Button';
 import { UserAccess } from 'models/Project';
 import {
@@ -98,31 +99,13 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
             <img src={error_icon} />
             <span className={styles.share_result_header}>{error}</span>
             <div>
-              <button
-                className={styles.share_result_button}
-                onClick={this.trySendInvitationAgain}
-              >
-                <span
-                  className={`${styles.share_result_button_text} ${
-                    styles.share_result_text
-                  }`}
-                >
-                  Try Again
-                </span>
-              </button>
-              <span className={styles.share_result_text}>or</span>
-              <button
-                className={styles.share_result_button}
-                onClick={this.sendNewInvitation}
-              >
-                <span
-                  className={`${styles.share_result_button_text} ${
-                    styles.share_result_text
-                  }`}
-                >
-                  Send New Invitation
-                </span>
-              </button>
+              <ButtonLikeLink onClick={this.trySendInvitationAgain}>
+                Try Again
+              </ButtonLikeLink>{' '}
+              <span className={styles.share_result_text}>or</span>{' '}
+              <ButtonLikeLink onClick={this.sendNewInvitation}>
+                Send New Invitation
+              </ButtonLikeLink>
             </div>
           </div>
         );
@@ -133,18 +116,9 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
             <span className={styles.share_result_header}>
               Invitation to {this.state.emailValue} sent!
             </span>
-            <button
-              className={styles.share_result_button}
-              onClick={this.sendNewInvitation}
-            >
-              <span
-                className={`${styles.share_result_button_text} ${
-                  styles.share_result_text
-                }`}
-              >
-                Send New Invitation
-              </span>
-            </button>
+            <ButtonLikeLink onClick={this.sendNewInvitation}>
+              Send New Invitation
+            </ButtonLikeLink>
           </div>
         );
       case InvitationStatus.Sending:
