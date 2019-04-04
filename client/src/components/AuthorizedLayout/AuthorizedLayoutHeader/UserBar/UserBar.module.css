@@ -65,5 +65,7 @@
 
 .menu_header_user_name {
   display: inline-block;
-  margin-right: 0.5em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
