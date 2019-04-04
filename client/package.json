@@ -6,6 +6,7 @@
     "ag-grid-community": "^20.1.0",
     "ag-grid-react": "^20.1.0",
     "axios": "^0.18.0",
+    "classnames": "^2.2.6",
     "connected-react-router": "^6.2.2",
     "d3": "^5.9.1",
     "decko": "^1.2.0",
@@ -50,6 +51,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "@types/classnames": "^2.2.7",
     "@types/d3": "^5.7.1",
     "@types/jest": "^24.0.9",
     "@types/lodash": "^4.14.122",
