@@ -9,7 +9,7 @@ interface ILocalProps {
   isOpen: boolean;
   height?: number;
   contentLabel?: string;
-  children: React.ReactChild | React.ReactChildren;
+  children: React.ReactChild | React.ReactChild[] | React.ReactChildren;
   onRequestClose(): void;
 }
 

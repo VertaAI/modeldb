@@ -1,11 +1,11 @@
 import { bind } from 'decko';
 import React from 'react';
-import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
 
+import Popup from 'components/shared/Popup/Popup';
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
-import { InvitationStatus, resetInvitationState } from 'store/collaboration';
+import { resetInvitationState } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { selectCurrentUser } from 'store/user';
 
@@ -51,7 +51,7 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
   public render() {
     let currentUserAccess = UserAccess.Read;
     Array.from(this.props.collaborators.entries()).forEach(
-      (value: [User, UserAccess], index: number) => {
+      (value: [User, UserAccess]) => {
         const [user, userAccess] = value;
 
         if (user.email === this.props.currentUser.email) {
@@ -61,22 +61,12 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
     );
 
     return (
-      <ReactModal
-        isOpen={this.state.showModal}
+      <Popup
+        title={this.props.projectName}
         contentLabel="sharePopup"
+        isOpen={this.state.showModal}
         onRequestClose={this.handleCloseModal}
-        className={styles.modal_window}
-        overlayClassName={styles.overlay}
-        appElement={document.getElementById('root')!}
       >
-        <div className={styles.header}>
-          <div className={styles.title}>{this.props.projectName}</div>
-          <img
-            src={close}
-            className={styles.icon}
-            onClick={this.handleCloseModal}
-          />
-        </div>
         <div className={styles.tabs}>
           <div className={styles.tabs_buttons}>
             <button
@@ -118,7 +108,7 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
             ''
           )}
         </div>
-      </ReactModal>
+      </Popup>
     );
   }
 
