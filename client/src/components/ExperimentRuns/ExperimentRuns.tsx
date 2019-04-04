@@ -67,12 +67,6 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
   }
 
-  public componentDidUpdate() {
-    if (this.props.data !== undefined && this.gridApi !== undefined) {
-      this.gridApi.setRowData(this.props.data);
-    }
-  }
-
   public render() {
     const { data, loading, columnConfig } = this.props;
     return loading ? (
@@ -85,7 +79,6 @@ class ExperimentRuns extends React.Component<AllProps> {
             pagination={true}
             onGridReady={this.onGridReady}
             animateRows={true}
-            getRowHeight={this.gridRowHeight}
             columnDefs={returnColumnDefs(columnConfig)}
             rowData={undefined}
             domLayout="autoHeight"
@@ -110,25 +103,6 @@ class ExperimentRuns extends React.Component<AllProps> {
     this.gridApi = event.api;
     this.columnApi = event.columnApi;
     this.gridApi.setRowData(this.props.data);
-  }
-
-  @bind
-  private gridRowHeight(params: any) {
-    const data = params.node.data;
-    if (
-      (data.metrics && data.metrics.length > 3) ||
-      (data.hyperparameters && data.hyperparameters.length > 3)
-    ) {
-      if (data.metrics.length > data.hyperparameters.length) {
-        return (data.metric.length - 3) * 5 + 220;
-      }
-      return data.hyperparameters.length * 5 + 220;
-    }
-    if (data.tags && data.tags.length >= 6) {
-      return 240;
-    }
-
-    return 200;
   }
 
   @bind
