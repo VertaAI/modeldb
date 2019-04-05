@@ -2,8 +2,8 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
+import Preloader from '../Preloader/Preloader';
 import styles from './Fab.module.css';
-import loaderSrc from './imgs/preloader.svg';
 import uploadSrc from './imgs/upload.svg';
 
 interface ILocalProps {
@@ -45,10 +45,12 @@ class Fab extends React.PureComponent<ILocalProps> {
         {!isLoading && (
           <>
             {children}
-            {icon && <img className={styles.icon} src={this.getIconSrc()} />}
+            <img className={styles.icon} src={this.getIconSrc()} />
           </>
         )}
-        <img className={styles.loader} src={loaderSrc} />
+        <div className={styles.loader}>
+          <Preloader variant="circle" size="small" />
+        </div>
       </button>
     );
   }
