@@ -17,3 +17,8 @@
 
 .form_login {
 }
+
+.heart {
+  display: inline-block;
+  opacity: 0.5;
+}

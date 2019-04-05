@@ -1,11 +1,11 @@
 .button {
-  display: inline-block;
+  display: inline-flex;
   border: none;
   background: none;
   cursor: pointer;
   outline: none;
-  line-height: 18px;
-  text-align: center;
+  justify-content: center;
+  align-items: center;
 }
 
 .theme_default {
@@ -50,5 +50,8 @@
 }
 
 .icon {
-  margin-right: 8px;
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 26px;
+  vertical-align: middle;
 }

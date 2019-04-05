@@ -2,6 +2,7 @@ import cn from 'classnames';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import Icon from 'components/shared/Icon/Icon';
 import routes from 'routes';
 
 import styles from './ColumnDefs.module.css';
@@ -27,17 +28,13 @@ class ArtifactsColDef extends React.Component<any> {
                   title="view ModelRecord"
                 >
                   <div className={styles.notif}>
-                    {artifact.type === 'IMAGE' ? (
-                      <i
-                        className={cn('fa', 'fa-image')}
-                        style={{ color: '#6863ff' }}
-                      />
-                    ) : (
-                      <i
-                        className={cn('fa', 'fa-codepen')}
-                        style={{ color: '#6863ff' }}
-                      />
-                    )}
+                    <div className={styles.notif_icon}>
+                      {artifact.type === 'IMAGE' ? (
+                        <Icon type="image" />
+                      ) : (
+                        <Icon type="codepen" />
+                      )}
+                    </div>
                   </div>
                   <div className={styles.type}>
                     {artifact.type} &nbsp; &nbsp; &nbsp; ->{' '}

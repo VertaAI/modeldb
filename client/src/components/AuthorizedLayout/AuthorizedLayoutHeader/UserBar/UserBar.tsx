@@ -12,6 +12,7 @@ import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { selectCurrentUser } from 'store/user';
 import { logoutUser } from 'store/user/actions';
 
+import Icon from 'components/shared/Icon/Icon';
 import styles from './UserBar.module.css';
 
 interface ILocalState {
@@ -48,7 +49,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
             src={user ? user.picture : ''}
           />
           <div className={styles.menu_arrow}>
-            <i className={cn('fa', 'fa-caret-down')} />
+            <Icon type="caret-down" />
           </div>
         </div>
         {this.state.isOpened ? (

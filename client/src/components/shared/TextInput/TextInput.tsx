@@ -2,6 +2,7 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
+import Icon from '../Icon/Icon';
 import styles from './TextInput.module.css';
 
 interface ILocalProps {
@@ -47,12 +48,7 @@ class TextInput extends React.PureComponent<ILocalProps> {
           onBlur={onBlur}
           onClick={onClick}
         />
-        {icon && (
-          <label
-            className={`${styles.icon} fa fa-${icon}`}
-            aria-hidden={true}
-          />
-        )}
+        {icon && <Icon type="search" className={styles.icon} />}
       </div>
     );
   }

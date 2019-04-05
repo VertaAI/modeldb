@@ -1,6 +1,7 @@
 import cn from 'classnames';
 import * as React from 'react';
 
+import Icon from '../Icon/Icon';
 import styles from './Button.module.css';
 
 interface ILocalProps {
@@ -9,13 +10,13 @@ interface ILocalProps {
   to?: string;
   fullWidth?: boolean;
   size?: 'medium' | 'large'; // todo maybe default rename to medium
-  icon?: Icon;
+  icon?: IconType;
   textTransform?: 'default' | 'none';
   theme?: 'default' | 'gray';
   onClick?(): void;
 }
 
-type Icon = 'github';
+type IconType = 'github';
 
 class Button extends React.PureComponent<ILocalProps> {
   public render() {
@@ -45,10 +46,9 @@ class Button extends React.PureComponent<ILocalProps> {
         onClick={onClick}
       >
         {icon && (
-          <i
-            className={cn('fa', `fa-${icon}, fa-fw, ${styles.icon}`)}
-            style={{ fontSize: '30px', verticalAlign: 'middle' }}
-          />
+          <div className={styles.icon}>
+            <Icon type={icon} />
+          </div>
         )}
         {children}
       </Elem>
