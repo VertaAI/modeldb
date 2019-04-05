@@ -63,10 +63,8 @@ class UserBar extends React.Component<AllProps, ILocalState> {
                 style={{ fontFamily: 'Roboto', fontWeight: '400' }}
                 src={user ? user.picture : ''}
               />
-              <div>
-                <div className={styles.menu_header_user_name}>
-                  {user ? user.name : ''}
-                </div>
+              <div className={styles.menu_header_user_name}>
+                {user ? user.name : ''}
               </div>
             </div>
             <div className={styles.menu_item}>

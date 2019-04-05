@@ -21,6 +21,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellRendererFramework: ModelRecordColDef,
       cellClass: [styles.cell, styles.modelDescription],
       hide: !updatedConfig.get('id').checked,
+      autoHeight: true,
     },
     {
       headerName: 'Summary',
@@ -29,6 +30,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 180,
       cellClass: styles.cell,
       hide: !updatedConfig.get('summary').checked,
+      autoHeight: true,
     },
     {
       headerName: 'Metrics',
@@ -37,6 +39,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 200,
       cellClass: styles.cell,
       hide: !updatedConfig.get('metrics').checked,
+      autoHeight: true,
     },
     {
       headerName: 'Hyperparameters',
@@ -45,6 +48,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellRendererFramework: HyperparamsColDef,
       cellClass: styles.cell,
       hide: !updatedConfig.get('hyperparameters').checked,
+      autoHeight: true,
     },
     {
       headerName: 'Artifacts',
@@ -53,6 +57,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 260,
       cellClass: styles.cell,
       hide: !updatedConfig.get('artifacts').checked,
+      autoHeight: true,
     },
     {
       headerName: 'Datasets',
@@ -61,6 +66,7 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 240,
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked,
+      autoHeight: true,
     },
     // {
     //   headerName: 'Observations',

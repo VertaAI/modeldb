@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -15,7 +16,7 @@ class ArtifactsColDef extends React.Component<any> {
             return (
               <Link
                 key={i}
-                className={styles.model_link}
+                className={cn(styles.model_link, styles.artifact_item)}
                 to={routes.modelRecord.getRedirectPath({
                   projectId,
                   modelRecordId: id,
