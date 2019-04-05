@@ -62,8 +62,11 @@ export default class ModelExploration extends React.Component<
   // Utilities
   public computeFlatMetric = (arr: ModelRecord[]) => {
     return _.map(arr, obj => {
-      const metricField = _.pick(obj, 'startTime', 'metrics');
-      const flatMetric: any = { date: metricField.startTime };
+      const metricField = _.pick(obj, 'startTime', 'metrics', 'id');
+      const flatMetric: any = {
+        date: metricField.startTime,
+        id: metricField.id,
+      };
       metricField.metrics.forEach((kvPair: any) => {
         this.yAxisParams.add(kvPair.key);
         flatMetric[kvPair.key] = kvPair.value;
