@@ -5,6 +5,22 @@ const svg_width = 660;
 const height = 400;
 const margin = { top: 20, right: 25, bottom: 40, left: 85 };
 
+function extend(base, difference) {
+  return base.map(d => {
+    const new_date = new Date().setTime(
+      d.date.getTime() -
+        (Math.random() * 2 - 1) * 24 * 60 * 60 * 1000 -
+        difference * 24 * 60 * 60 * 1000
+    );
+    var new_d = {};
+    for (var key in d) {
+      new_d[key] = d[key] * Math.pow(Math.random() * 0.2 + 0.8, difference + 1);
+    }
+    new_d.date = new_date;
+    return new_d;
+  });
+}
+
 class BarChart extends Component {
   state = {
     marks: [],
@@ -15,13 +31,20 @@ class BarChart extends Component {
   //.tickFormat(d3.timeFormat('%b/%d %H:%M'))
   xAxis = d3
     .axisBottom()
-    .tickFormat(d3.timeFormat('%b'))
-    .ticks(10);
+    .tickFormat(d3.timeFormat('%b/%d %H:%M'))
+    .ticks(5);
   yAxis = d3.axisLeft();
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { flatdata, selectedMetric } = nextProps;
+    var { flatdata, selectedMetric } = nextProps;
     if (!flatdata) return {};
+    Math.seedrandom('hello.');
+    flatdata = flatdata.concat(
+      extend(flatdata, 0),
+      extend(flatdata, 1),
+      extend(flatdata, 2),
+      extend(flatdata, 3)
+    );
 
     const extent = d3.extent(flatdata, d => d.date);
     const xScale = d3
