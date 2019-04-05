@@ -9,7 +9,6 @@ const height = 400;
 const margin = { top: 20, right: 25, bottom: 40, left: 85 };
 
 function extend(base, difference, p_id) {
-  console.log(p_id);
   return base.map(d => {
     const new_date = new Date().setTime(
       d.date.getTime() -
@@ -77,7 +76,6 @@ class ScatterChart extends Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     var { flatdata, selectedMetric } = nextProps;
     if (!flatdata) return {};
-    console.log(flatdata);
     const tempId = flatdata[0].id;
 
     Math.seedrandom('hello.');
@@ -87,9 +85,6 @@ class ScatterChart extends Component {
       extend(flatdata, 2, tempId),
       extend(flatdata, 3, tempId)
     );
-
-    console.log(flatdata);
-
     const extent = d3.extent(flatdata, d => d.date);
     const xScale = d3
       .scaleTime()
