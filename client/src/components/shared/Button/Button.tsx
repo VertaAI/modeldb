@@ -8,7 +8,7 @@ interface ILocalProps {
   disabled?: boolean;
   to?: string;
   fullWidth?: boolean;
-  size?: 'default' | 'large'; // todo maybe default rename to medium
+  size?: 'medium' | 'large'; // todo maybe default rename to medium
   icon?: Icon;
   textTransform?: 'default' | 'none';
   theme?: 'default' | 'gray';
@@ -24,7 +24,7 @@ class Button extends React.PureComponent<ILocalProps> {
       to,
       icon,
       fullWidth = false,
-      size = 'default',
+      size = 'medium',
       textTransform = 'default',
       theme = 'default',
       onClick,
@@ -35,7 +35,7 @@ class Button extends React.PureComponent<ILocalProps> {
       <Elem
         className={cn(styles.button, {
           [styles.full_width]: fullWidth,
-          [styles.size_default]: size === 'default',
+          [styles.size_medium]: size === 'medium',
           [styles.size_large]: size === 'large',
           [styles.text_transform_default]: textTransform === 'default',
           [styles.text_transform_none]: textTransform === 'none',
@@ -46,7 +46,7 @@ class Button extends React.PureComponent<ILocalProps> {
       >
         {icon && (
           <i
-            className={`fa fa-${icon} fa-fw ${styles.icon}`}
+            className={cn('fa', `fa-${icon}, fa-fw, ${styles.icon}`)}
             style={{ fontSize: '30px', verticalAlign: 'middle' }}
           />
         )}

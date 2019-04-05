@@ -23,7 +23,7 @@
   background-color: var(--main-color4);
 }
 
-.size_default {
+.size_medium {
   font-weight: 500;
   font-size: var(--font-size3);
   height: 34px;

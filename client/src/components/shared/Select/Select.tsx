@@ -35,7 +35,7 @@ class Select<T> extends React.PureComponent<ILocalProps<T>, ILocalState>
         <div className={styles.input} onClick={this.onOpen}>
           {selectedOption.label}
           <div className={styles.arrow}>
-            <i className="fa fa-caret-down" />
+            <i className={cn('fa', 'fa-caret-down')} />
           </div>
         </div>
         <div className={styles.options}>

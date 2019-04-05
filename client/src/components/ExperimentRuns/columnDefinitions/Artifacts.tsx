@@ -28,10 +28,13 @@ class ArtifactsColDef extends React.Component<any> {
                 >
                   <div className={styles.notif}>
                     {artifact.type === 'IMAGE' ? (
-                      <i className="fa fa-image" style={{ color: '#6863ff' }} />
+                      <i
+                        className={cn('fa', 'fa-image')}
+                        style={{ color: '#6863ff' }}
+                      />
                     ) : (
                       <i
-                        className="fa fa-codepen"
+                        className={cn('fa', 'fa-codepen')}
                         style={{ color: '#6863ff' }}
                       />
                     )}

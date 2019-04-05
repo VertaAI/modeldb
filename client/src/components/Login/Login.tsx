@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
@@ -25,7 +26,7 @@ class Login extends React.Component<AllProps> {
         </div>
         <div className={styles.login_slogan}>
           Models are the new code. Let’s show them some{' '}
-          <i className="fa fa-heart" style={{ opacity: 0.5 }} />
+          <i className={cn('fa', 'fa-heart')} style={{ opacity: 0.5 }} />
         </div>
         <div className={styles.form_login}>
           <Button

@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
@@ -15,7 +16,7 @@ export default class FilterItem extends React.Component<ILocalProps> {
     return (
       <div className={styles.root}>
         <div className={styles.filter_icon}>
-          <i className="fa fa-filter" aria-hidden="true" />
+          <i className={cn('fa', 'fa-filter')} aria-hidden="true" />
         </div>
         <div className={styles.prop_text}>{`${this.props.data.name}${
           this.props.data.value ? `: ${this.props.data.value}` : ''

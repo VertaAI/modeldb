@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 import onClickOutside from 'react-onclickoutside';
@@ -26,12 +27,7 @@ interface IPropsFromState {
 
 type AllProps = IConnectedReduxProps & IPropsFromState;
 class DashboardConfig extends React.Component<AllProps, ILocalState> {
-  public constructor(props: AllProps) {
-    super(props);
-    this.state = {
-      isOpened: false,
-    };
-  }
+  public state: ILocalState = { isOpened: false };
 
   public componentDidMount() {
     this.setState({ isOpened: false });
@@ -43,7 +39,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
       <div className={styles.root}>
         <div className={styles.user_bar} onClick={this.toggleMenu}>
           <div className={styles.dashboard_cog}>
-            <i className="fa fa-cog" />
+            <i className={cn('fa', 'fa-cog')} />
           </div>
         </div>
         {this.state.isOpened ? (

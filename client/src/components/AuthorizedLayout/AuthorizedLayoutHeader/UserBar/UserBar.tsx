@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 import Avatar from 'react-avatar';
@@ -47,7 +48,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
             src={user ? user.picture : ''}
           />
           <div className={styles.menu_arrow}>
-            <i className="fa fa-caret-down" />
+            <i className={cn('fa', 'fa-caret-down')} />
           </div>
         </div>
         {this.state.isOpened ? (

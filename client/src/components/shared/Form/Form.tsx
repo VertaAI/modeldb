@@ -15,5 +15,4 @@ class Form extends React.Component<ILocalProps> {
   }
 }
 
-export { FormItem };
 export default Form;
