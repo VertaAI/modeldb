@@ -4,7 +4,7 @@ import styles from './Form.module.css';
 import FormItem from './FormItem/FormItem';
 
 interface ILocalProps {
-  children: any[];
+  children: React.ReactNode;
 }
 
 class Form extends React.Component<ILocalProps> {
