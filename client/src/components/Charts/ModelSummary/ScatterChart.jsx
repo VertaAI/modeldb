@@ -209,8 +209,8 @@ class ScatterChart extends Component {
                   // ref={'ref-' + key}
                   // onMouseEnter={this.hoverOn.bind(this, d)}
                   // onMouseLeave={this.hoverOff.bind(this, d)}
-                  onMouseOut={this.mouseOut.bind(this, d)}
-                  onMouseOver={this.mouseOver.bind(this, d)}
+                  // onMouseOut={this.mouseOut.bind(this, d)}
+                  // onMouseOver={this.mouseOver.bind(this, d)}
                 />
               </Link>
             );
