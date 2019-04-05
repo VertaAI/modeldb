@@ -8,6 +8,24 @@ const svg_width = 660;
 const height = 400;
 const margin = { top: 20, right: 25, bottom: 40, left: 85 };
 
+function extend(base, difference, p_id) {
+  console.log(p_id);
+  return base.map(d => {
+    const new_date = new Date().setTime(
+      d.date.getTime() -
+        (Math.random() * 2 - 1) * 24 * 60 * 60 * 1000 -
+        difference * 24 * 60 * 60 * 1000
+    );
+    var new_d = {};
+    for (var key in d) {
+      new_d[key] = d[key] * Math.pow(Math.random() * 0.2 + 0.8, difference + 1);
+    }
+    new_d.date = new_date;
+    new_d.id = p_id;
+    return new_d;
+  });
+}
+
 class ScatterChart extends Component {
   state = {
     marks: [],
@@ -50,13 +68,27 @@ class ScatterChart extends Component {
   }
 
   //.tickFormat(d3.timeFormat('%b/%d %H:%M'))
-  xAxis = d3.axisBottom().tickFormat(this.multiFormat);
-  // .ticks(5);
+  xAxis = d3
+    .axisBottom()
+    .tickFormat(d3.timeFormat('%b-%d/ %H:%M'))
+    .ticks(5);
   yAxis = d3.axisLeft();
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { flatdata, selectedMetric } = nextProps;
+    var { flatdata, selectedMetric } = nextProps;
     if (!flatdata) return {};
+    console.log(flatdata);
+    const tempId = flatdata[0].id;
+
+    Math.seedrandom('hello.');
+    flatdata = flatdata.concat(
+      extend(flatdata, 0, tempId),
+      extend(flatdata, 1, tempId),
+      extend(flatdata, 2, tempId),
+      extend(flatdata, 3, tempId)
+    );
+
+    console.log(flatdata);
 
     const extent = d3.extent(flatdata, d => d.date);
     const xScale = d3
