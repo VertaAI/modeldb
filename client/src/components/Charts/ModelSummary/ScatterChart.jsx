@@ -1,11 +1,14 @@
+/* eslint-disable */
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import routes from 'routes';
 import * as d3 from 'd3';
 const width = 650;
 const svg_width = 660;
 const height = 400;
 const margin = { top: 20, right: 25, bottom: 40, left: 85 };
 
-function extend(base, difference) {
+function extend(base, difference, p_id) {
   return base.map(d => {
     const new_date = new Date().setTime(
       d.date.getTime() -
@@ -17,35 +20,71 @@ function extend(base, difference) {
       new_d[key] = d[key] * Math.pow(Math.random() * 0.2 + 0.8, difference + 1);
     }
     new_d.date = new_date;
+    new_d.id = p_id;
     return new_d;
   });
 }
 
-class BarChart extends Component {
+class ScatterChart extends Component {
   state = {
     marks: [],
+    // hover: false,
     xScale: undefined,
     yScale: undefined,
   };
 
+  // Establish the desired formatting options using locale.format():
+  // https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
+  formatMillisecond = d3.timeFormat('.%L');
+  formatSecond = d3.timeFormat(':%S');
+  formatMinute = d3.timeFormat('%I:%M');
+  formatHour = d3.timeFormat('%I');
+  formatDay = d3.timeFormat('%a %d');
+  formatWeek = d3.timeFormat('%b %d');
+  formatMonth = d3.timeFormat('%B');
+  formatYear = d3.timeFormat('%Y');
+
+  // Define filter conditions
+  multiFormat(date) {
+    // console.log(date);
+    // console.log(d3.timeMinute(date) < date);
+    return this.formatHour;
+    // return (d3.timeSecond(date) < date
+    //   ? this.formatHour
+    //   : d3.timeMinute(date) < date
+    //   ? this.formatHour
+    //   : d3.timeHour(date) < date
+    //   ? this.formatMinute
+    //   : d3.timeDay(date) < date
+    //   ? this.formatHour
+    //   : d3.timeMonth(date) < date
+    //   ? d3.timeWeek(date) < date
+    //     ? this.formatDay
+    //     : this.formatWeek
+    //   : d3.timeYear(date) < date
+    //   ? this.formatMonth
+    //   : this.formatYear)(date);
+  }
+
   //.tickFormat(d3.timeFormat('%b/%d %H:%M'))
   xAxis = d3
     .axisBottom()
-    .tickFormat(d3.timeFormat('%b/%d %H:%M'))
+    .tickFormat(d3.timeFormat('%b-%d/ %H:%M'))
     .ticks(5);
   yAxis = d3.axisLeft();
 
   static getDerivedStateFromProps(nextProps, prevState) {
     var { flatdata, selectedMetric } = nextProps;
     if (!flatdata) return {};
+    const tempId = flatdata[0].id;
+
     Math.seedrandom('hello.');
     flatdata = flatdata.concat(
-      extend(flatdata, 0),
-      extend(flatdata, 1),
-      extend(flatdata, 2),
-      extend(flatdata, 3)
+      extend(flatdata, 0, tempId),
+      extend(flatdata, 1, tempId),
+      extend(flatdata, 2, tempId),
+      extend(flatdata, 3, tempId)
     );
-
     const extent = d3.extent(flatdata, d => d.date);
     const xScale = d3
       .scaleTime()
@@ -59,9 +98,12 @@ class BarChart extends Component {
       .range([height - margin.bottom, margin.top]);
 
     const marks = flatdata.map(d => {
+      let projectId = window.location.href.split('/')[4];
       return {
         cx: xScale(d.date),
         cy: yScale(d[selectedMetric]),
+        projectId: projectId,
+        modelRecordId: d.id,
       };
     });
     return { marks, xScale, yScale };
@@ -94,6 +136,14 @@ class BarChart extends Component {
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text('Time Range');
+
+    // d3.select(this.refs.dots)
+    //   .selectAll('circle')
+    //   .on('mouseover', () => {
+    //     console.log(d3.select(this));
+    //     // d3.select(this).style('r', 9);
+    //   })
+    //   .on('mouseout', () => {});
 
     // d3.select(this.refs.annotation)
     //   .append('rect')
@@ -137,6 +187,22 @@ class BarChart extends Component {
     d3.select('#scatterYLabel').text(this.props.selectedMetric);
   }
 
+  mouseOver() {
+    console.log(this);
+    // console.log(d3.select(this.refs[ref]));
+    // console.log(document.getElementById('id-' + id));
+  }
+  mouseOut() {
+    // console.log(d3.select(this.refs[ref]));
+  }
+
+  // hoverOn() {
+  //   this.setState({ hover: true });
+  // }
+  // hoverOff() {
+  //   this.setState({ hover: false });
+  // }
+
   render() {
     return (
       <svg width={svg_width} height={height} className={'summaryChart'}>
@@ -150,19 +216,37 @@ class BarChart extends Component {
           className="axis"
           transform={`translate(${margin.left}, 0)`}
         />
-        {this.state.marks.map((d, i) => (
-          <circle
-            cx={d.cx}
-            cy={d.cy}
-            fill={'#6863ff'}
-            r={7}
-            key={this.props.selectedMetric + i}
-          />
-        ))}
+        <g ref="dots" className="marks">
+          {this.state.marks.map((d, i) => {
+            const key = this.props.selectedMetric + i;
+            return (
+              <Link
+                key={key}
+                to={routes.modelRecord.getRedirectPath({
+                  projectId: d.projectId,
+                  modelRecordId: d.modelRecordId,
+                })}
+              >
+                <circle
+                  cx={d.cx}
+                  cy={d.cy}
+                  fill={'#6863ff'}
+                  // r={this.state.hover ? 9 : 17}
+                  r={7}
+                  // ref={'ref-' + key}
+                  // onMouseEnter={this.hoverOn.bind(this, d)}
+                  // onMouseLeave={this.hoverOff.bind(this, d)}
+                  // onMouseOut={this.mouseOut.bind(this, d)}
+                  // onMouseOver={this.mouseOver.bind(this, d)}
+                />
+              </Link>
+            );
+          })}
+        </g>
         <g ref="annotation" transform={`translate(${width + 20}, 50)`} />
       </svg>
     );
   }
 }
 
-export default BarChart;
+export default ScatterChart;

@@ -73,3 +73,8 @@ select::-ms-expand {
 .grid line {
   stroke: #ddd;
 }
+
+.parallelHeading {
+  padding: 1em;
+  font-weight: 500;
+}

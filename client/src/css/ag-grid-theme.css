@@ -36,7 +36,8 @@
 }
 
 .expChart,
-.summaryChart {
+.summaryChart,
+.parallelChart {
   background-color: #f7f8fc;
   border-radius: 10px;
   margin: 0 10px;
@@ -47,4 +48,36 @@
 
 .axis {
   color: #444;
+}
+
+.axis,
+.frame {
+  shape-rendering: crispEdges;
+}
+
+.axis line {
+  stroke: rgb(87, 87, 87);
+}
+
+.axis text {
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+  cursor: move;
+  color: #444;
+}
+
+.background path {
+  fill: none;
+  stroke: #ddd;
+  shape-rendering: crispEdges;
+}
+
+.foreground path {
+  fill: none;
+  stroke: var(--main-color2);
+}
+
+.brush .extent {
+  fill-opacity: 0.3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
 }

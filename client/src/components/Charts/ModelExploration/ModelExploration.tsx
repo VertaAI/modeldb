@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import ModelRecord from '../../../models/ModelRecord';
 import BarChart from './BarChart';
+import ParallelCoordinates from './ParamParallelCoordinates';
 
 import styles from './ModelExploration.module.css';
 
@@ -17,6 +18,7 @@ interface ILocalState {
   selectedXAxis: string;
   selectedYAxis: string;
   selectedAggregate: string;
+  parallelData: any;
 }
 
 export default class ModelExploration extends React.Component<
@@ -37,6 +39,7 @@ export default class ModelExploration extends React.Component<
       selectedAggregate: 'average',
       selectedXAxis: props.initialSelection.initialHyperparam,
       selectedYAxis: props.initialSelection.initialMetric,
+      parallelData: this.computeParallelData(props.expRuns),
     };
   }
 
@@ -127,7 +130,7 @@ export default class ModelExploration extends React.Component<
           </div> */}
         </div>
         <div>
-          {console.log(this.state)}
+          {/* {console.log(this.state)} */}
           <BarChart
             xLabel={this.state.selectedXAxis}
             yLabel={this.state.selectedYAxis}
@@ -143,6 +146,14 @@ export default class ModelExploration extends React.Component<
               )
             )}
           />
+        </div>
+        <div>
+          {' '}
+          <div className={styles.parallelHeading}>
+            {' '}
+            Parallel Coordinates of Hyperparameters and Metrics{' '}
+          </div>
+          <ParallelCoordinates data={this.state.parallelData} />
         </div>
       </div>
     ) : (
@@ -350,6 +361,27 @@ export default class ModelExploration extends React.Component<
       if (modeRecord.tags) {
         modeRecord.tags.forEach((tag: string) => {
           fields[`tag_${tag}`] = tag;
+        });
+      }
+      return fields;
+    });
+  };
+
+  // compute Parallel chart's Data
+  public computeParallelData = (expRuns: ModelRecord[]) => {
+    return expRuns.map(modeRecord => {
+      const fields: any = {};
+      if (modeRecord.hyperparameters) {
+        modeRecord.hyperparameters.forEach((kvPair: any) => {
+          if (typeof kvPair.value !== 'string') {
+            fields[kvPair.key] = kvPair.value;
+          }
+        });
+      }
+
+      if (modeRecord.metrics) {
+        modeRecord.metrics.forEach((kvPair: any) => {
+          fields[kvPair.key] = kvPair.value;
         });
       }
       return fields;
