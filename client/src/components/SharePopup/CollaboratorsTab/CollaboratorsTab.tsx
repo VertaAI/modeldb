@@ -4,7 +4,7 @@ import Scrollbars, { positionValues } from 'react-custom-scrollbars';
 import { connect } from 'react-redux';
 
 import Button from 'components/shared/Button/Button';
-import ButtonLikeLink from 'components/shared/ButtonLikeLink/ButtonLikeLink';
+import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
 import { changeProjectOwner, selectAnyError } from 'store/collaboration';
@@ -49,7 +49,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
         <span className={styles.share_result_header}>
           There are some errors happened…
         </span>
-        <ButtonLikeLink onClick={this.refreshPage}>Refresh page</ButtonLikeLink>
+        <ButtonLikeText onClick={this.refreshPage}>Refresh page</ButtonLikeText>
       </div>
     ) : this.state.changeOwnerMode ? (
       <div className={styles.change_owner_content}>

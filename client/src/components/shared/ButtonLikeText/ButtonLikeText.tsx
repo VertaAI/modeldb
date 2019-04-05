@@ -1,24 +1,24 @@
 import * as React from 'react';
 
-import styles from './ButtonLikeLink.module.css';
+import styles from './ButtonLikeText.module.css';
 
-interface IProps {
+interface ILocalProps {
   children: React.ReactChild;
   to?: string;
   onClick?(): void;
 }
 
-class ButtonLikeLink extends React.PureComponent<IProps> {
+class ButtonLikeText extends React.PureComponent<ILocalProps> {
   public render() {
     const { to, children, onClick } = this.props;
     const Elem = (props: React.HTMLProps<any>) =>
       to ? <a href={to} {...props} /> : <button {...props} />;
     return (
-      <Elem className={styles.button_like_link} onClick={onClick}>
+      <Elem className={styles.button_like_text} onClick={onClick}>
         {children}
       </Elem>
     );
   }
 }
 
-export default ButtonLikeLink;
+export default ButtonLikeText;

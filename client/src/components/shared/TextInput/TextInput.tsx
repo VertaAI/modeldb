@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import styles from './TextInput.module.css';
 
-interface IProps {
+interface ILocalProps {
   defaultValue?: string;
   value?: string;
   placeholder?: string;
@@ -16,7 +16,7 @@ interface IProps {
   onClick?(): void;
 }
 
-class TextInput extends React.PureComponent<IProps> {
+class TextInput extends React.PureComponent<ILocalProps> {
   public render() {
     const {
       value,

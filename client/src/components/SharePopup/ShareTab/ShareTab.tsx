@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Button from 'components/shared/Button/Button';
-import ButtonLikeLink from 'components/shared/ButtonLikeLink/ButtonLikeLink';
+import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
 import { UserAccess } from 'models/Project';
 import {
   InvitationStatus,
@@ -99,13 +99,13 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
             <img src={error_icon} />
             <span className={styles.share_result_header}>{error}</span>
             <div>
-              <ButtonLikeLink onClick={this.trySendInvitationAgain}>
+              <ButtonLikeText onClick={this.trySendInvitationAgain}>
                 Try Again
-              </ButtonLikeLink>{' '}
+              </ButtonLikeText>{' '}
               <span className={styles.share_result_text}>or</span>{' '}
-              <ButtonLikeLink onClick={this.sendNewInvitation}>
+              <ButtonLikeText onClick={this.sendNewInvitation}>
                 Send New Invitation
-              </ButtonLikeLink>
+              </ButtonLikeText>
             </div>
           </div>
         );
@@ -116,9 +116,9 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
             <span className={styles.share_result_header}>
               Invitation to {this.state.emailValue} sent!
             </span>
-            <ButtonLikeLink onClick={this.sendNewInvitation}>
+            <ButtonLikeText onClick={this.sendNewInvitation}>
               Send New Invitation
-            </ButtonLikeLink>
+            </ButtonLikeText>
           </div>
         );
       case InvitationStatus.Sending:
