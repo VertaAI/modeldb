@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReactModal from 'react-modal';
 
-import closeIcon from './images/close.svg';
+import Icon from '../Icon/Icon';
 import styles from './Popup.module.css';
 
 interface ILocalProps {
@@ -37,9 +37,9 @@ class Popup extends React.Component<ILocalProps> {
       >
         <div className={styles.header}>
           <div className={styles.title}>{title}</div>
-          <img
+          <Icon
+            type="close"
             className={styles.close}
-            src={closeIcon}
             onClick={onRequestClose}
           />
         </div>

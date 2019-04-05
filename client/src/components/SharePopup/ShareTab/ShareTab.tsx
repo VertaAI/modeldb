@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import Button from 'components/shared/Button/Button';
 import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
+import Icon from 'components/shared/Icon/Icon';
 import { UserAccess } from 'models/Project';
 import {
   InvitationStatus,
@@ -14,11 +15,6 @@ import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import { selectInviteNewCollaborator } from 'store/collaboration/selectors';
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
-import error_icon from '../images/error-icon.svg';
-import icon_check from '../images/icon-check.svg';
-import read_only_icon from '../images/read-only-icon.svg';
-import share_read_icon from '../images/share-r-icon.svg';
-import share_write_icon from '../images/share-wr-icon.svg';
 import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './ShareTab.module.css';
 
@@ -48,11 +44,11 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   public render() {
     const { status, error } = this.props;
 
-    switch (status) {
+    switch (InvitationStatus.None as any) {
       case InvitationStatus.None:
         return this.props.currentUserAccess === UserAccess.Read ? (
           <div className={styles.share_result_content}>
-            <img src={read_only_icon} />
+            <Icon type="read-only" className={styles.icon} />
             <span className={styles.share_result_header}>Read-only</span>
             <span className={styles.share_result_text}>
               You're restricted to share project
@@ -72,10 +68,12 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
                 additionalControl={
                   <ButtonTooltip
                     additionalClassName={styles.share_button}
-                    imgSrc={
-                      this.state.userAccess === UserAccess.Read
-                        ? share_read_icon
-                        : share_write_icon
+                    icon={
+                      this.state.userAccess === UserAccess.Read ? (
+                        <Icon type="share-read" />
+                      ) : (
+                        <Icon type="share-write" />
+                      )
                     }
                     toolTipContent={`Access type ${
                       this.state.userAccess === UserAccess.Read
@@ -96,7 +94,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
       case InvitationStatus.Failure:
         return (
           <div className={styles.share_result_content}>
-            <img src={error_icon} />
+            <Icon type="error" className={styles.icon} />
             <span className={styles.share_result_header}>{error}</span>
             <div>
               <ButtonLikeText onClick={this.trySendInvitationAgain}>
@@ -112,7 +110,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
       case InvitationStatus.Success:
         return (
           <div className={styles.share_result_content}>
-            <img src={icon_check} />
+            <Icon type="check" className={styles.icon} />
             <span className={styles.share_result_header}>
               Invitation to {this.state.emailValue} sent!
             </span>

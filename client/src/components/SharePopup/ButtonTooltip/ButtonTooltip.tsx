@@ -6,7 +6,7 @@ import styles from './ButtonTooltip.module.css';
 
 interface ILocalProps {
   additionalClassName?: string;
-  imgSrc: string;
+  icon: React.ReactNode;
   toolTipContent: string;
   width: number;
   onButtonClick?(): void;
@@ -14,6 +14,7 @@ interface ILocalProps {
 
 export class ButtonTooltip extends React.Component<ILocalProps> {
   public render() {
+    const { icon } = this.props;
     return (
       <Tooltip content={this.props.toolTipContent} width={this.props.width}>
         <button
@@ -22,7 +23,7 @@ export class ButtonTooltip extends React.Component<ILocalProps> {
           }`}
           onClick={this.props.onButtonClick}
         >
-          <img className={styles.tooltip_button_icon} src={this.props.imgSrc} />
+          <div className={styles.tooltip_button_icon}>{icon}</div>
         </button>
       </Tooltip>
     );

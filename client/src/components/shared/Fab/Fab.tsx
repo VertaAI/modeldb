@@ -2,9 +2,9 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
+import Icon from '../Icon/Icon';
 import styles from './Fab.module.css';
 import loaderSrc from './imgs/preloader.svg';
-import uploadSrc from './imgs/upload.svg';
 
 interface ILocalProps {
   children: React.ReactNode;
@@ -12,11 +12,11 @@ interface ILocalProps {
   disabled?: boolean;
   isLoading?: boolean;
   variant?: 'outlined' | 'default';
-  icon?: Icon;
+  icon?: IconType;
   onClick(): void;
 }
 
-type Icon = 'upload';
+type IconType = 'upload';
 
 // float action button
 class Fab extends React.PureComponent<ILocalProps> {
@@ -45,17 +45,12 @@ class Fab extends React.PureComponent<ILocalProps> {
         {!isLoading && (
           <>
             {children}
-            {icon && <img className={styles.icon} src={this.getIconSrc()} />}
+            {icon && <Icon type={icon} className={styles.icon} />}
           </>
         )}
         <img className={styles.loader} src={loaderSrc} />
       </button>
     );
-  }
-
-  @bind
-  private getIconSrc() {
-    return ({ upload: uploadSrc } as Record<Icon, string>)[this.props.icon!];
   }
 }
 

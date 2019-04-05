@@ -11,8 +11,6 @@ import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { selectCurrentUser } from 'store/user';
 
 import CollaboratorsTab from './CollaboratorsTab/CollaboratorsTab';
-import close from './images/close.svg';
-import styles from './SharePopup.module.css';
 import ShareTab from './ShareTab/ShareTab';
 
 enum TabsType {
