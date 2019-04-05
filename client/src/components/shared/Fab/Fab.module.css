@@ -34,6 +34,8 @@
 
 .loader {
   display: none;
+  width: 30px;
+  height: 30px;
 }
 .loading .loader {
   display: block;

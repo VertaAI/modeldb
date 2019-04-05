@@ -49,7 +49,7 @@ class Fab extends React.PureComponent<ILocalProps> {
           </>
         )}
         <div className={styles.loader}>
-          <Preloader variant="circle" size="small" />
+          <Preloader variant="circle" dynamicSize={true} />
         </div>
       </button>
     );

@@ -7,18 +7,18 @@ import styles from './Preloader.module.css';
 
 interface ILocalProps {
   variant: 'dots' | 'circle';
-  size?: 'small';
+  dynamicSize?: boolean;
 }
 
 class Preloader extends React.PureComponent<ILocalProps> {
   public render() {
-    const { variant, size } = this.props;
+    const { variant, dynamicSize = false } = this.props;
     const preloaderSrc =
       variant === 'dots' ? dotsPreloaderSrc : circlePreloaderSrc;
     return (
       <img
         className={cn(styles.preloader, {
-          [styles.size_small]: size === 'small',
+          [styles.dynamic_size]: dynamicSize,
         })}
         src={preloaderSrc}
       />
