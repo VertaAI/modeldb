@@ -8,14 +8,23 @@ import {
   userAuthenticateAction,
   userAuthenticateActionTypes,
   userLogoutActionTypes,
+  _checkingUserAuthenticationActionTypes,
 } from './types';
+import initialCommuncation from 'utils/redux/communication/initial';
+import makeCommunicationReducer from 'utils/redux/communication/makeCommunicationReducer';
+import makeCommunicationReducerFromEnum from 'utils/redux/communication/makeCommunicationReducerFromEnum';
 
 const initialState: IUserState = {
   authenticated: false,
   loading: false,
   user: null,
   checkingUserAuthentication: false,
+  _checkingUserAuthentication: initialCommuncation,
 };
+
+const _checkingUserAuthenticationReducer = makeCommunicationReducerFromEnum(
+  _checkingUserAuthenticationActionTypes
+);
 
 const userAuthenticateReducer: Reducer<IUserState> = (
   state = initialState,

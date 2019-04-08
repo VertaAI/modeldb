@@ -6,11 +6,14 @@ import { ActionResult } from 'store/store';
 import {
   checkUserAuthenticationActionTypes,
   ICheckUserAuthenticationAction,
+  checkingUserAuthentication,
   IUserLogoutAction,
   userAuthenticateAction,
   userAuthenticateActionTypes,
   userLogoutActionTypes,
+  _checkingUserAuthenticationActionTypes,
 } from './types';
+import { RecordValues } from 'utils/types';
 
 export const authenticateUser = (): ActionResult<
   void,
@@ -32,23 +35,14 @@ export const logoutUser = (): ActionResult<
 
 export const checkUserAuthentication = (): ActionResult<
   void,
-  ICheckUserAuthenticationAction
+  RecordValues<checkingUserAuthentication>
 > => async dispatch => {
-  dispatch(
-    action(checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_REQUEST)
-  );
+  dispatch(action(_checkingUserAuthenticationActionTypes.request));
 
   try {
     const user = await ServiceFactory.getAuthenticationService().loadUser();
-    dispatch(
-      action(
-        checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_SUCCESS,
-        user
-      )
-    );
+    dispatch(action(_checkingUserAuthenticationActionTypes.success, user));
   } catch {
-    dispatch(
-      action(checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_FAILURE)
-    );
+    dispatch(action(_checkingUserAuthenticationActionTypes.failure, 'error'));
   }
 };
