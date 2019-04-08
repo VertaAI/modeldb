@@ -91,7 +91,10 @@ class Icon extends React.PureComponent<ILocalProps> {
       'share-delete': ShareDelete,
       upload: Upload,
       close: Close,
-    } as Record<IconType, any>)[this.props.type];
+    } as Record<
+      IconType,
+      React.FunctionComponent<React.SVGProps<SVGSVGElement>>
+    >)[this.props.type];
   }
 }
 

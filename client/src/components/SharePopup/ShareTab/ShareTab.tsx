@@ -44,7 +44,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   public render() {
     const { status, error } = this.props;
 
-    switch (InvitationStatus.None as any) {
+    switch (status) {
       case InvitationStatus.None:
         return this.props.currentUserAccess === UserAccess.Read ? (
           <div className={styles.share_result_content}>
