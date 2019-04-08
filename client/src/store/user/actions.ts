@@ -4,45 +4,43 @@ import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 
 import {
+  authenticateUserActionTypes,
   checkUserAuthenticationActionTypes,
-  ICheckUserAuthenticationAction,
-  checkingUserAuthentication,
-  IUserLogoutAction,
-  userAuthenticateAction,
-  userAuthenticateActionTypes,
-  userLogoutActionTypes,
-  _checkingUserAuthenticationActionTypes,
+  IAuthenticateUserActions,
+  ICheckUserAuthenticationActions,
+  ILogoutActions,
+  logoutActionTypes,
 } from './types';
-import { RecordValues } from 'utils/types';
 
 export const authenticateUser = (): ActionResult<
   void,
-  userAuthenticateAction
+  IAuthenticateUserActions
 > => async dispatch => {
-  dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST));
+  dispatch(action(authenticateUserActionTypes.request));
 
   ServiceFactory.getAuthenticationService().login();
 };
 
 export const logoutUser = (): ActionResult<
   void,
-  IUserLogoutAction
+  ILogoutActions
 > => async dispatch => {
-  dispatch(action(userLogoutActionTypes.LOGOUT_USER));
+  dispatch(action(logoutActionTypes.request));
 
   await ServiceFactory.getAuthenticationService().logout();
+  dispatch(action(logoutActionTypes.success));
 };
 
 export const checkUserAuthentication = (): ActionResult<
   void,
-  RecordValues<checkingUserAuthentication>
+  ICheckUserAuthenticationActions
 > => async dispatch => {
-  dispatch(action(_checkingUserAuthenticationActionTypes.request));
+  dispatch(action(checkUserAuthenticationActionTypes.request));
 
   try {
     const user = await ServiceFactory.getAuthenticationService().loadUser();
-    dispatch(action(_checkingUserAuthenticationActionTypes.success, user));
+    dispatch(action(checkUserAuthenticationActionTypes.success, user));
   } catch {
-    dispatch(action(_checkingUserAuthenticationActionTypes.failure, 'error'));
+    dispatch(action(checkUserAuthenticationActionTypes.failure, 'error'));
   }
 };
