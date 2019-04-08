@@ -34,7 +34,7 @@ class Login extends React.Component<AllProps> {
           <Button
             size="large"
             textTransform="none"
-            icon="github"
+            icon={<Icon type="github" />}
             onClick={this.authenticateViaGithub}
           >
             Login with Github

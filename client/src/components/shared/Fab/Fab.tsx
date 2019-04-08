@@ -1,7 +1,6 @@
 import cn from 'classnames';
 import * as React from 'react';
 
-import Icon from '../Icon/Icon';
 import Preloader from '../Preloader/Preloader';
 import styles from './Fab.module.css';
 
@@ -11,11 +10,9 @@ interface ILocalProps {
   disabled?: boolean;
   isLoading?: boolean;
   variant?: 'outlined' | 'default';
-  icon?: IconType;
+  icon: React.ReactNode;
   onClick(): void;
 }
-
-type IconType = 'upload';
 
 // float action button
 class Fab extends React.PureComponent<ILocalProps> {
@@ -44,7 +41,7 @@ class Fab extends React.PureComponent<ILocalProps> {
         {!isLoading && (
           <>
             {children}
-            {icon && <Icon type={icon} className={styles.icon} />}
+            {icon && <div className={styles.icon}>{icon}</div>}
           </>
         )}
         <div className={styles.loader}>
