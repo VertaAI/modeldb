@@ -12,3 +12,15 @@
 .bar-label {
   font-size: 9px;
 }
+
+.chartsHeading {
+  font-size: '20px';
+  font-weight: 500;
+}
+
+.chartsBlock {
+  float: right;
+  margin-top: -40px;
+  margin-left: -60px;
+  padding: 0 50px 0 0px;
+}

@@ -15,11 +15,6 @@ select {
   color: var(--bg-color2);
   max-width: 180px;
   cursor: pointer;
-
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  -ms-appearance: none;
-  -o-appearance: none;
   appearance: none;
 }
 

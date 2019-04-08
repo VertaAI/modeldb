@@ -1,5 +1,14 @@
 import _ from 'lodash';
 import React from 'react';
+import { bind } from 'decko';
+import {
+  listSum,
+  listAverage,
+  listMedian,
+  listVariance,
+  listStdev,
+  listCount,
+} from 'utils/StatMethods/AggregationTypes';
 import ModelRecord from '../../../models/ModelRecord';
 import BarChart from './BarChart';
 import ParallelCoordinates from './ParamParallelCoordinates';
@@ -130,7 +139,6 @@ export default class ModelExploration extends React.Component<
           </div> */}
         </div>
         <div>
-          {/* {console.log(this.state)} */}
           <BarChart
             xLabel={this.state.selectedXAxis}
             yLabel={this.state.selectedYAxis}
@@ -167,22 +175,27 @@ export default class ModelExploration extends React.Component<
   }
 
   // event handler to set user selection fields for bar chart
-  public setLocalYState = (event: React.FormEvent<HTMLSelectElement>) => {
+
+  @bind
+  public setLocalYState(event: React.FormEvent<HTMLSelectElement>): void {
     const element = event.target as HTMLSelectElement;
     this.setState({ selectedYAxis: element.value });
-  };
+  }
 
-  public setLocalXState = (event: React.FormEvent<HTMLSelectElement>) => {
+  @bind
+  public setLocalXState(event: React.FormEvent<HTMLSelectElement>): void {
     const element = event.target as HTMLSelectElement;
     this.setState({ selectedXAxis: element.value });
-  };
+  }
 
-  public setLocalAggState = (event: React.FormEvent<HTMLSelectElement>) => {
+  @bind
+  public setLocalAggState(event: React.FormEvent<HTMLSelectElement>): void {
     const element = event.target as HTMLSelectElement;
     this.setState({ selectedAggregate: element.value });
-  };
+  }
 
   // Utility Functions
+  @bind
   public groupBy(list: object[], keyGetter: any) {
     const map = new Map();
     list.forEach((item: any) => {
@@ -197,27 +210,8 @@ export default class ModelExploration extends React.Component<
     return map;
   }
 
-  // functions to compute basic aggregation types
-  public sum = (array: any) => array.reduce((a: number, b: number) => a + b);
-  public average = (array: any) => this.sum(array) / array.length;
-  public median = (array: any) => {
-    array.sort((a: number, b: number) => a - b);
-    const lowMiddle = Math.floor((array.length - 1) / 2);
-    const highMiddle = Math.ceil((array.length - 1) / 2);
-    return (array[lowMiddle] + array[highMiddle]) / 2;
-  };
-  public variance = (array: any) => {
-    const mean = this.average(array);
-    return this.average(
-      array.map((num: number) => {
-        return Math.pow(num - mean, 2);
-      })
-    );
-  };
-  public stdev = (array: any) => Math.sqrt(this.variance(array));
-  public count = (array: any) => array.length;
-
-  public computeFlatMetric = (arr: ModelRecord[]) => {
+  @bind
+  public computeFlatMetric(arr: ModelRecord[]) {
     return arr.map(obj => {
       const metricField = _.pick(obj, 'startTime', 'metrics');
       const flatMetric: any = { date: metricField.startTime };
@@ -227,7 +221,7 @@ export default class ModelExploration extends React.Component<
       });
       return flatMetric;
     });
-  };
+  }
 
   // reduce data based on aggigation type
   // public reduceMetricForAgg = (groupByResult: any, selectedAggType: string) => {
@@ -251,7 +245,8 @@ export default class ModelExploration extends React.Component<
   //   });
   // };
 
-  public returnAggResults = (selected: string, arrayGpBy: any) => {
+  @bind
+  public returnAggResults(selected: string, arrayGpBy: any) {
     switch (selected) {
       case 'average':
         return this.averageReduceMetrics(arrayGpBy);
@@ -266,46 +261,53 @@ export default class ModelExploration extends React.Component<
       case 'count':
         return this.countReduceMetrics(arrayGpBy);
     }
-  };
+  }
 
-  public averageReduceMetrics = (mapObj: any) => {
+  @bind
+  public averageReduceMetrics(mapObj: any) {
     return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.average(obj[1]) };
+      return { key: obj[0], value: listAverage(obj[1]) };
     });
-  };
+  }
 
-  public sumReduceMetrics = (mapObj: any) => {
+  @bind
+  public sumReduceMetrics(mapObj: any) {
     return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.sum(obj[1]) };
+      return { key: obj[0], value: listSum(obj[1]) };
     });
-  };
+  }
 
-  public medianReduceMetrics = (mapObj: any) => {
+  @bind
+  public medianReduceMetrics(mapObj: any) {
     return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.median(obj[1]) };
+      return { key: obj[0], value: listMedian(obj[1]) };
     });
-  };
+  }
 
-  public varianceReduceMetrics = (mapObj: any) => {
+  @bind
+  public varianceReduceMetrics(mapObj: any) {
     return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.variance(obj[1]) };
+      return { key: obj[0], value: listVariance(obj[1]) };
     });
-  };
+  }
 
-  public stdevReduceMetrics = (mapObj: any) => {
+  @bind
+  public stdevReduceMetrics(mapObj: any) {
     return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.stdev(obj[1]) };
+      return { key: obj[0], value: listStdev(obj[1]) };
     });
-  };
+  }
 
-  public countReduceMetrics = (mapObj: any) => {
+  @bind
+  public countReduceMetrics(mapObj: any) {
     return [...mapObj].map(obj => {
-      return { key: obj[0], value: this.count(obj[1]) };
+      return { key: obj[0], value: listCount(obj[1]) };
     });
-  };
+  }
 
   // compute flat data and set unique xAxisParams to render dropdown
-  public computeXAxisFields = (expRuns: ModelRecord[]) => {
+  @bind
+  public computeXAxisFields(expRuns: ModelRecord[]) {
     // hard coded with an assumption that these ids will always be present with the data
     this.xAxisParams.add('experiment_id');
     this.summaryParams.add('experiment_id');
@@ -365,10 +367,11 @@ export default class ModelExploration extends React.Component<
       }
       return fields;
     });
-  };
+  }
 
   // compute Parallel chart's Data
-  public computeParallelData = (expRuns: ModelRecord[]) => {
+  @bind
+  public computeParallelData(expRuns: ModelRecord[]) {
     return expRuns.map(modeRecord => {
       const fields: any = {};
       if (modeRecord.hyperparameters) {
@@ -386,5 +389,5 @@ export default class ModelExploration extends React.Component<
       }
       return fields;
     });
-  };
+  }
 }

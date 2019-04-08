@@ -21,11 +21,6 @@ select {
   color: var(--bg-color2);
   max-width: 180px;
   cursor: pointer;
-
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  -ms-appearance: none;
-  -o-appearance: none;
   appearance: none;
 }
 
@@ -45,10 +40,6 @@ select {
   right: 24px;
   color: rgb(114, 114, 114);
   pointer-events: none;
-}
-
-select::-ms-expand {
-  display: none;
 }
 
 .compute_button {
