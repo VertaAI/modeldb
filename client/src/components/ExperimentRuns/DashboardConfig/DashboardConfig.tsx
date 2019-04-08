@@ -20,7 +20,7 @@ interface ILocalState {
 
 interface IPropsFromState {
   columnConfig: IColumnConfig;
-  experimentRuns: ModelRecord[] | undefined;
+  experimentRuns: ModelRecord[] | null;
 }
 
 type AllProps = IConnectedReduxProps & IPropsFromState;

@@ -27,8 +27,8 @@ interface ILocalState {
 }
 
 interface IPropsFromState {
-  projects: Project[] | null | undefined;
-  experimentRuns?: ModelRecord[] | undefined;
+  projects?: Project[] | null;
+  experimentRuns: ModelRecord[] | null;
   loading: boolean;
 }
 
@@ -45,7 +45,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
     const { experimentRuns, loading, projects } = this.props;
     const projectId = this.props.match.params.projectId;
 
-    if (experimentRuns !== undefined) {
+    if (experimentRuns) {
       this.initialBarSelection = {
         initialHyperparam: experimentRuns[0].hyperparameters[0].key,
         initialMetric: this.state.selectedMetric,
@@ -102,7 +102,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = (state: IApplicationState) => ({
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
   experimentRuns: selectExperimentRuns(state),
   projects: selectProjects(state),
   loading: selectIsLoadingExperimentRuns(state),

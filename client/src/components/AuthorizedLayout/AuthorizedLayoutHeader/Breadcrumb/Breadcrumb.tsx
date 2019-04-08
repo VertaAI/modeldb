@@ -18,7 +18,7 @@ import headerArrow from './images/header-arrow.svg';
 
 interface IPropsFromState {
   projects?: Project[] | null;
-  experimentRuns?: ModelRecord[] | null;
+  experimentRuns: ModelRecord[] | null;
   modelRecord?: ModelRecord | null;
 }
 
