@@ -26,9 +26,7 @@ class Login extends React.Component<AllProps> {
         </div>
         <div className={styles.login_slogan}>
           Models are the new code. Let’s show them some{' '}
-          <div className={styles.heart}>
-            <Icon type="heart" />
-          </div>
+          <Icon type="heart" className={styles.heart} />
         </div>
         <div className={styles.form_login}>
           <Button

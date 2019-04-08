@@ -28,13 +28,10 @@ class ArtifactsColDef extends React.Component<any> {
                   title="view ModelRecord"
                 >
                   <div className={styles.notif}>
-                    <div className={styles.notif_icon}>
-                      {artifact.type === 'IMAGE' ? (
-                        <Icon type="image" />
-                      ) : (
-                        <Icon type="codepen" />
-                      )}
-                    </div>
+                    <Icon
+                      className={styles.notif_icon}
+                      type={artifact.type === 'IMAGE' ? 'image' : 'codepen'}
+                    />
                   </div>
                   <div className={styles.type}>
                     {artifact.type} &nbsp; &nbsp; &nbsp; ->{' '}

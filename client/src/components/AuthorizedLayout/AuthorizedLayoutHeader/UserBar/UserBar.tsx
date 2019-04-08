@@ -48,9 +48,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
             style={{ fontFamily: 'Roboto', fontWeight: '400' }}
             src={user ? user.picture : ''}
           />
-          <div className={styles.menu_arrow}>
-            <Icon type="caret-down" />
-          </div>
+          <Icon type="caret-down" className={styles.menu_arrow} />
         </div>
         {this.state.isOpened ? (
           <div className={styles.drop_down}>
