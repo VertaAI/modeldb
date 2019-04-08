@@ -7,12 +7,12 @@ RUN mkdir /usr/src/app/client
 
 # Install required package dependencies
 WORKDIR /usr/src/app
-COPY package*.json /usr/src/app/package.json
+COPY package.json /usr/src/app/package.json
 COPY yarn.lock /usr/src/app/yarn.lock
 RUN yarn install
 
 WORKDIR /usr/src/app/client
-COPY client/package*.json /usr/src/app/client/package.json
+COPY client/package.json /usr/src/app/client/package.json
 COPY client/yarn.lock /usr/src/app/client/yarn.lock
 RUN yarn install
 
