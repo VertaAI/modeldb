@@ -36,10 +36,11 @@
 
 .close {
   position: absolute;
-  right: 20px;
+  right: 24px;
   margin-top: 2px;
   cursor: pointer;
   filter: invert(0.5);
+  font-size: 14px;
 }
 .close:hover {
   /* filter: invert(33%) sepia(24%) saturate(6172%) hue-rotate(231deg) brightness(108%) contrast(101%); */

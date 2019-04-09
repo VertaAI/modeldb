@@ -9,13 +9,11 @@ interface ILocalProps {
   to?: string;
   fullWidth?: boolean;
   size?: 'medium' | 'large'; // todo maybe default rename to medium
-  icon?: Icon;
+  icon?: React.ReactNode;
   textTransform?: 'default' | 'none';
   theme?: 'default' | 'gray';
   onClick?(): void;
 }
-
-type Icon = 'github';
 
 class Button extends React.PureComponent<ILocalProps> {
   public render() {
@@ -44,12 +42,7 @@ class Button extends React.PureComponent<ILocalProps> {
         })}
         onClick={onClick}
       >
-        {icon && (
-          <i
-            className={cn('fa', `fa-${icon}, fa-fw, ${styles.icon}`)}
-            style={{ fontSize: '30px', verticalAlign: 'middle' }}
-          />
-        )}
+        {icon && <div className={styles.icon}>{icon}</div>}
         {children}
       </Elem>
     );

@@ -5,6 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
 import Checkbox from 'components/shared/Checkbox/Checkbox';
+import Icon from 'components/shared/Icon/Icon';
 import ModelRecord from 'models/ModelRecord';
 import {
   IColumnConfig,
@@ -38,9 +39,7 @@ class DashboardConfig extends React.Component<AllProps, ILocalState> {
     return (
       <div className={styles.root}>
         <div className={styles.user_bar} onClick={this.toggleMenu}>
-          <div className={styles.dashboard_cog}>
-            <i className={cn('fa', 'fa-cog')} />
-          </div>
+          <Icon type="cog" className={styles.dashboard_cog} />
         </div>
         {this.state.isOpened ? (
           <div className={styles.drop_down}>

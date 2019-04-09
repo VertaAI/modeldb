@@ -173,3 +173,7 @@
   grid-column: 1/2;
   grid-row: 1;
 }
+.notif_icon {
+  font-size: 13px;
+  color: var(--main-color2);
+}

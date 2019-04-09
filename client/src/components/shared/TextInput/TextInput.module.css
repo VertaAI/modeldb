@@ -32,15 +32,9 @@
 
 .icon {
   position: absolute;
-  right: 16px;
-  height: 100%;
-  width: 15px;
-  top: 0;
-}
-.icon:before {
-  position: absolute;
   top: 50%;
-  font-size: 18px;
-  color: var(--text-color4);
-  line-height: 0;
+  right: 15px;
+  font-size: 17px;
+  color: var(--fr-color5);
+  transform: translateY(-50%);
 }

@@ -5,13 +5,13 @@ import { connect } from 'react-redux';
 
 import Button from 'components/shared/Button/Button';
 import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
+import Icon from 'components/shared/Icon/Icon';
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
 import { changeProjectOwner, selectAnyError } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import CollaboratorItem from '../CollaboratorItem/CollaboratorItem';
-import error_icon from '../images/error-icon.svg';
 import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './CollaboratorsTab.module.css';
 
@@ -45,7 +45,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
   public render() {
     return this.props.error ? (
       <div className={styles.share_result_content}>
-        <img src={error_icon} />
+        <Icon type="error" className={styles.icon} />
         <span className={styles.share_result_header}>
           There are some errors happened…
         </span>

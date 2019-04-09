@@ -48,7 +48,6 @@
 }
 
 .share_result_content {
-  margin-top: 35px;
   display: grid;
   margin-bottom: 55px;
   justify-items: center;
@@ -65,4 +64,8 @@
   font-size: 13px;
   line-height: 15px;
   text-align: center;
+}
+
+.icon {
+  font-size: 60px;
 }
