@@ -15,9 +15,9 @@ export interface IProjectsState {
 }
 
 export const loadProjectsActionTypes = makeCommunicationActionTypes({
-  request: '@@projects/LOAD_PROJECTS_REQUEST',
-  success: '@@projects/LOAD_PROJECTS_SUCСESS',
-  failure: '@@projects/LOAD_PROJECTS_FAILURE',
+  REQUEST: '@@projects/LOAD_PROJECTS_REQUEST',
+  SUCCESS: '@@projects/LOAD_PROJECTS_SUCСESS',
+  FAILURE: '@@projects/LOAD_PROJECTS_FAILURE',
 });
 export type ILoadProjectsActions = MakeCommunicationActions<
   typeof loadProjectsActionTypes,

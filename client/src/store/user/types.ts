@@ -18,9 +18,9 @@ export interface IUserState {
 }
 
 export const authenticateUserActionTypes = makeCommunicationActionTypes({
-  request: '@@user/AUTHENTICATE_USER_REQUEST',
-  success: '@@user/AUTHENTICATE_USER_SUCСESS',
-  failure: '@@user/AUTHENTICATE_USER_FAILURE',
+  REQUEST: '@@user/AUTHENTICATE_USER_REQUEST',
+  SUCCESS: '@@user/AUTHENTICATE_USER_SUCСESS',
+  FAILURE: '@@user/AUTHENTICATE_USER_FAILURE',
 });
 export type IAuthenticateUserActions = MakeCommunicationActions<
   typeof authenticateUserActionTypes,
@@ -28,9 +28,9 @@ export type IAuthenticateUserActions = MakeCommunicationActions<
 >;
 
 export const checkUserAuthenticationActionTypes = makeCommunicationActionTypes({
-  request: '@@user/CHECK_USER_AUTHENTICATION_REQUEST',
-  success: '@@user/CHECK_USER_AUTHENTICATION_SUCСESS',
-  failure: '@@user/CHECK_USER_AUTHENTICATION_FAILURE',
+  REQUEST: '@@user/CHECK_USER_AUTHENTICATION_REQUEST',
+  SUCCESS: '@@user/CHECK_USER_AUTHENTICATION_SUCСESS',
+  FAILURE: '@@user/CHECK_USER_AUTHENTICATION_FAILURE',
 });
 export type ICheckUserAuthenticationActions = MakeCommunicationActions<
   typeof checkUserAuthenticationActionTypes,
@@ -38,9 +38,9 @@ export type ICheckUserAuthenticationActions = MakeCommunicationActions<
 >;
 
 export const logoutActionTypes = makeCommunicationActionTypes({
-  request: '@@user/LOGOUT_REQUEST',
-  success: '@@user/LOGOUT_SUCСESS',
-  failure: '@@user/LOGOUT_FAILURE',
+  REQUEST: '@@user/LOGOUT_REQUEST',
+  SUCCESS: '@@user/LOGOUT_SUCСESS',
+  FAILURE: '@@user/LOGOUT_FAILURE',
 });
 export type ILogoutActions = MakeCommunicationActions<
   typeof logoutActionTypes,

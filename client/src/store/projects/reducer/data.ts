@@ -16,7 +16,7 @@ const dataReducer: Reducer<IProjectsState['data'], FeatureAction> = (
   action
 ) => {
   switch (action.type) {
-    case loadProjectsActionTypes.success: {
+    case loadProjectsActionTypes.SUCCESS: {
       return { ...state, projects: action.payload };
     }
     case updateProjectActionTypes.UPDATE_PROJECT_STATE: {

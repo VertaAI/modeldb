@@ -24,13 +24,18 @@ const makeCommunicationReducer = <T extends MakeCommunicationActionTypes>({
   ): ICommunication<any> => {
     switch (action.type) {
       case requestType:
-        return { isRequesting: true, isSuccess: false, error: '' };
+        return { ...state, isRequesting: true, isSuccess: false, error: '' };
       case successType:
-        return { isRequesting: false, isSuccess: true, error: '' };
+        return { ...state, isRequesting: false, isSuccess: true, error: '' };
       case failureType:
-        return { isRequesting: true, isSuccess: false, error: action.payload };
+        return {
+          ...state,
+          isRequesting: true,
+          isSuccess: false,
+          error: action.payload,
+        };
       default:
-        return initialCommunication;
+        return state;
     }
   };
 };

@@ -21,9 +21,9 @@ export interface IFilterState {
 }
 
 export const registerContextActionTypes = makeCommunicationActionTypes({
-  request: '@@filters/REGISTER_CONTEXT_REQUEST',
-  success: '@@filters/REGISTER_CONTEXT_SUCСESS',
-  failure: '@@filters/REGISTER_CONTEXT_FAILURE',
+  REQUEST: '@@filters/REGISTER_CONTEXT_REQUEST',
+  SUCCESS: '@@filters/REGISTER_CONTEXT_SUCСESS',
+  FAILURE: '@@filters/REGISTER_CONTEXT_FAILURE',
 });
 export interface IFilterContextData {
   appliedFilters: IFilterData[];
@@ -44,9 +44,9 @@ export interface IChangeContextAction {
 }
 
 export const suggestFiltersActionTypes = makeCommunicationActionTypes({
-  request: '@@filters/SUGGEST_FILTERS_REQUEST',
-  success: '@@filters/SUGGEST_FILTERS_SUCСESS',
-  failure: '@@filters/SUGGEST_FILTERS_FAILURE',
+  REQUEST: '@@filters/SUGGEST_FILTERS_REQUEST',
+  SUCCESS: '@@filters/SUGGEST_FILTERS_SUCСESS',
+  FAILURE: '@@filters/SUGGEST_FILTERS_FAILURE',
 });
 export type ISuggestFiltersActions = MakeCommunicationActions<
   typeof suggestFiltersActionTypes,
@@ -54,9 +54,9 @@ export type ISuggestFiltersActions = MakeCommunicationActions<
 >;
 
 export const searchActionTypes = makeCommunicationActionTypes({
-  request: '@@filters/SEARCH_REQUEST',
-  success: '@@filters/SEARCH_SUCСESS',
-  failure: '@@filters/SEARCH_FAILURE',
+  REQUEST: '@@filters/SEARCH_REQUEST',
+  SUCCESS: '@@filters/SEARCH_SUCСESS',
+  FAILURE: '@@filters/SEARCH_FAILURE',
 });
 export type ISearchActions = MakeCommunicationActions<
   typeof searchActionTypes,
@@ -64,9 +64,9 @@ export type ISearchActions = MakeCommunicationActions<
 >;
 
 export const applyFiltersActionTypes = makeCommunicationActionTypes({
-  request: '@@filters/APPLY_FILTERS_REQUEST',
-  success: '@@filters/APPLY_FILTERS_SUCСESS',
-  failure: '@@filters/APPLY_FILTERS_FAILURE',
+  REQUEST: '@@filters/APPLY_FILTERS_REQUEST',
+  SUCCESS: '@@filters/APPLY_FILTERS_SUCСESS',
+  FAILURE: '@@filters/APPLY_FILTERS_FAILURE',
 });
 export type IApplyFiltersActions = MakeCommunicationActions<
   typeof applyFiltersActionTypes,

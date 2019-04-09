@@ -21,12 +21,12 @@ export function suggestFilters(
   searchString: string
 ): ActionResult<void, ISuggestFiltersActions> {
   return async (dispatch, getState) => {
-    dispatch(action(suggestFiltersActionTypes.request));
+    dispatch(action(suggestFiltersActionTypes.REQUEST));
     const svc = ServiceFactory.getSearchAndFiltersService();
     const currentCtx = selectCurrentContextData(getState());
     if (svc != null && currentCtx !== undefined) {
       await svc.searchFilterSuggestions(searchString, currentCtx).then(res => {
-        dispatch(action(suggestFiltersActionTypes.success, res));
+        dispatch(action(suggestFiltersActionTypes.SUCCESS, res));
       });
     }
   };
@@ -53,7 +53,7 @@ export function initContexts(): ActionResult<void, IRegisterContextActions> {
   return async dispatch => {
     dispatch(
       action(
-        registerContextActionTypes.success,
+        registerContextActionTypes.SUCCESS,
         FilterContextPool.initContextsData()
       )
     );
@@ -65,7 +65,7 @@ export function changeContext(
 ): ActionResult<void, IChangeContextAction | ISuggestFiltersActions> {
   return async (dispatch, getState) => {
     dispatch(action(changeContextActionTypes.CHANGE_CONTEXT, ctxName));
-    dispatch(action(suggestFiltersActionTypes.success, []));
+    dispatch(action(suggestFiltersActionTypes.SUCCESS, []));
     if (ctxName !== undefined && FilterContextPool.hasContext(ctxName)) {
       const ctxData = FilterContextPool.getContextByName(ctxName);
       ctxData.onApplyFilters(

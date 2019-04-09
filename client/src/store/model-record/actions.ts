@@ -13,7 +13,7 @@ export const fetchModelRecord = (
   dispatch,
   getState
 ) => {
-  dispatch(action(loadModelRecordActionTypes.request));
+  dispatch(action(loadModelRecordActionTypes.REQUEST));
 
   const storeExperimentRuns = selectExperimentRuns(getState()) || [
     new ModelRecord(),
@@ -21,9 +21,9 @@ export const fetchModelRecord = (
   await ServiceFactory.getExperimentRunsService()
     .getModelRecord(modelId, storeExperimentRuns)
     .then(res => {
-      dispatch(action(loadModelRecordActionTypes.success, res));
+      dispatch(action(loadModelRecordActionTypes.SUCCESS, res));
     })
     .catch(err => {
-      dispatch(action(loadModelRecordActionTypes.failure, err as string));
+      dispatch(action(loadModelRecordActionTypes.FAILURE, err as string));
     });
 };

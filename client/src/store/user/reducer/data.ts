@@ -18,13 +18,13 @@ const dataReducer: Reducer<IUserState['data'], FeatureAction> = (
   action
 ) => {
   switch (action.type) {
-    case logoutActionTypes.request: {
+    case logoutActionTypes.REQUEST: {
       return { ...state, user: null, authenticated: false };
     }
-    case authenticateUserActionTypes.success: {
+    case authenticateUserActionTypes.SUCCESS: {
       return { ...state, authenticated: true, user: action.payload };
     }
-    case checkUserAuthenticationActionTypes.success: {
+    case checkUserAuthenticationActionTypes.SUCCESS: {
       return {
         ...state,
         authenticated: Boolean(action.payload),

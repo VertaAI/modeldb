@@ -21,9 +21,9 @@ export enum InvitationStatus {
 }
 
 export const sendInvitationActionTypes = makeCommunicationActionTypes({
-  request: '@@collaboration/SEND_INVITATION_REQUEST',
-  success: '@@collaboration/SEND_INVITATION_SUCСESS',
-  failure: '@@collaboration/SEND_INVITATION_FAILURE',
+  REQUEST: '@@collaboration/SEND_INVITATION_REQUEST',
+  SUCCESS: '@@collaboration/SEND_INVITATION_SUCСESS',
+  FAILURE: '@@collaboration/SEND_INVITATION_FAILURE',
 });
 export type ISendInvitationActions = MakeCommunicationActions<
   typeof sendInvitationActionTypes,
@@ -37,9 +37,9 @@ export interface IResetInvitationAction {
 }
 
 export const changeOwnerActionTypes = makeCommunicationActionTypes({
-  request: '@@collaboration/CHANGE_OWNER_REQUEST',
-  success: '@@collaboration/CHANGE_OWNER_SUCСESS',
-  failure: '@@collaboration/CHANGE_OWNER_FAILURE',
+  REQUEST: '@@collaboration/CHANGE_OWNER_REQUEST',
+  SUCCESS: '@@collaboration/CHANGE_OWNER_SUCСESS',
+  FAILURE: '@@collaboration/CHANGE_OWNER_FAILURE',
 });
 export type IChangeOwnerActions = MakeCommunicationActions<
   typeof changeOwnerActionTypes,
@@ -53,9 +53,9 @@ export interface IResetChangeOwnerAction {
 }
 
 export const changeAccessActionTypes = makeCommunicationActionTypes({
-  request: '@@collaboration/CHANGE_ACCESS_REQUEST',
-  success: '@@collaboration/CHANGE_ACCESS_SUCСESS',
-  failure: '@@collaboration/CHANGE_ACCESS_FAILURE',
+  REQUEST: '@@collaboration/CHANGE_ACCESS_REQUEST',
+  SUCCESS: '@@collaboration/CHANGE_ACCESS_SUCСESS',
+  FAILURE: '@@collaboration/CHANGE_ACCESS_FAILURE',
 });
 export type IChangeAccessActions = MakeCommunicationActions<
   typeof changeAccessActionTypes,
@@ -69,9 +69,9 @@ export interface IResetChangeAccessAction {
 }
 
 export const removeAccessActionTypes = makeCommunicationActionTypes({
-  request: '@@collaboration/REMOVE_ACCESS_REQUEST',
-  success: '@@collaboration/REMOVE_ACCESS_SUCСESS',
-  failure: '@@collaboration/REMOVE_ACCESS_FAILURE',
+  REQUEST: '@@collaboration/REMOVE_ACCESS_REQUEST',
+  SUCCESS: '@@collaboration/REMOVE_ACCESS_SUCСESS',
+  FAILURE: '@@collaboration/REMOVE_ACCESS_FAILURE',
 });
 export type IRemoveAccessActions = MakeCommunicationActions<
   typeof removeAccessActionTypes,

@@ -13,14 +13,14 @@ export const fetchExperimentRuns = (
   id: string,
   filters?: IFilterData[]
 ): ActionResult<void, ILoadExperimentRunsActions> => async dispatch => {
-  dispatch(action(loadExperimentRunsActionTypes.request));
+  dispatch(action(loadExperimentRunsActionTypes.REQUEST));
 
   await ServiceFactory.getExperimentRunsService()
     .getExperimentRuns(id, filters)
     .then(res => {
-      dispatch(action(loadExperimentRunsActionTypes.success, res.data));
+      dispatch(action(loadExperimentRunsActionTypes.SUCCESS, res.data));
     })
     .catch(err => {
-      dispatch(action(loadExperimentRunsActionTypes.failure, err as string));
+      dispatch(action(loadExperimentRunsActionTypes.FAILURE, err as string));
     });
 };

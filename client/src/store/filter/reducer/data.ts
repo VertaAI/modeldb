@@ -90,7 +90,7 @@ const commonReducer: Reducer<IFilterState['data'], FeatureAction> = (
   action
 ) => {
   switch (action.type) {
-    case registerContextActionTypes.success: {
+    case registerContextActionTypes.SUCCESS: {
       const data: IFilterContextData[] = action.payload;
       const newMap: { [index: string]: IFilterContextData } = {};
       for (const ctxData of data) {
@@ -107,7 +107,7 @@ const commonReducer: Reducer<IFilterState['data'], FeatureAction> = (
       // }
       // return { ...state, context: undefined };
     }
-    case suggestFiltersActionTypes.success: {
+    case suggestFiltersActionTypes.SUCCESS: {
       return { ...state, foundFilters: action.payload };
     }
     default:

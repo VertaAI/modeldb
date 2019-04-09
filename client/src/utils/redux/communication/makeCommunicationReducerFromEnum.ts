@@ -7,9 +7,9 @@ import {
 const makeCommunicationReducerFromEnum = <
   T extends MakeCommunicationActionTypes<any, any, any>
 >({
-  request,
-  success,
-  failure,
+  REQUEST: request,
+  SUCCESS: success,
+  FAILURE: failure,
 }: ICommunicationActionTypes<any, any, any>) => {
   return makeCommunicationReducer<T>({
     requestType: request,

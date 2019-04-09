@@ -15,7 +15,7 @@ const dataReducer: Reducer<IModelRecordState['data'], FeatureAction> = (
   action
 ) => {
   switch (action.type) {
-    case loadModelRecordActionTypes.success: {
+    case loadModelRecordActionTypes.SUCCESS: {
       return { ...state, modelRecord: action.payload };
     }
     default:

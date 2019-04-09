@@ -17,15 +17,15 @@ import {
 export const fetchProjects = (
   filters?: IFilterData[]
 ): ActionResult<void, ILoadProjectsActions> => async dispatch => {
-  dispatch(action(loadProjectsActionTypes.request));
+  dispatch(action(loadProjectsActionTypes.REQUEST));
 
   await ServiceFactory.getProjectsService()
     .getProjects(filters)
     .then(res => {
-      dispatch(action(loadProjectsActionTypes.success, res.data));
+      dispatch(action(loadProjectsActionTypes.SUCCESS, res.data));
     })
     .catch(err => {
-      dispatch(action(loadProjectsActionTypes.failure, err as string));
+      dispatch(action(loadProjectsActionTypes.FAILURE, err as string));
     });
 };
 

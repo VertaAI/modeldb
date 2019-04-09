@@ -17,9 +17,9 @@ export interface ICommunicationActionTypes<
   S extends string,
   F extends string
 > {
-  request: R;
-  success: S;
-  failure: F;
+  REQUEST: R;
+  SUCCESS: S;
+  FAILURE: F;
 }
 
 export interface MakeCommunicationActionTypes<
@@ -37,12 +37,12 @@ export type MakeCommunicationActions<
   P extends { request?: any; success?: any; failure?: string }
 > = RecordValues<{
   request: P extends { request: any }
-    ? IAction<T['request'], P['request']>
-    : { type: T['request'] };
+    ? IAction<T['REQUEST'], P['request']>
+    : { type: T['REQUEST'] };
   success: P extends { success: any }
-    ? IAction<T['success'], P['success']>
-    : { type: T['success'] };
+    ? IAction<T['SUCCESS'], P['success']>
+    : { type: T['SUCCESS'] };
   failure: P extends { failure: any }
-    ? IAction<T['failure'], P['failure']>
-    : IAction<T['failure'], string>;
+    ? IAction<T['FAILURE'], P['failure']>
+    : IAction<T['FAILURE'], string>;
 }>;

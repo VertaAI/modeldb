@@ -15,7 +15,7 @@ const dataReducer: Reducer<IExperimentRunsState['data'], FeatureAction> = (
   action
 ) => {
   switch (action.type) {
-    case loadExperimentRunsActionTypes.success: {
+    case loadExperimentRunsActionTypes.SUCCESS: {
       return { ...state, modelRecords: action.payload };
     }
     default:

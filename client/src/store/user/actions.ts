@@ -16,7 +16,7 @@ export const authenticateUser = (): ActionResult<
   void,
   IAuthenticateUserActions
 > => async dispatch => {
-  dispatch(action(authenticateUserActionTypes.request));
+  dispatch(action(authenticateUserActionTypes.REQUEST));
 
   ServiceFactory.getAuthenticationService().login();
 };
@@ -25,22 +25,22 @@ export const logoutUser = (): ActionResult<
   void,
   ILogoutActions
 > => async dispatch => {
-  dispatch(action(logoutActionTypes.request));
+  dispatch(action(logoutActionTypes.REQUEST));
 
   await ServiceFactory.getAuthenticationService().logout();
-  dispatch(action(logoutActionTypes.success));
+  dispatch(action(logoutActionTypes.SUCCESS));
 };
 
 export const checkUserAuthentication = (): ActionResult<
   void,
   ICheckUserAuthenticationActions
 > => async dispatch => {
-  dispatch(action(checkUserAuthenticationActionTypes.request));
+  dispatch(action(checkUserAuthenticationActionTypes.REQUEST));
 
   try {
     const user = await ServiceFactory.getAuthenticationService().loadUser();
-    dispatch(action(checkUserAuthenticationActionTypes.success, user));
+    dispatch(action(checkUserAuthenticationActionTypes.SUCCESS, user));
   } catch {
-    dispatch(action(checkUserAuthenticationActionTypes.failure, 'error'));
+    dispatch(action(checkUserAuthenticationActionTypes.FAILURE, 'error'));
   }
 };

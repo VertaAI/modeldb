@@ -16,9 +16,9 @@ export interface IExperimentRunsState {
 }
 
 export const loadExperimentRunsActionTypes = makeCommunicationActionTypes({
-  request: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_REQUEST',
-  success: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_SUCСESS',
-  failure: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_FAILURE',
+  REQUEST: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_REQUEST',
+  SUCCESS: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_SUCСESS',
+  FAILURE: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_FAILURE',
 });
 export type ILoadExperimentRunsActions = MakeCommunicationActions<
   typeof loadExperimentRunsActionTypes,

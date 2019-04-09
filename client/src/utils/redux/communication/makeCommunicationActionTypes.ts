@@ -5,9 +5,9 @@ export default function makeCommunicationActionTypes<
   S extends string,
   F extends string
 >({
-  request,
-  success,
-  failure,
+  REQUEST: request,
+  SUCCESS: success,
+  FAILURE: failure,
 }: ICommunicationActionTypes<R, S, F>): ICommunicationActionTypes<R, S, F> {
-  return { request, success, failure };
+  return { REQUEST: request, SUCCESS: success, FAILURE: failure };
 }
