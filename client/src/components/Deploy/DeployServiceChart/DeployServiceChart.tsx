@@ -103,7 +103,10 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
   }
 
   public fullRebuild() {
-    if (this.state.metrics.time.length === 0) {
+    if (
+      this.state.metrics.time === undefined ||
+      this.state.metrics.time.length === 0
+    ) {
       return;
     }
     const points = this.transposePoints();

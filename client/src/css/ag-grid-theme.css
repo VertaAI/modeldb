@@ -28,7 +28,7 @@
 }
 
 .grid line {
-  stroke: rgb(255, 255, 255);
+  stroke: rgb(218, 218, 218) !important;
 }
 
 .grid > .domain {

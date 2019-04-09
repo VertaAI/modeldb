@@ -25,8 +25,8 @@ class BarChart extends Component {
   };
 
   xAxis = d3.axisBottom();
-
   yAxis = d3.axisLeft();
+  yAxisGrid = d3.axisLeft();
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const { data } = nextProps;
@@ -67,6 +67,15 @@ class BarChart extends Component {
 
     d3.select('#yLabel').text(this.props.yLabel);
     d3.select('#xLabel').text(this.props.xLabel);
+    // d3.select(this.refs.yAxisGrid)
+    //   .append('g')
+    //   .attr('class', 'grid')
+    //   .call(
+    //     this.yAxis
+    //       .ticks(6)
+    //       .tickSize(-width + margin.right + margin.left)
+    //       .tickFormat('')
+    //   );
   }
 
   componentDidMount() {
@@ -96,9 +105,10 @@ class BarChart extends Component {
       .style('fill', '#444')
       .text(this.props.xLabel);
 
-    // d3.select(this.refs.yAxis)
+    // this.yAxisGrid.scale(this.state.yScale);
+    // d3.select(this.refs.yAxisGrid).call(this.yAxisGrid);
+    // d3.select(this.refs.yAxisGrid)
     //   .append('g')
-    //   .attr('class', 'grid')
     //   .call(
     //     this.yAxis
     //       .ticks(6)
@@ -110,15 +120,20 @@ class BarChart extends Component {
   render() {
     return (
       <svg width={width} height={height} className={'expChart'}>
-        <g
-          ref="xAxis"
-          className="axis"
-          transform={`translate(0, ${height - margin.bottom})`}
-        />
+        {/* <g
+          ref="yAxisGrid"
+          className="grid"
+          transform={`translate(${margin.left}, 0)`}
+        /> */}
         <g
           ref="yAxis"
           className="axis"
           transform={`translate(${margin.left}, 0)`}
+        />
+        <g
+          ref="xAxis"
+          className="axis"
+          transform={`translate(0, ${height - margin.bottom})`}
         />
         <g ref="bars">
           {this.state.bars.map(d => (

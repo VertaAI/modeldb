@@ -109,11 +109,19 @@ class ScatterChart extends Component {
   }
 
   componentDidMount() {
-    this.xAxis.scale(this.state.xScale);
-    d3.select(this.refs.xAxis).call(this.xAxis);
-
     this.yAxis.scale(this.state.yScale);
     d3.select(this.refs.yAxis).call(this.yAxis);
+
+    // d3.select(this.refs.yAxisGrid).call(this.yAxis);
+    // d3.select(this.refs.yAxisGrid)
+    //   .append('g')
+    //   .attr('class', 'grid')
+    //   .call(
+    //     this.yAxis
+    //       .ticks(6)
+    //       .tickSize(-width + margin.right + margin.left)
+    //       .tickFormat('')
+    //   );
 
     d3.select(this.refs.yAxis)
       .append('text')
@@ -126,6 +134,9 @@ class ScatterChart extends Component {
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text(this.props.selectedMetric);
+
+    this.xAxis.scale(this.state.xScale);
+    d3.select(this.refs.xAxis).call(this.xAxis);
 
     d3.select(this.refs.xAxis)
       .append('text')
@@ -150,17 +161,15 @@ class ScatterChart extends Component {
     //   .attr('y', 20)
     //   .attr('font-size', '11px')
     //   .text('Model Metadata');
+  }
+  componentDidUpdate() {
+    this.xAxis.scale(this.state.xScale);
+    d3.select(this.refs.xAxis).call(this.xAxis);
+    this.yAxis.scale(this.state.yScale);
+    d3.select(this.refs.yAxis).call(this.yAxis);
+    d3.select('#scatterYLabel').text(this.props.selectedMetric);
 
-    // d3.selectAll('circle')
-    //   .on('mouseover', d => {
-    //     d3.select(this.refs.annotation).attr('opacity', 1);
-    //     console.log(d);
-    //   })
-    //   .on('mouseout', d => {
-    //     d3.select(this.refs.annotation).attr('opacity', 0);
-    //   });
-
-    // d3.select(this.refs.yAxis)
+    // d3.select(this.refs.yAxisGrid)
     //   .append('g')
     //   .attr('class', 'grid')
     //   .call(
@@ -170,37 +179,37 @@ class ScatterChart extends Component {
     //       .tickFormat('')
     //   );
   }
-  componentDidUpdate() {
-    this.xAxis.scale(this.state.xScale);
-    d3.select(this.refs.xAxis).call(this.xAxis);
-    this.yAxis.scale(this.state.yScale);
-    d3.select(this.refs.yAxis).call(this.yAxis);
-    d3.select('#scatterYLabel').text(this.props.selectedMetric);
-  }
 
   mouseOver(d) {
     d3.select(this.refs['ref-' + d.modelRecordId])
       .transition()
-      .attr('r', 10);
+      .attr('r', 10)
+      .attr('opacity', 0.9);
   }
   mouseOut(d) {
     d3.select(this.refs['ref-' + d.modelRecordId])
       .transition()
-      .attr('r', 7);
+      .attr('r', 7)
+      .attr('opacity', 0.7);
   }
 
   render() {
     return (
       <svg width={svg_width} height={height} className={'summaryChart'}>
-        <g
-          ref="xAxis"
+        {/* <g
+          ref="yAxisGrid"
           className="axis"
-          transform={`translate(0, ${height - margin.bottom})`}
-        />
+          transform={`translate(${margin.left}, 0)`}
+        /> */}
         <g
           ref="yAxis"
           className="axis"
           transform={`translate(${margin.left}, 0)`}
+        />
+        <g
+          ref="xAxis"
+          className="axis"
+          transform={`translate(0, ${height - margin.bottom})`}
         />
         <g ref="dots" className="marks">
           {this.state.marks.map((d, i) => {
@@ -218,6 +227,7 @@ class ScatterChart extends Component {
                   cy={d.cy}
                   fill={'#6863ff'}
                   r={7}
+                  opacity={0.7}
                   ref={'ref-' + d.modelRecordId}
                   onMouseOut={this.mouseOut.bind(this, d)}
                   onMouseOver={this.mouseOver.bind(this, d)}
