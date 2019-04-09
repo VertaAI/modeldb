@@ -4,7 +4,7 @@ import { IFilterState } from './types';
 const selectState = (state: IApplicationState): IFilterState => state.filters;
 
 export const selectCurrentContextName = (state: IApplicationState) =>
-  selectState(state).context;
+  selectState(state).data.context;
 
 export const selectCurrentContextData = (state: IApplicationState) => {
   const currentContextName = selectCurrentContextName(state);
@@ -19,7 +19,7 @@ export const selectContextDataByName = (
 ) => selectContextsData(state)[name];
 
 export const selectContextsData = (state: IApplicationState) =>
-  selectState(state).contexts;
+  selectState(state).data.contexts;
 
 export const selectFoundFilters = (state: IApplicationState) =>
-  selectState(state).foundFilters;
+  selectState(state).data.foundFilters;
