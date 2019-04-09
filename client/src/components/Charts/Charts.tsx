@@ -64,7 +64,12 @@ class Charts extends React.Component<AllProps> {
         <div className={styles.summary_wrapper}>
           {this.currentProject !== undefined && this.currentProject !== null ? (
             <div>
-              <p className={styles.chartsHeading}>{this.currentProject.name}</p>
+              <div>
+                Summary Chart:{' '}
+                <span className={styles.chartsHeading}>
+                  {this.currentProject.name}
+                </span>
+              </div>
               <div className={styles.chartsBlock}>
                 <div>
                   <span>Author:</span> {this.currentProject.Author.name}
@@ -91,7 +96,7 @@ class Charts extends React.Component<AllProps> {
           ) : (
             ''
           )}
-          <p style={{ fontSize: '1.2em' }}>Summary Chart</p>
+
           <ModelSummary
             experimentRuns={experimentRuns}
             initialYSelection={this.initialSelection.initialMetric}

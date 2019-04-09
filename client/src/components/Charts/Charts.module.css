@@ -16,11 +16,11 @@
 .chartsHeading {
   font-size: '20px';
   font-weight: 500;
+  /* display: inline; */
 }
 
 .chartsBlock {
   float: right;
-  margin-top: -40px;
   margin-left: -60px;
   padding: 0 50px 0 0px;
 }
