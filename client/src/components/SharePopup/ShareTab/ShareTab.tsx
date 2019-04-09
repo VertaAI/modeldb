@@ -198,6 +198,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
     event.preventDefault();
   }
 
+  @bind
   private trySendInvitationAgain() {
     this.props.dispatch(
       sendInvitationForUser(
