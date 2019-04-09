@@ -248,9 +248,9 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
         .attr('y1', 0)
         .attr('y2', height);
 
-      tooltip
-        .style('left', d3.event.pageX + 20)
-        .style('top', d3.event.pageY - 20);
+      // tooltip
+      //   .style('left', d3.event.pageX + 20)
+      //   .style('top', d3.event.pageY - 20);
 
       const closestPoint = points
         .map(point => {
@@ -268,8 +268,8 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       tooltip
         .html('')
         .style('display', 'block')
-        .style('left', `${d3.event.pageX + 20}  px`)
-        .style('top', `${d3.event.pageY - 20} px`)
+        .style('left', d3.event.pageX + 20 + 'px')
+        .style('top', d3.event.pageY - 20 + 'px')
         .selectAll()
         .data([
           {
