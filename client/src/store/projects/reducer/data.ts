@@ -1,8 +1,8 @@
 import { Reducer } from 'redux';
 
 import {
-  IProjectsState,
   FeatureAction,
+  IProjectsState,
   loadProjectsActionTypes,
   updateProjectActionTypes,
 } from '../types';

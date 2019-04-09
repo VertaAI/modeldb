@@ -8,9 +8,9 @@ import { ActionResult } from 'store/store';
 
 import { selectProjects } from './selectors';
 import {
-  loadProjectsActionTypes,
   ILoadProjectsActions,
   IUpdateProjectAction,
+  loadProjectsActionTypes,
   updateProjectActionTypes,
 } from './types';
 

@@ -2,8 +2,8 @@ import { IFilterContext } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
 import {
   ICommunication,
-  makeCommunicationActionTypes,
   MakeCommunicationActions,
+  makeCommunicationActionTypes,
 } from 'utils/redux/communication';
 
 export interface IFilterState {

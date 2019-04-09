@@ -3,11 +3,11 @@ import { combineReducers } from 'redux';
 import { makeCommunicationReducerFromEnum } from 'utils/redux/communication';
 
 import {
-  IFilterState,
-  suggestFiltersActionTypes,
-  searchActionTypes,
   applyFiltersActionTypes,
+  IFilterState,
   registerContextActionTypes,
+  searchActionTypes,
+  suggestFiltersActionTypes,
 } from '../types';
 
 export default combineReducers<IFilterState['communications']>({

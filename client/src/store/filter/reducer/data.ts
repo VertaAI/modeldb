@@ -1,17 +1,17 @@
-import { Reducer, AnyAction } from 'redux';
+import { AnyAction, Reducer } from 'redux';
 
-import {
-  IFilterState,
-  manageFiltersTypes,
-  FeatureAction,
-  IManageFiltersAction,
-  IFilterContextData,
-  registerContextActionTypes,
-  changeContextActionTypes,
-  suggestFiltersActionTypes,
-} from '../types';
 import { IFilterData } from 'models/Filters';
 import composeReducers from 'utils/redux/composeReducers';
+import {
+  changeContextActionTypes,
+  FeatureAction,
+  IFilterContextData,
+  IFilterState,
+  IManageFiltersAction,
+  manageFiltersTypes,
+  registerContextActionTypes,
+  suggestFiltersActionTypes,
+} from '../types';
 
 const initial: IFilterState['data'] = {
   contexts: {},

@@ -1,8 +1,8 @@
 import { Project } from 'models/Project';
 import {
   ICommunication,
-  makeCommunicationActionTypes,
   MakeCommunicationActions,
+  makeCommunicationActionTypes,
 } from 'utils/redux/communication';
 
 export interface IProjectsState {

@@ -7,14 +7,14 @@ import { ActionResult, IApplicationState } from 'store/store';
 import { selectContextDataByName, selectCurrentContextData } from './selectors';
 
 import {
-  IManageFiltersAction,
-  manageFiltersTypes,
-  suggestFiltersActionTypes,
-  ISuggestFiltersActions,
-  IRegisterContextActions,
-  registerContextActionTypes,
-  IChangeContextAction,
   changeContextActionTypes,
+  IChangeContextAction,
+  IManageFiltersAction,
+  IRegisterContextActions,
+  ISuggestFiltersActions,
+  manageFiltersTypes,
+  registerContextActionTypes,
+  suggestFiltersActionTypes,
 } from './types';
 
 export function suggestFilters(
