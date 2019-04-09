@@ -1,15 +1,16 @@
 import { IFilterContext } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
 
-export interface IFilterContextData {
-  appliedFilters: IFilterData[];
-  ctx: IFilterContext;
-  name: string;
-}
 export interface IFilterState {
   contexts: { [index: string]: IFilterContextData };
   foundFilters?: IFilterData[];
   context?: string;
+}
+
+export interface IFilterContextData {
+  appliedFilters: IFilterData[];
+  ctx: IFilterContext;
+  name: string;
 }
 
 export enum initActionTypes {

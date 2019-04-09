@@ -8,26 +8,24 @@ import { ActionResult } from 'store/store';
 
 import { selectProjects } from './selectors';
 import {
-  fetchProjectsAction,
-  fetchProjectsActionTypes,
+  loadProjectsActionTypes,
+  ILoadProjectsActions,
   IUpdateProjectAction,
   updateProjectActionTypes,
 } from './types';
 
 export const fetchProjects = (
   filters?: IFilterData[]
-): ActionResult<void, fetchProjectsAction> => async dispatch => {
-  dispatch(action(fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST));
+): ActionResult<void, ILoadProjectsActions> => async dispatch => {
+  dispatch(action(loadProjectsActionTypes.request));
 
   await ServiceFactory.getProjectsService()
     .getProjects(filters)
     .then(res => {
-      dispatch(
-        action(fetchProjectsActionTypes.FETCH_PROJECTS_SUCCESS, res.data)
-      );
+      dispatch(action(loadProjectsActionTypes.success, res.data));
     })
     .catch(err => {
-      dispatch(action(fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST));
+      dispatch(action(loadProjectsActionTypes.failure, err as string));
     });
 };
 

@@ -5,10 +5,13 @@ const selectState = (state: IApplicationState): IProjectsState =>
   state.projects;
 
 export const selectProjects = (state: IApplicationState) =>
-  selectState(state).data;
+  selectState(state).data.projects;
 
 export const selectIsLoadingProjects = (state: IApplicationState) =>
-  selectState(state).loading;
+  selectCommunications(state).loadingProjects.isRequesting;
+
+export const selectCommunications = (state: IApplicationState) =>
+  selectState(state).communications;
 
 export const selectProject = (state: IApplicationState, id: string) =>
   (selectProjects(state) || []).find(project => project.id === id);

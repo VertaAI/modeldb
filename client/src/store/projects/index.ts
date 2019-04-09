@@ -1,4 +1,4 @@
 export * from './actions';
-export * from './reducer';
+export { default as projectsReducer } from './reducer';
 export * from './types';
 export * from './selectors';
