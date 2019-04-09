@@ -1,9 +1,8 @@
 import { action } from 'typesafe-actions';
 
 import { IFilterData } from 'models/Filters';
-import { Project, UserAccess } from 'models/Project';
+import { UserAccess } from 'models/Project';
 import User from 'models/User';
-import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 
 import { selectProjects } from './selectors';
@@ -16,7 +15,11 @@ import {
 
 export const fetchProjects = (
   filters?: IFilterData[]
-): ActionResult<void, ILoadProjectsActions> => async dispatch => {
+): ActionResult<void, ILoadProjectsActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(action(loadProjectsActionTypes.REQUEST));
 
   await ServiceFactory.getProjectsService()

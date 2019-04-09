@@ -1,6 +1,5 @@
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
-import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
 import {
@@ -30,7 +29,11 @@ export const sendInvitationForUser = (
   projectId: string,
   email: string,
   userAccess: UserAccess
-): ActionResult<void, ISendInvitationActions> => async dispatch => {
+): ActionResult<void, ISendInvitationActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(action(sendInvitationActionTypes.REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
@@ -60,7 +63,11 @@ export const resetInvitationState = (): ActionResult<
 export const changeProjectOwner = (
   projectId: string,
   email: string
-): ActionResult<void, IChangeOwnerActions> => async dispatch => {
+): ActionResult<void, IChangeOwnerActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(action(changeOwnerActionTypes.REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
@@ -91,7 +98,11 @@ export const changeAccessToProject = (
   projectId: string,
   user: User,
   userAccess: UserAccess
-): ActionResult<void, IChangeAccessActions> => async dispatch => {
+): ActionResult<void, IChangeAccessActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(action(changeAccessActionTypes.REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
@@ -115,7 +126,11 @@ export const resetChangeAccessState = (): ActionResult<
 export const removeAccessFromProject = (
   projectId: string,
   user: User
-): ActionResult<void, IRemoveAccessActions> => async dispatch => {
+): ActionResult<void, IRemoveAccessActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(action(removeAccessActionTypes.REQUEST));
 
   await ServiceFactory.getCollaboratorsService()

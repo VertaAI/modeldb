@@ -1,7 +1,6 @@
 import { action } from 'typesafe-actions';
 
 import ModelRecord from 'models/ModelRecord';
-import ServiceFactory from 'services/ServiceFactory';
 import { selectExperimentRuns } from 'store/experiment-runs';
 import { ActionResult } from 'store/store';
 
@@ -11,7 +10,8 @@ export const fetchModelRecord = (
   modelId: string
 ): ActionResult<void, ILoadModelRecordActions> => async (
   dispatch,
-  getState
+  getState,
+  { ServiceFactory }
 ) => {
   dispatch(action(loadModelRecordActionTypes.REQUEST));
 

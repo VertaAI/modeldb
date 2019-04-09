@@ -1,6 +1,5 @@
 import { action } from 'typesafe-actions';
 
-import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 
 import {
@@ -15,16 +14,17 @@ import {
 export const authenticateUser = (): ActionResult<
   void,
   IAuthenticateUserActions
-> => async dispatch => {
+> => async (dispatch, _, { ServiceFactory }) => {
   dispatch(action(authenticateUserActionTypes.REQUEST));
 
   ServiceFactory.getAuthenticationService().login();
 };
 
-export const logoutUser = (): ActionResult<
-  void,
-  ILogoutActions
-> => async dispatch => {
+export const logoutUser = (): ActionResult<void, ILogoutActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(action(logoutActionTypes.REQUEST));
 
   await ServiceFactory.getAuthenticationService().logout();
@@ -34,7 +34,7 @@ export const logoutUser = (): ActionResult<
 export const checkUserAuthentication = (): ActionResult<
   void,
   ICheckUserAuthenticationActions
-> => async dispatch => {
+> => async (dispatch, _, { ServiceFactory }) => {
   dispatch(action(checkUserAuthenticationActionTypes.REQUEST));
 
   try {

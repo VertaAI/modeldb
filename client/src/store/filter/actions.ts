@@ -1,8 +1,6 @@
 import { action } from 'typesafe-actions';
 
-import { FilterContextPool } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
-import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult, IApplicationState } from 'store/store';
 import { selectContextDataByName, selectCurrentContextData } from './selectors';
 
@@ -20,7 +18,7 @@ import {
 export function suggestFilters(
   searchString: string
 ): ActionResult<void, ISuggestFiltersActions> {
-  return async (dispatch, getState) => {
+  return async (dispatch, getState, { ServiceFactory }) => {
     dispatch(action(suggestFiltersActionTypes.REQUEST));
     const svc = ServiceFactory.getSearchAndFiltersService();
     const currentCtx = selectCurrentContextData(getState());
@@ -36,21 +34,21 @@ export function applyFilters(
   ctxName: string,
   filters: IFilterData[]
 ): ActionResult<void> {
-  return async dispatch => {
+  return async (dispatch, _, { FilterContextPool }) => {
     const ctx = FilterContextPool.getContextByName(ctxName);
     ctx.onApplyFilters(filters, dispatch);
   };
 }
 
 export function search(ctxName: string, searchStr: string): ActionResult<void> {
-  return async dispatch => {
+  return async (dispatch, _, { FilterContextPool }) => {
     const ctx = FilterContextPool.getContextByName(ctxName);
     ctx.onSearch(searchStr, dispatch);
   };
 }
 
 export function initContexts(): ActionResult<void, IRegisterContextActions> {
-  return async dispatch => {
+  return async (dispatch, _, { FilterContextPool }) => {
     dispatch(
       action(
         registerContextActionTypes.SUCCESS,
@@ -63,7 +61,7 @@ export function initContexts(): ActionResult<void, IRegisterContextActions> {
 export function changeContext(
   ctxName?: string
 ): ActionResult<void, IChangeContextAction | ISuggestFiltersActions> {
-  return async (dispatch, getState) => {
+  return async (dispatch, getState, { FilterContextPool }) => {
     dispatch(action(changeContextActionTypes.CHANGE_CONTEXT, ctxName));
     dispatch(action(suggestFiltersActionTypes.SUCCESS, []));
     if (ctxName !== undefined && FilterContextPool.hasContext(ctxName)) {
