@@ -9,9 +9,13 @@ interface ILocalProps {
   initialYSelection: string;
 }
 
+interface IChartData {
+  [key: string]: any;
+}
+
 interface ILocalState {
   selectedMetric: string;
-  chartData: any;
+  chartData: IChartData;
 }
 export default class ModelExploration extends React.Component<
   ILocalProps,

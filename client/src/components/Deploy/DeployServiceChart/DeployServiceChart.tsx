@@ -23,27 +23,25 @@ interface ILocalProps {
   modelId: string;
 }
 
-class Point {
-  time!: Date;
-  throughput!: number;
-  averageLatency!: number;
-  p50Latency!: number;
-  p90Latency!: number;
-  p99Latency!: number;
+interface IPoint {
+  time: Date;
+  throughput: number;
+  averageLatency: number;
+  p50Latency: number;
+  p90Latency: number;
+  p99Latency: number;
 }
-
-interface IPropsFromState {}
 
 interface ILocalState {
   metrics: IServiceStatistics;
 }
 
-type AllProps = ILocalProps & IPropsFromState;
-
-var tipbox_node: any = undefined;
+type AllProps = ILocalProps;
+let tipboxNode: any;
 
 class DeployServiceChart extends React.Component<AllProps, ILocalState> {
-  ref!: SVGSVGElement;
+  public ref!: SVGSVGElement;
+  public timeout: any;
 
   public constructor(props: AllProps) {
     super(props);
@@ -51,41 +49,39 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
     this.state = {
       metrics: {
         averageLatency: [],
-        p99Latency: [],
-        p90Latency: [],
         p50Latency: [],
+        p90Latency: [],
+        p99Latency: [],
         throughput: [],
         time: [],
       } as IServiceStatistics,
     };
   }
 
-  convertTime(v: number) {
-    var t = new Date(0);
-    t.setUTCSeconds(v);
-    return t;
+  public convertTime(v: number) {
+    const date = new Date(0);
+    date.setUTCSeconds(v);
+    return date;
   }
 
-  transposePoints() {
+  public transposePoints() {
     const metrics = this.state.metrics;
-    var points: Point[] = [];
-    for (var i = 0; i < metrics.time.length; i++) {
+    const points: IPoint[] = [];
+    for (let i = 0; i < metrics.time.length; i++) {
       points.push({
-        time: this.convertTime(metrics.time[i]),
-        throughput: metrics.throughput[i * 2], // TODO: figure out why
         averageLatency: metrics.averageLatency[i],
         p50Latency: metrics.p50Latency[i],
         p90Latency: metrics.p90Latency[i],
         p99Latency: metrics.p99Latency[i],
+        throughput: metrics.throughput[i * 2], // TODO: figure out why
+        time: this.convertTime(metrics.time[i]),
       });
     }
     return points;
   }
 
-  timeout: any = undefined;
-
   @bind
-  dataRefresh() {
+  public dataRefresh() {
     ServiceFactory.getDeployService()
       .getServiceStatistics(this.props.modelId)
       .then(stat => {
@@ -95,18 +91,19 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       });
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     this.timeout = setInterval(this.dataRefresh, 5 * 1000);
     this.dataRefresh();
   }
 
-  componentWillUnmount() {
+  public componentWillUnmount() {
     clearInterval(this.timeout);
   }
 
-  fullRebuild() {
-    if (this.state.metrics.time.length == 0) return;
-    //console.log(this.state.metrics);
+  public fullRebuild() {
+    if (this.state.metrics.time.length === 0) {
+      return;
+    }
     const points = this.transposePoints();
     const width =
       this.props.width - this.props.marginLeft - this.props.marginRight;
@@ -122,13 +119,13 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       .append('g')
       .attr(
         'transform',
-        'translate(' + this.props.marginLeft + ',' + this.props.marginTop + ')'
+        `translate(${this.props.marginLeft}, ${this.props.marginTop})`
       );
 
     // X axis
     const x = d3
       .scaleTime()
-      //.domain([1910, 2010])
+      // .domain([1910, 2010])
       .range([0, width]);
 
     x.domain([points[0].time, points[points.length - 1].time]);
@@ -139,7 +136,7 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
 
     chart
       .append('g')
-      .attr('transform', 'translate(0,' + height + ')')
+      .attr('transform', `translate(0, ${height})`)
       .call(xAxis)
       .selectAll('text')
       .style('text-anchor', 'end')
@@ -171,7 +168,7 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       .tickFormat(d3.format('.2s'));
     chart
       .append('g')
-      .attr('transform', 'translate(' + width + ' ,0)')
+      .attr('transform', `translate(${width}, 0)`)
       .call(yThroughputAxis);
 
     // text label for the y axis
@@ -186,12 +183,12 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       .text('Throughput');
 
     const drawLine = (
-      extractor: (p: Point) => number,
+      extractor: (p: IPoint) => number,
       color: Color,
       yScale: (value: number) => number
     ) => {
       const line = d3
-        .line<Point>()
+        .line<IPoint>()
         .x(p => x(p.time))
         .y(p => yScale(extractor(p)));
 
@@ -222,8 +219,6 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       .on('mousemove', drawTooltip)
       .on('mouseout', removeTooltip);
 
-    //if (tooltip) drawTooltip()
-
     function removeTooltip() {
       if (tooltip) tooltip.style('display', 'none');
       if (tooltipLine) tooltipLine.attr('stroke', 'none');
@@ -233,10 +228,10 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
 
     function drawTooltip() {
       try {
-        tipbox_node = tipBox.node();
+        tipboxNode = tipBox.node();
       } catch {}
-      //console.log(tipbox_node);
-      const closestTime = x.invert(d3.mouse(tipbox_node as SVGRectElement)[0]);
+
+      const closestTime = x.invert(d3.mouse(tipboxNode as SVGRectElement)[0]);
       const closestSecond =
         Math.floor((closestTime.getTime() + 2500) / 5000) * 5;
       const closestRoundedDate = convertTime(closestSecond);
@@ -253,21 +248,23 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
         .style('top', d3.event.pageY - 20);
 
       const closestPoint = points
-        .map(p => {
+        .map(point => {
           return {
-            timeDiff: Math.abs(p.time.getTime() - closestRoundedDate.getTime()),
-            p: p,
+            point,
+            timeDiff: Math.abs(
+              point.time.getTime() - closestRoundedDate.getTime()
+            ),
           };
         })
         .sort((a, b) => {
           return a.timeDiff - b.timeDiff;
-        })[0].p;
+        })[0].point;
 
       tooltip
         .html('')
         .style('display', 'block')
-        .style('left', d3.event.pageX + 20 + 'px')
-        .style('top', d3.event.pageY - 20 + 'px')
+        .style('left', `${d3.event.pageX + 20}  px`)
+        .style('top', `${d3.event.pageY - 20} px`)
         .selectAll()
         .data([
           {
@@ -307,7 +304,7 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
     }
   }
 
-  render() {
+  public render() {
     this.fullRebuild();
     return (
       <React.Fragment>

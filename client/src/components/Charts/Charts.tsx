@@ -23,16 +23,23 @@ interface IPropsFromState {
   loading: boolean;
 }
 
+interface IInitialSelection {
+  initialHyperparam: string;
+  initialMetric: string;
+}
+
 type AllProps = RouteComponentProps<IUrlProps> &
   IPropsFromState &
   IConnectedReduxProps;
 class Charts extends React.Component<AllProps> {
-  public initialBarSelection: any;
-  public timeProj: any;
+  public initialBarSelection: IInitialSelection = {
+    initialHyperparam: '',
+    initialMetric: '',
+  };
+  public currentProject: Project = new Project();
 
   public render() {
     const { experimentRuns, loading, projects } = this.props;
-    const projectId = this.props.match.params.projectId;
 
     if (experimentRuns !== undefined) {
       this.initialBarSelection = {
@@ -40,8 +47,14 @@ class Charts extends React.Component<AllProps> {
         initialMetric: experimentRuns[0].metrics[0].key,
       };
     }
-    if (projects !== undefined && projects !== null) {
-      this.timeProj = projects.filter(d => d.name === 'Timeseries')[0];
+    if (
+      projects !== undefined &&
+      projects !== null &&
+      experimentRuns !== undefined
+    ) {
+      this.currentProject = projects.filter(
+        d => d.id === experimentRuns[0].projectId
+      )[0];
     }
 
     return loading ? (
@@ -49,25 +62,27 @@ class Charts extends React.Component<AllProps> {
     ) : experimentRuns ? (
       <div>
         <div className={styles.summary_wrapper}>
-          {this.timeProj !== undefined && this.timeProj !== null ? (
+          {this.currentProject !== undefined && this.currentProject !== null ? (
             <div>
-              <p className={styles.chartsHeading}>{this.timeProj.name}</p>
+              <p className={styles.chartsHeading}>{this.currentProject.name}</p>
               <div className={styles.chartsBlock}>
                 <div>
-                  <span>Author:</span> {this.timeProj.Author.name}
+                  <span>Author:</span> {this.currentProject.Author.name}
                 </div>
                 <br />
                 <div>
                   <span>Tags:</span>
                   <div className={tagStyles.tag_block}>
                     <ul className={tagStyles.tags}>
-                      {this.timeProj.tags.map((tag: string, i: number) => {
-                        return (
-                          <li key={i}>
-                            <Tag tag={tag} />
-                          </li>
-                        );
-                      })}
+                      {this.currentProject.tags.map(
+                        (tag: string, i: number) => {
+                          return (
+                            <li key={i}>
+                              <Tag tag={tag} />
+                            </li>
+                          );
+                        }
+                      )}
                     </ul>
                   </div>
                 </div>

@@ -15,9 +15,18 @@ import ParallelCoordinates from './ParamParallelCoordinates';
 
 import styles from './ModelExploration.module.css';
 
+interface IParallelData {
+  [key: string]: any;
+}
+
+interface IInitialSelection {
+  initialHyperparam: string;
+  initialMetric: string;
+}
+
 interface ILocalProps {
   expRuns: ModelRecord[];
-  initialSelection: any;
+  initialSelection: IInitialSelection;
 }
 
 interface ILocalState {
@@ -27,7 +36,7 @@ interface ILocalState {
   selectedXAxis: string;
   selectedYAxis: string;
   selectedAggregate: string;
-  parallelData: any;
+  parallelData: IParallelData;
 }
 
 export default class ModelExploration extends React.Component<
