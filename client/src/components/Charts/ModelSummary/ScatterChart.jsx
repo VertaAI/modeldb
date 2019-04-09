@@ -28,7 +28,6 @@ function extend(base, difference, p_id) {
 class ScatterChart extends Component {
   state = {
     marks: [],
-    // hover: false,
     xScale: undefined,
     yScale: undefined,
   };
@@ -137,14 +136,6 @@ class ScatterChart extends Component {
       .style('fill', '#444')
       .text('Time Range');
 
-    // d3.select(this.refs.dots)
-    //   .selectAll('circle')
-    //   .on('mouseover', () => {
-    //     console.log(d3.select(this));
-    //     // d3.select(this).style('r', 9);
-    //   })
-    //   .on('mouseout', () => {});
-
     // d3.select(this.refs.annotation)
     //   .append('rect')
     //   .attr('width', '160px')
@@ -187,21 +178,16 @@ class ScatterChart extends Component {
     d3.select('#scatterYLabel').text(this.props.selectedMetric);
   }
 
-  mouseOver() {
-    console.log(this);
-    // console.log(d3.select(this.refs[ref]));
-    // console.log(document.getElementById('id-' + id));
+  mouseOver(d) {
+    d3.select(this.refs['ref-' + d.modelRecordId])
+      .transition()
+      .attr('r', 10);
   }
-  mouseOut() {
-    // console.log(d3.select(this.refs[ref]));
+  mouseOut(d) {
+    d3.select(this.refs['ref-' + d.modelRecordId])
+      .transition()
+      .attr('r', 7);
   }
-
-  // hoverOn() {
-  //   this.setState({ hover: true });
-  // }
-  // hoverOff() {
-  //   this.setState({ hover: false });
-  // }
 
   render() {
     return (
@@ -231,13 +217,10 @@ class ScatterChart extends Component {
                   cx={d.cx}
                   cy={d.cy}
                   fill={'#6863ff'}
-                  // r={this.state.hover ? 9 : 17}
                   r={7}
-                  // ref={'ref-' + key}
-                  // onMouseEnter={this.hoverOn.bind(this, d)}
-                  // onMouseLeave={this.hoverOff.bind(this, d)}
-                  // onMouseOut={this.mouseOut.bind(this, d)}
-                  // onMouseOver={this.mouseOver.bind(this, d)}
+                  ref={'ref-' + d.modelRecordId}
+                  onMouseOut={this.mouseOut.bind(this, d)}
+                  onMouseOver={this.mouseOver.bind(this, d)}
                 />
               </Link>
             );

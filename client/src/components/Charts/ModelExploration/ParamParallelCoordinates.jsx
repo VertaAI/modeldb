@@ -60,9 +60,9 @@ class ParallelCoordinates extends Component {
       }))
     );
 
-    console.log(this.props.data);
-    console.log(dimensions);
-    console.log(x.domain);
+    // console.log(this.props.data);
+    // console.log(dimensions);
+    // console.log(x.domain);
 
     // Add grey background lines for context.
     background = svg

@@ -32,7 +32,7 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IPropsFromState &
   IConnectedReduxProps;
 class Charts extends React.Component<AllProps> {
-  public initialBarSelection: IInitialSelection = {
+  public initialSelection: IInitialSelection = {
     initialHyperparam: '',
     initialMetric: '',
   };
@@ -42,7 +42,7 @@ class Charts extends React.Component<AllProps> {
     const { experimentRuns, loading, projects } = this.props;
 
     if (experimentRuns !== undefined) {
-      this.initialBarSelection = {
+      this.initialSelection = {
         initialHyperparam: experimentRuns[0].hyperparameters[0].key,
         initialMetric: experimentRuns[0].metrics[0].key,
       };
@@ -94,13 +94,13 @@ class Charts extends React.Component<AllProps> {
           <p style={{ fontSize: '1.2em' }}>Summary Chart</p>
           <ModelSummary
             experimentRuns={experimentRuns}
-            initialYSelection={this.initialBarSelection.initialMetric}
+            initialYSelection={this.initialSelection.initialMetric}
           />
         </div>
         <br />
         <ModelExploration
           expRuns={experimentRuns}
-          initialSelection={this.initialBarSelection}
+          initialSelection={this.initialSelection}
         />
       </div>
     ) : (

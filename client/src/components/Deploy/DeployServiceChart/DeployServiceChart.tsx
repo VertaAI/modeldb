@@ -36,7 +36,9 @@ interface ILocalState {
   metrics: IServiceStatistics;
 }
 
-type AllProps = ILocalProps;
+interface IPropsFromState {}
+
+type AllProps = ILocalProps & IPropsFromState;
 let tipboxNode: any;
 
 class DeployServiceChart extends React.Component<AllProps, ILocalState> {
