@@ -11,7 +11,10 @@ export const selectCurrentUser = (state: IApplicationState): User | null =>
 export const selectIsCheckingUserAuthentication = (
   state: IApplicationState
 ): boolean =>
-  selectState(state).communications.checkingUserAuthentication.isRequesting;
+  selectCommunications(state).checkingUserAuthentication.isRequesting;
 
 export const selectIsUserAuthenticated = (state: IApplicationState): boolean =>
   selectState(state).data.authenticated;
+
+export const selectCommunications = (state: IApplicationState) =>
+  selectState(state).communications;

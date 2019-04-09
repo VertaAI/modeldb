@@ -9,3 +9,6 @@ export {
 } from './makeCommunicationReducerFromEnum';
 export * from './types';
 export { default as initialCommunication } from './initial';
+export {
+  default as makeResetCommunicationReducer,
+} from './makeResetCommunicationReducer';

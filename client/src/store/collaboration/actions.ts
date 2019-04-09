@@ -8,21 +8,21 @@ import {
   updateProjectCollaboratorAccess,
 } from '../projects';
 import {
-  changeAccessAction,
   changeAccessActionTypes,
-  changeOwnerAction,
   changeOwnerActionTypes,
+  IChangeAccessActions,
+  IChangeOwnerActions,
+  IRemoveAccessActions,
   IResetChangeAccessAction,
   IResetChangeOwnerAction,
   IResetInvitationAction,
   IResetRemoveAccessAction,
-  removeAccessAction,
+  ISendInvitationActions,
   removeAccessActionTypes,
   resetChangeAccessActionTypes,
   resetChangeOwnerActionTypes,
   resetInvitationActionTypes,
   resetRemoveAccessActionTypes,
-  sendInvitationAction,
   sendInvitationActionTypes,
 } from './types';
 
@@ -30,13 +30,13 @@ export const sendInvitationForUser = (
   projectId: string,
   email: string,
   userAccess: UserAccess
-): ActionResult<void, sendInvitationAction> => async dispatch => {
-  dispatch(action(sendInvitationActionTypes.SEND_INVITATION_REQUEST));
+): ActionResult<void, ISendInvitationActions> => async dispatch => {
+  dispatch(action(sendInvitationActionTypes.request));
 
   await ServiceFactory.getCollaboratorsService()
     .sendInvitation(projectId, email, userAccess)
     .then(res => {
-      dispatch(action(sendInvitationActionTypes.SEND_INVITATION_SUCCESS));
+      dispatch(action(sendInvitationActionTypes.success));
       dispatch(
         updateProjectCollaboratorAccess(
           projectId,
@@ -46,7 +46,7 @@ export const sendInvitationForUser = (
       );
     })
     .catch(err => {
-      dispatch(action(sendInvitationActionTypes.SEND_INVITATION_FAILURE, err));
+      dispatch(action(sendInvitationActionTypes.failure, err as string));
     });
 };
 
@@ -60,13 +60,13 @@ export const resetInvitationState = (): ActionResult<
 export const changeProjectOwner = (
   projectId: string,
   email: string
-): ActionResult<void, changeOwnerAction> => async dispatch => {
-  dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_REQUEST));
+): ActionResult<void, IChangeOwnerActions> => async dispatch => {
+  dispatch(action(changeOwnerActionTypes.request));
 
   await ServiceFactory.getCollaboratorsService()
     .changeOwner(projectId, email)
     .then(res => {
-      dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_SUCCESS));
+      dispatch(action(changeOwnerActionTypes.success));
       dispatch(
         updateProjectCollaboratorAccess(
           projectId,
@@ -76,7 +76,7 @@ export const changeProjectOwner = (
       );
     })
     .catch(err => {
-      dispatch(action(changeOwnerActionTypes.CHANGE_OWNER_FAILURE, err));
+      dispatch(action(changeOwnerActionTypes.failure, err as string));
     });
 };
 
@@ -91,17 +91,17 @@ export const changeAccessToProject = (
   projectId: string,
   user: User,
   userAccess: UserAccess
-): ActionResult<void, changeAccessAction> => async dispatch => {
-  dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_REQUEST));
+): ActionResult<void, IChangeAccessActions> => async dispatch => {
+  dispatch(action(changeAccessActionTypes.request));
 
   await ServiceFactory.getCollaboratorsService()
     .changeAccessToProject(projectId, user.email, userAccess)
     .then(res => {
-      dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_SUCCESS));
+      dispatch(action(changeAccessActionTypes.success));
       dispatch(updateProjectCollaboratorAccess(projectId, user, userAccess));
     })
     .catch(err => {
-      dispatch(action(changeAccessActionTypes.CHANGE_ACCESS_FAILURE, err));
+      dispatch(action(changeAccessActionTypes.failure, err as string));
     });
 };
 
@@ -115,17 +115,17 @@ export const resetChangeAccessState = (): ActionResult<
 export const removeAccessFromProject = (
   projectId: string,
   user: User
-): ActionResult<void, removeAccessAction> => async dispatch => {
-  dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_REQUEST));
+): ActionResult<void, IRemoveAccessActions> => async dispatch => {
+  dispatch(action(removeAccessActionTypes.request));
 
   await ServiceFactory.getCollaboratorsService()
     .removeAccessFromProject(projectId, user.email)
     .then(res => {
-      dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_SUCCESS));
+      dispatch(action(removeAccessActionTypes.success));
       dispatch(removeCollaboratorFromProject(projectId, user));
     })
     .catch(err => {
-      dispatch(action(removeAccessActionTypes.REMOVE_ACCESS_FAILURE, err));
+      dispatch(action(removeAccessActionTypes.failure, err as string));
     });
 };
 

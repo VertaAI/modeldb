@@ -3,6 +3,7 @@ import { RecordValues } from 'utils/types';
 
 export interface ICommunication<E = string> {
   isRequesting: boolean;
+  isSuccess: boolean;
   error: E;
 }
 

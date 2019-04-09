@@ -10,7 +10,7 @@ import {
 } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import { selectInviteNewCollaborator } from 'store/collaboration/selectors';
+import { selectInviteNewCollaboratorInfo } from 'store/collaboration/selectors';
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
 import error_icon from '../images/error-icon.svg';
 import icon_check from '../images/icon-check.svg';
@@ -210,7 +210,7 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
 }
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => {
-  const { error, status } = selectInviteNewCollaborator(state);
+  const { error, status } = selectInviteNewCollaboratorInfo(state);
   return { error, status };
 };
 
