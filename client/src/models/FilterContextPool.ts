@@ -2,7 +2,7 @@ import { AnyAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 
 import { IFilterContextData } from 'store/filter';
-import { IApplicationState } from 'store/store';
+import { IApplicationState, IThunkActionDependencies } from 'store/store';
 
 import { IFilterData } from './Filters';
 import { IMetaData } from './IMetaData';
@@ -13,11 +13,19 @@ export interface IFilterContext {
   getMetadata(): IMetaData[];
   onSearch(
     text: string,
-    dispatch: ThunkDispatch<IApplicationState, undefined, AnyAction>
+    dispatch: ThunkDispatch<
+      IApplicationState,
+      IThunkActionDependencies,
+      AnyAction
+    >
   ): void;
   onApplyFilters(
     filters: IFilterData[],
-    dispatch: ThunkDispatch<IApplicationState, undefined, AnyAction>
+    dispatch: ThunkDispatch<
+      IApplicationState,
+      IThunkActionDependencies,
+      AnyAction
+    >
   ): void;
   isValidLocation(location: string): boolean;
 }

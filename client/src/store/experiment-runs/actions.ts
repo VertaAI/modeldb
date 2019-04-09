@@ -1,7 +1,6 @@
 import { action } from 'typesafe-actions';
 
 import { IFilterData } from 'models/Filters';
-import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 
 import {
@@ -12,7 +11,11 @@ import {
 export const fetchExperimentRuns = (
   id: string,
   filters?: IFilterData[]
-): ActionResult<void, ILoadExperimentRunsActions> => async dispatch => {
+): ActionResult<void, ILoadExperimentRunsActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(action(loadExperimentRunsActionTypes.REQUEST));
 
   await ServiceFactory.getExperimentRunsService()
