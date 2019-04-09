@@ -64,12 +64,10 @@ class Charts extends React.Component<AllProps> {
         <div className={styles.summary_wrapper}>
           {this.currentProject !== undefined && this.currentProject !== null ? (
             <div>
-              <div>
-                Summary Chart:{' '}
-                <span className={styles.chartsHeading}>
-                  {this.currentProject.name}
-                </span>
+              <div className={styles.chartHeader}>
+                Summary Chart: <span>{this.currentProject.name}</span>
               </div>
+
               <div className={styles.chartsBlock}>
                 <div>
                   <span>Author:</span> {this.currentProject.Author.name}

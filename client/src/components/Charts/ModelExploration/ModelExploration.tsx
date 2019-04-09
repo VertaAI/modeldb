@@ -65,12 +65,12 @@ export default class ModelExploration extends React.Component<
     const { expRuns } = this.props;
     return expRuns ? (
       <div className={styles.summary_wrapper}>
-        <h3>Explore Visualizations</h3>
-        <p>
+        <div className={styles.chartHeader}>Explore Visualizations</div>
+        <div className={styles.chartDescription}>
           Generate charts to visualize trends in data by selecting fields to
           plot as x and y values. Optionally pick fields to group by and specify
           what type of aggregation to use.
-        </p>
+        </div>
 
         <div style={{ display: 'flex' }}>
           <div className={styles.chart_selector}>
@@ -166,7 +166,7 @@ export default class ModelExploration extends React.Component<
         </div>
         <div>
           {' '}
-          <div className={styles.parallelHeading}>
+          <div className={styles.chartHeader}>
             {' '}
             Parallel Coordinates of Hyperparameters and Metrics{' '}
           </div>

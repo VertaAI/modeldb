@@ -13,14 +13,19 @@
   font-size: 9px;
 }
 
-.chartsHeading {
-  font-size: '20px';
-  font-weight: 500;
-  /* display: inline; */
-}
-
 .chartsBlock {
   float: right;
   margin-left: -60px;
   padding: 0 50px 0 0px;
+}
+
+.chartHeader {
+  font-size: 1.25em;
+  font-weight: 500;
+  color: var(--text-color3);
+  padding: 0.5em;
+}
+
+.chartDescription {
+  padding: 0 0.5em;
 }

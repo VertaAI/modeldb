@@ -65,7 +65,13 @@ select {
   stroke: #ddd;
 }
 
-.parallelHeading {
-  padding: 1em;
+.chartHeader {
+  font-size: 1.25em;
   font-weight: 500;
+  color: var(--text-color3);
+  padding: 0.5em;
+}
+
+.chartDescription {
+  padding: 0 0.5em;
 }
