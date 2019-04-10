@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
 const width = 800;
-const height = 480;
+const height = 420;
 const margin = { top: 45, right: 35, bottom: 25, left: 45 };
 
 class ParallelCoordinates extends Component {

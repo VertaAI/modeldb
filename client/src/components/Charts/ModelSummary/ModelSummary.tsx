@@ -35,7 +35,7 @@ export default class ModelExploration extends React.Component<
     return (
       <div>
         <div className={styles.chart_selector}>
-          Metric :{' '}
+          <span className={styles.chart_selector_label}>Metric :</span>
           <select
             name="selected-metric"
             onChange={this.handleMetricChange}

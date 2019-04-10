@@ -194,6 +194,7 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
     ) => {
       const line = d3
         .line<IPoint>()
+        .curve(d3.curveMonotoneX)
         .x(p => x(p.time))
         .y(p => yScale(extractor(p)));
 
@@ -204,7 +205,8 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
         .append('path')
         .attr('fill', 'none')
         .attr('stroke', color)
-        .attr('stroke-width', 1)
+        .attr('stroke-width', 2)
+        .attr('opacity', 0.6)
         .attr('d', line);
     };
 
@@ -221,6 +223,7 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       .attr('width', width)
       .attr('height', height)
       .attr('opacity', 0)
+      .style('cursor', 'crosshair')
       .on('mousemove', drawTooltip)
       .on('mouseout', removeTooltip);
 
@@ -234,7 +237,9 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
     function drawTooltip() {
       try {
         tipboxNode = tipBox.node();
-      } catch {}
+      } catch {
+        console.log('tooltip node not found');
+      }
 
       const closestTime = x.invert(d3.mouse(tipboxNode as SVGRectElement)[0]);
       const closestSecond =
@@ -242,15 +247,12 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
       const closestRoundedDate = convertTime(closestSecond);
 
       tooltipLine
-        .attr('stroke', '#6863ff')
+        .attr('stroke', '#444')
+        .attr('stroke-width', '0.5px')
         .attr('x1', x(closestRoundedDate))
         .attr('x2', x(closestRoundedDate))
         .attr('y1', 0)
         .attr('y2', height);
-
-      // tooltip
-      //   .style('left', d3.event.pageX + 20)
-      //   .style('top', d3.event.pageY - 20);
 
       const closestPoint = points
         .map(point => {

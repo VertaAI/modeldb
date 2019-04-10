@@ -194,7 +194,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
               {this.props.loadingServiceStatistics ? (
                 <img src={loader} className={styles.loader} />
               ) : this.props.serviceStatistics ? (
-                //JSON.stringify(this.props.serviceStatistics)
+                // JSON.stringify(this.props.serviceStatistics)
                 <React.Fragment>
                   <this.Record header="Service behavior">
                     <DeployServiceChart
@@ -205,7 +205,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                       marginTop={40}
                       marginRight={60}
                       modelId={data.id}
-                      //metrics={this.props.serviceStatistics}
+                      // metrics={this.props.serviceStatistics}
                     />
                   </this.Record>
                 </React.Fragment>
@@ -221,7 +221,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
               {this.props.loadingServiceStatistics ? (
                 <img src={loader} className={styles.loader} />
               ) : this.props.dataStatistics ? (
-                //JSON.stringify(this.props.serviceStatistics)
+                // JSON.stringify(this.props.serviceStatistics)
                 <React.Fragment>
                   <this.Record header="Data behavior">
                     <DeployDataChart
@@ -232,7 +232,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                       marginTop={40}
                       marginRight={60}
                       modelId={data.id}
-                      //statistics={this.props.dataStatistics}
+                      // statistics={this.props.dataStatistics}
                     />
                   </this.Record>
                 </React.Fragment>

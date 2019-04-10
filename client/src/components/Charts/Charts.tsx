@@ -70,11 +70,12 @@ class Charts extends React.Component<AllProps> {
 
               <div className={styles.chartsBlock}>
                 <div>
-                  <span>Author:</span> {this.currentProject.Author.name}
+                  <span className={styles.subHeading}>Author: </span>
+                  {this.currentProject.Author.name}
                 </div>
                 <br />
                 <div>
-                  <span>Tags:</span>
+                  <span className={styles.subHeading}>Tags:</span>
                   <div className={tagStyles.tag_block}>
                     <ul className={tagStyles.tags}>
                       {this.currentProject.tags.map(

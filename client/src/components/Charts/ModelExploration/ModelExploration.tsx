@@ -74,7 +74,7 @@ export default class ModelExploration extends React.Component<
 
         <div style={{ display: 'flex' }}>
           <div className={styles.chart_selector}>
-            X Axis: {'  '}
+            <span className={styles.chart_selector_label}>X Axis: </span>
             <select
               name="selected-xaxis"
               value={this.state.selectedXAxis}
@@ -105,7 +105,7 @@ export default class ModelExploration extends React.Component<
           </div>
 
           <div className={styles.chart_selector}>
-            Y Axis: {'  '}
+            <span className={styles.chart_selector_label}>Y Axis:</span>
             <select
               name="selected-yaxis"
               value={this.state.selectedYAxis}
@@ -127,7 +127,7 @@ export default class ModelExploration extends React.Component<
           </div>
 
           <div className={styles.chart_selector}>
-            Aggregate: {'  '}
+            <span className={styles.chart_selector_label}>Aggregate:</span>
             <select
               name="selected-aggregate"
               value={this.state.selectedAggregate}

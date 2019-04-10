@@ -15,8 +15,20 @@
 
 .dropdown {
   padding: 10px;
-  font-size: 12px;
   outline: none;
+}
+
+select {
+  outline: none;
+  background: #f0f3fb;
+  border: 1px solid #f0f3fb;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 16px;
+  color: var(--bg-color2);
+  max-width: 180px;
+  cursor: pointer;
+  appearance: none;
   margin-top: 5px;
 }
 
@@ -25,7 +37,6 @@
   cursor: pointer;
   position: relative;
   max-width: 180px;
-  font-size: 13px;
 }
 
 .chart_selector:after {
@@ -33,7 +44,7 @@
   content: '\f107';
   font-size: 28px;
   position: absolute;
-  top: 36px;
+  top: 43px;
   right: 24px;
   color: rgb(114, 114, 114);
   pointer-events: none;

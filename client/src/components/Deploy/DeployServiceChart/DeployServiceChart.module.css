@@ -1,9 +1,11 @@
 .tooltip {
   position: absolute;
   background-color: #d6fff9;
-  padding: 5px;
+  padding: 1em;
   font-size: 14px;
   display: none;
+  border-radius: 5px;
+  line-height: 1.5em;
 }
 
 .chart {

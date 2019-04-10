@@ -28,17 +28,18 @@
 }
 
 .grid line {
-  stroke: rgb(218, 218, 218) !important;
+  stroke: rgb(238, 238, 238) !important;
 }
 
-.grid > .domain {
+.grid > .domain,
+.grid > .tick text {
   display: none;
 }
 
 .expChart,
 .summaryChart,
 .parallelChart {
-  background-color: #f7f8fc;
+  background-color: #f9fafc;
   border-radius: 10px;
   margin: 0 10px;
 }
@@ -46,17 +47,15 @@
   font-size: 12px;
 }
 
-.axis {
-  color: #444;
+.axis line,
+.domain {
+  stroke-width: 1.5px;
+  stroke: rgb(190, 190, 190);
 }
 
 .axis,
 .frame {
   shape-rendering: crispEdges;
-}
-
-.axis line {
-  stroke: rgb(87, 87, 87);
 }
 
 .axis text {

@@ -20,12 +20,17 @@
 }
 
 .chartHeader {
-  font-size: 1.25em;
-  font-weight: 500;
-  color: var(--text-color3);
+  font-size: 1.15em;
+  color: var(--main-color5);
   padding: 0.5em;
 }
 
 .chartDescription {
   padding: 0 0.5em;
+}
+
+.subHeading {
+  color: var(--text-color3);
+  font-size: 0.85em;
+  /* font-weight: 500; */
 }

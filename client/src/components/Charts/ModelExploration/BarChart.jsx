@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 const width = 800;
 const height = 360;
 const barWidth = 20;
-const margin = { top: 25, right: 35, bottom: 45, left: 85 };
+const margin = { top: 40, right: 35, bottom: 65, left: 85 };
 
 // d3.selection.prototype.bringElementAsTopLayer = function() {
 //   return this.each(function(){
@@ -63,19 +63,10 @@ class BarChart extends Component {
     this.xAxis.scale(this.state.xScale);
     d3.select(this.refs.xAxis).call(this.xAxis);
     this.yAxis.scale(this.state.yScale);
-    d3.select(this.refs.yAxis).call(this.yAxis);
+    d3.select(this.refs.yAxis).call(this.yAxis.ticks(6).tickSize(5));
 
     d3.select('#yLabel').text(this.props.yLabel);
     d3.select('#xLabel').text(this.props.xLabel);
-    // d3.select(this.refs.yAxisGrid)
-    //   .append('g')
-    //   .attr('class', 'grid')
-    //   .call(
-    //     this.yAxis
-    //       .ticks(6)
-    //       .tickSize(-width + margin.right + margin.left)
-    //       .tickFormat('')
-    //   );
   }
 
   componentDidMount() {
@@ -83,6 +74,10 @@ class BarChart extends Component {
     d3.select(this.refs.xAxis).call(this.xAxis);
     this.yAxis.scale(this.state.yScale);
     d3.select(this.refs.yAxis).call(this.yAxis.ticks(6));
+
+    d3.select(this.refs.yAxisGrid).call(
+      this.yAxis.ticks(6).tickSize(-width + margin.right + margin.left)
+    );
 
     d3.select(this.refs.yAxis)
       .append('text')
@@ -105,10 +100,9 @@ class BarChart extends Component {
       .style('fill', '#444')
       .text(this.props.xLabel);
 
-    // this.yAxisGrid.scale(this.state.yScale);
-    // d3.select(this.refs.yAxisGrid).call(this.yAxisGrid);
-    // d3.select(this.refs.yAxisGrid)
+    // d3.select(this.refs.yAxis)
     //   .append('g')
+    //   .attr('class', 'grid')
     //   .call(
     //     this.yAxis
     //       .ticks(6)
@@ -120,14 +114,14 @@ class BarChart extends Component {
   render() {
     return (
       <svg width={width} height={height} className={'expChart'}>
-        {/* <g
-          ref="yAxisGrid"
-          className="grid"
-          transform={`translate(${margin.left}, 0)`}
-        /> */}
         <g
           ref="yAxis"
           className="axis"
+          transform={`translate(${margin.left}, 0)`}
+        />
+        <g
+          ref="yAxisGrid"
+          className="grid"
           transform={`translate(${margin.left}, 0)`}
         />
         <g
