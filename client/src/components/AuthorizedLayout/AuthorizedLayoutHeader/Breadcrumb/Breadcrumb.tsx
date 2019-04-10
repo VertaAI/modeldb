@@ -5,6 +5,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 
+import Icon from 'components/shared/Icon/Icon';
 import { BreadcrumbItem } from 'models/BreadcrumbItem';
 import ModelRecord from 'models/ModelRecord';
 import routes from 'routes';
@@ -14,7 +15,6 @@ import { selectProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import styles from './Breadcrumb.module.css';
-import headerArrow from './images/header-arrow.svg';
 
 interface IPropsFromState {
   projects?: Project[] | null;
@@ -81,7 +81,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
           ) : (
             <React.Fragment key={index}>
               <div className={styles.breadcrumb_item}>{value}</div>
-              <img className={styles.arrow} src={headerArrow} />
+              <Icon type="arrow-right" className={styles.arrow} />
             </React.Fragment>
           );
         })}

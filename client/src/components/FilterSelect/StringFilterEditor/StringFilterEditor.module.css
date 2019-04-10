@@ -11,17 +11,3 @@
 .invert label {
   margin-left: 4px;
 }
-.input input {
-  width: 100%;
-  box-sizing: border-box;
-  outline: none;
-  height: 34px;
-  padding-left: 12px;
-  color: var(--text-color2);
-  border-radius: 2px;
-  border: 1px solid var(--fr-color5);
-}
-
-.input input:focus {
-  border: 1px solid #6863ff;
-}

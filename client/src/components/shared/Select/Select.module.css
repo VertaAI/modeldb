@@ -1,0 +1,57 @@
+.select {
+  position: relative;
+  border: none;
+  background-color: var(--main-color3);
+  font-size: var(--font-size3);
+}
+.select_open {
+}
+
+.input {
+  cursor: pointer;
+}
+
+.arrow {
+  display: inline-flex;
+  margin-left: 5px;
+  font-size: 14px;
+  color: #909090;
+}
+
+.options {
+  display: none;
+  position: absolute;
+  top: -6px;
+  right: 0;
+  width: 60px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  background-color: white;
+}
+.select_open .options {
+  display: block;
+}
+
+.option {
+  width: 100%;
+  height: 36px;
+  padding: 10px;
+  color: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.option:first-child {
+  border-radius: 3px 3px 0 0;
+}
+.option:last-child {
+  border-radius: 0 0 3px 3px;
+}
+.option:hover {
+  background-color: var(--bg-color4);
+}
+.option_selected {
+  color: rgba(255, 255, 255, 0.7);
+  background-color: var(--bg-color2) !important;
+}

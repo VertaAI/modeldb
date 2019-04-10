@@ -8,6 +8,7 @@
     "axios": "^0.18.0",
     "classnames": "^2.2.6",
     "connected-react-router": "^6.2.2",
+    "copy-to-clipboard": "^3.0.8",
     "d3": "^5.9.1",
     "decko": "^1.2.0",
     "json2typescript": "^1.0.6",

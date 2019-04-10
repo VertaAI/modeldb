@@ -1,0 +1,48 @@
+.fab {
+  display: inline-flex;
+  height: 36px;
+  width: 87px;
+  padding: 0 8px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 20px;
+  background: none;
+  font-size: var(--font-size4);
+  cursor: pointer;
+}
+
+.theme_blue {
+  color: white;
+}
+.variant_default.theme_blue {
+  background: var(--bg-color2);
+}
+
+.theme_green {
+  color: #256054;
+}
+.variant_default.theme_green {
+  background: var(--bg-color1);
+}
+.variant_outlined.theme_green {
+  border: 1px solid var(--bg-color1);
+}
+
+.variant_outlined {
+}
+
+.loader {
+  display: none;
+  width: 30px;
+  height: 30px;
+}
+.loading .loader {
+  display: block;
+}
+
+.icon {
+  font-size: 15px;
+  margin-left: 5px;
+  line-height: 0;
+}

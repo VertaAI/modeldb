@@ -1,8 +1,10 @@
 import { bind } from 'decko';
 import * as React from 'react';
 
+import Checkbox from 'components/shared/Checkbox/Checkbox';
 import { IStringFilterData } from 'models/Filters';
 
+import TextInput from 'components/shared/TextInput/TextInput';
 import styles from './StringFilterEditor.module.css';
 
 interface ILocalProps {
@@ -15,17 +17,17 @@ export default class StringFilterEditor extends React.Component<ILocalProps> {
     return (
       <div className={styles.root}>
         <div className={styles.input}>
-          <input
-            type="text"
+          <TextInput
             defaultValue={this.props.data.value}
-            onBlur={this.onBlur}
+            size="small"
             onKeyUp={this.onSubmit}
+            onBlur={this.onBlur}
           />
         </div>
         <div className={styles.invert}>
-          <input
-            type="checkbox"
-            defaultChecked={this.props.data.invert}
+          <Checkbox
+            value={this.props.data.invert}
+            size="small"
             onChange={this.onInvertChanged}
           />
           <label>invert</label>
@@ -42,10 +44,10 @@ export default class StringFilterEditor extends React.Component<ILocalProps> {
   }
 
   @bind
-  private onInvertChanged(event: React.ChangeEvent<HTMLInputElement>) {
+  private onInvertChanged(invert: boolean) {
     const newData = {
       ...this.props.data,
-      invert: event.target.checked,
+      invert,
     };
     this.onSave(newData);
   }

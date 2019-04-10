@@ -7,6 +7,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import Preloader from 'components/shared/Preloader/Preloader';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
 import {
@@ -20,7 +21,6 @@ import {
 } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import loader from '../images/loader.gif';
 import {
   defaultColDefinitions,
   returnColumnDefs,
@@ -70,7 +70,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   public render() {
     const { data, loading, columnConfig } = this.props;
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <Preloader variant="dots" />
     ) : data ? (
       <React.Fragment>
         <DashboardConfig />

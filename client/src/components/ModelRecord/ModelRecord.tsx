@@ -2,8 +2,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
-import loader from 'components/images/loader.gif';
-import tagStyles from 'components/TagBlock/TagBlock.module.css';
+import Preloader from 'components/shared/Preloader/Preloader';
+import tagStyles from 'components/shared/TagBlock/TagBlock.module.css';
 import { IArtifact } from 'models/Artifact';
 import { IHyperparameter } from 'models/HyperParameters';
 import { IMetric } from 'models/Metrics';
@@ -41,7 +41,9 @@ class ModelRecordLayout extends React.Component<AllProps> {
     const { data, loading } = this.props;
 
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <div className={styles.loader}>
+        <Preloader variant="dots" />
+      </div>
     ) : data ? (
       <div className={styles.model_layout}>
         <div className={styles.record_summary}>

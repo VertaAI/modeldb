@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
 
+import Preloader from 'components/shared/Preloader/Preloader';
 import ModelRecord from 'models/ModelRecord';
 import { Project } from 'models/Project';
 import {
@@ -14,8 +15,8 @@ import { selectProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import loader from '../images/loader.gif';
-import Tag from '../TagBlock/Tag';
-import tagStyles from '../TagBlock/TagBlock.module.css';
+import Tag from '../shared/TagBlock/Tag';
+import tagStyles from '../shared/TagBlock/TagBlock.module.css';
 import styles from './Charts.module.css';
 import ModelExploration from './ModelExploration/ModelExploration';
 import ModelSummary from './ModelSummary/ModelSummary';
@@ -56,7 +57,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
     }
 
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <Preloader variant="dots" />
     ) : experimentRuns ? (
       <div>
         <div className={styles.summary_wrapper}>

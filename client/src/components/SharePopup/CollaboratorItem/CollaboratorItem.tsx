@@ -3,6 +3,7 @@ import React from 'react';
 import Avatar from 'react-avatar';
 import { connect } from 'react-redux';
 
+import Icon from 'components/shared/Icon/Icon';
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
 import {
@@ -12,10 +13,6 @@ import {
 import { IConnectedReduxProps } from 'store/store';
 
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
-import share_change_icon from '../images/share-change-icon.svg';
-import share_delete_icon from '../images/share-del-icon.svg';
-import share_read_icon from '../images/share-r-icon.svg';
-import share_write_icon from '../images/share-wr-icon.svg';
 import styles from './CollaboratorItem.module.css';
 
 interface ILocalProps {
@@ -59,7 +56,7 @@ class CollaboratorItem extends React.Component<AllProps> {
                 additionalClassName={`${styles.collaborator_button} ${
                   styles.blue_button
                 }`}
-                imgSrc={share_read_icon}
+                icon={<Icon type="share-read" />}
                 toolTipContent={'Read only'}
                 onButtonClick={this.setWriteAccessToProject}
                 width={79}
@@ -69,7 +66,7 @@ class CollaboratorItem extends React.Component<AllProps> {
                 additionalClassName={`${styles.collaborator_button} ${
                   styles.blue_button
                 }`}
-                imgSrc={share_write_icon}
+                icon={<Icon type="share-write" />}
                 toolTipContent={'Read / Write'}
                 onButtonClick={this.setReadAccessToProject}
                 width={93}
@@ -86,7 +83,7 @@ class CollaboratorItem extends React.Component<AllProps> {
                 additionalClassName={`${styles.collaborator_button} ${
                   styles.blue_button
                 }`}
-                imgSrc={share_change_icon}
+                icon={<Icon type="share-change" />}
                 toolTipContent={'Change owner'}
                 onButtonClick={this.props.onChangeOwner}
                 width={104}
@@ -97,7 +94,7 @@ class CollaboratorItem extends React.Component<AllProps> {
                   additionalClassName={`${styles.collaborator_button} ${
                     styles.without_active_button
                   }`}
-                  imgSrc={share_read_icon}
+                  icon={<Icon type="share-read" />}
                   toolTipContent={'Read only'}
                   width={79}
                 />
@@ -106,7 +103,7 @@ class CollaboratorItem extends React.Component<AllProps> {
                   additionalClassName={`${styles.collaborator_button} ${
                     styles.without_active_button
                   }`}
-                  imgSrc={share_write_icon}
+                  icon={<Icon type="share-write" />}
                   toolTipContent={'Read / Write'}
                   width={93}
                 />
@@ -119,7 +116,7 @@ class CollaboratorItem extends React.Component<AllProps> {
                 additionalClassName={`${styles.collaborator_button} ${
                   styles.red_button
                 }`}
-                imgSrc={share_delete_icon}
+                icon={<Icon type="share-delete" />}
                 toolTipContent={'Delete'}
                 onButtonClick={this.removeAccessToProject}
                 width={59}

@@ -1,4 +1,6 @@
-import makeRoute, { IRoute } from './makeRoute';
+import makeRoute, { IRoute as _IRoute } from './makeRoute';
+
+export type IRoute<T> = _IRoute<T>;
 
 const routes = {
   mainPage: makeRoute({ getPath: () => '/' }),

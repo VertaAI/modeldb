@@ -1,0 +1,40 @@
+.input {
+  position: relative;
+  width: 100%;
+}
+
+.field {
+  width: 100%;
+  height: 100%;
+  padding-left: 12px;
+  border: 1px solid var(--fr-color5);
+  border-radius: 2px;
+  color: var(--text-color2);
+  outline: none;
+}
+.field:focus {
+  border: 1px solid var(--main-color2);
+}
+.field::placeholder {
+  font-size: var(--font-size4);
+  color: #888888;
+}
+.with_icon .field {
+  padding-right: 35px;
+}
+
+.size_small {
+  height: 34px;
+}
+.size_medium {
+  height: 40px;
+}
+
+.icon {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  font-size: 17px;
+  color: var(--fr-color5);
+  transform: translateY(-50%);
+}
