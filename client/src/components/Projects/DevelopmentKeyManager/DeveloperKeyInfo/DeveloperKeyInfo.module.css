@@ -1,0 +1,62 @@
+.root {
+  padding: 20px 30px;
+  background-color: white;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-color3);
+}
+.title {
+  font-size: var(--font-size3);
+  font-weight: bold;
+}
+.close_icon {
+  font-size: 12px;
+  cursor: pointer;
+}
+.content {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+}
+
+.user_info {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  grid-row-gap: 8px;
+  grid-column-gap: 23px;
+  margin-right: 10px;
+  font-size: var(--font-size3);
+}
+.user_info_item_label {
+  color: var(--text-color3);
+}
+.user_info_item_content {
+  color: var(--text-color2);
+}
+
+.developer_key {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 22px;
+  background-color: var(--bg-color7);
+  border: 2px dashed var(--border-color1);
+  border-radius: 4px;
+}
+.developer_key_icon {
+  font-size: 17px;
+  color: var(--text-color3);
+}
+.developer_key_value {
+  font-size: var(--font-size3);
+  font-weight: bold;
+  color: var(--text-color3);
+}
+.developer_key_copy {
+}

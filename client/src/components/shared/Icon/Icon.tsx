@@ -23,6 +23,7 @@ import { ReactComponent as ShareRead } from './imgs/share-read.svg';
 import { ReactComponent as ShareWrite } from './imgs/share-write.svg';
 import { ReactComponent as Twitter } from './imgs/twitter-logo.svg';
 import { ReactComponent as Upload } from './imgs/upload.svg';
+import { ReactComponent as Key } from './imgs/key.svg';
 
 import styles from './Icon.module.css';
 
@@ -54,7 +55,8 @@ type IconType =
   | 'share-change'
   | 'share-delete'
   | 'upload'
-  | 'close';
+  | 'close'
+  | 'key';
 
 class Icon extends React.PureComponent<ILocalProps> {
   public render() {
@@ -91,6 +93,7 @@ class Icon extends React.PureComponent<ILocalProps> {
       'share-delete': ShareDelete,
       upload: Upload,
       close: Close,
+      key: Key,
     } as Record<
       IconType,
       React.FunctionComponent<React.SVGProps<SVGSVGElement>>

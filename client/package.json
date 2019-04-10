@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/moment": "^2.13.0",
     "ag-grid-community": "^20.1.0",
     "ag-grid-react": "^20.1.0",
     "axios": "^0.18.0",
@@ -13,6 +14,7 @@
     "decko": "^1.2.0",
     "json2typescript": "^1.0.6",
     "lodash": "^4.17.11",
+    "moment": "^2.24.0",
     "normalize.css": "^8.0.1",
     "rc-tooltip": "^3.7.3",
     "react": "^16.7.0",

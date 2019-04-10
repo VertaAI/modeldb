@@ -22,7 +22,7 @@ class CopyToClipboard extends React.Component<ILocalProps, ILocalState> {
 
     return (
       <Tooltip visible={isShownNotificationAboutCopied} content="Copied">
-        <div>{children(this.onCopy)}</div>
+        {children(this.onCopy)}
       </Tooltip>
     );
   }

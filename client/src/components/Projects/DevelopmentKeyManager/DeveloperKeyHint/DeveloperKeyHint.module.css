@@ -1,0 +1,17 @@
+.root {
+  display: flex;
+  align-items: center;
+  padding: 20px 30px;
+  background-color: white;
+}
+
+.text {
+  font-size: var(--font-size3);
+  color: var(--text-color2);
+}
+
+.key_icon {
+  margin-right: 10px;
+  font-size: 17px;
+  color: var(--text-color3);
+}

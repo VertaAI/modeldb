@@ -12,6 +12,8 @@ import {
 } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
+import DeveloperKeyManager from './DevelopmentKeyManager/DevelopmentKeyManager';
+
 import styles from './Projects.module.css';
 import ProjectWidget from './ProjectWidget/ProjectWidget';
 
@@ -51,16 +53,17 @@ FilterContextPool.registerContext({
   },
 });
 
-class Projects extends React.Component<AllProps> {
+class Projects extends React.PureComponent<AllProps> {
   public render() {
+    const { data } = this.props;
     return (
       <div className={styles.projects}>
         <div className={styles.widgets_list}>
-          {this.props.data
-            ? this.props.data.map((proj, i) => (
-                <ProjectWidget project={proj} key={i} />
-              ))
-            : ''}
+          {data && data.length !== 0 ? (
+            data.map((proj, i) => <ProjectWidget project={proj} key={i} />)
+          ) : (
+            <DeveloperKeyManager />
+          )}
         </div>
       </div>
     );

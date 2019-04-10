@@ -4,7 +4,7 @@ import { IAuthenticationService } from './IAuthenticationService';
 
 export default class MockAuthenticationService
   implements IAuthenticationService {
-  public user: User | null;
+  public user: User;
 
   constructor() {
     this.user = new User('testid', process.env.REACT_APP_USER_EMAIL);
@@ -19,7 +19,7 @@ export default class MockAuthenticationService
     window.location.replace('/');
   }
 
-  public loadUser(): any {
-    return {};
+  public async loadUser(): Promise<User> {
+    return this.user!;
   }
 }
