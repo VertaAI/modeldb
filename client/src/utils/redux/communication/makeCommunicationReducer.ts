@@ -30,9 +30,9 @@ const makeCommunicationReducer = <T extends MakeCommunicationActionTypes>({
       case failureType:
         return {
           ...state,
-          isRequesting: true,
+          isRequesting: false,
           isSuccess: false,
-          error: action.payload,
+          error: action.payload || '',
         };
       default:
         return state;
