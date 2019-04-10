@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 const width = 650;
 const svg_width = 660;
 const height = 400;
-const margin = { top: 40, right: 25, bottom: 40, left: 85 };
+const margin = { top: 40, right: 25, bottom: 60, left: 85 };
 
 class ScatterChart extends Component {
   state = {
@@ -88,7 +88,7 @@ class ScatterChart extends Component {
     d3.select(this.refs.xAxis)
       .append('text')
       .attr('class', 'axisLabel')
-      .attr('y', margin.top + 10)
+      .attr('y', margin.top)
       .attr('x', width / 2)
       .style('text-anchor', 'middle')
       .style('fill', '#444')

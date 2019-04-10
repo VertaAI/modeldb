@@ -50,7 +50,7 @@
 .axis line,
 .domain {
   stroke-width: 1.5px;
-  stroke: rgb(190, 190, 190);
+  stroke: rgb(150, 150, 150);
 }
 
 .axis,

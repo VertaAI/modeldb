@@ -94,7 +94,7 @@ class BarChart extends Component {
       .append('text')
       .attr('id', 'xLabel')
       .attr('class', 'axisLabel')
-      .attr('y', margin.top + 10)
+      .attr('y', margin.top)
       .attr('x', width / 2)
       .style('text-anchor', 'middle')
       .style('fill', '#444')

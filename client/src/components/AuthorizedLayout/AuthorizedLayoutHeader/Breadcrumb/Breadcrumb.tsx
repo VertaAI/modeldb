@@ -139,7 +139,7 @@ class Breadcrumb extends React.Component<AllProps, ILocalState> {
           modelRecordId: modelRecord.id,
         })
       : '';
-    this.modelBreadcrumbItem.previousItem = this.experimentRunsBreadcrumbItem;
+    this.modelBreadcrumbItem.previousItem = this.chartsBreadcrumbItem;
 
     const breadcrumbItems: BreadcrumbItem[] = [];
     breadcrumbItems.push(this.indexBreadcrumbItem);
