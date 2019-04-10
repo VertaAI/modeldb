@@ -3,7 +3,7 @@ import { History } from 'history';
 import { applyMiddleware, createStore, Store } from 'redux';
 import reduxThunk, { ThunkMiddleware } from 'redux-thunk';
 
-import { createRootReducer, IApplicationState } from './store';
+import { createRootReducer, IApplicationState } from '../store';
 
 export default function configureStore(
   history: History,

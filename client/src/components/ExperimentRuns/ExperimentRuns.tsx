@@ -31,7 +31,7 @@ import styles from './ExperimentRuns.module.css';
 type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
 interface IPropsFromState {
-  data?: ModelRecord[] | undefined;
+  data: ModelRecord[] | null;
   loading: boolean;
   defaultColDefinitions: any;
   filterState: { [index: string]: {} };

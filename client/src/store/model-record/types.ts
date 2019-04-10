@@ -1,20 +1,27 @@
 import ModelRecord from 'models/ModelRecord';
+import {
+  ICommunication,
+  MakeCommunicationActions,
+  makeCommunicationActionTypes,
+} from 'utils/redux/communication';
 
 export interface IModelRecordState {
-  readonly loading: boolean;
-  readonly data?: ModelRecord | null;
+  data: {
+    modelRecord: ModelRecord | null;
+  };
+  communications: {
+    loadingModelRecord: ICommunication;
+  };
 }
 
-export enum fetchModelRecordActionTypes {
-  FETCH_MODEL_RECORD_REQUEST = '@@model_record/FETCH_MODEL_RECORD_REQUEST',
-  FETCH_MODEL_RECORD_SUCCESS = '@@model_record/FETCH_MODEL_RECORD_SUCCESS',
-  FETCH_MODEL_RECORD_FAILURE = '@@model_record/FETCH_MODEL_RECORD_FAILURE',
-}
+export const loadModelRecordActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@modelRecord/LOAD_MODEL_RECORD_REQUEST',
+  SUCCESS: '@@modelRecord/LOAD_MODEL_RECORD_SUCСESS',
+  FAILURE: '@@modelRecord/LOAD_MODEL_RECORD_FAILURE',
+});
+export type ILoadModelRecordActions = MakeCommunicationActions<
+  typeof loadModelRecordActionTypes,
+  { success: ModelRecord }
+>;
 
-export type fetchModelRecordAction =
-  | { type: fetchModelRecordActionTypes.FETCH_MODEL_RECORD_REQUEST }
-  | {
-      type: fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCCESS;
-      payload: ModelRecord;
-    }
-  | { type: fetchModelRecordActionTypes.FETCH_MODEL_RECORD_FAILURE };
+export type FeatureAction = ILoadModelRecordActions;

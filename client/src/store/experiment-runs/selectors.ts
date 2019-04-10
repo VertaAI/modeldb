@@ -5,7 +5,7 @@ const selectState = (state: IApplicationState): IExperimentRunsState =>
   state.experimentRuns;
 
 export const selectExperimentRuns = (state: IApplicationState) =>
-  selectState(state).data;
+  selectState(state).data.modelRecords;
 
 export const selectIsLoadingExperimentRuns = (state: IApplicationState) =>
-  selectState(state).loading;
+  selectState(state).communications.loadingExperimentRuns.isRequesting;
