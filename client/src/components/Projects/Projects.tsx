@@ -74,7 +74,7 @@ class Projects extends React.PureComponent<AllProps> {
 }
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
-  data: [],
+  data: selectProjects(state),
   loading: selectIsLoadingProjects(state),
 });
 

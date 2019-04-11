@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 import Avatar from 'react-avatar';
@@ -6,7 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import User from 'models/User';
+import CurrentUser from 'models/User';
 import routes from 'routes';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { selectCurrentUser } from 'store/user';
@@ -20,7 +19,7 @@ interface ILocalState {
 }
 
 interface IPropsFromState {
-  user: User | null;
+  user: CurrentUser | null;
 }
 
 type AllProps = IConnectedReduxProps & IPropsFromState;

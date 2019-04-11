@@ -3,8 +3,6 @@ export default class User {
   public name?: string | undefined;
   public email: string;
   public picture?: string | undefined;
-  public dateLastLoggedIn?: Date;
-  public developerKey = '';
 
   public constructor(id: string | undefined, email: string) {
     this.id = id;

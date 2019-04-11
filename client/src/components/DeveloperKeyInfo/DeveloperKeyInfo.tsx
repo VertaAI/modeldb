@@ -6,18 +6,18 @@ import { connect } from 'react-redux';
 import Icon from 'components/shared/Icon/Icon';
 import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
-import User from 'models/User';
-
-import styles from './DeveloperKeyInfo.module.css';
+import { CurrentUser } from 'models/User';
 import { IApplicationState } from 'store/store';
 import { selectCurrentUser } from 'store/user';
+
+import styles from './DeveloperKeyInfo.module.css';
 
 interface ILocalProps {
   close?: React.ReactNode;
 }
 
 interface IPropsFromState {
-  user: User;
+  user: CurrentUser;
 }
 
 type AllProps = ILocalProps & IPropsFromState;
