@@ -15,12 +15,14 @@ export default class Auth0AuthenticationService
 
   @bind
   public async loadUser(): Promise<User> {
-    const res = await axios.get<User>('/api/getUser');
+    const res = await axios.get<any>('/api/getUser');
     const serverUser = res.data;
     const user = new User(serverUser.id, serverUser.email);
     user.email = serverUser.email;
     user.name = serverUser.name;
     user.picture = serverUser.picture;
+    user.dateLastLoggedIn = new Date(serverUser.updated_at);
+    user.developerKey = serverUser.developer_key;
 
     return user;
   }
