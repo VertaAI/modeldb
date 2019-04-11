@@ -1,4 +1,4 @@
 export * from './actions';
-export * from './reducer';
+export { default as deployReducer } from './reducer';
 export * from './types';
 export * from './selectors';

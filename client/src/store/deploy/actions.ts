@@ -9,16 +9,16 @@ import {
   selectIsLoadingDeployStatusInfo,
 } from './selectors';
 import {
-  checkDeployStatusAction,
-  deployAction,
   deployActionTypes,
-  fetchDataStatisticsAction,
-  fetchDataStatisticsActionTypes,
-  fetchServiceStatisticsAction,
-  fetchServiceStatisticsActionTypes,
-  loadDeployStatusAction,
   loadDeployStatusActionTypes,
   toggleDeployManagerActionTypes,
+  IDeployActions,
+  ICheckDeployStatusActions,
+  ILoadDeployStatusActions,
+  ILoadServiceStatisticsActions,
+  loadServiceStatisticsActionTypes,
+  ILoadDataStatisticsActions,
+  loadDataStatisticsActionTypes,
 } from './types';
 
 export const showDeployManagerForModel = (modelID: string) => ({
@@ -42,33 +42,31 @@ export const checkDeployStatusForModelsIfNeed = (
 // todo rename
 export const deployWithCheckingStatusUntilDeployed = (
   modelId: string
-): ActionResult<void, deployAction> => async (dispatch, getState, deps) => {
+): ActionResult<void, IDeployActions> => async (dispatch, getState, deps) => {
   await deploy(modelId)(dispatch, getState, deps);
   await checkDeployStatusUntilDeployed(modelId)(dispatch, getState, deps);
 };
 
-const deploy = (modelId: string): ActionResult<void, deployAction> => async (
+const deploy = (modelId: string): ActionResult<void, IDeployActions> => async (
   dispatch,
   _,
   { ServiceFactory }
 ) => {
-  dispatch(action(deployActionTypes.DEPLOY_REQUEST, modelId));
+  dispatch(action(deployActionTypes.REQUEST, modelId));
 
   await ServiceFactory.getDeployService()
     .deploy({ modelId } as any)
     .then(res => {
-      dispatch(action(deployActionTypes.DEPLOY_SUCCESS, modelId));
+      dispatch(action(deployActionTypes.SUCCESS, modelId));
     })
     .catch(err => {
-      dispatch(
-        action(deployActionTypes.DEPLOY_FAILURE, { modelId, error: err })
-      );
+      dispatch(action(deployActionTypes.FAILURE, { modelId, error: err }));
     });
 };
 
 export const checkDeployStatusUntilDeployed = (
   modelId: string
-): ActionResult<void, checkDeployStatusAction> => async (
+): ActionResult<void, ICheckDeployStatusActions> => async (
   dispatch,
   getState,
   deps
@@ -96,20 +94,18 @@ export const checkDeployStatusUntilDeployed = (
 
 export const loadDeployStatus = (
   modelId: string
-): ActionResult<void, loadDeployStatusAction> => async (
+): ActionResult<void, ILoadDeployStatusActions> => async (
   dispatch,
   _,
   { ServiceFactory }
 ): Promise<IDeployStatusInfo> => {
-  dispatch(
-    action(loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_REQUEST, modelId)
-  );
+  dispatch(action(loadDeployStatusActionTypes.REQUEST, modelId));
 
   return await ServiceFactory.getDeployService()
     .loadStatus(modelId)
     .then(res => {
       dispatch(
-        action(loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_SUCCESS, {
+        action(loadDeployStatusActionTypes.SUCCESS, {
           modelId,
           info: res.data,
         })
@@ -118,7 +114,7 @@ export const loadDeployStatus = (
     })
     .catch(err => {
       dispatch(
-        action(loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_FAILURE, {
+        action(loadDeployStatusActionTypes.FAILURE, {
           modelId,
           error: 'error',
         })
@@ -129,65 +125,38 @@ export const loadDeployStatus = (
 
 export const getServiceStatistics = (
   modelId: string
-): ActionResult<void, fetchServiceStatisticsAction> => async (
+): ActionResult<void, ILoadServiceStatisticsActions> => async (
   dispatch,
   _,
   { ServiceFactory }
 ) => {
-  dispatch(
-    action(fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_REQUEST)
-  );
+  dispatch(action(loadServiceStatisticsActionTypes.REQUEST));
 
   await ServiceFactory.getDeployService()
     .getServiceStatistics(modelId)
     .then(res => {
-      dispatch(
-        action(
-          fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_SUCCESS,
-          res.data
-        )
-      );
+      dispatch(action(loadServiceStatisticsActionTypes.SUCCESS, res.data));
     })
     .catch(err => {
-      dispatch(
-        action(
-          fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_FAILURE,
-          err as string
-        )
-      );
+      dispatch(action(loadServiceStatisticsActionTypes.FAILURE, err as string));
     });
 };
 
 export const getDataStatistics = (
   modelId: string
-): ActionResult<void, fetchDataStatisticsAction> => async (
+): ActionResult<void, ILoadDataStatisticsActions> => async (
   dispatch,
   _,
   { ServiceFactory }
 ) => {
-  dispatch(
-    action(
-      fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_REQUEST,
-      modelId
-    )
-  );
+  dispatch(action(loadDataStatisticsActionTypes.REQUEST, modelId));
 
   await ServiceFactory.getDeployService()
     .getDataStatistics(modelId)
     .then(res => {
-      dispatch(
-        action(
-          fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_SUCCESS,
-          res.data
-        )
-      );
+      dispatch(action(loadDataStatisticsActionTypes.SUCCESS, res.data));
     })
     .catch(err => {
-      dispatch(
-        action(
-          fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_FAILURE,
-          err as string
-        )
-      );
+      dispatch(action(loadDataStatisticsActionTypes.FAILURE, err as string));
     });
 };
