@@ -14,7 +14,6 @@ import {
 import { selectProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import loader from '../images/loader.gif';
 import Tag from '../shared/TagBlock/Tag';
 import tagStyles from '../shared/TagBlock/TagBlock.module.css';
 import styles from './Charts.module.css';

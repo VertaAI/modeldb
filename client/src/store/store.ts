@@ -10,6 +10,7 @@ import {
   dashboardConfigReducer,
   IDashboardConfigState,
 } from './dashboard-config';
+import { deployReducer, IDeployState } from './deploy';
 import { experimentRunsReducer, IExperimentRunsState } from './experiment-runs';
 import { filtersReducer, IFilterState } from './filter';
 import { IModelRecordState, modelRecordReducer } from './model-record';
@@ -17,6 +18,7 @@ import { IProjectsState, projectsReducer } from './projects';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
+  deploy: IDeployState;
   collaboration: ICollaborationState;
   dashboardConfig: IDashboardConfigState;
   experimentRuns: IExperimentRunsState;
@@ -34,6 +36,7 @@ export interface IConnectedReduxProps<A extends Action = any> {
 
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
+    deploy: deployReducer,
     collaboration: collaborationReducer,
     dashboardConfig: dashboardConfigReducer,
     experimentRuns: experimentRunsReducer,

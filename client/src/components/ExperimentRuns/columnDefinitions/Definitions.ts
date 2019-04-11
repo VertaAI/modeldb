@@ -1,3 +1,4 @@
+import Actions from './Actions';
 import ArtifactsColDef from './Artifacts';
 import styles from './ColumnDefs.module.css';
 import DatasetsColDef from './Datasets';
@@ -66,6 +67,14 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 240,
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked,
+      autoHeight: true,
+    },
+    {
+      headerName: '',
+      field: 'data',
+      cellRendererFramework: Actions,
+      width: 140,
+      cellClass: styles.cell,
       autoHeight: true,
     },
     // {

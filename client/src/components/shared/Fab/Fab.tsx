@@ -10,7 +10,7 @@ interface ILocalProps {
   disabled?: boolean;
   isLoading?: boolean;
   variant?: 'outlined' | 'default';
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   onClick(): void;
 }
 

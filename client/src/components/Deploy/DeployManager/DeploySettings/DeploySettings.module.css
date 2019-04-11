@@ -1,0 +1,24 @@
+.deploy_settings {
+  padding-bottom: 27px;
+}
+
+/* todo move to component */
+.select_CSV_file_button {
+  font-size: var(--font-size4);
+  color: var(--main-color2);
+  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
+  cursor: pointer;
+}
+
+.deploy_button {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.model_id {
+  max-width: 225px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

@@ -7,14 +7,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import { DeployManager } from 'components/Deploy';
 import Preloader from 'components/shared/Preloader/Preloader';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
-import {
-  IColumnConfig,
-  IColumnMetaData,
-  selectColumnConfig,
-} from 'store/dashboard-config';
+import { IColumnConfig, selectColumnConfig } from 'store/dashboard-config';
+import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
 import {
   selectExperimentRuns,
   selectIsLoadingExperimentRuns,
@@ -55,7 +53,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   private data: any;
 
   public componentWillReceiveProps(nextProps: AllProps) {
-    if (this.gridApi !== undefined) {
+    if (this.gridApi) {
       setTimeout(this.callFilterUpdate, 100);
     }
     if (this.gridApi && this.props.columnConfig !== nextProps.columnConfig) {
@@ -67,18 +65,29 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
   }
 
+  public componentDidUpdate(prevProps: AllProps) {
+    if (this.props.data && prevProps.data !== this.props.data) {
+      this.props.dispatch(
+        checkDeployStatusForModelsIfNeed(this.props.data.map(({ id }) => id))
+      );
+    }
+  }
+
   public render() {
     const { data, loading, columnConfig } = this.props;
     return loading ? (
       <Preloader variant="dots" />
     ) : data ? (
-      <React.Fragment>
+      <>
+        <DeployManager />
         <DashboardConfig />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
+            reactNext={true}
             pagination={true}
             onGridReady={this.onGridReady}
             animateRows={true}
+            getRowHeight={this.gridRowHeight}
             columnDefs={returnColumnDefs(columnConfig)}
             rowData={undefined}
             domLayout="autoHeight"
@@ -87,10 +96,31 @@ class ExperimentRuns extends React.Component<AllProps> {
             doesExternalFilterPass={this.doesExternalFilterPass}
           />
         </div>
-      </React.Fragment>
+      </>
     ) : (
       ''
     );
+  }
+
+  @bind
+  private gridRowHeight(params: any) {
+    try {
+      const data = params.node.data;
+      if (
+        (data.metrics && data.metrics.length > 3) ||
+        (data.hyperparameters && data.hyperparameters.length > 3)
+      ) {
+        if (data.metrics && data.metrics.length > data.hyperparameters.length) {
+          return (data.metric.length - 3) * 5 + 220;
+        }
+        return data.hyperparameters.length * 5 + 220;
+      }
+      if (data.tags && data.tags.length >= 6) {
+        return 240;
+      }
+    } catch {}
+
+    return 200;
   }
 
   @bind

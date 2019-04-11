@@ -1,0 +1,19 @@
+.deploy_result {
+  padding: 42px 90px 73px;
+}
+
+.url {
+  display: inline-block;
+  width: 100%;
+  line-height: 0.9;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.model_id {
+  max-width: 225px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

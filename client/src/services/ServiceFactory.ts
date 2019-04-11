@@ -3,6 +3,9 @@ import { IAuthenticationService } from './auth/IAuthenticationService';
 import MockAuthenticationService from './auth/MockAuthenticationService';
 import CollaboratorsService from './collaborators/CollaboratorsService';
 import { ICollaboratorsService } from './collaborators/ICollaboratorsService';
+import DeployService from './deploy/DeployService';
+import { IDeployService } from './deploy/IDeployService';
+import MockDeployService from './deploy/MockDeployService';
 import ExperimentRunsDataService from './experimentRuns/ExperimentRunsDataService';
 import { IExperimentRunsDataService } from './experimentRuns/IExperimentRunsDataService';
 import MockExperimentRunsDataService from './experimentRuns/MockExperimentRunsDataService';
@@ -40,5 +43,12 @@ export default class ServiceFactory {
 
   public static getCollaboratorsService(): ICollaboratorsService {
     return new CollaboratorsService();
+  }
+
+  public static getDeployService(): IDeployService {
+    if (JSON.parse(process.env.REACT_APP_USE_API_DATA)) {
+      return new DeployService();
+    }
+    return new MockDeployService();
   }
 }

@@ -1,0 +1,17 @@
+.deploying {
+  display: flex;
+  padding: 48px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.preloader {
+  width: 100px;
+  height: 100px;
+}
+
+.description {
+  margin-top: 31px;
+  font-size: var(--font-size3);
+}

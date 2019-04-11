@@ -1,6 +1,9 @@
 import _ from 'lodash';
 import React from 'react';
-import ModelRecord from '../../../models/ModelRecord';
+
+import Icon from 'components/shared/Icon/Icon';
+import ModelRecord from 'models/ModelRecord';
+
 import styles from './ModelSummary.module.css';
 import ScatterChart from './ScatterChart';
 
@@ -44,6 +47,7 @@ export default class ModelExploration extends React.Component<
               );
             })}
           </select>
+          <Icon type="caret-down" className={styles.chart_selector_arrow} />
         </div>
         <ScatterChart
           flatdata={this.state.chartData}
