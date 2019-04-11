@@ -13,10 +13,6 @@
   font-size: var(--font-size3);
   font-weight: bold;
 }
-.close_icon {
-  font-size: 12px;
-  cursor: pointer;
-}
 .content {
   margin-top: 10px;
   display: grid;
@@ -50,7 +46,7 @@
   border-radius: 4px;
 }
 .developer_key_icon {
-  font-size: 17px;
+  font-size: 23px;
   color: var(--text-color3);
 }
 .developer_key_value {

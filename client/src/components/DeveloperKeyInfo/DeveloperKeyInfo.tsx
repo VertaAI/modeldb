@@ -1,27 +1,35 @@
 import { bind } from 'decko';
 import moment from 'moment';
 import * as React from 'react';
+import { connect } from 'react-redux';
 
 import Icon from 'components/shared/Icon/Icon';
-import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
 import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
+import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
 import User from 'models/User';
 
 import styles from './DeveloperKeyInfo.module.css';
+import { IApplicationState } from 'store/store';
+import { selectCurrentUser } from 'store/user';
 
 interface ILocalProps {
-  user: User;
-  onHide: () => void;
+  close?: React.ReactNode;
 }
 
-class DeveloperKeyInfo extends React.PureComponent<ILocalProps> {
+interface IPropsFromState {
+  user: User;
+}
+
+type AllProps = ILocalProps & IPropsFromState;
+
+class DeveloperKeyInfo extends React.PureComponent<AllProps> {
   public render() {
-    const { user, onHide } = this.props;
+    const { user, close } = this.props;
     return (
       <div className={styles.root}>
         <div className={styles.header}>
           <div className={styles.title}>Your Developer Key</div>
-          <Icon type="close" className={styles.close_icon} onClick={onHide} />
+          <div className={styles.close}>{close}</div>
         </div>
         <div className={styles.content}>
           <div className={styles.user_info}>
@@ -69,4 +77,10 @@ class DeveloperKeyInfo extends React.PureComponent<ILocalProps> {
   }
 }
 
-export default DeveloperKeyInfo;
+const mapStateToProps = (state: IApplicationState): IPropsFromState => {
+  return {
+    user: selectCurrentUser(state)!,
+  };
+};
+
+export default connect(mapStateToProps)(DeveloperKeyInfo);

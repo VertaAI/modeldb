@@ -12,7 +12,7 @@ import {
 } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import DeveloperKeyManager from './DevelopmentKeyManager/DevelopmentKeyManager';
+import DeveloperKeyManager from './DeveloperKeyManager/DeveloperKeyManager';
 
 import styles from './Projects.module.css';
 import ProjectWidget from './ProjectWidget/ProjectWidget';
@@ -59,11 +59,14 @@ class Projects extends React.PureComponent<AllProps> {
     return (
       <div className={styles.projects}>
         <div className={styles.widgets_list}>
-          {data && data.length !== 0 ? (
-            data.map((proj, i) => <ProjectWidget project={proj} key={i} />)
-          ) : (
-            <DeveloperKeyManager />
-          )}
+          {(() => {
+            if (data && data.length !== 0) {
+              return data.map((proj, i) => (
+                <ProjectWidget project={proj} key={i} />
+              ));
+            }
+            return <DeveloperKeyManager />;
+          })()}
         </div>
       </div>
     );
@@ -71,7 +74,7 @@ class Projects extends React.PureComponent<AllProps> {
 }
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
-  data: selectProjects(state),
+  data: [],
   loading: selectIsLoadingProjects(state),
 });
 
