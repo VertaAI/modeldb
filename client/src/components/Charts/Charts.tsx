@@ -69,25 +69,26 @@ class Charts extends React.Component<AllProps> {
               </div>
 
               <div className={styles.chartsBlock}>
-                <div>
-                  <span className={styles.subHeading}>Author: </span>
+                <div className={styles.chartMeta}>
+                  <div className={styles.subHeading}>Author: </div>
                   {this.currentProject.Author.name}
                 </div>
-                <br />
-                <div>
+                <div className={styles.chartMeta}>
                   <span className={styles.subHeading}>Tags:</span>
-                  <div className={tagStyles.tag_block}>
-                    <ul className={tagStyles.tags}>
-                      {this.currentProject.tags.map(
-                        (tag: string, i: number) => {
-                          return (
-                            <li key={i}>
-                              <Tag tag={tag} />
-                            </li>
-                          );
-                        }
-                      )}
-                    </ul>
+                  <div className={styles.tagBlock}>
+                    <div className={tagStyles.tag_block}>
+                      <ul className={tagStyles.tags}>
+                        {this.currentProject.tags.map(
+                          (tag: string, i: number) => {
+                            return (
+                              <li key={i}>
+                                <Tag tag={tag} />
+                              </li>
+                            );
+                          }
+                        )}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>

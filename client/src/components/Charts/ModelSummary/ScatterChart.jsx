@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import routes from 'routes';
 import * as d3 from 'd3';
-const width = 650;
-const svg_width = 660;
+// const canvasWidth = 960;
+const width = 680;
 const height = 400;
 const margin = { top: 40, right: 25, bottom: 60, left: 85 };
 
@@ -14,40 +14,7 @@ class ScatterChart extends Component {
     yScale: undefined,
   };
 
-  // Establish the desired formatting options using locale.format():
-  // https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
-  formatMillisecond = d3.timeFormat('.%L');
-  formatSecond = d3.timeFormat(':%S');
-  formatMinute = d3.timeFormat('%I:%M');
-  formatHour = d3.timeFormat('%I');
-  formatDay = d3.timeFormat('%a %d');
-  formatWeek = d3.timeFormat('%b %d');
-  formatMonth = d3.timeFormat('%B');
-  formatYear = d3.timeFormat('%Y');
-
-  // Define filter conditions
-  multiFormat(date) {
-    // console.log(date);
-    // console.log(d3.timeMinute(date) < date);
-    return this.formatHour;
-    // return (d3.timeSecond(date) < date
-    //   ? this.formatHour
-    //   : d3.timeMinute(date) < date
-    //   ? this.formatHour
-    //   : d3.timeHour(date) < date
-    //   ? this.formatMinute
-    //   : d3.timeDay(date) < date
-    //   ? this.formatHour
-    //   : d3.timeMonth(date) < date
-    //   ? d3.timeWeek(date) < date
-    //     ? this.formatDay
-    //     : this.formatWeek
-    //   : d3.timeYear(date) < date
-    //   ? this.formatMonth
-    //   : this.formatYear)(date);
-  }
-
-  //.tickFormat(d3.timeFormat('%b/%d %H:%M'))
+  //'%b/%d %H:%M'
   xAxis = d3
     .axisBottom()
     .tickFormat(d3.timeFormat('%H:%M'))
@@ -83,6 +50,21 @@ class ScatterChart extends Component {
   }
 
   componentDidMount() {
+    // d3.select(this.refs.annotation)
+    //   .append('rect')
+    //   .attr('width', '200px')
+    //   .attr('height', '320px')
+    //   .attr('fill', '#f9f9f9')
+    //   .attr('opacity', 1);
+
+    // d3.select(this.refs.annotation)
+    //   .append('text')
+    //   .attr('color', '#444')
+    //   .attr('x', 20)
+    //   .attr('y', 20)
+    //   .attr('font-size', '11px')
+    //   .text('Model Metadata');
+
     this.xAxis.scale(this.state.xScale);
     d3.select(this.refs.xAxis).call(this.xAxis);
     d3.select(this.refs.xAxis)
@@ -111,21 +93,6 @@ class ScatterChart extends Component {
     d3.select(this.refs.yAxisGrid).call(
       this.yAxis.ticks(6).tickSize(-width + margin.right + margin.left)
     );
-
-    // d3.select(this.refs.annotation)
-    //   .append('rect')
-    //   .attr('width', '160px')
-    //   .attr('height', '300px')
-    //   .attr('fill', '#f9f9f9');
-    // .attr('opacity', 0);
-
-    // d3.select(this.refs.annotation)
-    //   .append('text')
-    //   .attr('fill', '#444')
-    //   .attr('x', 20)
-    //   .attr('y', 20)
-    //   .attr('font-size', '11px')
-    //   .text('Model Metadata');
   }
   componentDidUpdate() {
     this.xAxis.scale(this.state.xScale);
@@ -150,7 +117,8 @@ class ScatterChart extends Component {
 
   render() {
     return (
-      <svg width={svg_width} height={height} className={'summaryChart'}>
+      // <g width={canvasWidth} height={height}>
+      <svg width={width} height={height} className={'summaryChart'}>
         <g
           ref="yAxis"
           className="axis"
@@ -191,10 +159,44 @@ class ScatterChart extends Component {
             );
           })}
         </g>
-        <g ref="annotation" transform={`translate(${width + 20}, 50)`} />
       </svg>
+      //   <g ref="annotation" transform={`translate(${width + 20}, 50)`} />
+      // </g>
     );
   }
 }
 
 export default ScatterChart;
+
+// Establish the desired formatting options using locale.format():
+// https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
+// formatMillisecond = d3.timeFormat('.%L');
+// formatSecond = d3.timeFormat(':%S');
+// formatMinute = d3.timeFormat('%I:%M');
+// formatHour = d3.timeFormat('%I');
+// formatDay = d3.timeFormat('%a %d');
+// formatWeek = d3.timeFormat('%b %d');
+// formatMonth = d3.timeFormat('%B');
+// formatYear = d3.timeFormat('%Y');
+
+// Define filter conditions
+// multiFormat(date) {
+// console.log(date);
+// console.log(d3.timeMinute(date) < date);
+// return this.formatHour;
+// return (d3.timeSecond(date) < date
+//   ? this.formatHour
+//   : d3.timeMinute(date) < date
+//   ? this.formatHour
+//   : d3.timeHour(date) < date
+//   ? this.formatMinute
+//   : d3.timeDay(date) < date
+//   ? this.formatHour
+//   : d3.timeMonth(date) < date
+//   ? d3.timeWeek(date) < date
+//     ? this.formatDay
+//     : this.formatWeek
+//   : d3.timeYear(date) < date
+//   ? this.formatMonth
+//   : this.formatYear)(date);
+// }

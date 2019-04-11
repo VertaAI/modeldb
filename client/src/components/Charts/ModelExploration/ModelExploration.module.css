@@ -83,3 +83,13 @@ select {
   max-width: 800px;
   font-size: 0.85em;
 }
+
+.parallelMeta {
+  display: grid;
+  max-width: 800px;
+  font-size: 0.7em;
+  font-style: italic;
+  justify-content: right;
+  margin: 0.5em -0.5em 0 0 !important;
+  color: var(--text-color3);
+}

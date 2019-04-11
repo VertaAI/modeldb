@@ -40,5 +40,14 @@ select {
 .chart_selector_label {
   color: var(--text-color3);
   font-size: 0.85em;
-  /* font-weight: 500; */
+}
+
+.scatterMeta {
+  display: grid;
+  max-width: 650px;
+  font-size: 0.7em;
+  font-style: italic;
+  justify-content: right;
+  margin: 0.5em 1em 0 !important;
+  color: var(--text-color3);
 }

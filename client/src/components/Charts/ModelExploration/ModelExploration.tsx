@@ -164,6 +164,7 @@ export default class ModelExploration extends React.Component<
             )}
           />
         </div>
+        <br />
         <div>
           {' '}
           <div className={styles.chartHeader}>
@@ -171,6 +172,9 @@ export default class ModelExploration extends React.Component<
             Parallel Coordinates of Hyperparameters and Metrics{' '}
           </div>
           <ParallelCoordinates data={this.state.parallelData} />
+          <div className={styles.parallelMeta}>
+            *click and drag on the y-axis to apply filter chart based on axis
+          </div>
         </div>
       </div>
     ) : (

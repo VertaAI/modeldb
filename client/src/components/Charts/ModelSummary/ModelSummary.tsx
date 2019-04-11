@@ -54,6 +54,9 @@ export default class ModelExploration extends React.Component<
           flatdata={this.state.chartData}
           selectedMetric={this.state.selectedMetric}
         />
+        <div className={styles.scatterMeta}>
+          *click on the marks to view corresponding ModelRecord
+        </div>
       </div>
     );
   }

@@ -43,6 +43,13 @@
   border-radius: 10px;
   margin: 0 10px;
 }
+
+/* .summaryChart {
+  color: #f9fafc;
+  border-radius: 10px;
+  margin: 0 10px;
+} */
+
 .axisLabel {
   font-size: 12px;
 }
@@ -60,23 +67,27 @@
 
 .axis text {
   text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
-  cursor: move;
   color: #444;
 }
 
-.background path {
-  fill: none;
-  stroke: #ddd;
-  shape-rendering: crispEdges;
+.parallelChart .dimension {
+  cursor: move;
 }
 
-.foreground path {
+.parallelLines path {
   fill: none;
+  stroke-width: 1.5px;
   stroke: var(--main-color2);
+  stroke-opacity: 0.5;
 }
 
 .brush .extent {
   fill-opacity: 0.3;
   stroke: #fff;
   shape-rendering: crispEdges;
+}
+
+.parallelLines path.fade {
+  stroke: #000;
+  stroke-opacity: 0.05;
 }
