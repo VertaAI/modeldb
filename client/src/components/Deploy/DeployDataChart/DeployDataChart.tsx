@@ -8,9 +8,7 @@ import {
   IServiceDataFeature,
   IServiceStatistics,
 } from 'models/Deploy';
-import { Color } from 'csstype';
 import styles from './DeployDataChart.module.css';
-import chartStyles from 'components/Charts/ModelSummary/ModelSummary.module.css';
 import { bind } from 'decko';
 import ServiceFactory from 'services/ServiceFactory';
 
@@ -182,9 +180,6 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
     const groupWidth = width / count.length;
     const barWidth = groupWidth * 0.4;
 
-    // never used
-    // var formatCount = d3.format(',.0f');
-
     function draw_bars(
       values: number[],
       color: string,
@@ -225,21 +220,6 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
         .attr('width', barWidth)
         .attr('height', d => height - y(getter(d)))
         .attr('fill', d => color);
-
-      /*
-      if (add_text) {
-        bar
-          .append('text')
-          .attr('dy', '.75em')
-          .attr('y', -12)
-          .attr('x', bar_width / 2)
-          .attr('text-anchor', 'middle')
-          .attr('fill', '#999999')
-          .attr('font', 'sans-serif')
-          .attr('font-size', '12px')
-          .text(d => formatCount(getter(d)));
-      }
-      */
     }
 
     const darkColor = '#6863ff';
@@ -280,84 +260,6 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
       .text((d, i) => {
         return ['Live', 'Reference'][i];
       });
-
-    /*
-    const yMax = Math.max(...count);
-    var y = d3
-      .scaleLinear()
-      .domain([0, yMax])
-      .range([height, 0]);
-
-    const yReference = d3.scaleLinear().range([height, 0]);
-    const yRefMax = Math.max(...reference)
-    yReference.domain([0, yRefMax]);
-
-    var darkColorScale = d3
-      .scaleLinear<d3.RGBColor>()
-      .domain([0, yMax])
-      .range([d3.rgb(darkColor).brighter(), d3.rgb(darkColor).darker()]);
-
-    var lightColorScale = d3
-      .scaleLinear<d3.RGBColor>()
-      .domain([0, yRefMax])
-      .range([d3.rgb(lightColor).brighter(), d3.rgb(lightColor).darker()]);
-
-    var live_bar = chart
-      .selectAll('.live_bar')
-      .data(data)
-      .enter()
-      .append('g')
-      .attr('class', 'live_bar')
-      .attr('transform', function(d) {
-        return 'translate(' + x(d.x) + ',' + y(d.val) + ')';
-      });
-
-    var reference_bar = chart
-      .selectAll('.reference_bar')
-      .data(data)
-      .enter()
-      .append('g')
-      .attr('class', 'reference_bar')
-      .attr('transform', function(d) {
-        return 'translate(' + x(d.x) + ',' + y(d.ref) + ')';
-      });
-
-      live_bar
-      .append('rect')
-      .attr('x', 1)
-      .attr('width', bar_width)
-      .attr('height', d => height - y(d.val))
-      .attr('fill', d => darkColorScale(d.val).toString());
-
-      reference_bar
-      .append('rect')
-      .attr('x', 1)
-      .attr('width', bar_width)
-      .attr('height', d => height - yReference(d.ref))
-      .attr('fill', d => lightColorScale(d.ref).toString());
-
-    live_bar
-      .append('text')
-      .attr('dy', '.75em')
-      .attr('y', -12)
-      .attr('x', bar_width/2)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#999999')
-      .attr('font', 'sans-serif')
-      .attr('font-size', '10px')
-      .text(d => formatCount(d.val));
-
-      reference_bar
-      .append('text')
-      .attr('dy', '.75em')
-      .attr('y', -12)
-      .attr('x', bar_width/2)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#999999')
-      .attr('font', 'sans-serif')
-      .attr('font-size', '10px')
-      .text(d => formatCount(d.ref));
-      */
   }
 
   public render() {
@@ -367,7 +269,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
         <div className={styles.chart_selector}>
           Feature :{' '}
           <select
-            name="selected-metric" // function(e: React.ChangeEvent<HTMLInputElement>){
+            name="selected-metric"
             onChange={e =>
               this.setState({
                 selectedFeature: (e.target as HTMLSelectElement).value,
