@@ -194,7 +194,6 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
     ) => {
       const line = d3
         .line<IPoint>()
-        .curve(d3.curveMonotoneX)
         .x(p => x(p.time))
         .y(p => yScale(extractor(p)));
 
