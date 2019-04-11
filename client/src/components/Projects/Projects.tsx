@@ -14,7 +14,6 @@ import {
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import DeveloperKeyManager from './DeveloperKeyManager/DeveloperKeyManager';
-
 import styles from './Projects.module.css';
 import ProjectWidget from './ProjectWidget/ProjectWidget';
 
