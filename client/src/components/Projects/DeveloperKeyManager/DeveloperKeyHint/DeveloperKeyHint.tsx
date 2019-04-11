@@ -1,9 +1,9 @@
-import * as React from 'react';
 import { bind } from 'decko';
+import * as React from 'react';
 
-import styles from './DeveloperKeyHint.module.css';
-import Icon from 'components/shared/Icon/Icon';
 import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
+import Icon from 'components/shared/Icon/Icon';
+import styles from './DeveloperKeyHint.module.css';
 
 interface ILocalProps {
   onHide(): void;

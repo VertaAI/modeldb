@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
+import Preloader from 'components/shared/Preloader/Preloader';
 import { FilterContextPool } from 'models/FilterContextPool';
 import { PropertyType } from 'models/Filters';
 import { Project } from 'models/Project';
@@ -55,11 +56,14 @@ FilterContextPool.registerContext({
 
 class Projects extends React.PureComponent<AllProps> {
   public render() {
-    const { data } = this.props;
+    const { loading, data } = this.props;
     return (
       <div className={styles.projects}>
         <div className={styles.widgets_list}>
           {(() => {
+            if (loading) {
+              return <Preloader variant="dots" />;
+            }
             if (data && data.length !== 0) {
               return data.map((proj, i) => (
                 <ProjectWidget project={proj} key={i} />

@@ -5,8 +5,8 @@ import { connect } from 'react-redux';
 import DeveloperKeyInfo from 'components/DeveloperKeyInfo/DeveloperKeyInfo';
 import Icon from 'components/shared/Icon/Icon';
 import {
-  selectIsShowDeveloperKeyInfo,
   hideDeveloperKeyInfo,
+  selectIsShowDeveloperKeyInfo,
 } from 'store/projectsPage';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import styles from './DeveloperKeyManager.module.css';

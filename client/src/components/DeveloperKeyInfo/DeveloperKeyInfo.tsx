@@ -3,9 +3,9 @@ import moment from 'moment';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import Icon from 'components/shared/Icon/Icon';
 import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
+import Icon from 'components/shared/Icon/Icon';
 import { CurrentUser } from 'models/User';
 import { IApplicationState } from 'store/store';
 import { selectCurrentUser } from 'store/user';

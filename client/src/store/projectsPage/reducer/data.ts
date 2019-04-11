@@ -1,9 +1,9 @@
 import { Reducer } from 'redux';
 
 import {
-  IProjectsPageState,
   FeatureAction,
   hideDeveloperKeyInfoActionType,
+  IProjectsPageState,
 } from '../types';
 
 const initial: IProjectsPageState['data'] = {

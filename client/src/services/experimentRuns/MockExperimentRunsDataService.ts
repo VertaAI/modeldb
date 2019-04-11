@@ -12,15 +12,17 @@ export default class MockExperimentRunsDataService
     super();
 
     const mock = new MockAdapter(axios);
-    mock.onGet('/getExperimentRunsInProject').reply(config => {
-      return [
-        200,
-        {
-          experiment_runs: expRunsMocks.filter(
-            x => x.project_id === config.params.project_id
-          ),
-        },
-      ];
-    });
+    mock
+      .onGet('/v1/modeldb/experiment-run/getExperimentRunsInProject')
+      .reply(config => {
+        return [
+          200,
+          {
+            experiment_runs: expRunsMocks.filter(
+              x => x.project_id === config.params.project_id
+            ),
+          },
+        ];
+      });
   }
 }

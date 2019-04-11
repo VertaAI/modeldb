@@ -1,6 +1,6 @@
 import { routerMiddleware } from 'connected-react-router';
 import { History } from 'history';
-import { applyMiddleware, createStore, Store, AnyAction } from 'redux';
+import { AnyAction, applyMiddleware, createStore, Store } from 'redux';
 import reduxThunk, { ThunkMiddleware } from 'redux-thunk';
 
 import { FilterContextPool } from 'models/FilterContextPool';
@@ -17,8 +17,8 @@ export default function configureStore(
   initialState: IApplicationState
 ): Store<IApplicationState> {
   const reduxThunkExtraArgument: IThunkActionDependencies = {
-    FilterContextPool: FilterContextPool,
-    ServiceFactory: ServiceFactory,
+    FilterContextPool,
+    ServiceFactory,
   };
 
   const store = createStore(

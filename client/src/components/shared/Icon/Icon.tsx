@@ -14,6 +14,7 @@ import { ReactComponent as Filter } from './imgs/filter.svg';
 import { ReactComponent as Github } from './imgs/github-logo.svg';
 import { ReactComponent as Heart } from './imgs/heart.svg';
 import { ReactComponent as Image } from './imgs/image.svg';
+import { ReactComponent as Key } from './imgs/key.svg';
 import { ReactComponent as LinkedIn } from './imgs/linkedIN-logo.svg';
 import { ReactComponent as ReadOnly } from './imgs/read-only.svg';
 import { ReactComponent as Seach } from './imgs/search.svg';
@@ -23,7 +24,6 @@ import { ReactComponent as ShareRead } from './imgs/share-read.svg';
 import { ReactComponent as ShareWrite } from './imgs/share-write.svg';
 import { ReactComponent as Twitter } from './imgs/twitter-logo.svg';
 import { ReactComponent as Upload } from './imgs/upload.svg';
-import { ReactComponent as Key } from './imgs/key.svg';
 
 import styles from './Icon.module.css';
 

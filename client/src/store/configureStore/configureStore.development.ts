@@ -1,6 +1,6 @@
 import { routerMiddleware } from 'connected-react-router';
 import { History } from 'history';
-import { applyMiddleware, createStore, Store, AnyAction } from 'redux';
+import { AnyAction, applyMiddleware, createStore, Store } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 // import createLogger from 'redux-logger';
 import reduxThunk, { ThunkMiddleware } from 'redux-thunk';
@@ -21,8 +21,8 @@ export default function configureStore(
   const composeEnhancers = composeWithDevTools({});
 
   const reduxThunkExtraArgument: IThunkActionDependencies = {
-    FilterContextPool: FilterContextPool,
-    ServiceFactory: ServiceFactory,
+    FilterContextPool,
+    ServiceFactory,
   };
 
   const store = createStore(
