@@ -167,10 +167,8 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           </this.Record>
         )}
         <this.Record header="Deploy info">
-          <>
-            <DeployButton modelId={data.id} />
-            <DeployManager />
-          </>
+          <DeployButton modelId={data.id} />
+          <DeployManager />
         </this.Record>
         <this.Record
           header="Monitoring information"
@@ -201,9 +199,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                       height={400}
                       width={600}
                       marginBottom={80}
-                      marginLeft={60}
+                      marginLeft={80}
                       marginTop={40}
-                      marginRight={60}
+                      marginRight={80}
                       modelId={data.id}
                       // metrics={this.props.serviceStatistics}
                     />
@@ -227,9 +225,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                     <DeployDataChart
                       height={400}
                       width={600}
-                      marginBottom={20}
+                      marginBottom={40}
                       marginLeft={60}
-                      marginTop={40}
+                      marginTop={60}
                       marginRight={60}
                       modelId={data.id}
                       // statistics={this.props.dataStatistics}

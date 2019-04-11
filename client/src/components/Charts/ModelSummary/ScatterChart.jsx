@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 // const canvasWidth = 960;
 const width = 680;
 const height = 400;
-const margin = { top: 40, right: 25, bottom: 60, left: 85 };
+const margin = { top: 40, right: 40, bottom: 60, left: 60 };
 
 class ScatterChart extends Component {
   state = {

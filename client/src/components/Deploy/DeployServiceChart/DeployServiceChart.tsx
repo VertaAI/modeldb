@@ -159,7 +159,7 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
     chart
       .append('text')
       .attr('transform', 'rotate(-90)')
-      .attr('y', 0 - this.props.marginLeft)
+      .attr('y', 0 - this.props.marginLeft + 20)
       .attr('x', 0 - height / 2)
       .attr('dy', '1em')
       .style('text-anchor', 'middle')
@@ -180,7 +180,7 @@ class DeployServiceChart extends React.Component<AllProps, ILocalState> {
     chart
       .append('text')
       .attr('transform', 'rotate(90)')
-      .attr('y', -width - this.props.marginRight)
+      .attr('y', -width - this.props.marginRight + 20)
       .attr('x', 0 + height / 2)
       .attr('dy', '1em')
       .style('text-anchor', 'middle')

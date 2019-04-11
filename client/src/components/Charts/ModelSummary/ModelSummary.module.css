@@ -48,6 +48,6 @@ select {
   font-size: 0.7em;
   font-style: italic;
   justify-content: right;
-  margin: 0.5em 1em 0 !important;
+  margin: 0.5em 0 0 2em !important;
   color: var(--text-color3);
 }

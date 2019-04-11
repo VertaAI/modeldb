@@ -7,10 +7,13 @@
 }
 
 .chart {
-  margin: auto;
+  /* margin: auto;
   margin-left: auto;
   margin-right: auto;
-  display: block;
+  display: block; */
+  background-color: #f9fafc;
+  border-radius: 10px;
+  margin: 0 10px;
 }
 
 .dropdown {
