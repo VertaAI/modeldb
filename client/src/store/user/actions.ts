@@ -40,7 +40,7 @@ export const checkUserAuthentication = (): ActionResult<
   try {
     const user = await ServiceFactory.getAuthenticationService().loadUser();
     dispatch(action(checkUserAuthenticationActionTypes.SUCCESS, user));
-  } catch {
-    dispatch(action(checkUserAuthenticationActionTypes.FAILURE, 'error'));
+  } catch (e) {
+    dispatch(action(checkUserAuthenticationActionTypes.FAILURE, e as string));
   }
 };
