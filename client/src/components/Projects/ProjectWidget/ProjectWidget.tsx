@@ -3,7 +3,7 @@ import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
 
-import Draggable from 'components/Draggable/Draggable';
+import Draggable from 'components/shared/Draggable/Draggable';
 import SharePopup from 'components/SharePopup/SharePopup';
 import { PropertyType } from 'models/Filters';
 import { Project, UserAccess } from 'models/Project';

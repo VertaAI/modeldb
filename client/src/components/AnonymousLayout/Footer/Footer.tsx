@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import Icon from 'components/shared/Icon/Icon';
+
 import styles from './Footer.module.css';
-import facebook_logo from './images/facebook_logo.svg';
-import github_logo from './images/github_logo.svg';
-import linkedIN_logo from './images/linkedIN_logo.svg';
-import twitter_logo from './images/twitter_logo.svg';
 
 // tslint:disable-next-line:variable-name
 export const Footer = () => {
@@ -17,17 +15,17 @@ export const Footer = () => {
         <Link to={'/'}>Privacy</Link>
       </div>
       <div className={styles.social_media}>
-        <Link to={'/'}>
-          <img src={twitter_logo} />
+        <Link className={styles.social} to={'/'}>
+          <Icon type="twitter" />
         </Link>
-        <Link to={'/'}>
-          <img src={facebook_logo} />
+        <Link className={styles.social} to={'/'}>
+          <Icon type="facebook" />
         </Link>
-        <Link to={'/'}>
-          <img src={linkedIN_logo} />
+        <Link className={styles.social} to={'/'}>
+          <Icon type="linkedIn" />
         </Link>
-        <Link to={'/'}>
-          <img src={github_logo} />
+        <Link className={styles.social} to={'/'}>
+          <Icon type="github" />
         </Link>
       </div>
     </footer>

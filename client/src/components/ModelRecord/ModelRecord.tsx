@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { connect, ReactReduxContextValue } from 'react-redux';
+import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
 import { DeployButton, DeployManager } from 'components/Deploy';
-import loader from 'components/images/loader.gif';
-import tagStyles from 'components/TagBlock/TagBlock.module.css';
+import Preloader from 'components/shared/Preloader/Preloader';
+import tagStyles from 'components/shared/TagBlock/TagBlock.module.css';
 import { IArtifact } from 'models/Artifact';
 import { IHyperparameter } from 'models/HyperParameters';
 import { IMetric } from 'models/Metrics';
@@ -90,7 +90,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     const alreadyDeployed = deployState && deployState.status === 'deployed';
 
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <div className={styles.loader}>
+        <Preloader variant="dots" />
+      </div>
     ) : data ? (
       <div className={styles.model_layout}>
         <div className={styles.record_summary}>
@@ -167,7 +169,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
         {alreadyDeployed && (
           <this.Record header="Latency and service metrics">
             {this.props.loadingServiceStatistics ? (
-              <img src={loader} className={styles.loader} />
+              <div className={styles.loader}>
+                <Preloader variant="dots" />
+              </div>
             ) : this.props.serviceStatistics ? (
               JSON.stringify(this.props.serviceStatistics)
             ) : (
@@ -178,7 +182,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
         {alreadyDeployed && (
           <this.Record header="Data metrics">
             {this.props.loadingDataStatistics ? (
-              <img src={loader} className={styles.loader} />
+              <div className={styles.loader}>
+                <Preloader variant="dots" />
+              </div>
             ) : this.props.dataStatistics ? (
               JSON.stringify(this.props.dataStatistics)
             ) : (

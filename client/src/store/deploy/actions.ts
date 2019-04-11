@@ -1,7 +1,6 @@
 import { action } from 'typesafe-actions';
 
 import { IDeployStatusInfo } from 'models/Deploy';
-import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 
 import {
@@ -32,25 +31,27 @@ export const closeDeployManagerForModel = (modelID: string) => ({
 
 export const checkDeployStatusForModelsIfNeed = (
   modelIds: string[]
-): ActionResult<void, any> => async (dispatch, getState) => {
+): ActionResult<void, any> => async (dispatch, getState, deps) => {
   modelIds
     .filter(modelId => needCheckDeployStatus(getState(), modelId))
     .forEach(modelId =>
-      checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined)
+      checkDeployStatusUntilDeployed(modelId)(dispatch, getState, deps)
     );
 };
 
 // todo rename
 export const deployWithCheckingStatusUntilDeployed = (
   modelId: string
-): ActionResult<void, deployAction> => async (dispatch, getState) => {
-  await deploy(modelId)(dispatch, getState, undefined);
-  await checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined);
+): ActionResult<void, deployAction> => async (dispatch, getState, deps) => {
+  await deploy(modelId)(dispatch, getState, deps);
+  await checkDeployStatusUntilDeployed(modelId)(dispatch, getState, deps);
 };
 
-const deploy = (
-  modelId: string
-): ActionResult<void, deployAction> => async dispatch => {
+const deploy = (modelId: string): ActionResult<void, deployAction> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(action(deployActionTypes.DEPLOY_REQUEST, modelId));
 
   await ServiceFactory.getDeployService()
@@ -69,7 +70,8 @@ export const checkDeployStatusUntilDeployed = (
   modelId: string
 ): ActionResult<void, checkDeployStatusAction> => async (
   dispatch,
-  getState
+  getState,
+  deps
 ) => {
   const isCheckingStatusInfo = selectIsLoadingDeployStatusInfo(
     getState(),
@@ -87,15 +89,17 @@ export const checkDeployStatusUntilDeployed = (
     return;
   }
   setTimeout(async () => {
-    await loadDeployStatus(modelId)(dispatch, getState, undefined);
-    checkDeployStatusUntilDeployed(modelId)(dispatch, getState, undefined);
+    await loadDeployStatus(modelId)(dispatch, getState, deps);
+    checkDeployStatusUntilDeployed(modelId)(dispatch, getState, deps);
   }, 1000);
 };
 
 export const loadDeployStatus = (
   modelId: string
 ): ActionResult<void, loadDeployStatusAction> => async (
-  dispatch
+  dispatch,
+  _,
+  { ServiceFactory }
 ): Promise<IDeployStatusInfo> => {
   dispatch(
     action(loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_REQUEST, modelId)
@@ -125,7 +129,11 @@ export const loadDeployStatus = (
 
 export const getServiceStatistics = (
   modelId: string
-): ActionResult<void, fetchServiceStatisticsAction> => async dispatch => {
+): ActionResult<void, fetchServiceStatisticsAction> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(
     action(fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_REQUEST)
   );
@@ -152,7 +160,11 @@ export const getServiceStatistics = (
 
 export const getDataStatistics = (
   modelId: string
-): ActionResult<void, fetchDataStatisticsAction> => async dispatch => {
+): ActionResult<void, fetchDataStatisticsAction> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
   dispatch(
     action(
       fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_REQUEST,

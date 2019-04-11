@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
 
+import Preloader from 'components/shared/Preloader/Preloader';
 import ModelRecord from 'models/ModelRecord';
 import { Project } from 'models/Project';
 import {
@@ -13,9 +14,8 @@ import {
 import { selectProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import loader from '../images/loader.gif';
-import Tag from '../TagBlock/Tag';
-import tagStyles from '../TagBlock/TagBlock.module.css';
+import Tag from '../shared/TagBlock/Tag';
+import tagStyles from '../shared/TagBlock/TagBlock.module.css';
 import styles from './Charts.module.css';
 import ModelExploration from './ModelExploration/ModelExploration';
 import ModelSummary from './ModelSummary/ModelSummary';
@@ -27,8 +27,8 @@ interface ILocalState {
 }
 
 interface IPropsFromState {
-  projects: Project[] | null | undefined;
-  experimentRuns?: ModelRecord[] | undefined;
+  projects?: Project[] | null;
+  experimentRuns: ModelRecord[] | null;
   loading: boolean;
 }
 
@@ -45,7 +45,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
     const { experimentRuns, loading, projects } = this.props;
     const projectId = this.props.match.params.projectId;
 
-    if (experimentRuns !== undefined) {
+    if (experimentRuns) {
       this.initialBarSelection = {
         initialHyperparam: experimentRuns[0].hyperparameters[0].key,
         initialMetric: this.state.selectedMetric,
@@ -56,7 +56,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
     }
 
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <Preloader variant="dots" />
     ) : experimentRuns ? (
       <div>
         <div className={styles.summary_wrapper}>
@@ -102,7 +102,7 @@ class Charts extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = (state: IApplicationState) => ({
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
   experimentRuns: selectExperimentRuns(state),
   projects: selectProjects(state),
   loading: selectIsLoadingExperimentRuns(state),

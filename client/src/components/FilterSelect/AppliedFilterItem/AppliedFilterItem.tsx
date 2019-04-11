@@ -1,8 +1,10 @@
+import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
 import { IFilterData, PropertyType } from 'models/Filters';
 
+import Icon from 'components/shared/Icon/Icon';
 import MetricFilterEditor from '../MetricFilterEditor/MetricFilterEditor';
 import NumberFilterEditor from '../NumberFilterEditor/NumberFilterEditor';
 import StringFilterEditor from '../StringFilterEditor/StringFilterEditor';
@@ -29,18 +31,13 @@ export default class AppliedFilterItem extends React.Component<
       <div className={styles.root}>
         <div className={styles.ctrl}>
           <div className={styles.remove_button} onClick={this.onClickRemove}>
-            {/* <i className="fa fa-filter" aria-hidden="true" /> */}x
+            x
           </div>
           <div className={styles.filter_text}>
             {this.getFormatedFilterName(this.props.data)}
           </div>
           <div className={styles.edit_button} onClick={this.onClickShowEditor}>
-            <i
-              className={
-                this.state.isEditorShown ? 'fa fa-caret-up' : 'fa fa-caret-down'
-              }
-              aria-hidden="true"
-            />
+            <Icon type={this.state.isEditorShown ? 'caret-up' : 'caret-down'} />
           </div>
         </div>
         {this.state.isEditorShown && (

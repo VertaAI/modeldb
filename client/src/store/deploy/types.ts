@@ -11,8 +11,8 @@ export interface IDeployState {
   loadingDeployStatus: Record<ModelID, ICommunication>;
   checkingDeployStatus: Record<ModelID, ICommunication>;
   loadingServiceStatistics: ICommunication;
-  serviceStatistics: IServiceStatistics | null;
   loadingDataStatistics: ICommunication;
+  serviceStatistics: IServiceStatistics | null;
   dataStatistics: IDataStatistics | null;
 }
 

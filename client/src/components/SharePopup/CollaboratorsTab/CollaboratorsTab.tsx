@@ -3,13 +3,15 @@ import React from 'react';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars';
 import { connect } from 'react-redux';
 
+import Button from 'components/shared/Button/Button';
+import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
+import Icon from 'components/shared/Icon/Icon';
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
 import { changeProjectOwner, selectAnyError } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import CollaboratorItem from '../CollaboratorItem/CollaboratorItem';
-import error_icon from '../images/error-icon.svg';
 import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './CollaboratorsTab.module.css';
 
@@ -43,22 +45,11 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
   public render() {
     return this.props.error ? (
       <div className={styles.share_result_content}>
-        <img src={error_icon} />
+        <Icon type="error" className={styles.icon} />
         <span className={styles.share_result_header}>
           There are some errors happened…
         </span>
-        <button
-          className={styles.share_result_button}
-          onClick={this.refreshPage}
-        >
-          <span
-            className={`${styles.share_result_button_text} ${
-              styles.share_result_text
-            }`}
-          >
-            Refresh page
-          </span>
-        </button>
+        <ButtonLikeText onClick={this.refreshPage}>Refresh page</ButtonLikeText>
       </div>
     ) : this.state.changeOwnerMode ? (
       <div className={styles.change_owner_content}>
@@ -72,22 +63,20 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
           />
         </div>
         <div>
-          <button
-            className={`${styles.change_owner_button} ${
-              styles.change_owner_cancel_button
-            }`}
-            onClick={this.hideChangeOwnerMode}
-          >
-            Cancel
-          </button>
-          <button
-            className={`${styles.change_owner_button} ${
-              styles.change_owner_confirm_button
-            }`}
-            onClick={this.changeOwnerOnClick}
-          >
-            Confirm
-          </button>
+          <div className={styles.change_owner_button}>
+            <Button
+              theme="gray"
+              fullWidth={true}
+              onClick={this.hideChangeOwnerMode}
+            >
+              Cancel
+            </Button>
+          </div>
+          <div className={styles.change_owner_button}>
+            <Button fullWidth={true} onClick={this.changeOwnerOnClick}>
+              Confirm
+            </Button>
+          </div>
         </div>
       </div>
     ) : (
@@ -95,7 +84,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
         <Scrollbars
           autoHeightMax={'calc(100vh - 200px)'}
           autoHeight={true}
-          style={{ margin: '30px 16px 0px 40px', width: 'auto' }}
+          style={{ margin: '0 16px 0px 40px', width: 'auto' }}
           onScrollFrame={this.handleScrollbarUpdate}
         >
           {Array.from(this.props.collaborators.entries()).map(

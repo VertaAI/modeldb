@@ -31,12 +31,10 @@ select {
   max-width: 180px;
 }
 
-.chart_selector:after {
-  font-family: FontAwesome;
-  content: '\f107';
-  font-size: 28px;
+.chart_selector_arrow {
+  font-size: 17px;
   position: absolute;
-  top: 36px;
+  top: 44px;
   right: 24px;
   color: rgb(114, 114, 114);
   pointer-events: none;

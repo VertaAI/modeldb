@@ -1,41 +1,53 @@
 import User from 'models/User';
+import {
+  ICommunication,
+  MakeCommunicationActions,
+  makeCommunicationActionTypes,
+} from 'utils/redux/communication';
 
 export interface IUserState {
-  readonly user: User | null;
-  loading: boolean; // todo rename
-  authenticated: boolean;
-  checkingUserAuthentication: boolean;
+  data: {
+    user: User | null;
+    authenticated: boolean;
+  };
+  communications: {
+    checkingUserAuthentication: ICommunication;
+    authenticatingUser: ICommunication;
+    logouting: ICommunication;
+  };
 }
 
-export enum userAuthenticateActionTypes {
-  AUTHENTICATE_USER_REQUEST = '@@user/AUTHENTICATE_USER_REQUEST',
-  AUTHENTICATE_USER_SUCCESS = '@@user/AUTHENTICATE_USER_SUCСESS',
-  AUTHENTICATE_USER_FAILURE = '@@user/AUTHENTICATE_USER_FAILURE',
-}
-export type userAuthenticateAction =
-  | { type: userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST }
-  | {
-      type: userAuthenticateActionTypes.AUTHENTICATE_USER_SUCCESS;
-      payload: User;
-    }
-  | { type: userAuthenticateActionTypes.AUTHENTICATE_USER_FAILURE };
+export const authenticateUserActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@user/AUTHENTICATE_USER_REQUEST',
+  SUCCESS: '@@user/AUTHENTICATE_USER_SUCСESS',
+  FAILURE: '@@user/AUTHENTICATE_USER_FAILURE',
+});
+export type IAuthenticateUserActions = MakeCommunicationActions<
+  typeof authenticateUserActionTypes,
+  { success: User }
+>;
 
-export enum checkUserAuthenticationActionTypes {
-  CHECKING_USER_AUTH_REQUEST = '@@user/CHECKING_USER_AUTH_REQUEST',
-  CHECKING_USER_AUTH_SUCCESS = '@@user/CHECKING_USER_AUTH_SUCСESS',
-  CHECKING_USER_AUTH_FAILURE = '@@user/CHECKING_USER_AUTH_FAILURE',
-}
-export type ICheckUserAuthenticationAction =
-  | { type: checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_REQUEST }
-  | {
-      type: checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_SUCCESS;
-      payload: User | null;
-    }
-  | { type: checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_FAILURE };
+export const checkUserAuthenticationActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@user/CHECK_USER_AUTHENTICATION_REQUEST',
+  SUCCESS: '@@user/CHECK_USER_AUTHENTICATION_SUCСESS',
+  FAILURE: '@@user/CHECK_USER_AUTHENTICATION_FAILURE',
+});
+export type ICheckUserAuthenticationActions = MakeCommunicationActions<
+  typeof checkUserAuthenticationActionTypes,
+  { success: User | null }
+>;
 
-export enum userLogoutActionTypes {
-  LOGOUT_USER = '@@user/LOGOUT_USER',
-}
-export interface IUserLogoutAction {
-  type: userLogoutActionTypes.LOGOUT_USER;
-}
+export const logoutActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@user/LOGOUT_REQUEST',
+  SUCCESS: '@@user/LOGOUT_SUCСESS',
+  FAILURE: '@@user/LOGOUT_FAILURE',
+});
+export type ILogoutActions = MakeCommunicationActions<
+  typeof logoutActionTypes,
+  {}
+>;
+
+export type FeatureAction =
+  | IAuthenticateUserActions
+  | ICheckUserAuthenticationActions
+  | ILogoutActions;

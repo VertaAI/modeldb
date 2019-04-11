@@ -9,7 +9,7 @@ import App from './App';
 import './index.css';
 import configureStore from './store/configureStore';
 
-export const history = createBrowserHistory();
+const history = createBrowserHistory();
 
 const store = configureStore(history);
 

@@ -1,6 +1,7 @@
 import { bind } from 'decko';
 import * as React from 'react';
 
+import TextInput from 'components/shared/TextInput/TextInput';
 import { ComparisonType, IMetricFilterData } from 'models/Filters';
 
 import styles from './MetricFilterEditor.module.css';
@@ -23,7 +24,8 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
           <option value={ComparisonType.LESS}>&lt;</option>
         </select>
 
-        <input
+        <TextInput
+          size="small"
           defaultValue={this.props.data.value.toString()}
           onBlur={this.onBlur}
           onKeyUp={this.onSubmit}

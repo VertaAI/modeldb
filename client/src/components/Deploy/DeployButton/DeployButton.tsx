@@ -3,6 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import Fab from 'components/shared/Fab/Fab';
+import Icon from 'components/shared/Icon/Icon';
 import { IDeployStatusInfo } from 'models/Deploy';
 import {
   selectDeployStatusInfo,
@@ -33,7 +34,7 @@ class DeployButton extends React.PureComponent<AllProps> {
               return (
                 <Fab
                   theme="blue"
-                  icon="upload"
+                  icon={<Icon type="upload" />}
                   isLoading={deployStatusInfo.status === 'unknown'}
                   disabled={deployStatusInfo.status === 'unknown'}
                   onClick={this.onShowDeployManager}

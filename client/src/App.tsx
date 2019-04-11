@@ -4,7 +4,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 
 import AnonymousLayout from 'components/AnonymousLayout/AnonymousLayout';
 import AuthorizedLayout from 'components/AuthorizedLayout/AuthorizedLayout';
-import GlobalPreloader from 'components/GlobalPreloader/GlobalPreloader';
+import GlobalPreloader from 'components/shared/GlobalPreloader/GlobalPreloader';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import {
   checkUserAuthentication,

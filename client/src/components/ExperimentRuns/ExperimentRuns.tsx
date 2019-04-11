@@ -8,22 +8,17 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
 import { DeployManager } from 'components/Deploy';
+import Preloader from 'components/shared/Preloader/Preloader';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
-import {
-  IColumnConfig,
-  IColumnMetaData,
-  selectColumnConfig,
-} from 'store/dashboard-config';
+import { IColumnConfig, selectColumnConfig } from 'store/dashboard-config';
 import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
-import { fetchExperimentRuns } from 'store/experiment-runs';
 import {
   selectExperimentRuns,
   selectIsLoadingExperimentRuns,
 } from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import loader from '../images/loader.gif';
 import {
   defaultColDefinitions,
   returnColumnDefs,
@@ -34,7 +29,7 @@ import styles from './ExperimentRuns.module.css';
 type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
 
 interface IPropsFromState {
-  data?: ModelRecord[] | undefined;
+  data: ModelRecord[] | null;
   loading: boolean;
   defaultColDefinitions: any;
   filterState: { [index: string]: {} };
@@ -71,9 +66,6 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
 
   public componentDidUpdate(prevProps: AllProps) {
-    if (this.gridApi && this.props.data && prevProps.data !== this.props.data) {
-      this.gridApi.setRowData(this.props.data);
-    }
     if (this.props.data && prevProps.data !== this.props.data) {
       this.props.dispatch(
         checkDeployStatusForModelsIfNeed(this.props.data.map(({ id }) => id))
@@ -84,7 +76,7 @@ class ExperimentRuns extends React.Component<AllProps> {
   public render() {
     const { data, loading, columnConfig } = this.props;
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <Preloader variant="dots" />
     ) : data ? (
       <>
         <DeployManager />
@@ -111,6 +103,27 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
 
   @bind
+  private gridRowHeight(params: any) {
+    try {
+      const data = params.node.data;
+      if (
+        (data.metrics && data.metrics.length > 3) ||
+        (data.hyperparameters && data.hyperparameters.length > 3)
+      ) {
+        if (data.metrics && data.metrics.length > data.hyperparameters.length) {
+          return (data.metric.length - 3) * 5 + 220;
+        }
+        return data.hyperparameters.length * 5 + 220;
+      }
+      if (data.tags && data.tags.length >= 6) {
+        return 240;
+      }
+    } catch {}
+
+    return 200;
+  }
+
+  @bind
   private callFilterUpdate() {
     this.gridApi.onFilterChanged();
   }
@@ -120,25 +133,6 @@ class ExperimentRuns extends React.Component<AllProps> {
     this.gridApi = event.api;
     this.columnApi = event.columnApi;
     this.gridApi.setRowData(this.props.data);
-  }
-
-  @bind
-  private gridRowHeight(params: any) {
-    const data = params.node.data;
-    if (
-      (data.metrics && data.metrics.length > 3) ||
-      (data.hyperparameters && data.hyperparameters.length > 3)
-    ) {
-      if (data.metrics.length > data.hyperparameters.length) {
-        return (data.metric.length - 3) * 5 + 220;
-      }
-      return data.hyperparameters.length * 5 + 220;
-    }
-    if (data.tags && data.tags.length >= 6) {
-      return 240;
-    }
-
-    return 200;
   }
 
   @bind

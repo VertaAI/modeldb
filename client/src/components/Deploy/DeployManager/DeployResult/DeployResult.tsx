@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Button from 'components/shared/Button/Button';
+import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
 import Form from 'components/shared/Form/Form';
 import Popup from 'components/shared/Popup/Popup';
@@ -37,16 +37,14 @@ class DeployResult extends React.Component<AllProps> {
               <Form.Item
                 label="URL"
                 additionalContent={
-                  <Button variant="like-link" fullWidth={true} to={api}>
+                  <ButtonLikeText to={api}>
                     <span className={styles.url}>{api}</span>
-                  </Button>
+                  </ButtonLikeText>
                 }
               >
                 <CopyToClipboard text={api}>
                   {onCopy => (
-                    <Button variant="like-link" onClick={onCopy}>
-                      Copy
-                    </Button>
+                    <ButtonLikeText onClick={onCopy}>Copy</ButtonLikeText>
                   )}
                 </CopyToClipboard>
               </Form.Item>

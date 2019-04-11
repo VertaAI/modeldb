@@ -6,7 +6,9 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import Droppable from 'components/Droppable/Droppable';
+import Button from 'components/shared/Button/Button';
+import Droppable from 'components/shared/Droppable/Droppable';
+import TextInput from 'components/shared/TextInput/TextInput';
 import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
@@ -84,15 +86,14 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     return (
       <div className={styles.root}>
         <div>
-          <input
-            className={styles.input}
+          <TextInput
+            value={this.state.txt}
             placeholder={this.props.placeHolderText}
+            icon="search"
+            size="medium"
             onChange={this.onChange}
             onClick={this.onShowPopup}
-            defaultValue={this.state.txt}
-            onKeyUp={this.onSearch}
           />
-          <label className="fa fa-search" aria-hidden={true} />
           {this.renderPopup()}
         </div>
         {this.props.isFiltersSupporting && (
@@ -117,7 +118,9 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
             </Droppable>
 
             <div className={styles.apply_filters_button}>
-              <button onClick={this.onApplyFilters}>Filter</button>
+              <Button fullWidth={true} onClick={this.onApplyFilters}>
+                Filter
+              </Button>
             </div>
           </div>
         )}
@@ -126,9 +129,9 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   }
 
   @bind
-  private onChange(event: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({ ...this.state, txt: event.target.value });
-    this.searchFilterSuggestions(event.target.value);
+  private onChange(value: string) {
+    this.setState({ ...this.state, txt: value });
+    this.searchFilterSuggestions(value);
   }
 
   @bind

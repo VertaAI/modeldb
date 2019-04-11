@@ -1,33 +1,57 @@
 .button {
-  display: inline-block;
+  display: inline-flex;
   border: none;
   background: none;
   cursor: pointer;
+  outline: none;
+  justify-content: center;
+  align-items: center;
 }
 
-.default {
+.theme_default {
+  background-color: var(--main-color2);
+  color: var(--main-color3);
+}
+.theme_default:hover {
+  background-color: #6a84ff;
+}
+.theme_gray {
+  background-color: #eeeeee;
+  color: #5a5a5a;
+}
+.theme_gray:hover {
+  background-color: var(--main-color4);
+}
+
+.size_medium {
+  font-weight: 500;
+  font-size: var(--font-size3);
   height: 34px;
   width: 164px;
   border-radius: 2px;
-  background-color: var(--main-color2);
-  font-size: var(--font-size3);
-  font-weight: 500;
-  line-height: 18px;
-  text-align: center;
-  text-transform: capitalize;
-  color: var(--main-color3);
 }
-.default:hover {
-  background-color: #6a84ff;
+.size_large {
+  font-weight: 400;
+  font-size: var(--font-size1);
+  height: 56px;
+  width: 276px;
+  border-radius: 4px;
+}
+
+.text_transform_default {
+  text-transform: capitalize;
+}
+.text_transform_none {
+  text-transform: none;
 }
 
 .full_width {
   width: 100%;
 }
 
-.like_link {
-  padding: 0;
-  font-size: var(--font-size4);
-  color: var(--main-color2);
-  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
+.icon {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 26px;
+  vertical-align: middle;
 }

@@ -1,5 +1,4 @@
 .cell {
-  margin-top: 1em;
   border: none !important;
   outline: none;
 }
@@ -57,6 +56,7 @@
 }
 
 .model_link {
+  display: block;
   color: var(--main-color2);
   text-decoration: none;
   line-height: 30px;
@@ -118,7 +118,6 @@
   background-color: #fff;
   color: #444;
   line-height: 16px !important;
-  margin-bottom: 15px;
   padding: 10px 20px 10px 10px;
   border: solid 1px lightgrey;
   border-radius: 5px;
@@ -133,6 +132,13 @@
   -moz-box-shadow: 0 5px 25px -5px rgba(0, 0, 0, 0.2);
   box-shadow: 0 0 25px -5px rgba(0, 0, 0, 0.2);
   border: solid 1px #fff; */
+}
+
+.artifact_item {
+  margin-bottom: 15px;
+}
+.artifact_item:last-child {
+  margin-bottom: 0;
 }
 
 .box {
@@ -166,4 +172,8 @@
 .notif {
   grid-column: 1/2;
   grid-row: 1;
+}
+.notif_icon {
+  font-size: 13px;
+  color: var(--main-color2);
 }

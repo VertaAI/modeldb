@@ -3,6 +3,7 @@ import { bind } from 'decko';
 import * as React from 'react';
 import onClickOutside, { HandleClickOutside } from 'react-onclickoutside';
 
+import Icon from '../Icon/Icon';
 import styles from './Select.module.css';
 
 interface ILocalProps<T> {
@@ -34,9 +35,7 @@ class Select<T> extends React.PureComponent<ILocalProps<T>, ILocalState>
       <div className={cn(styles.select, { [styles.select_open]: isOpen })}>
         <div className={styles.input} onClick={this.onOpen}>
           {selectedOption.label}
-          <div className={styles.arrow}>
-            <i className="fa fa-caret-down" />
-          </div>
+          <Icon type="caret-down" className={styles.arrow} />
         </div>
         <div className={styles.options}>
           {options.map((option, i) => (

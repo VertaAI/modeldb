@@ -30,3 +30,8 @@
   margin-left: 20px;
   text-decoration: none;
 }
+
+.social {
+  display: inline-block;
+  font-size: 24px;
+}
