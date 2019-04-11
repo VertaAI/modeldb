@@ -1,0 +1,86 @@
+.ag-header-cell-label .ag-header-cell-text {
+  font-size: 14px;
+  color: var(--text-color2);
+}
+.ag-header-container,
+.ag-floating-top-container,
+.ag-header-cell {
+  cursor: col-resize;
+  border-right: 1px solid transparent;
+  border-left: 1px solid transparent;
+}
+
+.ag-header-cell:hover {
+  border-right: 1px solid rgb(170, 170, 170);
+  border-left: 1px solid rgb(170, 170, 170);
+}
+
+.ag-center-cols-viewport {
+  scroll-behavior: smooth;
+}
+
+.ag-theme-material .ag-cell {
+  padding-right: 13px;
+}
+
+.ag-row {
+  padding: 0 23px;
+}
+
+.grid line {
+  stroke: rgb(238, 238, 238) !important;
+}
+
+.grid > .domain,
+.grid > .tick text {
+  display: none;
+}
+
+.expChart,
+.summaryChart,
+.parallelChart {
+  background-color: #f9fafc;
+  border-radius: 10px;
+  margin: 0 10px;
+}
+
+.axisLabel {
+  font-size: 12px;
+}
+
+.axis > .domain {
+  stroke-width: 1.5px;
+  stroke: rgb(150, 150, 150);
+}
+
+/* .axis,
+.frame {
+  shape-rendering: crispEdges;
+} */
+
+.axis text {
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+  color: #444;
+}
+
+.parallelChart .dimension {
+  cursor: move;
+}
+
+.parallelLines path {
+  fill: none;
+  stroke-width: 1.5px;
+  stroke: var(--main-color2);
+  stroke-opacity: 0.5;
+}
+
+.brush .extent {
+  fill-opacity: 0.3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.parallelLines path.fade {
+  stroke: #000;
+  stroke-opacity: 0.05;
+}

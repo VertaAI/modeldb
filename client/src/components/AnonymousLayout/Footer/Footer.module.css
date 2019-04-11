@@ -1,0 +1,32 @@
+.container {
+  background-color: #122135;
+  height: 56px;
+  display: grid;
+  color: var(--bg-color3);
+  grid-template-columns: 270px auto 229px;
+  grid-template-areas: 'links . social_media';
+  align-items: center;
+}
+
+.footer_site_map {
+  grid-area: links;
+  margin-left: 40px;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.footer_site_map > a {
+  margin-left: 30px;
+  text-decoration: none;
+  color: var(--bg-color3);
+}
+
+.social_media {
+  grid-area: social_media;
+  margin-right: 52.02px;
+}
+
+.social_media > a {
+  margin-left: 20px;
+  text-decoration: none;
+}

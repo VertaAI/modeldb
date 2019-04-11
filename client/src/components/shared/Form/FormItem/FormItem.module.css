@@ -1,0 +1,29 @@
+.form_item {
+  display: flex;
+  height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color1);
+}
+
+.form_item:last-child {
+  border-bottom: none;
+}
+
+.label {
+  color: var(--main-color5);
+  font-size: var(--font-size3);
+  font-weight: 500;
+}
+
+.additional_content {
+  display: inline-block;
+  width: 50%;
+  margin-left: auto;
+  margin-right: 14px;
+}
+
+.content {
+  color: var(--text-color2);
+  display: inline-block;
+}
