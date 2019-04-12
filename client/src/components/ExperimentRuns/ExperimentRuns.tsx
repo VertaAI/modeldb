@@ -7,14 +7,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import { DeployManager } from 'components/Deploy';
 import Preloader from 'components/shared/Preloader/Preloader';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
-import {
-  IColumnConfig,
-  IColumnMetaData,
-  selectColumnConfig,
-} from 'store/dashboard-config';
+import { IColumnConfig, selectColumnConfig } from 'store/dashboard-config';
+import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
 import {
   selectExperimentRuns,
   selectIsLoadingExperimentRuns,
@@ -28,7 +26,7 @@ import {
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 import styles from './ExperimentRuns.module.css';
 
-type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
+type IUrlProps = GetRouteParams<typeof routes.experimentRuns>;
 
 interface IPropsFromState {
   data: ModelRecord[] | null;
@@ -51,19 +49,27 @@ type AllProps = RouteComponentProps<IUrlProps> &
 
 class ExperimentRuns extends React.Component<AllProps> {
   private gridApi: any;
-  private columnApi: any;
   private data: any;
 
   public componentWillReceiveProps(nextProps: AllProps) {
-    if (this.gridApi !== undefined) {
-      setTimeout(this.callFilterUpdate, 100);
+    if (this.props !== nextProps && this.gridApi !== undefined) {
+      setTimeout(this.callFilterUpdate, 1000);
     }
+
     if (this.gridApi && this.props.columnConfig !== nextProps.columnConfig) {
       this.gridApi.setColumnDefs(returnColumnDefs(nextProps.columnConfig));
       const el = document.getElementsByClassName('ag-center-cols-viewport');
       if (el !== undefined && el[0] !== undefined) {
-        el[0].scrollLeft += 200;
+        el[0].scrollLeft += 300;
       }
+    }
+  }
+
+  public componentDidUpdate(prevProps: AllProps) {
+    if (this.props.data && prevProps.data !== this.props.data) {
+      this.props.dispatch(
+        checkDeployStatusForModelsIfNeed(this.props.data.map(({ id }) => id))
+      );
     }
   }
 
@@ -72,13 +78,16 @@ class ExperimentRuns extends React.Component<AllProps> {
     return loading ? (
       <Preloader variant="dots" />
     ) : data ? (
-      <React.Fragment>
+      <>
         <DashboardConfig />
+        <DeployManager />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
+            reactNext={true}
             pagination={true}
             onGridReady={this.onGridReady}
             animateRows={true}
+            getRowHeight={this.gridRowHeight}
             columnDefs={returnColumnDefs(columnConfig)}
             rowData={undefined}
             domLayout="autoHeight"
@@ -87,7 +96,7 @@ class ExperimentRuns extends React.Component<AllProps> {
             doesExternalFilterPass={this.doesExternalFilterPass}
           />
         </div>
-      </React.Fragment>
+      </>
     ) : (
       ''
     );
@@ -101,8 +110,28 @@ class ExperimentRuns extends React.Component<AllProps> {
   @bind
   private onGridReady(event: GridReadyEvent) {
     this.gridApi = event.api;
-    this.columnApi = event.columnApi;
     this.gridApi.setRowData(this.props.data);
+  }
+
+  @bind
+  private gridRowHeight(params: any) {
+    try {
+      const data = params.node.data;
+      if (
+        (data.metrics && data.metrics.length > 3) ||
+        (data.hyperparameters && data.hyperparameters.length > 3)
+      ) {
+        if (data.metrics && data.metrics.length > data.hyperparameters.length) {
+          return (data.metric.length - 3) * 5 + 220;
+        }
+        return data.hyperparameters.length * 5 + 220;
+      }
+      if (data.tags && data.tags.length >= 6) {
+        return 240;
+      }
+    } catch {}
+
+    return 200;
   }
 
   @bind

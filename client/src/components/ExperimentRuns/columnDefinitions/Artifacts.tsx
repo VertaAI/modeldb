@@ -14,6 +14,15 @@ class ArtifactsColDef extends React.Component<any> {
       <div>
         {artifacts &&
           artifacts.map((artifact: any, i: number) => {
+            const icon = (() => {
+              if (artifact.type === 'IMAGE') {
+                return 'image';
+              }
+              if (artifact.type === 'BINARY') {
+                return 'cube';
+              }
+              return 'codepen';
+            })();
             return (
               <Link
                 key={i}
@@ -28,16 +37,9 @@ class ArtifactsColDef extends React.Component<any> {
                   title="view ModelRecord"
                 >
                   <div className={styles.notif}>
-                    <Icon
-                      className={styles.notif_icon}
-                      type={artifact.type === 'IMAGE' ? 'image' : 'codepen'}
-                    />
+                    <Icon className={styles.notif_icon} type={icon} />
                   </div>
-                  <div className={styles.type}>
-                    {artifact.type} &nbsp; &nbsp; &nbsp; ->{' '}
-                  </div>
-                  <div className={styles.key}>{artifact.key}</div>
-                  <div className={styles.path}>{artifact.path}</div>
+                  <div className={styles.artifactKey}>{artifact.key}</div>
                 </div>
               </Link>
             );

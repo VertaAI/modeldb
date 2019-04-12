@@ -1,0 +1,52 @@
+.tooltip {
+  position: absolute;
+  background-color: #d6fff9;
+  padding: 5px;
+  font-size: 14px;
+  display: none;
+}
+
+.chart {
+  /* margin: auto;
+  margin-left: auto;
+  margin-right: auto;
+  display: block; */
+  background-color: #f9fafc;
+  border-radius: 10px;
+  margin: 0 10px;
+}
+
+.dropdown {
+  padding: 10px;
+  outline: none;
+}
+
+select {
+  outline: none;
+  background: #f0f3fb;
+  border: 1px solid #f0f3fb;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 16px;
+  color: var(--bg-color2);
+  max-width: 180px;
+  cursor: pointer;
+  appearance: none;
+  margin-top: 5px;
+}
+
+.chart_selector {
+  padding: 10px;
+  cursor: pointer;
+  position: relative;
+  max-width: 180px;
+}
+
+.chart_selector_arrow {
+  font-size: 17px;
+  position: absolute;
+  top: 44px;
+  right: 24px;
+  color: rgb(114, 114, 114);
+  pointer-events: none;
+}

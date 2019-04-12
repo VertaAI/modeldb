@@ -34,7 +34,7 @@ export interface MakeCommunicationActionTypes<
 
 export type MakeCommunicationActions<
   T extends ICommunicationActionTypes<any, any, any>,
-  P extends { request?: any; success?: any; failure?: string }
+  P extends { request?: any; success?: any; failure?: any }
 > = RecordValues<{
   request: P extends { request: any }
     ? IAction<T['REQUEST'], P['request']>

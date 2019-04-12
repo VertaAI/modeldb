@@ -10,14 +10,17 @@ import {
   dashboardConfigReducer,
   IDashboardConfigState,
 } from './dashboard-config';
+import { deployReducer, IDeployState } from './deploy';
 import { experimentRunsReducer, IExperimentRunsState } from './experiment-runs';
 import { filtersReducer, IFilterState } from './filter';
+import { ILocationState, locationReducer } from './location';
 import { IModelRecordState, modelRecordReducer } from './model-record';
 import { IProjectsState, projectsReducer } from './projects';
 import { IProjectsPageState, projectsPageReducer } from './projectsPage';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
+  deploy: IDeployState;
   collaboration: ICollaborationState;
   dashboardConfig: IDashboardConfigState;
   experimentRuns: IExperimentRunsState;
@@ -27,6 +30,7 @@ export interface IApplicationState {
   projectsPage: IProjectsPageState;
   router?: RouterState;
   filters: IFilterState;
+  location: ILocationState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -36,6 +40,7 @@ export interface IConnectedReduxProps<A extends Action = any> {
 
 export const createRootReducer = (history: History) =>
   combineReducers<IApplicationState>({
+    deploy: deployReducer,
     collaboration: collaborationReducer,
     dashboardConfig: dashboardConfigReducer,
     experimentRuns: experimentRunsReducer,
@@ -45,6 +50,7 @@ export const createRootReducer = (history: History) =>
     projects: projectsReducer,
     projectsPage: projectsPageReducer,
     router: connectRouter(history),
+    location: locationReducer,
   });
 
 export interface IThunkActionDependencies {

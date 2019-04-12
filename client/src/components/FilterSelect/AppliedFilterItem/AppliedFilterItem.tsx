@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { IFilterData, PropertyType } from 'models/Filters';
+import { ComparisonType, IFilterData, PropertyType } from 'models/Filters';
 
 import Icon from 'components/shared/Icon/Icon';
 import MetricFilterEditor from '../MetricFilterEditor/MetricFilterEditor';
@@ -73,7 +73,20 @@ export default class AppliedFilterItem extends React.Component<
     }
 
     if (filter.value !== undefined) {
-      result = `${result}: ${filter.value}`;
+      if (filter.type == PropertyType.METRIC) {
+        let adjustedVal = String(Math.round(filter.value * 10000) / 10000);
+        if (adjustedVal == '0') adjustedVal = filter.value.toExponential();
+        let comparison = '';
+        if (filter.comparisonType == ComparisonType.MORE) comparison = '>';
+        else if (filter.comparisonType == ComparisonType.EQUALS) {
+          comparison = '=';
+        } else if (filter.comparisonType == ComparisonType.LESS) {
+          comparison = '<';
+        }
+        result = `${result} ${comparison} ${adjustedVal}`;
+      } else {
+        result = `${result}: ${filter.value}`;
+      }
     }
 
     return result;

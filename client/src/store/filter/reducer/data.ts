@@ -101,11 +101,6 @@ const commonReducer: Reducer<IFilterState['data'], FeatureAction> = (
     }
     case changeContextActionTypes.CHANGE_CONTEXT: {
       return { ...state, context: action.payload };
-      // const contexts = state.contexts;
-      // if (contexts[action.payload] !== undefined) {
-      //   return { ...state, context: action.payload };
-      // }
-      // return { ...state, context: undefined };
     }
     case suggestFiltersActionTypes.SUCCESS: {
       return { ...state, foundFilters: action.payload };

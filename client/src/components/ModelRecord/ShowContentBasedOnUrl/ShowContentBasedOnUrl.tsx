@@ -27,14 +27,16 @@ export default class ShowContentBasedOnUrl extends React.Component<
       method: 'HEAD',
     };
 
-    fetch(this.props.path, configInit).then((value: Response) => {
-      const contentType = value.headers.get('content-type');
-      if (!contentType) return;
+    if (this.props.path.split(':')[0] == 'http') {
+      fetch(this.props.path, configInit).then((value: Response) => {
+        const contentType = value.headers.get('content-type');
+        if (!contentType) return;
 
-      if (contentType.startsWith('image')) {
-        this.setState({ ...this.state, urlContentType: ContentType.IMAGE });
-      }
-    });
+        if (contentType.startsWith('image')) {
+          this.setState({ ...this.state, urlContentType: ContentType.IMAGE });
+        }
+      });
+    }
   }
 
   public render() {

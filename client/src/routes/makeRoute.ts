@@ -7,7 +7,7 @@ export interface IRouteSettings<T> {
 export interface IRoute<T> {
   getPath: () => string;
   getRedirectPath: (options: T) => string;
-  getMatch(location: string): T | null;
+  getMatch(location: string, exact?: boolean): T | null;
 }
 
 export default function makeRoute<T>({
@@ -17,9 +17,9 @@ export default function makeRoute<T>({
   return {
     getPath,
     getRedirectPath: getRedirectPath || getPath,
-    getMatch: (location: string) => {
+    getMatch: (location: string, exact: boolean = true) => {
       const path = getPath();
-      const match = matchPath<T>(location, { path, exact: true });
+      const match = matchPath<T>(location, { path, exact });
       if (match) {
         return match.params;
       }

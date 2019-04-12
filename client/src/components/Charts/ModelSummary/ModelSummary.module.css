@@ -6,8 +6,8 @@
 
 select {
   outline: none;
-  background: #f0f3fb;
-  border: 1px solid #f0f3fb;
+  background: #f9fafc;
+  border: 1px solid #f9fafc;
   border-radius: 4px;
   width: 100%;
   padding: 20px;
@@ -23,19 +23,29 @@ select {
   cursor: pointer;
   position: relative;
   max-width: 180px;
+  margin-top: 1em;
 }
 
-.chart_selector:after {
-  font-family: FontAwesome;
-  content: '\f107';
-  font-size: 28px;
+.chart_selector_arrow {
+  font-size: 17px;
   position: absolute;
-  top: 36px;
+  top: 44px;
   right: 24px;
   color: rgb(114, 114, 114);
   pointer-events: none;
 }
 
-select::-ms-expand {
-  display: none;
+.chart_selector_label {
+  color: var(--text-color3);
+  font-size: 0.85em;
+}
+
+.scatterMeta {
+  display: grid;
+  max-width: 650px;
+  font-size: 0.7em;
+  font-style: italic;
+  justify-content: right;
+  margin: 0.5em 0 0 2em !important;
+  color: var(--text-color3);
 }

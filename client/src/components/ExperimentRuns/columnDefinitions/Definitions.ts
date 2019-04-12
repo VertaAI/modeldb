@@ -2,7 +2,6 @@ import ArtifactsColDef from './Artifacts';
 import styles from './ColumnDefs.module.css';
 import DatasetsColDef from './Datasets';
 import HyperparamsColDef from './Hyperparams';
-// import ObservationsColDef from './Observations';
 import MetricsColDef from './Metrics';
 import ModelRecordColDef from './ModelRecord';
 import SummaryColDef from './Summary';
@@ -15,31 +14,28 @@ export const defaultColDefinitions = {
 export const returnColumnDefs = (updatedConfig: any) => {
   return [
     {
-      headerName: 'IDs',
+      headerName: 'Models',
       field: 'data',
-      width: 190,
+      width: 200,
       cellRendererFramework: ModelRecordColDef,
       cellClass: [styles.cell, styles.modelDescription],
       hide: !updatedConfig.get('id').checked,
-      autoHeight: true,
     },
     {
       headerName: 'Summary',
       field: 'data',
       cellRendererFramework: SummaryColDef,
-      width: 180,
+      width: 200,
       cellClass: styles.cell,
       hide: !updatedConfig.get('summary').checked,
-      autoHeight: true,
     },
     {
       headerName: 'Metrics',
       field: 'metrics',
       cellRendererFramework: MetricsColDef,
-      width: 200,
+      width: 220,
       cellClass: styles.cell,
       hide: !updatedConfig.get('metrics').checked,
-      autoHeight: true,
     },
     {
       headerName: 'Hyperparameters',
@@ -48,16 +44,14 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellRendererFramework: HyperparamsColDef,
       cellClass: styles.cell,
       hide: !updatedConfig.get('hyperparameters').checked,
-      autoHeight: true,
     },
     {
       headerName: 'Artifacts',
       field: 'artifacts',
       cellRendererFramework: ArtifactsColDef,
-      width: 260,
+      width: 200,
       cellClass: styles.cell,
       hide: !updatedConfig.get('artifacts').checked,
-      autoHeight: true,
     },
     {
       headerName: 'Datasets',
@@ -66,15 +60,6 @@ export const returnColumnDefs = (updatedConfig: any) => {
       width: 240,
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked,
-      autoHeight: true,
     },
-    // {
-    //   headerName: 'Observations',
-    //   field: 'observations',
-    //   cellRendererFramework: ObservationsColDef,
-    //   width: 200,
-    //   cellClass: styles.cell,
-    //   hide: !updatedConfig.get('observations').checked
-    // }
   ];
 };

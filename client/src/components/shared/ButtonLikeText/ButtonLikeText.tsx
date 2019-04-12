@@ -12,7 +12,7 @@ class ButtonLikeText extends React.PureComponent<ILocalProps> {
   public render() {
     const { to, children, onClick } = this.props;
     const Elem = (props: React.HTMLProps<any>) =>
-      to ? <a href={to} {...props} /> : <button {...props} />;
+      to ? <a href={to} {...props} /> : <button {...props} type="button" />;
     return (
       <Elem className={styles.button_like_text} onClick={onClick}>
         {children}

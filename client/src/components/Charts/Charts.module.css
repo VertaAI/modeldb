@@ -13,14 +13,30 @@
   font-size: 9px;
 }
 
-.chartsHeading {
-  font-size: '20px';
-  font-weight: 500;
-}
-
 .chartsBlock {
   float: right;
-  margin-top: -40px;
-  margin-left: -60px;
-  padding: 0 50px 0 0px;
+  margin-top: -1em;
+  margin-right: 120px;
+}
+
+.chartHeader {
+  font-size: 1.15em;
+  color: var(--main-color5);
+  padding: 0.5em;
+}
+
+.chartDescription {
+  padding: 0 0.5em;
+}
+
+.subHeading {
+  color: var(--text-color3);
+  font-size: 0.85em;
+  margin-bottom: 0.25em;
+}
+.chartMeta {
+  padding: 0.25em 0;
+}
+.tagBlock {
+  font-size: 0.85em;
 }

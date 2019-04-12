@@ -17,6 +17,10 @@
   border: none;
 }
 
+.record_divider {
+  grid-template-columns: auto;
+}
+
 .experiment_link {
   font-size: 13px;
   text-decoration: none;
@@ -30,15 +34,25 @@
   margin: 5px 0;
 }
 
-.experiment_link:hover {
+/* .experiment_link:hover {
   background-color: #e6e6e6;
-}
+} */
 
-.parma_link_label {
+/* .parma_link_label {
   color: rgb(141, 141, 141);
 }
 
 .parma_link_value {
+  font-weight: 500;
+  color: var(--text-color1);
+} */
+
+.parma_link_value {
+  font-size: 0.8em;
+  color: rgb(75, 75, 75);
+}
+
+.parma_link_label {
   font-weight: 500;
   color: var(--text-color1);
 }
@@ -84,6 +98,11 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 18px;
+}
+
+.record_header_divider {
+  font-size: 18px;
+  margin: 5px 0;
 }
 
 .record_value {

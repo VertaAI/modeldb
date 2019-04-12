@@ -2,6 +2,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
+import {
+  DeployButton,
+  DeployDataChart,
+  DeployManager,
+  DeployServiceChart,
+} from 'components/Deploy';
 import Preloader from 'components/shared/Preloader/Preloader';
 import tagStyles from 'components/shared/TagBlock/TagBlock.module.css';
 import { IArtifact } from 'models/Artifact';
@@ -10,35 +16,83 @@ import { IMetric } from 'models/Metrics';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
 import {
+  checkDeployStatusUntilDeployed,
+  getDataStatistics,
+  getServiceStatistics,
+  selectDataStatistics,
+  selectDeployStatusInfo,
+  selectIsLoadingDataStatistics,
+  selectIsLoadingServiceStatistics,
+  selectServiceStatistics,
+} from 'store/deploy';
+import {
   fetchModelRecord,
   selectIsLoadingModelRecord,
   selectModelRecord,
 } from 'store/model-record';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
+import {
+  IDataStatistics,
+  IDeployStatusInfo,
+  IServiceStatistics,
+} from 'models/Deploy';
 import styles from './ModelRecord.module.css';
 import ShowContentBasedOnUrl from './ShowContentBasedOnUrl/ShowContentBasedOnUrl';
 
 type IUrlProps = GetRouteParams<typeof routes.modelRecord>;
 
 interface IPropsFromState {
-  data?: ModelRecord | null;
-  loading: boolean;
+  data: ModelRecord | null;
+  loadingModelRecord: boolean;
+  deployState: IDeployStatusInfo | null;
+  serviceStatistics: IServiceStatistics | null;
+  dataStatistics: IDataStatistics | null;
+  loadingServiceStatistics: boolean;
+  loadingDataStatistics: boolean;
 }
 
 type AllProps = RouteComponentProps<IUrlProps> &
   IPropsFromState &
   IConnectedReduxProps;
 
-class ModelRecordLayout extends React.Component<AllProps> {
+class ModelRecordLayout extends React.PureComponent<AllProps> {
   public componentDidMount() {
     this.props.dispatch(
       fetchModelRecord(this.props.match.params.modelRecordId)
     );
+    if (this.props.data) {
+      this.props.dispatch(checkDeployStatusUntilDeployed(this.props.data.id));
+      if (
+        this.props.deployState &&
+        this.props.deployState.status === 'deployed'
+      ) {
+        this.props.dispatch(getServiceStatistics(this.props.data.id));
+        this.props.dispatch(getDataStatistics(this.props.data.id));
+      }
+    }
+  }
+
+  public componentDidUpdate(prevProps: AllProps) {
+    if (this.props.data && prevProps.data !== this.props.data) {
+      this.props.dispatch(checkDeployStatusUntilDeployed(this.props.data.id));
+    }
+
+    if (
+      this.props.data &&
+      ((prevProps.deployState && prevProps.deployState.status !== 'deployed') ||
+        !prevProps.deployState) &&
+      this.props.deployState &&
+      this.props.deployState.status === 'deployed'
+    ) {
+      this.props.dispatch(getServiceStatistics(this.props.data.id));
+      this.props.dispatch(getDataStatistics(this.props.data.id));
+    }
   }
 
   public render() {
-    const { data, loading } = this.props;
+    const { data, loadingModelRecord: loading, deployState } = this.props;
+    const alreadyDeployed = deployState && deployState.status === 'deployed';
 
     return loading ? (
       <div className={styles.loader}>
@@ -51,7 +105,7 @@ class ModelRecordLayout extends React.Component<AllProps> {
             <div className={styles.record_label}>Name</div>
             <div className={styles.record_name}>{data.name}</div>
             <br />
-            <div className={styles.record_label}>Tags</div>
+            {data.tags && <div className={styles.record_label}>Tags</div>}
             <div>
               {data.tags &&
                 data.tags.map((value: string, key: number) => {
@@ -64,50 +118,126 @@ class ModelRecordLayout extends React.Component<AllProps> {
             </div>
           </div>
           <div className={styles.record_summary_meta}>
-            {this.renderParmaLink('Model ID:', data.id.slice(0, 4) + '..')}
-            {this.renderParmaLink(
-              'Project ID:',
-              data.projectId.slice(0, 4) + '..'
-            )}
-            {this.renderParmaLink(
-              'Experiment ID:',
-              data.experimentId.slice(0, 4) + '..'
-            )}
+            <this.ParmaLink label="Model ID:" value={data.id} />
+            <this.ParmaLink label="Project ID:" value={data.projectId} />
+            <this.ParmaLink label="Experiment ID:" value={data.experimentId} />
           </div>
         </div>
-        {this.renderTextRecord('Code version', data.codeVersion)}
-        {data.hyperparameters &&
-          this.renderListRecord(
-            'Hyperparameters',
-            data.hyperparameters.map((value: IHyperparameter, key: number) => {
+        {data.codeVersion! && (
+          <this.Record header="Code version">{data.codeVersion}</this.Record>
+        )}
+        {data.hyperparameters && (
+          <this.Record header="Hyperparameters">
+            {data.hyperparameters.map((value: IHyperparameter, key: number) => {
               return (
                 <div key={key}>
                   {value.key}: {value.value}
                 </div>
               );
-            })
-          )}
-        {data.metrics &&
-          this.renderListRecord(
-            'Metrics',
-            data.metrics.map((value: IMetric, key: number) => {
+            })}
+          </this.Record>
+        )}
+        {data.metrics && (
+          <this.Record header="Metrics">
+            {data.metrics.map((value: IMetric, key: number) => {
               return (
                 <div key={key}>
                   {value.key}: {value.value}
                 </div>
               );
-            })
-          )}
-        {data.artifacts &&
-          this.renderListRecord(
-            'Artifacts',
-            data.artifacts.map((value: IArtifact, key: number) => {
+            })}
+          </this.Record>
+        )}
+        {data.artifacts && (
+          <this.Record header="Artifacts">
+            {data.artifacts.map((value: IArtifact, key: number) => {
               return (
                 <div key={key}>
                   {value.key}: <ShowContentBasedOnUrl path={value.path} />
                 </div>
               );
-            })
+            })}
+          </this.Record>
+        )}
+        {data.datasets && (
+          <this.Record header="Datasets">
+            {data.datasets.map((value: IArtifact, key: number) => {
+              return (
+                <div key={key}>
+                  {value.key}: <ShowContentBasedOnUrl path={value.path} />
+                </div>
+              );
+            })}
+          </this.Record>
+        )}
+        <this.Record header="Deploy info">
+          <DeployButton modelId={data.id} />
+          <DeployManager />
+        </this.Record>
+        <this.Record
+          header="Monitoring information"
+          additionalHeaderClassName={styles.record_header_divider}
+          additionalContainerClassName={styles.record_divider}
+        />
+        {(!deployState || deployState.status !== 'deployed') && (
+          <div className={styles.record_header}>No monitoring information</div>
+        )}
+        {alreadyDeployed &&
+          (!this.props.serviceStatistics ||
+            !this.props.serviceStatistics.time) && (
+            <div className={styles.record_header}>
+              No monitoring information in the time window considered
+            </div>
+          )}
+        {alreadyDeployed &&
+          this.props.serviceStatistics &&
+          this.props.serviceStatistics.time && (
+            <div className={styles.chart}>
+              {this.props.loadingServiceStatistics ? (
+                <Preloader variant="dots" />
+              ) : this.props.serviceStatistics ? (
+                <>
+                  <this.Record header="Service behavior">
+                    <DeployServiceChart
+                      height={400}
+                      width={600}
+                      marginBottom={80}
+                      marginLeft={80}
+                      marginTop={40}
+                      marginRight={80}
+                      modelId={data.id}
+                    />
+                  </this.Record>
+                </>
+              ) : (
+                ''
+              )}
+            </div>
+          )}
+        {alreadyDeployed &&
+          this.props.dataStatistics &&
+          this.props.dataStatistics.size > 0 && (
+            <div className={styles.chart}>
+              {this.props.loadingServiceStatistics ? (
+                <Preloader variant="dots" />
+              ) : this.props.dataStatistics ? (
+                <>
+                  <this.Record header="Data behavior">
+                    <DeployDataChart
+                      height={400}
+                      width={600}
+                      marginBottom={40}
+                      marginLeft={60}
+                      marginTop={60}
+                      marginRight={60}
+                      modelId={data.id}
+                    />
+                  </this.Record>
+                </>
+              ) : (
+                ''
+              )}
+            </div>
           )}
       </div>
     ) : (
@@ -115,54 +245,58 @@ class ModelRecordLayout extends React.Component<AllProps> {
     );
   }
 
-  private renderRecord(
-    header: string,
-    content: JSX.Element[],
-    additionalValueClassName: string = ''
-  ) {
-    return content && content.length > 0 ? (
-      <div className={styles.record}>
-        <div className={styles.record_header}>{header}</div>
+  // tslint:disable-next-line:function-name
+  private Record(props: {
+    header: string;
+    children?: React.ReactNode;
+    additionalValueClassName?: string;
+    additionalContainerClassName?: string;
+    additionalHeaderClassName?: string;
+  }) {
+    const {
+      header,
+      children,
+      additionalValueClassName,
+      additionalContainerClassName,
+      additionalHeaderClassName,
+    } = props;
+    return (
+      <div className={`${styles.record} ${additionalContainerClassName}`}>
+        <div className={`${styles.record_header} ${additionalHeaderClassName}`}>
+          {header}
+        </div>
         <div className={`${styles.record_value} ${additionalValueClassName}`}>
-          {content}
+          {children}
         </div>
       </div>
-    ) : (
-      ''
     );
   }
 
-  private renderParmaLink(label: string, value: string) {
+  // tslint:disable-next-line:function-name
+  private ParmaLink(props: { label: string; value: string }) {
+    const { label, value } = props;
     return (
       <div className={styles.experiment_link}>
         <span className={styles.parma_link_label}>{label}</span>{' '}
-        <span className={styles.parma_link_value}>{value}</span>
+        <span className={styles.parma_link_value}>{value.slice(0, 6)}</span>
       </div>
     );
   }
-
-  private renderTextRecord(
-    header: string,
-    value: string,
-    additionalValueClassName: string = ''
-  ) {
-    return value
-      ? this.renderRecord(
-          header,
-          [<span key={0}>{value}</span>],
-          additionalValueClassName
-        )
-      : '';
-  }
-
-  private renderListRecord(header: string, content: JSX.Element[]) {
-    return this.renderRecord(header, content, styles.list);
-  }
 }
 
-const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
-  data: selectModelRecord(state),
-  loading: selectIsLoadingModelRecord(state),
-});
+const mapStateToProps = (state: IApplicationState): IPropsFromState => {
+  const modelRecord = selectModelRecord(state);
+  return {
+    data: modelRecord,
+    dataStatistics: selectDataStatistics(state),
+    deployState: modelRecord
+      ? selectDeployStatusInfo(state, modelRecord.id)
+      : null,
+    loadingDataStatistics: selectIsLoadingDataStatistics(state),
+    loadingModelRecord: selectIsLoadingModelRecord(state),
+    loadingServiceStatistics: selectIsLoadingServiceStatistics(state),
+    serviceStatistics: selectServiceStatistics(state),
+  };
+};
 
 export default connect(mapStateToProps)(ModelRecordLayout);

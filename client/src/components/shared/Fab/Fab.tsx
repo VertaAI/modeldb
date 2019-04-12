@@ -6,11 +6,11 @@ import styles from './Fab.module.css';
 
 interface ILocalProps {
   children: React.ReactNode;
-  theme: 'blue' | 'green';
+  theme: 'blue' | 'green' | 'red';
   disabled?: boolean;
   isLoading?: boolean;
   variant?: 'outlined' | 'default';
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   onClick(): void;
 }
 
@@ -34,6 +34,7 @@ class Fab extends React.PureComponent<ILocalProps> {
           [styles.variant_default]: variant === 'default',
           [styles.theme_blue]: theme === 'blue',
           [styles.theme_green]: theme === 'green',
+          [styles.theme_red]: theme === 'red',
         })}
         disabled={disabled}
         onClick={onClick}

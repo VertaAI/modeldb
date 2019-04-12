@@ -16,15 +16,15 @@ export default class ProjectPageTabs extends React.Component<ILocalProps> {
     return (
       <nav className={styles.nav_menu}>
         {this.renderActiveLink(
-          routes.expirementRuns,
-          { projectId },
-          'Experiment Runs',
-          activeRoute
-        )}
-        {this.renderActiveLink(
           routes.charts,
           { projectId },
           'Charts',
+          activeRoute
+        )}
+        {this.renderActiveLink(
+          routes.experimentRuns,
+          { projectId },
+          'Experiment Runs',
           activeRoute
         )}
       </nav>
