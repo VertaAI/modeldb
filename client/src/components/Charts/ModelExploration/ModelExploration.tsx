@@ -71,7 +71,6 @@ export default class ModelExploration extends React.Component<
 
   public render() {
     const { expRuns } = this.props;
-    console.log(this.state.computeXAxisFields);
     return expRuns ? (
       <div className={styles.summary_wrapper}>
         <div className={styles.chartHeader}>Explore Visualizations</div>
@@ -152,9 +151,6 @@ export default class ModelExploration extends React.Component<
               })}
             </select>
           </div>
-          {/* <div className={styles.compute_button}>
-            <button>Compute Charts</button>
-          </div> */}
         </div>
         <div>
           <BarChart
@@ -168,7 +164,11 @@ export default class ModelExploration extends React.Component<
               this.state.selectedAggregate,
               this.groupBy(
                 this.state.computeXAxisFields,
-                (field: any) => field[this.state.selectedXAxis]
+                (field: IChartData) => {
+                  if (field[this.state.selectedXAxis]) {
+                    return field[this.state.selectedXAxis];
+                  }
+                }
               )
             )}
           />
@@ -218,15 +218,19 @@ export default class ModelExploration extends React.Component<
 
   // Utility Functions
   @bind
-  public groupBy(list: object[], keyGetter: any) {
+  public groupBy(list: IChartData[], keyGetter: any) {
     const map = new Map();
-    list.forEach((item: any) => {
+    list.forEach((item: IChartData) => {
       const key = keyGetter(item);
       const collection = map.get(key);
       if (!collection) {
-        map.set(key, [item[this.state.selectedYAxis]]);
+        if (item[this.state.selectedYAxis]) {
+          map.set(key, [item[this.state.selectedYAxis]]);
+        }
       } else {
-        collection.push(item[this.state.selectedYAxis]);
+        if (item[this.state.selectedYAxis]) {
+          collection.push(item[this.state.selectedYAxis]);
+        }
       }
     });
     return map;
@@ -332,8 +336,6 @@ export default class ModelExploration extends React.Component<
     this.summaryParams.add('experiment_id');
     this.xAxisParams.add('project_id');
     this.summaryParams.add('project_id');
-    // this.xAxisParams.add('id');
-    // this.xAxisParams.add('start_time');
     return expRuns
       .map(modeRecord => {
         const fields: any = {};
@@ -375,7 +377,7 @@ export default class ModelExploration extends React.Component<
         fields.experiment_id = modeRecord.experimentId.substring(0, 8);
         fields.project_id = modeRecord.projectId.substring(0, 8);
         fields.exp_run_id = modeRecord.id.substring(0, 8);
-        fields.start_time = modeRecord.startTime;
+        fields.start_time = modeRecord.dateCreated;
 
         if (modeRecord.codeVersion) {
           fields.code_version = modeRecord.codeVersion;
@@ -386,11 +388,11 @@ export default class ModelExploration extends React.Component<
           this.xAxisParams.add('owner');
           this.summaryParams.add('owner');
         }
-        if (modeRecord.tags) {
-          modeRecord.tags.forEach((tag: string) => {
-            fields[`tag_${tag}`] = tag;
-          });
-        }
+        // if (modeRecord.tags) {
+        //   modeRecord.tags.forEach((tag: string) => {
+        //     fields[`tag_${tag}`] = tag;
+        //   });
+        // }
         return fields;
       })
       .filter(obj => obj !== undefined);
