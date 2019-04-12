@@ -167,17 +167,6 @@ export default class ModelExploration extends React.Component<
                 }
               )
             )}
-            // data={this.reduceMetricForAgg(
-            //   this.groupBy(
-            //     this.state.computeXAxisFields,
-            //     (field: IChartData) => {
-            //       if (field[this.state.selectedXAxis]) {
-            //         return field[this.state.selectedXAxis];
-            //       }
-            //     }
-            //   ),
-            //   this.state.selectedAggregate
-            // )}
           />
         </div>
         <br />
@@ -204,7 +193,6 @@ export default class ModelExploration extends React.Component<
   }
 
   // event handler to set user selection fields for bar chart
-
   @bind
   public setLocalYState(event: React.FormEvent<HTMLSelectElement>): void {
     const element = event.target as HTMLSelectElement;
@@ -252,28 +240,6 @@ export default class ModelExploration extends React.Component<
       });
     });
   }
-
-  // reduce data based on aggigation type
-  public reduceMetricForAgg = (groupByResult: any, selectedAggType: string) => {
-    let aggFun: any;
-    switch (selectedAggType) {
-      case 'sum':
-        aggFun = listSum;
-      case 'median':
-        aggFun = listMedian;
-      case 'variance':
-        aggFun = listVariance;
-      case 'stdev':
-        aggFun = listStdev;
-      case 'count':
-        aggFun = listCount;
-      default:
-        aggFun = listAverage;
-    }
-    return [...groupByResult].map(obj => {
-      return { key: obj[0], value: aggFun(obj[1]) };
-    });
-  };
 
   @bind
   public returnAggResults(selected: string, arrayGpBy: any) {
@@ -369,18 +335,6 @@ export default class ModelExploration extends React.Component<
         if (Object.getOwnPropertyNames(fields).length === 0) {
           return;
         }
-        // if (modeRecord.datasets) {
-        //   modeRecord.datasets.forEach((kvPair: any) => {
-        //     this.xAxisParams.add(kvPair.key);
-        //     fields[`dataset_${kvPair.key}`] = kvPair.path;
-        //   });
-        // }
-        // if (modeRecord.artifacts) {
-        //   modeRecord.artifacts.forEach((kvPair: any) => {
-        //     this.xAxisParams.add(kvPair.key);
-        //     fields[`artifact_${kvPair.key}`] = kvPair.path;
-        //   });
-        // }
         fields.experiment_id = modeRecord.experimentId.substring(0, 8);
         fields.project_id = modeRecord.projectId.substring(0, 8);
         fields.exp_run_id = modeRecord.id.substring(0, 8);
@@ -395,11 +349,6 @@ export default class ModelExploration extends React.Component<
           this.xAxisParams.add('owner');
           this.summaryParams.add('owner');
         }
-        // if (modeRecord.tags) {
-        //   modeRecord.tags.forEach((tag: string) => {
-        //     fields[`tag_${tag}`] = tag;
-        //   });
-        // }
         return fields;
       })
       .filter(obj => obj !== undefined);

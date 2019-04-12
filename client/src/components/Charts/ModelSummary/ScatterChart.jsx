@@ -15,7 +15,6 @@ class ScatterChart extends Component {
     yScale: undefined,
   };
 
-  //'%b/%d %H:%M'
   xAxis = d3
     .axisBottom()
     .tickFormat(d3.timeFormat('%b/%d %H:%M'))
@@ -50,6 +49,7 @@ class ScatterChart extends Component {
   }
 
   componentDidMount() {
+    // should be update with a separate PR
     // d3.select(this.refs.annotation)
     //   .append('rect')
     //   .attr('width', '200px')
@@ -168,6 +168,7 @@ class ScatterChart extends Component {
 
 export default ScatterChart;
 
+// Dynamic axis format will be added in a separate PR
 // Establish the desired formatting options using locale.format():
 // https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
 // formatMillisecond = d3.timeFormat('.%L');
