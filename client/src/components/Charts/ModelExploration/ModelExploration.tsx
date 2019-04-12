@@ -19,6 +19,15 @@ interface IParallelData {
   [key: string]: any;
 }
 
+interface IKeyValPair {
+  key: string;
+  value: number | string;
+}
+
+interface IChartData {
+  [key: string]: any;
+}
+
 interface IInitialSelection {
   initialHyperparam: string;
   initialMetric: string;
@@ -63,6 +72,7 @@ export default class ModelExploration extends React.Component<
 
   public render() {
     const { expRuns } = this.props;
+    console.log(this.state.computeXAxisFields);
     return expRuns ? (
       <div className={styles.summary_wrapper}>
         <div className={styles.chartHeader}>Explore Visualizations</div>
@@ -223,9 +233,23 @@ export default class ModelExploration extends React.Component<
     return map;
   }
 
+  // Utilities
+  // public computeFlatMetric = (arr: ModelRecord[]) => {
+  //   return _.map(arr, metricField => {
+  //     const flatMetric: any = metricField;
+  //     if (metricField.metrics.length !== 0) {
+  //       metricField.metrics.forEach((kvPair: IKeyValPair) => {
+  //         this.yAxisParams.add(kvPair.key);
+  //         flatMetric[kvPair.key] = kvPair.value;
+  //       });
+  //       return flatMetric;
+  //     }
+  //   })
+  // };
+
   @bind
   public computeFlatMetric(arr: ModelRecord[]) {
-    return arr.map(obj => {
+    return _.map(arr, obj => {
       const metricField = _.pick(obj, 'startTime', 'metrics');
       const flatMetric: any = { date: metricField.startTime };
       metricField.metrics.forEach((kvPair: any) => {
@@ -328,79 +352,91 @@ export default class ModelExploration extends React.Component<
     this.summaryParams.add('project_id');
     // this.xAxisParams.add('id');
     // this.xAxisParams.add('start_time');
-    return expRuns.map(modeRecord => {
-      const fields: any = {};
-      if (modeRecord.hyperparameters) {
-        modeRecord.hyperparameters.forEach((kvPair: any) => {
-          this.xAxisParams.add(`${kvPair.key}`);
-          this.hyperParams.add(kvPair.key);
-          fields[kvPair.key] =
-            kvPair.value.length > 8
-              ? kvPair.value.substring(0, 8)
-              : kvPair.value;
-        });
-      }
+    return expRuns
+      .map(modeRecord => {
+        const fields: any = {};
+        if (
+          modeRecord.hyperparameters &&
+          modeRecord.hyperparameters.length !== 0
+        ) {
+          modeRecord.hyperparameters.forEach((kvPair: any) => {
+            this.xAxisParams.add(`${kvPair.key}`);
+            this.hyperParams.add(kvPair.key);
+            fields[kvPair.key] =
+              kvPair.value.length > 8
+                ? kvPair.value.substring(0, 8)
+                : kvPair.value;
+          });
+        }
 
-      if (modeRecord.metrics) {
-        modeRecord.metrics.forEach((kvPair: any) => {
-          // this.xAxisParams.add(`${kvPair.key}`);
-          fields[kvPair.key] = kvPair.value;
-        });
-      }
-      // if (modeRecord.datasets) {
-      //   modeRecord.datasets.forEach((kvPair: any) => {
-      //     this.xAxisParams.add(kvPair.key);
-      //     fields[`dataset_${kvPair.key}`] = kvPair.path;
-      //   });
-      // }
-      // if (modeRecord.artifacts) {
-      //   modeRecord.artifacts.forEach((kvPair: any) => {
-      //     this.xAxisParams.add(kvPair.key);
-      //     fields[`artifact_${kvPair.key}`] = kvPair.path;
-      //   });
-      // }
-      fields.experiment_id = modeRecord.experimentId.substring(0, 8);
-      fields.project_id = modeRecord.projectId.substring(0, 8);
-      fields.exp_run_id = modeRecord.id.substring(0, 8);
-      fields.start_time = modeRecord.startTime;
+        if (modeRecord.metrics && modeRecord.metrics.length !== 0) {
+          modeRecord.metrics.forEach((kvPair: any) => {
+            // this.xAxisParams.add(`${kvPair.key}`);
+            fields[kvPair.key] = kvPair.value;
+          });
+        }
+        if (Object.getOwnPropertyNames(fields).length === 0) {
+          return;
+        }
+        // if (modeRecord.datasets) {
+        //   modeRecord.datasets.forEach((kvPair: any) => {
+        //     this.xAxisParams.add(kvPair.key);
+        //     fields[`dataset_${kvPair.key}`] = kvPair.path;
+        //   });
+        // }
+        // if (modeRecord.artifacts) {
+        //   modeRecord.artifacts.forEach((kvPair: any) => {
+        //     this.xAxisParams.add(kvPair.key);
+        //     fields[`artifact_${kvPair.key}`] = kvPair.path;
+        //   });
+        // }
+        fields.experiment_id = modeRecord.experimentId.substring(0, 8);
+        fields.project_id = modeRecord.projectId.substring(0, 8);
+        fields.exp_run_id = modeRecord.id.substring(0, 8);
+        fields.start_time = modeRecord.startTime;
 
-      if (modeRecord.codeVersion) {
-        fields.code_version = modeRecord.codeVersion;
-        this.xAxisParams.add('code_version');
-      }
-      if (modeRecord.owner) {
-        fields.owner = modeRecord.owner;
-        this.xAxisParams.add('owner');
-        this.summaryParams.add('owner');
-      }
-      if (modeRecord.tags) {
-        modeRecord.tags.forEach((tag: string) => {
-          fields[`tag_${tag}`] = tag;
-        });
-      }
-      return fields;
-    });
+        if (modeRecord.codeVersion) {
+          fields.code_version = modeRecord.codeVersion;
+          this.xAxisParams.add('code_version');
+        }
+        if (modeRecord.owner) {
+          fields.owner = modeRecord.owner;
+          this.xAxisParams.add('owner');
+          this.summaryParams.add('owner');
+        }
+        if (modeRecord.tags) {
+          modeRecord.tags.forEach((tag: string) => {
+            fields[`tag_${tag}`] = tag;
+          });
+        }
+        return fields;
+      })
+      .filter(obj => obj !== undefined);
   }
 
   // compute Parallel chart's Data
   @bind
   public computeParallelData(expRuns: ModelRecord[]) {
-    return expRuns.map(modeRecord => {
-      const fields: any = {};
-      if (modeRecord.hyperparameters) {
-        modeRecord.hyperparameters.forEach((kvPair: any) => {
-          if (typeof kvPair.value !== 'string') {
-            fields[kvPair.key] = kvPair.value;
-          }
-        });
-      }
+    return expRuns
+      .map(modeRecord => {
+        const fields: IChartData = {};
+        if (modeRecord.hyperparameters) {
+          modeRecord.hyperparameters.forEach((kvPair: IKeyValPair) => {
+            if (typeof kvPair.value !== 'string') {
+              fields[kvPair.key] = kvPair.value;
+            }
+          });
+        }
 
-      if (modeRecord.metrics) {
-        modeRecord.metrics.forEach((kvPair: any) => {
-          fields[kvPair.key] = kvPair.value;
-        });
-      }
-      return fields;
-    });
+        if (modeRecord.metrics) {
+          modeRecord.metrics.forEach((kvPair: IKeyValPair) => {
+            fields[kvPair.key] = kvPair.value;
+          });
+        }
+        if (Object.getOwnPropertyNames(fields).length !== 0) {
+          return fields;
+        }
+      })
+      .filter(obj => obj !== undefined);
   }
 }

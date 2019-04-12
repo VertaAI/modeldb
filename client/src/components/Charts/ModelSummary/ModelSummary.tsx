@@ -9,6 +9,11 @@ interface ILocalProps {
   initialYSelection: string;
 }
 
+interface IKeyValPair {
+  key: string;
+  value: number | string;
+}
+
 interface IChartData {
   [key: string]: any;
 }
@@ -21,7 +26,7 @@ export default class ModelExploration extends React.Component<
   ILocalProps,
   ILocalState
 > {
-  public yAxisParams: Set<string> = new Set(); // metric fields
+  public yAxisParams: Set<string> = new Set();
   public constructor(props: ILocalProps) {
     super(props);
 
@@ -68,17 +73,15 @@ export default class ModelExploration extends React.Component<
 
   // Utilities
   public computeFlatMetric = (arr: ModelRecord[]) => {
-    return _.map(arr, obj => {
-      const metricField = _.pick(obj, 'startTime', 'metrics', 'id');
-      const flatMetric: any = {
-        date: metricField.startTime,
-        id: metricField.id,
-      };
-      metricField.metrics.forEach((kvPair: any) => {
-        this.yAxisParams.add(kvPair.key);
-        flatMetric[kvPair.key] = kvPair.value;
-      });
-      return flatMetric;
-    });
+    return _.map(arr, metricField => {
+      const flatMetric: IChartData = metricField;
+      if (metricField.metrics.length !== 0) {
+        metricField.metrics.forEach((kvPair: IKeyValPair) => {
+          this.yAxisParams.add(kvPair.key);
+          flatMetric[kvPair.key] = kvPair.value;
+        });
+        return flatMetric;
+      }
+    }).filter(obj => obj !== undefined);
   };
 }
