@@ -32,15 +32,59 @@
 }
 
 .grid line {
-  stroke: rgb(255, 255, 255);
+  stroke: rgb(238, 238, 238) !important;
 }
 
-.grid > .domain {
+.grid > .domain,
+.grid > .tick text {
   display: none;
 }
 
 .expChart,
-.summaryChart {
-  background-color: #f7f8fc;
+.summaryChart,
+.parallelChart {
+  background-color: #f9fafc;
   border-radius: 10px;
+  margin: 0 10px;
+}
+
+.axisLabel {
+  font-size: 12px;
+}
+
+.axis > .domain {
+  stroke-width: 1.5px;
+  stroke: rgb(150, 150, 150);
+}
+
+/* .axis,
+.frame {
+  shape-rendering: crispEdges;
+} */
+
+.axis text {
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+  color: #444;
+}
+
+.parallelChart .dimension {
+  cursor: move;
+}
+
+.parallelLines path {
+  fill: none;
+  stroke-width: 1.5px;
+  stroke: var(--main-color2);
+  stroke-opacity: 0.5;
+}
+
+.brush .extent {
+  fill-opacity: 0.3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.parallelLines path.fade {
+  stroke: #000;
+  stroke-opacity: 0.05;
 }

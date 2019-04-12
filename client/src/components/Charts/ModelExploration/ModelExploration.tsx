@@ -15,10 +15,20 @@ import Icon from 'components/shared/Icon/Icon';
 import ModelRecord from '../../../models/ModelRecord';
 import BarChart from './BarChart';
 import styles from './ModelExploration.module.css';
+import ParallelCoordinates from './ParamParallelCoordinates';
+
+interface IParallelData {
+  [key: string]: any;
+}
+
+interface IInitialSelection {
+  initialHyperparam: string;
+  initialMetric: string;
+}
 
 interface ILocalProps {
   expRuns: ModelRecord[];
-  initialSelection: any;
+  initialSelection: IInitialSelection;
 }
 
 interface ILocalState {
@@ -28,14 +38,15 @@ interface ILocalState {
   selectedXAxis: string;
   selectedYAxis: string;
   selectedAggregate: string;
+  parallelData: IParallelData;
 }
 
 export default class ModelExploration extends React.Component<
   ILocalProps,
   ILocalState
 > {
-  public xAxisParams: Set<string> = new Set(); // computed fields from ModelRecord object
-  public yAxisParams: Set<string> = new Set(); // metric fields only for Y axis
+  public xAxisParams: Set<string> = new Set();
+  public yAxisParams: Set<string> = new Set();
   public summaryParams: Set<string> = new Set();
   public hyperParams: Set<string> = new Set();
   public mapOptGroup = { metric: false, hyper: false };
@@ -46,8 +57,9 @@ export default class ModelExploration extends React.Component<
       computeXAxisFields: this.computeXAxisFields(props.expRuns),
       flatMetric: this.computeFlatMetric(props.expRuns),
       selectedAggregate: 'average',
-      selectedXAxis: 'hidden_size', // initial val for testing //
-      selectedYAxis: 'test_loss', // initial val for testing - first metric
+      selectedXAxis: props.initialSelection.initialHyperparam,
+      selectedYAxis: props.initialSelection.initialMetric,
+      parallelData: this.computeParallelData(props.expRuns),
     };
   }
 
@@ -55,16 +67,16 @@ export default class ModelExploration extends React.Component<
     const { expRuns } = this.props;
     return expRuns ? (
       <div className={styles.summary_wrapper}>
-        <h3>Explore Visualizations</h3>
-        <p>
+        <div className={styles.chartHeader}>Explore Visualizations</div>
+        <div className={styles.chartDescription}>
           Generate charts to visualize trends in data by selecting fields to
           plot as x and y values. Optionally pick fields to group by and specify
           what type of aggregation to use.
-        </p>
+        </div>
 
         <div style={{ display: 'flex' }}>
           <div className={styles.chart_selector}>
-            X Axis: {'  '}
+            <span className={styles.chart_selector_label}>X Axis: </span>
             <select
               name="selected-xaxis"
               value={this.state.selectedXAxis}
@@ -96,7 +108,7 @@ export default class ModelExploration extends React.Component<
           </div>
 
           <div className={styles.chart_selector}>
-            Y Axis: {'  '}
+            <span className={styles.chart_selector_label}>Y Axis:</span>
             <select
               name="selected-yaxis"
               value={this.state.selectedYAxis}
@@ -119,7 +131,7 @@ export default class ModelExploration extends React.Component<
           </div>
 
           <div className={styles.chart_selector}>
-            Aggregate: {'  '}
+            <span className={styles.chart_selector_label}>Aggregate:</span>
             <select
               name="selected-aggregate"
               value={this.state.selectedAggregate}
@@ -157,11 +169,29 @@ export default class ModelExploration extends React.Component<
             )}
           />
         </div>
+        <br />
+        <div>
+          {' '}
+          <div className={styles.chartHeader}>
+            {' '}
+            Parallel Coordinates of Hyperparameters and Metrics{' '}
+          </div>
+          <ParallelCoordinates data={this.state.parallelData} />
+          <div className={styles.parallelMeta}>
+            *click and drag on the y-axis to apply filter chart based on axis
+          </div>
+        </div>
       </div>
     ) : (
       ''
     );
   }
+
+  // set initial x and y axis
+  public getInitialYAxis(experimentRuns: ModelRecord[]) {
+    return experimentRuns[0].hyperparameters[0].key;
+  }
+
   // event handler to set user selection fields for bar chart
 
   @bind
@@ -309,14 +339,17 @@ export default class ModelExploration extends React.Component<
         modeRecord.hyperparameters.forEach((kvPair: any) => {
           this.xAxisParams.add(`${kvPair.key}`);
           this.hyperParams.add(kvPair.key);
-          fields[`${kvPair.key}`] = kvPair.value;
+          fields[kvPair.key] =
+            kvPair.value.length > 8
+              ? kvPair.value.substring(0, 8)
+              : kvPair.value;
         });
       }
 
       if (modeRecord.metrics) {
         modeRecord.metrics.forEach((kvPair: any) => {
           // this.xAxisParams.add(`${kvPair.key}`);
-          fields[`${kvPair.key}`] = kvPair.value;
+          fields[kvPair.key] = kvPair.value;
         });
       }
       // if (modeRecord.datasets) {
@@ -331,9 +364,9 @@ export default class ModelExploration extends React.Component<
       //     fields[`artifact_${kvPair.key}`] = kvPair.path;
       //   });
       // }
-      fields.experiment_id = modeRecord.experimentId;
-      fields.project_id = modeRecord.projectId;
-      fields.exp_run_id = modeRecord.id;
+      fields.experiment_id = modeRecord.experimentId.substring(0, 8);
+      fields.project_id = modeRecord.projectId.substring(0, 8);
+      fields.exp_run_id = modeRecord.id.substring(0, 8);
       fields.start_time = modeRecord.startTime;
 
       if (modeRecord.codeVersion) {
@@ -348,6 +381,28 @@ export default class ModelExploration extends React.Component<
       if (modeRecord.tags) {
         modeRecord.tags.forEach((tag: string) => {
           fields[`tag_${tag}`] = tag;
+        });
+      }
+      return fields;
+    });
+  }
+
+  // compute Parallel chart's Data
+  @bind
+  public computeParallelData(expRuns: ModelRecord[]) {
+    return expRuns.map(modeRecord => {
+      const fields: any = {};
+      if (modeRecord.hyperparameters) {
+        modeRecord.hyperparameters.forEach((kvPair: any) => {
+          if (typeof kvPair.value !== 'string') {
+            fields[kvPair.key] = kvPair.value;
+          }
+        });
+      }
+
+      if (modeRecord.metrics) {
+        modeRecord.metrics.forEach((kvPair: any) => {
+          fields[kvPair.key] = kvPair.value;
         });
       }
       return fields;

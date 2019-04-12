@@ -2,7 +2,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
-import { DeployButton, DeployManager } from 'components/Deploy';
+import {
+  DeployButton,
+  DeployDataChart,
+  DeployManager,
+  DeployServiceChart,
+} from 'components/Deploy';
 import Preloader from 'components/shared/Preloader/Preloader';
 import tagStyles from 'components/shared/TagBlock/TagBlock.module.css';
 import { IArtifact } from 'models/Artifact';
@@ -100,7 +105,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             <div className={styles.record_label}>Name</div>
             <div className={styles.record_name}>{data.name}</div>
             <br />
-            <div className={styles.record_label}>Tags</div>
+            {data.tags && <div className={styles.record_label}>Tags</div>}
             <div>
               {data.tags &&
                 data.tags.map((value: string, key: number) => {
@@ -118,7 +123,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             <this.ParmaLink label="Experiment ID:" value={data.experimentId} />
           </div>
         </div>
-        <this.Record header="Code version">{data.codeVersion}</this.Record>
+        {data.codeVersion! && (
+          <this.Record header="Code version">{data.codeVersion}</this.Record>
+        )}
         {data.hyperparameters && (
           <this.Record header="Hyperparameters">
             {data.hyperparameters.map((value: IHyperparameter, key: number) => {
@@ -152,11 +159,20 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             })}
           </this.Record>
         )}
+        {data.datasets && (
+          <this.Record header="Datasets">
+            {data.datasets.map((value: IArtifact, key: number) => {
+              return (
+                <div key={key}>
+                  {value.key}: <ShowContentBasedOnUrl path={value.path} />
+                </div>
+              );
+            })}
+          </this.Record>
+        )}
         <this.Record header="Deploy info">
-          <>
-            <DeployButton modelId={data.id} />
-            <DeployManager />
-          </>
+          <DeployButton modelId={data.id} />
+          <DeployManager />
         </this.Record>
         <this.Record
           header="Monitoring information"
@@ -164,34 +180,65 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           additionalContainerClassName={styles.record_divider}
         />
         {(!deployState || deployState.status !== 'deployed') && (
-          <this.Record header="No monitoring information" />
+          <div className={styles.record_header}>No monitoring information</div>
         )}
-        {alreadyDeployed && (
-          <this.Record header="Latency and service metrics">
-            {this.props.loadingServiceStatistics ? (
-              <div className={styles.loader}>
+        {alreadyDeployed &&
+          (!this.props.serviceStatistics ||
+            !this.props.serviceStatistics.time) && (
+            <div className={styles.record_header}>
+              No monitoring information in the time window considered
+            </div>
+          )}
+        {alreadyDeployed &&
+          this.props.serviceStatistics &&
+          this.props.serviceStatistics.time && (
+            <div className={styles.chart}>
+              {this.props.loadingServiceStatistics ? (
                 <Preloader variant="dots" />
-              </div>
-            ) : this.props.serviceStatistics ? (
-              JSON.stringify(this.props.serviceStatistics)
-            ) : (
-              ''
-            )}
-          </this.Record>
-        )}
-        {alreadyDeployed && (
-          <this.Record header="Data metrics">
-            {this.props.loadingDataStatistics ? (
-              <div className={styles.loader}>
+              ) : this.props.serviceStatistics ? (
+                <>
+                  <this.Record header="Service behavior">
+                    <DeployServiceChart
+                      height={400}
+                      width={600}
+                      marginBottom={80}
+                      marginLeft={80}
+                      marginTop={40}
+                      marginRight={80}
+                      modelId={data.id}
+                    />
+                  </this.Record>
+                </>
+              ) : (
+                ''
+              )}
+            </div>
+          )}
+        {alreadyDeployed &&
+          this.props.dataStatistics &&
+          this.props.dataStatistics.size > 0 && (
+            <div className={styles.chart}>
+              {this.props.loadingServiceStatistics ? (
                 <Preloader variant="dots" />
-              </div>
-            ) : this.props.dataStatistics ? (
-              JSON.stringify(this.props.dataStatistics)
-            ) : (
-              ''
-            )}
-          </this.Record>
-        )}
+              ) : this.props.dataStatistics ? (
+                <>
+                  <this.Record header="Data behavior">
+                    <DeployDataChart
+                      height={400}
+                      width={600}
+                      marginBottom={40}
+                      marginLeft={60}
+                      marginTop={60}
+                      marginRight={60}
+                      modelId={data.id}
+                    />
+                  </this.Record>
+                </>
+              ) : (
+                ''
+              )}
+            </div>
+          )}
       </div>
     ) : (
       ''
@@ -231,7 +278,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     return (
       <div className={styles.experiment_link}>
         <span className={styles.parma_link_label}>{label}</span>{' '}
-        <span className={styles.parma_link_value}>{value.slice(0, 4)}..</span>
+        <span className={styles.parma_link_value}>{value.slice(0, 6)}</span>
       </div>
     );
   }

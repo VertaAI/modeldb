@@ -40,7 +40,7 @@ export enum changeContextActionTypes {
 }
 export interface IChangeContextAction {
   type: changeContextActionTypes.CHANGE_CONTEXT;
-  payload: string;
+  payload: string | undefined;
 }
 
 export const suggestFiltersActionTypes = makeCommunicationActionTypes({

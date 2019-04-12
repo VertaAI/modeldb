@@ -4,10 +4,10 @@ import {
   IServiceStatistics,
 } from 'models/Deploy';
 import {
-  makeCommunicationActionTypes,
-  MakeCommunicationActions,
-  makeCommunicationReducerFromEnum,
   ICommunication,
+  MakeCommunicationActions,
+  makeCommunicationActionTypes,
+  makeCommunicationReducerFromEnum,
 } from 'utils/redux/communication';
 
 export interface IDeployState {
@@ -23,6 +23,7 @@ export interface IDeployState {
     checkingDeployStatus: Record<ModelID, ICommunication>;
     loadingDataStatistics: ICommunication;
     loadingServiceStatistics: ICommunication;
+    deleting: ICommunication;
   };
 }
 
@@ -45,9 +46,6 @@ export type IDeployActions = MakeCommunicationActions<
     failure: { modelId: ModelID; error: string };
   }
 >;
-export const deployReducer = makeCommunicationReducerFromEnum(
-  deployActionTypes
-);
 
 export const loadDeployStatusActionTypes = makeCommunicationActionTypes({
   REQUEST: '@@deploy/LOAD_DEPLOY_STATUS_REQUEST',
@@ -62,9 +60,6 @@ export type ILoadDeployStatusActions = MakeCommunicationActions<
     failure: { modelId: ModelID; error: string };
   }
 >;
-export const loadDeployStatusReducer = makeCommunicationReducerFromEnum(
-  loadDeployStatusActionTypes
-);
 
 export const checkDeployStatusActionTypes = makeCommunicationActionTypes({
   REQUEST: '@@deploy/CHECK_DEPLOY_STATUS_REQUEST',
@@ -79,9 +74,6 @@ export type ICheckDeployStatusActions = MakeCommunicationActions<
     failure: { modelId: ModelID; error: string };
   }
 >;
-export const checkDeployStatusReducer = makeCommunicationReducerFromEnum(
-  checkDeployStatusActionTypes
-);
 
 export enum toggleDeployManagerActionTypes {
   OPEN_DEPLOY_MANAGER = '@@deploy/OPEN_DEPLOY_MANAGER',
@@ -103,9 +95,6 @@ export type ILoadServiceStatisticsActions = MakeCommunicationActions<
   typeof loadServiceStatisticsActionTypes,
   { success: IServiceStatistics }
 >;
-export const loadServiceStatisticsReducer = makeCommunicationReducerFromEnum(
-  loadServiceStatisticsActionTypes
-);
 
 export const loadDataStatisticsActionTypes = makeCommunicationActionTypes({
   REQUEST: '@@deploy/LOAD_DATA_STATISTICS_REQUEST',
@@ -115,6 +104,20 @@ export const loadDataStatisticsActionTypes = makeCommunicationActionTypes({
 export type ILoadDataStatisticsActions = MakeCommunicationActions<
   typeof loadDataStatisticsActionTypes,
   { success: IDataStatistics }
+>;
+
+export const deleteActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@deploy/DELETE_REQUEST',
+  SUCCESS: '@@deploy/DELETE_SUCСESS',
+  FAILURE: '@@deploy/DELETE_FAILURE',
+});
+export type IDeleteActions = MakeCommunicationActions<
+  typeof deleteActionTypes,
+  {
+    request: ModelID;
+    success: ModelID;
+    failure: { modelId: ModelID; error: string };
+  }
 >;
 
 export type FeatureAction =

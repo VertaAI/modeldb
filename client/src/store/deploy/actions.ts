@@ -9,16 +9,18 @@ import {
   selectIsLoadingDeployStatusInfo,
 } from './selectors';
 import {
+  deleteActionTypes,
   deployActionTypes,
-  loadDeployStatusActionTypes,
-  toggleDeployManagerActionTypes,
-  IDeployActions,
   ICheckDeployStatusActions,
+  IDeleteActions,
+  IDeployActions,
+  ILoadDataStatisticsActions,
   ILoadDeployStatusActions,
   ILoadServiceStatisticsActions,
-  loadServiceStatisticsActionTypes,
-  ILoadDataStatisticsActions,
   loadDataStatisticsActionTypes,
+  loadDeployStatusActionTypes,
+  loadServiceStatisticsActionTypes,
+  toggleDeployManagerActionTypes,
 } from './types';
 
 export const showDeployManagerForModel = (modelID: string) => ({
@@ -61,6 +63,26 @@ const deploy = (modelId: string): ActionResult<void, IDeployActions> => async (
     })
     .catch(err => {
       dispatch(action(deployActionTypes.FAILURE, { modelId, error: err }));
+    });
+};
+
+export const delete_ = (
+  modelId: string
+): ActionResult<void, IDeleteActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
+  dispatch(action(deleteActionTypes.REQUEST, modelId));
+
+  await ServiceFactory.getDeployService()
+    .delete(modelId)
+    .then(() => {
+      dispatch(action(deleteActionTypes.SUCCESS, modelId));
+      dispatch(loadDeployStatus(modelId));
+    })
+    .catch(err => {
+      dispatch(action(deleteActionTypes.FAILURE, { modelId, error: err }));
     });
 };
 

@@ -22,37 +22,40 @@ import ModelSummary from './ModelSummary/ModelSummary';
 
 export type IUrlProps = GetRouteParams<typeof routes.charts>;
 
-interface ILocalState {
-  selectedMetric: string;
-}
-
 interface IPropsFromState {
   projects?: Project[] | null;
   experimentRuns: ModelRecord[] | null;
   loading: boolean;
 }
 
+interface IInitialSelection {
+  initialHyperparam: string;
+  initialMetric: string;
+}
+
 type AllProps = RouteComponentProps<IUrlProps> &
   IPropsFromState &
   IConnectedReduxProps;
-class Charts extends React.Component<AllProps, ILocalState> {
-  public state: ILocalState = { selectedMetric: 'test_loss' };
-  private initialMetric: string = '';
-  private initialBarSelection: any;
-  private timeProj: any;
+class Charts extends React.Component<AllProps> {
+  public initialSelection: IInitialSelection = {
+    initialHyperparam: '',
+    initialMetric: '',
+  };
+  public currentProject: Project = new Project();
 
   public render() {
     const { experimentRuns, loading, projects } = this.props;
-    const projectId = this.props.match.params.projectId;
 
     if (experimentRuns) {
-      this.initialBarSelection = {
+      this.initialSelection = {
         initialHyperparam: experimentRuns[0].hyperparameters[0].key,
-        initialMetric: this.state.selectedMetric,
+        initialMetric: experimentRuns[0].metrics[0].key,
       };
     }
-    if (projects !== undefined && projects !== null) {
-      this.timeProj = projects.filter(d => d.name === 'Timeseries')[0];
+    if (projects && experimentRuns) {
+      this.currentProject = projects.filter(
+        d => d.id === experimentRuns[0].projectId
+      )[0];
     }
 
     return loading ? (
@@ -60,26 +63,33 @@ class Charts extends React.Component<AllProps, ILocalState> {
     ) : experimentRuns ? (
       <div>
         <div className={styles.summary_wrapper}>
-          {this.timeProj !== undefined && this.timeProj !== null ? (
+          {this.currentProject !== undefined && this.currentProject !== null ? (
             <div>
-              <p className={styles.chartsHeading}>{this.timeProj.name}</p>
+              <div className={styles.chartHeader}>
+                Summary Chart: <span>{this.currentProject.name}</span>
+              </div>
+
               <div className={styles.chartsBlock}>
-                <div>
-                  <span>Author:</span> {this.timeProj.Author.name}
+                <div className={styles.chartMeta}>
+                  <div className={styles.subHeading}>Author: </div>
+                  {this.currentProject.Author.name}
                 </div>
-                <br />
-                <div>
-                  <span>Tags:</span>
-                  <div className={tagStyles.tag_block}>
-                    <ul className={tagStyles.tags}>
-                      {this.timeProj.tags.map((tag: string, i: number) => {
-                        return (
-                          <li key={i}>
-                            <Tag tag={tag} />
-                          </li>
-                        );
-                      })}
-                    </ul>
+                <div className={styles.chartMeta}>
+                  <span className={styles.subHeading}>Tags:</span>
+                  <div className={styles.tagBlock}>
+                    <div className={tagStyles.tag_block}>
+                      <ul className={tagStyles.tags}>
+                        {this.currentProject.tags.map(
+                          (tag: string, i: number) => {
+                            return (
+                              <li key={i}>
+                                <Tag tag={tag} />
+                              </li>
+                            );
+                          }
+                        )}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -87,13 +97,16 @@ class Charts extends React.Component<AllProps, ILocalState> {
           ) : (
             ''
           )}
-          <p>Summary Chart</p>
-          <ModelSummary experimentRuns={experimentRuns} />
+
+          <ModelSummary
+            experimentRuns={experimentRuns}
+            initialYSelection={this.initialSelection.initialMetric}
+          />
         </div>
         <br />
         <ModelExploration
           expRuns={experimentRuns}
-          initialSelection={this.initialBarSelection}
+          initialSelection={this.initialSelection}
         />
       </div>
     ) : (

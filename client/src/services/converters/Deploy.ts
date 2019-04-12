@@ -27,17 +27,24 @@ export function convertServerServiceStatisticsToClient(
 export function convertServerDataStatisticsToClient(
   serverResponse: IServerServiceData
 ): IDataStatistics {
-  const features: Array<Record<string, IServiceDataFeature>> = Object.entries(
-    serverResponse
-  ).map(([feature, data]) => ({
-    [feature]: {
-      bucketLimits: data.bucket_limits,
-      count: data.count,
-      reference: data.reference,
-    },
-  }));
+  const features: Map<string, IServiceDataFeature> = new Map<
+    string,
+    IServiceDataFeature
+  >(
+    Object.entries(serverResponse).map(
+      ([feature, data]) =>
+        [
+          feature,
+          {
+            bucketLimits: data.bucket_limits,
+            count: data.count,
+            reference: data.reference,
+          },
+        ] as [string, IServiceDataFeature]
+    )
+  );
 
-  return { features };
+  return features;
 }
 
 export function convertServerDeployStatusInfoToClient(
@@ -56,6 +63,7 @@ export function convertServerDeployStatusInfoToClient(
         data: {
           ...deployedStatusInfoData,
           api: serverResponse.api,
+          token: serverResponse.token,
         },
       };
     }

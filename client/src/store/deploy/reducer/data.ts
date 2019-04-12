@@ -1,14 +1,14 @@
-import { Reducer, combineReducers } from 'redux';
+import { combineReducers, Reducer } from 'redux';
 
 import {
-  IDeployState,
-  FeatureAction,
-  IToggleDeployManagerActions,
-  toggleDeployManagerActionTypes,
   deployActionTypes,
-  loadServiceStatisticsActionTypes,
+  FeatureAction,
+  IDeployState,
+  IToggleDeployManagerActions,
   loadDataStatisticsActionTypes,
   loadDeployStatusActionTypes,
+  loadServiceStatisticsActionTypes,
+  toggleDeployManagerActionTypes,
 } from '../types';
 
 const initial: IDeployState['data'] = {

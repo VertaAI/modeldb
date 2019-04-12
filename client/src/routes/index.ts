@@ -7,7 +7,7 @@ const routes = {
   callback: makeRoute({ getPath: () => '/callback' }),
   settings: makeRoute({ getPath: () => '/settings' }),
 
-  expirementRuns: makeRoute({
+  experimentRuns: makeRoute({
     getPath: () => '/project/:projectId/exp-runs',
     getRedirectPath: (p: { projectId: string }) =>
       `/project/${p.projectId}/exp-runs`,
@@ -18,9 +18,9 @@ const routes = {
       `/project/${p.projectId}/charts`,
   }),
   modelRecord: makeRoute({
-    getPath: () => '/project/:projectId/exp-run/:modelRecordId',
+    getPath: () => '/project/:projectId/exp-runs/:modelRecordId',
     getRedirectPath: (p: { projectId: string; modelRecordId: string }) =>
-      `/project/${p.projectId}/exp-run/${p.modelRecordId}`,
+      `/project/${p.projectId}/exp-runs/${p.modelRecordId}`,
   }),
 };
 
