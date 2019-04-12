@@ -28,7 +28,7 @@ class Button extends React.PureComponent<ILocalProps> {
       onClick,
     } = this.props;
     const Elem = (props: React.HTMLProps<any>) =>
-      to ? <a href={to} {...props} /> : <button {...props} />;
+      to ? <a href={to} {...props} /> : <button {...props} type="button" />;
     return (
       <Elem
         className={cn(styles.button, {

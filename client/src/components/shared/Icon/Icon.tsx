@@ -8,6 +8,8 @@ import { ReactComponent as Check } from './imgs/check.svg';
 import { ReactComponent as Close } from './imgs/close.svg';
 import { ReactComponent as Codepen } from './imgs/codepen.svg';
 import { ReactComponent as Cog } from './imgs/cog.svg';
+import { ReactComponent as Cube } from './imgs/cube.svg';
+import { ReactComponent as Database } from './imgs/database.svg';
 import { ReactComponent as Error } from './imgs/error.svg';
 import { ReactComponent as Facebook } from './imgs/facebook-logo.svg';
 import { ReactComponent as Filter } from './imgs/filter.svg';
@@ -54,7 +56,9 @@ type IconType =
   | 'share-change'
   | 'share-delete'
   | 'upload'
-  | 'close';
+  | 'close'
+  | 'cube'
+  | 'database';
 
 class Icon extends React.PureComponent<ILocalProps> {
   public render() {
@@ -91,6 +95,8 @@ class Icon extends React.PureComponent<ILocalProps> {
       'share-delete': ShareDelete,
       upload: Upload,
       close: Close,
+      cube: Cube,
+      database: Database,
     } as Record<
       IconType,
       React.FunctionComponent<React.SVGProps<SVGSVGElement>>

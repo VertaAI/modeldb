@@ -26,7 +26,7 @@ import {
 import DashboardConfig from './DashboardConfig/DashboardConfig';
 import styles from './ExperimentRuns.module.css';
 
-type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
+type IUrlProps = GetRouteParams<typeof routes.experimentRuns>;
 
 interface IPropsFromState {
   data: ModelRecord[] | null;
@@ -49,18 +49,18 @@ type AllProps = RouteComponentProps<IUrlProps> &
 
 class ExperimentRuns extends React.Component<AllProps> {
   private gridApi: any;
-  private columnApi: any;
   private data: any;
 
   public componentWillReceiveProps(nextProps: AllProps) {
-    if (this.gridApi) {
-      setTimeout(this.callFilterUpdate, 100);
+    if (this.props !== nextProps && this.gridApi !== undefined) {
+      setTimeout(this.callFilterUpdate, 1000);
     }
+
     if (this.gridApi && this.props.columnConfig !== nextProps.columnConfig) {
       this.gridApi.setColumnDefs(returnColumnDefs(nextProps.columnConfig));
       const el = document.getElementsByClassName('ag-center-cols-viewport');
       if (el !== undefined && el[0] !== undefined) {
-        el[0].scrollLeft += 200;
+        el[0].scrollLeft += 300;
       }
     }
   }
@@ -79,8 +79,8 @@ class ExperimentRuns extends React.Component<AllProps> {
       <Preloader variant="dots" />
     ) : data ? (
       <>
-        <DeployManager />
         <DashboardConfig />
+        <DeployManager />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
           <AgGridReact
             reactNext={true}
@@ -103,6 +103,17 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
 
   @bind
+  private callFilterUpdate() {
+    this.gridApi.onFilterChanged();
+  }
+
+  @bind
+  private onGridReady(event: GridReadyEvent) {
+    this.gridApi = event.api;
+    this.gridApi.setRowData(this.props.data);
+  }
+
+  @bind
   private gridRowHeight(params: any) {
     try {
       const data = params.node.data;
@@ -121,18 +132,6 @@ class ExperimentRuns extends React.Component<AllProps> {
     } catch {}
 
     return 200;
-  }
-
-  @bind
-  private callFilterUpdate() {
-    this.gridApi.onFilterChanged();
-  }
-
-  @bind
-  private onGridReady(event: GridReadyEvent) {
-    this.gridApi = event.api;
-    this.columnApi = event.columnApi;
-    this.gridApi.setRowData(this.props.data);
   }
 
   @bind

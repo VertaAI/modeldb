@@ -9,11 +9,16 @@ import ScatterChart from './ScatterChart';
 
 interface ILocalProps {
   experimentRuns: ModelRecord[];
+  initialYSelection: string;
+}
+
+interface IChartData {
+  [key: string]: any;
 }
 
 interface ILocalState {
   selectedMetric: string;
-  chartData: any;
+  chartData: IChartData;
 }
 export default class ModelExploration extends React.Component<
   ILocalProps,
@@ -25,7 +30,7 @@ export default class ModelExploration extends React.Component<
 
     this.state = {
       chartData: this.computeFlatMetric(props.experimentRuns),
-      selectedMetric: 'test_loss',
+      selectedMetric: props.initialYSelection,
     };
   }
 
@@ -33,7 +38,7 @@ export default class ModelExploration extends React.Component<
     return (
       <div>
         <div className={styles.chart_selector}>
-          Metric :{' '}
+          <span className={styles.chart_selector_label}>Metric :</span>
           <select
             name="selected-metric"
             onChange={this.handleMetricChange}
@@ -53,6 +58,9 @@ export default class ModelExploration extends React.Component<
           flatdata={this.state.chartData}
           selectedMetric={this.state.selectedMetric}
         />
+        <div className={styles.scatterMeta}>
+          *click on the marks to view corresponding ModelRecord
+        </div>
       </div>
     );
   }
@@ -65,8 +73,11 @@ export default class ModelExploration extends React.Component<
   // Utilities
   public computeFlatMetric = (arr: ModelRecord[]) => {
     return _.map(arr, obj => {
-      const metricField = _.pick(obj, 'startTime', 'metrics');
-      const flatMetric: any = { date: metricField.startTime };
+      const metricField = _.pick(obj, 'startTime', 'metrics', 'id');
+      const flatMetric: any = {
+        date: metricField.startTime,
+        id: metricField.id,
+      };
       metricField.metrics.forEach((kvPair: any) => {
         this.yAxisParams.add(kvPair.key);
         flatMetric[kvPair.key] = kvPair.value;

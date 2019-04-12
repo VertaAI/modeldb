@@ -6,6 +6,8 @@ import { ComparisonType, PropertyType } from 'models/Filters';
 import styles from './ColumnDefs.module.css';
 
 const ModelProperty: React.SFC<any> = props => {
+  let adjustedVal = String(Math.round(props.property.value * 10000) / 10000);
+  if (adjustedVal == '0') adjustedVal = props.property.value.toExponential();
   return (
     <Draggable
       additionalClassName={styles.param_draggable}
@@ -21,7 +23,7 @@ const ModelProperty: React.SFC<any> = props => {
         <div className={styles.param_key}>{props.property.key}</div>
         <div className={styles.param_val}>
           {typeof props.property.value === 'number'
-            ? Math.round(props.property.value * 10000) / 10000
+            ? adjustedVal
             : props.property.value}
         </div>
       </div>

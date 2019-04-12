@@ -3,12 +3,16 @@ import { combineReducers, Reducer } from 'redux';
 import { makeCommunicationReducerFromEnum } from 'utils/redux/communication';
 
 import {
-  IDeployState,
-  loadDataStatisticsActionTypes,
-  loadServiceStatisticsActionTypes,
   checkDeployStatusActionTypes,
+  deleteActionTypes,
   deployActionTypes,
+  ICheckDeployStatusActions,
   IDeployActions,
+  IDeployState,
+  ILoadDeployStatusActions,
+  loadDataStatisticsActionTypes,
+  loadDeployStatusActionTypes,
+  loadServiceStatisticsActionTypes,
 } from '../types';
 
 const deployingReducer: Reducer<
@@ -45,22 +49,26 @@ const deployingReducer: Reducer<
 
 const loadingDeployStatusReducer: Reducer<
   IDeployState['communications']['loadingDeployStatus'],
-  IDeployActions
+  ILoadDeployStatusActions
 > = (state = {}, action) => {
   switch (action.type) {
-    case deployActionTypes.REQUEST: {
+    case loadDeployStatusActionTypes.REQUEST: {
       return {
         ...state,
         [action.payload]: { isSuccess: false, isRequesting: true, error: '' },
       };
     }
-    case deployActionTypes.SUCCESS: {
+    case loadDeployStatusActionTypes.SUCCESS: {
       return {
         ...state,
-        [action.payload]: { isSuccess: true, isRequesting: false, error: '' },
+        [action.payload.modelId]: {
+          isSuccess: true,
+          isRequesting: false,
+          error: '',
+        },
       };
     }
-    case deployActionTypes.FAILURE: {
+    case loadDeployStatusActionTypes.FAILURE: {
       return {
         ...state,
         [action.payload.modelId]: {
@@ -77,22 +85,22 @@ const loadingDeployStatusReducer: Reducer<
 
 const checkingDeployStatusReducer: Reducer<
   IDeployState['communications']['checkingDeployStatus'],
-  IDeployActions
+  ICheckDeployStatusActions
 > = (state = {}, action) => {
   switch (action.type) {
-    case deployActionTypes.REQUEST: {
+    case checkDeployStatusActionTypes.REQUEST: {
       return {
         ...state,
         [action.payload]: { isSuccess: false, isRequesting: true, error: '' },
       };
     }
-    case deployActionTypes.SUCCESS: {
+    case checkDeployStatusActionTypes.SUCCESS: {
       return {
         ...state,
         [action.payload]: { isSuccess: true, isRequesting: false, error: '' },
       };
     }
-    case deployActionTypes.FAILURE: {
+    case checkDeployStatusActionTypes.FAILURE: {
       return {
         ...state,
         [action.payload.modelId]: {
@@ -114,6 +122,7 @@ export default combineReducers<IDeployState['communications']>({
   loadingServiceStatistics: makeCommunicationReducerFromEnum(
     loadServiceStatisticsActionTypes
   ),
+  deleting: makeCommunicationReducerFromEnum(deleteActionTypes),
   deploying: deployingReducer,
   checkingDeployStatus: checkingDeployStatusReducer,
   loadingDeployStatus: loadingDeployStatusReducer,

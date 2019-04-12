@@ -29,6 +29,13 @@
   border: 1px solid var(--bg-color1);
 }
 
+.theme_red {
+  color: #ffffff;
+}
+.variant_default.theme_red {
+  background: #b80000;
+}
+
 .variant_outlined {
 }
 

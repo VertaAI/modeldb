@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 const width = 800;
 const height = 360;
 const barWidth = 20;
-const margin = { top: 25, right: 35, bottom: 45, left: 65 };
+const margin = { top: 40, right: 35, bottom: 65, left: 85 };
 
 // d3.selection.prototype.bringElementAsTopLayer = function() {
 //   return this.each(function(){
@@ -25,8 +25,8 @@ class BarChart extends Component {
   };
 
   xAxis = d3.axisBottom();
-
   yAxis = d3.axisLeft();
+  yAxisGrid = d3.axisLeft();
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const { data } = nextProps;
@@ -47,7 +47,7 @@ class BarChart extends Component {
     const [, max] = d3.extent(data, d => d.value);
     const yScale = d3
       .scaleLinear()
-      .domain([0, max + max * 0.2])
+      .domain([0, max * 1.25])
       .range([height - margin.bottom, margin.top]);
 
     const bars = data.map(d => {
@@ -65,7 +65,7 @@ class BarChart extends Component {
     this.xAxis.scale(this.state.xScale);
     d3.select(this.refs.xAxis).call(this.xAxis);
     this.yAxis.scale(this.state.yScale);
-    d3.select(this.refs.yAxis).call(this.yAxis);
+    d3.select(this.refs.yAxis).call(this.yAxis.ticks(6).tickSize(5));
 
     d3.select('#yLabel').text(this.props.yLabel);
     d3.select('#xLabel').text(this.props.xLabel);
@@ -77,12 +77,17 @@ class BarChart extends Component {
     this.yAxis.scale(this.state.yScale);
     d3.select(this.refs.yAxis).call(this.yAxis.ticks(6));
 
+    d3.select(this.refs.yAxisGrid).call(
+      this.yAxis.ticks(6).tickSize(-width + margin.right + margin.left)
+    );
+
     d3.select(this.refs.yAxis)
       .append('text')
       .attr('id', 'yLabel')
+      .attr('class', 'axisLabel')
       .attr('transform', 'rotate(-90)')
       .attr('x', -height / 2)
-      .attr('y', -margin.left / 2 - 10)
+      .attr('y', -margin.left / 2 - 20)
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text(this.props.yLabel);
@@ -90,28 +95,42 @@ class BarChart extends Component {
     d3.select(this.refs.xAxis)
       .append('text')
       .attr('id', 'xLabel')
-      .attr('y', margin.top + 10)
+      .attr('class', 'axisLabel')
+      .attr('y', margin.top)
       .attr('x', width / 2)
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text(this.props.xLabel);
 
-    d3.select(this.refs.yAxis)
-      .append('g')
-      .attr('class', 'grid')
-      .call(
-        this.yAxis
-          .ticks(6)
-          .tickSize(-width + margin.right + margin.left)
-          .tickFormat('')
-      );
+    // d3.select(this.refs.yAxis)
+    //   .append('g')
+    //   .attr('class', 'grid')
+    //   .call(
+    //     this.yAxis
+    //       .ticks(6)
+    //       .tickSize(-width + margin.right + margin.left)
+    //       .tickFormat('')
+    //   );
   }
 
   render() {
     return (
       <svg width={width} height={height} className={'expChart'}>
-        <g ref="xAxis" transform={`translate(0, ${height - margin.bottom})`} />
-        <g ref="yAxis" transform={`translate(${margin.left}, 0)`} />
+        <g
+          ref="yAxis"
+          className="axis"
+          transform={`translate(${margin.left}, 0)`}
+        />
+        <g
+          ref="yAxisGrid"
+          className="grid"
+          transform={`translate(${margin.left}, 0)`}
+        />
+        <g
+          ref="xAxis"
+          className="axis"
+          transform={`translate(0, ${height - margin.bottom})`}
+        />
         <g ref="bars">
           {this.state.bars.map(d => (
             <rect

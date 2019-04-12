@@ -3,9 +3,8 @@ import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
 
-import Draggable from 'components/shared/Draggable/Draggable';
+import Tag from 'components/shared/TagBlock/TagProject';
 import SharePopup from 'components/SharePopup/SharePopup';
-import { PropertyType } from 'models/Filters';
 import { Project, UserAccess } from 'models/Project';
 import User from 'models/User';
 import routes from 'routes';
@@ -43,7 +42,7 @@ export default class ProjectWidget extends React.Component<
         />
         <Link
           className={styles.project_link}
-          to={routes.expirementRuns.getRedirectPath({ projectId: project.id })}
+          to={routes.charts.getRedirectPath({ projectId: project.id })}
         >
           <div className={styles.project_widget}>
             <div className={styles.title_block}>
@@ -54,18 +53,19 @@ export default class ProjectWidget extends React.Component<
               {this.props.project.tags &&
                 this.props.project.tags.map((tag: string, i: number) => {
                   return (
-                    <Draggable
-                      key={i}
-                      type="filter"
-                      data={{
-                        type: PropertyType.STRING,
-                        name: 'Tag',
-                        value: tag,
-                      }}
-                      additionalClassName={styles.tag}
-                    >
-                      <span className={styles.tag_text}>{tag}</span>
-                    </Draggable>
+                    // <Draggable
+                    //   key={i}
+                    //   type="filter"
+                    //   data={{
+                    //     type: PropertyType.STRING,
+                    //     name: 'Tag',
+                    //     value: tag,
+                    //   }}
+                    //   additionalClassName={styles.tag}
+                    // >
+                    //   <span className={styles.tag_text}>{tag}</span>
+                    // </Draggable>
+                    <Tag tag={tag} key={i} />
                   );
                 })}
             </div>
@@ -85,10 +85,6 @@ export default class ProjectWidget extends React.Component<
                 className={styles.author_avatar}
                 src={project.Author.picture ? project.Author.picture : ''}
               />
-            </div>
-            <div className={styles.model_count_block}>
-              <span className={styles.model_counter}>{12}</span>
-              <span>model</span>
             </div>
             <div className={styles.collaborators}>
               <button

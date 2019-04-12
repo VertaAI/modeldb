@@ -53,9 +53,8 @@ class FileUploader extends React.Component<ILocalProps, ILocalState> {
       .map(fileType => {
         if (fileType === 'csv') {
           return '.csv, text/csv';
-        } else {
-          return '';
         }
+        return '';
       })
       .join(',');
   }

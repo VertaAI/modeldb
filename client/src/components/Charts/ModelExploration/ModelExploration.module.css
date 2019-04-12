@@ -12,8 +12,8 @@
 
 select {
   outline: none;
-  background: #f0f3fb;
-  border: 1px solid #f0f3fb;
+  background: #f9fafc;
+  border: 1px solid #f9fafc;
   border-radius: 4px;
   width: 100%;
   padding: 20px;
@@ -29,6 +29,7 @@ select {
   cursor: pointer;
   position: relative;
   max-width: 180px;
+  margin-top: 1em;
 }
 
 .chart_selector_arrow {
@@ -38,6 +39,12 @@ select {
   right: 24px;
   color: rgb(114, 114, 114);
   pointer-events: none;
+}
+
+.chart_selector_label {
+  color: var(--text-color3);
+  font-size: 0.85em;
+  /* font-weight: 500; */
 }
 
 .compute_button {
@@ -61,4 +68,26 @@ select {
 
 .grid line {
   stroke: #ddd;
+}
+
+.chartHeader {
+  font-size: 1.15em;
+  color: var(--main-color5);
+  padding: 0.5em;
+}
+
+.chartDescription {
+  padding: 0 0.6em;
+  max-width: 800px;
+  font-size: 0.85em;
+}
+
+.parallelMeta {
+  display: grid;
+  max-width: 800px;
+  font-size: 0.7em;
+  font-style: italic;
+  justify-content: right;
+  margin: 0.5em -0.5em 0 0 !important;
+  color: var(--text-color3);
 }

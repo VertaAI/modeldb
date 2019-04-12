@@ -17,7 +17,7 @@ class Deploying extends React.PureComponent<ILocalProps> {
         <div className={styles.deploying}>
           <img className={styles.preloader} src={preloaderSrc} />
           <span className={styles.description}>
-            We are deploying model right now...
+            We are deploying the model right now...
           </span>
         </div>
       </Popup>

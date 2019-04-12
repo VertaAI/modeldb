@@ -35,7 +35,7 @@ class DeployButton extends React.PureComponent<AllProps> {
                 <Fab
                   theme="blue"
                   icon={<Icon type="upload" />}
-                  isLoading={deployStatusInfo.status === 'unknown'}
+                  // isLoading={deployStatusInfo.status === 'unknown'}
                   disabled={deployStatusInfo.status === 'unknown'}
                   onClick={this.onShowDeployManager}
                 >

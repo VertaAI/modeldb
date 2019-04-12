@@ -34,15 +34,25 @@
   margin: 5px 0;
 }
 
-.experiment_link:hover {
+/* .experiment_link:hover {
   background-color: #e6e6e6;
-}
+} */
 
-.parma_link_label {
+/* .parma_link_label {
   color: rgb(141, 141, 141);
 }
 
 .parma_link_value {
+  font-weight: 500;
+  color: var(--text-color1);
+} */
+
+.parma_link_value {
+  font-size: 0.8em;
+  color: rgb(75, 75, 75);
+}
+
+.parma_link_label {
   font-weight: 500;
   color: var(--text-color1);
 }

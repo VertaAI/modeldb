@@ -9,7 +9,7 @@
     "classnames": "^2.2.6",
     "connected-react-router": "^6.2.2",
     "copy-to-clipboard": "^3.0.8",
-    "d3": "^5.9.1",
+    "d3": "^5.9.2",
     "decko": "^1.2.0",
     "json2typescript": "^1.0.6",
     "lodash": "^4.17.11",
@@ -33,7 +33,7 @@
     "typescript": "^3.2.2"
   },
   "scripts": {
-    "start": "react-app-rewired start",
+    "start": "PORT=3001 react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test --modulePaths=src",
     "lint": "tslint -p .",

@@ -7,7 +7,7 @@ const routes = {
   callback: makeRoute({ getPath: () => '/callback' }),
   settings: makeRoute({ getPath: () => '/settings' }),
 
-  expirementRuns: makeRoute({
+  experimentRuns: makeRoute({
     getPath: () => '/project/:projectId/exp-runs',
     getRedirectPath: (p: { projectId: string }) =>
       `/project/${p.projectId}/exp-runs`,

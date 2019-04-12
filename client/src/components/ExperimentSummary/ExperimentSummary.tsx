@@ -23,7 +23,7 @@ FilterContextPool.registerContext({
   ],
   isFilteringSupport: true,
   isValidLocation: (location: string) => {
-    for (const route of [routes.expirementRuns, routes.charts]) {
+    for (const route of [routes.experimentRuns, routes.charts]) {
       const match = route.getMatch(location);
       if (match) {
         currentProjectID = match.projectId;
@@ -50,7 +50,7 @@ FilterContextPool.registerContext({
   },
 });
 
-type IUrlProps = GetRouteParams<typeof routes.expirementRuns>;
+type IUrlProps = GetRouteParams<typeof routes.experimentRuns>;
 class ExperimentSummary extends React.Component<
   RouteComponentProps<IUrlProps>
 > {
@@ -70,7 +70,7 @@ class ExperimentSummary extends React.Component<
         <ProjectPageTabs projectId={projectId} activeRoute={currentRoute!} />
         <Switch>
           <Route
-            path={routes.expirementRuns.getPath()}
+            path={routes.experimentRuns.getPath()}
             component={ExperimentRuns}
           />
           <Route path={routes.charts.getPath()} component={Charts} />

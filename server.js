@@ -4,12 +4,13 @@ dotenv.config();
 const express = require('express');
 const path = require('path');
 const app = express();
-const api = require('./api');
+//const api = require('./api');
 var bodyParser = require('body-parser')
 var session = require('express-session');
 var auth = require('./routes/auth.js');
 var cors = require('cors');
 var cookieParser = require('cookie-parser');
+var proxy = require('http-proxy-middleware');
 
 // config express-session
 var sess = {
@@ -19,11 +20,12 @@ var sess = {
   saveUninitialized: true
 };
 
-if (app.get('env') === 'production') {
+/*
+if (process.env.DEPLOYED === 'yes') {
   sess.cookie.secure = true; // serve secure cookies, requires https
 }
+*/
 
-app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(session(sess));
 app.use(cors());
@@ -46,6 +48,17 @@ const strategy = new Auth0Strategy({
     return done(null, user, extraParams);
   }
 );
+
+passport.use(strategy);
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+passport.deserializeUser(function (user, done) {
+  done(null, user);
+});
+app.use(passport.initialize());
+app.use(passport.session());
+
 const secured = (req, res, next) => {
   if (req.user) {
     return next();
@@ -58,119 +71,32 @@ const setPrivateHeader = (req, res, next) => {
   req.headers['Grpc-Metadata-source'] = 'WebApp';
   next();
 }
-passport.use(strategy);
-passport.serializeUser(function (user, done) {
-  done(null, user);
-});
-passport.deserializeUser(function (user, done) {
-  done(null, user);
-});
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(express.static('client/build'));
-
-app.get('/api/getProjects', [secured, setPrivateHeader], (req, res) => {
-  api.getFromAPI('/v1/project/getProjects', 'get', req.headers)
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.get('/api/getExperimentRunsInProject', [secured, setPrivateHeader], (req, res) => {
-  api.getFromAPI(
-      '/v1/experiment-run/getExperimentRunsInProject',
-      'get',
-      req.headers,
-      req.query) // also req.params for post
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.get('/api/v1/getServiceStatistics/:modelId', [secured, setPrivateHeader], (req, res) => {
-  // Disable caching for content files
+const disableCache = (req, res, next) => {
   res.header("Cache-Control", "no-cache, no-store, must-revalidate");
   res.header("Pragma", "no-cache");
   res.header("Expires", 0);
+  next();
+}
+const printer = (req, res, next) => {
+  console.log('Requesting', req.originalUrl)
+  res.on('finish', () => {
+    console.info(`Returning ${res.statusCode} ${res.statusMessage}; ${res.get('Content-Length') || 0}b sent`)
+  })
+  next()
+}
 
-  api.getFromAPI(
-      `/api/v1/controller/statistics/service/${req.params.modelId}`,
-      'get',
-      req.headers,
-      req.query)
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
+const apiAddress = `${process.env.BACKEND_API_PROTOCOL}://${process.env.BACKEND_API_DOMAIN}${
+  process.env.BACKEND_API_PORT ? `:${process.env.BACKEND_API_PORT}` : ''
+}`;
 
-app.get('/api/v1/getDataStatistics/:modelId', [secured, setPrivateHeader], (req, res) => {
-  // Disable caching for content files
-  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.header("Pragma", "no-cache");
-  res.header("Expires", 0);
+if (process.env.DEPLOYED !== 'yes') {
+  const aws_proxy = proxy({target: apiAddress, changeOrigin: false, ws: true})
+  app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
+    return aws_proxy(req, res, next);
+  })
+}
 
-  api.getFromAPI(
-      `/api/v1/controller/data/service/${req.params.modelId}`,
-      'get',
-      req.headers,
-      req.query)
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.post('/api/v1/controller/deploy', [secured, setPrivateHeader], (req, res) => {
-  api.getFromAPI(
-      '/api/v1/controller/deploy',
-      'post',
-      req.headers,
-      req.query,
-      req.body,
-    )
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      res.status(500).send("Internal Server Error");
-    })
-});
-
-app.get('/api/v1/controller/status/:modelId', [secured, setPrivateHeader], (req, res) => {
-  // Disable caching for content files
-  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.header("Pragma", "no-cache");
-  res.header("Expires", 0);
-
-  api.getFromAPI(
-      `/api/v1/controller/status/${req.params.modelId}`,
-      'get',
-      req.headers,
-      req.query,
-    )
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).send("Internal Server Error");
-    })
-});
+app.use(bodyParser.json());
 
 app.get('/api/getUser',
   secured,
@@ -184,15 +110,23 @@ app.get('/api/getUser',
 
 app.use('/api/auth/', auth);
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get('*', (req, res) => {
-  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.header("Pragma", "no-cache");
-  res.header("Expires", 0);
+if (process.env.DEPLOYED === 'yes') {
+  app.use(express.static('client/build'));
 
-  res.sendFile(path.join(__dirname + '/client/build' + '/index.html'));
-});
+  // Any left over is sent to index
+  app.get('*', (req, res) => {
+    res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.header("Pragma", "no-cache");
+    res.header("Expires", 0);
+    res.sendFile(path.join(__dirname + '/client/build' + '/index.html'));
+  });
+}
+else {
+  const local_proxy = proxy({target: 'http://localhost:3001', changeOrigin: false, ws: true})
+  app.use('*', (req, res, next) => {
+    return local_proxy(req, res, next);
+  })
+}
 
 const port = process.env.PORT || 3000;
 app.listen(port);
