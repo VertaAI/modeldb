@@ -156,10 +156,6 @@ export default class ModelExploration extends React.Component<
           <BarChart
             xLabel={this.state.selectedXAxis}
             yLabel={this.state.selectedYAxis}
-            // data={this.reduceMetricForAgg(
-            //   this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis]),
-            //   this.state.selectedAggregate
-            // )}
             data={this.returnAggResults(
               this.state.selectedAggregate,
               this.groupBy(
@@ -171,6 +167,17 @@ export default class ModelExploration extends React.Component<
                 }
               )
             )}
+            // data={this.reduceMetricForAgg(
+            //   this.groupBy(
+            //     this.state.computeXAxisFields,
+            //     (field: IChartData) => {
+            //       if (field[this.state.selectedXAxis]) {
+            //         return field[this.state.selectedXAxis];
+            //       }
+            //     }
+            //   ),
+            //   this.state.selectedAggregate
+            // )}
           />
         </div>
         <br />
@@ -247,26 +254,26 @@ export default class ModelExploration extends React.Component<
   }
 
   // reduce data based on aggigation type
-  // public reduceMetricForAgg = (groupByResult: any, selectedAggType: string) => {
-  //   let aggFun: any;
-  //   switch (selectedAggType) {
-  //     case 'sum':
-  //       aggFun = this.sum;
-  //     case 'median':
-  //       aggFun = this.median;
-  //     case 'variance':
-  //       aggFun = this.variance;
-  //     case 'stdev':
-  //       aggFun = this.stdev;
-  //     case 'count':
-  //       aggFun = this.count;
-  //     default:
-  //       aggFun = this.average;
-  //   }
-  //   return [...groupByResult].map(obj => {
-  //     return { key: obj[0], value: aggFun(obj[1]) };
-  //   });
-  // };
+  public reduceMetricForAgg = (groupByResult: any, selectedAggType: string) => {
+    let aggFun: any;
+    switch (selectedAggType) {
+      case 'sum':
+        aggFun = listSum;
+      case 'median':
+        aggFun = listMedian;
+      case 'variance':
+        aggFun = listVariance;
+      case 'stdev':
+        aggFun = listStdev;
+      case 'count':
+        aggFun = listCount;
+      default:
+        aggFun = listAverage;
+    }
+    return [...groupByResult].map(obj => {
+      return { key: obj[0], value: aggFun(obj[1]) };
+    });
+  };
 
   @bind
   public returnAggResults(selected: string, arrayGpBy: any) {
