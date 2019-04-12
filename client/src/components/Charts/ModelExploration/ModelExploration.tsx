@@ -40,7 +40,6 @@ interface ILocalProps {
 
 interface ILocalState {
   aggType: string[];
-  flatMetric: object[];
   computeXAxisFields: object[];
   selectedXAxis: string;
   selectedYAxis: string;
@@ -59,10 +58,10 @@ export default class ModelExploration extends React.Component<
   public mapOptGroup = { metric: false, hyper: false };
   public constructor(props: ILocalProps) {
     super(props);
+    this.computeYParamsMetric(props.expRuns);
     this.state = {
       aggType: ['average', 'sum', 'median', 'variance', 'stdev', 'count'],
       computeXAxisFields: this.computeXAxisFields(props.expRuns),
-      flatMetric: this.computeFlatMetric(props.expRuns),
       selectedAggregate: 'average',
       selectedXAxis: props.initialSelection.initialHyperparam,
       selectedYAxis: props.initialSelection.initialMetric,
@@ -233,30 +232,13 @@ export default class ModelExploration extends React.Component<
     return map;
   }
 
-  // Utilities
-  // public computeFlatMetric = (arr: ModelRecord[]) => {
-  //   return _.map(arr, metricField => {
-  //     const flatMetric: any = metricField;
-  //     if (metricField.metrics.length !== 0) {
-  //       metricField.metrics.forEach((kvPair: IKeyValPair) => {
-  //         this.yAxisParams.add(kvPair.key);
-  //         flatMetric[kvPair.key] = kvPair.value;
-  //       });
-  //       return flatMetric;
-  //     }
-  //   })
-  // };
-
   @bind
-  public computeFlatMetric(arr: ModelRecord[]) {
+  public computeYParamsMetric(arr: ModelRecord[]) {
     return _.map(arr, obj => {
-      const metricField = _.pick(obj, 'startTime', 'metrics');
-      const flatMetric: any = { date: metricField.startTime };
+      const metricField = _.pick(obj, 'metrics');
       metricField.metrics.forEach((kvPair: any) => {
         this.yAxisParams.add(kvPair.key);
-        flatMetric[kvPair.key] = kvPair.value;
       });
-      return flatMetric;
     });
   }
 
