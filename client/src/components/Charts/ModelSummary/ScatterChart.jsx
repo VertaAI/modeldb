@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import routes from 'routes';
 import * as d3 from 'd3';
+import _ from 'lodash';
 // const canvasWidth = 960;
 const width = 680;
 const height = 400;
@@ -14,10 +15,9 @@ class ScatterChart extends Component {
     yScale: undefined,
   };
 
-  //'%b/%d %H:%M'
   xAxis = d3
     .axisBottom()
-    .tickFormat(d3.timeFormat('%H:%M'))
+    .tickFormat(d3.timeFormat('%b/%d %H:%M'))
     .ticks(5);
   yAxis = d3.axisLeft();
 
@@ -25,31 +25,31 @@ class ScatterChart extends Component {
     const { flatdata, selectedMetric } = nextProps;
     if (!flatdata) return {};
 
-    const extent = d3.extent(flatdata, d => d.date);
+    const extent = d3.extent(flatdata, d => d.dateCreated);
     const xScale = d3
       .scaleTime()
       .domain(extent)
       .range([margin.left, width - margin.right]);
 
-    const [, max] = d3.extent(flatdata, d => d[selectedMetric]);
+    const [min, max] = d3.extent(flatdata, d => +d[selectedMetric]);
     const yScale = d3
       .scaleLinear()
-      .domain([0, max * 1.25])
+      .domain([min * 0.95, max * 1.05])
       .range([height - margin.bottom, margin.top]);
 
-    const marks = flatdata.map(d => {
-      let projectId = window.location.href.split('/')[4];
-      return {
-        cx: xScale(d.date),
-        cy: yScale(d[selectedMetric]),
-        projectId: projectId,
-        modelRecordId: d.id,
-      };
-    });
+    const marks = _.map(flatdata, d => {
+      if (d[selectedMetric]) {
+        let dataOnChart = d;
+        dataOnChart.cx = xScale(d.dateCreated);
+        dataOnChart.cy = yScale(d[selectedMetric]);
+        return dataOnChart;
+      }
+    }).filter(obj => obj !== undefined);
     return { marks, xScale, yScale };
   }
 
   componentDidMount() {
+    // should be update with a separate PR
     // d3.select(this.refs.annotation)
     //   .append('rect')
     //   .attr('width', '200px')
@@ -103,13 +103,13 @@ class ScatterChart extends Component {
   }
 
   mouseOver(d) {
-    d3.select(this.refs['ref-' + d.modelRecordId])
+    d3.select(this.refs['ref-' + d.id])
       .transition()
       .attr('r', 9)
       .attr('opacity', 0.95);
   }
   mouseOut(d) {
-    d3.select(this.refs['ref-' + d.modelRecordId])
+    d3.select(this.refs['ref-' + d.id])
       .transition()
       .attr('r', 7)
       .attr('opacity', 0.8);
@@ -142,7 +142,7 @@ class ScatterChart extends Component {
                 key={key}
                 to={routes.modelRecord.getRedirectPath({
                   projectId: d.projectId,
-                  modelRecordId: d.modelRecordId,
+                  modelRecordId: d.id,
                 })}
               >
                 <circle
@@ -151,7 +151,7 @@ class ScatterChart extends Component {
                   fill={'#6863ff'}
                   opacity={0.95}
                   r={7}
-                  ref={'ref-' + d.modelRecordId}
+                  ref={'ref-' + d.id}
                   onMouseOut={this.mouseOut.bind(this, d)}
                   onMouseOver={this.mouseOver.bind(this, d)}
                 />
@@ -168,6 +168,7 @@ class ScatterChart extends Component {
 
 export default ScatterChart;
 
+// Dynamic axis format will be added in a separate PR
 // Establish the desired formatting options using locale.format():
 // https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
 // formatMillisecond = d3.timeFormat('.%L');

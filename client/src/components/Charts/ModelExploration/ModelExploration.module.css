@@ -49,10 +49,6 @@ select {
   /* font-weight: 500; */
 }
 
-.compute_button {
-  padding: 10px;
-}
-
 .compute_button button {
   color: var(--bg-color3);
   background-color: var(--bg-color2);

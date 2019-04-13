@@ -19,6 +19,15 @@ interface IParallelData {
   [key: string]: any;
 }
 
+interface IKeyValPair {
+  key: string;
+  value: number | string;
+}
+
+interface IChartData {
+  [key: string]: any;
+}
+
 interface IInitialSelection {
   initialHyperparam: string;
   initialMetric: string;
@@ -31,7 +40,6 @@ interface ILocalProps {
 
 interface ILocalState {
   aggType: string[];
-  flatMetric: object[];
   computeXAxisFields: object[];
   selectedXAxis: string;
   selectedYAxis: string;
@@ -50,10 +58,10 @@ export default class ModelExploration extends React.Component<
   public mapOptGroup = { metric: false, hyper: false };
   public constructor(props: ILocalProps) {
     super(props);
+    this.computeYParamsMetric(props.expRuns);
     this.state = {
       aggType: ['average', 'sum', 'median', 'variance', 'stdev', 'count'],
       computeXAxisFields: this.computeXAxisFields(props.expRuns),
-      flatMetric: this.computeFlatMetric(props.expRuns),
       selectedAggregate: 'average',
       selectedXAxis: props.initialSelection.initialHyperparam,
       selectedYAxis: props.initialSelection.initialMetric,
@@ -143,23 +151,20 @@ export default class ModelExploration extends React.Component<
               })}
             </select>
           </div>
-          {/* <div className={styles.compute_button}>
-            <button>Compute Charts</button>
-          </div> */}
         </div>
         <div>
           <BarChart
             xLabel={this.state.selectedXAxis}
             yLabel={this.state.selectedYAxis}
-            // data={this.reduceMetricForAgg(
-            //   this.groupBy(this.state.computeXAxisFields, (field: any) => field[this.state.selectedXAxis]),
-            //   this.state.selectedAggregate
-            // )}
             data={this.returnAggResults(
               this.state.selectedAggregate,
               this.groupBy(
                 this.state.computeXAxisFields,
-                (field: any) => field[this.state.selectedXAxis]
+                (field: IChartData) => {
+                  if (field[this.state.selectedXAxis]) {
+                    return field[this.state.selectedXAxis];
+                  }
+                }
               )
             )}
           />
@@ -188,7 +193,6 @@ export default class ModelExploration extends React.Component<
   }
 
   // event handler to set user selection fields for bar chart
-
   @bind
   public setLocalYState(event: React.FormEvent<HTMLSelectElement>): void {
     const element = event.target as HTMLSelectElement;
@@ -209,54 +213,33 @@ export default class ModelExploration extends React.Component<
 
   // Utility Functions
   @bind
-  public groupBy(list: object[], keyGetter: any) {
+  public groupBy(list: IChartData[], keyGetter: any) {
     const map = new Map();
-    list.forEach((item: any) => {
+    list.forEach((item: IChartData) => {
       const key = keyGetter(item);
       const collection = map.get(key);
       if (!collection) {
-        map.set(key, [item[this.state.selectedYAxis]]);
+        if (item[this.state.selectedYAxis]) {
+          map.set(key, [item[this.state.selectedYAxis]]);
+        }
       } else {
-        collection.push(item[this.state.selectedYAxis]);
+        if (item[this.state.selectedYAxis]) {
+          collection.push(item[this.state.selectedYAxis]);
+        }
       }
     });
     return map;
   }
 
   @bind
-  public computeFlatMetric(arr: ModelRecord[]) {
-    return arr.map(obj => {
-      const metricField = _.pick(obj, 'startTime', 'metrics');
-      const flatMetric: any = { date: metricField.startTime };
+  public computeYParamsMetric(arr: ModelRecord[]) {
+    return _.map(arr, obj => {
+      const metricField = _.pick(obj, 'metrics');
       metricField.metrics.forEach((kvPair: any) => {
         this.yAxisParams.add(kvPair.key);
-        flatMetric[kvPair.key] = kvPair.value;
       });
-      return flatMetric;
     });
   }
-
-  // reduce data based on aggigation type
-  // public reduceMetricForAgg = (groupByResult: any, selectedAggType: string) => {
-  //   let aggFun: any;
-  //   switch (selectedAggType) {
-  //     case 'sum':
-  //       aggFun = this.sum;
-  //     case 'median':
-  //       aggFun = this.median;
-  //     case 'variance':
-  //       aggFun = this.variance;
-  //     case 'stdev':
-  //       aggFun = this.stdev;
-  //     case 'count':
-  //       aggFun = this.count;
-  //     default:
-  //       aggFun = this.average;
-  //   }
-  //   return [...groupByResult].map(obj => {
-  //     return { key: obj[0], value: aggFun(obj[1]) };
-  //   });
-  // };
 
   @bind
   public returnAggResults(selected: string, arrayGpBy: any) {
@@ -326,81 +309,74 @@ export default class ModelExploration extends React.Component<
     this.summaryParams.add('experiment_id');
     this.xAxisParams.add('project_id');
     this.summaryParams.add('project_id');
-    // this.xAxisParams.add('id');
-    // this.xAxisParams.add('start_time');
-    return expRuns.map(modeRecord => {
-      const fields: any = {};
-      if (modeRecord.hyperparameters) {
-        modeRecord.hyperparameters.forEach((kvPair: any) => {
-          this.xAxisParams.add(`${kvPair.key}`);
-          this.hyperParams.add(kvPair.key);
-          fields[kvPair.key] =
-            kvPair.value.length > 8
-              ? kvPair.value.substring(0, 8)
-              : kvPair.value;
-        });
-      }
+    return expRuns
+      .map(modeRecord => {
+        const fields: any = {};
+        if (
+          modeRecord.hyperparameters &&
+          modeRecord.hyperparameters.length !== 0
+        ) {
+          modeRecord.hyperparameters.forEach((kvPair: any) => {
+            this.xAxisParams.add(`${kvPair.key}`);
+            this.hyperParams.add(kvPair.key);
+            fields[kvPair.key] =
+              kvPair.value.length > 8
+                ? kvPair.value.substring(0, 8)
+                : kvPair.value;
+          });
+        }
 
-      if (modeRecord.metrics) {
-        modeRecord.metrics.forEach((kvPair: any) => {
-          // this.xAxisParams.add(`${kvPair.key}`);
-          fields[kvPair.key] = kvPair.value;
-        });
-      }
-      // if (modeRecord.datasets) {
-      //   modeRecord.datasets.forEach((kvPair: any) => {
-      //     this.xAxisParams.add(kvPair.key);
-      //     fields[`dataset_${kvPair.key}`] = kvPair.path;
-      //   });
-      // }
-      // if (modeRecord.artifacts) {
-      //   modeRecord.artifacts.forEach((kvPair: any) => {
-      //     this.xAxisParams.add(kvPair.key);
-      //     fields[`artifact_${kvPair.key}`] = kvPair.path;
-      //   });
-      // }
-      fields.experiment_id = modeRecord.experimentId.substring(0, 8);
-      fields.project_id = modeRecord.projectId.substring(0, 8);
-      fields.exp_run_id = modeRecord.id.substring(0, 8);
-      fields.start_time = modeRecord.startTime;
+        if (modeRecord.metrics && modeRecord.metrics.length !== 0) {
+          modeRecord.metrics.forEach((kvPair: any) => {
+            // this.xAxisParams.add(`${kvPair.key}`);
+            fields[kvPair.key] = kvPair.value;
+          });
+        }
+        if (Object.getOwnPropertyNames(fields).length === 0) {
+          return;
+        }
+        fields.experiment_id = modeRecord.experimentId.substring(0, 8);
+        fields.project_id = modeRecord.projectId.substring(0, 8);
+        fields.exp_run_id = modeRecord.id.substring(0, 8);
+        fields.start_time = modeRecord.dateCreated;
 
-      if (modeRecord.codeVersion) {
-        fields.code_version = modeRecord.codeVersion;
-        this.xAxisParams.add('code_version');
-      }
-      if (modeRecord.owner) {
-        fields.owner = modeRecord.owner;
-        this.xAxisParams.add('owner');
-        this.summaryParams.add('owner');
-      }
-      if (modeRecord.tags) {
-        modeRecord.tags.forEach((tag: string) => {
-          fields[`tag_${tag}`] = tag;
-        });
-      }
-      return fields;
-    });
+        if (modeRecord.codeVersion) {
+          fields.code_version = modeRecord.codeVersion;
+          this.xAxisParams.add('code_version');
+        }
+        if (modeRecord.owner) {
+          fields.owner = modeRecord.owner;
+          this.xAxisParams.add('owner');
+          this.summaryParams.add('owner');
+        }
+        return fields;
+      })
+      .filter(obj => obj !== undefined);
   }
 
   // compute Parallel chart's Data
   @bind
   public computeParallelData(expRuns: ModelRecord[]) {
-    return expRuns.map(modeRecord => {
-      const fields: any = {};
-      if (modeRecord.hyperparameters) {
-        modeRecord.hyperparameters.forEach((kvPair: any) => {
-          if (typeof kvPair.value !== 'string') {
-            fields[kvPair.key] = kvPair.value;
-          }
-        });
-      }
+    return expRuns
+      .map(modeRecord => {
+        const fields: IChartData = {};
+        if (modeRecord.hyperparameters) {
+          modeRecord.hyperparameters.forEach((kvPair: IKeyValPair) => {
+            if (typeof kvPair.value !== 'string') {
+              fields[kvPair.key] = kvPair.value;
+            }
+          });
+        }
 
-      if (modeRecord.metrics) {
-        modeRecord.metrics.forEach((kvPair: any) => {
-          fields[kvPair.key] = kvPair.value;
-        });
-      }
-      return fields;
-    });
+        if (modeRecord.metrics) {
+          modeRecord.metrics.forEach((kvPair: IKeyValPair) => {
+            fields[kvPair.key] = kvPair.value;
+          });
+        }
+        if (Object.getOwnPropertyNames(fields).length !== 0) {
+          return fields;
+        }
+      })
+      .filter(obj => obj !== undefined);
   }
 }
