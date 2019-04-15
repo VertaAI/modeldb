@@ -114,18 +114,15 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             </div>
           </div>
           <div className={styles.record_summary_meta}>
-            <div className={styles.meta_block}>
-              <div className={styles.meta_label}>Id: &nbsp;</div>
-              <div className={styles.meta_value}>{data.id}</div>
-            </div>
-            <div className={styles.meta_block}>
-              <div className={styles.meta_label}>Experement: &nbsp;</div>
-              <div className={styles.meta_value}>{data.experimentId}</div>
-            </div>
-            <div className={styles.meta_block}>
-              <div className={styles.meta_label}>Project: &nbsp;</div>
-              <div className={styles.meta_value}>{data.projectId}</div>
-            </div>
+            <this.RenderModelMeta label="Id: &nbsp;" value={data.id} />
+            <this.RenderModelMeta
+              label="Experement: &nbsp;"
+              value={data.experimentId}
+            />
+            <this.RenderModelMeta
+              label="Project: &nbsp;"
+              value={data.projectId}
+            />
           </div>
         </div>
         {data.codeVersion! && (
@@ -273,6 +270,16 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
         <div className={`${styles.record_value} ${additionalValueClassName}`}>
           {children}
         </div>
+      </div>
+    );
+  }
+  // tslint:disable-next-line:function-name
+  private RenderModelMeta(props: { label: string; value: string }) {
+    const { label, value } = props;
+    return (
+      <div className={styles.meta_block}>
+        <div className={styles.meta_label}>{label}</div>
+        <div className={styles.meta_value}>{value}</div>
       </div>
     );
   }
