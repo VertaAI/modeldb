@@ -88,10 +88,20 @@ const printer = (req, res, next) => {
 const apiAddress = `${process.env.BACKEND_API_PROTOCOL}://${process.env.BACKEND_API_DOMAIN}${
   process.env.BACKEND_API_PORT ? `:${process.env.BACKEND_API_PORT}` : ''
 }`;
+const apiHost = `${process.env.BACKEND_API_DOMAIN}${
+  process.env.BACKEND_API_PORT ? `:${process.env.BACKEND_API_PORT}` : ''
+}`;
 
 if (process.env.DEPLOYED !== 'yes') {
+  // Since the cloud system is configured by hostname, change the request when it's going to AWS so
+  // that it appears to be targeted to the right hostname instead of localhost:3000
+  const hostnameApiSwitch = (req, res, next) => {
+    req.headers['host'] = apiHost;
+    next()
+  }
+
   const aws_proxy = proxy({target: apiAddress, changeOrigin: false, ws: true})
-  app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, printer], (req, res, next) => {
+  app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, hostnameApiSwitch, printer], (req, res, next) => {
     return aws_proxy(req, res, next);
   })
 }
