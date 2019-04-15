@@ -11,29 +11,6 @@ class ModelRecordColDef extends React.Component<any> {
     const { id, projectId, experimentId } = this.props.data;
     return (
       <div className={styles.param_cell}>
-        {/* <Link
-          className={styles.model_link}
-          to={routes.modelRecord.getRedirectPath({
-            projectId,
-            modelRecordId: id,
-          })}
-        >
-          <strong>Model ID</strong> {' : '}
-          {`${id.slice(0, 4)}...${id.slice(-4)}`}
-        </Link> */}
-        {/* <div className={styles.experiment_link}>
-          <span className={styles.parma_link_label}> Project ID:</span>
-          <span className={styles.parma_link_value}>
-            {projectId.slice(0, 4)}
-          </span>
-        </div>
-        <div className={styles.experiment_link}>
-          <span className={styles.parma_link_label}> Experiment ID:</span>
-          <span className={styles.parma_link_value}>
-            {experimentId.slice(0, 4)}
-          </span>
-        </div> */}
-
         <div className={styles.record_summary_meta}>
           <Link
             className={styles.model_link}
@@ -51,7 +28,6 @@ class ModelRecordColDef extends React.Component<any> {
             label="Experiment:"
             value={experimentId.slice(0, 6)}
           />
-          <this.parmaLink label="Project:" value={projectId.slice(0, 6)} />
         </div>
         <div className={styles.deploy_link}>
           <DeployButton modelId={id} />
