@@ -22,21 +22,6 @@
   margin-right: 30px;
 }
 
-.nav_menu {
-  grid-area: urls;
-  justify-self: end;
-}
-
-.nav_menu a {
-  margin: 0 18px;
-  text-decoration: none;
-  color: var(--bg-color3);
-}
-
-.nav_menu a:hover {
-  font-weight: 500;
-}
-
 .logo {
   justify-self: start;
   grid-area: logo;
