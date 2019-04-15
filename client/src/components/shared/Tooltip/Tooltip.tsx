@@ -1,7 +1,7 @@
 import RCTooltip from 'rc-tooltip';
 import * as React from 'react';
 
-import './Tooltip.css';
+import './Tooltip.module.css';
 
 interface ILocalProps {
   content: string;
