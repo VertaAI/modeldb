@@ -253,6 +253,7 @@
   background-color: #fff;
 }
 
-.codeVersion_block {
-  margin-bottom: '10px';
+.codeVersion_block,
+.expId_block {
+  margin-bottom: 10px;
 }

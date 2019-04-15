@@ -1,9 +1,7 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
 
 import Tag from 'components/TagBlock/Tag';
 import tag_styles from 'components/TagBlock/TagBlock.module.css';
-import routes from 'routes';
 
 import styles from './ColumnDefs.module.css';
 
@@ -14,11 +12,11 @@ class SummaryColDef extends React.Component<any> {
     return (
       <div className={styles.summary_cell}>
         {modelRecord.experimentId && (
-          <div>
-            <this.parmaLink
-              label="Experiment:"
-              value={modelRecord.experimentId.slice(0, 6)}
-            />
+          <div className={styles.expId_block}>
+            Experiment Id:{' '}
+            <div className={styles.highlight_summary}>
+              {modelRecord.experimentId}
+            </div>
           </div>
         )}
         {modelRecord.codeVersion && (
