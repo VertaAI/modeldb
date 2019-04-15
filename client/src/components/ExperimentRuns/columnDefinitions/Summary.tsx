@@ -8,7 +8,6 @@ import styles from './ColumnDefs.module.css';
 class SummaryColDef extends React.Component<any> {
   public render() {
     const modelRecord = this.props.data;
-    console.log(modelRecord);
     return (
       <div className={styles.summary_cell}>
         {modelRecord.experimentId && (
@@ -44,16 +43,6 @@ class SummaryColDef extends React.Component<any> {
       </div>
     );
   }
-
-  public parmaLink = (props: { label: string; value: string; link?: any }) => {
-    const { label, value } = props;
-    return (
-      <div className={styles.experiment_link}>
-        <span className={styles.parma_link_label}>{label}</span>{' '}
-        <span className={styles.parma_link_value}>{value.slice(0, 6)}</span>
-      </div>
-    );
-  };
 }
 
 export default SummaryColDef;
