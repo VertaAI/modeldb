@@ -114,9 +114,18 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             </div>
           </div>
           <div className={styles.record_summary_meta}>
-            <this.ParmaLink label="Model ID:" value={data.id} />
-            <this.ParmaLink label="Project ID:" value={data.projectId} />
-            <this.ParmaLink label="Experiment ID:" value={data.experimentId} />
+            <div className={styles.meta_block}>
+              <div className={styles.meta_label}>Id: &nbsp;</div>
+              <div className={styles.meta_value}>{data.id}</div>
+            </div>
+            <div className={styles.meta_block}>
+              <div className={styles.meta_label}>Experement: &nbsp;</div>
+              <div className={styles.meta_value}>{data.experimentId}</div>
+            </div>
+            <div className={styles.meta_block}>
+              <div className={styles.meta_label}>Project: &nbsp;</div>
+              <div className={styles.meta_value}>{data.projectId}</div>
+            </div>
           </div>
         </div>
         {data.codeVersion! && (
@@ -264,17 +273,6 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
         <div className={`${styles.record_value} ${additionalValueClassName}`}>
           {children}
         </div>
-      </div>
-    );
-  }
-
-  // tslint:disable-next-line:function-name
-  private ParmaLink(props: { label: string; value: string }) {
-    const { label, value } = props;
-    return (
-      <div className={styles.experiment_link}>
-        <span className={styles.parma_link_label}>{label}</span>{' '}
-        <span className={styles.parma_link_value}>{value.slice(0, 6)}</span>
       </div>
     );
   }
