@@ -7,15 +7,6 @@ const app = express();
 var bodyParser = require('body-parser')
 var proxy = require('http-proxy-middleware');
 
-var cookieSession = require('cookie-session')
-app.use(cookieSession({
-  name: 'session',
-  keys: ["webapp"],
-
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
-
 const disableCache = (req, res, next) => {
   res.header("Cache-Control", "no-cache, no-store, must-revalidate");
   res.header("Pragma", "no-cache");
@@ -41,6 +32,7 @@ if (process.env.DEPLOYED !== 'yes') {
   // Since the cloud system is configured by hostname, change the request when it's going to AWS so
   // that it appears to be targeted to the right hostname instead of localhost:3000
   const hostnameApiSwitch = (req, res, next) => {
+    req.headers['original-host'] = req.headers['host']
     req.headers['host'] = apiHost;
     next()
   }
