@@ -17,7 +17,9 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
         <div className={styles.input}>
           <input
             type="number"
-            defaultValue={this.props.data.value.toString()}
+            defaultValue={(
+              Math.round(this.props.data.value * 10000) / 10000
+            ).toString()}
             onBlur={this.onBlur}
             onKeyUp={this.onSubmit}
           />
