@@ -33,8 +33,8 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IConnectedReduxProps;
 class Charts extends React.Component<AllProps> {
   public initialSelection: IInitialSelection = {
-    initialHyperparam: '',
-    initialMetric: '',
+    initialHyperparam: 'not available',
+    initialMetric: 'not available',
   };
   public currentProject: Project = new Project();
 
