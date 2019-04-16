@@ -18,10 +18,6 @@ export default class AuthorizedLayoutHeader extends React.PureComponent {
           <div className={styles.breadcrumb}>
             <Breadcrumb />
           </div>
-          <nav className={styles.nav_menu}>
-            <Link to={'/'}>About</Link>
-            <Link to={'/'}>Blog</Link>
-          </nav>
           <div className={styles.user_bar}>
             <UserBar />
           </div>

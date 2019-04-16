@@ -16,7 +16,7 @@ export const defaultColDefinitions = {
 export const returnColumnDefs = (updatedConfig: any) => {
   return [
     {
-      headerName: 'Models',
+      headerName: 'Model',
       field: 'data',
       width: 200,
       cellRendererFramework: ModelRecordColDef,

@@ -16,7 +16,7 @@ export default class Auth0AuthenticationService
   }
 
   public async loadUser(): Promise<User> {
-    const res = await axios.get<User>('/api/getUser');
+    const res = await axios.get<User>('/api/auth/getUser');
     return res.data;
   }
 

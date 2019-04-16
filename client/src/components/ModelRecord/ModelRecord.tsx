@@ -114,9 +114,15 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             </div>
           </div>
           <div className={styles.record_summary_meta}>
-            <this.ParmaLink label="Model ID:" value={data.id} />
-            <this.ParmaLink label="Project ID:" value={data.projectId} />
-            <this.ParmaLink label="Experiment ID:" value={data.experimentId} />
+            <this.RenderModelMeta label="Id: &nbsp;" value={data.id} />
+            <this.RenderModelMeta
+              label="Experement: &nbsp;"
+              value={data.experimentId}
+            />
+            <this.RenderModelMeta
+              label="Project: &nbsp;"
+              value={data.projectId}
+            />
           </div>
         </div>
         {data.codeVersion! && (
@@ -267,14 +273,13 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
       </div>
     );
   }
-
   // tslint:disable-next-line:function-name
-  private ParmaLink(props: { label: string; value: string }) {
+  private RenderModelMeta(props: { label: string; value: string }) {
     const { label, value } = props;
     return (
-      <div className={styles.experiment_link}>
-        <span className={styles.parma_link_label}>{label}</span>{' '}
-        <span className={styles.parma_link_value}>{value.slice(0, 6)}</span>
+      <div className={styles.meta_block}>
+        <div className={styles.meta_label}>{label}</div>
+        <div className={styles.meta_value}>{value}</div>
       </div>
     );
   }

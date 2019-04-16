@@ -21,42 +21,6 @@
   grid-template-columns: auto;
 }
 
-.experiment_link {
-  font-size: 13px;
-  text-decoration: none;
-  line-height: 30px;
-  border: solid 1px lightgrey;
-  border-radius: 3px;
-  padding: 0 5px;
-  max-width: 150px;
-  text-align: center;
-  float: none;
-  margin: 5px 0;
-}
-
-/* .experiment_link:hover {
-  background-color: #e6e6e6;
-} */
-
-/* .parma_link_label {
-  color: rgb(141, 141, 141);
-}
-
-.parma_link_value {
-  font-weight: 500;
-  color: var(--text-color1);
-} */
-
-.parma_link_value {
-  font-size: 0.8em;
-  color: rgb(75, 75, 75);
-}
-
-.parma_link_label {
-  font-weight: 500;
-  color: var(--text-color1);
-}
-
 .record_summary {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -85,11 +49,24 @@
   color: rgb(141, 141, 141);
 }
 
+.meta_label {
+  font-size: 14px;
+  color: rgb(141, 141, 141);
+}
+
+.meta_value {
+  color: var(--fr-color2);
+}
+
 .record_summary_meta {
   grid-row: 2;
-  color: #7c7c7c;
   font-size: 15px;
   line-height: 18px;
+}
+
+.meta_block {
+  padding: 5px;
+  display: flex;
 }
 
 .record_header {
