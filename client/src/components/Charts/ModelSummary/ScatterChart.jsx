@@ -68,6 +68,20 @@ class ScatterChart extends Component {
     //   .attr('font-size', '11px')
     //   .text('Model Metadata');
 
+    let xAxisLabel = 'Time Range';
+    if (this.props.flatdata === undefined || this.props.flatdata.length === 0) {
+      errorMessage(
+        '.summaryChart',
+        width,
+        margin.left,
+        height,
+        'notAvailableMsg',
+        'data not available',
+        '\uf071'
+      );
+      xAxisLabel = 'not available';
+    }
+
     this.xAxis.scale(this.state.xScale);
     d3.select(this.refs.xAxis).call(this.xAxis);
     d3.select(this.refs.xAxis)
@@ -77,7 +91,7 @@ class ScatterChart extends Component {
       .attr('x', width / 2)
       .style('text-anchor', 'middle')
       .style('fill', '#444')
-      .text('Time Range');
+      .text(xAxisLabel);
 
     this.yAxis.scale(this.state.yScale);
     d3.select(this.refs.yAxis).call(this.yAxis.ticks(6));
@@ -96,17 +110,6 @@ class ScatterChart extends Component {
     d3.select(this.refs.yAxisGrid).call(
       this.yAxis.ticks(6).tickSize(-width + margin.right + margin.left)
     );
-    if (this.props.flatdata === undefined || this.props.flatdata.length === 0) {
-      errorMessage(
-        '.summaryChart',
-        width,
-        margin.left,
-        height,
-        'notAvailableMsg',
-        'data not available',
-        '\uf071'
-      );
-    }
   }
   componentDidUpdate() {
     this.xAxis.scale(this.state.xScale);
