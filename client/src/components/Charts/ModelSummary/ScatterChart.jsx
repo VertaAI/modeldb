@@ -93,7 +93,7 @@ class ScatterChart extends Component {
     d3.select(this.refs.yAxisGrid).call(
       this.yAxis.ticks(6).tickSize(-width + margin.right + margin.left)
     );
-    if (this.selectedMetric === undefined) {
+    if (this.props.flatdata === undefined || this.props.flatdata.length === 0) {
       d3.select('.summaryChart')
         .append('text')
         .attr(

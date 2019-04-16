@@ -14,7 +14,7 @@ class ParallelCoordinates extends Component {
     const chart_width = width - margin.left - margin.right;
     const chart_height = height - margin.top - margin.bottom;
 
-    if (data.length === 0) {
+    if (data === undefined || data.length === 0) {
       svg
         .append('text')
         .attr(

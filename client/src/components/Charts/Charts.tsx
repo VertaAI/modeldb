@@ -41,7 +41,7 @@ class Charts extends React.Component<AllProps> {
   public render() {
     const { experimentRuns, loading, projects } = this.props;
 
-    if (experimentRuns !== undefined) {
+    if (experimentRuns !== undefined && experimentRuns.length > 0) {
       this.initialSelection = {
         initialHyperparam:
           experimentRuns[0].hyperparameters[0] === undefined
@@ -56,7 +56,8 @@ class Charts extends React.Component<AllProps> {
     if (
       projects !== undefined &&
       projects !== null &&
-      experimentRuns !== undefined
+      experimentRuns !== undefined &&
+      experimentRuns.length > 0
     ) {
       this.currentProject = projects.filter(
         d => d.id === experimentRuns[0].projectId

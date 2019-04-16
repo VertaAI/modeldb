@@ -100,7 +100,7 @@ class BarChart extends Component {
       .style('fill', '#444')
       .text(this.props.xLabel);
 
-    if (this.props.xLabel || this.props.YLabel === 'not available') {
+    if (this.props.data === undefined || this.props.data.length === 0) {
       d3.select('.expChart')
         .append('text')
         .attr(
