@@ -19,7 +19,10 @@ class ModelRecordColDef extends React.Component<any> {
           })}
         >
           <div className={styles.modelName_block}>
-            <div className={styles.model_name}>{name}</div>
+            <div className={styles.model_name}>
+              {name} &nbsp;
+              <i className="fa fa-external-link" />
+            </div>
           </div>
         </Link>
 

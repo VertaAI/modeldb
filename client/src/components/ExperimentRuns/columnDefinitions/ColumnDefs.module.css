@@ -229,7 +229,7 @@
 }
 
 .model_name {
-  color: #000;
+  color: var(--main-color2);
   line-height: 16px;
   max-width: 134px;
   overflow-wrap: break-word;
@@ -241,16 +241,11 @@
 }
 
 .modelName_block {
-  padding: 5px 10px 5px;
-  border: solid 1px lightgrey;
-  border-radius: 5px;
-  transition: border 100ms;
+  padding-bottom: 10px;
 }
 
 .modelName_block:hover {
-  border: solid 1px var(--main-color2);
   cursor: pointer;
-  background-color: #fff;
 }
 
 .codeVersion_block,
