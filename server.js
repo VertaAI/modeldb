@@ -4,73 +4,9 @@ dotenv.config();
 const express = require('express');
 const path = require('path');
 const app = express();
-//const api = require('./api');
 var bodyParser = require('body-parser')
-var session = require('express-session');
-var auth = require('./routes/auth.js');
-var cors = require('cors');
-var cookieParser = require('cookie-parser');
 var proxy = require('http-proxy-middleware');
 
-// config express-session
-var sess = {
-  secret: 'CHANGE THIS TO A RANDOM SECRET',
-  cookie: {},
-  resave: false,
-  saveUninitialized: true
-};
-
-/*
-if (process.env.DEPLOYED === 'yes') {
-  sess.cookie.secure = true; // serve secure cookies, requires https
-}
-*/
-
-app.use(cookieParser());
-app.use(session(sess));
-app.use(cors());
-
-// Load Passport
-const passport = require('passport');
-const Auth0Strategy = require('passport-auth0');
-// Configure Passport to use Auth0
-const strategy = new Auth0Strategy({
-    domain: process.env.AUTH0_DOMAIN,
-    clientID: process.env.AUTH0_CLIENT_ID,
-    clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL: process.env.AUTH0_CALLBACK_URL
-  },
-  function (accessToken, refreshToken, extraParams, user, done) {
-    // accessToken is the token to call Auth0 API (not needed in the most cases)
-    // extraParams.id_token has the JSON Web Token
-    // extraParams have id_token, access_token, scope
-    // profile has all the information from the user
-    return done(null, user, extraParams);
-  }
-);
-
-passport.use(strategy);
-passport.serializeUser(function (user, done) {
-  done(null, user);
-});
-passport.deserializeUser(function (user, done) {
-  done(null, user);
-});
-app.use(passport.initialize());
-app.use(passport.session());
-
-const secured = (req, res, next) => {
-  if (req.user) {
-    return next();
-  } else {
-    res.status(401).send('user is not authorized');
-  }
-};
-const setPrivateHeader = (req, res, next) => {
-  req.headers['Grpc-Metadata-bearer_access_token'] = req.session.passport.extraInfo.access_token;
-  req.headers['Grpc-Metadata-source'] = 'WebApp';
-  next();
-}
 const disableCache = (req, res, next) => {
   res.header("Cache-Control", "no-cache, no-store, must-revalidate");
   res.header("Pragma", "no-cache");
@@ -96,29 +32,21 @@ if (process.env.DEPLOYED !== 'yes') {
   // Since the cloud system is configured by hostname, change the request when it's going to AWS so
   // that it appears to be targeted to the right hostname instead of localhost:3000
   const hostnameApiSwitch = (req, res, next) => {
+    req.headers['original-host'] = req.headers['host']
     req.headers['host'] = apiHost;
     next()
   }
 
   const aws_proxy = proxy({target: apiAddress, changeOrigin: false, ws: true})
-  app.use('/api/v1/*', [secured, setPrivateHeader, disableCache, hostnameApiSwitch, printer], (req, res, next) => {
+  app.use('/api/v1/*', [disableCache, hostnameApiSwitch, printer], (req, res, next) => {
+    return aws_proxy(req, res, next);
+  })
+  app.use('/api/auth/*', [disableCache, hostnameApiSwitch, printer], (req, res, next) => {
     return aws_proxy(req, res, next);
   })
 }
 
 app.use(bodyParser.json());
-
-app.get('/api/getUser',
-  secured,
-  (req, res) => {
-    const {
-      _json
-    } = req.user;
-    res.json(_json);
-  }
-);
-
-app.use('/api/auth/', auth);
 
 if (process.env.DEPLOYED === 'yes') {
   app.use(express.static('client/build'));

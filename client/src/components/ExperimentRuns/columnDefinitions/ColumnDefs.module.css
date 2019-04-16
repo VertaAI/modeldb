@@ -95,7 +95,7 @@
   max-width: 150px;
   text-align: center;
   float: none;
-  margin: 5px 0;
+  margin: 10px 0;
 }
 
 .modelId_link {
@@ -109,6 +109,7 @@
   text-align: center;
   float: none;
   margin: 5px 0;
+  transition: border 100ms;
 }
 
 .modelId_link:hover {
@@ -154,6 +155,7 @@
   border-radius: 5px;
   font-size: 0.9em;
   max-width: 150px;
+  transition: border 100ms;
 }
 
 .artifact_wrapper:hover {
@@ -230,4 +232,34 @@
   border-radius: 5px;
   white-space: pre-wrap;
   font-size: 0.9em;
+}
+
+.dataset_wrapper:hover {
+  /* border: solid 1px var(--main-color2); */
+  /* cursor: pointer; */
+}
+
+.model_name {
+  color: var(--main-color2);
+  line-height: 16px;
+  max-width: 134px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: -webkit-pre-wrap;
+  word-break: break-all;
+  white-space: normal;
+  margin: 5px 0;
+}
+
+.modelName_block {
+  padding-bottom: 10px;
+}
+
+.modelName_block:hover {
+  cursor: pointer;
+}
+
+.codeVersion_block,
+.expId_block {
+  margin-bottom: 10px;
 }
