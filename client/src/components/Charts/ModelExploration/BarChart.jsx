@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
+
+import { errorMessage } from 'utils/ChartHelpers';
+
 const width = 800;
 const height = 360;
 const barWidth = 20;
@@ -101,14 +104,15 @@ class BarChart extends Component {
       .text(this.props.xLabel);
 
     if (this.props.data === undefined || this.props.data.length === 0) {
-      d3.select('.expChart')
-        .append('text')
-        .attr(
-          'transform',
-          `translate(${width / 2 - margin.left}, ${height / 2})`
-        )
-        .attr('class', 'notAvailableMsg')
-        .text('data not available');
+      errorMessage(
+        '.expChart',
+        width,
+        margin.left,
+        height,
+        'notAvailableMsg',
+        'data not available',
+        '\uf071'
+      );
     }
 
     // d3.select(this.refs.yAxis)

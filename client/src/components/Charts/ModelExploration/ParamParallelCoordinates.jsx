@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
+
+import { errorMessage } from 'utils/ChartHelpers';
+
 const width = 800;
 const height = 360;
 const margin = { top: 65, right: 35, bottom: 35, left: 45 };
@@ -15,14 +18,15 @@ class ParallelCoordinates extends Component {
     const chart_height = height - margin.top - margin.bottom;
 
     if (data === undefined || data.length === 0) {
-      svg
-        .append('text')
-        .attr(
-          'transform',
-          `translate(${chart_width / 2 - margin.left}, ${chart_height / 2})`
-        )
-        .attr('class', 'notAvailableMsg')
-        .text('data not available');
+      errorMessage(
+        this._rootNode,
+        width,
+        margin.left,
+        height,
+        'notAvailableMsg',
+        'data not available',
+        '\uf071'
+      );
     }
 
     var x = d3
