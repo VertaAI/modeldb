@@ -97,27 +97,6 @@ class ScatterChart extends Component {
       this.yAxis.ticks(6).tickSize(-width + margin.right + margin.left)
     );
     if (this.props.flatdata === undefined || this.props.flatdata.length === 0) {
-      // d3.select('.summaryChart')
-      //   .append('text')
-      //   .attr(
-      //     'transform',
-      //     `translate(${width / 2 - margin.left}, ${height / 2})`
-      //   )
-      //   .attr('class', 'notAvailableMsg')
-      //   .attr('style', 'font-family:FontAwesome;')
-      //   .text(function(d) {
-      //     return '\uf071';
-      //   });
-
-      // d3.select('.summaryChart')
-      //   .append('text')
-      //   .attr(
-      //     'transform',
-      //     `translate(${width / 2 - margin.left + 30}, ${height / 2})`
-      //   )
-      //   .attr('class', 'notAvailableMsg')
-      //   .text('data not available');
-
       errorMessage(
         '.summaryChart',
         width,
