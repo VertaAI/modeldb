@@ -25,13 +25,12 @@ class ParallelCoordinates extends Component {
       lines;
 
     let dimensions = d3.keys(data[0]).filter(function(d) {
+      const [min, max] = d3.extent(data, function(p) {
+        return +p[d];
+      });
       return (y[d] = d3
         .scaleLinear()
-        .domain(
-          d3.extent(data, function(p) {
-            return +p[d];
-          })
-        )
+        .domain([min * 0.98, max * 1.02])
         .range([chart_height, 0]));
     });
     x.domain(dimensions);
