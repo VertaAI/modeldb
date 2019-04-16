@@ -2,6 +2,7 @@ import { bind } from 'decko';
 import * as React from 'react';
 
 import { INumberFilterData } from 'models/Filters';
+import { numberTo4Decimal } from 'utils/MapperConverters/NumberFormatter';
 
 import styles from './NumberFilterEditor.module.css';
 
@@ -17,9 +18,7 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
         <div className={styles.input}>
           <input
             type="number"
-            defaultValue={(
-              Math.round(this.props.data.value * 10000) / 10000
-            ).toString()}
+            defaultValue={numberTo4Decimal(this.props.data.value).toString()}
             onBlur={this.onBlur}
             onKeyUp={this.onSubmit}
           />
