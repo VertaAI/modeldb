@@ -10,12 +10,16 @@ class SummaryColDef extends React.Component<any> {
     const modelRecord = this.props.data;
     return (
       <div className={styles.summary_cell}>
-        <div style={{ marginBottom: '10px' }}>
-          Name:{' '}
-          <div className={styles.highlight_summary}>{modelRecord.name}</div>
-        </div>
+        {modelRecord.experimentId && (
+          <div className={styles.expId_block}>
+            Experiment Id:{' '}
+            <div className={styles.highlight_summary}>
+              {modelRecord.experimentId}
+            </div>
+          </div>
+        )}
         {modelRecord.codeVersion && (
-          <div style={{ marginBottom: '10px' }}>
+          <div className={styles.codeVersion_block}>
             Code Version:{' '}
             <div className={styles.highlight_summary}>
               {modelRecord.codeVersion}
