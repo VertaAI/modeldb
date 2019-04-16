@@ -75,7 +75,6 @@ class Charts extends React.Component<AllProps> {
                     {this.currentProject.Author.name}
                   </div>
                 )}
-                {console.log(this.currentProject)}
                 {this.currentProject.tags && this.currentProject.tags.length ? (
                   <div className={styles.chartMeta}>
                     <span className={styles.subHeading}>Tags:</span>
