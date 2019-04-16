@@ -43,8 +43,14 @@ class Charts extends React.Component<AllProps> {
 
     if (experimentRuns !== undefined) {
       this.initialSelection = {
-        initialHyperparam: experimentRuns[0].hyperparameters[0].key,
-        initialMetric: experimentRuns[0].metrics[0].key,
+        initialHyperparam:
+          experimentRuns[0].hyperparameters[0] === undefined
+            ? 'not available'
+            : experimentRuns[0].hyperparameters[0].key,
+        initialMetric:
+          experimentRuns[0].metrics[0] === undefined
+            ? 'not available'
+            : experimentRuns[0].metrics[0].key,
       };
     }
     if (
