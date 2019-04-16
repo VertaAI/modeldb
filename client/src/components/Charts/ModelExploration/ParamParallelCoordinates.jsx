@@ -30,7 +30,7 @@ class ParallelCoordinates extends Component {
       });
       return (y[d] = d3
         .scaleLinear()
-        .domain([min * 0.98, max * 1.02])
+        .domain([min * 0.95, max * 1.05])
         .range([chart_height, 0]));
     });
     x.domain(dimensions);
