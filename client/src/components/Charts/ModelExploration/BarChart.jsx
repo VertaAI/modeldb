@@ -100,6 +100,17 @@ class BarChart extends Component {
       .style('fill', '#444')
       .text(this.props.xLabel);
 
+    if (this.props.xLabel || this.props.YLabel === 'not available') {
+      d3.select('.expChart')
+        .append('text')
+        .attr(
+          'transform',
+          `translate(${width / 2 - margin.left}, ${height / 2})`
+        )
+        .attr('class', 'notAvailableMsg')
+        .text('data not available');
+    }
+
     // d3.select(this.refs.yAxis)
     //   .append('g')
     //   .attr('class', 'grid')

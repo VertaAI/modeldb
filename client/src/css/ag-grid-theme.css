@@ -84,3 +84,8 @@
   stroke: #000;
   stroke-opacity: 0.05;
 }
+.notAvailableMsg {
+  font-size: 24px;
+  font-style: italic;
+  fill: var(--text-color4);
+}

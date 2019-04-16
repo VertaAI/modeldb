@@ -14,6 +14,17 @@ class ParallelCoordinates extends Component {
     const chart_width = width - margin.left - margin.right;
     const chart_height = height - margin.top - margin.bottom;
 
+    if (data.length === 0) {
+      svg
+        .append('text')
+        .attr(
+          'transform',
+          `translate(${chart_width / 2 - margin.left}, ${chart_height / 2})`
+        )
+        .attr('class', 'notAvailableMsg')
+        .text('data not available');
+    }
+
     var x = d3
         .scalePoint()
         .range([0, chart_width])

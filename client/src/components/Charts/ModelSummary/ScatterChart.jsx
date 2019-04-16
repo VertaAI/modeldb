@@ -93,6 +93,16 @@ class ScatterChart extends Component {
     d3.select(this.refs.yAxisGrid).call(
       this.yAxis.ticks(6).tickSize(-width + margin.right + margin.left)
     );
+    if (this.selectedMetric === undefined) {
+      d3.select('.summaryChart')
+        .append('text')
+        .attr(
+          'transform',
+          `translate(${width / 2 - margin.left}, ${height / 2})`
+        )
+        .attr('class', 'notAvailableMsg')
+        .text('data not available');
+    }
   }
   componentDidUpdate() {
     this.xAxis.scale(this.state.xScale);
