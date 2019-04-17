@@ -1,7 +1,7 @@
-import User from 'models/User';
+import { CurrentUser } from 'models/User';
 
 export interface IAuthenticationService {
   login(): void;
   logout(): void;
-  loadUser(): Promise<User>;
+  loadUser(): Promise<CurrentUser>;
 }

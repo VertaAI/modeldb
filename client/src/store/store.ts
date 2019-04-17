@@ -16,6 +16,7 @@ import { filtersReducer, IFilterState } from './filter';
 import { ILocationState, locationReducer } from './location';
 import { IModelRecordState, modelRecordReducer } from './model-record';
 import { IProjectsState, projectsReducer } from './projects';
+import { IProjectsPageState, projectsPageReducer } from './projectsPage';
 import { IUserState, userReducer } from './user';
 
 export interface IApplicationState {
@@ -26,6 +27,7 @@ export interface IApplicationState {
   layout: IUserState;
   modelRecord: IModelRecordState;
   projects: IProjectsState;
+  projectsPage: IProjectsPageState;
   router?: RouterState;
   filters: IFilterState;
   location: ILocationState;
@@ -46,6 +48,7 @@ export const createRootReducer = (history: History) =>
     layout: userReducer,
     modelRecord: modelRecordReducer,
     projects: projectsReducer,
+    projectsPage: projectsPageReducer,
     router: connectRouter(history),
     location: locationReducer,
   });

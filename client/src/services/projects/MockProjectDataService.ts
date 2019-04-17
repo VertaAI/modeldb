@@ -11,6 +11,8 @@ export default class MockProjectDataService extends ProjectDataService
     super();
 
     const mock = new MockAdapter(axios);
-    mock.onGet('/getProjects').reply(200, { projects: projectsMock });
+    mock
+      .onGet('/v1/modeldb/project/getProjects')
+      .reply(200, { projects: projectsMock });
   }
 }

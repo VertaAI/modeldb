@@ -1,6 +1,6 @@
 .root {
   padding: 10px;
-  border: 1px solid #dedede;
+  border: 1px solid var(--border-color1);
   border-radius: 2px;
   background-color: #ffffff;
   color: var(--fr-color3);

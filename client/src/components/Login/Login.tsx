@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import Button from 'components/shared/Button/Button';
 import Icon from 'components/shared/Icon/Icon';
-import User from 'models/User';
+import { CurrentUser } from 'models/User';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { authenticateUser, selectCurrentUser } from 'store/user';
 
@@ -12,7 +12,7 @@ import logo from './images/logo.svg';
 import styles from './Login.module.css';
 
 interface IPropsFromState {
-  user?: User | null;
+  user?: CurrentUser | null;
 }
 
 type AllProps = IPropsFromState & IConnectedReduxProps;

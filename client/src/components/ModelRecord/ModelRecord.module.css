@@ -8,7 +8,7 @@
   grid-template-columns: 175px auto;
   grid-template-rows: 13px auto 12px;
   border-width: 1px 0 0 0;
-  border-color: #dedede;
+  border-color: var(--border-color1);
   border-style: solid;
   align-items: top;
 }
@@ -102,7 +102,7 @@
 .tag {
   height: 34px;
   width: 100px;
-  border: 1px solid #dedede;
+  border: 1px solid var(--border-color1);
   border-radius: 2px;
   margin-right: 12px;
   float: left;

@@ -16,6 +16,7 @@ import { ReactComponent as Filter } from './imgs/filter.svg';
 import { ReactComponent as Github } from './imgs/github-logo.svg';
 import { ReactComponent as Heart } from './imgs/heart.svg';
 import { ReactComponent as Image } from './imgs/image.svg';
+import { ReactComponent as Key } from './imgs/key.svg';
 import { ReactComponent as LinkedIn } from './imgs/linkedIN-logo.svg';
 import { ReactComponent as ReadOnly } from './imgs/read-only.svg';
 import { ReactComponent as Seach } from './imgs/search.svg';
@@ -57,6 +58,7 @@ type IconType =
   | 'share-delete'
   | 'upload'
   | 'close'
+  | 'key'
   | 'cube'
   | 'database';
 
@@ -95,6 +97,7 @@ class Icon extends React.PureComponent<ILocalProps> {
       'share-delete': ShareDelete,
       upload: Upload,
       close: Close,
+      key: Key,
       cube: Cube,
       database: Database,
     } as Record<

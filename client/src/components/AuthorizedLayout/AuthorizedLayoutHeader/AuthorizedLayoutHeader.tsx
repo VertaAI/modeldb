@@ -1,5 +1,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+
+import routes from 'routes';
+
 import styles from './AuthorizedLayoutHeader.module.css';
 import Breadcrumb from './Breadcrumb/Breadcrumb';
 import logo from './images/Verta_logo.svg';
@@ -18,6 +21,11 @@ export default class AuthorizedLayoutHeader extends React.PureComponent {
           <div className={styles.breadcrumb}>
             <Breadcrumb />
           </div>
+          <nav className={styles.nav_menu}>
+            <Link to={'/'}>About</Link>
+            <Link to={'/'}>Blog</Link>
+            <Link to={routes.settings.getRedirectPath({})}>Settings</Link>
+          </nav>
           <div className={styles.user_bar}>
             <UserBar />
           </div>
