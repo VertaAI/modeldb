@@ -18,8 +18,8 @@ import ModelSummary from './ModelSummary/ModelSummary';
 export type IUrlProps = GetRouteParams<typeof routes.charts>;
 
 interface IPropsFromState {
-  projects: Project[] | null | undefined;
-  experimentRuns?: ModelRecord[] | undefined;
+  projects: Project[] | undefined | null;
+  experimentRuns?: ModelRecord[] | undefined | null;
   loading: boolean;
 }
 
@@ -48,11 +48,13 @@ class Charts extends React.Component<AllProps> {
     ) {
       this.initialSelection = {
         initialHyperparam:
-          experimentRuns[0].hyperparameters[0] === undefined
+          experimentRuns[0].hyperparameters[0] === undefined ||
+          experimentRuns[0].hyperparameters[0] === null
             ? 'not available'
             : experimentRuns[0].hyperparameters[0].key,
         initialMetric:
-          experimentRuns[0].metrics[0] === undefined
+          experimentRuns[0].metrics[0] === undefined ||
+          experimentRuns[0].metrics[0] === null
             ? 'not available'
             : experimentRuns[0].metrics[0].key,
       };
@@ -60,6 +62,7 @@ class Charts extends React.Component<AllProps> {
     if (
       projects !== undefined &&
       projects !== null &&
+      projects.length > 0 &&
       experimentRuns !== undefined &&
       experimentRuns !== null &&
       experimentRuns.length > 0
