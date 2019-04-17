@@ -41,7 +41,11 @@ class Charts extends React.Component<AllProps> {
   public render() {
     const { experimentRuns, loading, projects } = this.props;
 
-    if (experimentRuns !== undefined && experimentRuns.length > 0) {
+    if (
+      experimentRuns !== undefined &&
+      experimentRuns !== null &&
+      experimentRuns.length > 0
+    ) {
       this.initialSelection = {
         initialHyperparam:
           experimentRuns[0].hyperparameters[0] === undefined
