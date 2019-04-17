@@ -13,3 +13,21 @@ export default class User {
     return this.name ? this.name : this.email;
   }
 }
+
+// tslint:disable-next-line: max-classes-per-file
+export class CurrentUser extends User {
+  public dateLastLoggedIn: Date;
+  public developerKey: string;
+
+  public constructor(opts: {
+    id: string | undefined;
+    email: string;
+    dateLastLoggedIn: Date;
+    developerKey: string;
+  }) {
+    const { id, email, dateLastLoggedIn, developerKey } = opts;
+    super(id, email);
+    this.dateLastLoggedIn = dateLastLoggedIn;
+    this.developerKey = developerKey;
+  }
+}

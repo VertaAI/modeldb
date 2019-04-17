@@ -1,4 +1,4 @@
-import User from 'models/User';
+import { CurrentUser } from 'models/User';
 import {
   ICommunication,
   MakeCommunicationActions,
@@ -7,7 +7,7 @@ import {
 
 export interface IUserState {
   data: {
-    user: User | null;
+    user: CurrentUser | null;
     authenticated: boolean;
   };
   communications: {
@@ -24,7 +24,7 @@ export const authenticateUserActionTypes = makeCommunicationActionTypes({
 });
 export type IAuthenticateUserActions = MakeCommunicationActions<
   typeof authenticateUserActionTypes,
-  { success: User }
+  { success: CurrentUser }
 >;
 
 export const checkUserAuthenticationActionTypes = makeCommunicationActionTypes({
@@ -34,7 +34,7 @@ export const checkUserAuthenticationActionTypes = makeCommunicationActionTypes({
 });
 export type ICheckUserAuthenticationActions = MakeCommunicationActions<
   typeof checkUserAuthenticationActionTypes,
-  { success: User | null }
+  { success: CurrentUser | null }
 >;
 
 export const logoutActionTypes = makeCommunicationActionTypes({

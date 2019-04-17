@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { bind } from 'decko';
+import { JsonConvert } from 'json2typescript';
 
-import User from 'models/User';
+import { CurrentUser } from 'models/User';
 
 import { IAuthenticationService } from './IAuthenticationService';
 
@@ -13,9 +14,20 @@ export default class Auth0AuthenticationService
   }
 
   @bind
-  public async loadUser(): Promise<User> {
-    const res = await axios.get<User>('/api/getUser');
-    return res.data;
+  public async loadUser(): Promise<CurrentUser> {
+    const res = await axios.get<any>('/api/getUser');
+    const serverUser = res.data;
+    // todo refactor
+    const user = new CurrentUser({
+      id: serverUser.id,
+      email: serverUser.email,
+      dateLastLoggedIn: new Date(serverUser.updated_at),
+      developerKey: serverUser.developer_key,
+    });
+    user.name = serverUser.name;
+    user.picture = serverUser.picture;
+
+    return user;
   }
 
   @bind

@@ -1,10 +1,3 @@
-import styles from 'components/AuthorizedLayout/AuthorizedLayout.module.css';
-import AuthorizedLayoutHeader from 'components/AuthorizedLayout/AuthorizedLayoutHeader/AuthorizedLayoutHeader';
-import ExperimentSummary from 'components/ExperimentSummary/ExperimentSummary';
-import { FilterSelect } from 'components/FilterSelect/FilterSelect';
-import { GenericNotFound } from 'components/GenericNotFound/GenericNotFound';
-import ModelRecord from 'components/ModelRecord/ModelRecord';
-import Projects from 'components/Projects/Projects';
 import React from 'react';
 import {
   Route,
@@ -14,6 +7,15 @@ import {
   withRouter,
 } from 'react-router-dom';
 import routes from 'routes';
+
+import DeveloperKeyInfo from '../DeveloperKeyInfo/DeveloperKeyInfo';
+import ExperimentSummary from '../ExperimentSummary/ExperimentSummary';
+import { FilterSelect } from '../FilterSelect/FilterSelect';
+import { GenericNotFound } from '../GenericNotFound/GenericNotFound';
+import ModelRecord from '../ModelRecord/ModelRecord';
+import Projects from '../Projects/Projects';
+import styles from './AuthorizedLayout.module.css';
+import AuthorizedLayoutHeader from './AuthorizedLayoutHeader/AuthorizedLayoutHeader';
 
 // tslint:disable-next-line:variable-name
 export const RouteWithFilter = ({ component, ...rest }: RouteProps) => {
@@ -63,6 +65,10 @@ class AuthorizedLayout extends React.Component<RouteComponentProps> {
           <RouteWithFilter
             path={routes.charts.getPath()}
             component={ExperimentSummary}
+          />
+          <RouteWithFilter
+            path={routes.settings.getPath()}
+            component={DeveloperKeyInfo}
           />
           {/* <RouteWithFilter path={'/'} component={ExperimentSummary} /> */}
 
