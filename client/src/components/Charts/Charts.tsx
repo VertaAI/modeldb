@@ -61,6 +61,7 @@ class Charts extends React.Component<AllProps> {
       projects !== undefined &&
       projects !== null &&
       experimentRuns !== undefined &&
+      experimentRuns !== null &&
       experimentRuns.length > 0
     ) {
       this.currentProject = projects.filter(
