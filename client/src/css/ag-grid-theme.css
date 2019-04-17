@@ -87,7 +87,7 @@
 
 .metricAxis {
   fill: var(--main-color1);
-  opacity: 0.1;
+  opacity: 0.25;
 }
 
 .hyperAxis {
