@@ -19,12 +19,12 @@
   font-weight: normal;
   padding: 0 12px;
   height: 34px;
-  /* vertical-align: top; */
   outline: 0;
   -webkit-appearance: none;
   -moz-appearance: none;
   -ms-appearance: none;
   appearance: none !important;
+  margin-top: 0; /* to remove 5px margin imposed from select style */
 }
 
 .root input {
