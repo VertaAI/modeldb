@@ -57,7 +57,7 @@ const renameProps = (map) => (obj) => {
     }, obj);
 };
 app.get('/api/getUser',
-  secured,
+  [],
   (req, res) => {
     const user = renameProps({
       'https://verta.ai/developer_key': 'developer_key',
@@ -67,8 +67,6 @@ app.get('/api/getUser',
     res.json(user);
   }
 );
-
-app.use('/api/auth/', auth);
 
 if (process.env.DEPLOYED === 'yes') {
   app.use(express.static('client/build'));
