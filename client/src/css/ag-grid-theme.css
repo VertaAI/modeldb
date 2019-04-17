@@ -84,3 +84,12 @@
   stroke: #000;
   stroke-opacity: 0.05;
 }
+
+.metricAxis {
+  fill: var(--main-color1);
+  opacity: 0.1;
+}
+
+.hyperAxis {
+  fill: none;
+}

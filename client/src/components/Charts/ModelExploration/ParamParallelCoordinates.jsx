@@ -7,6 +7,7 @@ const margin = { top: 65, right: 35, bottom: 35, left: 45 };
 class ParallelCoordinates extends Component {
   componentDidMount() {
     const data = this.props.data;
+    const metricList = this.props.metricList;
     let svg = d3
       .select(this._rootNode)
       .append('g')
@@ -89,6 +90,17 @@ class ParallelCoordinates extends Component {
       .attr('y', -20)
       .text(function(d) {
         return d;
+      });
+
+    g.append('rect')
+      .attr('width', 90)
+      .attr('height', height - margin.top)
+      .attr('transform', `translate(-45,${-margin.top / 4} )`)
+      .attr('class', function(d) {
+        if (metricList.has(d)) {
+          return 'metricAxis';
+        }
+        return 'hyperAxis';
       });
 
     // Add axis
