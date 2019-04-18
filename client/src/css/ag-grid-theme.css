@@ -91,3 +91,13 @@
   opacity: 0.7;
   fill: var(--text-color4);
 }
+.metricAxis {
+  fill: var(--main-color1);
+  fill-opacity: 0.15;
+  stroke-width: 0.5px;
+  stroke: var(--main-color1);
+}
+
+.hyperAxis {
+  fill: none;
+}
