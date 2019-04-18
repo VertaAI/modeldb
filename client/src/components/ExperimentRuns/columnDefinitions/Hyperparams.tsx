@@ -8,7 +8,9 @@ import styles from './ColumnDefs.module.css';
 
 const ModelProperty: React.SFC<any> = props => {
   let adjustedVal = numberTo4Decimal(props.property.value).toString();
-  if (adjustedVal == '0') adjustedVal = props.property.value.toExponential();
+  if (adjustedVal == '0') {
+    adjustedVal = props.property.value.toExponential();
+  }
   return (
     <Draggable
       additionalClassName={styles.param_draggable}
