@@ -25,7 +25,7 @@ class ModalCard extends React.Component<ILocalProps> {
     } = this.props;
     return (
       <ReactModal
-        className={styles.popup}
+        className={styles.modalCard}
         overlayClassName={styles.overlay}
         appElement={appElement}
         isOpen={isOpen}

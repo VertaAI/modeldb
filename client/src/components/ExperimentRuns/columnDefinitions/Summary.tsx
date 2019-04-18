@@ -26,7 +26,7 @@ class SummaryColDef extends React.Component<any> {
             </div>
           </div>
         )}
-        {modelRecord.tags && (
+        {modelRecord.tags && modelRecord.tags.length > 0 && (
           <div className={tag_styles.tag_block}>
             <div>Tags:</div>
             <ul className={tag_styles.tags}>

@@ -91,3 +91,6 @@ select {
 .cardField {
   padding: 5px 0;
 }
+.scatterplotBlock {
+  position: relative;
+}

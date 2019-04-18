@@ -46,7 +46,6 @@ select {
 .chart_selector_label {
   color: var(--text-color3);
   font-size: 0.85em;
-  /* font-weight: 500; */
 }
 
 .compute_button button {
@@ -76,13 +75,13 @@ select {
 
 .chartDescription {
   padding: 0 0.6em;
-  max-width: 800px;
+  max-width: 680px;
   font-size: 0.85em;
 }
 
 .parallelMeta {
   display: grid;
-  max-width: 800px;
+  max-width: 680px;
   font-size: 0.7em;
   font-style: italic;
   justify-content: right;

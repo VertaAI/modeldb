@@ -172,7 +172,7 @@ class ScatterChart extends Component {
 
   render() {
     return (
-      <div>
+      <div className={styles.scatterplotBlock}>
         <ModalCard
           isOpen={this.state.isModelOpen}
           onRequestClose={this.onClose}

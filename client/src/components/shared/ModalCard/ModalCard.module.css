@@ -9,9 +9,9 @@
   }
 }
 
-.popup {
+.modalCard {
   position: absolute;
-  top: 35%;
+  top: 30%;
   left: 65%;
   right: 0;
   width: 280px;
