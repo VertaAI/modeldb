@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
 
 import styles from './ColumnDefs.module.css';
 
@@ -19,14 +18,7 @@ class DatasetsColDef extends React.Component<any> {
                 <div className={styles.notif}>
                   <i className="fa fa-database" style={{ color: '#6863ff' }} />
                 </div>
-                <div className={styles.type}>
-                  {`DATA`} &nbsp; &nbsp; &nbsp; ->{' '}
-                </div>
-                <div className={styles.key}>{dataset.key}</div>
-                <div className={styles.path}>
-                  <span className={styles.path_label}>PATH : &nbsp;</span>
-                  {dataset.path}
-                </div>
+                <div className={styles.artifactKey}>{dataset.key}</div>
               </div>
             );
           })}
