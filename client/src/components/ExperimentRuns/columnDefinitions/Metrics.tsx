@@ -2,11 +2,12 @@ import * as React from 'react';
 
 import Draggable from 'components/shared/Draggable/Draggable';
 import { ComparisonType, PropertyType } from 'models/Filters';
+import { numberTo4Decimal } from 'utils/MapperConverters/NumberFormatter';
 
 import styles from './ColumnDefs.module.css';
 
 const ModelProperty: React.SFC<any> = props => {
-  let adjustedVal = String(Math.round(props.property.value * 10000) / 10000);
+  let adjustedVal = numberTo4Decimal(props.property.value).toString();
   if (adjustedVal == '0') adjustedVal = props.property.value.toExponential();
   return (
     <Draggable
@@ -23,7 +24,7 @@ const ModelProperty: React.SFC<any> = props => {
         <div className={styles.param_key}>{props.property.key}</div>
         <div className={styles.param_val}>
           {typeof props.property.value === 'number'
-            ? Math.round(props.property.value * 10000) / 10000
+            ? numberTo4Decimal(props.property.value)
             : props.property.value}
         </div>
       </div>
