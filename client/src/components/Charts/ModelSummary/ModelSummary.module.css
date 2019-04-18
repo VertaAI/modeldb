@@ -51,3 +51,43 @@ select {
   margin: 0.5em 0 0 2em !important;
   color: var(--text-color3);
 }
+
+.modelCardContent {
+  padding: 10px 20px;
+}
+
+.paramKey {
+  color: rgb(141, 141, 141);
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.paramVal {
+  color: #000;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.paramCell {
+  display: flex;
+  margin-left: 20px;
+  padding: 3px 0;
+}
+
+.cardFieldLabel {
+  font-size: 0.85em;
+  color: rgb(141, 141, 141);
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.cardFieldValue {
+  font-size: 0.95em;
+  color: #000;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.cardField {
+  padding: 5px 0;
+}

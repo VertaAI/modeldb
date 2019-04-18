@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
-import ModelRecord from '../../../models/ModelRecord';
+
+import ModelRecord from 'models/ModelRecord';
 import ScatterChart from './ScatterChart';
 import styles from './ModelSummary.module.css';
 
@@ -22,6 +23,7 @@ interface ILocalState {
   selectedMetric: string;
   chartData: IChartData;
 }
+
 export default class ModelExploration extends React.Component<
   ILocalProps,
   ILocalState

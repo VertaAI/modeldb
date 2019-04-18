@@ -1,0 +1,62 @@
+@keyframes modalFade {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.popup {
+  position: absolute;
+  top: 35%;
+  left: 65%;
+  right: 0;
+  width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 1px 10px 0 rgba(146, 146, 146, 0.25),
+    0 0 0.5px 0 rgba(211, 211, 211, 0.32);
+  outline: none;
+  animation-name: modalFade;
+  animation-duration: 0.3s;
+  background-color: #f9fafc;
+  border-radius: 10px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* display: none; */
+}
+
+.header {
+  position: relative;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.title {
+  font-size: var(--font-size1);
+  color: #000000;
+  text-transform: capitalize;
+}
+
+.close {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  cursor: pointer;
+  filter: invert(0.5);
+}
+.close:hover {
+  /* filter: invert(33%) sepia(24%) saturate(6172%) hue-rotate(231deg) brightness(108%) contrast(101%); */
+  filter: invert(35%) sepia(67%) saturate(2204%) hue-rotate(227deg)
+    brightness(100%) contrast(102%);
+}

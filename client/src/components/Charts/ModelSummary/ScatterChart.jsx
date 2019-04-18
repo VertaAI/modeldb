@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import routes from 'routes';
+// import { Link } from 'react-router-dom';
+// import routes from 'routes';
 import * as d3 from 'd3';
 import _ from 'lodash';
-// const canvasWidth = 960;
+
+import ModalCard from 'components/shared/ModalCard/ModalCard';
+import { numberTo4Decimal } from 'utils/MapperConverters/NumberFormatter';
+import styles from './ModelSummary.module.css';
 const width = 680;
 const height = 400;
 const margin = { top: 40, right: 40, bottom: 60, left: 60 };
@@ -13,6 +16,13 @@ class ScatterChart extends Component {
     marks: [],
     xScale: undefined,
     yScale: undefined,
+    isModelOpen: false,
+    modelRecordObj: {
+      name: '',
+      date: '',
+      metrics: [],
+      hyper: [],
+    },
   };
 
   xAxis = d3
@@ -114,54 +124,142 @@ class ScatterChart extends Component {
       .attr('r', 7)
       .attr('opacity', 0.8);
   }
+  GetFormattedDate(dt) {
+    let date = new Date(dt);
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var year = date.getFullYear();
+    return month + '/' + day + '/' + year;
+  }
+
+  onClick(d) {
+    let metricObj = [],
+      hyperObj = [];
+    d.metrics.forEach(d => {
+      metricObj.push(d);
+    });
+    d.hyperparameters.forEach(d => {
+      hyperObj.push(d);
+    });
+    this.setState({ isModelOpen: true });
+    this.setState({
+      modelRecordObj: {
+        name: d.name,
+        date: this.GetFormattedDate(d.dateCreated.toString()),
+        metrics: metricObj,
+        hyper: hyperObj,
+      },
+    });
+  }
+  onClose = () => {
+    this.setState({ isModelOpen: false });
+  };
 
   render() {
     return (
-      // <g width={canvasWidth} height={height}>
-      <svg width={width} height={height} className={'summaryChart'}>
-        <g
-          ref="yAxis"
-          className="axis"
-          transform={`translate(${margin.left}, 0)`}
-        />
-        <g
-          ref="yAxisGrid"
-          className="grid"
-          transform={`translate(${margin.left}, 0)`}
-        />
-        <g
-          ref="xAxis"
-          className="axis"
-          transform={`translate(0, ${height - margin.bottom})`}
-        />
-        <g ref="dots" className="marks">
-          {this.state.marks.map((d, i) => {
-            const key = this.props.selectedMetric + i;
-            return (
-              <Link
-                key={key}
-                to={routes.modelRecord.getRedirectPath({
-                  projectId: d.projectId,
-                  modelRecordId: d.id,
+      <div>
+        <ModalCard
+          isOpen={this.state.isModelOpen}
+          onRequestClose={this.onClose}
+        >
+          <div className={styles.modelCardContent}>
+            <div className={styles.cardField}>
+              <div className={styles.cardFieldLabel}>Name</div>
+              <div className={styles.cardFieldValue}>
+                {this.state.modelRecordObj.name}
+              </div>
+            </div>
+
+            <div className={styles.cardField}>
+              <div className={styles.cardFieldLabel}>Date: </div>
+              <div className={styles.cardFieldValue}>
+                {this.state.modelRecordObj.date}
+              </div>
+            </div>
+
+            <div className={styles.cardField}>
+              <div className={styles.cardFieldLabel}>Metrics: </div>
+              <div className={styles.cardFieldValue}>
+                {this.state.modelRecordObj.metrics.map((d, i) => {
+                  return (
+                    <div className={styles.paramCell} key={i}>
+                      <div className={styles.paramKey}>{d.key + ':  '} </div>
+                      <div className={styles.paramVal}>
+                        {typeof d.value == 'number'
+                          ? numberTo4Decimal(d.value)
+                          : d.value}
+                      </div>
+                    </div>
+                  );
                 })}
-              >
+              </div>
+            </div>
+
+            <div className={styles.cardField}>
+              <div className={styles.cardFieldLabel}>Hyperameters: </div>
+              <div className={styles.cardFieldValue}>
+                {this.state.modelRecordObj.hyper.map((d, i) => {
+                  return (
+                    <div className={styles.paramCell} key={i}>
+                      <div className={styles.paramKey}>{d.key + ':  '} </div>
+                      <div className={styles.paramVal}>
+                        {typeof d.value == 'number'
+                          ? numberTo4Decimal(d.value)
+                          : d.value}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </ModalCard>
+        <svg width={width} height={height} className={'summaryChart'}>
+          <g
+            ref="yAxis"
+            className="axis"
+            transform={`translate(${margin.left}, 0)`}
+          />
+          <g
+            ref="yAxisGrid"
+            className="grid"
+            transform={`translate(${margin.left}, 0)`}
+          />
+          <g
+            ref="xAxis"
+            className="axis"
+            transform={`translate(0, ${height - margin.bottom})`}
+          />
+          <g ref="dots" className="marks">
+            {this.state.marks.map((d, i) => {
+              const key = this.props.selectedMetric + i;
+              return (
+                // <Link
+                //   key={key}
+                //   to={routes.modelRecord.getRedirectPath({
+                //     projectId: d.projectId,
+                //     modelRecordId: d.id,
+                //   })}
+                // >
                 <circle
+                  key={key}
                   cx={d.cx}
                   cy={d.cy}
                   fill={'#6863ff'}
                   opacity={0.95}
                   r={7}
                   ref={'ref-' + d.id}
+                  cursor={'pointer'}
+                  onClick={this.onClick.bind(this, d)}
                   onMouseOut={this.mouseOut.bind(this, d)}
                   onMouseOver={this.mouseOver.bind(this, d)}
                 />
-              </Link>
-            );
-          })}
-        </g>
-      </svg>
-      //   <g ref="annotation" transform={`translate(${width + 20}, 50)`} />
-      // </g>
+                /* </Link> */
+              );
+            })}
+          </g>
+        </svg>
+      </div>
     );
   }
 }
