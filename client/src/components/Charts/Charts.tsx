@@ -23,8 +23,8 @@ import ModelSummary from './ModelSummary/ModelSummary';
 export type IUrlProps = GetRouteParams<typeof routes.charts>;
 
 interface IPropsFromState {
-  projects: Project[] | undefined | null;
-  experimentRuns?: ModelRecord[] | undefined | null;
+  projects?: Project[] | undefined | null;
+  experimentRuns: ModelRecord[] | undefined | null;
   loading: boolean;
 }
 
@@ -142,8 +142,8 @@ class Charts extends React.Component<AllProps> {
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
   experimentRuns: selectExperimentRuns(state),
-  projects: selectProjects(state),
   loading: selectIsLoadingExperimentRuns(state),
+  projects: selectProjects(state),
 });
 
 export default connect(mapStateToProps)(Charts);
