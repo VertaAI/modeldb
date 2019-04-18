@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import * as d3 from 'd3';
 const width = 800;
 const height = 360;
-const margin = { top: 65, right: 35, bottom: 35, left: 45 };
+const margin = { top: 75, right: 45, bottom: 35, left: 50 };
 
 class ParallelCoordinates extends Component {
   componentDidMount() {
     const data = this.props.data;
+    const metricList = this.props.metricList;
     let svg = d3
       .select(this._rootNode)
       .append('g')
@@ -34,15 +35,6 @@ class ParallelCoordinates extends Component {
         .range([chart_height, 0]));
     });
     x.domain(dimensions);
-
-    lines = svg
-      .append('g')
-      .attr('class', 'parallelLines')
-      .selectAll('path')
-      .data(data)
-      .enter()
-      .append('path')
-      .attr('d', path);
 
     // Add a group element for each dimension.
     var g = svg
@@ -85,9 +77,22 @@ class ParallelCoordinates extends Component {
       );
     g.append('text')
       .style('text-anchor', 'middle')
-      .attr('y', -20)
+      .attr('y', -30)
       .text(function(d) {
         return d;
+      });
+
+    g.append('rect')
+      .attr('width', 90)
+      .attr('height', height - margin.top)
+      .attr('rx', '5')
+      .attr('ry', '5')
+      .attr('transform', `translate(-50,${-margin.top / 4} )`)
+      .attr('class', function(d) {
+        if (metricList.has(d)) {
+          return 'metricAxis';
+        }
+        return 'hyperAxis';
       });
 
     // Add axis
@@ -113,6 +118,15 @@ class ParallelCoordinates extends Component {
       .selectAll('rect')
       .attr('x', -8)
       .attr('width', 16);
+
+    lines = svg
+      .append('g')
+      .attr('class', 'parallelLines')
+      .selectAll('path')
+      .data(data)
+      .enter()
+      .append('path')
+      .attr('d', path);
 
     function position(d) {
       var v = dragging[d];
