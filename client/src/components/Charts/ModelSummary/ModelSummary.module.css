@@ -91,6 +91,16 @@ select {
 .cardField {
   padding: 5px 0;
 }
+
 .scatterplotBlock {
   position: relative;
+}
+
+.cardFieldValue_Link > .cardFieldValue {
+  font-size: 0.85em;
+  color: var(--main-color2);
+}
+
+.cardFieldValue_Link {
+  text-decoration: none !important;
 }
