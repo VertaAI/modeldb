@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 
 import { errorMessage } from 'utils/ChartHelpers';
 
-const width = 800;
+const width = 680;
 const height = 360;
 const margin = { top: 75, right: 45, bottom: 35, left: 50 };
 
@@ -102,6 +102,7 @@ class ParallelCoordinates extends Component {
       .attr('height', height - margin.top)
       .attr('rx', '5')
       .attr('ry', '5')
+      .style('z-index', -1)
       .attr('transform', `translate(-50,${-margin.top / 4} )`)
       .attr('class', function(d) {
         if (metricList.has(d)) {

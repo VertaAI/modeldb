@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 
 import { errorMessage } from 'utils/ChartHelpers';
 
-const width = 800;
+const width = 680;
 const height = 360;
 const barWidth = 20;
 const margin = { top: 40, right: 35, bottom: 65, left: 85 };

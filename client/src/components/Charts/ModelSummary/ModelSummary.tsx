@@ -3,7 +3,8 @@ import React from 'react';
 
 import Icon from 'components/shared/Icon/Icon';
 import ModelRecord from 'models/ModelRecord';
-
+import ModelRecord from 'models/ModelRecord';
+import ScatterChart from './ScatterChart';
 import styles from './ModelSummary.module.css';
 import ScatterChart from './ScatterChart';
 
@@ -25,6 +26,7 @@ interface ILocalState {
   selectedMetric: string;
   chartData: IChartData;
 }
+
 export default class ModelExploration extends React.Component<
   ILocalProps,
   ILocalState
