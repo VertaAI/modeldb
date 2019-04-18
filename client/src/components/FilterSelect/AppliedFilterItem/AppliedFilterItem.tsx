@@ -3,6 +3,7 @@ import { bind } from 'decko';
 import * as React from 'react';
 
 import { ComparisonType, IFilterData, PropertyType } from 'models/Filters';
+import { numberTo4Decimal } from 'utils/MapperConverters/NumberFormatter';
 
 import Icon from 'components/shared/Icon/Icon';
 import MetricFilterEditor from '../MetricFilterEditor/MetricFilterEditor';
@@ -74,7 +75,7 @@ export default class AppliedFilterItem extends React.Component<
 
     if (filter.value !== undefined) {
       if (filter.type == PropertyType.METRIC) {
-        let adjustedVal = String(Math.round(filter.value * 10000) / 10000);
+        let adjustedVal = numberTo4Decimal(filter.value).toString();
         if (adjustedVal == '0') adjustedVal = filter.value.toExponential();
         let comparison = '';
         if (filter.comparisonType == ComparisonType.MORE) comparison = '>';

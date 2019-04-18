@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
+
+import { errorMessage } from 'utils/ChartHelpers';
+
 const width = 800;
 const height = 360;
 const barWidth = 20;
@@ -47,7 +50,7 @@ class BarChart extends Component {
     const [, max] = d3.extent(data, d => d.value);
     const yScale = d3
       .scaleLinear()
-      .domain([0, max * 1.25])
+      .domain([0, max * 1.05])
       .range([height - margin.bottom, margin.top]);
 
     const bars = data.map(d => {
@@ -101,6 +104,18 @@ class BarChart extends Component {
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text(this.props.xLabel);
+
+    if (this.props.data === undefined || this.props.data.length === 0) {
+      errorMessage(
+        '.expChart',
+        width,
+        margin.left,
+        height,
+        'notAvailableMsg',
+        'data not available',
+        '\uf071'
+      );
+    }
 
     // d3.select(this.refs.yAxis)
     //   .append('g')
