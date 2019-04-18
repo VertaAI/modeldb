@@ -23,8 +23,8 @@ import ModelSummary from './ModelSummary/ModelSummary';
 export type IUrlProps = GetRouteParams<typeof routes.charts>;
 
 interface IPropsFromState {
-  projects?: Project[] | null;
-  experimentRuns: ModelRecord[] | null;
+  projects?: Project[] | undefined | null;
+  experimentRuns: ModelRecord[] | undefined | null;
   loading: boolean;
 }
 
@@ -38,21 +38,40 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IConnectedReduxProps;
 class Charts extends React.Component<AllProps> {
   public initialSelection: IInitialSelection = {
-    initialHyperparam: '',
-    initialMetric: '',
+    initialHyperparam: 'not available',
+    initialMetric: 'not available',
   };
   public currentProject: Project = new Project();
 
   public render() {
     const { experimentRuns, loading, projects } = this.props;
 
-    if (experimentRuns) {
+    if (
+      experimentRuns !== undefined &&
+      experimentRuns !== null &&
+      experimentRuns.length > 0
+    ) {
       this.initialSelection = {
-        initialHyperparam: experimentRuns[0].hyperparameters[0].key,
-        initialMetric: experimentRuns[0].metrics[0].key,
+        initialHyperparam:
+          experimentRuns[0].hyperparameters[0] === undefined ||
+          experimentRuns[0].hyperparameters[0] === null
+            ? 'not available'
+            : experimentRuns[0].hyperparameters[0].key,
+        initialMetric:
+          experimentRuns[0].metrics[0] === undefined ||
+          experimentRuns[0].metrics[0] === null
+            ? 'not available'
+            : experimentRuns[0].metrics[0].key,
       };
     }
-    if (projects && experimentRuns) {
+    if (
+      projects !== undefined &&
+      projects !== null &&
+      projects.length > 0 &&
+      experimentRuns !== undefined &&
+      experimentRuns !== null &&
+      experimentRuns.length > 0
+    ) {
       this.currentProject = projects.filter(
         d => d.id === experimentRuns[0].projectId
       )[0];
@@ -70,28 +89,34 @@ class Charts extends React.Component<AllProps> {
               </div>
 
               <div className={styles.chartsBlock}>
-                <div className={styles.chartMeta}>
-                  <div className={styles.subHeading}>Author: </div>
-                  {this.currentProject.Author.name}
-                </div>
-                <div className={styles.chartMeta}>
-                  <span className={styles.subHeading}>Tags:</span>
-                  <div className={styles.tagBlock}>
-                    <div className={tagStyles.tag_block}>
-                      <ul className={tagStyles.tags}>
-                        {this.currentProject.tags.map(
-                          (tag: string, i: number) => {
-                            return (
-                              <li key={i}>
-                                <Tag tag={tag} />
-                              </li>
-                            );
-                          }
-                        )}
-                      </ul>
+                {this.currentProject.Author && (
+                  <div className={styles.chartMeta}>
+                    <div className={styles.subHeading}>Author: </div>
+                    {this.currentProject.Author.name}
+                  </div>
+                )}
+                {this.currentProject.tags && this.currentProject.tags.length ? (
+                  <div className={styles.chartMeta}>
+                    <span className={styles.subHeading}>Tags:</span>
+                    <div className={styles.tagBlock}>
+                      <div className={tagStyles.tag_block}>
+                        <ul className={tagStyles.tags}>
+                          {this.currentProject.tags.map(
+                            (tag: string, i: number) => {
+                              return (
+                                <li key={i}>
+                                  <Tag tag={tag} />
+                                </li>
+                              );
+                            }
+                          )}
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  ''
+                )}
               </div>
             </div>
           ) : (
@@ -117,8 +142,8 @@ class Charts extends React.Component<AllProps> {
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
   experimentRuns: selectExperimentRuns(state),
-  projects: selectProjects(state),
   loading: selectIsLoadingExperimentRuns(state),
+  projects: selectProjects(state),
 });
 
 export default connect(mapStateToProps)(Charts);

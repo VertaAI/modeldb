@@ -4,6 +4,7 @@ import * as React from 'react';
 import Checkbox from 'components/shared/Checkbox/Checkbox';
 import TextInput from 'components/shared/TextInput/TextInput';
 import { INumberFilterData } from 'models/Filters';
+import { numberTo4Decimal } from 'utils/MapperConverters/NumberFormatter';
 
 import styles from './NumberFilterEditor.module.css';
 
@@ -19,7 +20,7 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
         <div className={styles.input}>
           <TextInput
             size="small"
-            defaultValue={this.props.data.value.toString()}
+            defaultValue={numberTo4Decimal(this.props.data.value).toString()}
             onBlur={this.onBlur}
             onKeyUp={this.onSubmit}
           />
