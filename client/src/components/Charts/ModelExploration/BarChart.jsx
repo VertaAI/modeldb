@@ -48,7 +48,7 @@ class BarChart extends Component {
     const [, max] = d3.extent(data, d => d.value);
     const yScale = d3
       .scaleLinear()
-      .domain([0, max * 1.25])
+      .domain([0, max * 1.05])
       .range([height - margin.bottom, margin.top]);
 
     const bars = data.map(d => {

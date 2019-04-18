@@ -84,28 +84,34 @@ class Charts extends React.Component<AllProps> {
               </div>
 
               <div className={styles.chartsBlock}>
-                <div className={styles.chartMeta}>
-                  <div className={styles.subHeading}>Author: </div>
-                  {this.currentProject.Author.name}
-                </div>
-                <div className={styles.chartMeta}>
-                  <span className={styles.subHeading}>Tags:</span>
-                  <div className={styles.tagBlock}>
-                    <div className={tagStyles.tag_block}>
-                      <ul className={tagStyles.tags}>
-                        {this.currentProject.tags.map(
-                          (tag: string, i: number) => {
-                            return (
-                              <li key={i}>
-                                <Tag tag={tag} />
-                              </li>
-                            );
-                          }
-                        )}
-                      </ul>
+                {this.currentProject.Author && (
+                  <div className={styles.chartMeta}>
+                    <div className={styles.subHeading}>Author: </div>
+                    {this.currentProject.Author.name}
+                  </div>
+                )}
+                {this.currentProject.tags && this.currentProject.tags.length ? (
+                  <div className={styles.chartMeta}>
+                    <span className={styles.subHeading}>Tags:</span>
+                    <div className={styles.tagBlock}>
+                      <div className={tagStyles.tag_block}>
+                        <ul className={tagStyles.tags}>
+                          {this.currentProject.tags.map(
+                            (tag: string, i: number) => {
+                              return (
+                                <li key={i}>
+                                  <Tag tag={tag} />
+                                </li>
+                              );
+                            }
+                          )}
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  ''
+                )}
               </div>
             </div>
           ) : (
