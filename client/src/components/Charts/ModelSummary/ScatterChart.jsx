@@ -185,16 +185,15 @@ class ScatterChart extends Component {
             <div className={styles.cardField}>
               <div className={styles.cardFieldLabel}>Name</div>
               <Link
+                className={styles.cardFieldValue_Link}
                 to={routes.modelRecord.getRedirectPath({
                   projectId: this.state.modelRecordObj.projectId,
                   modelRecordId: this.state.modelRecordObj.id,
                 })}
               >
                 <div className={styles.cardFieldValue}>
-                  <div className={styles.cardModelName}>
-                    {this.state.modelRecordObj.name} &nbsp;
-                    <i className="fa fa-external-link" />
-                  </div>
+                  {this.state.modelRecordObj.name} &nbsp;
+                  <i className="fa fa-external-link" />
                 </div>
               </Link>
             </div>
