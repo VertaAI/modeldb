@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
+
+import { errorMessage } from 'utils/ChartHelpers';
+
 const width = 800;
 const height = 360;
 const margin = { top: 65, right: 35, bottom: 35, left: 45 };
@@ -13,6 +16,18 @@ class ParallelCoordinates extends Component {
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     const chart_width = width - margin.left - margin.right;
     const chart_height = height - margin.top - margin.bottom;
+
+    if (data === undefined || data.length === 0) {
+      errorMessage(
+        this._rootNode,
+        width,
+        margin.left,
+        height,
+        'notAvailableMsg',
+        'data not available',
+        '\uf071'
+      );
+    }
 
     var x = d3
         .scalePoint()

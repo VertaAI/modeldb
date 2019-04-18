@@ -18,8 +18,8 @@ import ModelSummary from './ModelSummary/ModelSummary';
 export type IUrlProps = GetRouteParams<typeof routes.charts>;
 
 interface IPropsFromState {
-  projects: Project[] | null | undefined;
-  experimentRuns?: ModelRecord[] | undefined;
+  projects: Project[] | undefined | null;
+  experimentRuns?: ModelRecord[] | undefined | null;
   loading: boolean;
 }
 
@@ -33,24 +33,39 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IConnectedReduxProps;
 class Charts extends React.Component<AllProps> {
   public initialSelection: IInitialSelection = {
-    initialHyperparam: '',
-    initialMetric: '',
+    initialHyperparam: 'not available',
+    initialMetric: 'not available',
   };
   public currentProject: Project = new Project();
 
   public render() {
     const { experimentRuns, loading, projects } = this.props;
 
-    if (experimentRuns !== undefined) {
+    if (
+      experimentRuns !== undefined &&
+      experimentRuns !== null &&
+      experimentRuns.length > 0
+    ) {
       this.initialSelection = {
-        initialHyperparam: experimentRuns[0].hyperparameters[0].key,
-        initialMetric: experimentRuns[0].metrics[0].key,
+        initialHyperparam:
+          experimentRuns[0].hyperparameters[0] === undefined ||
+          experimentRuns[0].hyperparameters[0] === null
+            ? 'not available'
+            : experimentRuns[0].hyperparameters[0].key,
+        initialMetric:
+          experimentRuns[0].metrics[0] === undefined ||
+          experimentRuns[0].metrics[0] === null
+            ? 'not available'
+            : experimentRuns[0].metrics[0].key,
       };
     }
     if (
       projects !== undefined &&
       projects !== null &&
-      experimentRuns !== undefined
+      projects.length > 0 &&
+      experimentRuns !== undefined &&
+      experimentRuns !== null &&
+      experimentRuns.length > 0
     ) {
       this.currentProject = projects.filter(
         d => d.id === experimentRuns[0].projectId
