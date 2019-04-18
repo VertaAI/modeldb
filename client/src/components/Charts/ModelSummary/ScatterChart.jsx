@@ -131,13 +131,15 @@ class ScatterChart extends Component {
     d3.select(this.refs['ref-' + d.id])
       .transition()
       .attr('r', 9)
-      .attr('opacity', 0.95);
+      .attr('fill', '#5fe6c9')
+      .attr('opacity', 0.85);
   }
   mouseOut(d) {
     d3.select(this.refs['ref-' + d.id])
       .transition()
       .attr('r', 7)
-      .attr('opacity', 0.8);
+      .attr('fill', '#6863ff')
+      .attr('opacity', 0.75);
   }
   GetFormattedDate(dt) {
     let date = new Date(dt);
@@ -261,7 +263,7 @@ class ScatterChart extends Component {
                   cx={d.cx}
                   cy={d.cy}
                   fill={'#6863ff'}
-                  opacity={0.95}
+                  opacity={0.75}
                   r={7}
                   ref={'ref-' + d.id}
                   cursor={'pointer'}
