@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-// import { Link } from 'react-router-dom';
-// import routes from 'routes';
 import * as d3 from 'd3';
 import _ from 'lodash';
 
@@ -251,13 +249,6 @@ class ScatterChart extends Component {
             {this.state.marks.map((d, i) => {
               const key = this.props.selectedMetric + i;
               return (
-                // <Link
-                //   key={key}
-                //   to={routes.modelRecord.getRedirectPath({
-                //     projectId: d.projectId,
-                //     modelRecordId: d.id,
-                //   })}
-                // >
                 <circle
                   key={key}
                   cx={d.cx}
@@ -271,7 +262,6 @@ class ScatterChart extends Component {
                   onMouseOut={this.mouseOut.bind(this, d)}
                   onMouseOver={this.mouseOver.bind(this, d)}
                 />
-                /* </Link> */
               );
             })}
           </g>
