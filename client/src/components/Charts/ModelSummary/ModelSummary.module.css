@@ -91,6 +91,12 @@ select {
 .cardField {
   padding: 5px 0;
 }
+
+.cardModelName {
+  font-size: 0.95em;
+  color: var(--main-color2);
+  text-decoration: none;
+}
 .scatterplotBlock {
   position: relative;
 }

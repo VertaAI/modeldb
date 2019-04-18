@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-// import { Link } from 'react-router-dom';
-// import routes from 'routes';
+import { Link } from 'react-router-dom';
+import routes from 'routes';
 import * as d3 from 'd3';
 import _ from 'lodash';
 
@@ -161,6 +161,8 @@ class ScatterChart extends Component {
       modelRecordObj: {
         name: d.name,
         date: this.GetFormattedDate(d.dateCreated.toString()),
+        projectId: d.projectId,
+        id: d.id,
         metrics: metricObj,
         hyper: hyperObj,
       },
@@ -180,9 +182,19 @@ class ScatterChart extends Component {
           <div className={styles.modelCardContent}>
             <div className={styles.cardField}>
               <div className={styles.cardFieldLabel}>Name</div>
-              <div className={styles.cardFieldValue}>
-                {this.state.modelRecordObj.name}
-              </div>
+              <Link
+                to={routes.modelRecord.getRedirectPath({
+                  projectId: this.state.modelRecordObj.projectId,
+                  modelRecordId: this.state.modelRecordObj.id,
+                })}
+              >
+                <div className={styles.cardFieldValue}>
+                  <div className={styles.cardModelName}>
+                    {this.state.modelRecordObj.name} &nbsp;
+                    <i className="fa fa-external-link" />
+                  </div>
+                </div>
+              </Link>
             </div>
 
             <div className={styles.cardField}>
@@ -249,13 +261,6 @@ class ScatterChart extends Component {
             {this.state.marks.map((d, i) => {
               const key = this.props.selectedMetric + i;
               return (
-                // <Link
-                //   key={key}
-                //   to={routes.modelRecord.getRedirectPath({
-                //     projectId: d.projectId,
-                //     modelRecordId: d.id,
-                //   })}
-                // >
                 <circle
                   key={key}
                   cx={d.cx}
@@ -269,7 +274,6 @@ class ScatterChart extends Component {
                   onMouseOut={this.mouseOut.bind(this, d)}
                   onMouseOver={this.mouseOver.bind(this, d)}
                 />
-                /* </Link> */
               );
             })}
           </g>

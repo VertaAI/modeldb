@@ -102,6 +102,7 @@ class ParallelCoordinates extends Component {
       .attr('height', height - margin.top)
       .attr('rx', '5')
       .attr('ry', '5')
+      .style('z-index', -1)
       .attr('transform', `translate(-50,${-margin.top / 4} )`)
       .attr('class', function(d) {
         if (metricList.has(d)) {
