@@ -39,13 +39,19 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
   public static getDerivedStateFromProps(nextProps: AllProps) {
     return { showModal: nextProps.showModal };
   }
+
   public state: ILocalState = {
-    activeTab:
-      this.props.project.collaborators.size > 1
-        ? TabsType.collaborators
-        : TabsType.share,
+    activeTab: this.getActiveTabWhenShownPopup(this.props.project),
     showModal: this.props.showModal,
   };
+
+  public componentDidUpdate(prevProps: AllProps) {
+    if (!prevProps.showModal && this.props.showModal) {
+      this.setState({
+        activeTab: this.getActiveTabWhenShownPopup(this.props.project),
+      });
+    }
+  }
 
   public render() {
     const {
@@ -92,6 +98,12 @@ class SharePopup extends React.Component<AllProps, ILocalState> {
         </Tabs>
       </Popup>
     );
+  }
+
+  private getActiveTabWhenShownPopup(project: Project) {
+    return project.collaborators.size > 1
+      ? TabsType.collaborators
+      : TabsType.share;
   }
 
   @bind

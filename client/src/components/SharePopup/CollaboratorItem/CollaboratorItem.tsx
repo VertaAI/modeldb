@@ -77,8 +77,7 @@ class CollaboratorItem extends React.Component<AllProps> {
           </div>
           <div />
           <div>
-            {userAccess === UserAccess.Owner &&
-            currentUserAccess === UserAccess.Owner ? (
+            {userAccess === UserAccess.Owner && false ? (
               <ButtonTooltip
                 additionalClassName={`${styles.collaborator_button} ${
                   styles.blue_button
