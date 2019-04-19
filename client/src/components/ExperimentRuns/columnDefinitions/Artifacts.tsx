@@ -21,10 +21,7 @@ class ArtifactsColDef extends React.Component<any> {
                   modelRecordId: id,
                 })}
               >
-                <div
-                  className={styles.artifact_wrapper}
-                  title="view ModelRecord"
-                >
+                <div className={styles.artifact_wrapper} title="view Artifacts">
                   <div className={styles.notif}>
                     {artifact.type === 'IMAGE' ? (
                       <i className="fa fa-image" style={{ color: '#6863ff' }} />
