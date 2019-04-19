@@ -55,3 +55,9 @@
   font-size: 26px;
   vertical-align: middle;
 }
+
+.button:disabled {
+  color: rgba(0, 0, 0, 0.26);
+  background-color: rgba(0, 0, 0, 0.12);
+  cursor: default;
+}

@@ -25,6 +25,7 @@ class Button extends React.PureComponent<ILocalProps> {
       size = 'medium',
       textTransform = 'default',
       theme = 'default',
+      disabled,
       onClick,
     } = this.props;
     const Elem = (props: React.HTMLProps<any>) =>
@@ -40,6 +41,7 @@ class Button extends React.PureComponent<ILocalProps> {
           [styles.theme_default]: theme === 'default',
           [styles.theme_gray]: theme === 'gray',
         })}
+        disabled={disabled}
         onClick={onClick}
       >
         {icon && <div className={styles.icon}>{icon}</div>}

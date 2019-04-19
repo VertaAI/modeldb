@@ -31,6 +31,7 @@ interface IPropsFromState {
 
 interface ILocalState {
   emailValue: string;
+  emailError: string | undefined;
   userAccess: UserAccess;
 }
 
@@ -40,10 +41,11 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
     emailValue: '',
     userAccess: UserAccess.Read,
+    emailError: undefined,
   };
 
   public render() {
-    const { status, error } = this.props;
+    const { status } = this.props;
 
     switch (status) {
       case InvitationStatus.None:
@@ -60,12 +62,13 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
             <div className={styles.content_header}>
               Invite People to the Project
             </div>
-            <div>
+            <div className={styles.userEmailInput}>
               <PlaceholderInput
                 additionalClassName={styles.form_group}
                 inputValue={this.state.emailValue}
-                onInputChange={this.updateInputValue}
                 placeholderValue={'Email or username'}
+                onInputChange={this.updateInputValue}
+                onBlur={this.validateEmailValue}
                 additionalControl={
                   <ButtonTooltip
                     additionalClassName={styles.share_button}
@@ -86,8 +89,14 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
                   />
                 }
               />
+              <span className={styles.userEmailInput_error}>
+                {this.state.emailError}
+              </span>
             </div>
-            <Button onClick={this.sendInvitationOnClick}>
+            <Button
+              disabled={this.state.emailError !== undefined}
+              onClick={this.sendInvitationOnClick}
+            >
               Send Invitation
             </Button>
           </div>
@@ -170,8 +179,18 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   private updateInputValue(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({
       emailValue: event.target.value,
+      emailError: this.state.emailError
+        ? validateEmailValue(event.target.value)
+        : undefined,
     });
     event.preventDefault();
+  }
+
+  @bind
+  private validateEmailValue() {
+    this.setState({
+      emailError: validateEmailValue(this.state.emailValue),
+    });
   }
 
   @bind
@@ -184,6 +203,33 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
       )
     );
   }
+}
+
+// todo move this functions in utils folder
+
+const validateEmailValue = combineValidators([validateNotEmpty, validateEmail]);
+
+function combineValidators<T>(
+  validators: Array<(value: T) => string | undefined>
+): (value: T) => string | undefined {
+  return (value: any) =>
+    validators.reduce(
+      (maybeError, validator) => {
+        return maybeError !== undefined ? maybeError : validator(value);
+      },
+      undefined as string | undefined
+    );
+}
+
+function validateNotEmpty(value: string) {
+  return value === '' || value === null || value === undefined
+    ? 'is empty!'
+    : undefined;
+}
+
+function validateEmail(email: string) {
+  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return !re.test(String(email).toLowerCase()) ? 'invalid email!' : undefined;
 }
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => {

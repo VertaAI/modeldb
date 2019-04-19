@@ -2,7 +2,7 @@
   display: grid;
   margin-bottom: 40px;
   justify-items: center;
-  grid-template-rows: 36px 60px auto;
+  grid-template-rows: 36px auto auto;
 }
 
 .content_header {
@@ -63,4 +63,16 @@
 
 .icon {
   font-size: 60px;
+}
+
+.userEmailInput {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.userEmailInput_error {
+  margin-top: 5px;
+  color: var(--error-color1);
 }
