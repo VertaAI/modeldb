@@ -18,6 +18,8 @@ import {
   sendInvitationActionTypes,
   ILoadCollaboratorsWithOwnerActions,
   loadCollaboratorsWithOwnerActionTypes,
+  IChangeAccessActions,
+  IRemoveAccessActions,
 } from '../types';
 
 const loadingCollaboratorsWithOwnerReducer: Reducer<
@@ -60,6 +62,86 @@ const loadingCollaboratorsWithOwnerReducer: Reducer<
   }
 };
 
+const changingAccessReducer: Reducer<
+  ICollaborationState['communications']['changingAccess'],
+  IChangeAccessActions
+> = (state = {}, action) => {
+  switch (action.type) {
+    case changeAccessActionTypes.REQUEST: {
+      return {
+        ...state,
+        [action.payload]: {
+          isSuccess: false,
+          isRequesting: true,
+          error: '',
+        },
+      };
+    }
+    case changeAccessActionTypes.SUCCESS: {
+      return {
+        ...state,
+        [action.payload]: {
+          isSuccess: true,
+          isRequesting: false,
+          error: '',
+        },
+      };
+    }
+    case changeAccessActionTypes.FAILURE: {
+      return {
+        ...state,
+        [action.payload.userId]: {
+          error: action.payload.error,
+          isSuccess: false,
+          isRequesting: false,
+        },
+      };
+    }
+    default:
+      return state;
+  }
+};
+
+const removingAccessReducer: Reducer<
+  ICollaborationState['communications']['removingAccess'],
+  IRemoveAccessActions
+> = (state = {}, action) => {
+  switch (action.type) {
+    case removeAccessActionTypes.REQUEST: {
+      return {
+        ...state,
+        [action.payload]: {
+          isSuccess: false,
+          isRequesting: true,
+          error: '',
+        },
+      };
+    }
+    case removeAccessActionTypes.SUCCESS: {
+      return {
+        ...state,
+        [action.payload]: {
+          isSuccess: true,
+          isRequesting: false,
+          error: '',
+        },
+      };
+    }
+    case removeAccessActionTypes.FAILURE: {
+      return {
+        ...state,
+        [action.payload.userId]: {
+          error: action.payload.error,
+          isSuccess: false,
+          isRequesting: false,
+        },
+      };
+    }
+    default:
+      return state;
+  }
+};
+
 export default combineReducers<ICollaborationState['communications']>({
   sendingInvitation: composeReducers([
     makeCommunicationReducerFromEnum(sendInvitationActionTypes),
@@ -73,17 +155,7 @@ export default combineReducers<ICollaborationState['communications']>({
       resetChangeOwnerActionTypes.RESET_CHANGE_OWNER
     ),
   ]),
-  changingAccess: composeReducers([
-    makeCommunicationReducerFromEnum(changeAccessActionTypes),
-    makeResetCommunicationReducer(
-      resetChangeAccessActionTypes.RESET_CHANGE_ACCESS
-    ),
-  ]),
-  removingAccess: composeReducers([
-    makeCommunicationReducerFromEnum(removeAccessActionTypes),
-    makeResetCommunicationReducer(
-      resetRemoveAccessActionTypes.RESET_REMOVE_ACCESS
-    ),
-  ]),
+  changingAccess: changingAccessReducer,
+  removingAccess: removingAccessReducer,
   loadingCollaboratorsWithOwner: loadingCollaboratorsWithOwnerReducer,
 });

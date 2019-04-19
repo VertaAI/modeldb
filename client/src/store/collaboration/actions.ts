@@ -58,7 +58,9 @@ export const sendInvitationForUser = (
       );
     })
     .catch(err => {
-      dispatch(action(sendInvitationActionTypes.FAILURE, err as string));
+      dispatch(
+        action(sendInvitationActionTypes.FAILURE, err.response.data.error)
+      );
     });
 };
 
@@ -112,16 +114,21 @@ export const changeAccessToProject = (
   _,
   { ServiceFactory }
 ) => {
-  dispatch(action(changeAccessActionTypes.REQUEST));
+  dispatch(action(changeAccessActionTypes.REQUEST, user.id!));
 
   await ServiceFactory.getCollaboratorsService()
     .changeAccessToProject(projectId, user.id!, userAccess)
     .then(res => {
-      dispatch(action(changeAccessActionTypes.SUCCESS));
+      dispatch(action(changeAccessActionTypes.SUCCESS, user.id!));
       dispatch(updateProjectCollaboratorAccess(projectId, user, userAccess));
     })
     .catch(err => {
-      dispatch(action(changeAccessActionTypes.FAILURE, err as string));
+      dispatch(
+        action(changeAccessActionTypes.FAILURE, {
+          userId: user.id!,
+          error: err,
+        })
+      );
     });
 };
 
@@ -140,16 +147,21 @@ export const removeAccessFromProject = (
   _,
   { ServiceFactory }
 ) => {
-  dispatch(action(removeAccessActionTypes.REQUEST));
+  dispatch(action(removeAccessActionTypes.REQUEST, user.id!));
 
   await ServiceFactory.getCollaboratorsService()
     .removeAccessFromProject(projectId, user.id!)
     .then(res => {
-      dispatch(action(removeAccessActionTypes.SUCCESS));
+      dispatch(action(removeAccessActionTypes.SUCCESS, user.id!));
       dispatch(removeCollaboratorFromProject(projectId, user));
     })
     .catch(err => {
-      dispatch(action(removeAccessActionTypes.FAILURE, err as string));
+      dispatch(
+        action(removeAccessActionTypes.FAILURE, {
+          userId: user.id!,
+          error: err as string,
+        })
+      );
     });
 };
 

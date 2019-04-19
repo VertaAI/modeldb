@@ -3,6 +3,7 @@ import * as React from 'react';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import cn from 'classnames';
 
 import Tag from 'components/shared/TagBlock/TagProject';
 import SharePopup from 'components/SharePopup/SharePopup';
@@ -41,7 +42,7 @@ class ProjectWidget extends React.Component<AllProps, ILocalState> {
   }
 
   public render() {
-    const project = this.props.project;
+    const { project, isLoadingCollaboratorsWithOwner } = this.props;
     const showCollaboratorsAvatars = project.collaborators.size > 1;
     const moreThanMaxCollaborators = project.collaborators.size - 3;
 
@@ -53,7 +54,9 @@ class ProjectWidget extends React.Component<AllProps, ILocalState> {
           onRequestClose={this.handleCloseModal}
         />
         <Link
-          className={styles.project_link}
+          className={cn(styles.project_link, {
+            [styles.loading_collaborators_with_owner]: isLoadingCollaboratorsWithOwner,
+          })}
           to={routes.charts.getRedirectPath({ projectId: project.id })}
         >
           <div className={styles.project_widget}>

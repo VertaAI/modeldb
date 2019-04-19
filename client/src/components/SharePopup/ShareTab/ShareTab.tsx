@@ -45,8 +45,6 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   public render() {
     const { status, error } = this.props;
 
-    console.log(status, error);
-
     switch (status) {
       case InvitationStatus.None:
         return this.props.currentUserAccess === UserAccess.Read ? (
@@ -98,7 +96,10 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
         return (
           <div className={styles.share_result_content}>
             <Icon type="error" className={styles.icon} />
-            <span className={styles.share_result_header}>{error}</span>
+            {/* todo fix it */}
+            <span className={styles.share_result_header}>
+              {'user not found'}
+            </span>
             <div>
               <ButtonLikeText onClick={this.trySendInvitationAgain}>
                 Try Again

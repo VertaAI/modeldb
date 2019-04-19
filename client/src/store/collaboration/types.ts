@@ -9,8 +9,8 @@ export interface ICollaborationState {
   communications: {
     sendingInvitation: ICommunication;
     changingOwner: ICommunication;
-    changingAccess: ICommunication;
-    removingAccess: ICommunication;
+    changingAccess: Record<string, ICommunication>;
+    removingAccess: Record<string, ICommunication>;
     loadingCollaboratorsWithOwner: Record<string, ICommunication>;
   };
 }
@@ -59,9 +59,14 @@ export const changeAccessActionTypes = makeCommunicationActionTypes({
   SUCCESS: '@@collaboration/CHANGE_ACCESS_SUCСESS',
   FAILURE: '@@collaboration/CHANGE_ACCESS_FAILURE',
 });
+type UserId = string;
 export type IChangeAccessActions = MakeCommunicationActions<
   typeof changeAccessActionTypes,
-  {}
+  {
+    request: UserId;
+    success: UserId;
+    failure: { userId: UserId; error: string };
+  }
 >;
 export enum resetChangeAccessActionTypes {
   RESET_CHANGE_ACCESS = '@@collaboration/RESET_CHANGE_ACCESS',
@@ -77,7 +82,11 @@ export const removeAccessActionTypes = makeCommunicationActionTypes({
 });
 export type IRemoveAccessActions = MakeCommunicationActions<
   typeof removeAccessActionTypes,
-  {}
+  {
+    request: UserId;
+    success: UserId;
+    failure: { userId: UserId; error: string };
+  }
 >;
 export enum resetRemoveAccessActionTypes {
   RESET_REMOVE_ACCESS = '@@collaboration/RESET_REMOVE_ACCESS',

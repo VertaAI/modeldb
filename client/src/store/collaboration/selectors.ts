@@ -1,3 +1,5 @@
+import { ICommunication } from 'utils/redux/communication';
+
 import { IApplicationState } from '../store';
 import { ICollaborationState, InvitationStatus } from './types';
 
@@ -28,11 +30,41 @@ export const selectAnyError = (state: IApplicationState) => {
     changingOwner,
     removingAccess,
   } = selectCommunications(state);
-  return changingAccess.error || changingOwner.error || removingAccess.error;
+  return (
+    selectErrorFromMultipleComm(changingAccess) ||
+    changingOwner.error ||
+    removingAccess.error
+  );
+};
+
+const selectErrorFromMultipleComm = (
+  multipleComm: Record<string, ICommunication>
+) => {
+  return (
+    Object.values(multipleComm)
+      .map(comm => comm.error)
+      .find(Boolean) || ''
+  );
 };
 
 export const selectCommunications = (state: IApplicationState) =>
   selectState(state).communications;
+
+export const selectIsChangingUserAccess = (
+  state: IApplicationState,
+  userId: string
+) => {
+  const comm = selectCommunications(state).changingAccess[userId];
+  return Boolean(comm && comm.isRequesting);
+};
+
+export const selectIsRemovingUserAccess = (
+  state: IApplicationState,
+  userId: string
+) => {
+  const comm = selectCommunications(state).removingAccess[userId];
+  return Boolean(comm && comm.isRequesting);
+};
 
 export const selectIsLoadingProjectCollaboratorsWithOwner = (
   state: IApplicationState,

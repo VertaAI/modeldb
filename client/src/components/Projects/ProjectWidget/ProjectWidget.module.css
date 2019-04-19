@@ -113,6 +113,9 @@
   grid-area: author_block;
   grid-template-rows: 36px auto;
 }
+.loading_collaborators_with_owner .author_block {
+  display: block;
+}
 
 .author_name {
   grid-area: author_name;
@@ -171,4 +174,7 @@
   font-size: 16px;
   line-height: 19px;
   margin-left: 2px;
+}
+
+.loading_collaborators_with_owner {
 }

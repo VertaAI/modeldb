@@ -1,5 +1,7 @@
+import cn from 'classnames';
 import { bind } from 'decko';
 import React from 'react';
+
 import styles from './PlaceholderInput.module.css';
 
 interface ILocalProps {
@@ -8,6 +10,7 @@ interface ILocalProps {
   inputValue: string;
   placeholderValue: string;
   onInputChange(event: React.ChangeEvent<HTMLInputElement>): void;
+  onBlur?(): void;
 }
 
 export class PlaceholderInput extends React.Component<ILocalProps> {
@@ -16,9 +19,11 @@ export class PlaceholderInput extends React.Component<ILocalProps> {
   public render() {
     return (
       <label
-        className={`${styles.form_group} ${styles.content_label} ${
+        className={cn(
+          styles.form_group,
+          styles.content_label,
           this.props.additionalClassName
-        }`}
+        )}
         onClick={this.focusOnInputLabelClick}
       >
         <input
@@ -27,6 +32,7 @@ export class PlaceholderInput extends React.Component<ILocalProps> {
           className={styles.content_input}
           value={this.props.inputValue}
           onChange={this.props.onInputChange}
+          onBlur={this.props.onBlur}
           ref={c => (this.input = c!)}
         />
         <label
