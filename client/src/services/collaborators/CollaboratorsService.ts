@@ -30,7 +30,6 @@ export default class CollaboratorsService extends BaseDataService
   }
 
   public sendInvitationWithInvitedUser(
-    oldProjectCollaborators: User[],
     projectId: string,
     email: string,
     userAccess: UserAccess
@@ -38,13 +37,9 @@ export default class CollaboratorsService extends BaseDataService
     return this.sendInvitation(projectId, email, userAccess)
       .then(() => this.loadProjectCollaborators(projectId))
       .then(currentProjectCollaborators => {
-        const invitedUser = currentProjectCollaborators.find(
-          currProjectColl =>
-            !oldProjectCollaborators.some(
-              oldCollaborator => currProjectColl.id !== oldCollaborator.id
-            )
+        return currentProjectCollaborators.find(
+          currentCollab => currentCollab.email === email
         )!;
-        return invitedUser;
       });
   }
 
@@ -153,7 +148,10 @@ const convertServerUserToClient = (
   serverUser: IServerUserInfo,
   id?: string
 ): User => {
-  const user = new User(id || serverUser.user_id, serverUser.email);
+  const user = new User(
+    id || serverUser.user_id || (serverUser as any).sub,
+    serverUser.email
+  );
   user.name = serverUser.full_name;
   user.access = access;
   return user;

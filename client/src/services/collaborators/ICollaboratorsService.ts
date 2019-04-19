@@ -10,7 +10,6 @@ export interface ICollaboratorsService {
     userAccess: UserAccess
   ): AxiosPromise<void>;
   sendInvitationWithInvitedUser(
-    oldProjectCollaborators: User[],
     projectId: string,
     email: string,
     userAccess: UserAccess

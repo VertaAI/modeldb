@@ -1,11 +1,12 @@
+import { action } from 'typesafe-actions';
+
 import { UserAccess, Project, ICollaboratorsWithOwner } from 'models/Project';
 import User from 'models/User';
 import { ActionResult } from 'store/store';
-import { action } from 'typesafe-actions';
+import cloneClassInstance from 'utils/cloneClassInstance';
 import {
   removeCollaboratorFromProject,
   updateProjectCollaboratorAccess,
-  updateProjectActionTypes,
   updateProjectById,
   IUpdateProjectByIdAction,
   selectProject,
@@ -42,20 +43,11 @@ export const sendInvitationForUser = (
 ) => {
   dispatch(action(sendInvitationActionTypes.REQUEST));
 
-  const project = selectProject(getState(), projectId)!;
-  const collaborators = [...project.collaborators].map(([coll]) => coll);
-
   await ServiceFactory.getCollaboratorsService()
-    .sendInvitationWithInvitedUser(collaborators, projectId, email, userAccess)
+    .sendInvitationWithInvitedUser(projectId, email, userAccess)
     .then(res => {
       dispatch(action(sendInvitationActionTypes.SUCCESS));
-      dispatch(
-        updateProjectCollaboratorAccess(
-          projectId,
-          new User(undefined, email),
-          userAccess
-        )
-      );
+      dispatch(updateProjectCollaboratorAccess(projectId, res, userAccess));
     })
     .catch(err => {
       dispatch(
@@ -116,6 +108,8 @@ export const changeAccessToProject = (
 ) => {
   dispatch(action(changeAccessActionTypes.REQUEST, user.id!));
 
+  console.log(user);
+
   await ServiceFactory.getCollaboratorsService()
     .changeAccessToProject(projectId, user.id!, userAccess)
     .then(res => {
@@ -169,24 +163,12 @@ const addCollaboratorsWithOwnerInProject = (
   project: Project,
   { owner, collaborators }: ICollaboratorsWithOwner
 ) => {
-  if (project.authorId !== owner.id!) {
-    owner.email = 'ManasiVartak@gmail.com';
-    owner.id = project.authorId;
-    owner.name = 'ManasiVartak@gmail.com';
-  }
-  const newProject = new Project();
-  newProject.collaborators = new Map(
+  const updatedProject = cloneClassInstance(project);
+  updatedProject.collaborators = new Map(
     collaborators.map(collaborator => [collaborator, collaborator.access])
   );
-  newProject.Author = owner;
-  newProject.authorId = owner.id;
-  newProject.name = project.name;
-  newProject.tags = project.tags;
-  newProject.dateCreated = project.dateCreated;
-  newProject.dateUpdated = project.dateUpdated;
-  newProject.description = project.description;
-  newProject.id = project.id;
-  return newProject;
+  updatedProject.Author = owner;
+  return updatedProject;
 };
 
 export const loadCollaboratorsWithOwner = (

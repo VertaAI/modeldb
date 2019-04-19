@@ -43,6 +43,8 @@ class CollaboratorItem extends React.Component<AllProps> {
       userAccess,
     } = this.props;
 
+    console.log('user', user);
+
     return (
       <div className={styles.collaborator}>
         <Avatar
