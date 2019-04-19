@@ -11,6 +11,9 @@ import routes from 'routes';
 
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
+import { connect } from 'react-redux';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import CollaboratorsService from 'services/collaborators/CollaboratorsService';
 
 interface ILocalProps {
   project: Project;
@@ -20,11 +23,16 @@ interface ILocalState {
   showModal: boolean;
 }
 
-export default class ProjectWidget extends React.Component<
-  ILocalProps,
-  ILocalState
-> {
+type AllProps = ILocalProps & IConnectedReduxProps;
+
+class ProjectWidget extends React.PureComponent<AllProps, ILocalState> {
   public state: ILocalState = { showModal: false };
+
+  public componentDidMount() {
+    new CollaboratorsService()
+      .loadProjectCollaborators(this.props.project.id)
+      .then(v => console.log(v.data));
+  }
 
   public render() {
     const project = this.props.project;
@@ -161,3 +169,9 @@ export default class ProjectWidget extends React.Component<
     this.setState({ showModal: false });
   }
 }
+
+const mapStateToProps = (state: IApplicationState): {} => {
+  return {};
+};
+
+export default connect(mapStateToProps)(ProjectWidget);

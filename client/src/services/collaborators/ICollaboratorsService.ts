@@ -1,5 +1,7 @@
-import { UserAccess } from 'models/Project';
 import { AxiosPromise } from 'axios';
+
+import { UserAccess } from 'models/Project';
+import User from 'models/User';
 
 export interface ICollaboratorsService {
   sendInvitation(
@@ -12,6 +14,7 @@ export interface ICollaboratorsService {
     projectId: string,
     email: string,
     userAccess: UserAccess
-  ): AxiosPromise<boolean>;
+  ): Promise<void>;
   removeAccessFromProject(projectId: string, email: string): Promise<void>;
+  loadProjectCollaborators(projectId: string): AxiosPromise<User[]>;
 }
