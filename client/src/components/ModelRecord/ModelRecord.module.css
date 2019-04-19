@@ -124,8 +124,17 @@
 }
 
 .notDeployedMsg {
+  display: grid;
+  grid-column-gap: 0.5em;
+  grid-template-columns: 1em auto;
   font-size: 14px;
   font-style: italic;
-  color: var(--text-color4);
+  color: var(--text-color3);
   padding: 2em;
+  background-color: var(--main-color1-light);
+  border: solid 0.5px var(--main-color1);
+  border-radius: 5px;
+  white-space: pre-wrap;
+  max-width: 24em;
+  opacity: 0.85;
 }
