@@ -12,6 +12,7 @@ import {
   sendInvitationForUser,
 } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import Preloader from 'components/shared/Preloader/Preloader';
 
 import { selectInviteNewCollaboratorInfo } from 'store/collaboration/selectors';
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
@@ -43,6 +44,8 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
 
   public render() {
     const { status, error } = this.props;
+
+    console.log(status, error);
 
     switch (status) {
       case InvitationStatus.None:
@@ -120,7 +123,11 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
           </div>
         );
       case InvitationStatus.Sending:
-        return '';
+        return (
+          <div className={styles.share_result_content}>
+            <Preloader variant="dots" />
+          </div>
+        );
       default:
         return '';
     }

@@ -4,7 +4,6 @@ import {
   makeCommunicationActionTypes,
 } from 'utils/redux/communication';
 import { Project, ICollaboratorsWithOwner } from 'models/Project';
-import User from 'models/User';
 
 export interface ICollaborationState {
   communications: {

@@ -41,6 +41,7 @@
   display: grid;
   margin-bottom: 55px;
   justify-items: center;
+  align-items: center;
   grid-template-rows: 71px 22px auto;
 }
 
