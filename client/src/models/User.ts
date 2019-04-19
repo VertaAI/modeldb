@@ -1,3 +1,5 @@
+import { UserAccess } from './Project';
+
 export default class User {
   public id: string | undefined;
   public name?: string | undefined;
@@ -11,6 +13,19 @@ export default class User {
 
   public getNameOrEmail(): string {
     return this.name ? this.name : this.email;
+  }
+}
+
+export class Collaborator extends User {
+  public access: UserAccess;
+
+  public constructor(
+    id: string | undefined,
+    email: string,
+    access: UserAccess
+  ) {
+    super(id, email);
+    this.access = access;
   }
 }
 

@@ -44,12 +44,17 @@ export default class CollaboratorsService extends BaseDataService
         entity_id: projectId,
       },
     };
-    console.log('adfadf');
-    const res = axios.get<User[]>(
-      '/v1/modeldb/collaborator/getProjectCollaborators',
-      config
-    );
-    res.then(r => console.log('res', res));
+    axios
+      .get<ILoadProjectCollaboratorsResponse[]>(
+        '/v1/modeldb/collaborator/getProjectCollaborators',
+        config
+      )
+      .then(res => {
+        const data = res.data;
+        data.map(x => {
+          return axios.get();
+        });
+      });
     return [] as any;
   }
 }
