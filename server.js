@@ -44,6 +44,9 @@ if (process.env.DEPLOYED !== 'yes') {
   app.use('/api/auth/*', [disableCache, hostnameApiSwitch, printer], (req, res, next) => {
     return aws_proxy(req, res, next);
   })
+  app.use('/api/uac-proxy/*', [disableCache, hostnameApiSwitch, printer], (req, res, next) => {
+    return aws_proxy(req, res, next);
+  })
 }
 
 app.use(bodyParser.json());
