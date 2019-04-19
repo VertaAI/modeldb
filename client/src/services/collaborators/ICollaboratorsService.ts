@@ -9,6 +9,12 @@ export interface ICollaboratorsService {
     email: string,
     userAccess: UserAccess
   ): AxiosPromise<void>;
+  sendInvitationWithInvitedUser(
+    oldProjectCollaborators: User[],
+    projectId: string,
+    email: string,
+    userAccess: UserAccess
+  ): Promise<User>;
   changeOwner(projectId: string, newOwnerEmail: string): Promise<void>;
   changeAccessToProject(
     projectId: string,

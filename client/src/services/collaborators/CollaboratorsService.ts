@@ -16,18 +16,36 @@ export default class CollaboratorsService extends BaseDataService
     email: string,
     userAccess: UserAccess
   ): AxiosPromise<void> {
-    return axios.post(
+    const res = axios.post(
       '/v1/modeldb/collaborator/addOrUpdateProjectCollaborator',
       {
-        params: {
-          entity_id: projectId,
-          share_with: email,
-          collaborator_type: convertUserAccessToServer(userAccess),
-          date_created: new Date().getMilliseconds(),
-          message: 'Please refer shared project for your invantion',
-        },
+        entity_id: projectId,
+        share_with: 'tauders@gmail.com',
+        collaborator_type: convertUserAccessToServer(userAccess),
+        date_created: new Date().getMilliseconds(),
+        message: 'Please refer shared project for your invantion',
       }
     );
+    return res;
+  }
+
+  public sendInvitationWithInvitedUser(
+    oldProjectCollaborators: User[],
+    projectId: string,
+    email: string,
+    userAccess: UserAccess
+  ): Promise<User> {
+    return this.sendInvitation(projectId, email, userAccess)
+      .then(() => this.loadProjectCollaborators(projectId))
+      .then(currentProjectCollaborators => {
+        const invitedUser = currentProjectCollaborators.find(
+          currProjectColl =>
+            !oldProjectCollaborators.some(
+              oldCollaborator => currProjectColl.id !== oldCollaborator.id
+            )
+        )!;
+        return invitedUser;
+      });
   }
 
   public changeOwner(projectId: string, newOwnerEmail: string): Promise<void> {
@@ -39,31 +57,27 @@ export default class CollaboratorsService extends BaseDataService
     userId: string,
     userAccess: UserAccess
   ): AxiosPromise<void> {
-    return axios.post('/v1/modeldb/collaborator/removeProjectCollaborator', {
-      params: {
+    return axios.post(
+      '/v1/modeldb/collaborator/addOrUpdateProjectCollaborator',
+      {
         entity_id: projectId,
         share_with: userId,
         collaborator_type: convertUserAccessToServer(userAccess),
         date_updated: new Date().getMilliseconds(),
         message: 'user comment',
-      },
-    });
+      }
+    );
   }
 
   public removeAccessFromProject(
     projectId: string,
     userId: string
   ): AxiosPromise<void> {
-    return axios.post(
-      '/v1/modeldb/collaborator/addOrUpdateProjectCollaborator',
-      {
-        params: {
-          entity_id: projectId,
-          share_with: userId,
-          date_deleted: new Date().getMilliseconds(),
-        },
-      }
-    );
+    return axios.post('/v1/modeldb/collaborator/removeProjectCollaborator', {
+      entity_id: projectId,
+      share_with: userId,
+      date_deleted: new Date().getMilliseconds(),
+    });
   }
 
   public loadProjectCollaboratorsWithOwner(
@@ -85,7 +99,7 @@ export default class CollaboratorsService extends BaseDataService
         paramsSerializer: (params: any) => `user_id=${params.user_id}`,
       })
       .then(res => {
-        const owner = convertServerUserToClient(0, res.data);
+        const owner = convertServerUserToClient(0, res.data, userId);
         owner.access = UserAccess.Owner;
         return owner;
       });
@@ -111,10 +125,15 @@ export default class CollaboratorsService extends BaseDataService
         });
         return Promise.all(collaboratorsPromisses).then(collabs =>
           collabs.map((r, i) => {
+            const shared_user = res.data.shared_users[i];
             const userAccess = convertServerUserAccessToClient(
-              res.data.shared_users[i].collaborator_type
+              shared_user.collaborator_type
             );
-            return convertServerUserToClient(userAccess, r.data);
+            return convertServerUserToClient(
+              userAccess,
+              r.data,
+              shared_user.user_id
+            );
           })
         );
       }) as any;
@@ -123,9 +142,10 @@ export default class CollaboratorsService extends BaseDataService
 
 const convertServerUserToClient = (
   access: UserAccess,
-  serverUser: IServerUserInfo
+  serverUser: IServerUserInfo,
+  id?: string
 ): User => {
-  const user = new User(serverUser.user_id, serverUser.email);
+  const user = new User(id || serverUser.user_id, serverUser.email);
   user.name = serverUser.full_name;
   user.access = access;
   return user;
@@ -135,7 +155,7 @@ const convertServerUserAccessToClient = (serverUserAccess: any): UserAccess => {
   switch (serverUserAccess) {
     case 0:
       return UserAccess.Read;
-    case 1:
+    case 'READ_WRITE':
       return UserAccess.Write;
     default:
       return UserAccess.Read;

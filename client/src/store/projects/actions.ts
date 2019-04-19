@@ -4,6 +4,7 @@ import { IFilterData } from 'models/Filters';
 import { UserAccess, Project } from 'models/Project';
 import User from 'models/User';
 import { ActionResult } from 'store/store';
+import cloneClassInstance from 'utils/cloneClassInstance';
 
 import { selectProjects } from './selectors';
 import {
@@ -56,8 +57,9 @@ export const updateProjectCollaboratorAccess = (
   } else {
     const projectIndex = projects.indexOf(project);
     project.collaborators.set(user, userAccess);
+    project.collaborators = new Map(project.collaborators);
 
-    projects[projectIndex] = project;
+    projects[projectIndex] = cloneClassInstance(project);
   }
   dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects));
 };
@@ -69,9 +71,10 @@ export const removeCollaboratorFromProject = (
   const projects = selectProjects(getState())!;
   const project = projects.find(value => value.id === projectId)!;
   project.collaborators.delete(user);
+  project.collaborators = cloneClassInstance(project.collaborators);
 
   const projectIndex = projects.indexOf(project);
-  projects[projectIndex] = project;
+  projects[projectIndex] = cloneClassInstance(project);
 
   dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects));
 };

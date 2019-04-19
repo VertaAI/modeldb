@@ -8,6 +8,7 @@ import {
   updateProjectActionTypes,
   updateProjectById,
   IUpdateProjectByIdAction,
+  selectProject,
 } from '../projects';
 import {
   changeAccessActionTypes,
@@ -36,13 +37,16 @@ export const sendInvitationForUser = (
   userAccess: UserAccess
 ): ActionResult<void, ISendInvitationActions> => async (
   dispatch,
-  _,
+  getState,
   { ServiceFactory }
 ) => {
   dispatch(action(sendInvitationActionTypes.REQUEST));
 
+  const project = selectProject(getState(), projectId)!;
+  const collaborators = [...project.collaborators].map(([coll]) => coll);
+
   await ServiceFactory.getCollaboratorsService()
-    .sendInvitation(projectId, email, userAccess)
+    .sendInvitationWithInvitedUser(collaborators, projectId, email, userAccess)
     .then(res => {
       dispatch(action(sendInvitationActionTypes.SUCCESS));
       dispatch(
@@ -111,7 +115,7 @@ export const changeAccessToProject = (
   dispatch(action(changeAccessActionTypes.REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
-    .changeAccessToProject(projectId, user.email, userAccess)
+    .changeAccessToProject(projectId, user.id!, userAccess)
     .then(res => {
       dispatch(action(changeAccessActionTypes.SUCCESS));
       dispatch(updateProjectCollaboratorAccess(projectId, user, userAccess));
@@ -139,7 +143,7 @@ export const removeAccessFromProject = (
   dispatch(action(removeAccessActionTypes.REQUEST));
 
   await ServiceFactory.getCollaboratorsService()
-    .removeAccessFromProject(projectId, user.email)
+    .removeAccessFromProject(projectId, user.id!)
     .then(res => {
       dispatch(action(removeAccessActionTypes.SUCCESS));
       dispatch(removeCollaboratorFromProject(projectId, user));
