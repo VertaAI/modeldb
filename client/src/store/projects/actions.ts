@@ -71,7 +71,7 @@ export const removeCollaboratorFromProject = (
   const projects = selectProjects(getState())!;
   const project = projects.find(value => value.id === projectId)!;
   project.collaborators.delete(user);
-  project.collaborators = cloneClassInstance(project.collaborators);
+  project.collaborators = new Map(project.collaborators);
 
   const projectIndex = projects.indexOf(project);
   projects[projectIndex] = cloneClassInstance(project);

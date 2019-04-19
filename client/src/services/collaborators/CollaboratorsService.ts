@@ -20,7 +20,7 @@ export default class CollaboratorsService extends BaseDataService
       '/v1/modeldb/collaborator/addOrUpdateProjectCollaborator',
       {
         entity_id: projectId,
-        share_with: 'tauders@gmail.com',
+        share_with: email,
         collaborator_type: convertUserAccessToServer(userAccess),
         date_created: new Date().getMilliseconds(),
         message: 'Please refer shared project for your invantion',
@@ -73,10 +73,12 @@ export default class CollaboratorsService extends BaseDataService
     projectId: string,
     userId: string
   ): AxiosPromise<void> {
-    return axios.post('/v1/modeldb/collaborator/removeProjectCollaborator', {
-      entity_id: projectId,
-      share_with: userId,
-      date_deleted: new Date().getMilliseconds(),
+    return axios.delete('/v1/modeldb/collaborator/removeProjectCollaborator', {
+      params: {
+        entity_id: projectId,
+        share_with: userId,
+        date_deleted: new Date().getMilliseconds(),
+      },
     });
   }
 
