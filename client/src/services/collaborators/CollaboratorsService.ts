@@ -118,11 +118,13 @@ export default class CollaboratorsService extends BaseDataService
         config
       )
       .then(res => {
-        const collaboratorsPromisses = res.data.shared_users.map(userEntity => {
-          return axios.get<IServerUserInfo>('/uac-proxy/v1/uac/getUser', {
-            params: { user_id: userEntity.user_id },
-          });
-        });
+        const collaboratorsPromisses = (res.data.shared_users || []).map(
+          userEntity => {
+            return axios.get<IServerUserInfo>('/uac-proxy/v1/uac/getUser', {
+              params: { user_id: userEntity.user_id },
+            });
+          }
+        );
         return Promise.all(collaboratorsPromisses).then(collabs =>
           collabs.map((r, i) => {
             const shared_user = res.data.shared_users[i];
