@@ -49,12 +49,18 @@
   color: rgb(141, 141, 141);
 }
 
+.meta_block {
+  padding: 5px;
+  display: flex;
+}
+
 .meta_label {
   font-size: 14px;
   color: rgb(141, 141, 141);
 }
 
 .meta_value {
+  padding-left: 5px;
   color: var(--fr-color2);
 }
 
@@ -62,11 +68,6 @@
   grid-row: 2;
   font-size: 15px;
   line-height: 18px;
-}
-
-.meta_block {
-  padding: 5px;
-  display: flex;
 }
 
 .record_header {
@@ -120,4 +121,20 @@
 .loader {
   display: block;
   margin: 0 auto;
+}
+
+.notDeployedMsg {
+  display: grid;
+  grid-column-gap: 0.5em;
+  grid-template-columns: 1em auto;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-color3);
+  padding: 2em;
+  background-color: var(--main-color1-light);
+  border: solid 0.5px var(--main-color1);
+  border-radius: 5px;
+  white-space: pre-wrap;
+  max-width: 24em;
+  opacity: 0.85;
 }
