@@ -98,7 +98,6 @@ export default class CollaboratorsService extends BaseDataService
     return axios
       .get<IServerUserInfo>('/uac-proxy/v1/uac/getUser', {
         params: { user_id: userId },
-        paramsSerializer: (params: any) => `user_id=${params.user_id}`,
       })
       .then(res => {
         const owner = convertServerUserToClient(0, res.data, userId);
@@ -122,7 +121,6 @@ export default class CollaboratorsService extends BaseDataService
         const collaboratorsPromisses = res.data.shared_users.map(userEntity => {
           return axios.get<IServerUserInfo>('/uac-proxy/v1/uac/getUser', {
             params: { user_id: userEntity.user_id },
-            paramsSerializer: (params: any) => `user_id=${params.user_id}`,
           });
         });
         return Promise.all(collaboratorsPromisses).then(collabs =>
@@ -138,7 +136,13 @@ export default class CollaboratorsService extends BaseDataService
             );
           })
         );
-      }) as any;
+      })
+      .catch(e => {
+        if (e.response && e.response.data && e.response.data.code === 5) {
+          return [];
+        }
+        throw e;
+      });
   }
 }
 
