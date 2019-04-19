@@ -43,30 +43,6 @@ export default class ProjectDataService extends BaseDataService
               Project
             ) as Project[];
 
-            for (const project of projects) {
-              // remove this after get real User API
-              project.Author = new User(
-                project.authorId,
-                'Manasi.Vartak@verta.ai'
-              );
-              project.Author.name = 'Manasi Vartak';
-
-              // remove this after get real Collaborators API
-              for (
-                let index = 0;
-                index < Math.round(Math.random() * 10);
-                index++
-              ) {
-                const user = new User(
-                  project.authorId,
-                  'Manasi.Vartak@verta.ai'
-                );
-                const rand = Math.floor(Math.random() * 2) + 1;
-                user.name = `Collaborator ${rand === 2 ? 'Read' : 'Write'}`;
-                project.collaborators.set(user, rand);
-              }
-            }
-
             if (filters && filters.length > 0) {
               let result: Project[] = projects;
               for (const filter of filters) {

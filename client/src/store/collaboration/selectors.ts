@@ -33,3 +33,13 @@ export const selectAnyError = (state: IApplicationState) => {
 
 export const selectCommunications = (state: IApplicationState) =>
   selectState(state).communications;
+
+export const selectIsLoadingProjectCollaboratorsWithOwner = (
+  state: IApplicationState,
+  projectId: string
+) => {
+  const comm = selectCommunications(state).loadingCollaboratorsWithOwner[
+    projectId
+  ];
+  return comm && comm.isRequesting;
+};

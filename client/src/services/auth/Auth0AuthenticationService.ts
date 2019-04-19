@@ -19,7 +19,7 @@ export default class Auth0AuthenticationService
     const serverUser = res.data;
     // todo refactor
     const user = new CurrentUser({
-      id: serverUser.id,
+      id: serverUser.sub,
       email: serverUser.email,
       dateLastLoggedIn: new Date(serverUser.updated_at),
       developerKey: serverUser.developer_key,

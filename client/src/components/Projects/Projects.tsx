@@ -53,7 +53,7 @@ FilterContextPool.registerContext({
   },
 });
 
-class Projects extends React.PureComponent<AllProps> {
+class Projects extends React.Component<AllProps> {
   public render() {
     const { loading, data } = this.props;
     return (

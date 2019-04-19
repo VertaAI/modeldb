@@ -1,6 +1,6 @@
 import { AxiosPromise } from 'axios';
 
-import { UserAccess } from 'models/Project';
+import { UserAccess, ICollaboratorsWithOwner } from 'models/Project';
 import User from 'models/User';
 
 export interface ICollaboratorsService {
@@ -8,13 +8,17 @@ export interface ICollaboratorsService {
     projectId: string,
     email: string,
     userAccess: UserAccess
-  ): Promise<void>;
+  ): AxiosPromise<void>;
   changeOwner(projectId: string, newOwnerEmail: string): Promise<void>;
   changeAccessToProject(
     projectId: string,
     email: string,
     userAccess: UserAccess
-  ): Promise<void>;
-  removeAccessFromProject(projectId: string, email: string): Promise<void>;
-  loadProjectCollaborators(projectId: string): AxiosPromise<User[]>;
+  ): AxiosPromise<void>;
+  removeAccessFromProject(projectId: string, email: string): AxiosPromise<void>;
+  loadProjectCollaborators(projectId: string): Promise<User[]>;
+  loadProjectCollaboratorsWithOwner(
+    projectId: string,
+    ownerId: string
+  ): Promise<ICollaboratorsWithOwner>;
 }

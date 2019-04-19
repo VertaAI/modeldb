@@ -32,4 +32,15 @@ export interface IUpdateProjectAction {
   payload: Project[];
 }
 
-export type FeatureAction = ILoadProjectsActions | IUpdateProjectAction;
+export enum updateProjectByIdActionTypes {
+  UPDATE_PROJECT = '@@projects/UPDATE_PROJECT',
+}
+export interface IUpdateProjectByIdAction {
+  type: updateProjectByIdActionTypes.UPDATE_PROJECT;
+  payload: Project;
+}
+
+export type FeatureAction =
+  | ILoadProjectsActions
+  | IUpdateProjectAction
+  | IUpdateProjectByIdAction;

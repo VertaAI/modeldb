@@ -87,8 +87,10 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
           style={{ margin: '0 16px 0px 40px', width: 'auto' }}
           onScrollFrame={this.handleScrollbarUpdate}
         >
-          {Array.from(this.props.collaborators.entries()).map(
-            (value: [User, UserAccess], index: number) => {
+          {Array.from(this.props.collaborators.entries())
+            .slice()
+            .sort((a, b) => a[1] - b[1])
+            .map((value: [User, UserAccess], index: number) => {
               const [user, userAccess] = value;
               return (
                 <CollaboratorItem
@@ -100,8 +102,7 @@ class CollaboratorsTab extends React.Component<AllProps, ILocalState> {
                   onChangeOwner={this.showChangeOwnerMode}
                 />
               );
-            }
-          )}
+            })}
         </Scrollbars>
         <div
           className={styles.shadowTop}

@@ -1,10 +1,13 @@
-import { UserAccess } from 'models/Project';
+import { UserAccess, Project, ICollaboratorsWithOwner } from 'models/Project';
 import User from 'models/User';
 import { ActionResult } from 'store/store';
 import { action } from 'typesafe-actions';
 import {
   removeCollaboratorFromProject,
   updateProjectCollaboratorAccess,
+  updateProjectActionTypes,
+  updateProjectById,
+  IUpdateProjectByIdAction,
 } from '../projects';
 import {
   changeAccessActionTypes,
@@ -23,6 +26,8 @@ import {
   resetInvitationActionTypes,
   resetRemoveAccessActionTypes,
   sendInvitationActionTypes,
+  ILoadCollaboratorsWithOwnerActions,
+  loadCollaboratorsWithOwnerActionTypes,
 } from './types';
 
 export const sendInvitationForUser = (
@@ -141,6 +146,61 @@ export const removeAccessFromProject = (
     })
     .catch(err => {
       dispatch(action(removeAccessActionTypes.FAILURE, err as string));
+    });
+};
+
+const addCollaboratorsWithOwnerInProject = (
+  project: Project,
+  { owner, collaborators }: ICollaboratorsWithOwner
+) => {
+  if (project.authorId !== owner.id!) {
+    owner.email = 'ManasiVartak@gmail.com';
+    owner.id = project.authorId;
+    owner.name = 'ManasiVartak@gmail.com';
+  }
+  const newProject = new Project();
+  newProject.collaborators = new Map(
+    collaborators.map(collaborator => [collaborator, collaborator.access])
+  );
+  newProject.Author = owner;
+  newProject.authorId = owner.id;
+  newProject.name = project.name;
+  newProject.tags = project.tags;
+  newProject.dateCreated = project.dateCreated;
+  newProject.dateUpdated = project.dateUpdated;
+  newProject.description = project.description;
+  newProject.id = project.id;
+  return newProject;
+};
+
+export const loadCollaboratorsWithOwner = (
+  project: Project
+): ActionResult<
+  void,
+  ILoadCollaboratorsWithOwnerActions | IUpdateProjectByIdAction
+> => async (dispatch, getState, { ServiceFactory }) => {
+  dispatch(action(loadCollaboratorsWithOwnerActionTypes.REQUEST, project));
+
+  await ServiceFactory.getCollaboratorsService()
+    .loadProjectCollaboratorsWithOwner(project.id, project.authorId)
+    .then(data => {
+      dispatch(
+        action(loadCollaboratorsWithOwnerActionTypes.SUCCESS, {
+          projectId: project.id,
+          data,
+        })
+      );
+      dispatch(
+        updateProjectById(addCollaboratorsWithOwnerInProject(project, data))
+      );
+    })
+    .catch(error => {
+      dispatch(
+        action(loadCollaboratorsWithOwnerActionTypes.FAILURE, {
+          projectId: project.id,
+          error,
+        })
+      );
     });
 };
 

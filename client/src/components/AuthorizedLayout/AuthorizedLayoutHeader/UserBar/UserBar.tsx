@@ -5,7 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import CurrentUser from 'models/User';
+import { CurrentUser } from 'models/User';
 import routes from 'routes';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import { selectCurrentUser } from 'store/user';

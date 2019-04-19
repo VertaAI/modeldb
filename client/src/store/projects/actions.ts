@@ -1,7 +1,7 @@
 import { action } from 'typesafe-actions';
 
 import { IFilterData } from 'models/Filters';
-import { UserAccess } from 'models/Project';
+import { UserAccess, Project } from 'models/Project';
 import User from 'models/User';
 import { ActionResult } from 'store/store';
 
@@ -11,6 +11,8 @@ import {
   IUpdateProjectAction,
   loadProjectsActionTypes,
   updateProjectActionTypes,
+  IUpdateProjectByIdAction,
+  updateProjectByIdActionTypes,
 } from './types';
 
 export const fetchProjects = (
@@ -73,3 +75,10 @@ export const removeCollaboratorFromProject = (
 
   dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects));
 };
+
+export const updateProjectById = (
+  project: Project
+): IUpdateProjectByIdAction => ({
+  type: updateProjectByIdActionTypes.UPDATE_PROJECT,
+  payload: project,
+});

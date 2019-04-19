@@ -5,6 +5,7 @@ export default class User {
   public name?: string | undefined;
   public email: string;
   public picture?: string | undefined;
+  public access: UserAccess = UserAccess.Read;
 
   public constructor(id: string | undefined, email: string) {
     this.id = id;

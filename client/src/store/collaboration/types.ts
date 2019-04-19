@@ -3,6 +3,8 @@ import {
   MakeCommunicationActions,
   makeCommunicationActionTypes,
 } from 'utils/redux/communication';
+import { Project, ICollaboratorsWithOwner } from 'models/Project';
+import User from 'models/User';
 
 export interface ICollaborationState {
   communications: {
@@ -10,6 +12,7 @@ export interface ICollaborationState {
     changingOwner: ICommunication;
     changingAccess: ICommunication;
     removingAccess: ICommunication;
+    loadingCollaboratorsWithOwner: Record<string, ICommunication>;
   };
 }
 
@@ -83,3 +86,19 @@ export enum resetRemoveAccessActionTypes {
 export interface IResetRemoveAccessAction {
   type: resetRemoveAccessActionTypes.RESET_REMOVE_ACCESS;
 }
+
+export const loadCollaboratorsWithOwnerActionTypes = makeCommunicationActionTypes(
+  {
+    REQUEST: '@@collaboration/LOAD_COLLABORATORS_WITH_OWNER_REQUEST',
+    SUCCESS: '@@collaboration/LOAD_COLLABORATORS_WITH_OWNER_SUCСESS',
+    FAILURE: '@@collaboration/LOAD_COLLABORATORS_WITH_OWNER_FAILURE',
+  }
+);
+export type ILoadCollaboratorsWithOwnerActions = MakeCommunicationActions<
+  typeof loadCollaboratorsWithOwnerActionTypes,
+  {
+    request: Project;
+    success: { projectId: string; data: ICollaboratorsWithOwner };
+    failure: { projectId: string; error: string };
+  }
+>;
