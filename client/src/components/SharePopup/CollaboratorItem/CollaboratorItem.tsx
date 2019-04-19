@@ -13,7 +13,7 @@ import {
   selectIsChangingUserAccess,
   selectIsRemovingUserAccess,
 } from 'store/collaboration';
-import { IConnectedReduxProps, IApplicationState } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
 import styles from './CollaboratorItem.module.css';

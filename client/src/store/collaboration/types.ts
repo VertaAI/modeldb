@@ -1,9 +1,9 @@
+import { ICollaboratorsWithOwner, Project } from 'models/Project';
 import {
   ICommunication,
   MakeCommunicationActions,
   makeCommunicationActionTypes,
 } from 'utils/redux/communication';
-import { Project, ICollaboratorsWithOwner } from 'models/Project';
 
 export interface ICollaborationState {
   communications: {

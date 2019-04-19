@@ -1,24 +1,24 @@
+import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 import Avatar from 'react-avatar';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import cn from 'classnames';
+import { Link } from 'react-router-dom';
 
 import Tag from 'components/shared/TagBlock/TagProject';
 import SharePopup from 'components/SharePopup/SharePopup';
 import { Project, UserAccess } from 'models/Project';
 import User from 'models/User';
 import routes from 'routes';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
 import {
   loadCollaboratorsWithOwner,
   selectIsLoadingProjectCollaboratorsWithOwner,
 } from 'store/collaboration';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
+import Preloader from 'components/shared/Preloader/Preloader';
 import combined from './images/combined.svg';
 import styles from './ProjectWidget.module.css';
-import Preloader from 'components/shared/Preloader/Preloader';
 
 interface ILocalProps {
   project: Project;

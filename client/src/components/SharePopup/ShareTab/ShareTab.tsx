@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import Button from 'components/shared/Button/Button';
 import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
 import Icon from 'components/shared/Icon/Icon';
+import Preloader from 'components/shared/Preloader/Preloader';
 import { UserAccess } from 'models/Project';
 import {
   InvitationStatus,
@@ -12,7 +13,6 @@ import {
   sendInvitationForUser,
 } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import Preloader from 'components/shared/Preloader/Preloader';
 
 import { selectInviteNewCollaboratorInfo } from 'store/collaboration/selectors';
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
@@ -228,7 +228,7 @@ function validateNotEmpty(value: string) {
 }
 
 function validateEmail(email: string) {
-  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return !re.test(String(email).toLowerCase()) ? 'invalid email!' : undefined;
 }
 

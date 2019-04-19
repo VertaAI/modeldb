@@ -1,35 +1,35 @@
 import { action } from 'typesafe-actions';
 
-import { UserAccess, Project, ICollaboratorsWithOwner } from 'models/Project';
+import { ICollaboratorsWithOwner, Project, UserAccess } from 'models/Project';
 import User from 'models/User';
 import { ActionResult } from 'store/store';
 import cloneClassInstance from 'utils/cloneClassInstance';
 import {
-  removeCollaboratorFromProject,
-  updateProjectCollaboratorAccess,
-  updateProjectById,
   IUpdateProjectByIdAction,
+  removeCollaboratorFromProject,
   selectProject,
+  updateProjectById,
+  updateProjectCollaboratorAccess,
 } from '../projects';
 import {
   changeAccessActionTypes,
   changeOwnerActionTypes,
   IChangeAccessActions,
   IChangeOwnerActions,
+  ILoadCollaboratorsWithOwnerActions,
   IRemoveAccessActions,
   IResetChangeAccessAction,
   IResetChangeOwnerAction,
   IResetInvitationAction,
   IResetRemoveAccessAction,
   ISendInvitationActions,
+  loadCollaboratorsWithOwnerActionTypes,
   removeAccessActionTypes,
   resetChangeAccessActionTypes,
   resetChangeOwnerActionTypes,
   resetInvitationActionTypes,
   resetRemoveAccessActionTypes,
   sendInvitationActionTypes,
-  ILoadCollaboratorsWithOwnerActions,
-  loadCollaboratorsWithOwnerActionTypes,
 } from './types';
 
 export const sendInvitationForUser = (

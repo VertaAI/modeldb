@@ -1,6 +1,6 @@
 import { AxiosPromise } from 'axios';
 
-import { UserAccess, ICollaboratorsWithOwner } from 'models/Project';
+import { ICollaboratorsWithOwner, UserAccess } from 'models/Project';
 import User from 'models/User';
 
 export interface ICollaboratorsService {

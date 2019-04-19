@@ -9,17 +9,17 @@ import composeReducers from 'utils/redux/composeReducers';
 import {
   changeAccessActionTypes,
   changeOwnerActionTypes,
+  IChangeAccessActions,
   ICollaborationState,
+  ILoadCollaboratorsWithOwnerActions,
+  IRemoveAccessActions,
+  loadCollaboratorsWithOwnerActionTypes,
   removeAccessActionTypes,
   resetChangeAccessActionTypes,
   resetChangeOwnerActionTypes,
   resetInvitationActionTypes,
   resetRemoveAccessActionTypes,
   sendInvitationActionTypes,
-  ILoadCollaboratorsWithOwnerActions,
-  loadCollaboratorsWithOwnerActionTypes,
-  IChangeAccessActions,
-  IRemoveAccessActions,
 } from '../types';
 
 const loadingCollaboratorsWithOwnerReducer: Reducer<

@@ -1,5 +1,5 @@
 import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
-import { UserAccess, ICollaboratorsWithOwner } from 'models/Project';
+import { ICollaboratorsWithOwner, UserAccess } from 'models/Project';
 import User from 'models/User';
 
 import { BaseDataService } from '../BaseDataService';

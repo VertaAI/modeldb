@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import Popup from 'components/shared/Popup/Popup';
 import Tabs from 'components/shared/Tabs/Tabs';
-import { UserAccess, Project } from 'models/Project';
+import { Project, UserAccess } from 'models/Project';
 import User, { CurrentUser } from 'models/User';
 import { resetInvitationState } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';

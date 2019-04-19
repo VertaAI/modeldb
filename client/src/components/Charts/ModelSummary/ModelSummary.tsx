@@ -3,8 +3,8 @@ import React from 'react';
 
 import Icon from 'components/shared/Icon/Icon';
 import ModelRecord from 'models/ModelRecord';
-import ScatterChart from './ScatterChart';
 import styles from './ModelSummary.module.css';
+import ScatterChart from './ScatterChart';
 
 interface ILocalProps {
   experimentRuns: ModelRecord[];

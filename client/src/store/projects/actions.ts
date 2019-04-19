@@ -1,7 +1,7 @@
 import { action } from 'typesafe-actions';
 
 import { IFilterData } from 'models/Filters';
-import { UserAccess, Project } from 'models/Project';
+import { Project, UserAccess } from 'models/Project';
 import User from 'models/User';
 import { ActionResult } from 'store/store';
 import cloneClassInstance from 'utils/cloneClassInstance';
@@ -10,9 +10,9 @@ import { selectProjects } from './selectors';
 import {
   ILoadProjectsActions,
   IUpdateProjectAction,
+  IUpdateProjectByIdAction,
   loadProjectsActionTypes,
   updateProjectActionTypes,
-  IUpdateProjectByIdAction,
   updateProjectByIdActionTypes,
 } from './types';
 
