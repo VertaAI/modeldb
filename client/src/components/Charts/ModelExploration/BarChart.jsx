@@ -8,20 +8,6 @@ const height = 360;
 const barWidth = 20;
 const margin = { top: 40, right: 35, bottom: 65, left: 85 };
 
-// d3.selection.prototype.bringElementAsTopLayer = function() {
-//   return this.each(function(){
-//   this.parentNode.appendChild(this);
-// });
-// };
-
-// d3.selection.prototype.pushElementAsBackLayer = function() {
-// return this.each(function() {
-// var firstChild = this.parentNode.firstChild;
-// if (firstChild) {
-//    this.parentNode.insertBefore(this, firstChild);
-// }
-// });
-
 class BarChart extends Component {
   state = {
     bars: [],
@@ -82,13 +68,14 @@ class BarChart extends Component {
       this.yAxis.ticks(6).tickSize(-width + margin.right + margin.left)
     );
 
+    let yLabelPos = -margin.left / 2 - 20;
     d3.select(this.refs.yAxis)
       .append('text')
       .attr('id', 'yLabel')
       .attr('class', 'axisLabel')
       .attr('transform', 'rotate(-90)')
       .attr('x', -height / 2)
-      .attr('y', -margin.left / 2 - 20)
+      .attr('y', yLabelPos)
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text(this.props.yLabel);
@@ -98,7 +85,7 @@ class BarChart extends Component {
       .attr('id', 'xLabel')
       .attr('class', 'axisLabel')
       .attr('y', margin.top)
-      .attr('x', width / 2)
+      .attr('x', width / 2 + (margin.left + yLabelPos))
       .style('text-anchor', 'middle')
       .style('fill', '#444')
       .text(this.props.xLabel);
@@ -114,16 +101,6 @@ class BarChart extends Component {
         '\uf071'
       );
     }
-
-    // d3.select(this.refs.yAxis)
-    //   .append('g')
-    //   .attr('class', 'grid')
-    //   .call(
-    //     this.yAxis
-    //       .ticks(6)
-    //       .tickSize(-width + margin.right + margin.left)
-    //       .tickFormat('')
-    //   );
   }
 
   render() {
