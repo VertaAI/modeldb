@@ -130,13 +130,10 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
         )}
         {data.hyperparameters && data.hyperparameters.length > 0 && (
           <this.Record header="Hyperparameters">
-            {data.hyperparameters.map((value: IHyperparameter, key: number) => {
+            {data.hyperparameters.map((val: IHyperparameter, key: number) => {
               return (
                 <div key={key}>
-                  <this.RenderModelMeta
-                    label={value.key}
-                    value={String(value.value)}
-                  />
+                  <this.RenderModelMeta label={val.key} value={val.value} />
                 </div>
               );
             })}
@@ -144,13 +141,10 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
         )}
         {data.metrics && data.metrics.length > 0 && (
           <this.Record header="Metrics">
-            {data.metrics.map((value: IMetric, key: number) => {
+            {data.metrics.map((val: IMetric, key: number) => {
               return (
                 <div key={key}>
-                  <this.RenderModelMeta
-                    label={value.key}
-                    value={String(value.value)}
-                  />
+                  <this.RenderModelMeta label={val.key} value={val.value} />
                 </div>
               );
             })}
@@ -292,14 +286,14 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
   // tslint:disable-next-line:function-name
   private RenderModelMeta(props: {
     label: string;
-    value?: string;
+    value?: string | number;
     children?: React.ReactNode;
   }) {
     const { label, value, children } = props;
     return (
       <div className={styles.meta_block}>
         <div className={styles.meta_label}>{`${label} :`}</div>
-        {typeof value === 'string' ? (
+        {value ? (
           <div className={styles.meta_value}>{value}</div>
         ) : (
           <div>{children}</div>
