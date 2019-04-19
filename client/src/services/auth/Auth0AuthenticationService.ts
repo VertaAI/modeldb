@@ -15,7 +15,7 @@ export default class Auth0AuthenticationService
 
   @bind
   public async loadUser(): Promise<CurrentUser> {
-    const res = await axios.get<any>('/api/getUser');
+    const res = await axios.get<any>('/api/auth/getUser');
     const serverUser = res.data;
     // todo refactor
     const user = new CurrentUser({

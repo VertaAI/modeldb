@@ -48,26 +48,6 @@ if (process.env.DEPLOYED !== 'yes') {
 
 app.use(bodyParser.json());
 
-const renameProps = (map) => (obj) => {
-  return Object
-    .entries(map)
-    .reduce((res, [oldProp, newProp]) => {
-      const { [oldProp]: oldPropValues, ...restProps } = res;
-      return { [newProp]: oldPropValues, ...restProps };
-    }, obj);
-};
-app.get('/api/getUser',
-  [],
-  (req, res) => {
-    const user = renameProps({
-      'https://verta.ai/developer_key': 'developer_key',
-      'https://verta.ai/roles': 'roles',
-    })(req.user._json);
-
-    res.json(user);
-  }
-);
-
 if (process.env.DEPLOYED === 'yes') {
   app.use(express.static('client/build'));
 
