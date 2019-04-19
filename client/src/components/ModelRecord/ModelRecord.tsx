@@ -190,7 +190,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
         {(!deployState || deployState.status !== 'deployed') && (
           <div className={styles.notDeployedMsg}>
             <i className="fa fa-exclamation-triangle" />
-            <span>No monitoring information in the time window considered</span>
+            <span>No monitoring information</span>
           </div>
         )}
         {alreadyDeployed &&
