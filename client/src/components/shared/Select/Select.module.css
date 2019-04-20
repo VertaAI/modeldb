@@ -1,15 +1,10 @@
 .select {
-  box-sizing: border-box;
   position: relative;
   border: none;
   background-color: var(--main-color3);
   font-size: var(--font-size3);
 }
 .select_open {
-}
-
-.select * {
-  box-sizing: border-box;
 }
 
 .input {
@@ -19,7 +14,6 @@
 .arrow {
   display: inline-flex;
   margin-left: 5px;
-  font-family: 'font-awesome';
   font-size: 14px;
   color: #909090;
 }

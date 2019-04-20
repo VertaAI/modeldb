@@ -1,6 +1,8 @@
 import { bind } from 'decko';
 import * as React from 'react';
 
+import Checkbox from 'components/shared/Checkbox/Checkbox';
+import TextInput from 'components/shared/TextInput/TextInput';
 import { INumberFilterData } from 'models/Filters';
 import { numberTo4Decimal } from 'utils/MapperConverters/NumberFormatter';
 
@@ -16,15 +18,19 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
     return (
       <div className={styles.root}>
         <div className={styles.input}>
-          <input
-            type="number"
+          <TextInput
+            size="small"
             defaultValue={numberTo4Decimal(this.props.data.value).toString()}
             onBlur={this.onBlur}
             onKeyUp={this.onSubmit}
           />
         </div>
         <div className={styles.invert}>
-          <input type="checkbox" defaultChecked={this.props.data.invert} />
+          <Checkbox
+            value={false}
+            size="small"
+            onChange={this.onInvertChanged}
+          />
           <label>invert</label>
         </div>
       </div>
@@ -46,10 +52,10 @@ export default class NumberFilterEditor extends React.Component<ILocalProps> {
   }
 
   @bind
-  private onInvertChanged(event: React.ChangeEvent<HTMLInputElement>) {
+  private onInvertChanged(invert: boolean) {
     const newData = {
       ...this.props.data,
-      invert: event.target.checked,
+      invert,
     };
     this.onSave(newData);
   }

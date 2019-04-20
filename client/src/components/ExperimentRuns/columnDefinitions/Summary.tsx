@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import Tag from 'components/TagBlock/Tag';
-import tag_styles from 'components/TagBlock/TagBlock.module.css';
+import Tag from 'components/shared/TagBlock/Tag';
+import tag_styles from 'components/shared/TagBlock/TagBlock.module.css';
 
 import styles from './ColumnDefs.module.css';
 

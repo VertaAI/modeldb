@@ -7,22 +7,6 @@
   margin: 205px 0 42px 0;
 }
 
-.create_button {
-  color: var(--bg-color3);
-  height: 56px;
-  width: 276px;
-  border-radius: 4px;
-  background-color: var(--bg-color2);
-  font-size: 20px;
-  line-height: 24px;
-  border: none;
-  cursor: pointer;
-}
-
-.github_icon {
-  margin-right: 8px;
-}
-
 .login_slogan {
   margin-bottom: 65px;
   color: #8885ae;
@@ -32,4 +16,9 @@
 }
 
 .form_login {
+}
+
+.heart {
+  display: inline-block;
+  opacity: 0.5;
 }

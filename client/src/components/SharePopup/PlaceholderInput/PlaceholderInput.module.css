@@ -1,6 +1,6 @@
 .form_group {
   position: relative;
-  border: 1px solid #dedede;
+  border: 1px solid var(--border-color1);
   border-radius: 3px;
   width: 360px;
 }

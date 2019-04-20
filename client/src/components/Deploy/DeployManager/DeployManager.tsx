@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { IDeployStatusInfo } from 'models/Deploy';
 import {
   closeDeployManagerForModel,
+  delete_,
   deployWithCheckingStatusUntilDeployed,
   selectDeployStatusInfo,
   selectModelId,
@@ -46,8 +47,8 @@ class DeployManager extends React.PureComponent<AllProps> {
           <DeployResult
             modelId={modelId}
             data={deployStatusInfo.data}
+            onShutdown={this.onShutdown}
             onClose={this.onClose}
-            dispatch={this.props.dispatch}
           />
         );
     }
@@ -58,6 +59,11 @@ class DeployManager extends React.PureComponent<AllProps> {
     this.props.dispatch(
       deployWithCheckingStatusUntilDeployed(this.props.modelId!)
     );
+  }
+
+  @bind
+  private onShutdown() {
+    this.props.dispatch(delete_(this.props.modelId!));
   }
 
   @bind

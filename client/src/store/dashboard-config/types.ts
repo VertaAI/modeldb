@@ -1,12 +1,14 @@
+export interface IDashboardConfigState {
+  [columnConfig: string]: IColumnConfig;
+}
+
 export interface IColumnMetaData {
   checked: boolean;
   name: string;
   label: string;
 }
 
-export interface IDashboardConfigState {
-  [columnConfig: string]: Map<string, IColumnMetaData>;
-}
+export type IColumnConfig = Map<string, IColumnMetaData>;
 
 export enum updateDashboardConfigActionTypes {
   UPDATE_DASHBOARD = '@@configDashboard/UPDATE_DASHBOARD',
@@ -14,5 +16,5 @@ export enum updateDashboardConfigActionTypes {
 
 export interface IUpdateDashboardConfigAction {
   type: updateDashboardConfigActionTypes.UPDATE_DASHBOARD;
-  payload: Map<string, IColumnMetaData>;
+  payload: IColumnConfig;
 }

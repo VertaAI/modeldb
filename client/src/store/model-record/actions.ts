@@ -1,35 +1,40 @@
 import { action } from 'typesafe-actions';
 
 import ModelRecord from 'models/ModelRecord';
-import ServiceFactory from 'services/ServiceFactory';
+import { selectExperimentRuns } from 'store/experiment-runs';
+import { fetchExperimentRuns } from 'store/experiment-runs/actions';
 import { ActionResult } from 'store/store';
 
-import { fetchModelRecordAction, fetchModelRecordActionTypes } from './types';
-import { fetchExperimentRuns } from 'store/experiment-runs/actions';
+import { ILoadModelRecordActions, loadModelRecordActionTypes } from './types';
 
 export const fetchModelRecord = (
   modelId: string
-): ActionResult<void, fetchModelRecordAction> => async (dispatch, getState) => {
-  if (getState().experimentRuns.data == null) {
+): ActionResult<void, ILoadModelRecordActions> => async (
+  dispatch,
+  getState,
+  { ServiceFactory }
+) => {
+  const experimentRuns = selectExperimentRuns(getState());
+  if (!experimentRuns) {
     dispatch(fetchExperimentRuns(getState().location.projectId || ''));
   }
-  dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_REQUEST));
+  dispatch(action(loadModelRecordActionTypes.REQUEST));
 
   // Need to fetch the experiment runs first
-  var promise;
-  if (!getState().experimentRuns.data) {
+  let promise;
+  if (!experimentRuns) {
     promise = ServiceFactory.getExperimentRunsService()
       .getExperimentRuns(getState().location.projectId || '')
       .then(records => {
         const data = records.data;
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
           const record = data[i];
           if (record.id == modelId) return [record];
         }
         return [new ModelRecord()];
       });
   } else {
-    promise = Promise.resolve(getState().experimentRuns.data);
+    promise = Promise.resolve(experimentRuns);
   }
 
   await promise
@@ -37,12 +42,10 @@ export const fetchModelRecord = (
       return ServiceFactory.getExperimentRunsService()
         .getModelRecord(modelId, storeExperimentRuns)
         .then(res => {
-          dispatch(
-            action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_SUCCESS, res)
-          );
+          dispatch(action(loadModelRecordActionTypes.SUCCESS, res));
         });
     })
     .catch(err => {
-      dispatch(action(fetchModelRecordActionTypes.FETCH_MODEL_RECORD_FAILURE));
+      dispatch(action(loadModelRecordActionTypes.FAILURE, err as string));
     });
 };

@@ -27,7 +27,6 @@
 }
 
 .change_owner_content {
-  margin-top: 30px;
   display: grid;
   margin-bottom: 20px;
   justify-items: center;
@@ -41,41 +40,14 @@
 }
 
 .change_owner_button {
-  height: 34px;
-  border-radius: 2px;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 18px;
-  text-align: center;
-  cursor: pointer;
-  border: none;
+  display: inline-block;
+  width: 110px;
 }
-
-.change_owner_cancel_button {
-  width: 106px;
-  border-radius: 2px;
-  background-color: #eeeeee;
-  color: #5a5a5a;
+.change_owner_button:first-child {
   margin-right: 4px;
 }
 
-.change_owner_cancel_button:hover {
-  background-color: var(--main-color4);
-}
-
-.change_owner_confirm_button {
-  width: 114px;
-  border-radius: 2px;
-  background-color: var(---main-color2);
-  color: var(--main-color3);
-}
-
-.change_owner_confirm_button:hover {
-  background-color: #6a84ff;
-}
-
 .share_result_content {
-  margin-top: 35px;
   display: grid;
   margin-bottom: 55px;
   justify-items: center;
@@ -94,15 +66,6 @@
   text-align: center;
 }
 
-.share_result_button {
-  text-align: center;
-  background: var(--main-color3);
-  cursor: pointer;
-  border: none;
-}
-
-.share_result_button_text {
-  color: var(--main-color2);
-  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
-  cursor: pointer;
+.icon {
+  font-size: 60px;
 }

@@ -41,15 +41,15 @@
 
 .loader {
   display: none;
-  width: 40px;
-  height: 90%;
+  width: 30px;
+  height: 30px;
 }
 .loading .loader {
   display: block;
 }
 
 .icon {
-  width: 15px;
-  height: 15px;
+  font-size: 15px;
   margin-left: 5px;
+  line-height: 0;
 }

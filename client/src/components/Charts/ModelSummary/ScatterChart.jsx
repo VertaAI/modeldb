@@ -34,7 +34,9 @@ class ScatterChart extends Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const { flatdata, selectedMetric } = nextProps;
-    if (!flatdata) return {};
+    if (!flatdata) {
+      return {};
+    }
 
     const extent = d3.extent(flatdata, d => d.dateCreated);
     const xScale = d3

@@ -44,3 +44,8 @@ export class Project {
     this.author = v;
   }
 }
+
+export interface ICollaboratorsWithOwner {
+  collaborators: User[];
+  owner: User;
+}

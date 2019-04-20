@@ -1,15 +1,15 @@
 import * as React from 'react';
-import { connect, ReactReduxContextValue } from 'react-redux';
+import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 
 import {
   DeployButton,
+  DeployDataChart,
   DeployManager,
   DeployServiceChart,
-  DeployDataChart,
 } from 'components/Deploy';
-import loader from 'components/images/loader.gif';
-import tagStyles from 'components/TagBlock/TagBlock.module.css';
+import Preloader from 'components/shared/Preloader/Preloader';
+import tagStyles from 'components/shared/TagBlock/TagBlock.module.css';
 import { IArtifact } from 'models/Artifact';
 import { IHyperparameter } from 'models/HyperParameters';
 import { IMetric } from 'models/Metrics';
@@ -17,7 +17,6 @@ import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
 import {
   checkDeployStatusUntilDeployed,
-  fetchDataStatisticsActionTypes,
   getDataStatistics,
   getServiceStatistics,
   selectDataStatistics,
@@ -26,14 +25,17 @@ import {
   selectIsLoadingServiceStatistics,
   selectServiceStatistics,
 } from 'store/deploy';
-import { fetchModelRecord } from 'store/model-record';
+import {
+  fetchModelRecord,
+  selectIsLoadingModelRecord,
+  selectModelRecord,
+} from 'store/model-record';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import {
   IDataStatistics,
   IDeployStatusInfo,
   IServiceStatistics,
-  IUnknownStatusInfo,
 } from 'models/Deploy';
 import styles from './ModelRecord.module.css';
 import ShowContentBasedOnUrl from './ShowContentBasedOnUrl/ShowContentBasedOnUrl';
@@ -93,7 +95,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     const alreadyDeployed = deployState && deployState.status === 'deployed';
 
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <div className={styles.loader}>
+        <Preloader variant="dots" />
+      </div>
     ) : data ? (
       <div className={styles.model_layout}>
         <div className={styles.record_summary}>
@@ -119,7 +123,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           <div className={styles.record_summary_meta}>
             <this.RenderModelMeta label="Id" value={data.id} />
             <this.RenderModelMeta
-              label="Experement"
+              label="Experiment"
               value={data.experimentId}
             />
             <this.RenderModelMeta label="Project" value={data.projectId} />
@@ -208,9 +212,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           this.props.serviceStatistics.time && (
             <div className={styles.chart}>
               {this.props.loadingServiceStatistics ? (
-                <img src={loader} className={styles.loader} />
+                <Preloader variant="dots" />
               ) : this.props.serviceStatistics ? (
-                <React.Fragment>
+                <>
                   <this.Record header="Service behavior">
                     <DeployServiceChart
                       height={400}
@@ -222,7 +226,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                       modelId={data.id}
                     />
                   </this.Record>
-                </React.Fragment>
+                </>
               ) : (
                 ''
               )}
@@ -233,9 +237,9 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           this.props.dataStatistics.size > 0 && (
             <div className={styles.chart}>
               {this.props.loadingServiceStatistics ? (
-                <img src={loader} className={styles.loader} />
+                <Preloader variant="dots" />
               ) : this.props.dataStatistics ? (
-                <React.Fragment>
+                <>
                   <this.Record header="Data behavior">
                     <DeployDataChart
                       height={400}
@@ -247,7 +251,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
                       modelId={data.id}
                     />
                   </this.Record>
-                </React.Fragment>
+                </>
               ) : (
                 ''
               )}
@@ -306,15 +310,15 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
 }
 
 const mapStateToProps = (state: IApplicationState): IPropsFromState => {
-  const { modelRecord } = state;
+  const modelRecord = selectModelRecord(state);
   return {
-    data: modelRecord.data,
+    data: modelRecord,
     dataStatistics: selectDataStatistics(state),
-    deployState: modelRecord.data
-      ? selectDeployStatusInfo(state, modelRecord.data.id)
+    deployState: modelRecord
+      ? selectDeployStatusInfo(state, modelRecord.id)
       : null,
     loadingDataStatistics: selectIsLoadingDataStatistics(state),
-    loadingModelRecord: modelRecord.loading,
+    loadingModelRecord: selectIsLoadingModelRecord(state),
     loadingServiceStatistics: selectIsLoadingServiceStatistics(state),
     serviceStatistics: selectServiceStatistics(state),
   };

@@ -1,16 +1,13 @@
+import * as d3 from 'd3';
+import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import * as d3 from 'd3';
 
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import {
-  IDataStatistics,
-  IServiceDataFeature,
-  IServiceStatistics,
-} from 'models/Deploy';
-import styles from './DeployDataChart.module.css';
-import { bind } from 'decko';
+import Icon from 'components/shared/Icon/Icon';
+import { IDataStatistics, IServiceDataFeature } from 'models/Deploy';
 import ServiceFactory from 'services/ServiceFactory';
+
+import styles from './DeployDataChart.module.css';
 
 interface ILocalProps {
   height: number;
@@ -22,15 +19,13 @@ interface ILocalProps {
   modelId: string;
 }
 
-interface IPropsFromState {}
-
 interface ILocalState {
   selectedFeature: string;
   possibleFeatures: string[];
   statistics: IDataStatistics;
 }
 
-type AllProps = ILocalProps & IPropsFromState;
+type AllProps = ILocalProps;
 
 const isBinary = (vals: number[], boundaries: number[]) => {
   if (
@@ -285,6 +280,7 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
               );
             })}
           </select>
+          <Icon type="caret-down" className={styles.chart_selector_arrow} />
         </div>
         <svg
           className={`container ${styles.chart}`}
@@ -298,11 +294,4 @@ class DeployDataChart extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = (
-  state: IApplicationState,
-  localProps: ILocalProps
-): IPropsFromState => {
-  return {};
-};
-
-export default connect(mapStateToProps)(DeployDataChart);
+export default DeployDataChart;

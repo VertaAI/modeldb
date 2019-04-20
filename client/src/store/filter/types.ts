@@ -1,82 +1,97 @@
 import { IFilterContext } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
+import {
+  ICommunication,
+  MakeCommunicationActions,
+  makeCommunicationActionTypes,
+} from 'utils/redux/communication';
 
+export interface IFilterState {
+  data: {
+    contexts: { [index: string]: IFilterContextData };
+    foundFilters?: IFilterData[];
+    context?: string;
+  };
+  communications: {
+    suggestingFilters: ICommunication;
+    searching: ICommunication;
+    applyingFilters: ICommunication;
+    registeringContext: ICommunication;
+  };
+}
+
+export const registerContextActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@filters/REGISTER_CONTEXT_REQUEST',
+  SUCCESS: '@@filters/REGISTER_CONTEXT_SUCСESS',
+  FAILURE: '@@filters/REGISTER_CONTEXT_FAILURE',
+});
 export interface IFilterContextData {
   appliedFilters: IFilterData[];
   ctx: IFilterContext;
   name: string;
 }
-export interface IFilterState {
-  contexts: { [index: string]: IFilterContextData };
-  foundFilters?: IFilterData[];
-  context?: string;
-}
+export type IRegisterContextActions = MakeCommunicationActions<
+  typeof registerContextActionTypes,
+  { success: IFilterContextData[] }
+>;
 
-export enum initActionTypes {
-  REGISTER_CONTEXT_REQUEST = '@@filters/REGISTER_CONTEXT_REQUEST',
-  REGISTER_CONTEXT_SUCCESS = '@@filters/REGISTER_CONTEXT_SUCCESS',
-  REGISTER_CONTEXT_FAILURE = '@@filters/REGISTER_CONTEXT_FAILURE',
+export enum changeContextActionTypes {
   CHANGE_CONTEXT = '@@filters/CHANGE_CONTEXT',
 }
-
-export enum suggestFiltersActionTypes {
-  SUGGEST_FILTERS_REQUEST = '@@filters/SUGGEST_FILTERS_REQUEST',
-  SUGGEST_FILTERS_RESULT = '@@filters/SUGGEST_FILTERS_RESULT',
+export interface IChangeContextAction {
+  type: changeContextActionTypes.CHANGE_CONTEXT;
+  payload: string | undefined;
 }
 
-export enum searchActionType {
-  SEARCH_REQUEST = '@@filters/SEARCH_REQUEST',
-  SEARCH_SUCCESS = '@@filters/SEARCH_SUCCESS',
-  SEARCH_FAILURE = '@@filters/SEARCH_FAILURE',
-}
+export const suggestFiltersActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@filters/SUGGEST_FILTERS_REQUEST',
+  SUCCESS: '@@filters/SUGGEST_FILTERS_SUCСESS',
+  FAILURE: '@@filters/SUGGEST_FILTERS_FAILURE',
+});
+export type ISuggestFiltersActions = MakeCommunicationActions<
+  typeof suggestFiltersActionTypes,
+  { success: IFilterData[] }
+>;
 
-export enum applyFiltersActionType {
-  APPLY_FILTERS_REQUEST = '@@filters/APPLY_FILTERS_REQUEST',
-  APPLY_FILTERS_SUCCESS = '@@filters/APPLY_FILTERS_SUCCESS',
-  APPLY_FILTERS_FAILURE = '@@filters/APPLY_FILTERS_FAILURE',
-}
+export const searchActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@filters/SEARCH_REQUEST',
+  SUCCESS: '@@filters/SEARCH_SUCСESS',
+  FAILURE: '@@filters/SEARCH_FAILURE',
+});
+export type ISearchActions = MakeCommunicationActions<
+  typeof searchActionTypes,
+  { request: string }
+>;
+
+export const applyFiltersActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@filters/APPLY_FILTERS_REQUEST',
+  SUCCESS: '@@filters/APPLY_FILTERS_SUCСESS',
+  FAILURE: '@@filters/APPLY_FILTERS_FAILURE',
+});
+export type IApplyFiltersActions = MakeCommunicationActions<
+  typeof applyFiltersActionTypes,
+  { request: IFilterData[] }
+>;
 
 export enum manageFiltersTypes {
   ADD_FILTER = '@@filters/ADD_FILTER',
   EDIT_FILTER = '@@filters/EDIT_FILTER',
   REMOVE_FILTER = '@@filters/REMOVE_FILTER',
 }
-
-interface IFilterPayload {
+export interface IFilterPayload {
   index?: number;
   filter: IFilterData;
   ctx: string;
 }
-export type initContextAction =
-  | { type: initActionTypes.CHANGE_CONTEXT; payload: string }
-  | { type: initActionTypes.REGISTER_CONTEXT_REQUEST }
-  | {
-      type: initActionTypes.REGISTER_CONTEXT_SUCCESS;
-      payload: IFilterContextData[];
-    }
-  | { type: initActionTypes.REGISTER_CONTEXT_FAILURE };
-
-export type applyFiltersAction =
-  | {
-      type: applyFiltersActionType.APPLY_FILTERS_REQUEST;
-      payload: IFilterData[];
-    }
-  | { type: applyFiltersActionType.APPLY_FILTERS_SUCCESS }
-  | { type: applyFiltersActionType.APPLY_FILTERS_FAILURE };
-
-export type suggestFiltersAction =
-  | { type: suggestFiltersActionTypes.SUGGEST_FILTERS_REQUEST }
-  | {
-      type: suggestFiltersActionTypes.SUGGEST_FILTERS_RESULT;
-      payload: IFilterData[];
-    };
-
-export type searchAction =
-  | { type: searchActionType.SEARCH_REQUEST; payload: string }
-  | { type: searchActionType.SEARCH_SUCCESS }
-  | { type: searchActionType.SEARCH_FAILURE };
-
-export type manageFiltersAction =
+export type IManageFiltersAction =
   | { type: manageFiltersTypes.EDIT_FILTER; payload: IFilterPayload }
   | { type: manageFiltersTypes.ADD_FILTER; payload: IFilterPayload }
   | { type: manageFiltersTypes.REMOVE_FILTER; payload: IFilterPayload };
+
+export type FeatureAction =
+  | ISearchActions
+  | IManageFiltersAction
+  | IApplyFiltersActions
+  | IRegisterContextActions
+  | IChangeContextAction
+  | ISuggestFiltersActions;

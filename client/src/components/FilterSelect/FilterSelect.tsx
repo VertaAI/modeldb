@@ -6,7 +6,9 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import Droppable from 'components/Droppable/Droppable';
+import Button from 'components/shared/Button/Button';
+import Droppable from 'components/shared/Droppable/Droppable';
+import TextInput from 'components/shared/TextInput/TextInput';
 import { FilterContextPool, IFilterContext } from 'models/FilterContextPool';
 import { IFilterData } from 'models/Filters';
 import ModelRecord from 'models/ModelRecord';
@@ -20,6 +22,8 @@ import {
   initContexts,
   removeFilter,
   search,
+  selectCurrentContextData,
+  selectFoundFilters,
   suggestFilters,
 } from 'store/filter';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
@@ -33,11 +37,14 @@ contextMap.set('/', Project.name);
 contextMap.set('', ModelRecord.name);
 
 interface ILocalProps {
+  placeHolderText?: string;
+}
+
+interface IPropsFromState {
   appliedFilters: IFilterData[];
-  ctx?: string;
+  ctxName?: string;
   isFiltersSupporting: boolean;
   foundFilters?: IFilterData[];
-  placeHolderText?: string;
 }
 
 interface ILocalState {
@@ -45,7 +52,10 @@ interface ILocalState {
   txt: string;
 }
 
-type AllProps = ILocalProps & IConnectedReduxProps & RouteComponentProps;
+type AllProps = ILocalProps &
+  IPropsFromState &
+  IConnectedReduxProps &
+  RouteComponentProps;
 
 class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
@@ -76,15 +86,14 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
     return (
       <div className={styles.root}>
         <div>
-          <input
-            className={styles.input}
+          <TextInput
+            value={this.state.txt}
             placeholder={this.props.placeHolderText}
+            icon="search"
+            size="medium"
             onChange={this.onChange}
             onClick={this.onShowPopup}
-            defaultValue={this.state.txt}
-            onKeyUp={this.onSearch}
           />
-          <label className="fa fa-search" aria-hidden={true} />
           {this.renderPopup()}
         </div>
         {this.props.isFiltersSupporting && (
@@ -102,14 +111,16 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
                     key={index}
                     data={filter}
                     onRemoveFilter={this.onRemoveFilter}
-                    onChange={this.onSaveFilterData(index, this.props.ctx)}
+                    onChange={this.onSaveFilterData(index, this.props.ctxName)}
                   />
                 ))}
               </div>
             </Droppable>
 
             <div className={styles.apply_filters_button}>
-              <button onClick={this.onApplyFilters}>Filter</button>
+              <Button fullWidth={true} onClick={this.onApplyFilters}>
+                Filter
+              </Button>
             </div>
           </div>
         )}
@@ -118,16 +129,16 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   }
 
   @bind
-  private onChange(event: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({ ...this.state, txt: event.target.value });
-    this.searchFilterSuggestions(event.target.value);
+  private onChange(value: string) {
+    this.setState({ ...this.state, txt: value });
+    this.searchFilterSuggestions(value);
   }
 
   @bind
   private onApplyFilters() {
-    if (this.props.ctx !== undefined) {
+    if (this.props.ctxName !== undefined) {
       this.props.dispatch(
-        applyFilters(this.props.ctx, this.props.appliedFilters)
+        applyFilters(this.props.ctxName, this.props.appliedFilters)
       );
     }
   }
@@ -135,8 +146,8 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   @bind
   private onSearch(ev: React.KeyboardEvent<HTMLInputElement>) {
     if (ev.key === 'Enter') {
-      if (this.props.ctx !== undefined) {
-        this.props.dispatch(search(this.props.ctx, this.state.txt));
+      if (this.props.ctxName !== undefined) {
+        this.props.dispatch(search(this.props.ctxName, this.state.txt));
       }
     }
   }
@@ -186,16 +197,16 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
 
   @bind
   private onCreateFilter(data: IFilterData) {
-    if (this.props.ctx !== undefined) {
-      this.props.dispatch(addFilter(data, this.props.ctx));
+    if (this.props.ctxName !== undefined) {
+      this.props.dispatch(addFilter(data, this.props.ctxName));
     }
     this.setState({ ...this.state, isOpened: false });
   }
 
   @bind
   private onRemoveFilter(data: IFilterData) {
-    if (this.props.ctx !== undefined) {
-      this.props.dispatch(removeFilter(data, this.props.ctx));
+    if (this.props.ctxName !== undefined) {
+      this.props.dispatch(removeFilter(data, this.props.ctxName));
     }
   }
 
@@ -217,31 +228,30 @@ class FilterSelectComponent extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ filters }: IApplicationState) => {
-  if (filters.context !== undefined) {
-    const fcData: IFilterContextData | undefined =
-      filters.contexts[filters.context];
-    if (fcData) {
-      return {
-        appliedFilters: fcData.appliedFilters,
-        ctx: filters.context,
-        foundFilters: filters.foundFilters,
-        isFiltersSupporting: fcData.ctx.isFilteringSupport,
-      };
-    }
+const mapStateToProps = (state: IApplicationState): IPropsFromState => {
+  const fcData: IFilterContextData | undefined = selectCurrentContextData(
+    state
+  );
+  const foundFilters = selectFoundFilters(state);
+
+  if (fcData) {
+    return {
+      appliedFilters: fcData.appliedFilters,
+      ctxName: fcData.name,
+      foundFilters,
+      isFiltersSupporting: fcData.ctx.isFilteringSupport,
+    };
   }
 
   return {
+    foundFilters,
     appliedFilters: [],
     isFiltersSupporting: false,
-    foundFilters: filters.foundFilters,
-    ctx: undefined,
+    ctxName: undefined,
   };
 };
 
-// export connect(mapStateToProps)(FilterSelect);
 const filterSelect = withRouter(
   connect(mapStateToProps)(onClickOutside(FilterSelectComponent))
 );
-// const filterSelect = connect(mapStateToProps)(FilterSelectComponent);
 export { filterSelect as FilterSelect };

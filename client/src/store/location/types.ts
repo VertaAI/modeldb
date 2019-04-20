@@ -1,5 +1,5 @@
-import { Project } from 'models/Project';
 import ModelRecord from 'models/ModelRecord';
+import { Project } from 'models/Project';
 
 export interface ILocationState {
   projectId?: string;

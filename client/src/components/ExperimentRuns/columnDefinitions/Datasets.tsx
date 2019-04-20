@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import Icon from 'components/shared/Icon/Icon';
+
 import styles from './ColumnDefs.module.css';
 
 class DatasetsColDef extends React.Component<any> {
@@ -16,7 +18,7 @@ class DatasetsColDef extends React.Component<any> {
                 title="view Datasets"
               >
                 <div className={styles.notif}>
-                  <i className="fa fa-database" style={{ color: '#6863ff' }} />
+                  <Icon className={styles.notif_icon} type="database" />
                 </div>
                 <div className={styles.artifactKey}>{dataset.key}</div>
               </div>

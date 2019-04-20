@@ -1,17 +1,17 @@
+import * as d3 from 'd3';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import * as d3 from 'd3';
 
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { Color } from 'csstype';
+import { bind } from 'decko';
 import {
   IDataStatistics,
   IServiceDataFeature,
   IServiceStatistics,
 } from 'models/Deploy';
-import { Color } from 'csstype';
-import styles from './DeployServiceChart.module.css';
 import ServiceFactory from 'services/ServiceFactory';
-import { bind } from 'decko';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import styles from './DeployServiceChart.module.css';
 
 interface ILocalProps {
   height: number;

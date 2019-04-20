@@ -3,30 +3,35 @@ import { action } from 'typesafe-actions';
 import { IFilterData } from 'models/Filters';
 import { Project, UserAccess } from 'models/Project';
 import User from 'models/User';
-import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
+import cloneClassInstance from 'utils/cloneClassInstance';
 
+import { selectProjects } from './selectors';
 import {
-  fetchProjectsAction,
-  fetchProjectsActionTypes,
+  ILoadProjectsActions,
   IUpdateProjectAction,
+  IUpdateProjectByIdAction,
+  loadProjectsActionTypes,
   updateProjectActionTypes,
+  updateProjectByIdActionTypes,
 } from './types';
 
 export const fetchProjects = (
   filters?: IFilterData[]
-): ActionResult<void, fetchProjectsAction> => async (dispatch, getState) => {
-  dispatch(action(fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST));
+): ActionResult<void, ILoadProjectsActions> => async (
+  dispatch,
+  _,
+  { ServiceFactory }
+) => {
+  dispatch(action(loadProjectsActionTypes.REQUEST));
 
   await ServiceFactory.getProjectsService()
     .getProjects(filters)
     .then(res => {
-      dispatch(
-        action(fetchProjectsActionTypes.FETCH_PROJECTS_SUCCESS, res.data)
-      );
+      dispatch(action(loadProjectsActionTypes.SUCCESS, res.data));
     })
     .catch(err => {
-      dispatch(action(fetchProjectsActionTypes.FETCH_PROJECTS_REQUEST));
+      dispatch(action(loadProjectsActionTypes.FAILURE, err as string));
     });
 };
 
@@ -35,10 +40,8 @@ export const updateProjectCollaboratorAccess = (
   user: User,
   userAccess: UserAccess
 ): ActionResult<void, IUpdateProjectAction> => async (dispatch, getState) => {
-  const { projects } = getState();
-  const project = projects.data!.find(
-    (value: Project, index: number) => value.id === projectId
-  )!;
+  const projects = selectProjects(getState())!;
+  const project = projects.find(value => value.id === projectId)!;
 
   if (userAccess === UserAccess.Owner) {
     project.Author = user;
@@ -52,30 +55,33 @@ export const updateProjectCollaboratorAccess = (
       project.collaborators.set(collaboratorUser, collaboratorUserAccess);
     }
   } else {
-    const projectIndex = projects.data!.indexOf(project);
+    const projectIndex = projects.indexOf(project);
     project.collaborators.set(user, userAccess);
+    project.collaborators = new Map(project.collaborators);
 
-    projects.data![projectIndex] = project;
+    projects[projectIndex] = cloneClassInstance(project);
   }
-  dispatch(
-    action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects.data!)
-  );
+  dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects));
 };
 
 export const removeCollaboratorFromProject = (
   projectId: string,
   user: User
 ): ActionResult<void, IUpdateProjectAction> => async (dispatch, getState) => {
-  const { projects } = getState();
-  const project = projects.data!.find(
-    (value: Project, index: number) => value.id === projectId
-  )!;
+  const projects = selectProjects(getState())!;
+  const project = projects.find(value => value.id === projectId)!;
   project.collaborators.delete(user);
+  project.collaborators = new Map(project.collaborators);
 
-  const projectIndex = projects.data!.indexOf(project);
-  projects.data![projectIndex] = project;
+  const projectIndex = projects.indexOf(project);
+  projects[projectIndex] = cloneClassInstance(project);
 
-  dispatch(
-    action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects.data!)
-  );
+  dispatch(action(updateProjectActionTypes.UPDATE_PROJECT_STATE, projects));
 };
+
+export const updateProjectById = (
+  project: Project
+): IUpdateProjectByIdAction => ({
+  type: updateProjectByIdActionTypes.UPDATE_PROJECT,
+  payload: project,
+});

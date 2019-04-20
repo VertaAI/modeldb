@@ -1,19 +1,19 @@
 import Auth0AuthenticationService from './auth/Auth0AuthenticationService';
 import { IAuthenticationService } from './auth/IAuthenticationService';
 import MockAuthenticationService from './auth/MockAuthenticationService';
-import CollaboratorsService from './CollaboratorsService';
-import { DeployService } from './DeployService';
-import ExperimentRunsDataService from './ExperimentRunsDataService';
+import CollaboratorsService from './collaborators/CollaboratorsService';
+import { ICollaboratorsService } from './collaborators/ICollaboratorsService';
+import DeployService from './deploy/DeployService';
+import { IDeployService } from './deploy/IDeployService';
+import MockDeployService from './deploy/MockDeployService';
+import ExperimentRunsDataService from './experimentRuns/ExperimentRunsDataService';
+import { IExperimentRunsDataService } from './experimentRuns/IExperimentRunsDataService';
+import MockExperimentRunsDataService from './experimentRuns/MockExperimentRunsDataService';
+import { ISearchAndFilterService } from './filter/ISearchAndFilterService';
 import MockSFService from './filter/MockSFService';
-import { ICollaboratorsService } from './ICollaboratorsService';
-import { IDeployService } from './IDeployService';
-import { IExperimentRunsDataService } from './IExperimentRunsDataService';
-import { IProjectDataService } from './IProjectDataService';
-import ISearchAndFilterService from './ISearchAndFilterService';
-import MockDeployService from './mocks/MockDeployService';
-import { MockExperimentRunsDataService } from './mocks/MockExperimentRunsDataService';
-import { MockProjectDataService } from './mocks/MockProjectDataService';
-import { ProjectDataService } from './ProjectDataService';
+import { IProjectDataService } from './projects/IProjectDataService';
+import MockProjectDataService from './projects/MockProjectDataService';
+import ProjectDataService from './projects/ProjectDataService';
 
 export default class ServiceFactory {
   public static getProjectsService(): IProjectDataService {
@@ -37,7 +37,7 @@ export default class ServiceFactory {
     return new MockAuthenticationService();
   }
 
-  public static getSearchAndFiltersService(): ISearchAndFilterService | null {
+  public static getSearchAndFiltersService(): ISearchAndFilterService {
     return new MockSFService();
   }
 

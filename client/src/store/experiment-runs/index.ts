@@ -1,3 +1,4 @@
 export * from './actions';
-export * from './reducer';
+export { default as experimentRunsReducer } from './reducer';
 export * from './types';
+export * from './selectors';

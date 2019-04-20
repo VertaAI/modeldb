@@ -3,19 +3,19 @@ import React from 'react';
 import Avatar from 'react-avatar';
 import { connect } from 'react-redux';
 
+import Icon from 'components/shared/Icon/Icon';
+import Preloader from 'components/shared/Preloader/Preloader';
 import { UserAccess } from 'models/Project';
 import User from 'models/User';
 import {
   changeAccessToProject,
   removeAccessFromProject,
+  selectIsChangingUserAccess,
+  selectIsRemovingUserAccess,
 } from 'store/collaboration';
-import { IConnectedReduxProps } from 'store/store';
+import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
-import share_change_icon from '../images/share-change-icon.svg';
-import share_delete_icon from '../images/share-del-icon.svg';
-import share_read_icon from '../images/share-r-icon.svg';
-import share_write_icon from '../images/share-wr-icon.svg';
 import styles from './CollaboratorItem.module.css';
 
 interface ILocalProps {
@@ -26,11 +26,24 @@ interface ILocalProps {
   onChangeOwner(): void;
 }
 
-type AllProps = IConnectedReduxProps & ILocalProps;
+interface IPropsFromState {
+  isChangingAccess: boolean;
+  isRemovingAccess: boolean;
+}
+
+type AllProps = IConnectedReduxProps & ILocalProps & IPropsFromState;
 
 class CollaboratorItem extends React.Component<AllProps> {
   public render() {
-    const { currentUserAccess, user, userAccess } = this.props;
+    const {
+      currentUserAccess,
+      isChangingAccess,
+      isRemovingAccess,
+      user,
+      userAccess,
+    } = this.props;
+
+    console.log('user', user);
 
     return (
       <div className={styles.collaborator}>
@@ -51,83 +64,91 @@ class CollaboratorItem extends React.Component<AllProps> {
           )}
         </div>
         <div className={styles.collaborator_buttons}>
-          <div>
-            {currentUserAccess === UserAccess.Read ? (
-              ''
-            ) : userAccess === UserAccess.Read ? (
-              <ButtonTooltip
-                additionalClassName={`${styles.collaborator_button} ${
-                  styles.blue_button
-                }`}
-                imgSrc={share_read_icon}
-                toolTipContent={'Read only'}
-                onButtonClick={this.setWriteAccessToProject}
-                width={79}
-              />
-            ) : userAccess === UserAccess.Write ? (
-              <ButtonTooltip
-                additionalClassName={`${styles.collaborator_button} ${
-                  styles.blue_button
-                }`}
-                imgSrc={share_write_icon}
-                toolTipContent={'Read / Write'}
-                onButtonClick={this.setReadAccessToProject}
-                width={93}
-              />
-            ) : (
-              ''
-            )}
-          </div>
-          <div />
-          <div>
-            {userAccess === UserAccess.Owner &&
-            currentUserAccess === UserAccess.Owner ? (
-              <ButtonTooltip
-                additionalClassName={`${styles.collaborator_button} ${
-                  styles.blue_button
-                }`}
-                imgSrc={share_change_icon}
-                toolTipContent={'Change owner'}
-                onButtonClick={this.props.onChangeOwner}
-                width={104}
-              />
-            ) : currentUserAccess === UserAccess.Read ? (
-              userAccess === UserAccess.Read ? (
-                <ButtonTooltip
-                  additionalClassName={`${styles.collaborator_button} ${
-                    styles.without_active_button
-                  }`}
-                  imgSrc={share_read_icon}
-                  toolTipContent={'Read only'}
-                  width={79}
-                />
-              ) : userAccess === UserAccess.Write ? (
-                <ButtonTooltip
-                  additionalClassName={`${styles.collaborator_button} ${
-                    styles.without_active_button
-                  }`}
-                  imgSrc={share_write_icon}
-                  toolTipContent={'Read / Write'}
-                  width={93}
-                />
-              ) : (
-                ''
-              )
-            ) : userAccess === UserAccess.Read ||
-              userAccess === UserAccess.Write ? (
-              <ButtonTooltip
-                additionalClassName={`${styles.collaborator_button} ${
-                  styles.red_button
-                }`}
-                imgSrc={share_delete_icon}
-                toolTipContent={'Delete'}
-                onButtonClick={this.removeAccessToProject}
-                width={59}
-              />
-            ) : (
-              ''
-            )}
-          </div>
+          {(() => {
+            if (isChangingAccess || isRemovingAccess) {
+              return <Preloader variant="dots" />;
+            }
+            return (
+              <>
+                <div>
+                  {currentUserAccess === UserAccess.Read ? (
+                    ''
+                  ) : userAccess === UserAccess.Read ? (
+                    <ButtonTooltip
+                      additionalClassName={`${styles.collaborator_button} ${
+                        styles.blue_button
+                      }`}
+                      icon={<Icon type="share-read" />}
+                      toolTipContent={'Read only'}
+                      onButtonClick={this.setWriteAccessToProject}
+                      width={79}
+                    />
+                  ) : userAccess === UserAccess.Write ? (
+                    <ButtonTooltip
+                      additionalClassName={`${styles.collaborator_button} ${
+                        styles.blue_button
+                      }`}
+                      icon={<Icon type="share-write" />}
+                      toolTipContent={'Read / Write'}
+                      onButtonClick={this.setReadAccessToProject}
+                      width={93}
+                    />
+                  ) : (
+                    ''
+                  )}
+                </div>
+                <div />
+                <div>
+                  {userAccess === UserAccess.Owner && false ? (
+                    <ButtonTooltip
+                      additionalClassName={`${styles.collaborator_button} ${
+                        styles.blue_button
+                      }`}
+                      icon={<Icon type="share-change" />}
+                      toolTipContent={'Change owner'}
+                      onButtonClick={this.props.onChangeOwner}
+                      width={104}
+                    />
+                  ) : currentUserAccess === UserAccess.Read ? (
+                    userAccess === UserAccess.Read ? (
+                      <ButtonTooltip
+                        additionalClassName={`${styles.collaborator_button} ${
+                          styles.without_active_button
+                        }`}
+                        icon={<Icon type="share-read" />}
+                        toolTipContent={'Read only'}
+                        width={79}
+                      />
+                    ) : userAccess === UserAccess.Write ? (
+                      <ButtonTooltip
+                        additionalClassName={`${styles.collaborator_button} ${
+                          styles.without_active_button
+                        }`}
+                        icon={<Icon type="share-write" />}
+                        toolTipContent={'Read / Write'}
+                        width={93}
+                      />
+                    ) : (
+                      ''
+                    )
+                  ) : userAccess === UserAccess.Read ||
+                    userAccess === UserAccess.Write ? (
+                    <ButtonTooltip
+                      additionalClassName={`${styles.collaborator_button} ${
+                        styles.red_button
+                      }`}
+                      icon={<Icon type="share-delete" />}
+                      toolTipContent={'Delete'}
+                      onButtonClick={this.removeAccessToProject}
+                      width={59}
+                    />
+                  ) : (
+                    ''
+                  )}
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     );
@@ -163,6 +184,14 @@ class CollaboratorItem extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = () => ({});
+const mapStateToProps = (
+  state: IApplicationState,
+  localProps: ILocalProps
+): IPropsFromState => {
+  return {
+    isChangingAccess: selectIsChangingUserAccess(state, localProps.user.id!),
+    isRemovingAccess: selectIsRemovingUserAccess(state, localProps.user.id!),
+  };
+};
 
 export default connect(mapStateToProps)(CollaboratorItem);

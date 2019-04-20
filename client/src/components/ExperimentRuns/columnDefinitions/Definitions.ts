@@ -1,9 +1,7 @@
-import Actions from './Actions';
 import ArtifactsColDef from './Artifacts';
 import styles from './ColumnDefs.module.css';
 import DatasetsColDef from './Datasets';
 import HyperparamsColDef from './Hyperparams';
-// import ObservationsColDef from './Observations';
 import MetricsColDef from './Metrics';
 import ModelRecordColDef from './ModelRecord';
 import SummaryColDef from './Summary';
@@ -23,13 +21,6 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellClass: [styles.cell, styles.modelDescription],
       hide: !updatedConfig.get('id').checked,
     },
-    // {
-    //   headerName: 'Deploy',
-    //   field: 'data',
-    //   cellRendererFramework: Actions,
-    //   width: 140,
-    //   cellClass: styles.cell,
-    // },
     {
       headerName: 'Summary',
       field: 'data',
@@ -46,7 +37,6 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellClass: styles.cell,
       hide: !updatedConfig.get('metrics').checked,
     },
-
     {
       headerName: 'Hyperparameters',
       width: 230,
@@ -71,13 +61,5 @@ export const returnColumnDefs = (updatedConfig: any) => {
       cellClass: styles.cell,
       hide: !updatedConfig.get('datasets').checked,
     },
-    // {
-    //   headerName: 'Observations',
-    //   field: 'observations',
-    //   cellRendererFramework: ObservationsColDef,
-    //   width: 200,
-    //   cellClass: styles.cell,
-    //   hide: !updatedConfig.get('observations').checked
-    // }
   ];
 };

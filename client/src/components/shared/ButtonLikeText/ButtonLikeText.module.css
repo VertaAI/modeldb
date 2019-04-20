@@ -1,0 +1,12 @@
+.button_like_text {
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
+  font-size: var(--font-size4);
+  color: var(--main-color2);
+  background: none;
+  outline: none;
+  cursor: pointer;
+}

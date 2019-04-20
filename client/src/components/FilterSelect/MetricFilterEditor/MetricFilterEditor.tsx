@@ -1,6 +1,7 @@
 import { bind } from 'decko';
 import * as React from 'react';
 
+import TextInput from 'components/shared/TextInput/TextInput';
 import { ComparisonType, IMetricFilterData } from 'models/Filters';
 import { numberTo4Decimal } from 'utils/MapperConverters/NumberFormatter';
 
@@ -23,7 +24,9 @@ export default class MetricFilterEditor extends React.Component<ILocalProps> {
           <option value={ComparisonType.EQUALS}>=</option>
           <option value={ComparisonType.LESS}>&lt;</option>
         </select>
-        <input
+
+        <TextInput
+          size="small"
           defaultValue={numberTo4Decimal(this.props.data.value).toString()}
           onBlur={this.onBlur}
           onKeyUp={this.onSubmit}

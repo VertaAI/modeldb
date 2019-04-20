@@ -4,13 +4,18 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
 
+import Preloader from 'components/shared/Preloader/Preloader';
 import ModelRecord from 'models/ModelRecord';
 import { Project } from 'models/Project';
+import {
+  selectExperimentRuns,
+  selectIsLoadingExperimentRuns,
+} from 'store/experiment-runs';
+import { selectProjects } from 'store/projects';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
-import loader from '../images/loader.gif';
-import Tag from '../TagBlock/Tag';
-import tagStyles from '../TagBlock/TagBlock.module.css';
+import Tag from '../shared/TagBlock/Tag';
+import tagStyles from '../shared/TagBlock/TagBlock.module.css';
 import styles from './Charts.module.css';
 import ModelExploration from './ModelExploration/ModelExploration';
 import ModelSummary from './ModelSummary/ModelSummary';
@@ -18,8 +23,8 @@ import ModelSummary from './ModelSummary/ModelSummary';
 export type IUrlProps = GetRouteParams<typeof routes.charts>;
 
 interface IPropsFromState {
-  projects: Project[] | undefined | null;
-  experimentRuns?: ModelRecord[] | undefined | null;
+  projects?: Project[] | undefined | null;
+  experimentRuns: ModelRecord[] | undefined | null;
   loading: boolean;
 }
 
@@ -73,7 +78,7 @@ class Charts extends React.Component<AllProps> {
     }
 
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <Preloader variant="dots" />
     ) : experimentRuns ? (
       <div>
         <div className={styles.summary_wrapper}>
@@ -135,10 +140,10 @@ class Charts extends React.Component<AllProps> {
   }
 }
 
-const mapStateToProps = ({ experimentRuns, projects }: IApplicationState) => ({
-  experimentRuns: experimentRuns.data,
-  projects: projects.data,
-  loading: experimentRuns.loading,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  experimentRuns: selectExperimentRuns(state),
+  loading: selectIsLoadingExperimentRuns(state),
+  projects: selectProjects(state),
 });
 
 export default connect(mapStateToProps)(Charts);

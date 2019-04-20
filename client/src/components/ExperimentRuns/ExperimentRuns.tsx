@@ -2,19 +2,23 @@ import { GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import { AgGridReact } from 'ag-grid-react';
+import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
+
 import { DeployManager } from 'components/Deploy';
-import loader from 'components/images/loader.gif';
-import { FilterContextPool } from 'models/FilterContextPool';
-import { PropertyType } from 'models/Filters';
+import Preloader from 'components/shared/Preloader/Preloader';
 import ModelRecord from 'models/ModelRecord';
 import routes, { GetRouteParams } from 'routes';
-import { IColumnMetaData } from 'store/dashboard-config';
+import { IColumnConfig, selectColumnConfig } from 'store/dashboard-config';
 import { checkDeployStatusForModelsIfNeed } from 'store/deploy';
-import { fetchExperimentRuns } from 'store/experiment-runs';
+import {
+  selectExperimentRuns,
+  selectIsLoadingExperimentRuns,
+} from 'store/experiment-runs';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
+
 import {
   defaultColDefinitions,
   returnColumnDefs,
@@ -25,12 +29,12 @@ import styles from './ExperimentRuns.module.css';
 type IUrlProps = GetRouteParams<typeof routes.experimentRuns>;
 
 interface IPropsFromState {
-  data?: ModelRecord[] | undefined;
+  data: ModelRecord[] | null;
   loading: boolean;
   defaultColDefinitions: any;
   filterState: { [index: string]: {} };
   filtered: boolean;
-  columnConfig: Map<string, IColumnMetaData>;
+  columnConfig: IColumnConfig;
 }
 
 interface IOperator {
@@ -44,13 +48,8 @@ type AllProps = RouteComponentProps<IUrlProps> &
   IConnectedReduxProps;
 
 class ExperimentRuns extends React.Component<AllProps> {
-  public gridApi: any;
-  public columnApi: any;
-  public data: any;
-
-  public callFilterUpdate = () => {
-    this.gridApi.onFilterChanged();
-  };
+  private gridApi: any;
+  private data: any;
 
   public componentWillReceiveProps(nextProps: AllProps) {
     if (this.props !== nextProps && this.gridApi !== undefined) {
@@ -67,9 +66,6 @@ class ExperimentRuns extends React.Component<AllProps> {
   }
 
   public componentDidUpdate(prevProps: AllProps) {
-    if (this.gridApi && this.props.data && prevProps.data !== this.props.data) {
-      this.gridApi.setRowData(this.props.data);
-    }
     if (this.props.data && prevProps.data !== this.props.data) {
       this.props.dispatch(
         checkDeployStatusForModelsIfNeed(this.props.data.map(({ id }) => id))
@@ -80,9 +76,9 @@ class ExperimentRuns extends React.Component<AllProps> {
   public render() {
     const { data, loading, columnConfig } = this.props;
     return loading ? (
-      <img src={loader} className={styles.loader} />
+      <Preloader variant="dots" />
     ) : data ? (
-      <React.Fragment>
+      <>
         <DashboardConfig />
         <DeployManager />
         <div className={`ag-theme-material ${styles.aggrid_wrapper}`}>
@@ -100,19 +96,25 @@ class ExperimentRuns extends React.Component<AllProps> {
             doesExternalFilterPass={this.doesExternalFilterPass}
           />
         </div>
-      </React.Fragment>
+      </>
     ) : (
       ''
     );
   }
 
-  public onGridReady = (event: GridReadyEvent) => {
-    this.gridApi = event.api;
-    this.columnApi = event.columnApi;
-    this.gridApi.setRowData(this.props.data);
-  };
+  @bind
+  private callFilterUpdate() {
+    this.gridApi.onFilterChanged();
+  }
 
-  public gridRowHeight = (params: any) => {
+  @bind
+  private onGridReady(event: GridReadyEvent) {
+    this.gridApi = event.api;
+    this.gridApi.setRowData(this.props.data);
+  }
+
+  @bind
+  private gridRowHeight(params: any) {
     try {
       const data = params.node.data;
       if (
@@ -130,13 +132,15 @@ class ExperimentRuns extends React.Component<AllProps> {
     } catch {}
 
     return 200;
-  };
+  }
 
-  public isExternalFilterPresent = () => {
+  @bind
+  private isExternalFilterPresent() {
     return this.props.filtered;
-  };
+  }
 
-  public funEvaluate(filter: any) {
+  @bind
+  private funEvaluate(filter: any) {
     // this.data is from the bind(node) where node is table row data
     // **ts forced creation of public data var to be able access node
     const operators: IOperator = {
@@ -166,22 +170,20 @@ class ExperimentRuns extends React.Component<AllProps> {
     }
   }
 
-  public doesExternalFilterPass = (node: any) => {
+  @bind
+  private doesExternalFilterPass(node: any) {
     return Object.values(this.props.filterState)
       .map(this.funEvaluate.bind(node))
       .every(val => val === true);
-  };
+  }
 }
 
 // filterState and filtered should be provided by from IApplicationState -> customFilter
-const mapStateToProps = ({
-  experimentRuns,
-  dashboardConfig,
-}: IApplicationState) => ({
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
   defaultColDefinitions,
-  columnConfig: dashboardConfig.columnConfig,
-  data: experimentRuns.data,
-  loading: experimentRuns.loading,
+  columnConfig: selectColumnConfig(state),
+  data: selectExperimentRuns(state),
+  loading: selectIsLoadingExperimentRuns(state),
   filterState: {},
   filtered: false,
 });

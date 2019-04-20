@@ -5,11 +5,13 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import User from 'models/User';
+import { CurrentUser } from 'models/User';
 import routes from 'routes';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
+import { selectCurrentUser } from 'store/user';
 import { logoutUser } from 'store/user/actions';
 
+import Icon from 'components/shared/Icon/Icon';
 import styles from './UserBar.module.css';
 
 interface ILocalState {
@@ -17,7 +19,7 @@ interface ILocalState {
 }
 
 interface IPropsFromState {
-  user: User | null;
+  user: CurrentUser | null;
 }
 
 type AllProps = IConnectedReduxProps & IPropsFromState;
@@ -45,9 +47,7 @@ class UserBar extends React.Component<AllProps, ILocalState> {
             style={{ fontFamily: 'Roboto', fontWeight: '400' }}
             src={user ? user.picture : ''}
           />
-          <div className={styles.menu_arrow}>
-            <i className="fa fa-caret-down" />
-          </div>
+          <Icon type="caret-down" className={styles.menu_arrow} />
         </div>
         {this.state.isOpened ? (
           <div className={styles.drop_down}>
@@ -62,10 +62,8 @@ class UserBar extends React.Component<AllProps, ILocalState> {
                 style={{ fontFamily: 'Roboto', fontWeight: '400' }}
                 src={user ? user.picture : ''}
               />
-              <div>
-                <div className={styles.menu_header_user_name}>
-                  {user ? user.name : ''}
-                </div>
+              <div className={styles.menu_header_user_name}>
+                {user ? user.name : ''}
               </div>
             </div>
             <div className={styles.menu_item}>
@@ -109,8 +107,8 @@ class UserBar extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ layout }: IApplicationState) => ({
-  user: layout.user,
+const mapStateToProps = (state: IApplicationState): IPropsFromState => ({
+  user: selectCurrentUser(state),
 });
 
 export default connect(mapStateToProps)(onClickOutside(UserBar));

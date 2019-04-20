@@ -1,24 +1,23 @@
+import { bind } from 'decko';
 import * as React from 'react';
 
-import Button from 'components/shared/Button/Button';
+import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
 import CopyToClipboard from 'components/shared/CopyToClipboard/CopyToClipboard';
+import Fab from 'components/shared/Fab/Fab';
 import Form from 'components/shared/Form/Form';
 import Popup from 'components/shared/Popup/Popup';
 import { IDeployedStatusInfo } from 'models/Deploy';
-import Fab from 'components/shared/Fab/Fab';
-import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { delete_ } from 'store/deploy';
-import { bind } from 'decko';
 
 import styles from './DeployResult.module.css';
 
 interface ILocalProps {
   modelId: string;
   data: IDeployedStatusInfo['data'];
+  onShutdown(): void;
   onClose(): void;
 }
 
-type AllProps = ILocalProps & IConnectedReduxProps;
+type AllProps = ILocalProps;
 
 const mockApi = 'https://verta.io/234wfogsfas/fsfbgs';
 const mockToken = '42';
@@ -42,16 +41,14 @@ class DeployResult extends React.Component<AllProps> {
               <Form.Item
                 label="URL"
                 additionalContent={
-                  <Button variant="like-link" fullWidth={true} to={api}>
+                  <ButtonLikeText to={api}>
                     <span className={styles.url}>{api}</span>
-                  </Button>
+                  </ButtonLikeText>
                 }
               >
                 <CopyToClipboard text={api}>
                   {onCopy => (
-                    <Button variant="like-link" onClick={onCopy}>
-                      Copy
-                    </Button>
+                    <ButtonLikeText onClick={onCopy}>Copy</ButtonLikeText>
                   )}
                 </CopyToClipboard>
               </Form.Item>
@@ -63,9 +60,7 @@ class DeployResult extends React.Component<AllProps> {
               >
                 <CopyToClipboard text={token}>
                   {onCopy => (
-                    <Button variant="like-link" onClick={onCopy}>
-                      Copy
-                    </Button>
+                    <ButtonLikeText onClick={onCopy}>Copy</ButtonLikeText>
                   )}
                 </CopyToClipboard>
               </Form.Item>
@@ -86,7 +81,7 @@ class DeployResult extends React.Component<AllProps> {
 
   @bind
   private onShutdown() {
-    this.props.dispatch(delete_(this.props.modelId));
+    this.props.onShutdown();
     this.props.onClose();
   }
 }

@@ -1,9 +1,12 @@
 import {
   IDataStatistics,
+  IDeployStatusInfo,
   IServiceDataFeature,
   IServiceStatistics,
 } from 'models/Deploy';
+import { deployedStatusInfoData } from 'services/mocks/deployMock';
 import {
+  IServerDeployStatusInfo,
   IServerServiceData,
   IServerServiceStatistics,
 } from 'services/serverModel/Deploy';
@@ -42,4 +45,27 @@ export function convertServerDataStatisticsToClient(
   );
 
   return features;
+}
+
+export function convertServerDeployStatusInfoToClient(
+  serverResponse: IServerDeployStatusInfo
+): IDeployStatusInfo {
+  switch (serverResponse.status) {
+    case 'not deployed': {
+      return { status: 'notDeployed' };
+    }
+    case 'deploying': {
+      return { status: 'deploying' };
+    }
+    case 'live': {
+      return {
+        status: 'deployed',
+        data: {
+          ...deployedStatusInfoData,
+          api: serverResponse.api,
+          token: serverResponse.token,
+        },
+      };
+    }
+  }
 }

@@ -1,9 +1,10 @@
 import _ from 'lodash';
 import React from 'react';
 
+import Icon from 'components/shared/Icon/Icon';
 import ModelRecord from 'models/ModelRecord';
-import ScatterChart from './ScatterChart';
 import styles from './ModelSummary.module.css';
+import ScatterChart from './ScatterChart';
 
 interface ILocalProps {
   experimentRuns: ModelRecord[];
@@ -56,6 +57,7 @@ export default class ModelExploration extends React.Component<
               );
             })}
           </select>
+          <Icon type="caret-down" className={styles.chart_selector_arrow} />
         </div>
         <ScatterChart
           flatdata={this.state.chartData}

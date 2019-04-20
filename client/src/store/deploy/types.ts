@@ -3,22 +3,28 @@ import {
   IDeployStatusInfo,
   IServiceStatistics,
 } from 'models/Deploy';
+import {
+  ICommunication,
+  MakeCommunicationActions,
+  makeCommunicationActionTypes,
+  makeCommunicationReducerFromEnum,
+} from 'utils/redux/communication';
 
 export interface IDeployState {
-  shownDeployManagerModelId: ModelID | null;
-  deployStatusInfoByModelId: IDeployStatusInfoByModelId;
-  deploying: Record<ModelID, ICommunication>;
-  loadingDeployStatus: Record<ModelID, ICommunication>;
-  checkingDeployStatus: Record<ModelID, ICommunication>;
-  loadingServiceStatistics: ICommunication;
-  serviceStatistics: IServiceStatistics | null;
-  loadingDataStatistics: ICommunication;
-  dataStatistics: IDataStatistics | null;
-}
-
-interface ICommunication {
-  isRequesting: boolean;
-  error: string;
+  data: {
+    shownDeployManagerModelId: ModelID | null;
+    deployStatusInfoByModelId: IDeployStatusInfoByModelId;
+    serviceStatistics: IServiceStatistics | null;
+    dataStatistics: IDataStatistics | null;
+  };
+  communications: {
+    deploying: Record<ModelID, ICommunication>;
+    loadingDeployStatus: Record<ModelID, ICommunication>;
+    checkingDeployStatus: Record<ModelID, ICommunication>;
+    loadingDataStatistics: ICommunication;
+    loadingServiceStatistics: ICommunication;
+    deleting: ICommunication;
+  };
 }
 
 type ModelID = string;
@@ -27,121 +33,97 @@ export interface IDeployStatusInfoByModelId {
   [modelId: string]: IDeployStatusInfo;
 }
 
-export enum deployActionTypes {
-  DEPLOY_REQUEST = '@@deploy/DEPLOY_REQUEST',
-  DEPLOY_SUCCESS = '@@deploy/DEPLOY_SUCCESS',
-  DEPLOY_FAILURE = '@@deploy/DEPLOY_FAILURE',
-}
-export type deployAction =
-  | { type: deployActionTypes.DEPLOY_REQUEST; payload: ModelID }
-  | { type: deployActionTypes.DEPLOY_SUCCESS; payload: ModelID }
-  | {
-      type: deployActionTypes.DEPLOY_FAILURE;
-      payload: { modelId: ModelID; error: string };
-    };
+export const deployActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@deploy/DEPLOY_REQUEST',
+  SUCCESS: '@@deploy/DEPLOY_SUCСESS',
+  FAILURE: '@@deploy/DEPLOY_FAILURE',
+});
+export type IDeployActions = MakeCommunicationActions<
+  typeof deployActionTypes,
+  {
+    request: ModelID;
+    success: ModelID;
+    failure: { modelId: ModelID; error: string };
+  }
+>;
 
-export enum deleteActionTypes {
-  DELETE_REQUEST = '@@deploy/DELETE_REQUEST',
-  DELETE_SUCCESS = '@@deploy/DELETE_SUCCESS',
-  DELETE_FAILURE = '@@deploy/DELETE_FAILURE',
-}
-export type deleteAction =
-  | { type: deleteActionTypes.DELETE_REQUEST; payload: ModelID }
-  | { type: deleteActionTypes.DELETE_SUCCESS; payload: ModelID }
-  | {
-      type: deleteActionTypes.DELETE_FAILURE;
-      payload: { modelId: ModelID; error: string };
-    };
+export const loadDeployStatusActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@deploy/LOAD_DEPLOY_STATUS_REQUEST',
+  SUCCESS: '@@deploy/LOAD_DEPLOY_STATUS_SUCСESS',
+  FAILURE: '@@deploy/LOAD_DEPLOY_STATUS_FAILURE',
+});
+export type ILoadDeployStatusActions = MakeCommunicationActions<
+  typeof loadDeployStatusActionTypes,
+  {
+    request: ModelID;
+    success: { modelId: ModelID; info: IDeployStatusInfo };
+    failure: { modelId: ModelID; error: string };
+  }
+>;
 
-export enum loadDeployStatusActionTypes {
-  LOAD_DEPLOY_STATUS_REQUEST = '@@deploy/LOAD_DEPLOY_STATUS_REQUEST',
-  LOAD_DEPLOY_STATUS_SUCCESS = '@@deploy/LOAD_DEPLOY_STATUS_SUCCESS',
-  LOAD_DEPLOY_STATUS_FAILURE = '@@deploy/LOAD_DEPLOY_STATUS_FAILURE',
-}
-export type loadDeployStatusAction =
-  | {
-      type: loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_REQUEST;
-      payload: ModelID;
-    }
-  | {
-      type: loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_SUCCESS;
-      payload: { modelId: ModelID; info: IDeployStatusInfo };
-    }
-  | {
-      type: loadDeployStatusActionTypes.LOAD_DEPLOY_STATUS_FAILURE;
-      payload: { modelId: ModelID; error: string };
-    };
-
-export enum checkDeployStatusActionTypes {
-  CHECK_DEPLOY_STATUS_REQUEST = '@@deploy/CHECK_DEPLOY_STATUS_REQUEST',
-  CHECK_DEPLOY_STATUS_SUCCESS = '@@deploy/CHECK_DEPLOY_STATUS_SUCCESS',
-  CHECK_DEPLOY_STATUS_FAILURE = '@@deploy/CHECK_DEPLOY_STATUS_FAILURE',
-}
-export type checkDeployStatusAction =
-  | {
-      type: checkDeployStatusActionTypes.CHECK_DEPLOY_STATUS_REQUEST;
-      payload: ModelID;
-    }
-  | {
-      type: checkDeployStatusActionTypes.CHECK_DEPLOY_STATUS_SUCCESS;
-      payload: ModelID;
-    }
-  | {
-      type: checkDeployStatusActionTypes.CHECK_DEPLOY_STATUS_FAILURE;
-      payload: { modelId: ModelID; error: string };
-    };
+export const checkDeployStatusActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@deploy/CHECK_DEPLOY_STATUS_REQUEST',
+  SUCCESS: '@@deploy/CHECK_DEPLOY_STATUS_SUCСESS',
+  FAILURE: '@@deploy/CHECK_DEPLOY_STATUS_FAILURE',
+});
+export type ICheckDeployStatusActions = MakeCommunicationActions<
+  typeof checkDeployStatusActionTypes,
+  {
+    request: ModelID;
+    success: ModelID;
+    failure: { modelId: ModelID; error: string };
+  }
+>;
 
 export enum toggleDeployManagerActionTypes {
   OPEN_DEPLOY_MANAGER = '@@deploy/OPEN_DEPLOY_MANAGER',
   CLOSE_DEPLOY_MANAGER = '@@deploy/CLOSE_DEPLOY_MANAGER',
 }
-export type toggleDeployManagerAction =
+export type IToggleDeployManagerActions =
   | {
       type: toggleDeployManagerActionTypes.OPEN_DEPLOY_MANAGER;
       payload: ModelID;
     }
   | { type: toggleDeployManagerActionTypes.CLOSE_DEPLOY_MANAGER };
 
-export enum fetchServiceStatisticsActionTypes {
-  FETCH_SERVICE_STATISTICS_REQUEST = '@@deploy/FETCH_SERVICE_STATISTICS_REQUEST',
-  FETCH_SERVICE_STATISTICS_SUCCESS = '@@deploy/FETCH_SERVICE_STATISTICS_SUCCESS',
-  FETCH_SERVICE_STATISTICS_FAILURE = '@@deploy/FETCH_SERVICE_STATISTICS_FAILURE',
-}
-export type fetchServiceStatisticsAction =
-  | {
-      type: fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_REQUEST;
-    }
-  | {
-      type: fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_SUCCESS;
-      payload: IServiceStatistics;
-    }
-  | {
-      type: fetchServiceStatisticsActionTypes.FETCH_SERVICE_STATISTICS_FAILURE;
-      payload: string;
-    };
+export const loadServiceStatisticsActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@deploy/LOAD_SERVICE_STATISTICS_REQUEST',
+  SUCCESS: '@@deploy/LOAD_SERVICE_STATISTICS_SUCСESS',
+  FAILURE: '@@deploy/LOAD_SERVICE_STATISTICS_FAILURE',
+});
+export type ILoadServiceStatisticsActions = MakeCommunicationActions<
+  typeof loadServiceStatisticsActionTypes,
+  { success: IServiceStatistics }
+>;
 
-export enum fetchDataStatisticsActionTypes {
-  FETCH_DATA_STATISTICS_REQUEST = '@@deploy/FETCH_DATA_STATISTICS_REQUEST',
-  FETCH_DATA_STATISTICS_SUCCESS = '@@deploy/FETCH_DATA_STATISTICS_SUCCESS',
-  FETCH_DATA_STATISTICS_FAILURE = '@@deploy/FETCH_DATA_STATISTICS_FAILURE',
-}
-export type fetchDataStatisticsAction =
-  | {
-      type: fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_REQUEST;
-    }
-  | {
-      type: fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_SUCCESS;
-      payload: IDataStatistics;
-    }
-  | {
-      type: fetchDataStatisticsActionTypes.FETCH_DATA_STATISTICS_FAILURE;
-      payload: string;
-    };
+export const loadDataStatisticsActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@deploy/LOAD_DATA_STATISTICS_REQUEST',
+  SUCCESS: '@@deploy/LOAD_DATA_STATISTICS_SUCСESS',
+  FAILURE: '@@deploy/LOAD_DATA_STATISTICS_FAILURE',
+});
+export type ILoadDataStatisticsActions = MakeCommunicationActions<
+  typeof loadDataStatisticsActionTypes,
+  { success: IDataStatistics }
+>;
 
-export type allActions =
-  | deployAction
-  | loadDeployStatusAction
-  | checkDeployStatusAction
-  | toggleDeployManagerAction
-  | fetchServiceStatisticsAction
-  | fetchDataStatisticsAction;
+export const deleteActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@deploy/DELETE_REQUEST',
+  SUCCESS: '@@deploy/DELETE_SUCСESS',
+  FAILURE: '@@deploy/DELETE_FAILURE',
+});
+export type IDeleteActions = MakeCommunicationActions<
+  typeof deleteActionTypes,
+  {
+    request: ModelID;
+    success: ModelID;
+    failure: { modelId: ModelID; error: string };
+  }
+>;
+
+export type FeatureAction =
+  | IDeployActions
+  | ILoadDeployStatusActions
+  | ICheckDeployStatusActions
+  | IToggleDeployManagerActions
+  | ILoadServiceStatisticsActions
+  | ILoadDataStatisticsActions;

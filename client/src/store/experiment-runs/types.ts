@@ -1,20 +1,31 @@
 import ModelRecord from 'models/ModelRecord';
+import {
+  ICommunication,
+  MakeCommunicationActions,
+  makeCommunicationActionTypes,
+  makeCommunicationReducerFromEnum,
+} from 'utils/redux/communication';
 
 export interface IExperimentRunsState {
-  readonly loading: boolean;
-  readonly data?: ModelRecord[] | undefined;
+  data: {
+    modelRecords: ModelRecord[] | null;
+  };
+  communications: {
+    loadingExperimentRuns: ICommunication;
+  };
 }
 
-export enum fetchExperimentRunsActionTypes {
-  FETCH_EXP_RUNS_REQUEST = '@@experiment-runs/FETCH_EXP_RUNS_REQUEST',
-  FETCH_EXP_RUNS_SUCCESS = '@@experiment-runs/FETCH_EXP_RUNS_SUCCESS',
-  FETCH_EXP_RUNS_FAILURE = '@@experiment-runs/FETCH_EXP_RUNS_FAILURE',
-}
+export const loadExperimentRunsActionTypes = makeCommunicationActionTypes({
+  REQUEST: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_REQUEST',
+  SUCCESS: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_SUCСESS',
+  FAILURE: '@@experimentRuns/LOAD_EXPERIMENT_RUNS_FAILURE',
+});
+export type ILoadExperimentRunsActions = MakeCommunicationActions<
+  typeof loadExperimentRunsActionTypes,
+  { success: ModelRecord[] }
+>;
+export const loadExperimentRunsReducer = makeCommunicationReducerFromEnum(
+  loadExperimentRunsActionTypes
+);
 
-export type fetchExperimentRunsAction =
-  | { type: fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_REQUEST }
-  | {
-      type: fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_SUCCESS;
-      payload?: ModelRecord[];
-    }
-  | { type: fetchExperimentRunsActionTypes.FETCH_EXP_RUNS_FAILURE };
+export type FeatureAction = ILoadExperimentRunsActions;

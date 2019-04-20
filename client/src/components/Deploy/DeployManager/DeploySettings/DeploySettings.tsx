@@ -2,11 +2,12 @@ import { bind } from 'decko';
 import * as React from 'react';
 
 import Button from 'components/shared/Button/Button';
-import Checkbox from 'components/shared/Checkbox/Checkbox';
+import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
 import FileUploader from 'components/shared/FileUploader/FileUploader';
 import Form from 'components/shared/Form/Form';
 import Popup from 'components/shared/Popup/Popup';
 import Select from 'components/shared/Select/Select';
+import Switch from 'components/shared/Switch/Switch';
 import Tabs from 'components/shared/Tabs/Tabs';
 
 import { DeployType, IDeployConfig } from 'models/Deploy';
@@ -64,10 +65,10 @@ class DeploySettings extends React.PureComponent<ILocalProps, ILocalState> {
                   />
                 </Form.Item>
                 <Form.Item label="Logs">
-                  <Checkbox value={withLogs} onChange={this.onToggleLogs} />
+                  <Switch value={withLogs} onChange={this.onToggleLogs} />
                 </Form.Item>
                 <Form.Item label="Service Monitoring">
-                  <Checkbox
+                  <Switch
                     value={withServiceMonitoring}
                     onChange={this.onToggleServiceMonitoring}
                   />
@@ -90,10 +91,10 @@ class DeploySettings extends React.PureComponent<ILocalProps, ILocalState> {
                   />
                 </Form.Item>
                 <Form.Item label="Logs">
-                  <Checkbox value={withLogs} onChange={this.onToggleLogs} />
+                  <Switch value={withLogs} onChange={this.onToggleLogs} />
                 </Form.Item>
                 <Form.Item label="Service Monitoring">
-                  <Checkbox
+                  <Switch
                     value={withServiceMonitoring}
                     onChange={this.onToggleServiceMonitoring}
                   />
@@ -104,9 +105,9 @@ class DeploySettings extends React.PureComponent<ILocalProps, ILocalState> {
                     onUpload={console.log}
                   >
                     {onSelectFile => (
-                      <Button variant="like-link" onClick={onSelectFile}>
+                      <ButtonLikeText onClick={onSelectFile}>
                         Select .CSV
-                      </Button>
+                      </ButtonLikeText>
                     )}
                   </FileUploader>
                 </Form.Item>

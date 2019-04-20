@@ -1,19 +1,21 @@
+import { bind } from 'decko';
 import _ from 'lodash';
 import React from 'react';
-import { bind } from 'decko';
 import {
-  listSum,
   listAverage,
-  listMedian,
-  listVariance,
-  listStdev,
   listCount,
+  listMedian,
+  listStdev,
+  listSum,
+  listVariance,
 } from 'utils/StatMethods/AggregationTypes';
+
+import Icon from 'components/shared/Icon/Icon';
+
 import ModelRecord from '../../../models/ModelRecord';
 import BarChart from './BarChart';
-import ParallelCoordinates from './ParamParallelCoordinates';
-
 import styles from './ModelExploration.module.css';
+import ParallelCoordinates from './ParamParallelCoordinates';
 
 interface IParallelData {
   [key: string]: any;
@@ -110,6 +112,7 @@ export default class ModelExploration extends React.Component<
                 )}
               </optgroup>
             </select>
+            <Icon type="caret-down" className={styles.chart_selector_arrow} />
           </div>
 
           <div className={styles.chart_selector}>
@@ -132,6 +135,7 @@ export default class ModelExploration extends React.Component<
                 )}
               </optgroup>
             </select>
+            <Icon type="caret-down" className={styles.chart_selector_arrow} />
           </div>
 
           <div className={styles.chart_selector}>
@@ -150,6 +154,7 @@ export default class ModelExploration extends React.Component<
                 );
               })}
             </select>
+            <Icon type="caret-down" className={styles.chart_selector_arrow} />
           </div>
         </div>
         <div>

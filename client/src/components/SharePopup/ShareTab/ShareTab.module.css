@@ -1,33 +1,14 @@
 .content_share {
-  margin-top: 30px;
   display: grid;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
   justify-items: center;
-  grid-template-rows: 36px 60px auto;
+  grid-template-rows: 36px auto auto;
 }
 
 .content_header {
   font-size: 15px;
   line-height: 18px;
   text-align: center;
-}
-
-.send_invitation_button {
-  height: 34px;
-  width: 164px;
-  border-radius: 2px;
-  background-color: var(--main-color2);
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 18px;
-  text-align: center;
-  cursor: pointer;
-  border: none;
-  color: var(--main-color3);
-}
-
-.send_invitation_button:hover {
-  background-color: #6a84ff;
 }
 
 .form_group:focus-within .share_button {
@@ -56,10 +37,11 @@
 }
 
 .share_result_content {
-  margin-top: 35px;
+  width: 100%;
   display: grid;
   margin-bottom: 55px;
   justify-items: center;
+  align-items: center;
   grid-template-rows: 71px 22px auto;
 }
 
@@ -76,14 +58,21 @@
 }
 
 .share_result_button {
-  text-align: center;
-  background: var(--main-color3);
-  cursor: pointer;
-  border: none;
+  margin-top: 2px;
 }
 
-.share_result_button_text {
-  color: var(--main-color2);
-  border-bottom: 1px solid rgb(104, 99, 255, 0.3);
-  cursor: pointer;
+.icon {
+  font-size: 60px;
+}
+
+.userEmailInput {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.userEmailInput_error {
+  margin-top: 5px;
+  color: var(--error-color1);
 }

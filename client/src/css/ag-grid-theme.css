@@ -19,6 +19,10 @@
   scroll-behavior: smooth;
 }
 
+.ag-react-container {
+  margin: 1em 0;
+}
+
 .ag-theme-material .ag-cell {
   padding-right: 13px;
 }

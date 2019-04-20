@@ -1,40 +1,5 @@
-.input {
-  border: solid var(--fr-color5) 1px;
-  height: 40px;
-  line-height: 40px;
-  padding: 0 13px;
-  padding-right: 31px;
-  outline: none;
-  position: relative;
-  border-radius: 2px;
-
-  width: 100%;
-  box-sizing: border-box;
-}
-
 .root {
   position: relative;
-}
-
-.input::placeholder {
-  font-size: 13px;
-  color: var(--fr-color4);
-}
-
-.input + label {
-  position: relative;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.input + label:before {
-  content: '\f002';
-  position: absolute;
-  left: -31px;
-  top: -1px;
-  font-size: 18px;
-  color: var(--fr-color5);
-  line-height: 0px;
 }
 
 .applied_filters {
@@ -68,21 +33,8 @@
 }
 
 .apply_filters_button {
-  text-align: right;
-}
-
-.apply_filters_button button {
-  color: var(--bg-color3);
-  background-color: var(--bg-color2);
-  border-radius: 2px;
-  padding: 8px 45px;
-  border: none;
-  outline: none;
-  cursor: pointer;
-}
-
-.apply_filters_button button:hover {
-  background-color: #6a84ff;
+  width: 125px;
+  margin-left: auto;
 }
 
 /* temp fix for conditional label within filter */
@@ -117,10 +69,6 @@
   background-size: 46px;
 }
 
-.applied_filters_proj button:hover {
-  background-color: #6a84ff;
-}
-
 .found_filters_popup {
   border: solid 1px var(--fr-color5);
   border-bottom-right-radius: 2px;
@@ -128,5 +76,4 @@
   border-top: none;
   position: absolute;
   width: 100%;
-  box-sizing: border-box;
 }

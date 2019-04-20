@@ -1,54 +1,46 @@
 import { action } from 'typesafe-actions';
 
-import ServiceFactory from 'services/ServiceFactory';
 import { ActionResult } from 'store/store';
 
 import {
+  authenticateUserActionTypes,
   checkUserAuthenticationActionTypes,
-  ICheckUserAuthenticationAction,
-  IUserLogoutAction,
-  userAuthenticateAction,
-  userAuthenticateActionTypes,
-  userLogoutActionTypes,
+  IAuthenticateUserActions,
+  ICheckUserAuthenticationActions,
+  ILogoutActions,
+  logoutActionTypes,
 } from './types';
 
 export const authenticateUser = (): ActionResult<
   void,
-  userAuthenticateAction
-> => async (dispatch, getState) => {
-  dispatch(action(userAuthenticateActionTypes.AUTHENTICATE_USER_REQUEST));
+  IAuthenticateUserActions
+> => async (dispatch, _, { ServiceFactory }) => {
+  dispatch(action(authenticateUserActionTypes.REQUEST));
 
   ServiceFactory.getAuthenticationService().login();
 };
 
-export const logoutUser = (): ActionResult<void, IUserLogoutAction> => async (
+export const logoutUser = (): ActionResult<void, ILogoutActions> => async (
   dispatch,
-  getState
+  _,
+  { ServiceFactory }
 ) => {
-  dispatch(action(userLogoutActionTypes.LOGOUT_USER));
+  dispatch(action(logoutActionTypes.REQUEST));
 
   await ServiceFactory.getAuthenticationService().logout();
+  dispatch(action(logoutActionTypes.SUCCESS));
 };
 
 export const checkUserAuthentication = (): ActionResult<
   void,
-  ICheckUserAuthenticationAction
-> => async (dispatch, getState) => {
-  dispatch(
-    action(checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_REQUEST)
-  );
+  ICheckUserAuthenticationActions
+> => async (dispatch, _, { ServiceFactory }) => {
+  dispatch(action(checkUserAuthenticationActionTypes.REQUEST));
 
   try {
     const user = await ServiceFactory.getAuthenticationService().loadUser();
-    dispatch(
-      action(
-        checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_SUCCESS,
-        user
-      )
-    );
-  } catch {
-    dispatch(
-      action(checkUserAuthenticationActionTypes.CHECKING_USER_AUTH_FAILURE)
-    );
+    dispatch(action(checkUserAuthenticationActionTypes.SUCCESS, user));
+  } catch (e) {
+    dispatch(action(checkUserAuthenticationActionTypes.FAILURE, e as string));
   }
 };

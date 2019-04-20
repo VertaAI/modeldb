@@ -2,6 +2,10 @@ import { bind } from 'decko';
 import React from 'react';
 import { connect } from 'react-redux';
 
+import Button from 'components/shared/Button/Button';
+import ButtonLikeText from 'components/shared/ButtonLikeText/ButtonLikeText';
+import Icon from 'components/shared/Icon/Icon';
+import Preloader from 'components/shared/Preloader/Preloader';
 import { UserAccess } from 'models/Project';
 import {
   InvitationStatus,
@@ -10,44 +14,44 @@ import {
 } from 'store/collaboration';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
 
+import { selectInviteNewCollaboratorInfo } from 'store/collaboration/selectors';
 import { ButtonTooltip } from '../ButtonTooltip/ButtonTooltip';
-import error_icon from '../images/error-icon.svg';
-import icon_check from '../images/icon-check.svg';
-import read_only_icon from '../images/read-only-icon.svg';
-import share_read_icon from '../images/share-r-icon.svg';
-import share_write_icon from '../images/share-wr-icon.svg';
 import { PlaceholderInput } from '../PlaceholderInput/PlaceholderInput';
 import styles from './ShareTab.module.css';
 
 interface ILocalProps {
   currentUserAccess: UserAccess;
-  // should be changed to actual type after getting format from the backend
+  projectId: string;
+}
+
+interface IPropsFromState {
   error?: any;
   status: InvitationStatus;
-  projectId: string;
 }
 
 interface ILocalState {
   emailValue: string;
+  emailError: string | undefined;
   userAccess: UserAccess;
 }
 
-type AllProps = IConnectedReduxProps & ILocalProps;
+type AllProps = IConnectedReduxProps & ILocalProps & IPropsFromState;
 
 class ShareTab extends React.Component<AllProps, ILocalState> {
   public state: ILocalState = {
     emailValue: '',
     userAccess: UserAccess.Read,
+    emailError: undefined,
   };
 
   public render() {
-    const { status, error } = this.props;
+    const { status } = this.props;
 
     switch (status) {
       case InvitationStatus.None:
         return this.props.currentUserAccess === UserAccess.Read ? (
           <div className={styles.share_result_content}>
-            <img src={read_only_icon} />
+            <Icon type="read-only" className={styles.icon} />
             <span className={styles.share_result_header}>Read-only</span>
             <span className={styles.share_result_text}>
               You're restricted to share project
@@ -58,19 +62,22 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
             <div className={styles.content_header}>
               Invite People to the Project
             </div>
-            <div>
+            <div className={styles.userEmailInput}>
               <PlaceholderInput
                 additionalClassName={styles.form_group}
                 inputValue={this.state.emailValue}
-                onInputChange={this.updateInputValue}
                 placeholderValue={'Email or username'}
+                onInputChange={this.updateInputValue}
+                onBlur={this.validateEmailValue}
                 additionalControl={
                   <ButtonTooltip
                     additionalClassName={styles.share_button}
-                    imgSrc={
-                      this.state.userAccess === UserAccess.Read
-                        ? share_read_icon
-                        : share_write_icon
+                    icon={
+                      this.state.userAccess === UserAccess.Read ? (
+                        <Icon type="share-read" />
+                      ) : (
+                        <Icon type="share-write" />
+                      )
                     }
                     toolTipContent={`Access type ${
                       this.state.userAccess === UserAccess.Read
@@ -82,74 +89,55 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
                   />
                 }
               />
+              <span className={styles.userEmailInput_error}>
+                {this.state.emailError}
+              </span>
             </div>
-            <div>
-              <button
-                className={styles.send_invitation_button}
-                onClick={this.sendInvitationOnClick}
-              >
-                Send Invitation
-              </button>
-            </div>
+            <Button
+              disabled={this.state.emailError !== undefined}
+              onClick={this.sendInvitationOnClick}
+            >
+              Send Invitation
+            </Button>
           </div>
         );
       case InvitationStatus.Failure:
         return (
           <div className={styles.share_result_content}>
-            <img src={error_icon} />
-            <span className={styles.share_result_header}>{error}</span>
+            <Icon type="error" className={styles.icon} />
+            {/* todo fix it */}
+            <span className={styles.share_result_header}>
+              {'user not found'}
+            </span>
             <div>
-              <button
-                className={styles.share_result_button}
-                onClick={this.trySendInvitationAgain}
-              >
-                <span
-                  className={`${styles.share_result_button_text} ${
-                    styles.share_result_text
-                  }`}
-                >
-                  Try Again
-                </span>
-              </button>
-              <span className={styles.share_result_text}>or</span>
-              <button
-                className={styles.share_result_button}
-                onClick={this.sendNewInvitation}
-              >
-                <span
-                  className={`${styles.share_result_button_text} ${
-                    styles.share_result_text
-                  }`}
-                >
-                  Send New Invitation
-                </span>
-              </button>
+              <ButtonLikeText onClick={this.trySendInvitationAgain}>
+                Try Again
+              </ButtonLikeText>{' '}
+              <span className={styles.share_result_text}>or</span>{' '}
+              <ButtonLikeText onClick={this.sendNewInvitation}>
+                Send New Invitation
+              </ButtonLikeText>
             </div>
           </div>
         );
       case InvitationStatus.Success:
         return (
           <div className={styles.share_result_content}>
-            <img src={icon_check} />
+            <Icon type="check" className={styles.icon} />
             <span className={styles.share_result_header}>
               Invitation to {this.state.emailValue} sent!
             </span>
-            <button
-              className={styles.share_result_button}
-              onClick={this.sendNewInvitation}
-            >
-              <span
-                className={`${styles.share_result_button_text} ${
-                  styles.share_result_text
-                }`}
-              >
-                Send New Invitation
-              </span>
-            </button>
+            <ButtonLikeText onClick={this.sendNewInvitation}>
+              Send New Invitation
+            </ButtonLikeText>
           </div>
         );
       case InvitationStatus.Sending:
-        return '';
+        return (
+          <div className={styles.share_result_content}>
+            <Preloader variant="dots" />
+          </div>
+        );
       default:
         return '';
     }
@@ -191,10 +179,21 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   private updateInputValue(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({
       emailValue: event.target.value,
+      emailError: this.state.emailError
+        ? validateEmailValue(event.target.value)
+        : undefined,
     });
     event.preventDefault();
   }
 
+  @bind
+  private validateEmailValue() {
+    this.setState({
+      emailError: validateEmailValue(this.state.emailValue),
+    });
+  }
+
+  @bind
   private trySendInvitationAgain() {
     this.props.dispatch(
       sendInvitationForUser(
@@ -206,9 +205,36 @@ class ShareTab extends React.Component<AllProps, ILocalState> {
   }
 }
 
-const mapStateToProps = ({ collaboration }: IApplicationState) => ({
-  error: collaboration.inviteNewCollaborator.error,
-  status: collaboration.inviteNewCollaborator.status,
-});
+// todo move this functions in utils folder
+
+const validateEmailValue = combineValidators([validateNotEmpty, validateEmail]);
+
+function combineValidators<T>(
+  validators: Array<(value: T) => string | undefined>
+): (value: T) => string | undefined {
+  return (value: any) =>
+    validators.reduce(
+      (maybeError, validator) => {
+        return maybeError !== undefined ? maybeError : validator(value);
+      },
+      undefined as string | undefined
+    );
+}
+
+function validateNotEmpty(value: string) {
+  return value === '' || value === null || value === undefined
+    ? 'is empty!'
+    : undefined;
+}
+
+function validateEmail(email: string) {
+  let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return !re.test(String(email).toLowerCase()) ? 'invalid email!' : undefined;
+}
+
+const mapStateToProps = (state: IApplicationState): IPropsFromState => {
+  const { error, status } = selectInviteNewCollaboratorInfo(state);
+  return { error, status };
+};
 
 export default connect(mapStateToProps)(ShareTab);

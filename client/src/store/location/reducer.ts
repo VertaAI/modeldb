@@ -1,6 +1,7 @@
+import { LOCATION_CHANGE } from 'connected-react-router';
+
 import { Reducer } from 'redux';
 import { ILocationState } from './types';
-import { LOCATION_CHANGE } from 'connected-react-router';
 
 const initialState: ILocationState = {
   projectId: undefined,
