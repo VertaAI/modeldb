@@ -123,7 +123,7 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           <div className={styles.record_summary_meta}>
             <this.RenderModelMeta label="Id" value={data.id} />
             <this.RenderModelMeta
-              label="Experement"
+              label="Experiment"
               value={data.experimentId}
             />
             <this.RenderModelMeta label="Project" value={data.projectId} />
