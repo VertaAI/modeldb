@@ -32,10 +32,7 @@ class ArtifactsColDef extends React.Component<any> {
                   modelRecordId: id,
                 })}
               >
-                <div
-                  className={styles.artifact_wrapper}
-                  title="view ModelRecord"
-                >
+                <div className={styles.artifact_wrapper} title="view Artifacts">
                   <div className={styles.notif}>
                     <Icon className={styles.notif_icon} type={icon} />
                   </div>

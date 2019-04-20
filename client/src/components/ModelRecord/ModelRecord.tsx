@@ -105,72 +105,78 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
             <div className={styles.record_label}>Name</div>
             <div className={styles.record_name}>{data.name}</div>
             <br />
-            {data.tags && <div className={styles.record_label}>Tags</div>}
-            <div>
-              {data.tags &&
-                data.tags.map((value: string, key: number) => {
-                  return (
-                    <div className={styles.tags} key={key}>
-                      <span className={tagStyles.staticTag}>{value}</span>
-                    </div>
-                  );
-                })}
-            </div>
+            {data.tags && data.tags.length > 0 && (
+              <div>
+                <div className={styles.record_label}>Tags</div>
+                <div>
+                  {data.tags.map((value: string, key: number) => {
+                    return (
+                      <div className={styles.tags} key={key}>
+                        <span className={tagStyles.staticTag}>{value}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           <div className={styles.record_summary_meta}>
-            <this.RenderModelMeta label="Id: &nbsp;" value={data.id} />
+            <this.RenderModelMeta label="Id" value={data.id} />
             <this.RenderModelMeta
-              label="Experement: &nbsp;"
+              label="Experement"
               value={data.experimentId}
             />
-            <this.RenderModelMeta
-              label="Project: &nbsp;"
-              value={data.projectId}
-            />
+            <this.RenderModelMeta label="Project" value={data.projectId} />
           </div>
         </div>
-        {data.codeVersion! && (
+        {data.codeVersion && (
           <this.Record header="Code version">{data.codeVersion}</this.Record>
         )}
-        {data.hyperparameters && (
+        {data.hyperparameters && data.hyperparameters.length > 0 && (
           <this.Record header="Hyperparameters">
-            {data.hyperparameters.map((value: IHyperparameter, key: number) => {
+            {data.hyperparameters.map((val: IHyperparameter, key: number) => {
               return (
                 <div key={key}>
-                  {value.key}: {value.value}
+                  <this.RenderModelMeta label={val.key} value={val.value} />
                 </div>
               );
             })}
           </this.Record>
         )}
-        {data.metrics && (
+        {data.metrics && data.metrics.length > 0 && (
           <this.Record header="Metrics">
-            {data.metrics.map((value: IMetric, key: number) => {
+            {data.metrics.map((val: IMetric, key: number) => {
               return (
                 <div key={key}>
-                  {value.key}: {value.value}
+                  <this.RenderModelMeta label={val.key} value={val.value} />
                 </div>
               );
             })}
           </this.Record>
         )}
-        {data.artifacts && (
+        {data.artifacts && data.artifacts.length > 0 && (
           <this.Record header="Artifacts">
             {data.artifacts.map((value: IArtifact, key: number) => {
               return (
                 <div key={key}>
-                  {value.key}: <ShowContentBasedOnUrl path={value.path} />
+                  <this.RenderModelMeta
+                    label={value.key}
+                    children={<ShowContentBasedOnUrl path={value.path} />}
+                  />
                 </div>
               );
             })}
           </this.Record>
         )}
-        {data.datasets && (
+        {data.datasets && data.datasets.length > 0 && (
           <this.Record header="Datasets">
             {data.datasets.map((value: IArtifact, key: number) => {
               return (
                 <div key={key}>
-                  {value.key}: <ShowContentBasedOnUrl path={value.path} />
+                  <this.RenderModelMeta
+                    label={value.key}
+                    children={<ShowContentBasedOnUrl path={value.path} />}
+                  />
                 </div>
               );
             })}
@@ -186,13 +192,19 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
           additionalContainerClassName={styles.record_divider}
         />
         {(!deployState || deployState.status !== 'deployed') && (
-          <div className={styles.record_header}>No monitoring information</div>
+          <div className={styles.notDeployedMsg}>
+            <i className="fa fa-exclamation-triangle" />
+            <span>No monitoring information</span>
+          </div>
         )}
         {alreadyDeployed &&
           (!this.props.serviceStatistics ||
             !this.props.serviceStatistics.time) && (
-            <div className={styles.record_header}>
-              No monitoring information in the time window considered
+            <div className={styles.notDeployedMsg}>
+              <i className="fa fa-exclamation-triangle" />
+              <span>
+                No monitoring information in the time window considered
+              </span>
             </div>
           )}
         {alreadyDeployed &&
@@ -278,12 +290,20 @@ class ModelRecordLayout extends React.PureComponent<AllProps> {
     );
   }
   // tslint:disable-next-line:function-name
-  private RenderModelMeta(props: { label: string; value: string }) {
-    const { label, value } = props;
+  private RenderModelMeta(props: {
+    label: string;
+    value?: string | number;
+    children?: React.ReactNode;
+  }) {
+    const { label, value, children } = props;
     return (
       <div className={styles.meta_block}>
-        <div className={styles.meta_label}>{label}</div>
-        <div className={styles.meta_value}>{value}</div>
+        <div className={styles.meta_label}>{`${label} :`}</div>
+        {value ? (
+          <div className={styles.meta_value}>{value}</div>
+        ) : (
+          <div>{children}</div>
+        )}
       </div>
     );
   }

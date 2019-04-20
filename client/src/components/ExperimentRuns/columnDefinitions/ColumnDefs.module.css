@@ -222,21 +222,16 @@
 .dataset_wrapper {
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: 10px 70px 84px;
+  grid-template-columns: 10px 120px;
   background-color: #fff;
   color: #444;
-  line-height: 16px !important;
-  margin-bottom: 15px;
-  padding: 10px 20px 10px 10px;
+  line-height: 12px !important;
+  margin-bottom: 7px;
+  padding: 7px 15px 7px 7px;
   border: solid 1px lightgrey;
   border-radius: 5px;
-  white-space: pre-wrap;
   font-size: 0.9em;
-}
-
-.dataset_wrapper:hover {
-  /* border: solid 1px var(--main-color2); */
-  /* cursor: pointer; */
+  max-width: 150px;
 }
 
 .model_name {

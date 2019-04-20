@@ -17,8 +17,7 @@
   width: 280px;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0 1px 10px 0 rgba(146, 146, 146, 0.25),
-    0 0 0.5px 0 rgba(211, 211, 211, 0.32);
+  box-shadow: 0px 1px 2px 0px rgba(9, 30, 66, 0.25);
   outline: none;
   animation-name: modalFade;
   animation-duration: 0.3s;

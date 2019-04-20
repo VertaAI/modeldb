@@ -20,14 +20,7 @@ class DatasetsColDef extends React.Component<any> {
                 <div className={styles.notif}>
                   <Icon className={styles.notif_icon} type="database" />
                 </div>
-                <div className={styles.type}>
-                  {`DATA`} &nbsp; &nbsp; &nbsp; ->{' '}
-                </div>
-                <div className={styles.key}>{dataset.key}</div>
-                <div className={styles.path}>
-                  <span className={styles.path_label}>PATH : &nbsp;</span>
-                  {dataset.path}
-                </div>
+                <div className={styles.artifactKey}>{dataset.key}</div>
               </div>
             );
           })}
