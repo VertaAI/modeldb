@@ -1,0 +1,7 @@
+Run
+ kubectl port-forward modeldb-frontend-**********-***** 3000
+to access modeldb frontend at
+ localhost:3000
+
+To initialize modeldb-client use 
+ HOST = http://localhost:3000

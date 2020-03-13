@@ -1,0 +1,368 @@
+syntax = "proto3";
+
+package ai.verta.modeldb;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
+
+option java_multiple_files = true;
+
+import "protos/public/common/CommonService.proto";
+import "protos/public/modeldb/CommonService.proto";
+import "google/api/annotations.proto";
+import "protos/public/modeldb/ExperimentService.proto";
+import "protos/public/modeldb/ExperimentRunService.proto";
+
+message Dataset {
+    string id = 1;//For backend reference
+    string name = 2;
+    string owner = 3;
+    string description = 4;
+    repeated string tags = 5;
+    DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 6;
+    DatasetTypeEnum.DatasetType dataset_type = 7;
+    repeated common.KeyValue attributes = 8;
+    uint64 time_created = 9;
+    uint64 time_updated = 10;
+    string workspace_id = 11;
+    WorkspaceTypeEnum.WorkspaceType workspace_type = 12;
+}
+
+message DatasetTypeEnum {
+    enum DatasetType{
+        RAW = 0;// default
+        PATH = 1;
+        QUERY = 2;
+    }
+}
+
+message DatasetVisibilityEnum {
+    enum DatasetVisibility {
+        PRIVATE = 0;// default
+        PUBLIC = 1;
+        ORG_SCOPED_PUBLIC = 2;
+    }
+}
+
+message CreateDataset {
+    string name = 1;
+    string description = 2;
+    repeated string tags = 3;
+    repeated common.KeyValue attributes = 4;
+    DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 5;
+    DatasetTypeEnum.DatasetType dataset_type = 6;
+    string workspace_name = 7;
+    uint64 time_created = 8;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+//getAllDataset
+message GetAllDatasets {
+    //For pagination
+    int32 page_number = 1;
+    int32 page_limit = 2;
+    bool ascending = 3;
+    string sort_key = 4;
+    string workspace_name = 7;
+    message Response {
+        repeated Dataset datasets = 1;
+        uint64 total_records = 2;
+    }
+}
+
+//getDataset
+message GetDatasetById {
+    string id = 1;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+//getDatasetByName
+message GetDatasetByName {
+    string name = 1;
+    string workspace_name = 2;
+    message Response {
+        Dataset dataset_by_user = 1;
+        repeated Dataset shared_datasets = 2; // because of collaboration, this might be multiple datasets w/same name
+    }
+}
+
+message DeleteDataset {
+    string id = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message DeleteDatasets {
+    repeated string ids = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message FindDatasets {
+    repeated string dataset_ids = 1;
+    repeated KeyValueQuery predicates = 2;
+    bool ids_only = 3; // whether to return full experiment runs or ids only
+    string workspace_name = 8;
+
+    //For pagination
+    int32 page_number = 4;
+    int32 page_limit = 5;
+    bool ascending = 6;
+    string sort_key = 7;
+
+    message Response {
+        repeated Dataset datasets = 1;
+        int64 total_records = 2;
+    }
+}
+
+message UpdateDatasetName {
+    string id = 1;
+    string name = 2;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+message UpdateDatasetDescription {
+    string id = 1;
+    string description = 2;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+message AddDatasetTags {
+    string id = 1;
+    repeated string tags = 2;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+message DeleteDatasetTags {
+    string id = 1;
+    repeated string tags = 2;
+    bool delete_all = 3;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+message AddDatasetAttributes {
+    string id = 1;
+    repeated common.KeyValue attributes = 2;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+message UpdateDatasetAttributes {
+    string id = 1;
+    common.KeyValue attribute = 2;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+message GetDatasetAttributes {
+    string id = 1;
+
+    message Response {
+        repeated common.KeyValue attributes = 1;
+    }
+}
+
+message DeleteDatasetAttributes {
+    string id = 1;
+    repeated string attribute_keys = 2;
+    bool delete_all = 3;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+message SetDatasetVisibilty {
+    string id = 1;
+    DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 2;
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+message LastExperimentByDatasetId{
+    string dataset_id = 1;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message GetExperimentRunByDataset {
+    string dataset_id = 1;
+
+    message Response {
+        repeated ExperimentRun experiment_runs = 1;
+    }
+}
+
+message SetDatasetWorkspace {
+    string id = 1;
+    string workspace_name = 2;
+
+
+    message Response {
+        Dataset dataset = 1;
+    }
+}
+
+service DatasetService {
+    rpc createDataset (CreateDataset) returns (CreateDataset.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/createDataset"
+            body: "*"
+        };
+    };
+
+    rpc getAllDatasets (GetAllDatasets) returns (GetAllDatasets.Response) {
+        option (google.api.http) = {
+            get: "/v1/dataset/getAllDatasets"
+        };
+    };
+
+    rpc getDatasetById (GetDatasetById) returns (GetDatasetById.Response) {
+        option (google.api.http) = {
+            get: "/v1/dataset/getDatasetById"
+        };
+    };
+
+    rpc getDatasetByName (GetDatasetByName) returns (GetDatasetByName.Response) {
+        option (google.api.http) = {
+            get: "/v1/dataset/getDatasetByName"
+        };
+    };
+
+    rpc deleteDataset (DeleteDataset) returns (DeleteDataset.Response) {
+        option (google.api.http) = {
+            delete: "/v1/dataset/deleteDataset"
+            body: "*"
+        };
+    };
+
+    rpc deleteDatasets (DeleteDatasets) returns (DeleteDatasets.Response) {
+        option (google.api.http) = {
+            delete: "/v1/dataset/deleteDatasets"
+            body: "*"
+        };
+    };
+
+    // queries
+    rpc findDatasets(FindDatasets) returns (FindDatasets.Response){
+        option (google.api.http) = {
+            post: "/v1/dataset/findDatasets"
+            body: "*"
+        };
+    };
+
+    rpc updateDatasetName (UpdateDatasetName) returns (UpdateDatasetName.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/updateDatasetName"
+            body: "*"
+        };
+    };
+
+    rpc updateDatasetDescription (UpdateDatasetDescription) returns (UpdateDatasetDescription.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/updateDatasetDescription"
+            body: "*"
+        };
+    };
+
+    rpc addDatasetTags(AddDatasetTags) returns (AddDatasetTags.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/addDatasetTags"
+            body: "*"
+        };
+    };
+
+    rpc getDatasetTags(GetTags) returns (GetTags.Response) {
+        option (google.api.http) = {
+            get: "/v1/dataset/getDatasetTags"
+        };
+    };
+
+    rpc deleteDatasetTags(DeleteDatasetTags) returns (DeleteDatasetTags.Response) {
+        option (google.api.http) = {
+            delete: "/v1/dataset/deleteDatasetTags"
+            body: "*"
+        };
+    };
+
+    rpc addDatasetAttributes(AddDatasetAttributes) returns (AddDatasetAttributes.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/addDatasetAttributes"
+            body: "*"
+        };
+    };
+
+    rpc updateDatasetAttributes(UpdateDatasetAttributes) returns (UpdateDatasetAttributes.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/updateDatasetAttributes"
+            body: "*"
+        };
+    };
+
+    rpc getDatasetAttributes(GetAttributes) returns (GetAttributes.Response) {
+        option (google.api.http) = {
+            get: "/v1/dataset/getDatasetAttributes"
+        };
+    };
+
+    rpc deleteDatasetAttributes(DeleteDatasetAttributes) returns (DeleteDatasetAttributes.Response) {
+        option (google.api.http) = {
+            delete: "/v1/dataset/deleteDatasetAttributes"
+        };
+    };
+
+    rpc setDatasetVisibility(SetDatasetVisibilty) returns (SetDatasetVisibilty.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/setDatasetVisibility"
+            body: "*"
+        };
+    };
+
+    rpc getLastExperimentByDatasetId(LastExperimentByDatasetId) returns (LastExperimentByDatasetId.Response){
+        option (google.api.http) = {
+            get: "/v1/dataset/getLastExperimentByDatasetId"
+        };
+    };
+
+    rpc getExperimentRunByDataset(GetExperimentRunByDataset) returns (GetExperimentRunByDataset.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/getExperimentRunByDataset"
+            body: "*"
+        };
+    };
+    rpc setDatasetWorkspace(SetDatasetWorkspace) returns (SetDatasetWorkspace.Response) {
+        option (google.api.http) = {
+            post: "/v1/dataset/setDatasetWorkspace"
+            body: "*"
+        };
+    };
+}

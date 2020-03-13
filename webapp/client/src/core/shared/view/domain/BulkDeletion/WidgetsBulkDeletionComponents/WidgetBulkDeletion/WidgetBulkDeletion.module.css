@@ -1,0 +1,41 @@
+.root {
+  position: relative;
+}
+
+.muted_widget {
+  pointer-events: none;
+}
+
+.entity {
+}
+
+.entity_selected {
+  border-left: 40px solid var(--delete-color2);
+  transition-delay: 1s;
+  transition: border 160ms ease-in-out;
+  opacity: 0.7;
+}
+
+.deleting_deleting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.togglerContainer {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+  left: 0;
+  top: 50%;
+  height: 100%;
+  transform: translateX(50%) translateY(-50%);
+}
+
+.hideToggler {
+  display: none;
+}
+
+.trash_icon {
+  color: var(--main-color3);
+}

@@ -1,0 +1,39 @@
+.compare_code {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 5px;
+}
+
+.key_value_pairs {
+}
+.key_value_pair {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-gap: 5px;
+}
+.key {
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--tex-color-grey);
+}
+.value {
+  color: var(--text-color2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.monospace_text {
+  display: inline-block;
+  margin-bottom: -3px;
+  font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace !important;
+  font-size: 90%;
+}
+
+.truncated_text {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

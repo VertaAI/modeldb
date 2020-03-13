@@ -1,0 +1,93 @@
+.root {
+  position: relative;
+  color: var(--fr-color2);
+}
+
+.title {
+  margin: 0px;
+  font-size: 13px;
+  margin-bottom: 7px;
+  line-height: 12px;
+  color: var(--text-color5);
+}
+
+.user_bar {
+  text-align: right;
+}
+
+.dashboard_cog {
+  font-size: 18px;
+  color: grey;
+  cursor: pointer;
+  transition: all 0.25s ease-out;
+}
+
+.dashboard_cog:hover {
+  color: var(--main-color2);
+}
+
+.drop_down {
+  font-family: Roboto;
+  position: absolute;
+  background-color: var(--bg-color3);
+  border: solid 1px lightgray;
+  margin-top: 20px;
+  padding: 25px 20px 20px 20px;
+  font-size: 12px;
+  width: 200px;
+  right: 0;
+  z-index: 100;
+}
+
+.menu_items {
+  margin: 20px 0;
+}
+.menu_items:last-of-type {
+  margin-bottom: 0;
+}
+.menu_items a {
+  text-decoration: none;
+  color: var(--fr-color3);
+}
+.menu_items a:hover {
+  color: var(--fr-color2);
+}
+.menu_items:last-of-type a {
+  color: var(--fr-color4);
+}
+.menu_items:last-of-type a:hover {
+  color: var(--fr-color3);
+}
+
+.menu_item {
+  display: flex;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+.menu_item:last-child {
+  margin-bottom: 0;
+}
+
+.menu_item_label {
+  font-size: 14px;
+  margin-left: 25px;
+  cursor: pointer;
+}
+
+.menu_header {
+  display: grid;
+  grid-template-columns: 60px auto;
+  border-bottom: 1px solid #cccccc;
+  padding-bottom: 16px;
+  align-items: center;
+}
+
+.menu_header_user_name {
+  display: inline-block;
+  margin-right: 0.5em;
+}
+
+.input_style {
+  padding: 10px;
+  font-size: 2em;
+}

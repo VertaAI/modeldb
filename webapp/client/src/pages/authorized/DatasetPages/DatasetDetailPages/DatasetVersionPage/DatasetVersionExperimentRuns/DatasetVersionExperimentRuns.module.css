@@ -1,0 +1,36 @@
+.root {
+}
+
+.root th div {
+  display: flex;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.root td {
+  text-align: center;
+}
+
+.experiment_run_link {
+  display: block;
+  color: var(--main-color2);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.experiment_run_id_wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.experiment_run_id {
+  color: black;
+}
+
+.copy_id {
+  margin-left: 5px;
+}

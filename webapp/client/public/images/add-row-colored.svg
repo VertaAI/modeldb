@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="117px" height="81px" viewBox="0 0 117 81" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 58 (84663) - https://sketch.com -->
+    <title>add-row-colored</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Buttons,-Icon-buttons,-Links" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="3c-Organizations---Create-New-Org" transform="translate(-189.000000, -468.000000)">
+            <g id="add-row-colored" transform="translate(189.000000, 468.000000)">
+                <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" points="1.5 1.5 112.5 1.5 112.5 40.5 1.5 40.5"></polygon>
+                <path d="M111,3 L111,39 L3,39 L3,3 L111,3 M114,0 L0,0 L0,42 L114,42 L114,0 Z" id="Shape" fill="#514EB5" fill-rule="nonzero"></path>
+                <path d="M90,79.5 C75.9375,79.5 64.5,68.0625 64.5,54 C64.5,39.9375 75.9375,28.5 90,28.5 C104.0625,28.5 115.5,39.9375 115.5,54 C115.5,68.0625 104.0625,79.5 90,79.5 Z" id="Path" fill="#C1C0DF" fill-rule="nonzero"></path>
+                <path d="M90,30 C103.230468,30 114,40.769532 114,54 C114,67.230468 103.230468,78 90,78 C76.769532,78 66,67.230468 66,54 C66,40.769532 76.769532,30 90,30 M90,27 C75.082032,27 63,39.082032 63,54 C63,68.917968 75.082032,81 90,81 C104.917968,81 117,68.917968 117,54 C117,39.082032 104.917968,27 90,27 Z" id="Shape" fill="#514EB5" fill-rule="nonzero"></path>
+                <path d="M90,69 L90,39" id="Path" stroke="#FFFFFF" stroke-width="6"></path>
+                <path d="M75,54 L105,54" id="Path" stroke="#FFFFFF" stroke-width="6"></path>
+            </g>
+        </g>
+    </g>
+</svg>

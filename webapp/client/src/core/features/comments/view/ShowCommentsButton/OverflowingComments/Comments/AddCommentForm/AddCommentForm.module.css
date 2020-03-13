@@ -1,0 +1,34 @@
+.root {
+  display: flex;
+  padding: var(--common-padding);
+  border-top: 1px solid var(--border-color1);
+}
+
+.preloader {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.input {
+  width: 100%;
+  text-align: center;
+}
+.input_error {
+  margin-top: 4px;
+  color: var(--error-color1);
+}
+
+.leftContent {
+  margin-right: 16px;
+}
+
+.rightContent {
+  flex-grow: 1;
+}
+
+.addButton {
+  margin-top: 5px;
+}

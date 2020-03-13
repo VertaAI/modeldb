@@ -1,0 +1,61 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  position: fixed;
+  bottom: 0;
+  width: var(--sidebar-width);
+  height: 100%;
+  background-color: var(--bg-color3);
+  user-select: none;
+}
+
+.mainNavigation {
+  position: relative;
+  padding-bottom: 16px;
+  margin-bottom: 32px;
+}
+.mainNavigation:after {
+  display: block;
+  content: '';
+  position: absolute;
+  height: 1px;
+  width: calc(100% - var(--layout-horizontal-padding) * 2);
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  background-color: #aaaaaa;
+}
+
+.filters {
+  min-height: 0;
+}
+
+.additionalLinks {
+  margin-top: auto;
+  padding-bottom: 28px;
+}
+
+.collapseSidebarButton {
+  position: absolute;
+  display: inline-flex;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  top: 50%;
+  transform: translate(50%, -50%);
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid #dedede;
+  font-size: 14px;
+  color: #979797;
+  cursor: pointer;
+  background-color: #ffffff;
+}
+.collapseSidebarButton:after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 50px;
+}

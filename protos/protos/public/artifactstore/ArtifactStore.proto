@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package ai.verta.artifactstore;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/artifactstore";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+
+/*
+ * ArtifactStore Entity..
+ */
+
+message StoreArtifact {
+    string key = 1;
+    string path = 2;
+
+    message Response {
+        string artifact_store_key = 1;
+        string artifact_store_path = 2;
+    }
+}
+
+message StoreArtifactWithStream {
+    string key = 1;
+    bytes client_file = 2;
+
+    message Response {
+        string cloud_file_key = 1;
+        string cloud_file_path = 2;
+    }
+}
+
+message GetArtifact {
+    string key = 1;
+
+    message Response {
+        bytes contents = 1;
+    }
+}
+
+message DeleteArtifact {
+    string key = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+service ArtifactStore {
+
+    rpc storeArtifact(StoreArtifact) returns (StoreArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/artifact/storeArtifact"
+            body: "*"
+        };
+    };
+
+    rpc storeArtifactWithStream(StoreArtifactWithStream) returns (StoreArtifactWithStream.Response) {
+        option (google.api.http) = {
+            post: "/v1/artifact/storeArtifactWithStream"
+            body: "*"
+        };
+    };
+
+    rpc getArtifact(GetArtifact) returns (GetArtifact.Response) {
+        option (google.api.http) = {
+            get: "/v1/artifact/getArtifact"
+        };
+    };
+
+    rpc deleteArtifact(DeleteArtifact) returns (DeleteArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/artifact/deleteArtifact"
+            body: "*"
+        };
+    };
+}

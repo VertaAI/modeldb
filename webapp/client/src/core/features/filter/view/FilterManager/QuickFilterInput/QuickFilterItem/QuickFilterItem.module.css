@@ -1,0 +1,35 @@
+.root {
+  display: grid;
+  grid-template-columns: 24px auto 24px;
+  border-bottom: solid 1px var(--fr-color5);
+  height: 40px;
+  align-items: center;
+  color: var(--fr-color3);
+  font-size: 13px;
+  background-color: var(--bg-color3);
+  cursor: pointer;
+}
+
+.root:last-of-type {
+  border-bottom: none;
+}
+
+.filter_icon {
+  color: var(--fr-color4);
+  font-size: 9px;
+  justify-self: center;
+}
+
+.add_button {
+  color: var(--fr-color1);
+  font-size: 17pt;
+  justify-self: start;
+}
+
+.add_button:hover {
+  cursor: pointer;
+}
+
+.prop_text::first-letter {
+  text-transform: uppercase;
+}

@@ -1,0 +1,20 @@
+.root {
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 var(--header-horizontal-padding);
+  margin-right: auto;
+  color: #999999;
+  font-weight: 500;
+}
+
+.edit {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  margin-right: var(--header-horizontal-padding);
+  cursor: pointer;
+}

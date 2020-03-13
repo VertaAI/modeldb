@@ -1,0 +1,40 @@
+.root {
+}
+
+.list_block {
+  font-size: 13px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+}
+
+.scroll_down_marker {
+  margin: -15px 45% 0;
+  width: 30%;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(9, 30, 66, 0.08),
+    0 2px 4px 1px rgba(9, 30, 66, 0.08);
+  background-color: white;
+  transition: all 0.15s ease-out;
+  cursor: pointer;
+}
+
+.scroll_icon {
+  font-size: 12px;
+  position: relative;
+  left: 6px;
+  top: 6px;
+}
+
+.list_field_value {
+  margin: 5px;
+  padding: 3px;
+  display: inline-flex;
+  background-color: var(--grey-lightest);
+  border-bottom: 1px solid var(--fr-color5);
+  border-radius: 3px;
+}

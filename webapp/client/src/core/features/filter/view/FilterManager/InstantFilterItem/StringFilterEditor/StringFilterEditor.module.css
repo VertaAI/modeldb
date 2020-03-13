@@ -1,0 +1,13 @@
+.root {
+}
+
+.invert {
+  text-align: end;
+  font-size: var(--font-size3);
+  color: var(--text-color3);
+  margin-top: 4px;
+}
+
+.invert label {
+  margin-left: 4px;
+}

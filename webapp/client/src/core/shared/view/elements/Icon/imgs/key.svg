@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="23px" height="12px" viewBox="0 0 23 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="Share" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Share&amp;Collaboration_States" transform="translate(-633.000000, -312.000000)">
+            <g id="Group-3" transform="translate(623.000000, 298.000000)">
+                <rect id="Rectangle" x="0" y="0" width="40" height="40"></rect>
+                <path d="M21.6585886,18 L31,18 L33,20 L31,23 L30,22 L29,22 L27,21 L24,23 L22,22 L21.5798575,22.2100712 C20.6998188,24.4300717 18.5332476,26 16,26 C12.6862915,26 10,23.3137085 10,20 C10,16.6862915 12.6862915,14 16,14 C18.6124377,14 20.8349158,15.6696153 21.6585886,18 Z M16,22 C17.1045695,22 18,21.1045695 18,20 C18,18.8954305 17.1045695,18 16,18 C14.8954305,18 14,18.8954305 14,20 C14,21.1045695 14.8954305,22 16,22 Z" id="Combined-Shape" fill="currentColor"></path>
+            </g>
+        </g>
+    </g>
+</svg>

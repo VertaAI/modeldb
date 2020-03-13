@@ -1,0 +1,7 @@
+.git
+.idea
+node_modules
+client/node_modules
+build
+*~
+*.swp

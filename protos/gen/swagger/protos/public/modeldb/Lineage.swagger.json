@@ -1,0 +1,373 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protos/public/modeldb/Lineage.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/lineage/addLineage": {
+      "post": {
+        "operationId": "addLineage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbAddLineageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbAddLineage"
+            }
+          }
+        ],
+        "tags": [
+          "LineageService"
+        ]
+      }
+    },
+    "/lineage/deleteLineage": {
+      "post": {
+        "operationId": "deleteLineage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteLineageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteLineage"
+            }
+          }
+        ],
+        "tags": [
+          "LineageService"
+        ]
+      }
+    },
+    "/lineage/findAllInputs": {
+      "post": {
+        "operationId": "findAllInputs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbFindAllInputsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbFindAllInputs"
+            }
+          }
+        ],
+        "tags": [
+          "LineageService"
+        ]
+      }
+    },
+    "/lineage/findAllInputsOutputs": {
+      "post": {
+        "operationId": "findAllInputsOutputs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbFindAllInputsOutputsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbFindAllInputsOutputs"
+            }
+          }
+        ],
+        "tags": [
+          "LineageService"
+        ]
+      }
+    },
+    "/lineage/findAllOutputs": {
+      "post": {
+        "operationId": "findAllOutputs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbFindAllOutputsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbFindAllOutputs"
+            }
+          }
+        ],
+        "tags": [
+          "LineageService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "LineageEntryEnumLineageEntryType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "EXPERIMENT_RUN",
+        "DATASET_VERSION"
+      ],
+      "default": "UNKNOWN"
+    },
+    "modeldbAddLineage": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntry"
+          }
+        },
+        "output": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntry"
+          }
+        }
+      },
+      "description": "Add every item of \"input\" as a parent of every item on \"output\"."
+    },
+    "modeldbAddLineageResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "modeldbDeleteLineage": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntry"
+          }
+        },
+        "output": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntry"
+          }
+        }
+      },
+      "description": "Delete every item of \"input\" as a parent of every item on \"output\"."
+    },
+    "modeldbDeleteLineageResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "modeldbFindAllInputs": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntry"
+          }
+        }
+      },
+      "description": "For each item provided, list its inputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.inputs will contain N elements, where each element\nis the set of inputs for the corresponding i-th item provided in the\nrequest."
+    },
+    "modeldbFindAllInputsOutputs": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntry"
+          }
+        }
+      },
+      "description": "For each item provided, list its inputs and outputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.inputs and Response.outputs will contain N elements each, where each element\nis the set of inputs and outputs for the corresponding i-th item provided in the\nrequest."
+    },
+    "modeldbFindAllInputsOutputsResponse": {
+      "type": "object",
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntryBatch"
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntryBatch"
+          }
+        }
+      }
+    },
+    "modeldbFindAllInputsResponse": {
+      "type": "object",
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntryBatch"
+          }
+        }
+      }
+    },
+    "modeldbFindAllOutputs": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntry"
+          }
+        }
+      },
+      "description": "For each item provided, list its outputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.outputs will contain N elements, where each element\nis the set of outputs for the corresponding i-th item provided in the\nrequest."
+    },
+    "modeldbFindAllOutputsResponse": {
+      "type": "object",
+      "properties": {
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntryBatch"
+          }
+        }
+      }
+    },
+    "modeldbLineageEntry": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/LineageEntryEnumLineageEntryType"
+        },
+        "external_id": {
+          "type": "string",
+          "title": "External ID of the item for the given type, if compatible"
+        }
+      }
+    },
+    "modeldbLineageEntryBatch": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntry"
+          }
+        }
+      },
+      "description": "Represent a set of lineage items, essentially an array so that it can be embedded on other proto messages."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

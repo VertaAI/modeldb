@@ -1,0 +1,35 @@
+.root {
+  display: flex;
+  align-items: center;
+}
+
+.compare_entities_button {
+  margin-right: 10px;
+}
+
+.item {
+  display: inline-flex;
+  height: 100%;
+  align-items: center;
+  width: 125px;
+  margin-right: 5px;
+  padding: 8px 10px;
+  font-size: 15px;
+  background-color: white;
+  color: var(--fr-color3);
+}
+.item:last-child {
+  margin-right: 0;
+}
+
+.item_unselect {
+  color: var(--text-color4);
+  cursor: pointer;
+  margin-right: 6px;
+}
+
+.item_value {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

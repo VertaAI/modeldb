@@ -1,0 +1,150 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.preloader {
+}
+
+.deleting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 0.9fr 1fr;
+  padding-bottom: 12px;
+}
+
+.summary_main {
+  grid-row: 2;
+  color: var(--fr-color3);
+  line-height: 18px;
+}
+
+.id {
+  font-size: 22px;
+  color: var(--fr-color25);
+  margin-bottom: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.description {
+}
+
+.tags {
+  margin-top: 20px;
+}
+
+.summary_meta {
+  grid-row: 2;
+  font-size: 15px;
+  line-height: 18px;
+}
+
+.summary_meta_record {
+  padding: 2px 0;
+  display: grid;
+  grid-template-columns: 80px auto;
+  grid-column-gap: 10px;
+}
+.summary_meta_record_label {
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  align-self: center;
+  color: rgb(141, 141, 141);
+}
+.summary_meta_record_value {
+  color: var(--fr-color2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.dataset {
+  display: flex;
+}
+.dataset_name {
+  flex-grow: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.dataset_id {
+}
+
+.record {
+  display: grid;
+  grid-template-columns: 140px auto;
+  grid-template-rows: 13px auto 12px;
+  border-width: 1px 0 0 0;
+  border-color: var(--border-color1);
+  border-style: solid;
+  align-items: top;
+}
+
+.record_vertical {
+  display: flex;
+  flex-direction: column;
+  padding-top: 13px;
+  padding-bottom: 12px;
+}
+
+.record:first-child {
+  border: none;
+}
+
+.record_label {
+  grid-row: 2;
+  color: var(--fr-color25);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+}
+.record_vertical .record_label {
+  margin-bottom: 20px;
+}
+
+.record_value {
+  grid-row: 2;
+  color: var(--fr-color3);
+  font-size: 16px;
+  line-height: 16px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.location_type_value {
+  text-transform: uppercase;
+}
+.path_info_grid_wrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 300px;
+  max-width: 700px;
+  border: solid 1px var(--border-color1);
+}
+
+.monospace_text {
+  display: inline-block;
+  margin-bottom: -3px;
+  font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace !important;
+  font-size: 90%;
+}
+
+.experiment_run_link {
+  display: block;
+  color: var(--main-color2);
+  text-decoration: none;
+}
+.experiment_run_id {
+  color: black;
+}

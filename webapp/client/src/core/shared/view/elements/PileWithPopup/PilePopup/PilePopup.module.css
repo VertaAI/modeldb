@@ -1,0 +1,51 @@
+.root {
+  display: grid;
+  grid-template-rows: auto auto;
+  padding: 1em;
+}
+
+.fields {
+}
+
+.field {
+  display: grid;
+  display: grid;
+  grid-template-columns: 1fr 6fr;
+  grid-column-gap: 5px;
+  padding: 10px 0px;
+  font-size: 13.6px;
+}
+.field__label {
+  margin-left: 1em;
+  color: var(--text-color3);
+}
+.field__value {
+  align-self: center;
+  color: var(--text-color2);
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.splittedContent {
+  display: flex;
+  padding: 1em;
+  font-size: 0.85em;
+}
+.splittedContent_left {
+  width: 50%;
+  padding-right: 5px;
+  border-right: 1px solid var(--border-color1);
+}
+.splittedContent_right {
+  padding-left: 5px;
+  width: 50%;
+}

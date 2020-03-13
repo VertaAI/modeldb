@@ -1,0 +1,404 @@
+syntax = "proto3";
+
+package ai.verta.modeldb;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
+
+option java_multiple_files = true;
+
+import "protos/public/common/CommonService.proto";
+import "protos/public/modeldb/CommonService.proto";
+import "google/api/annotations.proto";
+
+/*
+*   Experiment Entity
+*/
+
+message Experiment {
+    string id = 1;
+    string project_id = 2;
+    string name = 3;
+    string description = 4;
+    int64 date_created = 5;
+    int64 date_updated = 6;
+
+    repeated common.KeyValue attributes = 20;
+    repeated string tags = 21;
+    string owner = 22;
+    CodeVersion code_version_snapshot = 23;
+    repeated Artifact artifacts = 24;
+}
+
+message GetExperimentsInProject {
+    string project_id = 1;
+    int32 page_number = 2;
+    int32 page_limit = 3;
+    bool ascending = 4;
+    string sort_key = 5;
+
+    message Response {
+        repeated Experiment experiments = 1;
+        int64 total_records = 2;
+    }
+}
+
+message GetExperimentById {
+    string id = 1;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message GetExperimentByName {
+    string name = 1;
+    string project_id = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message CreateExperiment {
+    string project_id  = 1;
+    string name = 2;
+    string description = 3;
+    int64 date_created = 4;
+    int64 date_updated = 5;
+
+    repeated common.KeyValue attributes = 20;
+    repeated string tags = 21;
+    repeated Artifact artifacts = 22;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message DeleteExperiment {
+    string id = 1;
+    message Response {
+        bool status = 1;
+    }
+}
+
+message UpdateExperimentNameOrDescription {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message UpdateExperimentName {
+    string id = 1;
+    string name = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message UpdateExperimentDescription {
+    string id = 1;
+    string description = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message AddExperimentTags {
+    string id = 1;
+    repeated string tags = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message DeleteExperimentTags {
+    string id = 1;
+    repeated string tags = 2;
+    bool delete_all = 3;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message AddExperimentTag {
+    string id = 1;
+    string tag = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message DeleteExperimentTag {
+    string id = 1;
+    string tag = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message AddExperimentAttributes {
+    string id = 1;
+    repeated common.KeyValue attributes = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message DeleteExperimentAttributes {
+    string id = 1;
+    repeated string attribute_keys = 2;
+    bool delete_all = 3;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+// code version
+message LogExperimentCodeVersion {
+    string id = 1;
+    CodeVersion code_version = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message GetExperimentCodeVersion {
+    string id = 1;
+
+    message Response {
+        CodeVersion code_version = 1;
+    }
+}
+
+message FindExperiments {
+    string project_id = 1;
+    repeated string experiment_ids = 2;
+    repeated KeyValueQuery predicates = 4;
+    bool ids_only = 5; // whether to return full experiment runs or ids only
+
+    //For pagination
+    int32 page_number = 6;
+    int32 page_limit = 7;
+    bool ascending = 9;
+    string sort_key = 10;
+
+    message Response {
+        repeated Experiment experiments = 1;
+        int64 total_records = 2;
+    }
+}
+
+// artifacts
+message LogExperimentArtifacts {
+    string id = 1;
+    repeated Artifact artifacts = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message DeleteExperimentArtifact {
+    string id = 1;
+    string key = 2;
+
+    message Response {
+        Experiment experiment = 1;
+    }
+}
+
+message DeleteExperiments {
+    repeated string ids = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+service ExperimentService {
+    rpc createExperiment(CreateExperiment) returns (CreateExperiment.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/createExperiment"
+            body: "*"
+        };
+    };
+
+    rpc updateExperimentNameOrDescription(UpdateExperimentNameOrDescription) returns (UpdateExperimentNameOrDescription.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/updateExperimentNameOrDescription"
+            body: "*"
+        };
+    };
+
+    rpc updateExperimentName(UpdateExperimentName) returns (UpdateExperimentName.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/updateExperimentName"
+            body: "*"
+        };
+    };
+
+    rpc updateExperimentDescription(UpdateExperimentDescription) returns (UpdateExperimentDescription.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/updateExperimentDescription"
+            body: "*"
+        };
+    };
+
+    rpc addExperimentTags(AddExperimentTags) returns (AddExperimentTags.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/addExperimentTags"
+            body: "*"
+        };
+    };
+
+    rpc getExperimentTags(GetTags) returns (GetTags.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment/getExperimentTags"
+        };
+    };
+
+    rpc deleteExperimentTags(DeleteExperimentTags) returns (DeleteExperimentTags.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment/deleteExperimentTags"
+            body: "*"
+        };
+    };
+
+    rpc addExperimentTag(AddExperimentTag) returns (AddExperimentTag.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/addExperimentTag"
+            body: "*"
+        };
+    };
+
+    rpc deleteExperimentTag(DeleteExperimentTag) returns (DeleteExperimentTag.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment/deleteExperimentTag"
+            body: "*"
+        };
+    };
+
+    rpc addAttribute(AddAttributes) returns (AddAttributes.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/addAttribute"
+            body: "*"
+        };
+    };
+
+    rpc addExperimentAttributes(AddExperimentAttributes) returns (
+        AddExperimentAttributes.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/addExperimentAttributes"
+            body: "*"
+        };
+    };
+
+    rpc getExperimentAttributes(GetAttributes) returns (GetAttributes.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment/getExperimentAttributes"
+        };
+    };
+
+    rpc deleteExperimentAttributes(DeleteExperimentAttributes) returns (
+        DeleteExperimentAttributes.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment/deleteExperimentAttributes"
+        };
+    };
+
+    // code version
+    rpc logExperimentCodeVersion(LogExperimentCodeVersion) returns (LogExperimentCodeVersion.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/logExperimentCodeVersion"
+            body: "*"
+        };
+    };
+
+    rpc getExperimentCodeVersion(GetExperimentCodeVersion) returns (GetExperimentCodeVersion.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment/getExperimentCodeVersion"
+        };
+    };
+
+    rpc getExperimentsInProject(GetExperimentsInProject) returns (GetExperimentsInProject.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment/getExperimentsInProject"
+        };
+    };
+
+    rpc getExperimentById(GetExperimentById) returns (GetExperimentById.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment/getExperimentById"
+        };
+    };
+
+    rpc getExperimentByName(GetExperimentByName) returns (GetExperimentByName.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment/getExperimentByName"
+        };
+    };
+
+    rpc deleteExperiment(DeleteExperiment) returns (DeleteExperiment.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment/deleteExperiment"
+            body: "*"
+        };
+    };
+
+    // artifacts
+    rpc getUrlForArtifact(GetUrlForArtifact) returns (GetUrlForArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/getUrlForArtifact"
+            body: "*"
+        };
+    };
+
+    // queries
+    rpc findExperiments(FindExperiments) returns (FindExperiments.Response){
+        option (google.api.http) = {
+            post: "/v1/experiment/findExperiments"
+            body: "*"
+        };
+    };
+
+    // artifacts
+    rpc logArtifacts(LogExperimentArtifacts) returns (LogExperimentArtifacts.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment/logArtifacts"
+            body: "*"
+        };
+    };
+
+    rpc getArtifacts(GetArtifacts) returns (GetArtifacts.Response) {
+        option (google.api.http) = {
+            get: "/v1/experiment/getArtifacts"
+        };
+    };
+
+    rpc deleteArtifact(DeleteExperimentArtifact) returns (DeleteExperimentArtifact.Response){
+        option (google.api.http) = {
+            delete: "/v1/experiment/deleteArtifact"
+            body: "*"
+        };
+    };
+
+    rpc deleteExperiments(DeleteExperiments) returns (DeleteExperiments.Response){
+        option (google.api.http) = {
+            delete: "/v1/experiment/deleteExperiments"
+            body: "*"
+        };
+    };
+}

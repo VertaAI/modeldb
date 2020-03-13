@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  vertademo:
+    build: ./
+    command: jupyter notebook /usr/src/app/workflows/demos/ --ip=0.0.0.0 --allow-root
+    ports:
+      - "8888:8888"

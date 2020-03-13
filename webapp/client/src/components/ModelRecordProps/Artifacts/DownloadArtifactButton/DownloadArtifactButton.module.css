@@ -1,0 +1,18 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.preloader {
+}
+
+.url_call_message {
+  margin-top: 10px;
+}
+
+.success_message {
+  font-size: 10px;
+  color: var(--success-green);
+}

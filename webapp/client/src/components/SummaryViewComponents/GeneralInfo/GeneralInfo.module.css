@@ -1,0 +1,22 @@
+.root {
+}
+
+.id_block {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: min-content min-content min-content;
+  column-gap: 5px;
+  align-items: center;
+}
+
+.id_label {
+  color: rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+}
+
+.id_value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}

@@ -1,0 +1,123 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.preloader {
+}
+
+.compared_models_manager {
+  margin-bottom: 5px;
+}
+
+.deleting_dataset_version_manager {
+  margin-bottom: 5px;
+}
+
+.table {
+  flex-grow: 1;
+  display: flex;
+}
+
+.dataset_id {
+  color: var(--fr-color1);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.parameter:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.parameter_label {
+  margin-bottom: 5px;
+  line-height: 12px;
+  color: var(--text-color5);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+}
+.parameter_label {
+  text-transform: capitalize;
+}
+
+.parameter_value {
+  color: black;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.array_parameter_values {
+  max-height: 150px;
+  overflow: auto;
+}
+
+.dataversion_type {
+  text-transform: uppercase;
+}
+
+.action_block {
+  display: grid;
+  grid-template-columns: 55px 40px;
+  grid-template-rows: 40px;
+  padding: 5px;
+  grid-column-gap: 5px;
+  -webkit-column-gap: 5px;
+  column-gap: 5px;
+  -webkit-align-items: center;
+  align-items: center;
+}
+.action_label {
+  line-height: 16px;
+  font-size: 11px;
+  color: var(--text-color5);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+:global td {
+  vertical-align: top !important;
+}
+
+.tags {
+  margin-top: 10px;
+}
+
+.monospace_text {
+  display: inline-block;
+  margin-bottom: -3px;
+  font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace !important;
+  font-size: 90%;
+}
+
+/* counter for -10% in font size for IDs to make the table consistent */
+.column_ids,
+.base_path_value {
+  font-size: 110% !important;
+}
+
+.draggrable_param_value {
+  display: inline-block;
+}
+
+.dashboard_actions {
+  display: flex;
+}
+
+.action_container {
+  display: grid;
+  grid-template-columns: 45px 40px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  align-items: center;
+}
+
+.dashboard_action_label {
+  font-size: 12px;
+  color: var(--text-color3);
+}

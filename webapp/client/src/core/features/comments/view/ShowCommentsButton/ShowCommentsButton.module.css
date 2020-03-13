@@ -1,0 +1,20 @@
+.root {
+  position: relative;
+}
+
+.miniCommentNumber {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin-top: -42px;
+  margin-left: 24px;
+  align-items: center;
+  min-width: 12px;
+  height: 14px;
+  border-radius: 2px;
+  font-size: 8px;
+  color: white;
+  background-color: var(--bg-color2);
+}

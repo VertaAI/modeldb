@@ -1,0 +1,29 @@
+.root {
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.deleting_datasets_manager {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 5px;
+}
+
+.content {
+  padding-bottom: 62px;
+}
+
+.datasets {
+}
+
+.dataset {
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+}

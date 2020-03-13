@@ -1,0 +1,39 @@
+.root {
+  position: relative;
+}
+
+.quickFilters {
+  position: absolute;
+  width: 100%;
+  border: solid 1px var(--fr-color5);
+  border-bottom-right-radius: 2px;
+  border-bottom-left-radius: 2px;
+  border-top: none;
+  z-index: 1;
+}
+
+.quickFilterTag {
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 75%;
+  padding: 0 7px;
+  margin-left: 5px;
+  border-radius: 2px;
+  color: white;
+  background-color: var(--main-color2);
+  cursor: pointer;
+}
+.quickFilterTag__remove {
+  cursor: pointer;
+  font-size: 10px;
+  margin-left: 5px;
+  color: white;
+}
+
+.collapsedQuickFilterInput {
+  font-size: 18px;
+  color: #777777;
+  cursor: pointer;
+}

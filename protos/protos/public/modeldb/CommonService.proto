@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package ai.verta.modeldb;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "protos/public/common/CommonService.proto";
+
+message ArtifactTypeEnum{
+    enum ArtifactType {
+        IMAGE = 0;
+        MODEL = 1;
+        TENSORBOARD = 2;
+        DATA = 3;
+        BLOB = 4;
+        STRING = 5;
+        CODE = 6;
+    }
+}
+
+message Artifact {
+    string key = 1;
+    string path = 2;
+    bool path_only = 3;
+    ArtifactTypeEnum.ArtifactType artifact_type = 4;
+    string linked_artifact_id = 5;
+    string filename_extension = 6;
+}
+
+message Feature {
+    string name = 1;
+}
+
+// attributes
+message GetAttributes {
+    string id = 1;
+    repeated string attribute_keys = 2;
+    bool get_all = 3;
+
+    message Response {
+        repeated common.KeyValue attributes = 1;
+    }
+}
+
+// TODO: make this update attribute
+message AddAttributes {
+    string id = 1;
+    common.KeyValue attribute = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message GetTags {
+    string id = 1;
+
+    message Response {
+        repeated string tags = 1;
+    }
+}
+
+// code version
+message CodeVersion {
+    oneof code {
+        GitSnapshot git_snapshot = 1;
+        Artifact code_archive = 2; // ZIP archive of source code
+    }
+    uint64 date_logged = 3;
+}
+
+message GitSnapshot {
+    repeated string filepaths = 1; // paths to relevant source code
+    string repo = 2; // URL to remote repository
+    string hash = 3; // commit hash
+    common.TernaryEnum.Ternary is_dirty = 4;
+}
+
+message KeyValueQuery {
+    string key = 1; //entity field key
+    google.protobuf.Value value = 2; //entity field value
+    common.ValueTypeEnum.ValueType value_type = 3; // Default = STRING
+    OperatorEnum.Operator operator = 4; // Default = EQ
+}
+
+message OperatorEnum {
+    enum Operator {
+        EQ = 0;
+        NE = 1;
+        GT = 2;
+        GTE = 3;
+        LT = 4;
+        LTE = 5;
+        CONTAIN = 6;
+        NOT_CONTAIN = 7;
+        IN = 8; // This is not fully supported by backend.
+    }
+}
+
+message GetUrlForArtifact {
+    string id = 1; // can be Proj, Expt, or Run depending on handling service
+    string key = 2;
+    string method = 3; //This is either GET or PUT
+    ArtifactTypeEnum.ArtifactType artifact_type = 4; //can inform which slot to check
+
+    message Response {
+        string url = 1;
+        map<string, string> fields = 2;
+    }
+}
+
+// TODO: add bulk and get_all
+message GetArtifacts {
+    string id = 1;
+    string key = 2;
+
+    message Response {
+        repeated Artifact artifacts = 1;
+    }
+}
+
+message WorkspaceTypeEnum {
+    enum WorkspaceType {
+        UNKNOWN = 0;
+        ORGANIZATION = 1;
+        USER = 2;
+    }
+}

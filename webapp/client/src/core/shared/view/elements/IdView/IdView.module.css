@@ -1,0 +1,6 @@
+.root {
+  display: inline-block;
+  margin-bottom: -3px;
+  font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace !important;
+  font-size: 90%;
+}

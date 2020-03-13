@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package ai.verta.modeldb;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "protos/public/uac/UACService.proto";
+
+/*
+*   Comment Entity
+*/
+
+message EntityComment { // Entity Comment
+    string id = 1;
+    string entity_id = 2; // entity.id like experimentRun.id, project.id etc.
+    string entity_name = 3; // entity name like experimentRun, project etc.
+    repeated Comment comments = 4; // list of user comment messages with date, userId and message text.
+}
+
+message Comment { // User comment
+    string id = 1;
+    string user_id = 2 [deprecated = true];
+    uint64 date_time = 3; // Comment added/updated time
+    string message = 4;
+    uac.UserInfo user_info = 5;
+    string verta_id = 6;
+}
+
+message AddComment {
+    string entity_id = 1; // entity.id like experimentRun.id, project.id etc.
+    uint64 date_time = 2; // Comment added time
+    string message = 3; // comment message text
+
+    message Response {
+        Comment comment = 1;
+    }
+}
+
+message UpdateComment {
+    string id = 1;
+    string entity_id = 2; // entity.id like experimentRun.id, project.id etc.
+    uint64 date_time = 3; // Comment updated time
+    string message = 4;
+
+    message Response {
+        Comment comment = 1;
+    }
+}
+
+message DeleteComment {
+    string id = 1;
+    string entity_id = 2; // entity.id like experimentRun.id, project.id etc.
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message GetComments {
+    string entity_id = 1; // entity.id like experimentRun.id, project.id etc.
+
+    message Response {
+        repeated Comment comments = 1; // return list of user comments from Entity Comment message
+    }
+}
+
+service CommentService {
+
+    rpc addExperimentRunComment (AddComment) returns (AddComment.Response) {
+        option (google.api.http) = {
+            post: "/v1/comment/addExperimentRunComment"
+            body: "*"
+        };
+    };
+
+    rpc updateExperimentRunComment (UpdateComment) returns (UpdateComment.Response) {
+        option (google.api.http) = {
+            post: "/v1/comment/updateExperimentRunComment"
+            body: "*"
+        };
+    };
+
+    rpc getExperimentRunComments (GetComments) returns (GetComments.Response) {
+        option (google.api.http) = {
+            get: "/v1/comment/getExperimentRunComments"
+        };
+    };
+
+    rpc deleteExperimentRunComment (DeleteComment) returns (DeleteComment.Response) {
+        option (google.api.http) = {
+            delete: "/v1/comment/deleteExperimentRunComment"
+        };
+    };
+
+}

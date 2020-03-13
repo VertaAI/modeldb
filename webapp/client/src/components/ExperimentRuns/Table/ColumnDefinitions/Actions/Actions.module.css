@@ -1,0 +1,40 @@
+.root {
+  font-size: 12.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.compare {
+  margin-top: 15px;
+}
+
+.action_block {
+  display: grid;
+  grid-template-columns: 55px 40px;
+  grid-template-rows: 40px;
+  padding: 5px;
+  grid-column-gap: 5px;
+  -webkit-column-gap: 5px;
+  column-gap: 5px;
+  -webkit-align-items: center;
+  align-items: center;
+}
+.action_label {
+  line-height: 16px;
+  font-size: 11px;
+  color: var(--text-color5);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.delete {
+  margin-top: 5px;
+}
+.deleting {
+  opacity: 0.5;
+}
+
+.group_fai_block {
+}

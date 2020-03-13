@@ -1,0 +1,16 @@
+@value green-color: #bef5cb;
+@value red-color: #fdaeb7;
+
+.highlightBg_entity1 {
+  background-color: green-color !important;
+}
+.highlightBg_entity2 {
+  background-color: red-color !important;
+}
+
+.highlightBorder_entity1 {
+  border-color: green-color !important;
+}
+.highlightBorder_entity2 {
+  border-color: red-color !important;
+}

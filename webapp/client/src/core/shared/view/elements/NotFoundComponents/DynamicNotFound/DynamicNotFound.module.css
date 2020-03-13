@@ -1,0 +1,30 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.header {
+  color: var(--fr-color4);
+  font-size: 24px;
+  line-height: 25px;
+  text-align: center;
+  margin: 4em 0 0.5em;
+}
+
+.links {
+  color: var(--fr-color5);
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 2em;
+}
+
+.links > a {
+  color: var(--bg-color2);
+}
+
+.infographicContainer {
+  height: 300px;
+  width: 357px;
+}

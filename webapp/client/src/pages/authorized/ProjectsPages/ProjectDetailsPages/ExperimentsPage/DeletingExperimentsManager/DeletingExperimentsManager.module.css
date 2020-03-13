@@ -1,0 +1,44 @@
+.root {
+  display: flex;
+}
+
+.deleting {
+  opacity: 0.5;
+}
+
+.delete_button {
+  margin-right: 10px;
+}
+
+.items {
+  display: flex;
+  max-width: 385px;
+  overflow-x: auto;
+}
+
+.item {
+  display: inline-flex;
+  height: 100%;
+  align-items: center;
+  width: 125px;
+  margin-right: 5px;
+  padding: 8px 10px;
+  font-size: 15px;
+  background-color: white;
+  color: var(--fr-color3);
+}
+.item:last-child {
+  margin-right: 0;
+}
+
+.item_unselect {
+  color: var(--text-color4);
+  cursor: pointer;
+  margin-right: 6px;
+}
+
+.item_value {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

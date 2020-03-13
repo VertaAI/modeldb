@@ -1,0 +1,8 @@
+.root {
+  width: 100%;
+}
+
+.deleting {
+  opacity: 0.5;
+  pointer-events: none;
+}

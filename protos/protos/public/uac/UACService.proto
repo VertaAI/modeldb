@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+
+message Empty {
+
+}
+
+message GetUser {
+    string user_id = 1;
+    string email = 2;
+    string username = 3;
+}
+
+message GetUsers {
+    repeated string user_ids = 1;
+    repeated string emails = 2;
+    repeated string usernames = 3;
+
+    message Response {
+        repeated UserInfo user_infos = 1;
+    }
+}
+
+message IdServiceProviderEnum {
+    enum IdServiceProvider {
+        UNKNOWN = 0;
+        GITHUB = 1;
+        BITBUCKET = 2;
+        GOOGLE = 3;
+        VERTA = 4;
+    }
+}
+
+enum FlagEnum {
+    UNDEFINED = 0;
+    TRUE = 1;
+    FALSE = 2;
+}
+
+message VertaUserInfo {
+    bool individual_user = 1;
+    string username = 2;
+    uint64 refresh_timestamp = 3;
+    uint64 last_login_timestamp = 4;
+    string user_id = 5;
+    FlagEnum publicProfile = 6;
+}
+
+message UserInfo {
+    string user_id = 1;
+    string full_name = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string email = 5;
+    IdServiceProviderEnum.IdServiceProvider id_service_provider = 6;
+    repeated string roles = 7;
+    string image_url = 8;
+    string dev_key = 9;
+    VertaUserInfo verta_info = 10;
+}
+
+message CreateUser {
+    UserInfo info = 1;
+    string password = 2; // If empty, create one.
+
+    message Response {
+        UserInfo info = 1;
+    }
+}
+
+message UpdateUser {
+    UserInfo info = 1;
+    string password = 2; // If empty, don't update.
+
+    message Response {
+        UserInfo info = 1;
+    }
+}
+
+message DeleteUser {
+    string user_id = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+service UACService {
+
+    // Get the current user information verifying JWT token
+    rpc getCurrentUser (Empty) returns (UserInfo) {
+        option (google.api.http) = {
+            get: "/v1/uac/getCurrentUser"
+        };
+    };
+
+    // Get the current user information verifying JWT token
+    rpc getUser (GetUser) returns (UserInfo) {
+        option (google.api.http) = {
+            get: "/v1/uac/getUser"
+        };
+    };
+
+    rpc getUsers (GetUsers) returns (GetUsers.Response) {
+        option (google.api.http) = {
+            post: "/v1/uac/getUsers"
+            body: "*"
+        };
+    };
+
+    // For now, any user can create a new user
+    rpc createUser (CreateUser) returns (CreateUser.Response) {
+        option (google.api.http) = {
+            post: "/v1/uac/createUser"
+            body: "*"
+        };
+    };
+
+    // Only current user can update themselves
+    rpc updateUser (UpdateUser) returns (UpdateUser.Response) {
+        option (google.api.http) = {
+            post: "/v1/uac/updateUser"
+            body: "*"
+        };
+    };
+
+    // Only current user can delete themselves
+    rpc deleteUser (DeleteUser) returns (DeleteUser.Response) {
+        option (google.api.http) = {
+             post: "/v1/uac/deleteUser"
+             body: "*"
+         };
+    };
+
+}

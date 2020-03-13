@@ -1,0 +1,53 @@
+artifactStore_grpcServer:
+  host: artifact-store-backend
+  port: 8086
+artifactStoreConfig:
+  NFS:
+    artifactEndpoint:
+      getArtifact: /api/v1/artifact/getArtifact
+      storeArtifact: /api/v1/artifact/storeArtifact
+    nfsRootPath: /tmp/artifactStore/
+    nfsServerHost: nfs2.dev.verta.ai
+    nfsServerPort: 8086
+    nfsUrlProtocol: https
+  S3:
+    cloudBucketName: verta-condacon
+  artifactStoreType: S3
+database:
+  DBType: relational
+  RdbConfiguration:
+    RdbDatabaseName: modeldb
+    RdbDriver: "com.mysql.cj.jdbc.Driver"
+    RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+    RdbUrl: "jdbc:mysql://localhost:4001"
+    RdbUsername: modeldb
+    RdbPassword: modeldb
+  liquibaseLockThreshold: 60
+  timeout: 4
+grpcServer:
+  port: 8085
+springServer:
+  port: 8086
+#AuthService Properties
+authService: 
+  host: localhost # Docker container name OR docker IP
+  port: 50051
+test:
+  test-database:
+    DBType: relational
+    timeout: 4
+    liquibaseLockThreshold: 60
+    RdbConfiguration:
+      RdbDatabaseName: postgres
+      RdbDialect: org.hibernate.dialect.PostgreSQLDialect
+      RdbDriver: org.postgresql.Driver
+      RdbPassword: cR2@2V5cYLb5WHz^*bpZ
+      RdbUrl: jdbc:postgresql://modeldb--postgresql-stolon-proxy.__NAMESPACE__:5432
+      RdbUsername: superuser
+  testUsers:
+    primaryUser:
+      email: foo
+      devKey: bar
+    secondaryUser:
+      email: foo2
+      devKey: bar2

@@ -1,0 +1,183 @@
+.preloader {
+}
+
+.deleting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.record {
+  display: grid;
+  grid-template-columns: 140px auto;
+  grid-template-rows: 13px auto 12px;
+  border-width: 1px 0 0 0;
+  border-color: var(--border-color1);
+  border-style: solid;
+  align-items: top;
+}
+
+.record:first-child {
+  border: none;
+}
+
+.record_divider {
+  grid-template-columns: auto;
+}
+
+.record_summary {
+  display: grid;
+  grid-template-columns: 0.9fr 1fr;
+  grid-column-gap: 5px;
+  padding-bottom: 12px;
+  align-items: top;
+}
+
+.tags {
+  display: inline-block;
+}
+
+.record_summary_main {
+  grid-row: 2;
+  color: var(--fr-color3);
+  line-height: 18px;
+}
+
+.header_records {
+  margin-bottom: 7px;
+}
+
+.record_name {
+  font-size: 22px;
+  color: var(--fr-color25);
+}
+
+.record_desc {
+  font-size: 13px;
+  color: var(--fr-color25);
+}
+
+.record_desc_empty {
+  font-size: 13px;
+  color: var(--line-color1);
+}
+.record_label {
+  font-size: 14px;
+  color: rgb(141, 141, 141);
+  margin-bottom: 3px;
+}
+
+.meta_container {
+  display: grid;
+  grid-template-columns: 240px auto;
+  grid-column-gap: 10px;
+  padding: 2px 0;
+}
+
+.meta_id_container {
+  display: grid;
+  grid-template-columns: 90px auto;
+  grid-column-gap: 10px;
+  padding: 2px 0;
+}
+
+.meta_label_container {
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  align-self: center;
+  color: rgb(141, 141, 141);
+}
+
+.value_id_container {
+  display: grid;
+  grid-template-columns: auto max-content;
+  grid-column-gap: 10px;
+}
+
+.value_container {
+  display: inline-flex;
+}
+
+.meta_value {
+  padding-left: 5px;
+  color: var(--fr-color2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.record_summary_meta {
+  grid-row: 2;
+  font-size: 15px;
+  line-height: 18px;
+}
+
+.record_label {
+  grid-row: 2;
+  color: var(--fr-color25);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.record_value {
+  grid-row: 2;
+  color: var(--fr-color3);
+  font-size: 16px;
+  line-height: 16px;
+}
+
+.parameter_pills_container {
+  width: 600px;
+}
+
+.record_serviceBehaviour {
+}
+
+.record_dataBehavior {
+}
+
+.record_hyperparameters {
+}
+
+.record_metrics {
+}
+
+.record_attributes {
+}
+
+.record_artifacts {
+}
+
+.record_datasets {
+}
+
+.record_observations {
+}
+
+.tags_block {
+  grid-area: tags;
+  margin-bottom: -6px;
+  max-width: 300px;
+  display: inline-flex;
+}
+
+.serviceMeta {
+  display: grid;
+  max-width: 740px;
+  font-size: 0.7em;
+  font-style: italic;
+  justify-content: right;
+  margin: 0.5em 0 0 2em !important;
+  color: var(--text-color3);
+}
+
+.run_id {
+  display: inline-block;
+  max-width: 290px;
+  margin-bottom: -6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

@@ -1,0 +1,41 @@
+.root {
+  padding: 10px;
+  border: 1px solid var(--border-color1);
+  border-radius: 2px;
+  background-color: #ffffff;
+  color: var(--fr-color3);
+  font-size: var(--font-size3);
+  margin-top: 6px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 6px auto 15px;
+}
+
+.root:first-of-type {
+  margin-top: 0;
+}
+
+.edit_button {
+  font-size: 15px;
+  color: var(--fr-color4);
+}
+
+.edit_button:hover {
+  cursor: pointer;
+}
+
+.filter_text {
+  margin-left: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.remove_button {
+}
+
+.editor {
+  padding-top: 11px;
+}

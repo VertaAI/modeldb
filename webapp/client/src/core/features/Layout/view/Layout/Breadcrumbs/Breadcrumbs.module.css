@@ -1,0 +1,28 @@
+.root {
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.arrow {
+  margin: 0 9.5px;
+  font-size: 10px;
+  color: #aaaaaa;
+}
+
+.breadcrumb_item {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  color: #777777;
+  outline: none;
+}
+.breadcrumb_item:hover {
+  color: var(--main-text-color1);
+}
+.breadcrumb_item_active {
+  font-weight: 500;
+  color: var(--main-text-color1);
+}

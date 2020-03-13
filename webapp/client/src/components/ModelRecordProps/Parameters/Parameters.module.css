@@ -1,0 +1,18 @@
+.param {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-gap: 5px;
+}
+.param_key {
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--tex-color-grey);
+}
+.param_value {
+  color: var(--text-color2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

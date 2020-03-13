@@ -1,0 +1,66 @@
+version: "3.5"
+services:
+    modeldb-backend:
+        image: vertaaiofficial/modeldb-backend:latest
+        container_name: "modeldb-backend"
+        expose:
+            - "8085"
+            - "8086"
+        ports:
+            - "8085:8085"
+            - "8086:8086"
+        networks:
+            - modeldb_network
+        environment:
+            - VERTA_MODELDB_CONFIG:/config/config.yaml
+        volumes:
+            - ./backend/config:/config/
+            - ./artifact-store:/artifact-store/
+
+    modeldb-proxy:
+        image: vertaaiofficial/modeldb-proxy:latest
+        container_name: "modeldb-proxy"
+        environment:
+            MDB_ADDRESS: "modeldb-backend:8085"
+            SERVER_HTTP_PORT: "8080"
+        expose:
+            - "8080"
+        ports:
+            - "8080:8080"
+        depends_on:
+            - modeldb-backend
+        networks:
+            - modeldb_network
+
+    modeldb-frontend:
+        image: vertaaiofficial/modeldb-frontend:latest
+        container_name: "modeldb-frontend"
+        expose:
+            - "3000"
+        ports:
+            - "3000:3000"
+        depends_on:
+            - modeldb-proxy
+        environment:
+            DEPLOYED: "yes"
+            BACKEND_API_PROTOCOL: "http"
+            BACKEND_API_DOMAIN: "modeldb-proxy:8080"
+            MDB_ADDRESS: http://modeldb-proxy:8080
+            ARTIFACTORY_ADDRESS: http://modeldb-backend:8086
+        networks:
+            - modeldb_network
+
+    modeldb-postgres:
+        image: postgres
+        container_name: "modeldb-postgres"
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: root
+            PGDATA: /var/lib/postgresql/data/pgdata
+        networks:
+            - modeldb_network
+        volumes:
+            - ./data:/var/lib/postgresql/data/pgdata
+
+networks:
+  modeldb_network:

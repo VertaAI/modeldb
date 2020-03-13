@@ -1,0 +1,421 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protos/public/uac/UACService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/uac/createUser": {
+      "post": {
+        "summary": "For now, any user can create a new user",
+        "operationId": "createUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacCreateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacCreateUser"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
+    "/uac/deleteUser": {
+      "post": {
+        "summary": "Only current user can delete themselves",
+        "operationId": "deleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacDeleteUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacDeleteUser"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
+    "/uac/getCurrentUser": {
+      "get": {
+        "summary": "Get the current user information verifying JWT token",
+        "operationId": "getCurrentUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
+    "/uac/getUser": {
+      "get": {
+        "summary": "Get the current user information verifying JWT token",
+        "operationId": "getUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
+    "/uac/getUsers": {
+      "post": {
+        "operationId": "getUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetUsers"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
+    "/uac/updateUser": {
+      "post": {
+        "summary": "Only current user can update themselves",
+        "operationId": "updateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacUpdateUser"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "IdServiceProviderEnumIdServiceProvider": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "GITHUB",
+        "BITBUCKET",
+        "GOOGLE",
+        "VERTA"
+      ],
+      "default": "UNKNOWN"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "uacCreateUser": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "$ref": "#/definitions/uacUserInfo"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "uacCreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "$ref": "#/definitions/uacUserInfo"
+        }
+      }
+    },
+    "uacDeleteUser": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      }
+    },
+    "uacDeleteUserResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacFlagEnum": {
+      "type": "string",
+      "enum": [
+        "UNDEFINED",
+        "TRUE",
+        "FALSE"
+      ],
+      "default": "UNDEFINED"
+    },
+    "uacGetUsers": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "emails": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usernames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacGetUsersResponse": {
+      "type": "object",
+      "properties": {
+        "user_infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacUserInfo"
+          }
+        }
+      }
+    },
+    "uacUpdateUser": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "$ref": "#/definitions/uacUserInfo"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "uacUpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "$ref": "#/definitions/uacUserInfo"
+        }
+      }
+    },
+    "uacUserInfo": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "full_name": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "id_service_provider": {
+          "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "image_url": {
+          "type": "string"
+        },
+        "dev_key": {
+          "type": "string"
+        },
+        "verta_info": {
+          "$ref": "#/definitions/uacVertaUserInfo"
+        }
+      }
+    },
+    "uacVertaUserInfo": {
+      "type": "object",
+      "properties": {
+        "individual_user": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "username": {
+          "type": "string"
+        },
+        "refresh_timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_login_timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "publicProfile": {
+          "$ref": "#/definitions/uacFlagEnum"
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

@@ -1,0 +1,969 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`(parallel chart) (data: all metric hyp) should render parallelChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="parallel-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+      Parallel Coordinates of Hyperparameters and Metrics
+    </div>
+  </div>
+  <div>
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+    <div
+      className="parallelControlPanel"
+    >
+      <Collapsable
+        collapseLabel=" Control Panel"
+        collapsibleContainerID="pcChartCollapsible"
+        keepOpen={true}
+      >
+        <div>
+          <div
+            className="metric_key_block"
+          >
+            Select Hyperparameters:
+            <div
+              className="panel_content"
+            >
+              <button
+                className="panel_buttons"
+                key="0"
+                onClick={[Function]}
+              >
+                <span>
+                  C
+                </span>
+              </button>
+              <button
+                className="panel_button_deselected"
+                key="1"
+                onClick={[Function]}
+              >
+                <span>
+                  max_iter
+                </span>
+              </button>
+            </div>
+          </div>
+          <div
+            className="metric_key_block"
+          >
+            Select Metrics:
+            <div
+              className="panel_content"
+            >
+              <button
+                className="panel_buttons"
+                key="0"
+                onClick={[Function]}
+              >
+                <span>
+                  val_acc
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Collapsable>
+      <div />
+    </div>
+    <div>
+      <ParallelCoordinates
+        data={
+          Array [
+            Object {
+              "C": 0.0001,
+              "max_iter": 28,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T15:38:49.991Z",
+                "dateUpdated": "2019-09-09T15:38:51.352Z",
+                "description": "",
+                "endTime": "2019-09-09T15:48:22.464Z",
+                "experimentId": "80da8511-a8d1-45f5-89b9-927df441abb4",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.0001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 28,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "d8bc38dd-d9b9-48db-b32f-398a6cb784a6",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.8145,
+                  },
+                ],
+                "name": "Run 2682215680435231",
+                "observations": Array [],
+                "projectId": "b9edf9ac-61ad-43bf-a148-42315a25b4d4",
+                "startTime": "2019-09-09T15:48:22.464Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.8145,
+            },
+            Object {
+              "C": 0.000001,
+              "max_iter": 15,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T15:38:48.242Z",
+                "dateUpdated": "2019-09-09T15:38:49.449Z",
+                "description": "",
+                "endTime": "2019-09-09T15:48:22.470Z",
+                "experimentId": "80da8511-a8d1-45f5-89b9-927df441abb4",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.000001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 15,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "4dfda1df-5fd0-43fe-9cfa-d8e2c4376717",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.7852,
+                  },
+                ],
+                "name": "Run 26822156804352134",
+                "observations": Array [],
+                "projectId": "b9edf9ac-61ad-43bf-a148-42315a25b4d4",
+                "startTime": "2019-09-09T15:48:22.470Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.7852,
+            },
+            Object {
+              "C": 0.0001,
+              "max_iter": 28,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T15:38:46.590Z",
+                "dateUpdated": "2019-09-09T15:38:47.798Z",
+                "description": "",
+                "endTime": "2019-09-09T15:48:22.472Z",
+                "experimentId": "80da8511-a8d1-45f5-89b9-927df441abb4",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.0001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 28,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "a52ad09a-8dc6-4452-8b4a-8a6ee90d51b6",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.7879,
+                  },
+                ],
+                "name": "Run 26822156804351964",
+                "observations": Array [],
+                "projectId": "b9edf9ac-61ad-43bf-a148-42315a25b4d4",
+                "startTime": "2019-09-09T15:48:22.472Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.7879,
+            },
+            Object {
+              "C": 0.000001,
+              "max_iter": 15,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T15:38:44.890Z",
+                "dateUpdated": "2019-09-09T15:38:46.059Z",
+                "description": "",
+                "endTime": "2019-09-09T15:48:22.474Z",
+                "experimentId": "80da8511-a8d1-45f5-89b9-927df441abb4",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.000001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 15,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "76fe74f3-7218-4a66-a156-fe0d36f20c3e",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.8539,
+                  },
+                ],
+                "name": "Run 26822156804351799",
+                "observations": Array [],
+                "projectId": "b9edf9ac-61ad-43bf-a148-42315a25b4d4",
+                "startTime": "2019-09-09T15:48:22.474Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.8539,
+            },
+          ]
+        }
+        metricKeysSet={
+          Set {
+            "val_acc",
+          }
+        }
+        selectedCategory="experimentId"
+        selectedPanelElements={
+          Array [
+            "C",
+            "val_acc",
+          ]
+        }
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`(parallel chart) (data: only metric) should render parallelChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="parallel-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+      Parallel Coordinates of Hyperparameters and Metrics
+    </div>
+  </div>
+  <div>
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+    <div
+      className="parallelControlPanel"
+    >
+      <Collapsable
+        collapseLabel=" Control Panel"
+        collapsibleContainerID="pcChartCollapsible"
+        keepOpen={true}
+      >
+        <div>
+          <div
+            className="metric_key_block"
+          >
+            Select Hyperparameters:
+            <div
+              className="panel_content"
+            >
+              <span
+                className="empty_hyp_msg"
+              >
+                no hyperparameters keys present
+              </span>
+            </div>
+          </div>
+          <div
+            className="metric_key_block"
+          >
+            Select Metrics:
+            <div
+              className="panel_content"
+            >
+              <button
+                className="panel_buttons"
+                key="0"
+                onClick={[Function]}
+              >
+                <span>
+                  val_acc
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Collapsable>
+      <div />
+    </div>
+    <div>
+      <ParallelCoordinates
+        data={
+          Array [
+            Object {
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:26.164Z",
+                "dateUpdated": "2019-09-09T14:53:26.726Z",
+                "description": "",
+                "endTime": "2019-09-09T23:25:15.340Z",
+                "experimentId": "5cb880cf-f345-4dff-80b7-078d381903ac",
+                "hyperparameters": Array [],
+                "id": "e88b1b4a-69d5-44c2-a047-9f182b199ac5",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.8145,
+                  },
+                ],
+                "name": "Run 26680156804079906",
+                "observations": Array [],
+                "projectId": "735079f8-8ae8-4f0e-85cf-a46280aff071",
+                "startTime": "2019-09-09T23:25:15.340Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.8145,
+            },
+            Object {
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:24.944Z",
+                "dateUpdated": "2019-09-09T14:53:25.800Z",
+                "description": "",
+                "endTime": "2019-09-09T23:25:15.345Z",
+                "experimentId": "5cb880cf-f345-4dff-80b7-078d381903ac",
+                "hyperparameters": Array [],
+                "id": "08929c61-64f5-4f3d-867c-34b59e22b2e7",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.7852,
+                  },
+                ],
+                "name": "Run 26680156804079758",
+                "observations": Array [],
+                "projectId": "735079f8-8ae8-4f0e-85cf-a46280aff071",
+                "startTime": "2019-09-09T23:25:15.345Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.7852,
+            },
+            Object {
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:23.573Z",
+                "dateUpdated": "2019-09-09T14:53:24.322Z",
+                "description": "",
+                "endTime": "2019-09-09T23:25:15.347Z",
+                "experimentId": "5cb880cf-f345-4dff-80b7-078d381903ac",
+                "hyperparameters": Array [],
+                "id": "14c1c44a-8a3a-4343-87ff-e8b6868a97f5",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.7879,
+                  },
+                ],
+                "name": "Run 26680156804079648",
+                "observations": Array [],
+                "projectId": "735079f8-8ae8-4f0e-85cf-a46280aff071",
+                "startTime": "2019-09-09T23:25:15.347Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.7879,
+            },
+            Object {
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:22.643Z",
+                "dateUpdated": "2019-09-09T14:53:23.153Z",
+                "description": "",
+                "endTime": "2019-09-09T23:25:15.349Z",
+                "experimentId": "5cb880cf-f345-4dff-80b7-078d381903ac",
+                "hyperparameters": Array [],
+                "id": "4828e812-c75c-48f9-941c-f24594f412f5",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.8539,
+                  },
+                ],
+                "name": "Run 26680156804079551",
+                "observations": Array [],
+                "projectId": "735079f8-8ae8-4f0e-85cf-a46280aff071",
+                "startTime": "2019-09-09T23:25:15.349Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.8539,
+            },
+          ]
+        }
+        metricKeysSet={
+          Set {
+            "val_acc",
+          }
+        }
+        selectedCategory="experimentId"
+        selectedPanelElements={
+          Array [
+            "val_acc",
+          ]
+        }
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`(parallel chart) (data: some hyp missing) should render parallelChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="parallel-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+      Parallel Coordinates of Hyperparameters and Metrics
+    </div>
+  </div>
+  <div>
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+    <div
+      className="parallelControlPanel"
+    >
+      <Collapsable
+        collapseLabel=" Control Panel"
+        collapsibleContainerID="pcChartCollapsible"
+        keepOpen={true}
+      >
+        <div>
+          <div
+            className="metric_key_block"
+          >
+            Select Hyperparameters:
+            <div
+              className="panel_content"
+            >
+              <button
+                className="panel_buttons"
+                key="0"
+                onClick={[Function]}
+              >
+                <span>
+                  C
+                </span>
+              </button>
+              <button
+                className="panel_button_deselected"
+                key="1"
+                onClick={[Function]}
+              >
+                <span>
+                  max_iter
+                </span>
+              </button>
+            </div>
+          </div>
+          <div
+            className="metric_key_block"
+          >
+            Select Metrics:
+            <div
+              className="panel_content"
+            >
+              <button
+                className="panel_buttons"
+                key="0"
+                onClick={[Function]}
+              >
+                <span>
+                  val_acc
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Collapsable>
+      <div />
+    </div>
+    <div>
+      <ParallelCoordinates
+        data={
+          Array [
+            Object {
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:35.805Z",
+                "dateUpdated": "2019-09-09T14:53:36.414Z",
+                "description": "",
+                "endTime": "2019-09-09T23:33:52.961Z",
+                "experimentId": "5a5778d4-4eb3-4176-9d83-0a47d4c1e0fc",
+                "hyperparameters": Array [],
+                "id": "9f37aeff-bdc1-4f4e-b563-6d8efc7b3843",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.8145,
+                  },
+                ],
+                "name": "Run 26680156804080862",
+                "observations": Array [],
+                "projectId": "b8686728-0335-4d5f-87ad-468ed1fed0da",
+                "startTime": "2019-09-09T23:33:52.961Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.8145,
+            },
+            Object {
+              "C": 0.000001,
+              "max_iter": 15,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:34.297Z",
+                "dateUpdated": "2019-09-09T14:53:35.359Z",
+                "description": "",
+                "endTime": "2019-09-09T23:33:52.963Z",
+                "experimentId": "5a5778d4-4eb3-4176-9d83-0a47d4c1e0fc",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.000001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 15,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "cd3e0a6b-7cad-410c-8d92-bca278e45f49",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.7852,
+                  },
+                ],
+                "name": "Run 26680156804080702",
+                "observations": Array [],
+                "projectId": "b8686728-0335-4d5f-87ad-468ed1fed0da",
+                "startTime": "2019-09-09T23:33:52.963Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.7852,
+            },
+            Object {
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:33.150Z",
+                "dateUpdated": "2019-09-09T14:53:33.758Z",
+                "description": "",
+                "endTime": "2019-09-09T23:33:52.965Z",
+                "experimentId": "5a5778d4-4eb3-4176-9d83-0a47d4c1e0fc",
+                "hyperparameters": Array [],
+                "id": "22835fb7-bc91-4763-80eb-0bd59def1b1b",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.7879,
+                  },
+                ],
+                "name": "Run 26680156804080595",
+                "observations": Array [],
+                "projectId": "b8686728-0335-4d5f-87ad-468ed1fed0da",
+                "startTime": "2019-09-09T23:33:52.965Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.7879,
+            },
+            Object {
+              "C": 0.000001,
+              "max_iter": 15,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:31.245Z",
+                "dateUpdated": "2019-09-09T14:53:32.658Z",
+                "description": "",
+                "endTime": "2019-09-09T23:33:52.967Z",
+                "experimentId": "5a5778d4-4eb3-4176-9d83-0a47d4c1e0fc",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.000001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 15,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "95f9ed00-ceeb-43eb-90c8-5120e6853ab8",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.8539,
+                  },
+                ],
+                "name": "Run 26680156804080396",
+                "observations": Array [],
+                "projectId": "b8686728-0335-4d5f-87ad-468ed1fed0da",
+                "startTime": "2019-09-09T23:33:52.967Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.8539,
+            },
+          ]
+        }
+        metricKeysSet={
+          Set {
+            "val_acc",
+          }
+        }
+        selectedCategory="experimentId"
+        selectedPanelElements={
+          Array [
+            "val_acc",
+            "C",
+          ]
+        }
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`(parallel chart) (data: some metric missing) should render parallelChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="parallel-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+      Parallel Coordinates of Hyperparameters and Metrics
+    </div>
+  </div>
+  <div>
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+    <div
+      className="parallelControlPanel"
+    >
+      <Collapsable
+        collapseLabel=" Control Panel"
+        collapsibleContainerID="pcChartCollapsible"
+        keepOpen={true}
+      >
+        <div>
+          <div
+            className="metric_key_block"
+          >
+            Select Hyperparameters:
+            <div
+              className="panel_content"
+            >
+              <button
+                className="panel_buttons"
+                key="0"
+                onClick={[Function]}
+              >
+                <span>
+                  C
+                </span>
+              </button>
+              <button
+                className="panel_button_deselected"
+                key="1"
+                onClick={[Function]}
+              >
+                <span>
+                  max_iter
+                </span>
+              </button>
+            </div>
+          </div>
+          <div
+            className="metric_key_block"
+          >
+            Select Metrics:
+            <div
+              className="panel_content"
+            >
+              <button
+                className="panel_buttons"
+                key="0"
+                onClick={[Function]}
+              >
+                <span>
+                  val_acc
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Collapsable>
+      <div />
+    </div>
+    <div>
+      <ParallelCoordinates
+        data={
+          Array [
+            Object {
+              "C": 0.0001,
+              "max_iter": 28,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:05.843Z",
+                "dateUpdated": "2019-09-09T14:53:06.457Z",
+                "description": "",
+                "endTime": "2019-09-09T22:56:28.256Z",
+                "experimentId": "754a9ae0-5679-4778-87e2-d8c333c94850",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.0001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 28,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "7cafc855-6a7a-47ea-a77e-38a651ca5335",
+                "metrics": Array [],
+                "name": "Run 26680156804077873",
+                "observations": Array [],
+                "projectId": "73f158d8-ac03-425d-b26e-45454fb82149",
+                "startTime": "2019-09-09T22:56:28.256Z",
+                "tags": Array [],
+              },
+            },
+            Object {
+              "C": 0.000001,
+              "max_iter": 15,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:04.244Z",
+                "dateUpdated": "2019-09-09T14:53:05.457Z",
+                "description": "",
+                "endTime": "2019-09-09T22:56:28.258Z",
+                "experimentId": "754a9ae0-5679-4778-87e2-d8c333c94850",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.000001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 15,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "a1c30fb2-527a-4e5d-8183-e10d101c7c23",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.7852,
+                  },
+                ],
+                "name": "Run 26680156804077707",
+                "observations": Array [],
+                "projectId": "73f158d8-ac03-425d-b26e-45454fb82149",
+                "startTime": "2019-09-09T22:56:28.258Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.7852,
+            },
+            Object {
+              "C": 0.0001,
+              "max_iter": 28,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:03.030Z",
+                "dateUpdated": "2019-09-09T14:53:03.720Z",
+                "description": "",
+                "endTime": "2019-09-09T22:56:28.260Z",
+                "experimentId": "754a9ae0-5679-4778-87e2-d8c333c94850",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.0001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 28,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "88a3ee5e-94c3-4fd3-9716-192f0e49f5e0",
+                "metrics": Array [],
+                "name": "Run 26680156804077592",
+                "observations": Array [],
+                "projectId": "73f158d8-ac03-425d-b26e-45454fb82149",
+                "startTime": "2019-09-09T22:56:28.260Z",
+                "tags": Array [],
+              },
+            },
+            Object {
+              "C": 0.000001,
+              "max_iter": 15,
+              "modelRecord": Object {
+                "artifacts": Array [],
+                "attributes": Array [],
+                "datasets": Array [],
+                "dateCreated": "2019-09-09T14:53:01.442Z",
+                "dateUpdated": "2019-09-09T14:53:02.654Z",
+                "description": "",
+                "endTime": "2019-09-09T22:56:28.262Z",
+                "experimentId": "754a9ae0-5679-4778-87e2-d8c333c94850",
+                "hyperparameters": Array [
+                  Object {
+                    "key": "C",
+                    "value": 0.000001,
+                  },
+                  Object {
+                    "key": "max_iter",
+                    "value": 15,
+                  },
+                  Object {
+                    "key": "solver",
+                    "value": "lbfgs",
+                  },
+                ],
+                "id": "954f87e9-6fde-4b69-b878-2d7c42c6ae1b",
+                "metrics": Array [
+                  Object {
+                    "key": "val_acc",
+                    "value": 0.8539,
+                  },
+                ],
+                "name": "Run 26680156804077422",
+                "observations": Array [],
+                "projectId": "73f158d8-ac03-425d-b26e-45454fb82149",
+                "startTime": "2019-09-09T22:56:28.262Z",
+                "tags": Array [],
+              },
+              "val_acc": 0.8539,
+            },
+          ]
+        }
+        metricKeysSet={
+          Set {
+            "val_acc",
+          }
+        }
+        selectedCategory="experimentId"
+        selectedPanelElements={
+          Array [
+            "C",
+            "val_acc",
+          ]
+        }
+      />
+    </div>
+  </div>
+</div>
+`;

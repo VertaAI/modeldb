@@ -1,0 +1,14 @@
+.root {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-column-gap: 10px;
+  grid-row-gap: 15px;
+}
+
+.item {
+  transition: opacity 90ms ease-out;
+}
+
+.fade {
+  opacity: 0.2;
+}

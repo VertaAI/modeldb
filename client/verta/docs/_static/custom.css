@@ -1,0 +1,512 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Source+Code+Pro:300,300i,400,400i,500,500i,600,600i,700,700i&display=swap");
+
+* {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+html {
+  font-size: 14px;
+  font-family: "Roboto";
+  height: 100%;
+}
+
+/*
+@media screen and (max-width: 1700px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media screen and (max-width: 1550px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 1450px) {
+  html {
+    font-size: 13px;
+  }
+}
+
+@media screen and (max-width: 1300px) {
+  html {
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 1150px) {
+  html {
+    font-size: 11px;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  html {
+    font-size: 10px;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  html {
+    font-size: 9px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  html {
+    font-size: 8px;
+  }
+}
+
+@media screen and (max-width: 320px) {
+  html {
+    font-size: 7px;
+  }
+}
+*/
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  background: #f5f7f9;
+}
+
+.document {
+  flex-grow: 2;
+  margin: 0;
+  display: flex;
+}
+
+.sphinxsidebar {
+  color: rgb(59, 69, 78);
+  width: 18.75rem;
+  background: #f5f7f9;
+  border-right: 1px solid #e6ecf1;
+  flex-shrink: 0;
+}
+
+.sphinxsidebar h3 {
+  margin: 1rem 0;
+  border: none;
+}
+
+.sphinxsidebarwrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  width: 100%;
+}
+
+p.logo {
+  padding: 2rem;
+  border-bottom: 1px solid #e6ecf1;
+  margin: 0;
+}
+
+.footer {
+  height: 3rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  background-color: #2b2b2b;
+  color: #dae1e7;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.footer a {
+  margin: 0 1rem;
+  text-decoration: none;
+  color: #3584fc;
+}
+
+#searchbox {
+  border-top: 1px solid #e6ecf1;
+  margin-top: auto;
+  padding: 1rem 2rem;
+}
+
+.search {
+  display: flex;
+}
+
+input {
+  font-family: "Roboto";
+}
+
+.bodywrapper input {
+  padding: 0.6rem 1rem;
+  border: 1px solid #e6ecf1;
+}
+
+#searchbox input {
+  padding: 0.6rem 1rem;
+  border: none;
+  border: 1px solid #e6ecf1;
+  font-size: 1rem;
+  width: 11rem;
+}
+
+#searchlabel {
+  margin-bottom: 1rem !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.sphinxsidebar h3 {
+  padding: 0 2rem;
+}
+
+.sphinxsidebarwrapper > ul > li {
+  margin-bottom: 2rem;
+}
+
+.sphinxsidebar ul {
+  list-style: none;
+  padding-left: 1rem;
+  margin: 0;
+}
+
+.sphinxsidebar ul a {
+  text-decoration: none;
+  color: rgb(59, 69, 78);
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.sphinxsidebar ul a:hover {
+  background-color: #e6ecf1;
+}
+
+.sphinxsidebar ul a:active {
+  background-color: #ffffff;
+  color: rgb(164, 78, 237);
+}
+
+.sphinxsidebar ul a.current {
+  background-color: #ffffff;
+  color: rgb(164, 78, 237);
+  border: 1px solid #e6ecf1;
+}
+
+h3#searchlabel {
+  margin: 0;
+  padding: 0;
+}
+
+.highlight {
+  padding: 1rem 2rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  background: #f5f7f9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 18px;
+  font-size: 14px;
+}
+
+.highlight pre {
+  margin: 0;
+  font-size: 14px;
+  font-family: "Source Code Pro", Consolas, Menlo, Monaco, Courier, monospace !important;
+}
+
+.documentwrapper {
+  height: 100%;
+  max-width: 1100px;
+  padding: 0 4rem;
+  border-right: 2px solid #e6ecf1;
+  background: #ffffff;
+  flex-shrink: 0;
+  flex-grow: 2;
+}
+
+.documentwrapper h1 {
+  margin: 0;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e6ecf1;
+}
+
+h2 {
+  font-size: 21px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+.documentwrapper h2 {
+  padding: 2rem 0;
+  border-top: 2px solid #e6ecf1;
+  margin-top: 2rem;
+  margin-bottom: 0;
+}
+
+.documentwrapper p {
+  margin: 0;
+  padding-bottom: 1rem;
+  font-size: 16px;
+  font-family: Content-font, Roboto, sans-serif;
+  font-weight: 400;
+  line-height: 1.625;
+}
+
+.headerlink {
+  display: none;
+}
+
+#rellinks > ul {
+  list-style: none;
+  width: auto;
+  margin: 0;
+  display: grid;
+  padding: 0;
+  -ms-grid-rows: auto;
+  grid-column-gap: 24px;
+  -ms-grid-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 2rem;
+}
+
+#rellinks > ul li a {
+  position: relative;
+  padding: 2rem 1rem;
+  color: #242a31;
+  font-size: 1.2rem;
+  border: 1px solid #e6ecf1;
+  font-weight: 500;
+  height: 5rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-decoration: none;
+  flex-direction: column;
+}
+
+#rellinks > ul li a:hover {
+  color: rgb(164, 78, 237);
+  border-color: rgb(164, 78, 237);
+}
+
+#rellinks > ul li:last-child a {
+  align-items: flex-start;
+}
+
+#rellinks > ul li a::before {
+  content: "Previous";
+  display: inline;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgb(157, 170, 182) !important;
+}
+
+#rellinks > ul li:last-child a::before {
+  content: "Next";
+}
+
+#rellinks > ul li a::after {
+  display: block;
+  position: absolute;
+  content: "";
+  width: 1.5rem;
+  height: 1.5rem;
+  background: url("https://image.flaticon.com/icons/svg/271/271218.svg");
+  left: 1rem;
+}
+
+#rellinks > ul li:last-child a::after {
+  left: calc(100% - 2.5rem);
+  transform: rotate(180deg);
+}
+
+cite,
+span.pre,
+code {
+  margin: 0;
+  display: inline-block;
+  padding: 2px;
+  font-size: 85%;
+  font-family: "Source Code Pro", Menlo, monospace;
+  border-radius: 3px;
+  background-color: #f5f7f9;
+}
+
+dt > code {
+  padding: 0;
+}
+
+dl.attribute {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #f5f7f9;
+}
+
+.method > dt,
+.class > dt {
+  border-radius: 3px 3px 0 0;
+  border-top: 3px solid rgb(56, 132, 255);
+  font-size: 18px;
+  font-family: Content-font, Roboto, sans-serif;
+  font-weight: 700;
+  line-height: 1.5;
+  color: rgb(36, 42, 49);
+  display: flex;
+  position: relative;
+  margin: 24px 0px;
+  background-color: rgb(245, 247, 249);
+  display: inline-block;
+  padding: 1px 4px;
+}
+
+dt.field-odd,
+dt.field-even,
+p.rubric {
+  font-weight: 600;
+  font-size: 17px;
+  margin-bottom: 3px;
+}
+
+.reference.external {
+  color: rgb(164, 78, 237);
+  text-decoration: none;
+}
+
+a {
+  color: rgb(164, 78, 237);
+}
+
+img {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.admonition {
+  width: 100%;
+  display: block;
+  position: relative;
+  background-color: rgb(245, 247, 249);
+  margin: 32px 0px;
+  padding: 24px 24px calc(0.1px) 50px;
+  border-left: 4px solid rgb(56, 132, 255);
+  border-radius: 3px;
+  position: relative;
+}
+
+.admonition::before {
+  display: block;
+  content: "!";
+  position: absolute;
+  top: 1.6rem;
+  left: 1rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 1rem;
+  border: 2px solid rgb(56, 132, 255);
+  color: rgb(56, 132, 255);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+p.admonition-title {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.admonition.warning {
+  border-color: rgb(247, 125, 5);
+}
+
+.admonition.warning::before {
+  border-color: rgb(247, 125, 5);
+  color: rgb(247, 125, 5);
+}
+
+.copybtn {
+  top: 1rem !important;
+  right: 1rem !important;
+}
+
+h1 + div > h2 {
+  border: none !important;
+  padding-top: 0 !important;
+}
+
+.relations {
+  display: none;
+}
+
+table.docutils {
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+table.docutils thead tr {
+  border-bottom: 2px solid rgb(230, 236, 241);
+  color: rgb(157, 170, 182);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+table.docutils thead tr p {
+  font-weight: 500;
+}
+
+table.docutils tbody tr {
+  border-top-width: initial;
+  border-right-width: initial;
+  border-left-width: initial;
+  border-top-color: initial;
+  border-right-color: initial;
+  border-left-color: initial;
+  border-style: none none solid;
+  border-image: initial;
+  background: rgb(255, 255, 255);
+  border-bottom: 1px solid rgb(230, 236, 241);
+  page-break-after: auto;
+  page-break-inside: avoid;
+}
+
+table.docutils td,
+table.docutils th {
+  padding: 10px;
+}
+
+table.docutils p {
+  padding: 0 !important;
+}
+
+.section h3 {
+  font-size: 18px;
+}
+
+ul.simple ol.simple p {
+  padding: 0;
+  font-size: 14px;
+}
+
+ul.simple li {
+  padding: 10px 0;
+}

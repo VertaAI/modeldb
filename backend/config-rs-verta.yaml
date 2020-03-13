@@ -1,0 +1,91 @@
+#ModelDB Properties
+grpcServer:
+  port: 8085
+
+springServer:
+  port: 8086
+  shutdownTimeout: 30 #time in second
+
+artifactStoreConfig:
+  artifactStoreType: S3 #S3, GCP, NFS
+  S3:
+   # cloudCredentials: AKIAXFYPNEYJZ4CJEWX5-7VoF9mbe1pL76rPQez9NRfUWrzWfV1CWpUdAkcBK #for s3 its access-secret, maybe set these when building the image?, for gcp?, for nfs?
+    cloudBucketName: verta-backend-testing-artifacts # if nfs then root dir. Note: bucket needs to exist alrady
+  NFS:
+    nfsServerHost: localhost
+    nfsServerPort: 8086
+    nfsUrlProtocol: https
+    nfsRootPath: /tmp/
+    artifactEndpoint:
+      getArtifact: "/v1/artifact1/getArtifact"
+      storeArtifact: "/v1/artifact/storeArtifact"
+
+# Database settings (type mongodb, couchbasedb, relational etc..)
+database:
+  DBType: relational
+  timeout: 4
+  liquibaseLockThreshold: 60 #time in second
+  #  RdbDatabaseName: modeldb
+  #  RdbDriver: "com.mysql.cj.jdbc.Driver"
+  #  RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+  #  RdbUrl: "jdbc:mysql://localhost:4001"
+  #  RdbUsername: modeldb
+  #  RdbPassword: modeldb
+  RdbConfiguration:
+    RdbDatabaseName: modeldb
+    RdbDriver: "com.mysql.cj.jdbc.Driver"
+    RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+    RdbUrl: "jdbc:mysql://localhost:4001"
+    RdbUsername: modeldb
+    RdbPassword: modeldb
+
+# Test Database settings (type mongodb, couchbasedb etc..)
+test:
+  test-database:
+    DBType: relational
+    timeout: 4
+    liquibaseLockThreshold: 60 #time in second
+    MongoDBConfiguration:
+      mongoDBDatabaseName: modeldb_test
+      mongoDBHost: mongo-backend
+      mongoDBPort: 27017
+      mongoDBUsername: modeldbTestAdmin
+      mongoDBPassword: testAdmin@123
+    
+    #RdbConfiguration:
+      #RdbDatabaseName: modeldb_test
+      #RdbDriver: "org.postgresql.Driver"
+      #RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+      #RdbUrl: "jdbc:postgresql://localhost:5432"
+      #RdbUsername: postgres
+      #RdbPassword: root
+    RdbConfiguration:
+      RdbDatabaseName: modeldb
+      RdbDriver: "com.mysql.cj.jdbc.Driver"
+      RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+      RdbUrl: "jdbc:mysql://localhost:4001"
+      RdbUsername: modeldb
+      RdbPassword: modeldb
+  testUsers:
+    primaryUser:
+      email: vertatest@protonmail.com
+      devKey: 3a38607f-388a-48e2-a573-54cb5ad02dba
+    secondaryUser:
+      email: test1verta@gmail.com
+      devKey: 109af02f-a7dd-4b68-9e58-6847e28bb411
+
+#AuthService Properties
+authService:
+  host: localhost # Docker container name OR docker IP
+  port: 50051
+
+starterProject:
+  starterProjectId: 6699071b-71cd-43c5-a8b1-4254bb7659ae
+
+#ArtifactStore Properties
+artifactStore_grpcServer:
+  host: localhost
+  port: 8086
+feature-flag:
+  disabled-authz: false
+  disabled-mdb-collaborator: true

@@ -1,0 +1,20 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.preloader {
+}
+
+.experiment {
+}
+
+.experiments {
+  padding-bottom: 62px;
+}
+
+.pagination {
+  display: flex;
+  margin-top: 10px;
+  justify-content: center;
+}

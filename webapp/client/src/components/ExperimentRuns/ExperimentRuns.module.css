@@ -1,0 +1,14 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.table {
+  display: flex;
+  flex-grow: 1;
+}
+
+.actions {
+  margin-bottom: 5px;
+}

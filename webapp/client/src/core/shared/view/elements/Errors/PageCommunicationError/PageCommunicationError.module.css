@@ -1,0 +1,21 @@
+.root {
+}
+
+.dynamic {
+  width: 100%;
+  height: 100%;
+}
+
+.text_error_container {
+  padding: 6px 10px;
+  background-color: var(--grey-lightest-highlight);
+  border-radius: 2px;
+  margin: 5px 0;
+  color: var(--error-color1);
+  text-align: center;
+  margin: auto;
+  word-break: break-word;
+  word-wrap: break-word;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}

@@ -1,0 +1,750 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`(symmary chart) (data: all_metric_hyp) should render summaryChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="summary-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+       Metric Summary Chart 
+    </div>
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={
+        Set {
+          "val_acc",
+        }
+      }
+      value="val_acc"
+    />
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+  </div>
+  <ScatterChart
+    flatdata={
+      Array [
+        Object {
+          "C": 0.0001,
+          "dateCreated": "2019-09-09T15:38:49.991Z",
+          "experimentId": "80da8511-a8d1-45f5-89b9-927df441abb4",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.0001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 28,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "d8bc38dd-d9b9-48db-b32f-398a6cb784a6",
+          "max_iter": 28,
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.8145,
+            },
+          ],
+          "name": "Run 2682215680435231",
+          "projectId": "b9edf9ac-61ad-43bf-a148-42315a25b4d4",
+          "solver": "lbfgs",
+          "tags": Array [],
+          "val_acc": 0.8145,
+        },
+        Object {
+          "C": 0.000001,
+          "dateCreated": "2019-09-09T15:38:48.242Z",
+          "experimentId": "80da8511-a8d1-45f5-89b9-927df441abb4",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.000001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 15,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "4dfda1df-5fd0-43fe-9cfa-d8e2c4376717",
+          "max_iter": 15,
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.7852,
+            },
+          ],
+          "name": "Run 26822156804352134",
+          "projectId": "b9edf9ac-61ad-43bf-a148-42315a25b4d4",
+          "solver": "lbfgs",
+          "tags": Array [],
+          "val_acc": 0.7852,
+        },
+        Object {
+          "C": 0.0001,
+          "dateCreated": "2019-09-09T15:38:46.590Z",
+          "experimentId": "80da8511-a8d1-45f5-89b9-927df441abb4",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.0001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 28,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "a52ad09a-8dc6-4452-8b4a-8a6ee90d51b6",
+          "max_iter": 28,
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.7879,
+            },
+          ],
+          "name": "Run 26822156804351964",
+          "projectId": "b9edf9ac-61ad-43bf-a148-42315a25b4d4",
+          "solver": "lbfgs",
+          "tags": Array [],
+          "val_acc": 0.7879,
+        },
+        Object {
+          "C": 0.000001,
+          "dateCreated": "2019-09-09T15:38:44.890Z",
+          "experimentId": "80da8511-a8d1-45f5-89b9-927df441abb4",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.000001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 15,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "76fe74f3-7218-4a66-a156-fe0d36f20c3e",
+          "max_iter": 15,
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.8539,
+            },
+          ],
+          "name": "Run 26822156804351799",
+          "projectId": "b9edf9ac-61ad-43bf-a148-42315a25b4d4",
+          "solver": "lbfgs",
+          "tags": Array [],
+          "val_acc": 0.8539,
+        },
+      ]
+    }
+    selectedCategory="experimentId"
+    selectedMetric="val_acc"
+  />
+</div>
+`;
+
+exports[`(symmary chart) (data: only hyp) should render summaryChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="summary-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+       Metric Summary Chart 
+    </div>
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={Set {}}
+      value="data not available"
+    />
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+  </div>
+  <ScatterChart
+    flatdata={
+      Array [
+        Object {
+          "C": 0.0001,
+          "dateCreated": "2019-09-09T14:53:11.450Z",
+          "experimentId": "18ac1765-d3fa-4da9-9551-3f6d8ffb012c",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.0001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 28,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "119a5931-06e9-4e9b-82dd-49ba0b666e55",
+          "max_iter": 28,
+          "metrics": Array [],
+          "name": "Run 26680156804078424",
+          "projectId": "bed37656-529a-4f09-afcd-b102f77778c5",
+          "solver": "lbfgs",
+          "tags": Array [],
+        },
+        Object {
+          "C": 0.000001,
+          "dateCreated": "2019-09-09T14:53:10.048Z",
+          "experimentId": "18ac1765-d3fa-4da9-9551-3f6d8ffb012c",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.000001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 15,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "bac73bd4-fca0-492d-b8cc-b9db0d45eddc",
+          "max_iter": 15,
+          "metrics": Array [],
+          "name": "Run 26680156804078288",
+          "projectId": "bed37656-529a-4f09-afcd-b102f77778c5",
+          "solver": "lbfgs",
+          "tags": Array [],
+        },
+        Object {
+          "C": 0.0001,
+          "dateCreated": "2019-09-09T14:53:08.975Z",
+          "experimentId": "18ac1765-d3fa-4da9-9551-3f6d8ffb012c",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.0001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 28,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "0f42225e-1aff-473a-931d-c4d73581f143",
+          "max_iter": 28,
+          "metrics": Array [],
+          "name": "Run 26680156804078187",
+          "projectId": "bed37656-529a-4f09-afcd-b102f77778c5",
+          "solver": "lbfgs",
+          "tags": Array [],
+        },
+        Object {
+          "C": 0.000001,
+          "dateCreated": "2019-09-09T14:53:07.848Z",
+          "experimentId": "18ac1765-d3fa-4da9-9551-3f6d8ffb012c",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.000001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 15,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "40b98782-6f0a-48a6-8138-e3df77a1ae69",
+          "max_iter": 15,
+          "metrics": Array [],
+          "name": "Run 26680156804078075",
+          "projectId": "bed37656-529a-4f09-afcd-b102f77778c5",
+          "solver": "lbfgs",
+          "tags": Array [],
+        },
+      ]
+    }
+    selectedCategory="experimentId"
+    selectedMetric="data not available"
+  />
+</div>
+`;
+
+exports[`(symmary chart) (data: only metric) should render summaryChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="summary-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+       Metric Summary Chart 
+    </div>
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={
+        Set {
+          "val_acc",
+        }
+      }
+      value="val_acc"
+    />
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+  </div>
+  <ScatterChart
+    flatdata={
+      Array [
+        Object {
+          "dateCreated": "2019-09-09T14:53:26.164Z",
+          "experimentId": "5cb880cf-f345-4dff-80b7-078d381903ac",
+          "hyperparameters": Array [],
+          "id": "e88b1b4a-69d5-44c2-a047-9f182b199ac5",
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.8145,
+            },
+          ],
+          "name": "Run 26680156804079906",
+          "projectId": "735079f8-8ae8-4f0e-85cf-a46280aff071",
+          "tags": Array [],
+          "val_acc": 0.8145,
+        },
+        Object {
+          "dateCreated": "2019-09-09T14:53:24.944Z",
+          "experimentId": "5cb880cf-f345-4dff-80b7-078d381903ac",
+          "hyperparameters": Array [],
+          "id": "08929c61-64f5-4f3d-867c-34b59e22b2e7",
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.7852,
+            },
+          ],
+          "name": "Run 26680156804079758",
+          "projectId": "735079f8-8ae8-4f0e-85cf-a46280aff071",
+          "tags": Array [],
+          "val_acc": 0.7852,
+        },
+        Object {
+          "dateCreated": "2019-09-09T14:53:23.573Z",
+          "experimentId": "5cb880cf-f345-4dff-80b7-078d381903ac",
+          "hyperparameters": Array [],
+          "id": "14c1c44a-8a3a-4343-87ff-e8b6868a97f5",
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.7879,
+            },
+          ],
+          "name": "Run 26680156804079648",
+          "projectId": "735079f8-8ae8-4f0e-85cf-a46280aff071",
+          "tags": Array [],
+          "val_acc": 0.7879,
+        },
+        Object {
+          "dateCreated": "2019-09-09T14:53:22.643Z",
+          "experimentId": "5cb880cf-f345-4dff-80b7-078d381903ac",
+          "hyperparameters": Array [],
+          "id": "4828e812-c75c-48f9-941c-f24594f412f5",
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.8539,
+            },
+          ],
+          "name": "Run 26680156804079551",
+          "projectId": "735079f8-8ae8-4f0e-85cf-a46280aff071",
+          "tags": Array [],
+          "val_acc": 0.8539,
+        },
+      ]
+    }
+    selectedCategory="experimentId"
+    selectedMetric="val_acc"
+  />
+</div>
+`;
+
+exports[`(symmary chart) (data: some hyp missing) should render summaryChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="summary-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+       Metric Summary Chart 
+    </div>
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={
+        Set {
+          "val_acc",
+        }
+      }
+      value="val_acc"
+    />
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+  </div>
+  <ScatterChart
+    flatdata={
+      Array [
+        Object {
+          "dateCreated": "2019-09-09T14:53:35.805Z",
+          "experimentId": "5a5778d4-4eb3-4176-9d83-0a47d4c1e0fc",
+          "hyperparameters": Array [],
+          "id": "9f37aeff-bdc1-4f4e-b563-6d8efc7b3843",
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.8145,
+            },
+          ],
+          "name": "Run 26680156804080862",
+          "projectId": "b8686728-0335-4d5f-87ad-468ed1fed0da",
+          "tags": Array [],
+          "val_acc": 0.8145,
+        },
+        Object {
+          "C": 0.000001,
+          "dateCreated": "2019-09-09T14:53:34.297Z",
+          "experimentId": "5a5778d4-4eb3-4176-9d83-0a47d4c1e0fc",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.000001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 15,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "cd3e0a6b-7cad-410c-8d92-bca278e45f49",
+          "max_iter": 15,
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.7852,
+            },
+          ],
+          "name": "Run 26680156804080702",
+          "projectId": "b8686728-0335-4d5f-87ad-468ed1fed0da",
+          "solver": "lbfgs",
+          "tags": Array [],
+          "val_acc": 0.7852,
+        },
+        Object {
+          "dateCreated": "2019-09-09T14:53:33.150Z",
+          "experimentId": "5a5778d4-4eb3-4176-9d83-0a47d4c1e0fc",
+          "hyperparameters": Array [],
+          "id": "22835fb7-bc91-4763-80eb-0bd59def1b1b",
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.7879,
+            },
+          ],
+          "name": "Run 26680156804080595",
+          "projectId": "b8686728-0335-4d5f-87ad-468ed1fed0da",
+          "tags": Array [],
+          "val_acc": 0.7879,
+        },
+        Object {
+          "C": 0.000001,
+          "dateCreated": "2019-09-09T14:53:31.245Z",
+          "experimentId": "5a5778d4-4eb3-4176-9d83-0a47d4c1e0fc",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.000001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 15,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "95f9ed00-ceeb-43eb-90c8-5120e6853ab8",
+          "max_iter": 15,
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.8539,
+            },
+          ],
+          "name": "Run 26680156804080396",
+          "projectId": "b8686728-0335-4d5f-87ad-468ed1fed0da",
+          "solver": "lbfgs",
+          "tags": Array [],
+          "val_acc": 0.8539,
+        },
+      ]
+    }
+    selectedCategory="experimentId"
+    selectedMetric="val_acc"
+  />
+</div>
+`;
+
+exports[`(symmary chart) (data: some metric missing) should render summaryChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="summary-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+       Metric Summary Chart 
+    </div>
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={
+        Set {
+          "val_acc",
+        }
+      }
+      value="val_acc"
+    />
+    <ChartConfigDropdown
+      label="Category :"
+      onChange={[Function]}
+      options={
+        Array [
+          "experimentId",
+        ]
+      }
+      value="experimentId"
+    />
+  </div>
+  <ScatterChart
+    flatdata={
+      Array [
+        Object {
+          "C": 0.0001,
+          "dateCreated": "2019-09-09T14:53:05.843Z",
+          "experimentId": "754a9ae0-5679-4778-87e2-d8c333c94850",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.0001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 28,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "7cafc855-6a7a-47ea-a77e-38a651ca5335",
+          "max_iter": 28,
+          "metrics": Array [],
+          "name": "Run 26680156804077873",
+          "projectId": "73f158d8-ac03-425d-b26e-45454fb82149",
+          "solver": "lbfgs",
+          "tags": Array [],
+        },
+        Object {
+          "C": 0.000001,
+          "dateCreated": "2019-09-09T14:53:04.244Z",
+          "experimentId": "754a9ae0-5679-4778-87e2-d8c333c94850",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.000001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 15,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "a1c30fb2-527a-4e5d-8183-e10d101c7c23",
+          "max_iter": 15,
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.7852,
+            },
+          ],
+          "name": "Run 26680156804077707",
+          "projectId": "73f158d8-ac03-425d-b26e-45454fb82149",
+          "solver": "lbfgs",
+          "tags": Array [],
+          "val_acc": 0.7852,
+        },
+        Object {
+          "C": 0.0001,
+          "dateCreated": "2019-09-09T14:53:03.030Z",
+          "experimentId": "754a9ae0-5679-4778-87e2-d8c333c94850",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.0001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 28,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "88a3ee5e-94c3-4fd3-9716-192f0e49f5e0",
+          "max_iter": 28,
+          "metrics": Array [],
+          "name": "Run 26680156804077592",
+          "projectId": "73f158d8-ac03-425d-b26e-45454fb82149",
+          "solver": "lbfgs",
+          "tags": Array [],
+        },
+        Object {
+          "C": 0.000001,
+          "dateCreated": "2019-09-09T14:53:01.442Z",
+          "experimentId": "754a9ae0-5679-4778-87e2-d8c333c94850",
+          "hyperparameters": Array [
+            Object {
+              "key": "C",
+              "value": 0.000001,
+            },
+            Object {
+              "key": "max_iter",
+              "value": 15,
+            },
+            Object {
+              "key": "solver",
+              "value": "lbfgs",
+            },
+          ],
+          "id": "954f87e9-6fde-4b69-b878-2d7c42c6ae1b",
+          "max_iter": 15,
+          "metrics": Array [
+            Object {
+              "key": "val_acc",
+              "value": 0.8539,
+            },
+          ],
+          "name": "Run 26680156804077422",
+          "projectId": "73f158d8-ac03-425d-b26e-45454fb82149",
+          "solver": "lbfgs",
+          "tags": Array [],
+          "val_acc": 0.8539,
+        },
+      ]
+    }
+    selectedCategory="experimentId"
+    selectedMetric="val_acc"
+  />
+</div>
+`;
