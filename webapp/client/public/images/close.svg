@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="14px" height="14px" viewBox="0 0 14 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="Share" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Share&amp;Collaboration_States" transform="translate(-897.000000, -66.000000)">
+            <g id="icon-close-large" transform="translate(894.000000, 63.000000)">
+                <rect id="Rectangle-13" x="0" y="0" width="20" height="20"></rect>
+                <path d="M10,10 L4,4 L10,10 L16,4 L10,10 Z M10,10 L4,16 L10,10 L16,16 L10,10 Z" id="Combined-Shape" stroke='#6863ff' stroke-width="2"></path>
+            </g>
+        </g>
+    </g>
+</svg>

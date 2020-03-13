@@ -1,0 +1,101 @@
+.checkbox {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  z-index: 5;
+}
+
+.size_small {
+  width: 14px;
+  height: 14px;
+}
+.size_medium {
+  width: 20px;
+  height: 20px;
+}
+.rounded.size_medium {
+  width: 24px;
+  height: 24px;
+}
+
+.real_checkbox {
+  display: none;
+}
+
+.container .real_checkbox {
+  display: none;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  background-color: var(--lighter-main-color);
+  border: 1px solid var(--main-color2-lighter);
+  transition: all 0.25s ease-out;
+}
+.rounded .checkmark {
+  border-radius: 100% !important;
+  border: 1px solid var(--border-color1);
+  background-color: white;
+}
+.rounded .real_checkbox:checked ~ .checkmark {
+  border-width: 0;
+}
+
+.checkbox.theme_red .real_checkbox:checked ~ .checkmark {
+  background-color: white !important;
+}
+
+.rounded.theme_red.checkbox:hover .real_checkbox ~ .checkmark:after {
+  display: block;
+  border-color: white;
+}
+
+.checkbox.theme_red .real_checkbox:checked ~ .checkmark:after {
+  display: block;
+  border-color: red !important;
+}
+
+.checkmark:after {
+  content: '';
+  position: absolute;
+  display: none;
+}
+.checkbox:hover .real_checkbox ~ .checkmark {
+  background-color: var(--lighter-main-color);
+}
+.checkbox .real_checkbox:checked ~ .checkmark {
+  background-color: var(--main-color2);
+  border-radius: 2px;
+}
+.checkbox .real_checkbox:checked ~ .checkmark {
+  background-color: #5457e3 !important;
+}
+
+.checkbox .checkmark:after {
+  left: 50%;
+  top: 50%;
+  width: 25%;
+  height: 45%;
+  border: 2px solid red;
+  border-width: 0 2px 2px 0;
+  transform: translateX(-50%) translateY(-50%) rotate(45deg);
+}
+.rounded.checkbox:hover .real_checkbox ~ .checkmark:after {
+  display: block;
+  border-color: #5457e3;
+}
+.checkbox .real_checkbox:checked ~ .checkmark:after {
+  display: block;
+  border-color: white !important;
+}
+.checkbox .real_checkbox:disabled ~ .checkmark {
+  border-color: rgba(0, 0, 0, 0.26);
+  background-color: transparent;
+  cursor: default;
+}

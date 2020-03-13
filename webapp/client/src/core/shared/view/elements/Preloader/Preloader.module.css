@@ -1,0 +1,15 @@
+.preloader {
+}
+
+.dynamic_size {
+  width: 100%;
+  height: 100%;
+}
+
+.theme_blue path {
+  fill: rgb(97, 91, 226);
+}
+
+.theme_light path {
+  fill: white;
+}

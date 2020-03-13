@@ -1,0 +1,492 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protos/public/uac/Team.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/team/addUser": {
+      "post": {
+        "summary": "Adds the given user to the team\nOnly enabled if the requester is the creator of the team or the organization",
+        "operationId": "addUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacAddTeamUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacAddTeamUser"
+            }
+          }
+        ],
+        "tags": [
+          "TeamService"
+        ]
+      }
+    },
+    "/team/deleteTeam": {
+      "post": {
+        "summary": "Delete an existing team\nOnly enabled if the person deleting is the owner of the organization or owner of the team",
+        "operationId": "deleteTeam",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacDeleteTeamResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacDeleteTeam"
+            }
+          }
+        ],
+        "tags": [
+          "TeamService"
+        ]
+      }
+    },
+    "/team/getTeamById": {
+      "get": {
+        "summary": "Gets information from a given team",
+        "operationId": "getTeamById",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetTeamByIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TeamService"
+        ]
+      }
+    },
+    "/team/getTeamByName": {
+      "get": {
+        "summary": "Gets information from a given team",
+        "operationId": "getTeamByName",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetTeamByNameResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "team_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TeamService"
+        ]
+      }
+    },
+    "/team/getTeamByShortName": {
+      "get": {
+        "summary": "Gets information from a given team",
+        "operationId": "getTeamByShortName",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetTeamByShortNameResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "short_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TeamService"
+        ]
+      }
+    },
+    "/team/listMyTeams": {
+      "get": {
+        "summary": "Lists the teams that the current user can see",
+        "operationId": "listMyTeams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacListMyTeamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "TeamService"
+        ]
+      }
+    },
+    "/team/listUsers": {
+      "get": {
+        "summary": "List users inside a team\nOnly available for users inside the team itself",
+        "operationId": "listUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacListTeamUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TeamService"
+        ]
+      }
+    },
+    "/team/removeUser": {
+      "post": {
+        "summary": "Removes the given user to the team\nOnly enabled if the requester is the creator of the team\nThe owner can never be removed",
+        "operationId": "removeUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveTeamUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacRemoveTeamUser"
+            }
+          }
+        ],
+        "tags": [
+          "TeamService"
+        ]
+      }
+    },
+    "/team/setTeam": {
+      "post": {
+        "summary": "Create or update a team\nAutomatically adds the caller to the team",
+        "operationId": "setTeam",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacSetTeamResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacSetTeam"
+            }
+          }
+        ],
+        "tags": [
+          "TeamService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "uacAddTeamUser": {
+      "type": "object",
+      "properties": {
+        "team_id": {
+          "type": "string"
+        },
+        "share_with": {
+          "type": "string"
+        }
+      }
+    },
+    "uacAddTeamUserResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacDeleteTeam": {
+      "type": "object",
+      "properties": {
+        "team_id": {
+          "type": "string"
+        }
+      }
+    },
+    "uacDeleteTeamResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacGetTeamByIdResponse": {
+      "type": "object",
+      "properties": {
+        "team": {
+          "$ref": "#/definitions/uacTeam"
+        }
+      }
+    },
+    "uacGetTeamByNameResponse": {
+      "type": "object",
+      "properties": {
+        "team": {
+          "$ref": "#/definitions/uacTeam"
+        }
+      }
+    },
+    "uacGetTeamByShortNameResponse": {
+      "type": "object",
+      "properties": {
+        "team": {
+          "$ref": "#/definitions/uacTeam"
+        }
+      }
+    },
+    "uacListMyTeamsResponse": {
+      "type": "object",
+      "properties": {
+        "teams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacTeam"
+          }
+        }
+      }
+    },
+    "uacListTeamUserResponse": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacRemoveTeamUser": {
+      "type": "object",
+      "properties": {
+        "team_id": {
+          "type": "string"
+        },
+        "share_with": {
+          "type": "string"
+        }
+      }
+    },
+    "uacRemoveTeamUserResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacSetTeam": {
+      "type": "object",
+      "properties": {
+        "team": {
+          "$ref": "#/definitions/uacTeam"
+        }
+      }
+    },
+    "uacSetTeamResponse": {
+      "type": "object",
+      "properties": {
+        "team": {
+          "$ref": "#/definitions/uacTeam"
+        }
+      }
+    },
+    "uacTeam": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "org_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "short_name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "created_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "updated_timestamp": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

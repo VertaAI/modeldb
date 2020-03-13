@@ -1,0 +1,41 @@
+/* -----------------start generic block------------------- */
+.chart_section_wrapper {
+  padding: 15px 0 20px 20px;
+  background-color: var(--bg-color3);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  min-width: 980px;
+}
+
+.chart_header {
+  font-size: 1.15em;
+  color: var(--main-color5);
+  padding: 0.5em;
+  line-height: 24px;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  max-width: 700px;
+  user-select: none;
+}
+
+.chart_config_section {
+  max-width: 700px;
+}
+
+.chart_config_selectors {
+  display: flex;
+}
+
+/* -----------------end generic block------------------- */
+
+.missing_count_block {
+  display: grid;
+  max-width: 680px;
+  font-size: 0.7em;
+  font-style: italic;
+  justify-content: right;
+  margin: 0.5em -0.5em 0 0 !important;
+  color: var(--text-color3);
+}

@@ -1,0 +1,24 @@
+.root :global .MuiOutlinedInput-input {
+  padding: 12.5px 14px;
+}
+.root :global .MuiInputLabel-outlined {
+  transform: translate(14px, 100%);
+}
+.root :global .MuiInputLabel-outlined::first-letter {
+  text-transform: uppercase;
+}
+.root :global .MuiOutlinedInput-notchedOutline {
+  border-color: #555555 !important;
+}
+
+.root :global .MuiInputBase-root {
+  color: #555555;
+}
+:global .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--main-color2) !important;
+  border-width: 1px !important;
+}
+
+.root :global .MuiOutlinedInput-multiline {
+  padding: 0 !important;
+}

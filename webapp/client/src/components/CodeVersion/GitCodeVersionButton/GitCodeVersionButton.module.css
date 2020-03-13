@@ -1,0 +1,71 @@
+.git_code_version_wrapper {
+  display: grid;
+  grid-gap: 5px;
+  grid-template-columns: 15px 120px;
+  background-color: #fff;
+  color: var(--main-text-color1);
+  line-height: 12px !important;
+  margin-bottom: 7px;
+  padding: 7px 15px 7px 7px;
+  border: solid 1px var(--lightgrey);
+  border-radius: 5px;
+  font-size: 12px;
+  transition: border 130ms ease-out, border-color 130ms ease-out,
+    color 130ms ease-out, box-shadow 130ms ease-out;
+}
+
+.git_code_version_wrapper:hover {
+  border: solid 1px var(--main-color2);
+  cursor: pointer;
+}
+
+.notif {
+  grid-column: 1/2;
+  grid-row: 1;
+}
+.notif_icon {
+  font-size: 13px;
+  color: var(--main-color2);
+  align-self: center;
+}
+
+.git_code_version_key {
+  color: var(--text-color5);
+  word-break: break-all;
+  word-wrap: break-word;
+  white-space: nowrap;
+  hyphens: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
+.popup_content {
+  padding: 1em;
+  font-size: 0.85em;
+}
+
+.git_code_version_link {
+  display: block;
+  color: var(--main-color2);
+  text-decoration: none;
+  line-height: 30px;
+  max-width: 150px;
+}
+
+.field {
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  padding: 10px 10px;
+}
+
+.field_key {
+  margin-left: 1em;
+  color: var(--text-color3);
+}
+
+.field_value {
+  color: var(--text-color2);
+  word-break: break-all;
+  word-wrap: break-word;
+}

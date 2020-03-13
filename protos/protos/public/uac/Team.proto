@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+
+message Team {
+    string id = 1;
+    string org_id = 2;
+    string name = 3;
+    string short_name = 8;
+    string description = 4;
+    string owner_id = 5;
+
+    int64 created_timestamp = 6;
+    int64 updated_timestamp = 7;
+}
+
+message GetTeamById {
+    string team_id = 1;
+
+    message Response {
+        Team team = 1;
+    }
+}
+
+// Team names are unique in an organization, but not across teams
+message GetTeamByName {
+    string org_id = 1;
+    string team_name = 2;
+
+    message Response {
+        Team team = 1;
+    }
+}
+
+// Team short names are unique in an organization, but not across teams
+message GetTeamByShortName {
+    string org_id = 1;
+    string short_name = 2;
+
+    message Response {
+        Team team = 1;
+    }
+}
+
+message ListMyTeams {
+    message Response {
+        repeated Team teams = 1;
+    }
+}
+
+message SetTeam {
+    Team team = 1;
+
+    message Response {
+        Team team = 1;
+    }
+}
+
+message DeleteTeam {
+    string team_id = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message ListTeamUser {
+    string team_id = 1;
+
+    message Response {
+        repeated string user_ids = 1;
+    }
+}
+
+message AddTeamUser {
+    string team_id = 1;
+    string share_with = 3;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message RemoveTeamUser {
+    string team_id = 1;
+    string share_with = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+service TeamService {
+    // Gets information from a given team
+    rpc getTeamById (GetTeamById) returns (GetTeamById.Response){
+        option (google.api.http) = {
+            get: "/v1/team/getTeamById"
+        };
+    };
+
+    // Gets information from a given team
+    rpc getTeamByName (GetTeamByName) returns (GetTeamByName.Response){
+        option (google.api.http) = {
+            get: "/v1/team/getTeamByName"
+        };
+    };
+
+    // Gets information from a given team
+    rpc getTeamByShortName (GetTeamByShortName) returns (GetTeamByShortName.Response){
+        option (google.api.http) = {
+            get: "/v1/team/getTeamByShortName"
+        };
+    };
+
+    // Lists the teams that the current user can see
+    rpc listMyTeams (ListMyTeams) returns (ListMyTeams.Response){
+        option (google.api.http) = {
+            get: "/v1/team/listMyTeams"
+        };
+    };
+
+    // Create or update a team
+    // Automatically adds the caller to the team
+    rpc setTeam (SetTeam) returns (SetTeam.Response){
+        option (google.api.http) = {
+            post: "/v1/team/setTeam"
+            body: "*"
+        };
+    };
+
+    // Delete an existing team
+    // Only enabled if the person deleting is the owner of the organization or owner of the team
+    rpc deleteTeam (DeleteTeam) returns (DeleteTeam.Response){
+        option (google.api.http) = {
+            post: "/v1/team/deleteTeam"
+            body: "*"
+        };
+    };
+
+    // List users inside a team
+    // Only available for users inside the team itself
+    rpc listUsers (ListTeamUser) returns (ListTeamUser.Response){
+        option (google.api.http) = {
+            get: "/v1/team/listUsers"
+        };
+    };
+
+    // Adds the given user to the team
+    // Only enabled if the requester is the creator of the team or the organization
+    rpc addUser (AddTeamUser) returns (AddTeamUser.Response){
+        option (google.api.http) = {
+            post: "/v1/team/addUser"
+            body: "*"
+        };
+    };
+
+    // Removes the given user to the team
+    // Only enabled if the requester is the creator of the team
+    // The owner can never be removed
+    rpc removeUser (RemoveTeamUser) returns (RemoveTeamUser.Response){
+        option (google.api.http) = {
+            post: "/v1/team/removeUser"
+            body: "*"
+        };
+    };
+}

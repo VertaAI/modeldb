@@ -1,0 +1,31 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha \"./tests/**/*.test.js\" --exit"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/ramda": "^0.26.21",
+    "authenticator": "^1.1.5",
+    "axios": "^0.19.0",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chromedriver": "77.0.0",
+    "dotenv": "^8.1.0",
+    "faker": "^4.1.0",
+    "mocha": "^6.2.0",
+    "mochawesome": "^4.1.0",
+    "ramda": "^0.26.1",
+    "selenium-webdriver": "^4.0.0-alpha.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.0",
+    "@types/mocha": "^5.2.7",
+    "@types/selenium-webdriver": "^4.0.2",
+    "auth0-js": "^9.11.3"
+  }
+}

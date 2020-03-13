@@ -1,0 +1,53 @@
+:global .rc-tooltip {
+  position: absolute;
+  z-index: 1070;
+  display: block;
+  visibility: visible;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+:global .rc-tooltip-hidden {
+  display: none;
+}
+
+:global .rc-tooltip-inner {
+  padding: 5px 10px;
+  color: rgba(51, 51, 51, 0.9);
+  text-align: center;
+  text-decoration: none;
+  background-color: rgba(255, 255, 255, 1);
+  font-size: 12px;
+  border-radius: 5px;
+  line-height: 1.5em;
+  box-shadow: 0.05px 1px 2px 0.15px rgba(9, 30, 66, 0.15);
+}
+
+:global .rc-tooltip-arrow,
+:global .rc-tooltip-arrow-inner {
+  position: absolute;
+  z-index: 1070;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+:global .rc-tooltip-placement-top .rc-tooltip-arrow {
+  bottom: -7px;
+  margin-left: -6px;
+  border-width: 6px 6px 0;
+}
+
+:global .rc-tooltip-placement-top .rc-tooltip-arrow-inner,
+:global .rc-tooltip-placement-topLeft .rc-tooltip-arrow-inner,
+:global .rc-tooltip-placement-topRight .rc-tooltip-arrow-inner {
+  bottom: 1px;
+  margin-left: -6px;
+  border-width: 6px 6px 0;
+  border-top-color: rgba(9, 30, 66, 0.15);
+}
+
+:global .rc-tooltip-placement-top .rc-tooltip-arrow {
+  left: 50%;
+}

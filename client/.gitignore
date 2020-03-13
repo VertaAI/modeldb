@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# data
+*.csv
+
+# development
+.vscode
+
+# packaging
+verta/build/
+verta/dist/
+verta/verta.egg-info/
+
+# unit testing
+verta/tests/.hypothesis
+
+# documentation
+verta/docs/_build/

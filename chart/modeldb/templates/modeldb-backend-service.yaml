@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: modeldb
+  name: modeldb-backend
+spec:
+  ports:
+  - port: 8085
+    name: backend
+  - port: 8086
+    name: artifactstore
+  selector:
+    app: modeldb
+    tier: backend
+  type: ClusterIP

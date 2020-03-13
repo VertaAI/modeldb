@@ -1,0 +1,33 @@
+.root {
+  position: sticky;
+  top: 0;
+  padding: 23px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  color: var(--text-color2);
+  background-color: white;
+  z-index: 2;
+  box-shadow: 1px 1px #e2e2e2;
+}
+
+.cell_content {
+  display: flex;
+  align-items: center;
+}
+
+.sorting_field {
+  font-weight: normal;
+  font-size: 10px;
+  color: var(--text-color3);
+  position: absolute;
+  width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sorting_value {
+  font-weight: 500;
+  color: var(--text-color2);
+}

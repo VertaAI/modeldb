@@ -1,0 +1,17 @@
+.root {
+  margin: 5px 0px;
+  width: 100%;
+  text-align: center;
+  padding: 6px 10px;
+  background-color: var(--grey-lightest-highlight);
+  border-radius: 2px;
+  color: var(--error-color1);
+  text-align: center;
+  word-break: break-word;
+  word-wrap: break-word;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.root::first-letter {
+  text-transform: capitalize;
+}

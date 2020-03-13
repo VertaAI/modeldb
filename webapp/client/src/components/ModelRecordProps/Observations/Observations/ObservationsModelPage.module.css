@@ -1,0 +1,59 @@
+/* limit for pill size is 150, 780 of it is total length, 630 would be the charts width */
+.observations_wrapper {
+  display: grid;
+  grid-template-columns: 180px 630px;
+}
+
+.attribute_container {
+  display: flex;
+}
+
+.attribute_container_attribute {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.observations_chart_container {
+  padding: 0 5px;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  margin-top: 3px;
+  margin-left: 3px;
+  transition: all 90ms ease-out;
+}
+
+.option_icon {
+  color: var(--medium-grey);
+}
+
+.option_icon:hover {
+  margin-left: 5px;
+  color: var(--light-main-color);
+}
+
+.selected_option_icon {
+  color: var(--main-color2);
+}
+
+/* chart styles */
+.groupedChartBlock {
+  display: grid;
+  grid-template-rows: auto auto;
+}
+
+.legendLabel {
+  color: var(--text-color3);
+  font-size: 12px;
+  margin-left: 20px;
+}
+
+.legendBlock {
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+/* -------------------- */

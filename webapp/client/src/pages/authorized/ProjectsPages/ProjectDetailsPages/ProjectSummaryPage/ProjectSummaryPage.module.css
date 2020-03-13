@@ -1,0 +1,14 @@
+.root {
+}
+
+.deleting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.readme {
+}
+
+.mainInfo {
+  margin-bottom: 20px;
+}

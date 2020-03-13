@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package ai.verta.modeldb;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+
+/*
+  The lineage service is used to track the lineage of our data types.
+  More specifically, it's responsible for recording which inputs were
+  used to create which outputs, forming a DAG. However, since detecting
+  a DAG is too expensive in general, we won't impose this constraint and
+  it's to up to the user to ensure that things are configured correctly.
+*/
+
+// We can have multiple types being recorded in the lineage system. These are the types that we allow.
+message LineageEntryEnum {
+    enum LineageEntryType {
+        UNKNOWN = 0; // Type 0 should always cause an error
+        EXPERIMENT_RUN = 1;
+        DATASET_VERSION = 2;
+    }
+};
+
+message LineageEntry {
+    LineageEntryEnum.LineageEntryType type = 1;
+    oneof description {
+        // External ID of the item for the given type, if compatible
+        string external_id = 2;
+    };
+}
+
+// Represent a set of lineage items, essentially an array so that it can be embedded on other proto messages.
+message LineageEntryBatch {
+    repeated LineageEntry items = 1;
+}
+
+// Add every item of "input" as a parent of every item on "output".
+message AddLineage {
+    repeated LineageEntry input = 1;
+    repeated LineageEntry output = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+// Delete every item of "input" as a parent of every item on "output".
+message DeleteLineage {
+    repeated LineageEntry input = 1;
+    repeated LineageEntry output = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+// For each item provided, list its inputs.
+// This operation is batched by default. If "items" contains N elements,
+// then Response.inputs will contain N elements, where each element
+// is the set of inputs for the corresponding i-th item provided in the
+// request.
+message FindAllInputs {
+    repeated LineageEntry items = 1;
+
+    message Response {
+        repeated LineageEntryBatch inputs = 1;
+    }
+}
+
+// For each item provided, list its outputs.
+// This operation is batched by default. If "items" contains N elements,
+// then Response.outputs will contain N elements, where each element
+// is the set of outputs for the corresponding i-th item provided in the
+// request.
+message FindAllOutputs {
+    repeated LineageEntry items = 1;
+
+    message Response {
+        repeated LineageEntryBatch outputs = 1;
+    }
+}
+
+// For each item provided, list its inputs and outputs.
+// This operation is batched by default. If "items" contains N elements,
+// then Response.inputs and Response.outputs will contain N elements each, where each element
+// is the set of inputs and outputs for the corresponding i-th item provided in the
+// request.
+message FindAllInputsOutputs {
+    repeated LineageEntry items = 1;
+
+    message Response {
+        repeated LineageEntryBatch inputs = 1;
+        repeated LineageEntryBatch outputs = 2;
+    }
+}
+
+service LineageService {
+    rpc addLineage (AddLineage) returns (AddLineage.Response) {
+        option (google.api.http) = {
+            post: "/v1/lineage/addLineage"
+            body: "*"
+        };
+    };
+
+    rpc deleteLineage (DeleteLineage) returns (DeleteLineage.Response) {
+        option (google.api.http) = {
+            post: "/v1/lineage/deleteLineage"
+            body: "*"
+        };
+    };
+
+    rpc findAllInputs (FindAllInputs) returns (FindAllInputs.Response) {
+        option (google.api.http) = {
+            post: "/v1/lineage/findAllInputs"
+            body: "*"
+        };
+    };
+
+    rpc findAllOutputs (FindAllOutputs) returns (FindAllOutputs.Response) {
+        option (google.api.http) = {
+            post: "/v1/lineage/findAllOutputs"
+            body: "*"
+        };
+    };
+
+    rpc findAllInputsOutputs (FindAllInputsOutputs) returns (FindAllInputsOutputs.Response) {
+        option (google.api.http) = {
+            post: "/v1/lineage/findAllInputsOutputs"
+            body: "*"
+        };
+    };
+}

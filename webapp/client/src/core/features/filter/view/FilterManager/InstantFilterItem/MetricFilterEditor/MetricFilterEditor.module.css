@@ -1,0 +1,28 @@
+.root {
+  display: grid;
+  grid-template-columns: 34px auto;
+  text-align: end;
+  font-size: var(--font-size3);
+  color: var(--text-color3);
+  margin-top: 4px;
+  grid-column-gap: 4px;
+}
+
+.root select {
+  background: var(--main-color3);
+  border-radius: 2px;
+  width: 34px;
+  border: 1px solid var(--line-color2);
+  color: var(--text-color1);
+  font-size: var(--font-size2);
+  line-height: 1.4;
+  font-weight: normal;
+  padding: 0 12px;
+  height: 34px;
+  outline: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  appearance: none !important;
+  margin-top: 0; /* to remove 5px margin imposed from select style */
+}

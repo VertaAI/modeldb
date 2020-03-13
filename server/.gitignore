@@ -1,7 +1,0 @@
-.idea/
-target/
-*.iml
-*.jar
-src/main/java/jooq/
-*.db
-codegen/mongodb/

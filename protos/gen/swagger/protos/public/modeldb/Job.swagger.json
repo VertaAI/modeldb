@@ -1,0 +1,331 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protos/public/modeldb/Job.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/job/createJob": {
+      "post": {
+        "operationId": "createJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCreateJobResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCreateJob"
+            }
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      }
+    },
+    "/job/deleteJob": {
+      "get": {
+        "operationId": "deleteJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteJobResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      }
+    },
+    "/job/getJob": {
+      "get": {
+        "operationId": "getJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetJobResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      }
+    },
+    "/job/updateJob": {
+      "get": {
+        "operationId": "updateJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbUpdateJobResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "job_status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "IN_PROGRESS",
+              "COMPLETED"
+            ],
+            "default": "NOT_STARTED"
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "JobStatusEnumJobStatus": {
+      "type": "string",
+      "enum": [
+        "NOT_STARTED",
+        "IN_PROGRESS",
+        "COMPLETED"
+      ],
+      "default": "NOT_STARTED"
+    },
+    "JobTypeEnumJobType": {
+      "type": "string",
+      "enum": [
+        "KUBERNETES_JOB"
+      ],
+      "default": "KUBERNETES_JOB"
+    },
+    "ValueTypeEnumValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "LIST",
+        "BLOB"
+      ],
+      "default": "STRING"
+    },
+    "commonKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "modeldbCreateJob": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "start_time": {
+          "type": "string"
+        },
+        "end_time": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        },
+        "job_status": {
+          "$ref": "#/definitions/JobStatusEnumJobStatus"
+        },
+        "job_type": {
+          "$ref": "#/definitions/JobTypeEnumJobType"
+        }
+      }
+    },
+    "modeldbCreateJobResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/modeldbJob"
+        }
+      }
+    },
+    "modeldbDeleteJobResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "modeldbGetJobResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/modeldbJob"
+        }
+      }
+    },
+    "modeldbJob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "start_time": {
+          "type": "string"
+        },
+        "end_time": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        },
+        "job_status": {
+          "$ref": "#/definitions/JobStatusEnumJobStatus"
+        },
+        "job_type": {
+          "$ref": "#/definitions/JobTypeEnumJobType"
+        },
+        "owner": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbUpdateJobResponse": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/modeldbJob"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

@@ -1,0 +1,79 @@
+.root {
+}
+
+.dataset_link {
+  text-decoration: none;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 400px auto auto 180px;
+  grid-template-rows: 50px auto auto 48px auto;
+  padding: var(--widget-card-padding);
+  font-size: 13px;
+  color: var(--fr-color3);
+  margin-bottom: 16px;
+  background-color: var(--bg-color3);
+  border: 1px solid var(--bg-color3);
+  user-select: none;
+  grid-template-areas:
+    'title_block . . .'
+    'title_block . . type'
+    'tags . . dates'
+    '. . . actions';
+  cursor: pointer;
+}
+.content:hover {
+  border-color: var(--bg-color2);
+}
+
+.title_block {
+  display: grid;
+  grid-template-rows: auto auto 12px;
+  grid-area: title_block;
+  grid-gap: 5px;
+}
+
+.title {
+  color: var(--fr-color2);
+  font-size: 20px;
+  line-height: 24px;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.tags_block {
+  grid-area: tags;
+  cursor: default;
+}
+
+.type {
+  grid-area: type;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--fr-color4);
+}
+
+.dates_block {
+  color: var(--fr-color4);
+  grid-area: dates;
+  align-self: end;
+  justify-self: end;
+  text-align: end;
+  padding-bottom: 8px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  grid-area: actions;
+}
+.action {
+  margin-right: 5px;
+}
+.action:last-child {
+  margin-right: 0;
+}

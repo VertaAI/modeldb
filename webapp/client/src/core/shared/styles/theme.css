@@ -1,0 +1,119 @@
+/* when you change any root variable also please change theme.ts */
+:root {
+  --bg-color1: var(--main-color1);
+  --bg-color2: var(--main-color2);
+  --bg-color3: var(--main-color3);
+  --bg-color4: var(--main-color4);
+  --bg-color5: var(--main-color5);
+  --bg-color6: rgba(0, 0, 0, 0.2);
+  --bg-color7: #fafafa;
+  --bg-color8: #dedede;
+  --bg-color-charts: #f9fafc;
+
+  --fr-color1: #5457e3;
+  --fr-color2: var(--main-color5);
+  --fr-color25: rgba(0, 0, 0, 0.8);
+  --fr-color3: rgba(0, 0, 0, 0.7);
+  --fr-color4: rgba(0, 0, 0, 0.5);
+  --fr-color5: rgba(0, 0, 0, 0.2);
+  --fr-color6: rgba(0, 0, 0, 0.1);
+
+  --main-color1: #5fe6c9;
+  --main-color1-dark: #23d8c0;
+  --main-color1-light: #5fe6c910;
+  --main-color2: #534eb5;
+  --main-color2-light: #534eb5b5;
+  --main-color2-lighter: #534eb580;
+  --main-color2-lightest: #dedefc66;
+  --main-color2-lightest-highlight: #ececfdd3;
+  --light-main-color: #a3a3f4;
+  --lighter-main-color: #e3e3fa;
+  --lightest-main-color: #ececfdd3;
+
+  --main-color2-dark: #3430a9;
+  --main-color3: #ffffff;
+  --main-color4: #f3f3f3;
+  --main-color5: rgba(0, 0, 0, 0.9);
+  --main-color6: #514eb5;
+  --main-color7: #393780;
+  --main-hover-blue: #6a84ff;
+
+  --main-text-color1: #444444;
+  --text-color1: #5457e3;
+  --text-color2: rgba(0, 0, 0, 0.7);
+  --text-color3: rgba(0, 0, 0, 0.5);
+  --text-color4: rgba(0, 0, 0, 0.2);
+  --text-color5: rgba(0, 0, 0, 0.4);
+  --text-color6: #000000;
+  --text-color7: #222222;
+  --text-color8: #4e77b5;
+  --text-color9: #aaaaaa;
+  --text-color-grey: #8d8d8d;
+  --medium-grey: #cacaca;
+  --lightgrey: #dddddd;
+  --grey-borders: #eaeaea;
+  --disabled-color: #bbbbbb;
+
+  --line-color1: rgba(0, 0, 0, 0.3);
+  --line-color2: rgba(0, 0, 0, 0.15);
+  --error-color1: #ff787f;
+  --delete-color1: #ff8a91;
+  --delete-color2: #f2505a;
+
+  --font-size1: 20px;
+  --font-size2: 16px;
+  --font-size3: 15px;
+  --font-size4: 13px;
+  --font-size5: 12px;
+
+  --grey-light: #dae1e7;
+  --grey-light-mid: #e2eaf0;
+  --grey-lighter: #f3f3f3;
+  --grey-lightest: #f8fafc;
+  --grey-lightest-highlight: #f3f3f3ad;
+  --grey-medium: #e2e2e2;
+  --grey-dark-text: #999;
+  --grey-dark-mid: #adadad;
+  --grey-dark: #444;
+
+  --vgreen-lightest: #e7fffb;
+  --vgreen-lighter: #d6fff9;
+  --vgreen-light: #b8fff4;
+
+  --border-color1: #dedede;
+
+  --header-height: 60px;
+
+  --success-green: #42ca49;
+  --success-green-lighter: #82c91e2b;
+  --warn-yellow: #ffae42;
+  --warn-light-yellow: #f9fea4b1;
+
+  --widget-card-padding: 30px;
+
+  --input-padding-left: 12px;
+  --input-border: 1px solid var(--border-color1);
+  --input-color: var(--text-color2);
+
+  --button-primary-bg: var(--main-color6);
+  --button-primary-hover-bg: var(--main-color7);
+  --button-primary-disabled-bg: var(--disabled-color);
+  --button-primary-color: #ffffff;
+
+  --button-secondary-bg: #ffffff;
+  --button-secondary-border: var(--main-color7);
+  --button-secondary-color: var(--main-color7);
+  --button-secondary-hover-bg: #d6d6e0;
+  --button-secondary-disabled-bg: #ffffff;
+  --button-secondary-disabled-color: var(--disabled-color);
+  --button-secondary-disabled-border: #dedede;
+}
+
+/* theme of scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  background: var(--grey-lightest-highlight);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--grey-medium);
+}

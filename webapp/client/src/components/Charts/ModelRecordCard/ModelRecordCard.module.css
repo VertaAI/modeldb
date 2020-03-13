@@ -1,0 +1,133 @@
+.show {
+  display: block;
+}
+
+.hide {
+  display: none;
+}
+
+.modelCardContent {
+  max-width: 230px;
+  padding: 10px 10px 10px 20px;
+  animation-duration: 2s;
+  background-color: var(--bg-color-charts);
+  border-radius: 7px;
+  box-shadow: 0px 1px 2px 0px rgba(9, 30, 66, 0.15);
+  outline: none;
+}
+
+.paramKey {
+  color: rgb(141, 141, 141);
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.paramVal {
+  color: #000;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.paramCell {
+  display: grid;
+  grid-template-columns: 90px auto;
+  grid-column-gap: 5px;
+  padding: 5px 0 5px 15px;
+}
+
+.paramCell:hover {
+  border-radius: 4px;
+  background-color: #e6e6e6;
+}
+
+.cardFieldLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--line-color1);
+  word-break: break-all;
+  word-wrap: break-word;
+  margin-bottom: 5px;
+}
+
+.cardFieldValue {
+  font-size: 13px;
+  color: #000;
+  word-break: break-all;
+  word-wrap: break-word;
+  display: grid;
+}
+
+.cardField {
+  padding: 5px 0;
+}
+
+.cardFieldValue_Link > .cardFieldValue {
+  color: var(--main-color2);
+}
+
+.cardFieldValue_Link {
+  text-decoration: none !important;
+}
+
+.close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+  filter: invert(0.5);
+}
+.close:hover {
+  filter: invert(33%) sepia(24%) saturate(6172%) hue-rotate(231deg)
+    brightness(108%) contrast(101%);
+}
+
+.header {
+  position: relative;
+  height: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.scrollable_root {
+  position: relative;
+}
+
+.param_draggable {
+  padding: 4px;
+}
+.param_draggable:hover {
+  border-radius: 4px;
+  background-color: #e6e6e6;
+}
+
+.param_grid,
+.param_grid_hyperparameters {
+  line-height: 20px !important;
+  display: grid;
+  grid-template-columns: 90px 40px;
+  grid-gap: 5px;
+  white-space: pre-wrap;
+}
+
+.param_grid_metrics {
+  line-height: 20px !important;
+  display: grid;
+  grid-template-columns: 90px 40px;
+  grid-gap: 5px;
+  white-space: pre-wrap;
+}
+
+.param_key {
+  color: var(--text-color-grey);
+  word-break: break-all;
+  word-wrap: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.param_val {
+  color: #000;
+  word-break: break-all;
+  word-wrap: break-word;
+}

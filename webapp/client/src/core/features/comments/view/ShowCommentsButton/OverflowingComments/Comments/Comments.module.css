@@ -1,0 +1,85 @@
+.root {
+  display: flex;
+  position: relative;
+  width: 100%;
+  flex-direction: column;
+  background-color: var(--bg-color3);
+
+  --common-padding: 20px;
+}
+
+.header {
+  display: grid;
+  grid-column: auto;
+  grid-template-rows: 40px auto;
+  padding: 0 var(--common-padding);
+  align-items: center;
+  background-color: #41c5ee;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  height: var(--header-height);
+}
+
+.headerLabel {
+  position: relative;
+  text-align: center;
+  color: var(--main-text-color1);
+  margin-top: 10px;
+}
+
+.commentNumber {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #181d33;
+  background-color: var(--bg-color3);
+}
+
+.entityInfo {
+  color: white;
+  font-size: 13px;
+  margin: 0 18px;
+}
+
+.close {
+  position: absolute;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  right: 0;
+}
+
+.preloader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.content {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+}
+
+.items {
+  flex-grow: 1;
+  padding: var(--common-padding);
+  overflow: auto;
+}
+
+.item {
+  display: flex;
+  margin-bottom: 18px;
+}
+.item:last-child {
+  margin-bottom: 0;
+}

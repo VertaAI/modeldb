@@ -1,0 +1,12 @@
+.footer {
+  display: flex;
+  border-top: 1px solid #e2e2e2;
+  align-items: center;
+  padding: 12px;
+  height: 72px;
+  background-color: white;
+}
+
+.footer__pagination {
+  margin-left: auto;
+}

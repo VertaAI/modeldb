@@ -1,0 +1,54 @@
+.root {
+}
+
+.modes {
+  display: flex;
+  height: 100%;
+  margin-right: auto;
+}
+.mode {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  padding: 0 var(--header-horizontal-padding);
+  margin-bottom: calc(var(--border-width) * -1);
+  background: transparent;
+  cursor: pointer;
+}
+.mode:hover {
+  color: #24292e;
+}
+.activeMode {
+  color: black;
+  font-weight: 500;
+  background-color: white;
+  pointer-events: none;
+}
+.activeMode:first-child {
+  border-right: var(--border);
+}
+.activeMode:last-child {
+  border-left: var(--border);
+  border-right: var(--border);
+}
+
+.actions {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  padding-right: var(--header-horizontal-padding);
+}
+.saveChanges {
+  margin-right: 10px;
+}
+.close {
+  cursor: pointer;
+}
+
+.options {
+  display: flex;
+  margin-right: 14px;
+}
+.option {
+  margin-right: 5px;
+}

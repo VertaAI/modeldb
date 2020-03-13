@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="60px" height="60px" viewBox="0 0 60 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="Share" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Share&amp;Collaboration_States" transform="translate(-611.000000, -169.000000)" fill="#5FE6C9">
+            <path d="M641,229 C624.431458,229 611,215.568542 611,199 C611,182.431458 624.431458,169 641,169 C657.568542,169 671,182.431458 671,199 C671,215.568542 657.568542,229 641,229 Z M635,207.34 L626.66,199 L623.82,201.82 L635,213 L659,189 L656.18,186.18 L635,207.34 Z" id="Icon-Check_SVG"></path>
+        </g>
+    </g>
+</svg>

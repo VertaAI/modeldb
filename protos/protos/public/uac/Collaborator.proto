@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "protos/public/uac/UACService.proto";
+import "protos/public/uac/Organization.proto";
+import "protos/public/uac/Team.proto";
+import "protos/public/uac/RoleService.proto";
+import "protos/public/common/CommonService.proto";
+
+message AddCollaboratorRequest {
+    repeated string entity_ids = 1; // List of project.id, experiment.id etc.
+    string share_with = 2; // Collaborator user Id
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 3;
+    string message = 4; // Shared message for reference
+    uint64 date_created = 5; // shared on
+    uint64 date_updated = 6; // CollaboratorType updated on
+
+    common.TernaryEnum.Ternary can_deploy = 7;
+    EntitiesEnum.EntitiesTypes authz_entity_type = 8; //user, team, org
+
+    message Response {
+        repeated Action self_allowed_actions = 5;
+        bool status = 1;
+        oneof collaborator {
+          UserInfo collaborator_user_info = 2;
+          Organization collaborator_organization = 3;
+          Team collaborator_team = 4;
+        }
+    }
+}
+
+enum ShareViaEnum {
+    USER_ID = 0;
+    EMAIL_ID = 1;
+    USERNAME = 2;
+}
+
+message RemoveCollaborator {
+    string entity_id = 1; // project.id, experiment.id etc.
+    string share_with = 2; // Collaborator user Id
+    uint64 date_deleted = 3;
+    EntitiesEnum.EntitiesTypes authz_entity_type = 4;
+
+    message Response {
+        bool status = 1;
+        repeated Action self_allowed_actions = 5;
+    }
+}
+
+message GetCollaboratorResponse {
+    string user_id = 1 [deprecated=true];
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
+    ShareViaEnum share_via_type = 3;
+    string verta_id = 4; //user_verta_id, team_id, org_id
+    common.TernaryEnum.Ternary can_deploy = 5;
+    EntitiesEnum.EntitiesTypes authz_entity_type = 6;
+}
+
+message GetCollaborator {
+    string entity_id = 1;
+
+    message Response {
+        repeated GetCollaboratorResponse shared_users = 1;
+    }
+}
+
+service CollaboratorService {
+    rpc addOrUpdateProjectCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateProjectCollaborator"
+            body: "*"
+        };
+    };
+
+    rpc removeProjectCollaborator (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeProjectCollaborator"
+        };
+    };
+
+    rpc getProjectCollaborators (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getProjectCollaborators"
+        };
+    };
+    rpc addOrUpdateDatasetCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateDatasetCollaborator"
+            body: "*"
+        };
+    };
+
+    rpc removeDatasetCollaborator (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeDatasetCollaborator"
+        };
+    };
+
+    rpc getDatasetCollaborators (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getDatasetCollaborators"
+        };
+    };
+}

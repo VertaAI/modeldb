@@ -1,0 +1,29 @@
+.root {
+  border: var(--border);
+  border-radius: 3px;
+
+  background-color: white;
+
+  --border-width: 1px;
+  --border: var(--border-width) solid var(--border-color1);
+  --header-horizontal-padding: 12px;
+}
+
+.header {
+  display: flex;
+  height: 36px;
+  border-bottom: var(--border);
+  background-color: #fafbfc;
+  color: #586069;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.header_leftContent {
+}
+.header_rightContent {
+  margin-left: auto;
+}
+
+.content {
+}

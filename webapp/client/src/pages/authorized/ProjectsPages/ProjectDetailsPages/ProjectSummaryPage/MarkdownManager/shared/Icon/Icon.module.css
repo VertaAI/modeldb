@@ -1,0 +1,8 @@
+.root {
+  font-size: 14px;
+  color: #586069;
+}
+
+.root:hover {
+  color: var(--main-color-dark);
+}

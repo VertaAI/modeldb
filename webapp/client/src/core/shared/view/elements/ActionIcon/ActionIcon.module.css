@@ -1,0 +1,13 @@
+.icon {
+  color: var(--main-color6);
+  cursor: pointer;
+}
+
+.icon:hover {
+  color: var(--main-color7);
+}
+
+.icon.disabled {
+  color: var(--disabled-color);
+  cursor: default;
+}

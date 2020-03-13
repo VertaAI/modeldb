@@ -1,0 +1,10 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.experimentRuns {
+  display: flex;
+  flex-grow: 1;
+}

@@ -1,0 +1,26 @@
+version: "3.5"
+services:
+    model:
+        image: model:latest
+        container_name: model
+        expose:
+        - "5000"
+        ports:
+        - "5000:5000"
+        networks:
+        - model
+
+    prometheus:
+        image: prom/prometheus:v2.16.0
+        container_name: prometheus
+        expose:
+        - "9090"
+        ports:
+        - "9090:9090"
+        networks:
+        - model
+        volumes:
+        - ./prometheus_config.yaml:/etc/prometheus/prometheus.yml
+
+networks:
+  model:

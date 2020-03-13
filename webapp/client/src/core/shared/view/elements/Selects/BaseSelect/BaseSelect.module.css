@@ -1,0 +1,34 @@
+.options {
+  width: 125px;
+  position: absolute;
+  visibility: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  background-color: white;
+}
+.opened.options {
+  visibility: visible;
+}
+
+.option {
+  width: 100%;
+  padding: var(--input-padding-left);
+  color: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.option:first-child {
+  border-radius: 3px 3px 0 0;
+}
+.option:last-child {
+  border-radius: 0 0 3px 3px;
+}
+.option:hover {
+  background-color: var(--bg-color4);
+}
+.option_selected {
+  color: rgba(255, 255, 255, 0.7);
+  background-color: var(--bg-color2) !important;
+}

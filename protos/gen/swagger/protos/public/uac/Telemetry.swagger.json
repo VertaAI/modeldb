@@ -1,0 +1,139 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protos/public/uac/Telemetry.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/telemetry/collectTelemetry": {
+      "post": {
+        "operationId": "collectTelemetry",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacCollectTelemetryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacCollectTelemetry"
+            }
+          }
+        ],
+        "tags": [
+          "TelemetryService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ValueTypeEnumValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "LIST",
+        "BLOB"
+      ],
+      "default": "STRING"
+    },
+    "commonKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "uacCollectTelemetry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        }
+      }
+    },
+    "uacCollectTelemetryResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

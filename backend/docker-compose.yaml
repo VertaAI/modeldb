@@ -1,0 +1,50 @@
+version: "3.5"
+services:
+    modeldb-backend:
+        image: modeldb-backend:latest
+        container_name: "modeldb-backend"
+        build: .
+        volumes:
+            - /Users/XYZ/Document/config:/config
+        environment:
+            VERTA_MODELDB_CONFIG: /config/config.yaml
+        expose:
+            - "8085"
+        ports:
+            - "8085:8085"
+        networks:
+            - modeldb_network
+
+    backend-proxy:
+        image: backend-proxy:latest
+        container_name: "backend-proxy"
+        expose:
+            - "8080"
+        ports:
+            - "8080:8080"
+        depends_on:
+            - modeldb-backend
+        networks:
+            - modeldb_network
+
+    uacservice:
+        image: uacservice:latest
+        container_name: "uacservice"
+        expose:
+            - "50051"
+        ports:
+            - "50051:50051"
+        networks:
+            - modeldb_network
+        environment:
+            - CONFIG_DIR:/config
+        volumes:
+            - /path/to/UACService:/config
+
+networks:
+  modeldb_network:
+    external:
+      name: modeldb_network
+
+volumes:
+  mongodata:

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="14px" viewBox="0 0 20 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 58 (84663) - https://sketch.com -->
+    <title>people-24px</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Workspaces,-Profile,-Organizations" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="1a-Workspaces" transform="translate(-1170.000000, -144.000000)" fill="#AAAAAA" fill-rule="nonzero">
+            <g id="Workspace-dropdown" transform="translate(1147.000000, 56.000000)">
+                <g id="people-24px" transform="translate(23.000000, 88.000000)">
+                    <path d="M7,8.75 C4.66,8.75 0,9.92 0,12.25 L0,14 L14,14 L14,12.25 C14,9.92 9.34,8.75 7,8.75 Z M2.34,12 C3.18,11.42 5.21,10.75 7,10.75 C8.79,10.75 10.82,11.42 11.66,12 L2.34,12 Z M7,7 C8.93,7 10.5,5.43 10.5,3.5 C10.5,1.57 8.93,0 7,0 C5.07,0 3.5,1.57 3.5,3.5 C3.5,5.43 5.07,7 7,7 Z M7,2 C7.83,2 8.5,2.67 8.5,3.5 C8.5,4.33 7.83,5 7,5 C6.17,5 5.5,4.33 5.5,3.5 C5.5,2.67 6.17,2 7,2 Z M14.04,8.81 C15.2,9.65 16,10.77 16,12.25 L16,14 L20,14 L20,12.25 C20,10.23 16.5,9.08 14.04,8.81 L14.04,8.81 Z M13,7 C14.93,7 16.5,5.43 16.5,3.5 C16.5,1.57 14.93,0 13,0 C12.46,0 11.96,0.13 11.5,0.35 C12.13,1.24 12.5,2.33 12.5,3.5 C12.5,4.67 12.13,5.76 11.5,6.65 C11.96,6.87 12.46,7 13,7 Z" id="Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

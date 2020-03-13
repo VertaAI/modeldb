@@ -1,0 +1,14 @@
+.root {
+  background-color: var(--main-color3);
+  border-right: 1px solid #e2e2e2;
+  text-align: center;
+  vertical-align: center;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  padding-top: 18px;
+}
+
+.selected_row_view {
+  background-color: var(--delete-color1) !important;
+}

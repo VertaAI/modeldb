@@ -1,229 +1,110 @@
-## ModelDB V2 Coming Soon! Sign up [here](https://verta.ai) for early access to open-source and managed service via [Verta.AI](https://verta.ai).
+# ModelDB: A system to track, version and audit Machine Learning models
 
----
----
+----
 
-# ModelDB: A system to manage ML models
+ModelDB is an end-to-end system for tracking, versioning and auditing  machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying and the python client.
 
-**Website**: [http://modeldb.csail.mit.edu](http://modeldb.csail.mit.edu)
+This version of ModelDB is built upon its [predecessor](https://mitdbg.github.io/modeldb/) from [CSAIL, MIT](https://www.csail.mit.edu/). The previous version can be found on Github [here](https://github.com/mitdbg/modeldb).
 
-**See the ModelDB frontend in action**:
+----
 
-[![ModelDB frontend in action video](http://img.youtube.com/vi/gxBb4CjJcxQ/0.jpg)](https://youtu.be/gxBb4CjJcxQ "Watch the ModelDB frontend in action")
+## Architecture
 
-## Contents
+At a high level the architecture of ModelDB in a Kubernetes cluster or a Docker application looks as below:
 
-- [Overview](#overview)
-    - [How Does it Work?](#how-does-it-work)
-- [Demo](#demo)
-- [News](#news)
-- [Setup and Installation](#setup-and-installation)
-- [Usage and Samples](#usage-and-samples)
-    - [Incorporate ModelDB into your ML workflow](#incorporate-modeldb-into-your-ml-workflow)
-    - [View your models in ModelDB](#view-your-models-in-modeldb)
-- [Documentation](#documentation)
-- [Contact Us](#contact-us)
-- [Contributing](#contributing)
+![image](doc-resources/images/modeldb-architecture.png)
 
-## Overview
-ModelDB is an end-to-end system to manage machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying. ModelDB can be used with **any ML environment** via the ModelDB Light API. ModelDB native clients can be used for advanced support in `spark.ml` and `scikit-learn`.
+- **ModelDB Client** developed in Python which can instantiated in the user's model building code and exposes functions to log related information to ModelDB.
+- **ModelDB Frontend**  developed in JavaScript and typescript is the visual reporting module of ModelDB. It also acts as an entry point for the ModelDB cluster.
+  - It receives the request from client (1) and the browser and route them to the appropriate container.
+  - The gRPC calls (2) for creating, reading,updating or deleting Projects, Experiments, ExperimentRuns, Dataset, DatasetVersions or their metadata are routed to ModelDB Proxy.
+  - The HTTP calls (3) for storing and retrieving binary artifacts are forwarded directly to backend.
+- **ModelDB Backend Proxy** developed in golang is a light weight gRPC to Http convertor.
+  - It receives the gRPC request from the front end (2) and sends them to backend (4). In the other direction it converts the response from backend and sends it to the frontend.
+- **ModelDB Backend** developed in java is module which stores, retrieves or deletes information as triggered by user via the client or the front end.
+  - It exposes gRPC endpoints (4) for most of the operations which is used by the proxy.
+  - It has http endpoints (3) for storing, retrieving and deleting artifacts used directly by the frontend.
+- **Database** ModelDB Backend stores (5) the information from the requests it receive into a Relational database.
+  - Out of the box ModelDB is configured and verified to work against PostgreSQL, but since it uses Hibernate as a ORM and liquibase for change management, it should be easy to configure ModelDB to run on another SQL Database supported by the the tools.
 
-The ModelDB frontend provides rich summaries and graphs showing model data. The frontend provides functionality to slice and dice this data along various attributes (e.g. operations like filter by hyperparameter, group by datasets) and to build custom charts showing model performance.
+*Volumes : The relational database and the artifact store in backend need volumes attached to enable persistent storage.*
 
-<img src="docs/getting_started/images/frontend-1.png" width="75%"><br>
-ModelDB Frontend Projects Summary Page
-
-<img src="docs/getting_started/images/frontend-2.png" width="75%"><br>
-ModelDB Graph for Model Metrics
-
-<img src="docs/getting_started/images/frontend-4.png" width="75%"><br>
-ModelDB Configurable Graph Parameters
-
-### How does it work?
-
-[ModelDB's Light API](client/python/light_api.md) can be used with any ML environment to sync model metrics and metadata or even entire config files by calling a few functions (e.g. see [here](client/python/samples/basic/BasicWorkflow.py) and [here](client/python/samples/basic/BasicSyncAll.py) respectively).
-
-Alternatively, ModelDB native clients for  ```spark.ml``` and ```scikit-learn``` can be used to perform automatic, fine-grained logging. Unlike the Light API, native clients do not require the user to explicitly provide model data to ModelDB. The native clients can automatically extract relevant pieces of model data *as the model is being built* and sync them with ModelDB. Incorporating ModelDB into a scikit-learn / spark.ml workflow is as simple as appending `Sync` or `_sync` to relevant methods in the respective libraries. See samples for spark.ml [here](client/scala/libs/spark.ml#samples) and those for scikit-learn [here](client/python/scikit_learn.md).
-
-## Demo
-- [ModelDB client](http://modeldb.csail.mit.edu:8000): See how ModelDB can be integrated into different ML workflows 
-- [ModelDB frontend](http://modeldb.csail.mit.edu:3000): See how ModelDB can visualize model data and results
-
-## News
-
-2017.02.08: ModelDB publicly available! Try it out and contribute.
+----
 
 ## Setup and Installation
 
+There are multiple way to bring up ModelDB.
+
 ### Docker Setup
 
-If you have [Docker Compose](https://docs.docker.com/compose/install/) installed, you can bring up a ModelDB server with just a couple commands.
+#### Deploy pre published images
 
-*To run ModelDB with Docker, but without Docker Compose, see [detailed instructions](dockerbuild/README.md).*
+If you have [Docker Compose](https://docs.docker.com/compose/install/) installed, you can bring up a ModelDB server with just a single command.
 
-1. **Clone the repo**
+```bash
+docker-compose -f docker-compose-all.yaml up
+```
 
-    ```bash
-    git clone https://github.com/mitdbg/modeldb
-    ```
+This command will fetch the published images from Docker hub and setup the multi container environment. The webapp can be accessed at **<http://localhost:3000>**.
 
-2. **Build and run ModelDB**
+Logs will have an entry similar to `Backend server started listening on 8085` to indicate backend is up. During the first run backend will have to run the liquibase scripts so it will take a few extra minutes to come up. The progress can be monitored in the logs.
 
-    ```bash
-    cd [path_to_modeldb]
-    docker-compose up
-    ```
-Note by default ModelDB will listen on localhost:3000.     
-### Manual Setup
+*Once the command finishes it might take a couple of minutes for the proxy, backend and frontend to establish connection. During this time any access through frontend or client may result in 502.*
 
-Watch a video of the setup and installation process [here](https://youtu.be/rmNnG3-bd6s).
+#### Build images from source and deploy
 
-1. **Clone the repo**
+To build the images you need Docker and jdk(1.8) installed. Each of the modules has a script to build its Docker image. This flow can be triggered by running from the root of the repository
 
-    ```bash
-    git clone https://github.com/mitdbg/modeldb
-    ```
+```bash
+./build_all_no_deploy_modeldb.sh
+```
 
-2. **Install dependencies**
+This will build the Docker images locally.
 
-    ModelDB requires Linux or MacOS. The code below shows how you can install the dependencies on each of them. A detailed list of all the dependencies with the recommended and required versions can be found [here](docs/required_software.md).
+To use these images run steps in [Deploy pre published images](#deploy-pre-published-images), but this time since there will be locally built images , those will be used instead of pulling the images from remote repository.
 
-    Depending on the client you're using, we assume you have the following already installed:
-    - scikit-learn client:
-        - Python 2.7 or Python 3.5.1\*\*
-        - [pip](https://pip.pypa.io/en/stable/installing/)
-        - [scikit-learn](http://scikit-learn.org/stable/install.html) 0.17\*\*
-    - spark.ml client:
-        - Java 1.8+
-        - Spark 2.0.0\*\*
+A utility script to combine the two steps is available and can be run as
 
-    **(\*\*) = Python 3.5.1+ is only compatible with thrift 0.10.0+**
+```bash
+./build_modeldb.sh
+```
 
-    On OSX, we also assume that you have [homebrew](https://brew.sh/) installed.
+### Kubernetes SetUp
 
-    **On Mac OSX:**
+Helm chart is available at `chart/modeldb`. ModelDB can be brought up on a Kubernetes cluster by running:
 
-    ```bash
-    # Use homebrew to install the dependencies
-    brew install sqlite
-    brew install maven
-    brew install node
-    brew install sbt # for spark.ml client only
-    brew install mongodb
+```bash
+cd chart/modeldb
+helm install . --name <release-name> --namespace <k8s namespace>
+```
 
-    # ModelDB works only with Thrift 0.9.3 and 0.10.0. Python 3 is only compatible with thrift 0.10.0 If you do not have thrift installed, install via brew.
-    `brew install thrift`
+By default, the `default` namespace on your Kubernetes cluster is used. `release-name` is a arbitrary identifier user picks to perform future helm operations on the cluster.
 
-    pip install -r [path_to_modeldb]/client/python/requirements.txt
-    ```
+To bring a cluster down, run:
 
-    **On Linux:**
+```bash
+helm del --purge <release-name-used-install-cmd>
+```
 
-    ```bash
-    apt-get update
-    sudo apt-get install sqlite
-    sudo apt-get install maven
-    sudo apt-get install sbt # for spark.ml client only
-    sudo apt-get install nodejs # may need to symlink node to nodejs. "cd /usr/bin; ln nodejs node"
-    sudo apt-get install -y mongodb-org # further instructions here: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+----
 
-    # install thrift. [path_to_thrift] is the installation directory
-    # ModelDB works with thrift 0.9.3 and 0.10.0. The following instructions are for 0.9.3
-    cd [path_to_thrift]
-    wget http://mirror.cc.columbia.edu/pub/software/apache/thrift/0.9.3/thrift-0.9.3.tar.gz
-    tar -xvzf thrift-0.9.3.tar.gz
-    cd thrift-0.9.3
-    ./configure
-    make
-    export PATH=[path_to_thrift]/:$PATH
+## Community
+For help or questions about ModelDB usage around "How To"s see the [docs](https://docs.verta.ai/en/master/).
 
-    pip install -r [path_to_modeldb]/client/python/requirements.txt
-    ```
+To report a bug, file a documentation issue, or submit a feature request, please open a GitHub issue.
 
-    For Linux, you can also refer to [this script](https://github.com/mitdbg/modeldb/blob/master/docs/install_on_linux.sh).
+For release announcements and other discussions, please join us in [Slack](http://bit.ly/modeldb-mlops).
 
-3. **Build**
+## Repo Structure
 
-    ModelDB is composed of three components: the ModelDB **server**, the ModelDB **client libraries**, and the ModelDB **frontend**.
+Each module in the architecture diagram has a designated folder in this repository, and has their own README covering in depth documentation and contribution guidelines.
 
-    In the following, **[path_to_modeldb]** refers to the directory into which you have cloned the modeldb repo and **[thrift_version]** is 0.9.3 or 0.10.0 depending on your thrift version (check by running ```thrift -version```).
+1. **protos** has the protobuf definitions of the objects and endpoint used across ModelDB. More details [here](protos/README.md).
+1. **backend** has the source code and tests for ModelDB Backend. It also holds the proxy at **backend/proxy**. More details [here](backend/README.md).
+1. **client** has the source code and tests for ModelDB client. More details [here](client/README.md).
+1. **webapp** has the source and tests for ModelDB frontend. More details [here](webapp/README.md).
 
-    ```bash
-    # run the script to set up the sqlite and the mongodb databases that modeldb will use
-    # this also starts mongodb
-    # ***IMPORTANT NOTE: This clears any previous modeldb databases. This should only be done once.***
-    cd [path_to_modeldb]/server/codegen
-    ./gen_sqlite.sh
+Other supporting material for deployment and documentation is at:
 
-    # build and start the server
-    cd ..
-    ./start_server.sh [thrift_version] &
-    # NOTE: if you are building the project in eclipse, you may need to uncomment the pluginManagement tags in pom.xml located in the server directory
-
-    # build or pip install the scikit-learn client library
-    pip install modeldb
-
-    -- or --
-
-    cd [path_to_modeldb]/client/python
-    ./build_client.sh
-
-    # build spark.ml client library
-    cd [path_to_modeldb]/client/scala/libs/spark.ml
-    ./build_client.sh
-
-    # start the frontend
-    cd [path_to_modeldb]/frontend
-    ./start_frontend.sh & # the frontend will now be available in http://localhost:3000/
-
-    # ****** For server shutdown ******
-    # Kill server
-    # Shutdown mongodb server
-    mongo --eval "db.getSiblingDB('admin').shutdownServer()"
-    ```
-
-## Usage and Samples
-
-### Incorporate ModelDB into your ML workflow
-- [Light API](client/python/light_api.md)
-- [scikit-learn](client/python/scikit_learn.md)
-- [spark.ml](docs/getting_started/spark_ml.md)
-
-### View your models in ModelDB
-After incorporating ModelDB into your models, follow these steps to run and view them in ModelDB.
-
-1. **Make sure the server is running.**
-
-    Each time you use ModelDB, the server, including MongoDB for the database, must be up and running.
-
-    ```bash
-    # start the server
-    cd [path_to_modeldb]/server
-    ./start_server.sh [thrift_version] &
-
-    # make sure mongodb is running. if not running, execute the commands below
-    # cd codegen
-    # mkdir -p mongodb
-    # mongod --dbpath mongodb
-    ```
-
-2. **Run your models instrumented with ModelDB as shown [above](#incorporate-modeldb-into-your-ml-workflow).**
-
-3. **View, visualize, and query your models.**
-
-    You can view all these models in [http:localhost:3000/](http:localhost:3000/) by starting the frontend.
-
-    ```bash
-    cd [path_to_modeldb]/frontend
-    ./start_frontend.sh &
-    ```
-
-## Documentation
-More comprehensive documentation on ModelDB, including answers to FAQ, will be available soon in [the wiki](https://github.com/mitdbg/modeldb/wiki). Information about the server documentation can be found in the [docs folder](docs). For other questions, don't hesitate to contact us.
-
-## Contact Us
-Questions? Bugs? We're happy to talk about all things ModelDB! Reach out to modeldb *at* lists.csail.mit.edu or post in the ModelDB [Google Group](https://groups.google.com/forum/#!forum/modeldb).
-
-## Contributing
-Contributions are welcome! Please read [this](CONTRIBUTING.md) to get started.
-
+1. **chart** has the helm chart to deploy ModelDB onto your Kubernetes cluster. More details [here](chart/modeldb/README.md).
+1. **doc-resources** has images for documentation.

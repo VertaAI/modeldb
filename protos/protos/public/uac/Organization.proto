@@ -1,0 +1,185 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "protos/public/common/CommonService.proto";
+
+message Organization {
+    string id = 1;
+    string name = 2;
+    string short_name = 7;
+    string description = 3;
+    string owner_id = 4;
+
+    int64 created_timestamp = 5;
+    int64 updated_timestamp = 6;
+
+    common.CollaboratorTypeEnum.CollaboratorType global_collaborator_type = 8;
+    common.TernaryEnum.Ternary global_can_deploy = 9;
+}
+
+message GetOrganizationById {
+    string org_id = 1;
+
+    message Response {
+        Organization organization = 1;
+    }
+}
+
+message GetOrganizationByName {
+    string org_name = 1;
+
+    message Response {
+        Organization organization = 1;
+    }
+}
+
+message GetOrganizationByShortName {
+    string short_name = 1;
+
+    message Response {
+        Organization organization = 1;
+    }
+}
+
+message ListMyOrganizations {
+    message Response {
+        repeated Organization organizations = 1;
+    }
+}
+
+message SetOrganization {
+    Organization organization = 1;
+
+    message Response {
+        Organization organization = 1;
+    }
+}
+
+message DeleteOrganization {
+    string org_id = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message ListUsers {
+    string org_id = 1;
+
+    message Response {
+        repeated string user_ids = 1;
+    }
+}
+
+message ListTeams {
+    string org_id = 1;
+
+    message Response {
+        repeated string team_ids = 1;
+    }
+}
+
+message AddUser {
+    string org_id = 1;
+    string share_with = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message RemoveUser {
+    string org_id = 1;
+    string share_with = 2;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+service OrganizationService {
+    // Gets information from a given organization
+    rpc getOrganizationById (GetOrganizationById) returns (GetOrganizationById.Response){
+        option (google.api.http) = {
+            get: "/v1/organization/getOrganizationById"
+        };
+    };
+
+    // Gets information from a given organization
+    rpc getOrganizationByName (GetOrganizationByName) returns (GetOrganizationByName.Response){
+        option (google.api.http) = {
+            get: "/v1/organization/getOrganizationByName"
+        };
+    };
+
+    // Gets information from a given organization
+    rpc getOrganizationByShortName (GetOrganizationByShortName) returns (GetOrganizationByShortName.Response){
+        option (google.api.http) = {
+            get: "/v1/organization/getOrganizationByShortName"
+        };
+    };
+
+    // Lists the organizations that the current user can see
+    rpc listMyOrganizations (ListMyOrganizations) returns (ListMyOrganizations.Response){
+        option (google.api.http) = {
+            get: "/v1/organization/listMyOrganizations"
+        };
+    };
+
+    // Create or update an organization
+    // Automatically sets the user making the call as owner and adds to the organization
+    rpc setOrganization (SetOrganization) returns (SetOrganization.Response){
+        option (google.api.http) = {
+            post: "/v1/organization/setOrganization"
+            body: "*"
+        };
+    };
+
+    // Delete an existing organization
+    // Only enabled if the person deleting is the creator
+    rpc deleteOrganization (DeleteOrganization) returns (DeleteOrganization.Response){
+        option (google.api.http) = {
+            post: "/v1/organization/deleteOrganization"
+            body: "*"
+        };
+    };
+
+    // List teams that are part of an organization
+    // Only available for users inside the organization itself
+    rpc listTeams (ListTeams) returns (ListTeams.Response){
+        option (google.api.http) = {
+            get: "/v1/organization/listTeams"
+        };
+    };
+
+    // List users inside an organization
+    // Only available for users inside the organization itself
+    rpc listUsers (ListUsers) returns (ListUsers.Response){
+        option (google.api.http) = {
+            get: "/v1/organization/listUsers"
+        };
+    };
+
+    // Adds the given user to the organization
+    // Only enabled if the requester is the creator of the organization
+    rpc addUser (AddUser) returns (AddUser.Response){
+        option (google.api.http) = {
+            post: "/v1/organization/addUser"
+            body: "*"
+        };
+    };
+
+    // Removes the given user to the organization
+    // Only enabled if the requester is the creator of the organization
+    // The owner can never be removed
+    rpc removeUser (RemoveUser) returns (RemoveUser.Response){
+        option (google.api.http) = {
+            post: "/v1/organization/removeUser"
+            body: "*"
+        };
+    };
+}

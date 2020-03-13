@@ -1,0 +1,206 @@
+g.marks {
+  transition: all 80ms ease-out;
+}
+
+.aggregationChart,
+.aggregatedBoxChart,
+.summaryChart,
+.parallelChart,
+.groupedBarChart,
+.groupedLineChart,
+.multiLineObsChart,
+.legendRect,
+.parallelEmptyChart,
+.groupedEmptyChart {
+  background-color: var(--bg-color-charts);
+  border-radius: 5px;
+  margin: 0 10px;
+}
+
+.axisLabel {
+  user-select: none;
+  font-size: 13px;
+  font-weight: 400 !important;
+}
+
+.axis > .domain,
+.axis > .tick line {
+  stroke: #bcbcbc;
+}
+
+.axis,
+.frame {
+  shape-rendering: crispEdges;
+}
+
+.groupedXAxis,
+.axis text {
+  font-size: 11px;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+  color: var(--main-text-color1);
+  user-select: none;
+  z-index: 5556;
+}
+
+.label {
+  user-select: none;
+  color: var(--text-color3) !important;
+}
+
+.groupedXAxis > .domain,
+.groupedXAxis > .tick line {
+  stroke: #bcbcbc;
+}
+
+.grid line,
+.groupedYAxisGrid > .tick line,
+.groupedXAxisGrid > .tick line {
+  stroke: #dedede !important;
+  stroke-width: 0.5px;
+}
+
+.grid > .domain,
+.grid > .tick text,
+.groupedXAxisGrid > .domain,
+.groupedXAxisGrid > .tick text,
+.groupedYAxisGrid > .domain,
+.groupedYAxisGrid > .tick text {
+  display: none;
+}
+
+.parallelChart .dimension {
+  /* cursor: move; */
+}
+
+.parallelLines {
+}
+
+.parallelLines path {
+  fill: none;
+  shape-rendering: auto;
+  stroke-width: 1.5px;
+  stroke-opacity: 0.5;
+  transition: all 80ms ease-out;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.parallelLines path:hover,
+.parallelLines path:active {
+  stroke-width: 2px;
+  stroke-opacity: 1;
+}
+
+.parallelLinesPath path {
+  fill: none;
+  stroke-width: 9px;
+  stroke: var(--grey-dark);
+  stroke-opacity: 0;
+  transition: 0.2s;
+}
+
+.parallel_axis_label {
+  font-size: 10px;
+}
+
+.parallelLinesPath path:hover {
+  stroke-opacity: 0.15;
+}
+
+.brush .extent {
+  fill-opacity: 0.3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.parallelLines path.fade {
+  stroke: #000;
+  stroke-opacity: 0.05;
+}
+
+.notAvailableMsg {
+  font-size: 18px;
+  font-style: italic;
+  opacity: 0.7;
+  fill: var(--text-color4);
+}
+
+.notAvailableMsg_icon {
+  font-size: 20px;
+  font-weight: 600;
+  opacity: 0.7;
+  fill: var(--text-color4);
+}
+
+.metricAxis {
+  fill: var(--main-color3);
+  stroke: var(--main-color2);
+  stroke-width: 0.5;
+  stroke-opacity: 0.3;
+}
+
+.hyperAxis {
+  fill-opacity: 0;
+}
+
+/* Scatterplot Tooltip Styling */
+.tooltip {
+  z-index: 5555;
+  position: absolute;
+  background-color: #ffffff;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 5px;
+  line-height: 1.5em;
+  box-shadow: 0px 1px 2px 0px rgba(9, 30, 66, 0.25);
+}
+
+.tooltip-label {
+  color: var(--text-color2);
+}
+
+.tooltip-value {
+  font-weight: 500;
+  color: var(--main-color5);
+}
+
+.compare_table tbody > tr > td:first-child {
+  background-color: #f0f0f070;
+  font-weight: 500;
+}
+
+.groupedChartXAxisLabel {
+  font-size: 12px;
+  fill: var(--text-color3);
+}
+
+.groupedChartXAxisLabelBold {
+  font-size: 12px;
+  font-weight: bold;
+  fill: var(--text-color2);
+}
+
+/* ------------------------------------------------- */
+
+.ml-line {
+  stroke-width: 2;
+  fill: none;
+}
+
+.ml-axis path {
+  stroke: black;
+}
+
+.ml-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ml-text-label-background {
+  background-color: #fff;
+  z-index: 5555;
+}
+
+.ml-title-text {
+  font-size: 12px;
+}

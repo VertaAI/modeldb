@@ -1,0 +1,39 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+        logicalFilePath="src/main/resources/liquibase/create-index-changelog.xml">
+
+    <changeSet author="anandJ" id="1-create-text-indexes-postgres">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <createIndex indexName="kv_kv_val"
+                     tableName="keyvalue"
+                     unique="true">
+            <column name="kv_value"/>
+        </createIndex>
+        <createIndex indexName="kv_kv_key"
+                     tableName="keyvalue"
+                     unique="true">
+            <column name="kv_key"/>
+        </createIndex>
+        <createIndex indexName="at_kv_key"
+                     tableName="attribute"
+                     unique="true">
+            <column name="kv_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="1-create-text-indexes-mysql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            CREATE INDEX kv_kv_val ON keyvalue (kv_value(255));
+            CREATE INDEX kv_kv_key ON keyvalue (kv_key(255));
+            CREATE INDEX at_kv_key on attribute (kv_key(255));
+        </sql>
+    </changeSet>
+</databaseChangeLog>

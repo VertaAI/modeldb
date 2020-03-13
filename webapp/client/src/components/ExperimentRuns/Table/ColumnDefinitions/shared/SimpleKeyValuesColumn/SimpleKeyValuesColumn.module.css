@@ -1,0 +1,38 @@
+.root {
+}
+
+.param_draggable {
+  padding: 5px;
+}
+.param_draggable:hover {
+  border-radius: 3px;
+  background-color: var(--bg-color4);
+}
+
+.param_grid,
+.param_grid_hyperparameters,
+.param_grid_metrics {
+  line-height: 20px !important;
+  display: grid;
+  grid-template-columns: 90px 60px;
+  grid-gap: 5px;
+  white-space: pre-wrap;
+}
+
+.param_key {
+  color: var(--text-color-grey);
+  word-break: break-all;
+  word-wrap: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.param_val {
+  color: #000;
+  word-break: break-all;
+  word-wrap: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

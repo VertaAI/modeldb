@@ -1,0 +1,20 @@
+.compareBlock {
+  display: grid;
+  grid-template-columns: 59px 50px;
+  column-gap: 5px;
+}
+
+.compareLabel {
+  margin-left: 5px;
+  justify-self: left;
+  align-self: center;
+  line-height: 16px;
+  font-size: 11px;
+  color: var(--text-color5);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.icon {
+}

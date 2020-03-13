@@ -1,0 +1,28 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.actions {
+  display: flex;
+  margin-bottom: 10px;
+}
+.action:last-child {
+  margin-left: auto;
+}
+
+.preloader {
+}
+
+.project {
+}
+
+.projects {
+  padding-bottom: 62px;
+}
+
+.pagination {
+  display: flex;
+  padding: 16px 0;
+  justify-content: center;
+}

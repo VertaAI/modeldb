@@ -1,0 +1,424 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`(charts root component) (data: all rows with metric and hyp) should load charts with selected default chart configuration 1`] = `
+<div
+  className="root"
+  data-test="charts-root"
+>
+  <Connect(ChartRangeFilter)
+    loadingSequentialChartData={
+      Object {
+        "error": undefined,
+        "isRequesting": false,
+        "isSuccess": false,
+      }
+    }
+    paginatedDataLength={0}
+    projectId="b9edf9ac-61ad-43bf-a148-42315a25b4d4"
+    resetChartConfigAtParent={[Function]}
+    updateIsRangeAppliedAtParent={[Function]}
+  />
+  <SummaryChartManager
+    genericChartData={Array []}
+    metricKeys={
+      Set {
+        "val_acc",
+      }
+    }
+    summaryChartConfig={
+      Object {
+        "selectedMetric": "data not available",
+      }
+    }
+    updateSummaryChartConfig={[Function]}
+  />
+  <AggregationChartManager
+    aggregationChartConfig={
+      Object {
+        "selectedAggregationType": "average",
+        "selectedChartType": "bar-chart",
+        "selectedHyperparameter": "data not available",
+        "selectedMetric": "data not available",
+      }
+    }
+    genericChartData={Array []}
+    hyperparameterKeys={
+      Set {
+        "C",
+        "max_iter",
+        "solver",
+      }
+    }
+    metricKeys={
+      Set {
+        "val_acc",
+      }
+    }
+    updateAggregationChartConfig={[Function]}
+  />
+  <div>
+    <ParallelChartManager
+      data={Array []}
+      metricKeysSet={
+        Set {
+          "val_acc",
+        }
+      }
+      updateParallelChartConfig={[Function]}
+    />
+  </div>
+  <div>
+    <GroupedChartManager
+      data={Array []}
+      hyperparamKeysSet={
+        Set {
+          "C",
+          "max_iter",
+          "solver",
+        }
+      }
+      metricKeysSet={
+        Set {
+          "val_acc",
+        }
+      }
+      updateGroupedChartConfig={[Function]}
+    />
+  </div>
+</div>
+`;
+
+exports[`(charts root component) (data: only hyperparam) should load charts with selected default chart configuration 1`] = `
+<div
+  className="root"
+  data-test="charts-root"
+>
+  <Connect(ChartRangeFilter)
+    loadingSequentialChartData={
+      Object {
+        "error": undefined,
+        "isRequesting": false,
+        "isSuccess": false,
+      }
+    }
+    paginatedDataLength={0}
+    projectId="b9edf9ac-61ad-43bf-a148-42315a25b4d4"
+    resetChartConfigAtParent={[Function]}
+    updateIsRangeAppliedAtParent={[Function]}
+  />
+  <SummaryChartManager
+    genericChartData={Array []}
+    metricKeys={Set {}}
+    summaryChartConfig={
+      Object {
+        "selectedMetric": "data not available",
+      }
+    }
+    updateSummaryChartConfig={[Function]}
+  />
+  <AggregationChartManager
+    aggregationChartConfig={
+      Object {
+        "selectedAggregationType": "average",
+        "selectedChartType": "bar-chart",
+        "selectedHyperparameter": "data not available",
+        "selectedMetric": "data not available",
+      }
+    }
+    genericChartData={Array []}
+    hyperparameterKeys={
+      Set {
+        "C",
+        "max_iter",
+        "solver",
+      }
+    }
+    metricKeys={Set {}}
+    updateAggregationChartConfig={[Function]}
+  />
+  <ChartWrapperForNoData
+    canvasClassName="parallelEmptyChart"
+    chartHeading="Parallel Coordinates of Hyperparameters and Metrics"
+    message="No parallel Coordinates for available data"
+  />
+  <ChartWrapperForNoData
+    canvasClassName="groupedEmptyChart"
+    chartHeading="Grouped Metric Chart, Aggregated by Hyperparameters"
+    message="No grouping results for available data"
+  />
+</div>
+`;
+
+exports[`(charts root component) (data: only metric) should load charts with selected default chart configuration 1`] = `
+<div
+  className="root"
+  data-test="charts-root"
+>
+  <Connect(ChartRangeFilter)
+    loadingSequentialChartData={
+      Object {
+        "error": undefined,
+        "isRequesting": false,
+        "isSuccess": false,
+      }
+    }
+    paginatedDataLength={0}
+    projectId="b9edf9ac-61ad-43bf-a148-42315a25b4d4"
+    resetChartConfigAtParent={[Function]}
+    updateIsRangeAppliedAtParent={[Function]}
+  />
+  <SummaryChartManager
+    genericChartData={Array []}
+    metricKeys={
+      Set {
+        "val_acc",
+      }
+    }
+    summaryChartConfig={
+      Object {
+        "selectedMetric": "data not available",
+      }
+    }
+    updateSummaryChartConfig={[Function]}
+  />
+  <AggregationChartManager
+    aggregationChartConfig={
+      Object {
+        "selectedAggregationType": "average",
+        "selectedChartType": "bar-chart",
+        "selectedHyperparameter": "data not available",
+        "selectedMetric": "data not available",
+      }
+    }
+    genericChartData={Array []}
+    hyperparameterKeys={Set {}}
+    metricKeys={
+      Set {
+        "val_acc",
+      }
+    }
+    updateAggregationChartConfig={[Function]}
+  />
+  <div>
+    <ParallelChartManager
+      data={Array []}
+      initialConfiguration={
+        Object {
+          "selectedPanelElements": Array [],
+        }
+      }
+      metricKeysSet={
+        Set {
+          "val_acc",
+        }
+      }
+      updateParallelChartConfig={[Function]}
+    />
+  </div>
+  <ChartWrapperForNoData
+    canvasClassName="groupedEmptyChart"
+    chartHeading="Grouped Metric Chart, Aggregated by Hyperparameters"
+    message="No grouping results for available data"
+  />
+</div>
+`;
+
+exports[`(charts root component) (data: some hyp missing) should load charts with selected default chart configuration 1`] = `
+<div
+  className="root"
+  data-test="charts-root"
+>
+  <Connect(ChartRangeFilter)
+    loadingSequentialChartData={
+      Object {
+        "error": undefined,
+        "isRequesting": false,
+        "isSuccess": false,
+      }
+    }
+    paginatedDataLength={0}
+    projectId="b9edf9ac-61ad-43bf-a148-42315a25b4d4"
+    resetChartConfigAtParent={[Function]}
+    updateIsRangeAppliedAtParent={[Function]}
+  />
+  <SummaryChartManager
+    genericChartData={Array []}
+    metricKeys={
+      Set {
+        "val_acc",
+      }
+    }
+    summaryChartConfig={
+      Object {
+        "selectedMetric": "data not available",
+      }
+    }
+    updateSummaryChartConfig={[Function]}
+  />
+  <AggregationChartManager
+    aggregationChartConfig={
+      Object {
+        "selectedAggregationType": "average",
+        "selectedChartType": "bar-chart",
+        "selectedHyperparameter": "data not available",
+        "selectedMetric": "data not available",
+      }
+    }
+    genericChartData={Array []}
+    hyperparameterKeys={
+      Set {
+        "C",
+        "max_iter",
+        "solver",
+      }
+    }
+    metricKeys={
+      Set {
+        "val_acc",
+      }
+    }
+    updateAggregationChartConfig={[Function]}
+  />
+  <div>
+    <ParallelChartManager
+      data={Array []}
+      initialConfiguration={
+        Object {
+          "selectedPanelElements": Array [],
+        }
+      }
+      metricKeysSet={
+        Set {
+          "val_acc",
+        }
+      }
+      updateParallelChartConfig={[Function]}
+    />
+  </div>
+  <div>
+    <GroupedChartManager
+      data={Array []}
+      hyperparamKeysSet={
+        Set {
+          "C",
+          "max_iter",
+          "solver",
+        }
+      }
+      initialConfiguration={
+        Object {
+          "selectedChartType": "multi-line-chart",
+          "selectedPanelElements": Array [],
+          "selectedYAxisType": "linear",
+        }
+      }
+      metricKeysSet={
+        Set {
+          "val_acc",
+        }
+      }
+      updateGroupedChartConfig={[Function]}
+    />
+  </div>
+</div>
+`;
+
+exports[`(charts root component) (data: some metric missing) should load charts with selected default chart configuration 1`] = `
+<div
+  className="root"
+  data-test="charts-root"
+>
+  <Connect(ChartRangeFilter)
+    loadingSequentialChartData={
+      Object {
+        "error": undefined,
+        "isRequesting": false,
+        "isSuccess": false,
+      }
+    }
+    paginatedDataLength={0}
+    projectId="b9edf9ac-61ad-43bf-a148-42315a25b4d4"
+    resetChartConfigAtParent={[Function]}
+    updateIsRangeAppliedAtParent={[Function]}
+  />
+  <SummaryChartManager
+    genericChartData={Array []}
+    metricKeys={
+      Set {
+        "val_acc",
+      }
+    }
+    summaryChartConfig={
+      Object {
+        "selectedMetric": "data not available",
+      }
+    }
+    updateSummaryChartConfig={[Function]}
+  />
+  <AggregationChartManager
+    aggregationChartConfig={
+      Object {
+        "selectedAggregationType": "average",
+        "selectedChartType": "bar-chart",
+        "selectedHyperparameter": "data not available",
+        "selectedMetric": "data not available",
+      }
+    }
+    genericChartData={Array []}
+    hyperparameterKeys={
+      Set {
+        "C",
+        "max_iter",
+        "solver",
+      }
+    }
+    metricKeys={
+      Set {
+        "val_acc",
+      }
+    }
+    updateAggregationChartConfig={[Function]}
+  />
+  <div>
+    <ParallelChartManager
+      data={Array []}
+      initialConfiguration={
+        Object {
+          "selectedPanelElements": Array [],
+        }
+      }
+      metricKeysSet={
+        Set {
+          "val_acc",
+        }
+      }
+      updateParallelChartConfig={[Function]}
+    />
+  </div>
+  <div>
+    <GroupedChartManager
+      data={Array []}
+      hyperparamKeysSet={
+        Set {
+          "C",
+          "max_iter",
+          "solver",
+        }
+      }
+      initialConfiguration={
+        Object {
+          "selectedChartType": "multi-line-chart",
+          "selectedPanelElements": Array [],
+          "selectedYAxisType": "linear",
+        }
+      }
+      metricKeysSet={
+        Set {
+          "val_acc",
+        }
+      }
+      updateGroupedChartConfig={[Function]}
+    />
+  </div>
+</div>
+`;

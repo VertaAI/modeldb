@@ -1,0 +1,1 @@
+{{#is_list}}[{{#list_type}}{{> from_json}}{{/list_type}} for tmp in tmp]{{/is_list}}{{#is_map}}{k: {{#map_val_type}}{{> from_json}}{{/map_val_type}} for k, tmp in tmp.items()}{{/is_map}}{{#is_basic}}tmp{{/is_basic}}{{#is_custom}}{{#custom}}{{name}}.from_json(tmp){{/custom}}{{/is_custom}}

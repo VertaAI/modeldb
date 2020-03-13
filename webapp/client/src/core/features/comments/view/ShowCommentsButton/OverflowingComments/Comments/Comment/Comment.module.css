@@ -1,0 +1,43 @@
+.root {
+  display: flex;
+  width: 100%;
+}
+
+.deleting {
+  opacity: 0.5;
+}
+
+.leftContent {
+  margin-right: 13px;
+}
+
+.rightContent {
+  flex-grow: 1;
+}
+
+.header {
+  display: flex;
+}
+
+.username {
+  font-size: 13px;
+  color: var(--main-color2);
+}
+
+.time {
+  color: #4e4e4e;
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.message {
+  margin-top: 5px;
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--text-color2);
+}

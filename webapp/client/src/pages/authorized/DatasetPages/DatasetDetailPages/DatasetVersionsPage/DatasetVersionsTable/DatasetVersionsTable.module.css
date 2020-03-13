@@ -1,0 +1,10 @@
+.footer {
+  display: flex;
+  align-items: center;
+  height: 72px;
+  background-color: white;
+}
+
+.footer__pagination {
+  margin-left: auto;
+}

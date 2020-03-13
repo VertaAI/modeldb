@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 58 (84663) - https://sketch.com -->
+    <title>person-24px</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Workspaces,-Profile,-Organizations" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="1a-Workspaces" transform="translate(-1173.000000, -92.000000)" fill="#AAAAAA" fill-rule="nonzero">
+            <g id="Workspace-dropdown" transform="translate(1147.000000, 56.000000)">
+                <g id="person-24px" transform="translate(26.000000, 36.000000)">
+                    <path d="M8,2 C9.1,2 10,2.9 10,4 C10,5.1 9.1,6 8,6 C6.9,6 6,5.1 6,4 C6,2.9 6.9,2 8,2 M8,12 C10.7,12 13.8,13.29 14,14 L2,14 C2.23,13.28 5.31,12 8,12 M8,0 C5.79,0 4,1.79 4,4 C4,6.21 5.79,8 8,8 C10.21,8 12,6.21 12,4 C12,1.79 10.21,0 8,0 Z M8,10 C5.33,10 0,11.34 0,14 L0,16 L16,16 L16,14 C16,11.34 10.67,10 8,10 Z" id="Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

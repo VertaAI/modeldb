@@ -1,0 +1,19 @@
+.chart_section_wrapper {
+  padding: 15px 0 20px 20px;
+  background-color: var(--bg-color3);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  min-width: 980px;
+}
+
+.chart_header {
+  font-size: 1.15em;
+  color: var(--main-color5);
+  padding: 0.5em;
+  line-height: 24px;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  max-width: 700px;
+}

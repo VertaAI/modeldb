@@ -1,0 +1,15 @@
+.root {
+  font-style: italic;
+  font-size: 14px;
+  white-space: normal;
+  color: var(--text-color3);
+}
+
+.suggestion_link {
+  text-decoration: none;
+  color: var(--main-color2);
+}
+
+.suggestion_link:hover {
+  color: var(--main-color2-light);
+}

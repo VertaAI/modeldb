@@ -1,0 +1,75 @@
+.root {
+  display: grid;
+  justify-content: unset;
+  outline: none;
+  font-size: 13px;
+}
+
+.model_link {
+  display: block;
+  color: var(--main-color2);
+  text-decoration: none;
+  line-height: 30px;
+}
+
+.modelName_block {
+  padding-bottom: 5px;
+  cursor: pointer;
+}
+
+.model_name {
+  color: var(--main-color2);
+  line-height: 16px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: -webkit-pre-wrap;
+  word-break: break-all;
+  white-space: normal;
+  max-width: 220px;
+}
+
+.model_name:hover {
+  color: var(--fr-color1);
+}
+
+.expName_block,
+.timeStamp_block {
+  margin-bottom: 7px;
+  line-height: 12px;
+  color: var(--text-color5);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: -webkit-pre-wrap;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.expName_value,
+.timestamp_value {
+  color: #000;
+  max-width: 220px;
+  line-height: 1.15em;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: -webkit-pre-wrap;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.timestamp_value {
+  margin-top: 3px;
+}
+
+.timestamp_value {
+  user-select: text;
+  cursor: text;
+}
+
+.param_draggable {
+  margin-left: -5px;
+  padding: 5px;
+}
+.param_draggable:hover {
+  border-radius: 3px;
+  background-color: var(--bg-color4);
+}

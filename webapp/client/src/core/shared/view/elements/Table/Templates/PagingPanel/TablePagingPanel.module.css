@@ -1,0 +1,6 @@
+:global .MuiButton-root {
+  font-weight: normal !important;
+}
+:global .active-pagination-page {
+  font-weight: bold !important;
+}

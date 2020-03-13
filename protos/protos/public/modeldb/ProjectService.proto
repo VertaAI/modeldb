@@ -1,0 +1,583 @@
+syntax = "proto3";
+
+package ai.verta.modeldb;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+
+import "protos/public/common/CommonService.proto";
+import "protos/public/modeldb/CommonService.proto";
+
+/*
+*   Project Entity
+*/
+
+message Project {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    uint64 date_created = 4;
+    uint64 date_updated = 5;
+    string short_name = 6;
+    string readme_text = 7;
+    ProjectVisibility project_visibility = 8;
+    string workspace_id = 9;
+    WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
+
+    repeated common.KeyValue attributes = 20;
+    repeated string tags = 21;
+    string owner = 22;
+    CodeVersion code_version_snapshot = 23;
+    repeated Artifact artifacts = 24;
+}
+
+enum ProjectVisibility {
+    PRIVATE = 0;
+    PUBLIC = 1;
+    ORG_SCOPED_PUBLIC = 2;
+}
+
+message CreateProject {
+    string name = 1;
+    string description = 2;
+    repeated common.KeyValue attributes = 3;
+    repeated string tags = 4;
+    string readme_text = 5;
+    ProjectVisibility project_visibility = 6;
+    repeated Artifact artifacts = 7;
+    string workspace_name = 8;
+    int64 date_created = 9;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message DeleteProject {
+    string id = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message UpdateProjectName {
+    string id = 1;
+    string name = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message UpdateProjectDescription {
+    string id = 1;
+    string description = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message AddProjectTags {
+    string id = 1;
+    repeated string tags = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message DeleteProjectTags {
+    string id = 1;
+    repeated string tags = 2;
+    bool delete_all = 3;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message AddProjectTag {
+    string id = 1;
+    string tag = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message DeleteProjectTag {
+    string id = 1;
+    string tag = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message GetProjectAttributes {
+    string id = 1;
+
+    message Response {
+        repeated common.KeyValue attributes = 1;
+    }
+}
+
+message AddProjectAttributes {
+    string id = 1;
+    repeated common.KeyValue attributes = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message UpdateProjectAttributes {
+    string id = 1;
+    common.KeyValue attribute = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message DeleteProjectAttributes {
+    string id = 1;
+    repeated string attribute_keys = 2;
+    bool delete_all = 3;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+// code version
+message LogProjectCodeVersion {
+    string id = 1;
+    CodeVersion code_version = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message GetProjectCodeVersion {
+    string id = 1;
+
+    message Response {
+        CodeVersion code_version = 1;
+    }
+}
+
+message GetProjects {
+    int32 page_number = 1;
+    int32 page_limit = 2;
+    bool ascending = 3;
+    string sort_key = 4;
+    string workspace_name = 5;
+
+    message Response {
+        repeated Project projects = 1;
+        int64 total_records = 2;
+    }
+}
+
+message GetPublicProjects {
+    string user_id = 1;
+    string workspace_name = 2;
+
+    message Response {
+        repeated Project projects = 1;
+    }
+}
+
+message GetProjectById {
+    string id = 1;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message GetProjectByName {
+    string name = 1;
+    string workspace_name = 2;
+
+    message Response {
+        Project project_by_user = 1;
+        repeated Project shared_projects = 2; // because of collaboration, this might be multiple projects w/same name
+    }
+}
+
+message Empty {
+
+}
+
+message VerifyConnectionResponse {
+    bool status = 1;
+}
+
+message DeepCopyProject {
+    string id = 1;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message MetricsSummary {
+    string key = 1;
+    double min_value = 2;
+    double max_value = 3;
+}
+
+message LastModifiedExperimentRunSummary {
+    string name = 1;
+    uint64 last_updated_time = 2;
+}
+
+message GetSummary {
+    string entityId = 1;
+
+    message Response {
+        string name = 1;
+        uint64 last_updated_time = 2;
+        int64 total_experiment = 3;
+        int64 total_experiment_runs = 4;
+
+        LastModifiedExperimentRunSummary last_modified_experimentRun_summary = 5;
+        repeated MetricsSummary metrics = 6;
+	}
+}
+
+message SetProjectReadme {
+    string id = 1;
+    string readme_text = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message GetProjectReadme {
+    string id = 1;
+
+    message Response {
+        string readme_text = 1;
+    }
+}
+
+message SetProjectVisibilty {
+    string id = 1;
+    ProjectVisibility project_visibility = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message SetProjectShortName {
+    string id = 1;
+    string short_name = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message GetProjectShortName {
+    string id = 1;
+
+    message Response {
+        string short_name = 2;
+    }
+}
+
+message FindProjects {
+    repeated string project_ids = 1;
+    repeated KeyValueQuery predicates = 2;
+    bool ids_only = 3; // whether to return full experiment runs or ids only
+    string workspace_name = 8;
+
+    //For pagination
+    int32 page_number = 4;
+    int32 page_limit = 5;
+    bool ascending = 6;
+    string sort_key = 7;
+
+    message Response {
+        repeated Project projects = 1;
+        int64 total_records = 2;
+    }
+}
+
+// artifacts
+message LogProjectArtifacts {
+    string id = 1;
+    repeated Artifact artifacts = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message DeleteProjectArtifact {
+    string id = 1;
+    string key = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+message DeleteProjects {
+    repeated string ids = 1;
+
+    message Response {
+        bool status = 1;
+    }
+}
+
+message SetProjectWorkspace {
+    string id = 1;
+    string workspace_name = 2;
+
+    message Response {
+        Project project = 1;
+    }
+}
+
+service ProjectService {
+
+    rpc createProject(CreateProject) returns (CreateProject.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/createProject"
+            body: "*"
+        };
+    };
+
+    rpc getProjects(GetProjects) returns (GetProjects.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjects"
+        };
+    };
+
+    rpc getPublicProjects (GetPublicProjects) returns (GetPublicProjects.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getPublicProjects"
+        };
+    };
+
+    rpc getProjectById(GetProjectById) returns (GetProjectById.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectById"
+        };
+    };
+
+    rpc getProjectByName(GetProjectByName) returns (GetProjectByName.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectByName"
+        };
+    };
+
+
+    rpc deleteProject(DeleteProject) returns (DeleteProject.Response) {
+        option (google.api.http) = {
+            delete: "/v1/project/deleteProject"
+            body: "*"
+        };
+    };
+
+    rpc updateProjectName(UpdateProjectName) returns (UpdateProjectName.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/updateProjectName"
+            body: "*"
+        };
+    };
+
+    rpc updateProjectDescription(UpdateProjectDescription) returns (UpdateProjectDescription.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/updateProjectDescription"
+            body: "*"
+        };
+    };
+
+    rpc addProjectTags(AddProjectTags) returns (AddProjectTags.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/addProjectTags"
+            body: "*"
+        };
+    };
+
+    rpc getProjectTags(GetTags) returns (GetTags.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectTags"
+        };
+    };
+
+    rpc deleteProjectTags(DeleteProjectTags) returns (DeleteProjectTags.Response) {
+        option (google.api.http) = {
+            delete: "/v1/project/deleteProjectTags"
+            body: "*"
+        };
+    };
+
+    rpc addProjectTag(AddProjectTag) returns (AddProjectTag.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/addProjectTag"
+            body: "*"
+        };
+    };
+
+    rpc deleteProjectTag(DeleteProjectTag) returns (DeleteProjectTag.Response) {
+        option (google.api.http) = {
+            delete: "/v1/project/deleteProjectTag"
+            body: "*"
+        };
+    };
+
+    rpc updateProjectAttributes(UpdateProjectAttributes) returns (UpdateProjectAttributes.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/updateProjectAttributes"
+            body: "*"
+        };
+    };
+
+    rpc getProjectAttributes(GetAttributes) returns (GetAttributes.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectAttributes"
+        };
+    };
+
+    rpc addProjectAttributes(AddProjectAttributes) returns (AddProjectAttributes.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/addProjectAttributes"
+            body: "*"
+        };
+    };
+
+    rpc deleteProjectAttributes(DeleteProjectAttributes) returns (DeleteProjectAttributes.Response) {
+        option (google.api.http) = {
+            delete: "/v1/project/deleteProjectAttributes"
+        };
+    };
+
+    // code version
+    rpc logProjectCodeVersion(LogProjectCodeVersion) returns (LogProjectCodeVersion.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/logProjectCodeVersion"
+            body: "*"
+        };
+    };
+
+    rpc getProjectCodeVersion(GetProjectCodeVersion) returns (GetProjectCodeVersion.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectCodeVersion"
+        };
+    };
+
+    rpc verifyConnection(Empty) returns (VerifyConnectionResponse) {
+        option (google.api.http) = {
+            get: "/v1/project/verifyConnection"
+        };
+    };
+
+    rpc deepCopyProject(DeepCopyProject) returns (DeepCopyProject.Response) {
+       option (google.api.http) = {
+           post: "/v1/project/deepCopyProject"
+           body: "*"
+       };
+    };
+
+    rpc getSummary(GetSummary) returns (GetSummary.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getSummary"
+        };
+    };
+
+    rpc setProjectReadme(SetProjectReadme) returns (SetProjectReadme.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/setProjectReadme"
+            body: "*"
+       };
+    };
+
+    rpc getProjectReadme(GetProjectReadme) returns (GetProjectReadme.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectReadme"
+        };
+    };
+
+    rpc setProjectVisibility(SetProjectVisibilty) returns (SetProjectVisibilty.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/setProjectVisibility"
+            body: "*"
+        };
+    };
+
+    rpc setProjectShortName(SetProjectShortName) returns (SetProjectShortName.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/setProjectShortName"
+            body: "*"
+       };
+    };
+
+    rpc getProjectShortName(GetProjectShortName) returns (GetProjectShortName.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectShortName"
+        };
+    };
+
+    // artifacts
+    rpc getUrlForArtifact(GetUrlForArtifact) returns (GetUrlForArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/getUrlForArtifact"
+            body: "*"
+        };
+    };
+
+    // queries
+    rpc findProjects(FindProjects) returns (FindProjects.Response){
+        option (google.api.http) = {
+            post: "/v1/project/findProjects"
+            body: "*"
+        };
+    };
+
+    // artifacts
+    rpc logArtifacts(LogProjectArtifacts) returns (LogProjectArtifacts.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/logArtifacts"
+            body: "*"
+        };
+    };
+
+    rpc getArtifacts(GetArtifacts) returns (GetArtifacts.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getArtifacts"
+        };
+    };
+
+    rpc deleteArtifact(DeleteProjectArtifact) returns (DeleteProjectArtifact.Response){
+        option (google.api.http) = {
+            delete: "/v1/project/deleteArtifact"
+            body: "*"
+        };
+    };
+
+    rpc deleteProjects(DeleteProjects) returns (DeleteProjects.Response){
+        option (google.api.http) = {
+            delete: "/v1/project/deleteProjects"
+            body: "*"
+        };
+    };
+
+    rpc setProjectWorkspace(SetProjectWorkspace) returns (SetProjectWorkspace.Response) {
+        option (google.api.http) = {
+            post: "/v1/project/setProjectWorkspace"
+            body: "*"
+        };
+    };
+}

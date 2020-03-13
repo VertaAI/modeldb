@@ -1,0 +1,12 @@
+annoy
+jupyter
+matplotlib
+pandas
+scikit-learn
+tensorflow<2.0
+tensorflow-hub
+torch
+wget
+xgboost
+
+-e ../verta

@@ -1,0 +1,248 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protos/public/artifactstore/ArtifactStore.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/artifact/deleteArtifact": {
+      "post": {
+        "operationId": "deleteArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/artifactstoreDeleteArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/artifactstoreDeleteArtifact"
+            }
+          }
+        ],
+        "tags": [
+          "ArtifactStore"
+        ]
+      }
+    },
+    "/artifact/getArtifact": {
+      "get": {
+        "operationId": "getArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/artifactstoreGetArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ArtifactStore"
+        ]
+      }
+    },
+    "/artifact/storeArtifact": {
+      "post": {
+        "operationId": "storeArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/artifactstoreStoreArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/artifactstoreStoreArtifact"
+            }
+          }
+        ],
+        "tags": [
+          "ArtifactStore"
+        ]
+      }
+    },
+    "/artifact/storeArtifactWithStream": {
+      "post": {
+        "operationId": "storeArtifactWithStream",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/artifactstoreStoreArtifactWithStreamResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/artifactstoreStoreArtifactWithStream"
+            }
+          }
+        ],
+        "tags": [
+          "ArtifactStore"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "artifactstoreDeleteArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "artifactstoreDeleteArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "artifactstoreGetArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "contents": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "artifactstoreStoreArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "artifactstoreStoreArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_store_key": {
+          "type": "string"
+        },
+        "artifact_store_path": {
+          "type": "string"
+        }
+      }
+    },
+    "artifactstoreStoreArtifactWithStream": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "client_file": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "artifactstoreStoreArtifactWithStreamResponse": {
+      "type": "object",
+      "properties": {
+        "cloud_file_key": {
+          "type": "string"
+        },
+        "cloud_file_path": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

@@ -1,0 +1,17 @@
+.input {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding-left: var(--input-padding-left);
+  font-size: 14px;
+  line-height: 16px;
+  border: var(--input-border);
+  border-radius: 3px;
+  color: var(--input-color);
+  cursor: pointer;
+}
+
+.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}

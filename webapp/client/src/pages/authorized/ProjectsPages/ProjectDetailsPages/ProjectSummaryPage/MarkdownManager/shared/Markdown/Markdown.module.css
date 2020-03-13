@@ -1,0 +1,14 @@
+:global .markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px 40px;
+  overflow: auto;
+}
+
+@media (max-width: 767px) {
+  :global .markdown-body {
+    padding: 5px 15px;
+  }
+}

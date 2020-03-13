@@ -1,0 +1,36 @@
+.root {
+  display: flex;
+  justify-content: space-between;
+}
+
+.compared_models_manager {
+}
+
+.dashboard_settings_container {
+  display: flex;
+}
+
+.action_wrapper {
+}
+
+.action_container {
+  display: grid;
+  grid-template-columns: 45px 40px;
+  margin-right: 10px;
+  margin-bottom: 3px;
+}
+
+.dashboard_actione_label {
+  font-size: 12px;
+  color: var(--text-color3);
+  margin-top: 10px;
+}
+
+.dashboard_action_link {
+}
+
+.experiment_runs_table_config_wrapper {
+  display: flex;
+  align-self: center;
+  margin-right: 10px;
+}

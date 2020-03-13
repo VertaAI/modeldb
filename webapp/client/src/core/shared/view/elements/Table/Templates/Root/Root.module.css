@@ -1,0 +1,15 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  position: relative;
+  overflow: auto;
+  height: 300px;
+}
+
+.root > div {
+}
+
+.root table {
+  height: 100%;
+}

@@ -1,0 +1,399 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`(aggregation chart) (data: all rows with metric and hyp) should render aggregationChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="aggregation-chart"
+>
+  <div
+    className="chart_header"
+  >
+    Aggregated Metrics/Hyperparameters Chart
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={
+        Set {
+          "val_acc",
+        }
+      }
+      value="val_acc"
+    />
+    <ChartConfigDropdown
+      label="Hyperparameter :"
+      onChange={[Function]}
+      options={
+        Set {
+          "C",
+          "max_iter",
+          "solver",
+        }
+      }
+      value="C"
+    />
+    <ChartConfigDropdown
+      isDisabled={false}
+      label="Aggregation Types :"
+      onChange={[Function]}
+      options={
+        Array [
+          "average",
+          "sum",
+          "median",
+          "variance",
+          "stdev",
+          "count",
+        ]
+      }
+      value="average"
+    />
+    <ChartConfigDropdown
+      label="Chart Type :"
+      onChange={[Function]}
+      options={
+        Array [
+          "bar-chart",
+          "box-plot",
+        ]
+      }
+      value="bar-chart"
+    />
+  </div>
+  <div>
+    <BarChart
+      data={
+        Array [
+          Object {
+            "key": 0.000001,
+            "value": 0.81955,
+          },
+          Object {
+            "key": 0.0001,
+            "value": 0.8012,
+          },
+        ]
+      }
+      xLabel="C"
+      yLabel="val_acc"
+    />
+  </div>
+</div>
+`;
+
+exports[`(aggregation chart) (data: only hyperparams) should render aggregationChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="aggregation-chart"
+>
+  <div
+    className="chart_header"
+  >
+    Aggregated Metrics/Hyperparameters Chart
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={Set {}}
+      value="data not available"
+    />
+    <ChartConfigDropdown
+      label="Hyperparameter :"
+      onChange={[Function]}
+      options={
+        Set {
+          "C",
+          "max_iter",
+          "solver",
+        }
+      }
+      value="C"
+    />
+    <ChartConfigDropdown
+      isDisabled={false}
+      label="Aggregation Types :"
+      onChange={[Function]}
+      options={
+        Array [
+          "average",
+          "sum",
+          "median",
+          "variance",
+          "stdev",
+          "count",
+        ]
+      }
+      value="average"
+    />
+    <ChartConfigDropdown
+      label="Chart Type :"
+      onChange={[Function]}
+      options={
+        Array [
+          "bar-chart",
+          "box-plot",
+        ]
+      }
+      value="bar-chart"
+    />
+  </div>
+  <div>
+    <BarChart
+      data={Array []}
+      xLabel="C"
+      yLabel="data not available"
+    />
+  </div>
+</div>
+`;
+
+exports[`(aggregation chart) (data: only hyperparams) should render aggregationChart component that matches snapshot 2`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="aggregation-chart"
+>
+  <div
+    className="chart_header"
+  >
+    Aggregated Metrics/Hyperparameters Chart
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={
+        Set {
+          "val_acc",
+        }
+      }
+      value="val_acc"
+    />
+    <ChartConfigDropdown
+      label="Hyperparameter :"
+      onChange={[Function]}
+      options={Set {}}
+      value="data not available"
+    />
+    <ChartConfigDropdown
+      isDisabled={false}
+      label="Aggregation Types :"
+      onChange={[Function]}
+      options={
+        Array [
+          "average",
+          "sum",
+          "median",
+          "variance",
+          "stdev",
+          "count",
+        ]
+      }
+      value="average"
+    />
+    <ChartConfigDropdown
+      label="Chart Type :"
+      onChange={[Function]}
+      options={
+        Array [
+          "bar-chart",
+          "box-plot",
+        ]
+      }
+      value="bar-chart"
+    />
+  </div>
+  <div>
+    <BarChart
+      data={Array []}
+      xLabel="data not available"
+      yLabel="val_acc"
+    />
+    <div
+      className="missing_count_block"
+    >
+      missing data count 
+      4
+       - [
+      data not available
+      ]
+    </div>
+  </div>
+</div>
+`;
+
+exports[`(aggregation chart) (data: some hyp missing) should render aggregationChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="aggregation-chart"
+>
+  <div
+    className="chart_header"
+  >
+    Aggregated Metrics/Hyperparameters Chart
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={
+        Set {
+          "val_acc",
+        }
+      }
+      value="val_acc"
+    />
+    <ChartConfigDropdown
+      label="Hyperparameter :"
+      onChange={[Function]}
+      options={
+        Set {
+          "C",
+          "max_iter",
+          "solver",
+        }
+      }
+      value="C"
+    />
+    <ChartConfigDropdown
+      isDisabled={false}
+      label="Aggregation Types :"
+      onChange={[Function]}
+      options={
+        Array [
+          "average",
+          "sum",
+          "median",
+          "variance",
+          "stdev",
+          "count",
+        ]
+      }
+      value="average"
+    />
+    <ChartConfigDropdown
+      label="Chart Type :"
+      onChange={[Function]}
+      options={
+        Array [
+          "bar-chart",
+          "box-plot",
+        ]
+      }
+      value="bar-chart"
+    />
+  </div>
+  <div>
+    <BarChart
+      data={
+        Array [
+          Object {
+            "key": 0.000001,
+            "value": 0.81955,
+          },
+        ]
+      }
+      xLabel="C"
+      yLabel="val_acc"
+    />
+    <div
+      className="missing_count_block"
+    >
+      missing data count 
+      2
+       - [
+      C
+      ]
+    </div>
+  </div>
+</div>
+`;
+
+exports[`(aggregation chart) (data: some metric missing) should render aggregationChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="aggregation-chart"
+>
+  <div
+    className="chart_header"
+  >
+    Aggregated Metrics/Hyperparameters Chart
+  </div>
+  <div
+    className="chart_config_selectors"
+  >
+    <ChartConfigDropdown
+      label="Metric :"
+      onChange={[Function]}
+      options={
+        Set {
+          "val_acc",
+        }
+      }
+      value="val_acc"
+    />
+    <ChartConfigDropdown
+      label="Hyperparameter :"
+      onChange={[Function]}
+      options={
+        Set {
+          "C",
+          "max_iter",
+          "solver",
+        }
+      }
+      value="C"
+    />
+    <ChartConfigDropdown
+      isDisabled={false}
+      label="Aggregation Types :"
+      onChange={[Function]}
+      options={
+        Array [
+          "average",
+          "sum",
+          "median",
+          "variance",
+          "stdev",
+          "count",
+        ]
+      }
+      value="average"
+    />
+    <ChartConfigDropdown
+      label="Chart Type :"
+      onChange={[Function]}
+      options={
+        Array [
+          "bar-chart",
+          "box-plot",
+        ]
+      }
+      value="bar-chart"
+    />
+  </div>
+  <div>
+    <BarChart
+      data={
+        Array [
+          Object {
+            "key": 0.000001,
+            "value": 0.81955,
+          },
+        ]
+      }
+      xLabel="C"
+      yLabel="val_acc"
+    />
+  </div>
+</div>
+`;

@@ -1,0 +1,118 @@
+.root {
+  display: inline-block;
+  position: relative;
+  margin-left: 5px;
+  border-radius: 100%;
+}
+
+.icon {
+  color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+.selected .icon {
+  color: var(--main-color1);
+}
+
+.field_sorting_indicator {
+  min-width: 18px;
+  margin-left: 5px;
+}
+
+.field_sorting_indicator:hover {
+  background-color: var(--grey-lighter);
+  border-radius: 30%;
+}
+
+.field_sorting_indicator_top {
+  cursor: pointer;
+}
+
+.header_sorting_indicator_asc {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 18px;
+}
+.header_sorting_indicator_desc {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 18px;
+  margin-left: -10px;
+}
+.selected.header_sorting_indicator_asc {
+  color: var(--main-color1);
+}
+.selected.header_sorting_indicator_desc {
+  color: var(--main-color1);
+}
+
+.options {
+  position: absolute;
+  background-color: white;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 5px 7px 0px rgba(9, 30, 66, 0.15);
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 1em;
+}
+.option {
+  display: flex;
+  padding: 10px;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  margin-left: 16px;
+}
+
+.option_label {
+  display: inline-block;
+  margin-right: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+.option_sort_direction_buttons {
+  display: flex;
+  align-items: center;
+}
+.option_sort_direction_button {
+  padding: 4px;
+  font-size: 9px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+  background-color: white;
+  color: var(--bg-color2);
+  cursor: pointer;
+  outline: none;
+}
+.option_sort_direction_button:nth-child(1) {
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.option_sort_direction_button:nth-child(2) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.selected.option_sort_direction_button {
+  background-color: var(--bg-color2);
+  color: white;
+  cursor: default;
+}
+
+.reset_sorting {
+  margin-left: 5px;
+  font-size: 18px;
+  opacity: 0.5;
+  cursor: pointer;
+  color: var(--text-color5);
+}
+
+.reset_sorting:hover {
+  color: var(--text-color3);
+}
+
+.hidden.reset_sorting {
+  visibility: hidden;
+  pointer-events: none;
+}

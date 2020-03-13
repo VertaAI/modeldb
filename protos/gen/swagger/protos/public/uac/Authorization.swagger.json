@@ -1,0 +1,627 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protos/public/uac/Authorization.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/authz/getAllowedEntities": {
+      "post": {
+        "operationId": "getAllowedEntities",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedEntitiesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedEntities"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
+    "/authz/getAllowedResources": {
+      "post": {
+        "operationId": "getAllowedResources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedResources"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
+    "/authz/getDirectlyAllowedResources": {
+      "post": {
+        "operationId": "getDireclyAllowedResources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedResources"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
+    "/authz/getSelfAllowedActionsBatch": {
+      "post": {
+        "operationId": "getSelfAllowedActionsBatch",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetSelfAllowedActionsBatchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetSelfAllowedActionsBatch"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
+    "/authz/getSelfAllowedResources": {
+      "post": {
+        "operationId": "getSelfAllowedResources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetSelfAllowedResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetSelfAllowedResources"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
+    "/authz/getSelfDirectlyAllowedResources": {
+      "post": {
+        "operationId": "getSelfDirectlyAllowedResources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetSelfAllowedResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetSelfAllowedResources"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
+    "/authz/isAllowed": {
+      "post": {
+        "operationId": "isAllowed",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacIsAllowedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacIsAllowed"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
+    "/authz/isSelfAllowed": {
+      "post": {
+        "operationId": "isSelfAllowed",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacIsSelfAllowedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacIsSelfAllowed"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "AuthzActionEnumAuthzServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "IS_ALLOWED",
+        "GET"
+      ],
+      "default": "UNKNOWN"
+    },
+    "AuthzResourceEnumAuthzServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ModelDBActionEnumModelDBServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE",
+        "DEPLOY",
+        "PUBLIC_READ"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ModelResourceEnumModelDBServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "PROJECT",
+        "EXPERIMENT",
+        "EXPERIMENT_RUN",
+        "DATASET",
+        "DATASET_VERSION",
+        "DASHBOARD"
+      ],
+      "default": "UNKNOWN"
+    },
+    "RoleActionEnumRoleServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "GET_BY_ID",
+        "GET_BY_NAME",
+        "CREATE",
+        "UPDATE",
+        "LIST",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "RoleResourceEnumRoleServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ROLE",
+        "ROLE_BINDING"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ServiceEnumService": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ROLE_SERVICE",
+        "AUTHZ_SERVICE",
+        "MODELDB_SERVICE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "uacAction": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "role_service_action": {
+          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
+        },
+        "authz_service_action": {
+          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
+        },
+        "modeldb_service_action": {
+          "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
+        }
+      },
+      "title": "An action describes a specific operation that can be performed on a service"
+    },
+    "uacActions": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        }
+      }
+    },
+    "uacEntities": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "org_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Entities that can be bound to a role. All users in all scopes given are considered a match."
+    },
+    "uacGetAllowedEntities": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResources"
+          }
+        }
+      },
+      "title": "Same as above, but lists all entities that are allowed to perform a certain action on certain resources"
+    },
+    "uacGetAllowedEntitiesResponse": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacEntities"
+          }
+        }
+      }
+    },
+    "uacGetAllowedResources": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacEntities"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        }
+      },
+      "title": "Same as above, but lists the resources on which actions can be performed by entities"
+    },
+    "uacGetAllowedResourcesResponse": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResources"
+          }
+        }
+      }
+    },
+    "uacGetSelfAllowedActionsBatch": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "$ref": "#/definitions/uacResources"
+        }
+      }
+    },
+    "uacGetSelfAllowedActionsBatchResponse": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/uacActions"
+          }
+        }
+      }
+    },
+    "uacGetSelfAllowedResources": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        }
+      },
+      "title": "Same as GetAllowedResources, but infers entities from the current logged user"
+    },
+    "uacGetSelfAllowedResourcesResponse": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResources"
+          }
+        }
+      }
+    },
+    "uacIsAllowed": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacEntities"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResources"
+          }
+        }
+      },
+      "title": "Answers the question \"is any of `entities` allowed to perform any of `actions` on any of `resources`?\"\nThis allows sending a single query for a user+his teams and a resource+parents\nIf the user wants more granularity, they should make multiple requests"
+    },
+    "uacIsAllowedResponse": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacIsSelfAllowed": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResources"
+          }
+        }
+      },
+      "title": "Same as IsAllowed, but infers entities from the current logged user"
+    },
+    "uacIsSelfAllowedResponse": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacResources": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "resource_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
+        },
+        "role_service_resource_type": {
+          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
+          "title": "Separate based on the service itself"
+        },
+        "authz_service_resource_type": {
+          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
+        },
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        }
+      },
+      "title": "A resource describes a specific object in a service that can receive an action"
+    }
+  },
+  "basePath": "/v1"
+}

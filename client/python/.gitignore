@@ -1,6 +1,0 @@
-*.pyc
-ModelDB.thrift
-samples/data/iris-data-clean.csv
-build/*.py
-dist/*.py
-*.egg-info/*

@@ -1,0 +1,21 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+  padding: 20px 30px;
+  background-color: white;
+}
+
+.title {
+  margin-bottom: 10px;
+  color: #999999;
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}

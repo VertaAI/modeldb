@@ -1,0 +1,1223 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protos/public/modeldb/DatasetVersionService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/dataset-version/addDatasetVersionAttributes": {
+      "post": {
+        "operationId": "addDatasetVersionAttributes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbAddDatasetVersionAttributesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbAddDatasetVersionAttributes"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/addDatasetVersionTags": {
+      "post": {
+        "operationId": "addDatasetVersionTags",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbAddDatasetVersionTagsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbAddDatasetVersionTags"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/createDatasetVersion": {
+      "post": {
+        "operationId": "createDatasetVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCreateDatasetVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCreateDatasetVersion"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/deleteDatasetVersion": {
+      "delete": {
+        "operationId": "deleteDatasetVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetVersion"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/deleteDatasetVersionAttributes": {
+      "delete": {
+        "operationId": "deleteDatasetVersionAttributes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetVersionAttributesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "attribute_keys",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "delete_all",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/deleteDatasetVersionTags": {
+      "delete": {
+        "operationId": "deleteDatasetVersionTags",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetVersionTagsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetVersionTags"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/deleteDatasetVersions": {
+      "delete": {
+        "operationId": "deleteDatasetVersions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetVersionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetVersions"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/findDatasetVersions": {
+      "post": {
+        "summary": "queries",
+        "operationId": "findDatasetVersions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbFindDatasetVersionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbFindDatasetVersions"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/getAllDatasetVersionsByDatasetId": {
+      "get": {
+        "operationId": "getAllDatasetVersionsByDatasetId",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetAllDatasetVersionsByDatasetIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page_number",
+            "description": "For pagination.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "ascending",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "sort_key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/getDatasetVersionAttributes": {
+      "get": {
+        "operationId": "getDatasetVersionAttributes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetAttributesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "attribute_keys",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "get_all",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/getDatasetVersionById": {
+      "get": {
+        "operationId": "getDatasetVersionById",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetDatasetVersionByIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/getDatasetVersionTags": {
+      "get": {
+        "operationId": "getDatasetVersionTags",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetTagsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/getLatestDatasetVersionByDatasetId": {
+      "get": {
+        "operationId": "getLatestDatasetVersionByDatasetId",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetLatestDatasetVersionByDatasetIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ascending",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "sort_key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/setDatasetVersionVisibility": {
+      "post": {
+        "operationId": "setDatasetVersionVisibility",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbSetDatasetVersionVisibiltyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbSetDatasetVersionVisibilty"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/updateDatasetVersionAttributes": {
+      "post": {
+        "operationId": "updateDatasetVersionAttributes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbUpdateDatasetVersionAttributesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbUpdateDatasetVersionAttributes"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    },
+    "/dataset-version/updateDatasetVersionDescription": {
+      "post": {
+        "operationId": "updateDatasetVersionDescription",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbUpdateDatasetVersionDescriptionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbUpdateDatasetVersionDescription"
+            }
+          }
+        ],
+        "tags": [
+          "DatasetVersionService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "DatasetTypeEnumDatasetType": {
+      "type": "string",
+      "enum": [
+        "RAW",
+        "PATH",
+        "QUERY"
+      ],
+      "default": "RAW"
+    },
+    "DatasetVisibilityEnumDatasetVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
+    },
+    "OperatorEnumOperator": {
+      "type": "string",
+      "enum": [
+        "EQ",
+        "NE",
+        "GT",
+        "GTE",
+        "LT",
+        "LTE",
+        "CONTAIN",
+        "NOT_CONTAIN",
+        "IN"
+      ],
+      "default": "EQ"
+    },
+    "PathLocationTypeEnumPathLocationType": {
+      "type": "string",
+      "enum": [
+        "LOCAL_FILE_SYSTEM",
+        "NETWORK_FILE_SYSTEM",
+        "HADOOP_FILE_SYSTEM",
+        "S3_FILE_SYSTEM"
+      ],
+      "default": "LOCAL_FILE_SYSTEM"
+    },
+    "ValueTypeEnumValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "LIST",
+        "BLOB"
+      ],
+      "default": "STRING"
+    },
+    "commonKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "modeldbAddDatasetVersionAttributes": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        }
+      }
+    },
+    "modeldbAddDatasetVersionAttributesResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbAddDatasetVersionTags": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "modeldbAddDatasetVersionTagsResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbCreateDatasetVersion": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "parent_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dataset_version_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        },
+        "dataset_type": {
+          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        },
+        "version": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "raw_dataset_version_info": {
+          "$ref": "#/definitions/modeldbRawDatasetVersionInfo"
+        },
+        "path_dataset_version_info": {
+          "$ref": "#/definitions/modeldbPathDatasetVersionInfo"
+        },
+        "query_dataset_version_info": {
+          "$ref": "#/definitions/modeldbQueryDatasetVersionInfo"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "modeldbCreateDatasetVersionResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbDatasetPartInfo": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "checksum": {
+          "type": "string"
+        },
+        "last_modified_at_source": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "modeldbDatasetVersion": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "parent_id": {
+          "type": "string"
+        },
+        "dataset_id": {
+          "type": "string"
+        },
+        "time_logged": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dataset_version_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        },
+        "dataset_type": {
+          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        },
+        "owner": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "raw_dataset_version_info": {
+          "$ref": "#/definitions/modeldbRawDatasetVersionInfo"
+        },
+        "path_dataset_version_info": {
+          "$ref": "#/definitions/modeldbPathDatasetVersionInfo"
+        },
+        "query_dataset_version_info": {
+          "$ref": "#/definitions/modeldbQueryDatasetVersionInfo"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "modeldbDeleteDatasetVersion": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbDeleteDatasetVersionAttributesResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbDeleteDatasetVersionResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "modeldbDeleteDatasetVersionTags": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "modeldbDeleteDatasetVersionTagsResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbDeleteDatasetVersions": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "modeldbDeleteDatasetVersionsResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "modeldbFindDatasetVersions": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "dataset_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "predicates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbKeyValueQuery"
+          }
+        },
+        "ids_only": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "For pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ascending": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "sort_key": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbFindDatasetVersionsResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbDatasetVersion"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "modeldbGetAllDatasetVersionsByDatasetIdResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbDatasetVersion"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "modeldbGetAttributesResponse": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        }
+      }
+    },
+    "modeldbGetDatasetVersionByIdResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbGetLatestDatasetVersionByDatasetIdResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbGetTagsResponse": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "modeldbKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
+    "modeldbPathDatasetVersionInfo": {
+      "type": "object",
+      "properties": {
+        "location_type": {
+          "$ref": "#/definitions/PathLocationTypeEnumPathLocationType"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "dataset_part_infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbDatasetPartInfo"
+          }
+        },
+        "base_path": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbQueryDatasetVersionInfo": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "query_template": {
+          "type": "string"
+        },
+        "query_parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbQueryParameter"
+          }
+        },
+        "data_source_uri": {
+          "type": "string"
+        },
+        "execution_timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "num_records": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "modeldbQueryParameter": {
+      "type": "object",
+      "properties": {
+        "parameter_name": {
+          "type": "string"
+        },
+        "parameter_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "value": {
+          "type": "object"
+        }
+      }
+    },
+    "modeldbRawDatasetVersionInfo": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "num_records": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "object_path": {
+          "type": "string"
+        },
+        "checksum": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbSetDatasetVersionVisibilty": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "dataset_version_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        }
+      }
+    },
+    "modeldbSetDatasetVersionVisibiltyResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbUpdateDatasetVersionAttributes": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "attribute": {
+          "$ref": "#/definitions/commonKeyValue"
+        }
+      }
+    },
+    "modeldbUpdateDatasetVersionAttributesResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "modeldbUpdateDatasetVersionDescription": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbUpdateDatasetVersionDescriptionResponse": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "$ref": "#/definitions/modeldbDatasetVersion"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

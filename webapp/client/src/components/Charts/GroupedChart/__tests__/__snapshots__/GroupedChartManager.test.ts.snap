@@ -1,0 +1,385 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`(grouped chart) (data: all metric hyp) should render groupedChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="grouped-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+      Grouped Metric Chart, Aggregated by Hyperparameters
+    </div>
+  </div>
+  <div>
+    <div
+      className="parallelControlPanel"
+    >
+      <div>
+        <div
+          className="chart_config_selectors"
+        >
+          <ChartConfigDropdown
+            label="Chart Type :"
+            onChange={[Function]}
+            options={
+              Array [
+                "multi-line-chart",
+                "grouped-bar-chart",
+              ]
+            }
+            value="multi-line-chart"
+          />
+          <ChartConfigDropdown
+            label="Y Axis Type :"
+            onChange={[Function]}
+            options={
+              Array [
+                "linear",
+                "log",
+              ]
+            }
+            value="linear"
+          />
+        </div>
+        <Collapsable
+          collapseLabel=" Control Panel"
+          collapsibleContainerID="groupedChartCollapsible"
+          keepOpen={true}
+        >
+          <div>
+            <div
+              className="metric_key_block"
+            >
+              Select Hyperparameters (x-axis):
+              <div
+                className="panel_content"
+              >
+                <button
+                  className="panel_buttons"
+                  key="0"
+                  onClick={[Function]}
+                >
+                  <span>
+                    C
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="1"
+                  onClick={[Function]}
+                >
+                  <span>
+                    max_iter
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="2"
+                  onClick={[Function]}
+                >
+                  <span>
+                    solver
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="3"
+                  onClick={[Function]}
+                >
+                  <span>
+                    val_acc
+                  </span>
+                </button>
+              </div>
+            </div>
+            <div
+              className="metric_key_block"
+            >
+              Select Metrics (y-axis):
+              <div
+                className="panel_content"
+              />
+            </div>
+          </div>
+        </Collapsable>
+      </div>
+      <div />
+    </div>
+    <div>
+      <MultiLineChart
+        colorScale={[Function]}
+        data={Array []}
+        selectedHyperparams={
+          Array [
+            "C",
+            "max_iter",
+            "solver",
+            "val_acc",
+          ]
+        }
+        selectedYAxisType="linear"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`(grouped chart) (data: some hyp missing) should render groupedChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="grouped-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+      Grouped Metric Chart, Aggregated by Hyperparameters
+    </div>
+  </div>
+  <div>
+    <div
+      className="parallelControlPanel"
+    >
+      <div>
+        <div
+          className="chart_config_selectors"
+        >
+          <ChartConfigDropdown
+            label="Chart Type :"
+            onChange={[Function]}
+            options={
+              Array [
+                "multi-line-chart",
+                "grouped-bar-chart",
+              ]
+            }
+            value="multi-line-chart"
+          />
+          <ChartConfigDropdown
+            label="Y Axis Type :"
+            onChange={[Function]}
+            options={
+              Array [
+                "linear",
+                "log",
+              ]
+            }
+            value="linear"
+          />
+        </div>
+        <Collapsable
+          collapseLabel=" Control Panel"
+          collapsibleContainerID="groupedChartCollapsible"
+          keepOpen={true}
+        >
+          <div>
+            <div
+              className="metric_key_block"
+            >
+              Select Hyperparameters (x-axis):
+              <div
+                className="panel_content"
+              >
+                <button
+                  className="panel_buttons"
+                  key="0"
+                  onClick={[Function]}
+                >
+                  <span>
+                    val_acc
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="1"
+                  onClick={[Function]}
+                >
+                  <span>
+                    C
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="2"
+                  onClick={[Function]}
+                >
+                  <span>
+                    max_iter
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="3"
+                  onClick={[Function]}
+                >
+                  <span>
+                    solver
+                  </span>
+                </button>
+              </div>
+            </div>
+            <div
+              className="metric_key_block"
+            >
+              Select Metrics (y-axis):
+              <div
+                className="panel_content"
+              />
+            </div>
+          </div>
+        </Collapsable>
+      </div>
+      <div />
+    </div>
+    <div>
+      <MultiLineChart
+        colorScale={[Function]}
+        data={Array []}
+        selectedHyperparams={
+          Array [
+            "val_acc",
+            "C",
+            "max_iter",
+            "solver",
+          ]
+        }
+        selectedYAxisType="linear"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`(grouped chart) (data: some metric missing) should render groupedChart component that matches snapshot 1`] = `
+<div
+  className="chart_section_wrapper"
+  data-test="grouped-chart"
+>
+  <div
+    className="chart_header_container"
+  >
+    <div
+      className="chart_header"
+    >
+      Grouped Metric Chart, Aggregated by Hyperparameters
+    </div>
+  </div>
+  <div>
+    <div
+      className="parallelControlPanel"
+    >
+      <div>
+        <div
+          className="chart_config_selectors"
+        >
+          <ChartConfigDropdown
+            label="Chart Type :"
+            onChange={[Function]}
+            options={
+              Array [
+                "multi-line-chart",
+                "grouped-bar-chart",
+              ]
+            }
+            value="multi-line-chart"
+          />
+          <ChartConfigDropdown
+            label="Y Axis Type :"
+            onChange={[Function]}
+            options={
+              Array [
+                "linear",
+                "log",
+              ]
+            }
+            value="linear"
+          />
+        </div>
+        <Collapsable
+          collapseLabel=" Control Panel"
+          collapsibleContainerID="groupedChartCollapsible"
+          keepOpen={true}
+        >
+          <div>
+            <div
+              className="metric_key_block"
+            >
+              Select Hyperparameters (x-axis):
+              <div
+                className="panel_content"
+              >
+                <button
+                  className="panel_buttons"
+                  key="0"
+                  onClick={[Function]}
+                >
+                  <span>
+                    C
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="1"
+                  onClick={[Function]}
+                >
+                  <span>
+                    max_iter
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="2"
+                  onClick={[Function]}
+                >
+                  <span>
+                    solver
+                  </span>
+                </button>
+                <button
+                  className="panel_buttons"
+                  key="3"
+                  onClick={[Function]}
+                >
+                  <span>
+                    val_acc
+                  </span>
+                </button>
+              </div>
+            </div>
+            <div
+              className="metric_key_block"
+            >
+              Select Metrics (y-axis):
+              <div
+                className="panel_content"
+              />
+            </div>
+          </div>
+        </Collapsable>
+      </div>
+      <div />
+    </div>
+    <div>
+      <MultiLineChart
+        colorScale={[Function]}
+        data={Array []}
+        selectedHyperparams={
+          Array [
+            "C",
+            "max_iter",
+            "solver",
+            "val_acc",
+          ]
+        }
+        selectedYAxisType="linear"
+      />
+    </div>
+  </div>
+</div>
+`;

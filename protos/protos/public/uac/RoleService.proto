@@ -1,0 +1,302 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+// List of possible services and actions
+// Let's only use enum if we can update this list without changing UAC code
+// I prefer enums instead of strings so that 1) we avoid bugs due to typos, 2) we have a comprehensive list somewhere
+message ServiceEnum {
+    enum Service {
+        UNKNOWN = 0; // Service 0 should always cause an error
+        ALL = 1;
+        ROLE_SERVICE = 2;
+        AUTHZ_SERVICE = 3;
+        MODELDB_SERVICE = 4;
+    }
+};
+
+message RoleActionEnum {
+    enum RoleServiceActions {
+        UNKNOWN = 0; // Action 0 should always cause an error
+        ALL = 1;
+        GET_BY_ID = 2;
+        GET_BY_NAME = 3;
+        CREATE = 4;
+        UPDATE = 5;
+        LIST = 6;
+        DELETE = 7;
+    }
+};
+
+message AuthzActionEnum {
+    enum AuthzServiceActions {
+        UNKNOWN = 0; // Action 0 should always cause an error
+        ALL = 1;
+        IS_ALLOWED = 2;
+        GET = 3;
+    }
+
+};
+
+message ModelDBActionEnum {
+    enum ModelDBServiceActions {
+        UNKNOWN = 0; // Action 0 should always cause an error
+        ALL = 1;
+        CREATE = 2;
+        READ = 3;
+        UPDATE = 4;
+        DELETE = 5;
+        DEPLOY = 6;
+        PUBLIC_READ =7;
+    }
+};
+
+// An action describes a specific operation that can be performed on a service
+message Action {
+    ServiceEnum.Service service = 1;
+    oneof action {
+        RoleActionEnum.RoleServiceActions role_service_action = 2;
+        AuthzActionEnum.AuthzServiceActions authz_service_action = 3;
+        ModelDBActionEnum.ModelDBServiceActions modeldb_service_action = 4;
+    }
+};
+
+message RoleResourceEnum {
+    enum RoleServiceResourceTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ALL = 1;
+        ROLE = 2;
+        ROLE_BINDING = 3;
+    }
+};
+
+message AuthzResourceEnum {
+    enum AuthzServiceResourceTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ALL = 1;
+    }
+};
+
+message ModelResourceEnum {
+    enum ModelDBServiceResourceTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ALL = 1;
+        PROJECT = 2;
+        EXPERIMENT = 3;
+        EXPERIMENT_RUN = 4;
+        DATASET = 5;
+        DATASET_VERSION = 6;
+        DASHBOARD = 7;
+    }
+};
+
+// A resource describes a specific object in a service that can receive an action
+message Resources {
+    ServiceEnum.Service service = 1;
+    // Internal ID for the resource in the service, whose meaning doesn't matter for other services
+    // This is optional. If empty, means all resources
+    repeated string resource_ids = 2;
+    oneof resource {
+    // Separate based on the service itself
+        RoleResourceEnum.RoleServiceResourceTypes role_service_resource_type = 3;
+        AuthzResourceEnum.AuthzServiceResourceTypes authz_service_resource_type = 4;
+        ModelResourceEnum.ModelDBServiceResourceTypes modeldb_service_resource_type = 5;
+    };
+};
+
+// Roles can be scoped by organization/team or global
+// The uniqueness of the name is only ensured at the right scope
+// Both Roles and RoleBindings have a scope. The most restrictive one will be used when checking for permissions
+message RoleScope {
+    string org_id = 1;
+    string team_id = 2;
+};
+
+// Allows grouping multiple resources and actions for more descriptive permissions
+message ResourceActionGroup {
+    repeated Resources resources = 1;
+    repeated Action actions = 2;
+};
+
+// Defines a role that can perform actions on resources
+message Role {
+    string id = 1;
+    string name = 2; // Unique within a scope
+    RoleScope scope = 3;
+
+    // Allow multiple combinations at the same time
+    repeated ResourceActionGroup resource_action_groups = 4;
+}
+
+message EntitiesEnum {
+    enum EntitiesTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ORGANIZATION = 1;
+        TEAM = 2;
+        USER = 3;
+    }
+};
+
+// Entities that can be bound to a role. All users in all scopes given are considered a match.
+message Entities {
+    repeated string user_ids = 1;
+    repeated string org_ids = 2;
+    repeated string team_ids = 3;
+};
+
+// Binds a set of roles to a set of entities
+message RoleBinding {
+    string id = 1;
+    string name = 2; // Unique within a scope
+    RoleScope scope = 3;
+
+    // Binds all roles to all given entities
+    repeated Entities entities = 5;
+
+    // We optionally allow a more specialized list of resources that the original one allowed by the roles
+    repeated Resources resources = 6;
+    string role_id = 7;
+}
+
+// Service messages
+message GetRoleById {
+    string id = 1;
+    message Response {
+        Role role = 1;
+    };
+};
+
+message GetRoleByName {
+    string name = 1;
+    RoleScope scope = 2;
+
+    message Response {
+        Role role = 1;
+    };
+};
+
+message ListRoles {
+    RoleScope scope = 2;
+
+    message Response {
+        repeated Role roles = 1;
+    };
+};
+
+message SetRole {
+    Role role = 1;
+
+    message Response {
+        Role role = 1;
+    };
+};
+
+message DeleteRole {
+    string id = 1;
+
+    message Response {
+        bool status = 1;
+    };
+};
+
+message GetRoleBindingById {
+    string id = 1;
+
+    message Response {
+        RoleBinding role_binding = 1;
+    };
+};
+
+message GetRoleBindingByName {
+    string name = 1;
+    RoleScope scope = 2;
+
+    message Response {
+        RoleBinding role_binding = 1;
+    };
+};
+
+message ListRoleBindings {
+    string entity_id = 1;
+    RoleScope scope = 2;
+
+    message Response {
+        repeated RoleBinding role_bindings = 1;
+    };
+};
+
+message SetRoleBinding {
+    RoleBinding role_binding = 1;
+
+    message Response {
+        RoleBinding role_binding = 1;
+    };
+};
+
+message DeleteRoleBinding {
+    string id = 1;
+
+    message Response {
+        bool status = 1;
+    };
+};
+
+service RoleService {
+    rpc getRoleById (GetRoleById) returns (GetRoleById.Response) {
+        option (google.api.http) = {
+            get : "/v1/role/getRoleById"
+        };
+    };
+    rpc getRoleByName (GetRoleByName) returns (GetRoleByName.Response) {
+        option (google.api.http) = {
+            get : "/v1/role/getRoleByName"
+        };
+    };
+    rpc listRoles (ListRoles) returns (ListRoles.Response) {
+        option (google.api.http) = {
+            get : "/v1/role/listRoles"
+        };
+    };
+    rpc setRole (SetRole) returns (SetRole.Response) {
+        option (google.api.http) = {
+            post : "/v1/role/setRole"
+            body : "*"
+        };
+    };
+    rpc deleteRole (DeleteRole) returns (DeleteRole.Response) {
+        option (google.api.http) = {
+            post : "/v1/role/deleteRole"
+            body : "*"
+        };
+    };
+    rpc getBindingRoleById (GetRoleBindingById) returns (GetRoleBindingById.Response) {
+        option (google.api.http) = {
+            get : "/v1/role/getRoleBindingById"
+        };
+    };
+    rpc getRoleBindingByName (GetRoleBindingByName) returns (GetRoleBindingByName.Response) {
+        option (google.api.http) = {
+            get : "/v1/role/getRoleBindingByName"
+        };
+    };
+    rpc listRoleBindings (ListRoleBindings) returns (ListRoleBindings.Response) {
+        option (google.api.http) = {
+            get : "/v1/role/listRoleBindings"
+        };
+    };
+    rpc setRoleBinding (SetRoleBinding) returns (SetRoleBinding.Response) {
+        option (google.api.http) = {
+            post : "/v1/role/setRoleBinding"
+            body : "*"
+        };
+    };
+    rpc deleteRoleBinding (DeleteRoleBinding) returns (DeleteRoleBinding.Response) {
+        option (google.api.http) = {
+            post : "/v1/role/deleteRoleBinding"
+            body : "*"
+        };
+    };
+};

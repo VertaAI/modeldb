@@ -1,0 +1,66 @@
+#ModelDB Properties
+grpcServer:
+  port: 8085
+
+springServer:
+  port: 8086
+  shutdownTimeout: 30 #time in second
+
+artifactStoreConfig:
+  artifactStoreType: NFS #S3, GCP, NFS
+  S3:
+    cloudAccessKey: #for s3 aws account access-key
+    cloudSecretKey: #for s3 aws account secret-key
+    cloudBucketName: # if nfs then root dir. Note: bucket needs to exist alrady
+  NFS:
+    nfsServerHost: localhost
+    nfsUrlProtocol: https
+    nfsRootPath:
+    artifactEndpoint:
+      getArtifact: "/v1/artifact1/getArtifact"
+      storeArtifact: "/v1/artifact/storeArtifact"
+
+# Database settings (type mongodb, couchbasedb, relational etc..)
+database:
+  DBType: relational
+  timeout: 4
+  liquibaseLockThreshold: 60 #time in second
+  RdbConfiguration:
+    RdbDatabaseName:
+    RdbDriver: "org.postgresql.Driver"
+    RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+    RdbUrl: "jdbc:postgresql://localhost:5432"
+    RdbUsername:
+    RdbPassword:
+
+# Test Database settings (type mongodb, couchbasedb, relational etc..)
+test:
+  test-database:
+    DBType: relational
+    timeout: 4
+    liquibaseLockThreshold: 60 #time in second
+    RdbConfiguration:
+      RdbDatabaseName: test
+      RdbDriver: "org.postgresql.Driver"
+      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+      RdbUrl: "jdbc:postgresql://localhost:5432"
+      RdbUsername:
+      RdbPassword:
+  testUsers:
+    primaryUser:
+      email:
+      devKey:
+    secondaryUser:
+      email:
+      devKey:
+
+#AuthService Properties
+authService:
+  host: uacservice # Docker container name OR docker IP
+  port: 50051
+
+migration:
+  #xyz : true
+
+feature-flag:
+  disabled-authz: true

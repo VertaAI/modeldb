@@ -1,0 +1,9 @@
+.root {
+  font-size: 0.875rem;
+  padding: 48px 0;
+  color: rgba(0, 0, 0, 0.87);
+  font-weight: 400;
+  text-align: center;
+  vertical-align: center;
+  border-bottom: 1px solid rgb(224, 224, 224);
+}
