@@ -100,13 +100,13 @@ docker-compose -f docker-compose-all.yaml up
 ```
 
 2. Install the ModelDB pip package. *Note it comes packaged in the verta package.*
-```
+```bash
 pip install verta
 ```
 
 3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/guides/examples.html) in our repository.*
 
-```
+```python
 from verta import Client
 client = Client("localhost:8085")
 
