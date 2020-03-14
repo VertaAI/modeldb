@@ -79,6 +79,7 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 ## What’s In This Document
 
 - [Up and Running in 5 minutes](#up-and-running-in-5-minutes)
+- [Documentation](#documentation)
 - [Community](#community)
 - [Architecture](#architecture)
 - [How to Contribute](#how-to-contribute)
@@ -103,13 +104,32 @@ docker-compose -f docker-compose-all.yaml up
 pip install verta
 ```
 
-3. Version a model or log a workflow
-```
-Add something here
-```
-Check out detailed examples [here](https://docs.verta.ai/en/master/guides/examples.html).
+3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/guides/examples.html) in our repository.*
 
-Navigate to **<http://localhost:3000>** to find the ModelDB Web UI and check out the models you just logged.
+```
+from verta import Client
+client = Client("localhost:8085")
+
+proj = client.set_project("My first ModelDB project")
+expt = client.set_experiment("Default Experiment")
+
+# log the first run
+run = client.set_experiment_run("First Run")
+run.log_hyperparameters({"regularization" : 0.5})
+# ... model training code goes here
+run.log_metric('accuracy', 0.72)
+
+# log the second run
+run = client.set_experiment_run("First Run")
+run.log_hyperparameters({"regularization" : 0.8})
+# ... model training code goes here
+run.log_metric('accuracy', 0.83)
+```
+
+**That's it!** Navigate to **<http://localhost:3000>** to find the ModelDB Web UI and check out the models you just logged.
+
+
+----
 
 For information on debugging the Docker-based ModelDB installation, check [here](DEPLOY.md#Deploy-pre-published-images).
 
@@ -145,7 +165,7 @@ At a high level the architecture of ModelDB in a Kubernetes cluster or a Docker 
 
 ![image](doc-resources/images/modeldb-architecture.png)
 
-- **ModelDB Client** developed in Python which can instantiated in the user's model building code and exposes functions to log related information to ModelDB.
+- **ModelDB Client** available in Python and Scala which can instantiated in the user's model building code and exposes functions to store information to ModelDB.
 - **ModelDB Frontend**  developed in JavaScript and typescript is the visual reporting module of ModelDB. It also acts as an entry point for the ModelDB cluster.
   - It receives the request from client (1) and the browser and route them to the appropriate container.
   - The gRPC calls (2) for creating, reading,updating or deleting Projects, Experiments, ExperimentRuns, Dataset, DatasetVersions or their metadata are routed to ModelDB Proxy.
