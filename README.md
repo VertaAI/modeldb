@@ -2,9 +2,9 @@
 
 ----
 
-ModelDB is an end-to-end system for tracking, versioning and auditing  machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying and the python client.
+ModelDB is an end-to-end system for tracking, versioning and auditing  machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying and the python and scala clients.
 
-This version of ModelDB is built upon its [predecessor](https://mitdbg.github.io/modeldb/) from [CSAIL, MIT](https://www.csail.mit.edu/). The previous version can be found on Github [here](https://github.com/mitdbg/modeldb).
+This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://www.csail.mit.edu/). The previous version can be found on Github [here](https://github.com/VertaAI/modeldb/releases/tag/v1.0.0).
 
 ----
 <p align="center">
@@ -151,6 +151,8 @@ The main skill sets for each module are as below:
 1. backend : If you are interested in `Java` development or are interested in database design using technologies like `Hibernate` and `Liquibase` please take a look at [backed README](backend/README.md) for setup and development instructions.
 1. client : If you are interested in `Python` or `Scala` development or are interested in building examples notebooks on various ML frameworks logging data to Modeldb please take a look at [client CONTRIBUTING](client/CONTRIBUTING.md) for contribution instructions.
 1. protos : If you are interested  in `Node`,`React` or `Redux`based development please take a look at [webapp README](webapp/README.md)
+
+Please reach out to us in [slack](http://bit.ly/modeldb-mlops) for any assistance in getting started with the development set up or any other feedback.
 
 ----
 
