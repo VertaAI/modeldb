@@ -1,27 +1,6 @@
 # ModelDB: An open-source system for Machine Learning model versioning, metadata, and experiment management.
 ----
 
-ModelDB is an open-source system to version machine learning models including their ingredients code, data, config, and environment and to track ML metadata across the model lifecycle.
-
-Use ModelDB in order to:
-* Make your ML models reproducible
-* Manage your ML experiments, build performance dashboards, and share reports
-* Track models across their lifecycle including development, deployment, and live monitoring
-
-Features:
-* Works on Docker, Kubernetes
-* Clients in Python and Scala
-* Beautiful dashboards for model performance and reporting
-* Git-like operations on any model
-* Flexible metadata logging including metrics, artifacts, tags and user information
-* Pluggable storage systems
-* Battle-tested in productionn environments
-
-If you are looking for a hosted version of ModelDB, please reach out at modeldb@verta.ai.
-
-This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://www.csail.mit.edu/). The previous version can be found on Github [here](https://github.com/VertaAI/modeldb/releases/tag/v1.0.0). The ModelDB project is now maintained by [Verta.ai](https://verta.ai).
-
-----
 <p align="center">
   <a href="https://hub.docker.com/u/vertaaiofficial">
     <img src="https://img.shields.io/docker/v/vertaaiofficial/modeldb-backend?color=534eb5&label=Docker%20image%20version&style=plastic" alt="docker hub" />
@@ -61,6 +40,28 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 </p>
 
 ----
+ModelDB is an open-source system to version machine learning models including their ingredients code, data, config, and environment and to track ML metadata across the model lifecycle.
+
+Use ModelDB in order to:
+* Make your ML models reproducible
+* Manage your ML experiments, build performance dashboards, and share reports
+* Track models across their lifecycle including development, deployment, and live monitoring
+
+Features:
+* Works on Docker, Kubernetes
+* Clients in Python and Scala
+* Beautiful dashboards for model performance and reporting
+* Git-like operations on any model
+* Flexible metadata logging including metrics, artifacts, tags and user information
+* Pluggable storage systems
+* Battle-tested in productionn environments
+
+If you are looking for a hosted version of ModelDB, please reach out at modeldb@verta.ai.
+
+This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://www.csail.mit.edu/). The previous version can be found on Github [here](https://github.com/VertaAI/modeldb/releases/tag/v1.0.0). The ModelDB project is now maintained by [Verta.ai](https://verta.ai).
+
+----
+
 
 <h3 align="center">
   <a href="#quick-start">Quick-start</a>
