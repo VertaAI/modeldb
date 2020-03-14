@@ -120,7 +120,7 @@ run.log_hyperparameters({"regularization" : 0.5})
 run.log_metric('accuracy', 0.72)
 
 # log the second run
-run = client.set_experiment_run("First Run")
+run = client.set_experiment_run("Second Run")
 run.log_hyperparameters({"regularization" : 0.8})
 # ... model training code goes here
 run.log_metric('accuracy', 0.83)
