@@ -1,10 +1,25 @@
-# ModelDB: A system to track, version and audit Machine Learning models
-
+# ModelDB: An open-source system for Machine Learning model versioning, metadata, and experiment management.
 ----
 
-ModelDB is an end-to-end system for tracking, versioning and auditing  machine learning models. It ingests models and associated metadata as models are being trained, stores model data in a structured format, and surfaces it through a web-frontend for rich querying and the python and scala clients.
+ModelDB is an open-source system to version machine learning models including their ingredients code, data, config, and environment and to track ML metadata across the model lifecycle.
 
-This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://www.csail.mit.edu/). The previous version can be found on Github [here](https://github.com/VertaAI/modeldb/releases/tag/v1.0.0).
+Use ModelDB in order to:
+* Make your ML models reproducible
+* Manage your ML experiments, build performance dashboards, and share reports
+* Track models across their lifecycle including development, deployment, and live monitoring
+
+Features:
+* Works on Docker, Kubernetes
+* Clients in Python and Scala
+* Beautiful dashboards for model performance and reporting
+* Git-like operations on any model
+* Flexible metadata logging including metrics, artifacts, tags and user information
+* Pluggable storage systems
+* Battle-tested in productionn environments
+
+If you are looking for a hosted version of ModelDB, please reach out at modeldb@verta.ai.
+
+This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://www.csail.mit.edu/). The previous version can be found on Github [here](https://github.com/VertaAI/modeldb/releases/tag/v1.0.0). The ModelDB project is now maintained by [Verta.ai](https://verta.ai).
 
 ----
 <p align="center">
@@ -63,7 +78,7 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 
 ## What’s In This Document
 
-- [Quick-start](#-quick-start)
+- [Quickstart](#-quickstart)
 - [Community](#-community)
 - [Architecture](#-architecture)
 - [How to Contribute](#-how-to-contribute)
@@ -72,7 +87,7 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 
 ----
 
-## Quick-start
+## Quickstart
 
 If you have [Docker Compose](https://docs.docker.com/compose/install/) installed, you can bring up a ModelDB server with just a single command.
 
