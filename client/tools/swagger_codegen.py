@@ -61,16 +61,16 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
             for param_def in op_content.get('parameters', []):
                 name = param_def['name']
                 safe_name = to_language_case(name.replace('.', '_'), case)
-                parameters.append(FieldType(safe_name, name, resolve_type(param_def)))
+                parameters.append(FieldType(safe_name, name, dict(resolve_type(param_def), var_name=safe_name)))
 
                 if param_def.get('required', False):
                     required.append(parameters[-1])
 
                 if param_def['in'] == 'body':
                     got_body_parameter = True
-                    body_type = resolve_type(param_def)
+                    body_type = dict(resolve_type(param_def), var_name=safe_name)
                 elif param_def['in'] == 'query':
-                    query.append(FieldType(safe_name, name, resolve_type(param_def)))
+                    query.append(FieldType(safe_name, name, dict(resolve_type(param_def), var_name=safe_name)))
                 elif param_def['in'] == 'path':
                     path = path.replace('{%s}' % name, "$%s" % safe_name)
                 else:
@@ -174,7 +174,7 @@ def create_model(result_dir, result_package, definition_name, definition, enums,
     properties = definition.get('properties', dict())
     properties = [{'name': keyword_safe(to_language_case(k, case)),
                    'required': k in required,
-                   'type': resolve_type(v)
+                   'type': dict(resolve_type(v), var_name=keyword_safe(to_language_case(k, case)))
                   } for k, v in properties.items()]
     for i, p in enumerate(properties):
         p.update({'last': i == len(properties)-1})
@@ -255,6 +255,8 @@ def capitalize_first(s):
 def to_language_case(base, case):
     if case == 'camel':
         return to_camel_case(base)
+    if case == 'capital':
+        return to_capital_case(base)
     if case == 'snake':
         return base
     raise ValueError(case)
@@ -264,6 +266,12 @@ def to_camel_case(snake_str):
     # We capitalize the first letter of each component except the first one
     # with the 'title' method and join them together.
     return components[0] + ''.join(x.title() for x in components[1:])
+
+def to_capital_case(snake_str):
+    components = snake_str.split('_')
+    # We capitalize the first letter of each component except the first one
+    # with the 'title' method and join them together.
+    return ''.join(x.title() for x in components)
 
 if __name__ == "__main__":
     main()
