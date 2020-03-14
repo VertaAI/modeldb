@@ -1,0 +1,7 @@
+boto3
+flask
+jupyter
+numpy
+pandas
+spacy>=2
+verta
