@@ -49,7 +49,7 @@
   <span> · </span>
   <a href="https://github.com/VertaAI/modeldb/blob/master/client/CONTRIBUTING.md">Contribute</a>
   <span> · </span>
-  <a href="http://bit.ly/modeldb-mlops">Support</a>
+  <a href="http://bit.ly/modeldb-mlops">Support (Slack)</a>
 </h3>
 
 ----
@@ -67,6 +67,7 @@ Features:
 * Git-like operations on any model
 * Flexible metadata logging including metrics, artifacts, tags and user information
 * Pluggable storage systems
+* Integration into state-of-the-art frameworks like Tensorflow and PyTorch
 * Battle-tested in productionn environments
 
 If you are looking for a hosted version of ModelDB, please reach out at modeldb@verta.ai.
@@ -77,7 +78,7 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 
 ## What’s In This Document
 
-- [Quickstart](#quickstart)
+- [Up and Running in 5 minutes](#up-and-running-in-5-minutes)
 - [Community](#community)
 - [Architecture](#architecture)
 - [How to Contribute](#how-to-contribute)
@@ -86,35 +87,55 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 
 ----
 
-## Quickstart
+## Up and Running in 5 minutes
 
-If you have [Docker Compose](https://docs.docker.com/compose/install/) installed, you can bring up a ModelDB server with just a single command.
+0. Install [Docker](https://docs.docker.com/compose/install/) (and Docker Compose)
+
+
+1. Setup ModelDB via Docker Compose
 
 ```bash
 docker-compose -f docker-compose-all.yaml up
 ```
 
-This command will fetch the published images from Docker hub and setup the multi container environment. The webapp can be accessed at **<http://localhost:3000>**.
+2. Install the ModelDB pip package. *Note it comes packaged in the verta package.*
+```
+pip install verta
+```
 
-Logs will have an entry similar to `Backend server started listening on 8085` to indicate backend is up. During the first run backend will have to run the liquibase scripts so it will take a few extra minutes to come up. The progress can be monitored in the logs.
+3. Version a model or log a workflow
+```
+Add something here
+```
+Check out detailed examples [here](https://docs.verta.ai/en/master/guides/examples.html).
 
-*Once the command finishes it might take a couple of minutes for the proxy, backend and frontend to establish connection. During this time any access through frontend or client may result in 502.*
+Navigate to **<http://localhost:3000>** to find the ModelDB Web UI and check out the models you just logged.
 
-**Other ways to deploy ModelDB are:**
+For information on debugging the Docker-based ModelDB installation, check [here](DEPLOY.md#Deploy-pre-published-images).
+
+
+**Other ways to install ModelDB are:**
 
 1. [Building the source code and deploying](DEPLOY.md#build-images-from-source-and-deploy)
-1. [Deploy on kubernetes using help](DEPLOY.md#kubernetes-setUp)
-1. [Spin up a AWS EC2 machine using a modeldb ami](DEPLOY.md#AWS)
+1. [Deploy on kubernetes via helm](DEPLOY.md#kubernetes-setUp)
+1. [Using a ModelDB ami](DEPLOY.md#AWS)
+1. If you are looking for a hosted version of ModelDB, please reach out at modeldb@verta.ai.
+
+----
+
+## Documentation
+
+Official documentation for ModelDB can be found [here](https://docs.verta.ai/en/master/).
 
 ----
 
 ## Community
 
-For Getting Started guides, Tutorials, and API reference [docs](https://docs.verta.ai/en/master/).
+For Getting Started guides, Tutorials, and API reference check out our [docs](https://docs.verta.ai/en/master/).
 
 To report a bug, file a documentation issue, or submit a feature request, please open a GitHub issue.
 
-For help, questions, contribution discussions and release announcements, please join us in [Slack](http://bit.ly/modeldb-mlops).
+For help, questions, contribution discussions and release announcements, please join us on [Slack](http://bit.ly/modeldb-mlops).
 
 ----
 
@@ -162,9 +183,9 @@ We are open to contributions to any of the modules in form of Pull Requests.
 
 The main skill sets for each module are as below:
 
-1. backend : If you are interested in `Java` development or are interested in database design using technologies like `Hibernate` and `Liquibase` please take a look at [backed README](backend/README.md) for setup and development instructions.
-1. client : If you are interested in `Python` or `Scala` development or are interested in building examples notebooks on various ML frameworks logging data to Modeldb please take a look at [client CONTRIBUTING](client/CONTRIBUTING.md) for contribution instructions.
-1. protos : If you are interested  in `Node`,`React` or `Redux`based development please take a look at [webapp README](webapp/README.md)
+1. backend: If you are interested in `Java` development or are interested in database design using technologies like `Hibernate` and `Liquibase` please take a look at [backed README](backend/README.md) for setup and development instructions.
+1. client: If you are interested in `Python` or `Scala` development or are interested in building examples notebooks on various ML frameworks logging data to Modeldb please take a look at [client CONTRIBUTING guide](client/CONTRIBUTING.md) for contribution instructions.
+1. frontend: If you are interested  in `Node`,`React` or `Redux` based development please take a look at [webapp README](webapp/README.md)
 
 Please reach out to us in [slack](http://bit.ly/modeldb-mlops) for any assistance in getting started with the development set up or any other feedback.
 
@@ -178,4 +199,4 @@ ModelDB is licensed under Apache 2.0.
 
 ## Thanks
 
-Thanks to our many [contributors](CONTRIBUTORS.md) and users.
+Thanks to our many contributors and users.
