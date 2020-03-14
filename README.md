@@ -39,6 +39,19 @@
   </a>
 </p>
 
+
+<h3 align="center">
+  <a href="#quickstart">Quickstart</a>
+  <span> · </span>
+  <a href="https://docs.verta.ai/en/master/guides/workflow.html">Workflow</a>
+  <span> · </span>
+  <a href="https://docs.verta.ai/en/master/guides/examples.html">Examples</a>
+  <span> · </span>
+  <a href="https://github.com/VertaAI/modeldb/blob/master/client/CONTRIBUTING.md">Contribute</a>
+  <span> · </span>
+  <a href="http://bit.ly/modeldb-mlops">Support</a>
+</h3>
+
 ----
 ModelDB is an open-source system to version machine learning models including their ingredients code, data, config, and environment and to track ML metadata across the model lifecycle.
 
@@ -62,29 +75,14 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 
 ----
 
-
-<h3 align="center">
-  <a href="#quick-start">Quick-start</a>
-  <span> · </span>
-  <a href="https://docs.verta.ai/en/master/guides/workflow.html">Workflow</a>
-  <span> · </span>
-  <a href="https://docs.verta.ai/en/master/guides/examples.html">Examples</a>
-  <span> · </span>
-  <a href="https://github.com/VertaAI/modeldb/blob/master/client/CONTRIBUTING.md">Contribute</a>
-  <span> · </span>
-  <a href="http://bit.ly/modeldb-mlops">Support</a>
-</h3>
-
-----
-
 ## What’s In This Document
 
-- [Quickstart](#-quickstart)
-- [Community](#-community)
-- [Architecture](#-architecture)
-- [How to Contribute](#-how-to-contribute)
-- [License](#-license)
-- [Thanks to Our Contributors](#-thanks)
+- [Quickstart](#quickstart)
+- [Community](#community)
+- [Architecture](#architecture)
+- [How to Contribute](#how-to-contribute)
+- [License](#license)
+- [Thanks to Our Contributors](#thanks)
 
 ----
 
