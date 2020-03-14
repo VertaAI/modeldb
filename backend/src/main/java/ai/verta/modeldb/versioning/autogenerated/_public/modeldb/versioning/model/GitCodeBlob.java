@@ -81,78 +81,28 @@ public class GitCodeBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitGitCodeBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Repo);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Hash);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Branch);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Tag);
-            }
-        }
-        {
-            Function<Boolean,Void> f = null;
-            if (f != null) {
-                f.apply(this.IsDirty);
-            }
-        }
+        visitor.preVisitDeepString(this.Repo);
+        visitor.preVisitDeepString(this.Hash);
+        visitor.preVisitDeepString(this.Branch);
+        visitor.preVisitDeepString(this.Tag);
+        visitor.preVisitDeepBoolean(this.IsDirty);
     }
 
     public GitCodeBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitGitCodeBlob(this);
     }
 
     public GitCodeBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Repo = f.apply(this.Repo);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Hash = f.apply(this.Hash);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Branch = f.apply(this.Branch);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Tag = f.apply(this.Tag);
-            }
-        }
-        {
-            Function<Boolean,Boolean> f = null;
-            if (f != null) {
-                this.IsDirty = f.apply(this.IsDirty);
-            }
-        }
+        this.Repo = visitor.postVisitDeepString(this.Repo);
+        this.Hash = visitor.postVisitDeepString(this.Hash);
+        this.Branch = visitor.postVisitDeepString(this.Branch);
+        this.Tag = visitor.postVisitDeepString(this.Tag);
+        this.IsDirty = visitor.postVisitDeepBoolean(this.IsDirty);
         return this.postVisitShallow(visitor);
     }
 }

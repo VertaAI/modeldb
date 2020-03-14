@@ -57,54 +57,24 @@ public class ContinuousHyperparameterSetConfigBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitContinuousHyperparameterSetConfigBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<HyperparameterValuesConfigBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.IntervalBegin);
-            }
-        }
-        {
-            Function<HyperparameterValuesConfigBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.IntervalEnd);
-            }
-        }
-        {
-            Function<HyperparameterValuesConfigBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.IntervalStep);
-            }
-        }
+        visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalBegin);
+        visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalEnd);
+        visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalStep);
     }
 
     public ContinuousHyperparameterSetConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitContinuousHyperparameterSetConfigBlob(this);
     }
 
     public ContinuousHyperparameterSetConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<HyperparameterValuesConfigBlob,HyperparameterValuesConfigBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.IntervalBegin = f.apply(this.IntervalBegin);
-            }
-        }
-        {
-            Function<HyperparameterValuesConfigBlob,HyperparameterValuesConfigBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.IntervalEnd = f.apply(this.IntervalEnd);
-            }
-        }
-        {
-            Function<HyperparameterValuesConfigBlob,HyperparameterValuesConfigBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.IntervalStep = f.apply(this.IntervalStep);
-            }
-        }
+        this.IntervalBegin = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalBegin);
+        this.IntervalEnd = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalEnd);
+        this.IntervalStep = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalStep);
         return this.postVisitShallow(visitor);
     }
 }

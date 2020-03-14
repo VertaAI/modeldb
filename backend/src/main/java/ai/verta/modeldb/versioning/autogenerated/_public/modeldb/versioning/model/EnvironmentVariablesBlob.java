@@ -45,42 +45,22 @@ public class EnvironmentVariablesBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitEnvironmentVariablesBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Name);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Value);
-            }
-        }
+        visitor.preVisitDeepString(this.Name);
+        visitor.preVisitDeepString(this.Value);
     }
 
     public EnvironmentVariablesBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitEnvironmentVariablesBlob(this);
     }
 
     public EnvironmentVariablesBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Name = f.apply(this.Name);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Value = f.apply(this.Value);
-            }
-        }
+        this.Name = visitor.postVisitDeepString(this.Name);
+        this.Value = visitor.postVisitDeepString(this.Value);
         return this.postVisitShallow(visitor);
     }
 }

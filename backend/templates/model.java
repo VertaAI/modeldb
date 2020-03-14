@@ -49,36 +49,26 @@ public class {{class_name}} {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisit{{class_name}}(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
         {{#properties}}
         {{^required}}
-        {
-            {{#type}}{{> previsitdeep}}{{/type}}
-            if (f != null) {
-                f.apply(this.{{name}});
-            }
-        }
+        visitor.preVisitDeep{{#type}}{{> visittype}}{{/type}}(this.{{name}});
         {{/required}}
         {{/properties}}
     }
 
     public {{class_name}} postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisit{{class_name}}(this);
     }
 
     public {{class_name}} postVisitDeep(Visitor visitor) throws ModelDBException {
         {{#properties}}
         {{^required}}
-        {
-            {{#type}}{{> postvisitdeep}}{{/type}}
-            if (f != null) {
-                this.{{name}} = f.apply(this.{{name}});
-            }
-        }
+        this.{{name}} = visitor.postVisitDeep{{#type}}{{> visittype}}{{/type}}(this.{{name}});
         {{/required}}
         {{/properties}}
         return this.postVisitShallow(visitor);

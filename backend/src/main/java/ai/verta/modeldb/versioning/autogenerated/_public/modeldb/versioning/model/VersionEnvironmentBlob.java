@@ -69,66 +69,26 @@ public class VersionEnvironmentBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitVersionEnvironmentBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<Integer,Void> f = null;
-            if (f != null) {
-                f.apply(this.Major);
-            }
-        }
-        {
-            Function<Integer,Void> f = null;
-            if (f != null) {
-                f.apply(this.Minor);
-            }
-        }
-        {
-            Function<Integer,Void> f = null;
-            if (f != null) {
-                f.apply(this.Patch);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Suffix);
-            }
-        }
+        visitor.preVisitDeepInteger(this.Major);
+        visitor.preVisitDeepInteger(this.Minor);
+        visitor.preVisitDeepInteger(this.Patch);
+        visitor.preVisitDeepString(this.Suffix);
     }
 
     public VersionEnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitVersionEnvironmentBlob(this);
     }
 
     public VersionEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<Integer,Integer> f = null;
-            if (f != null) {
-                this.Major = f.apply(this.Major);
-            }
-        }
-        {
-            Function<Integer,Integer> f = null;
-            if (f != null) {
-                this.Minor = f.apply(this.Minor);
-            }
-        }
-        {
-            Function<Integer,Integer> f = null;
-            if (f != null) {
-                this.Patch = f.apply(this.Patch);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Suffix = f.apply(this.Suffix);
-            }
-        }
+        this.Major = visitor.postVisitDeepInteger(this.Major);
+        this.Minor = visitor.postVisitDeepInteger(this.Minor);
+        this.Patch = visitor.postVisitDeepInteger(this.Patch);
+        this.Suffix = visitor.postVisitDeepString(this.Suffix);
         return this.postVisitShallow(visitor);
     }
 }

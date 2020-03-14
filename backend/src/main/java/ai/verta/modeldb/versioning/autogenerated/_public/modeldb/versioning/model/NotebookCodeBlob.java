@@ -45,42 +45,22 @@ public class NotebookCodeBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitNotebookCodeBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<PathDatasetBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Path);
-            }
-        }
-        {
-            Function<GitCodeBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.GitRepo);
-            }
-        }
+        visitor.preVisitDeepPathDatasetBlob(this.Path);
+        visitor.preVisitDeepGitCodeBlob(this.GitRepo);
     }
 
     public NotebookCodeBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitNotebookCodeBlob(this);
     }
 
     public NotebookCodeBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<PathDatasetBlob,PathDatasetBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Path = f.apply(this.Path);
-            }
-        }
-        {
-            Function<GitCodeBlob,GitCodeBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.GitRepo = f.apply(this.GitRepo);
-            }
-        }
+        this.Path = visitor.postVisitDeepPathDatasetBlob(this.Path);
+        this.GitRepo = visitor.postVisitDeepGitCodeBlob(this.GitRepo);
         return this.postVisitShallow(visitor);
     }
 }

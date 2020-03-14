@@ -33,30 +33,20 @@ public class S3DatasetComponentBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitS3DatasetComponentBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<PathDatasetComponentBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Path);
-            }
-        }
+        visitor.preVisitDeepPathDatasetComponentBlob(this.Path);
     }
 
     public S3DatasetComponentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitS3DatasetComponentBlob(this);
     }
 
     public S3DatasetComponentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<PathDatasetComponentBlob,PathDatasetComponentBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Path = f.apply(this.Path);
-            }
-        }
+        this.Path = visitor.postVisitDeepPathDatasetComponentBlob(this.Path);
         return this.postVisitShallow(visitor);
     }
 }

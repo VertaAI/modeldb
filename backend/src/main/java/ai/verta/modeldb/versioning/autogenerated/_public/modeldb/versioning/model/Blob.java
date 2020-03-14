@@ -69,66 +69,26 @@ public class Blob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<DatasetBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Dataset);
-            }
-        }
-        {
-            Function<EnvironmentBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Environment);
-            }
-        }
-        {
-            Function<CodeBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Code);
-            }
-        }
-        {
-            Function<ConfigBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Config);
-            }
-        }
+        visitor.preVisitDeepDatasetBlob(this.Dataset);
+        visitor.preVisitDeepEnvironmentBlob(this.Environment);
+        visitor.preVisitDeepCodeBlob(this.Code);
+        visitor.preVisitDeepConfigBlob(this.Config);
     }
 
     public Blob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitBlob(this);
     }
 
     public Blob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<DatasetBlob,DatasetBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Dataset = f.apply(this.Dataset);
-            }
-        }
-        {
-            Function<EnvironmentBlob,EnvironmentBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Environment = f.apply(this.Environment);
-            }
-        }
-        {
-            Function<CodeBlob,CodeBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Code = f.apply(this.Code);
-            }
-        }
-        {
-            Function<ConfigBlob,ConfigBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Config = f.apply(this.Config);
-            }
-        }
+        this.Dataset = visitor.postVisitDeepDatasetBlob(this.Dataset);
+        this.Environment = visitor.postVisitDeepEnvironmentBlob(this.Environment);
+        this.Code = visitor.postVisitDeepCodeBlob(this.Code);
+        this.Config = visitor.postVisitDeepConfigBlob(this.Config);
         return this.postVisitShallow(visitor);
     }
 }

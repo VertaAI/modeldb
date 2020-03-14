@@ -33,30 +33,20 @@ public class PathDatasetBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitPathDatasetBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<List<PathDatasetComponentBlob>,Void> f = v -> {v.stream().forEach(s -> s.preVisitDeep(visitor)); return null;};
-            if (f != null) {
-                f.apply(this.Components);
-            }
-        }
+        visitor.preVisitDeepListOfPathDatasetComponentBlob(this.Components);
     }
 
     public PathDatasetBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitPathDatasetBlob(this);
     }
 
     public PathDatasetBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<List<PathDatasetComponentBlob>,List<PathDatasetComponentBlob>> f = v -> v.stream().map(s -> s.postVisitDeep(visitor)).collect(Collectors.toList());
-            if (f != null) {
-                this.Components = f.apply(this.Components);
-            }
-        }
+        this.Components = visitor.postVisitDeepListOfPathDatasetComponentBlob(this.Components);
         return this.postVisitShallow(visitor);
     }
 }

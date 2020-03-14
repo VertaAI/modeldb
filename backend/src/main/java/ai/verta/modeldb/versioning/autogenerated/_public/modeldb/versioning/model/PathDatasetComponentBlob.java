@@ -81,78 +81,28 @@ public class PathDatasetComponentBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitPathDatasetComponentBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Path);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Size);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.LastModifiedAtSource);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Sha256);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Md5);
-            }
-        }
+        visitor.preVisitDeepString(this.Path);
+        visitor.preVisitDeepString(this.Size);
+        visitor.preVisitDeepString(this.LastModifiedAtSource);
+        visitor.preVisitDeepString(this.Sha256);
+        visitor.preVisitDeepString(this.Md5);
     }
 
     public PathDatasetComponentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitPathDatasetComponentBlob(this);
     }
 
     public PathDatasetComponentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Path = f.apply(this.Path);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Size = f.apply(this.Size);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.LastModifiedAtSource = f.apply(this.LastModifiedAtSource);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Sha256 = f.apply(this.Sha256);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Md5 = f.apply(this.Md5);
-            }
-        }
+        this.Path = visitor.postVisitDeepString(this.Path);
+        this.Size = visitor.postVisitDeepString(this.Size);
+        this.LastModifiedAtSource = visitor.postVisitDeepString(this.LastModifiedAtSource);
+        this.Sha256 = visitor.postVisitDeepString(this.Sha256);
+        this.Md5 = visitor.postVisitDeepString(this.Md5);
         return this.postVisitShallow(visitor);
     }
 }

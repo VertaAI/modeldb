@@ -57,54 +57,24 @@ public class PythonEnvironmentBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitPythonEnvironmentBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<VersionEnvironmentBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Version);
-            }
-        }
-        {
-            Function<List<PythonRequirementEnvironmentBlob>,Void> f = v -> {v.stream().forEach(s -> s.preVisitDeep(visitor)); return null;};
-            if (f != null) {
-                f.apply(this.Requirements);
-            }
-        }
-        {
-            Function<List<PythonRequirementEnvironmentBlob>,Void> f = v -> {v.stream().forEach(s -> s.preVisitDeep(visitor)); return null;};
-            if (f != null) {
-                f.apply(this.Constraints);
-            }
-        }
+        visitor.preVisitDeepVersionEnvironmentBlob(this.Version);
+        visitor.preVisitDeepListOfPythonRequirementEnvironmentBlob(this.Requirements);
+        visitor.preVisitDeepListOfPythonRequirementEnvironmentBlob(this.Constraints);
     }
 
     public PythonEnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitPythonEnvironmentBlob(this);
     }
 
     public PythonEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<VersionEnvironmentBlob,VersionEnvironmentBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Version = f.apply(this.Version);
-            }
-        }
-        {
-            Function<List<PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>> f = v -> v.stream().map(s -> s.postVisitDeep(visitor)).collect(Collectors.toList());
-            if (f != null) {
-                this.Requirements = f.apply(this.Requirements);
-            }
-        }
-        {
-            Function<List<PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>> f = v -> v.stream().map(s -> s.postVisitDeep(visitor)).collect(Collectors.toList());
-            if (f != null) {
-                this.Constraints = f.apply(this.Constraints);
-            }
-        }
+        this.Version = visitor.postVisitDeepVersionEnvironmentBlob(this.Version);
+        this.Requirements = visitor.postVisitDeepListOfPythonRequirementEnvironmentBlob(this.Requirements);
+        this.Constraints = visitor.postVisitDeepListOfPythonRequirementEnvironmentBlob(this.Constraints);
         return this.postVisitShallow(visitor);
     }
 }

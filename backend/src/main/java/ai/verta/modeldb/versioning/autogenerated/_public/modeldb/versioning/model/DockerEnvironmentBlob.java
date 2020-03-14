@@ -57,54 +57,24 @@ public class DockerEnvironmentBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitDockerEnvironmentBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Repository);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Tag);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Sha);
-            }
-        }
+        visitor.preVisitDeepString(this.Repository);
+        visitor.preVisitDeepString(this.Tag);
+        visitor.preVisitDeepString(this.Sha);
     }
 
     public DockerEnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitDockerEnvironmentBlob(this);
     }
 
     public DockerEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Repository = f.apply(this.Repository);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Tag = f.apply(this.Tag);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Sha = f.apply(this.Sha);
-            }
-        }
+        this.Repository = visitor.postVisitDeepString(this.Repository);
+        this.Tag = visitor.postVisitDeepString(this.Tag);
+        this.Sha = visitor.postVisitDeepString(this.Sha);
         return this.postVisitShallow(visitor);
     }
 }

@@ -69,66 +69,26 @@ public class EnvironmentBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitEnvironmentBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<PythonEnvironmentBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Python);
-            }
-        }
-        {
-            Function<DockerEnvironmentBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Docker);
-            }
-        }
-        {
-            Function<List<EnvironmentVariablesBlob>,Void> f = v -> {v.stream().forEach(s -> s.preVisitDeep(visitor)); return null;};
-            if (f != null) {
-                f.apply(this.EnvironmentVariables);
-            }
-        }
-        {
-            Function<List<String>,Void> f = v -> {v.stream().forEach(s -> s.preVisitDeep(visitor)); return null;};
-            if (f != null) {
-                f.apply(this.CommandLine);
-            }
-        }
+        visitor.preVisitDeepPythonEnvironmentBlob(this.Python);
+        visitor.preVisitDeepDockerEnvironmentBlob(this.Docker);
+        visitor.preVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariables);
+        visitor.preVisitDeepListOfString(this.CommandLine);
     }
 
     public EnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitEnvironmentBlob(this);
     }
 
     public EnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<PythonEnvironmentBlob,PythonEnvironmentBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Python = f.apply(this.Python);
-            }
-        }
-        {
-            Function<DockerEnvironmentBlob,DockerEnvironmentBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Docker = f.apply(this.Docker);
-            }
-        }
-        {
-            Function<List<EnvironmentVariablesBlob>,List<EnvironmentVariablesBlob>> f = v -> v.stream().map(s -> s.postVisitDeep(visitor)).collect(Collectors.toList());
-            if (f != null) {
-                this.EnvironmentVariables = f.apply(this.EnvironmentVariables);
-            }
-        }
-        {
-            Function<List<String>,List<String>> f = v -> v.stream().map(s -> s.postVisitDeep(visitor)).collect(Collectors.toList());
-            if (f != null) {
-                this.CommandLine = f.apply(this.CommandLine);
-            }
-        }
+        this.Python = visitor.postVisitDeepPythonEnvironmentBlob(this.Python);
+        this.Docker = visitor.postVisitDeepDockerEnvironmentBlob(this.Docker);
+        this.EnvironmentVariables = visitor.postVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariables);
+        this.CommandLine = visitor.postVisitDeepListOfString(this.CommandLine);
         return this.postVisitShallow(visitor);
     }
 }

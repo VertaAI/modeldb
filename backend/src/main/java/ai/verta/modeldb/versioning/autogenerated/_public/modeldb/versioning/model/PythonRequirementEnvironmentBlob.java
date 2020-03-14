@@ -57,54 +57,24 @@ public class PythonRequirementEnvironmentBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitPythonRequirementEnvironmentBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Library);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Constraint);
-            }
-        }
-        {
-            Function<VersionEnvironmentBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Version);
-            }
-        }
+        visitor.preVisitDeepString(this.Library);
+        visitor.preVisitDeepString(this.Constraint);
+        visitor.preVisitDeepVersionEnvironmentBlob(this.Version);
     }
 
     public PythonRequirementEnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitPythonRequirementEnvironmentBlob(this);
     }
 
     public PythonRequirementEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Library = f.apply(this.Library);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Constraint = f.apply(this.Constraint);
-            }
-        }
-        {
-            Function<VersionEnvironmentBlob,VersionEnvironmentBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Version = f.apply(this.Version);
-            }
-        }
+        this.Library = visitor.postVisitDeepString(this.Library);
+        this.Constraint = visitor.postVisitDeepString(this.Constraint);
+        this.Version = visitor.postVisitDeepVersionEnvironmentBlob(this.Version);
         return this.postVisitShallow(visitor);
     }
 }

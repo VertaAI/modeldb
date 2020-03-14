@@ -16,7 +16,7 @@ public class HyperparameterValuesConfigBlob {
 
     public HyperparameterValuesConfigBlob() {
         this.IntValue = null;
-        this.FloatValue = 0;
+        this.FloatValue = 0.;
         this.StringValue = null;
     }
 
@@ -57,54 +57,24 @@ public class HyperparameterValuesConfigBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitHyperparameterValuesConfigBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.IntValue);
-            }
-        }
-        {
-            Function<Double,Void> f = null;
-            if (f != null) {
-                f.apply(this.FloatValue);
-            }
-        }
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.StringValue);
-            }
-        }
+        visitor.preVisitDeepString(this.IntValue);
+        visitor.preVisitDeepDouble(this.FloatValue);
+        visitor.preVisitDeepString(this.StringValue);
     }
 
     public HyperparameterValuesConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitHyperparameterValuesConfigBlob(this);
     }
 
     public HyperparameterValuesConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.IntValue = f.apply(this.IntValue);
-            }
-        }
-        {
-            Function<Double,Double> f = null;
-            if (f != null) {
-                this.FloatValue = f.apply(this.FloatValue);
-            }
-        }
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.StringValue = f.apply(this.StringValue);
-            }
-        }
+        this.IntValue = visitor.postVisitDeepString(this.IntValue);
+        this.FloatValue = visitor.postVisitDeepDouble(this.FloatValue);
+        this.StringValue = visitor.postVisitDeepString(this.StringValue);
         return this.postVisitShallow(visitor);
     }
 }

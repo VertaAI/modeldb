@@ -45,42 +45,22 @@ public class HyperparameterConfigBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitHyperparameterConfigBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<String,Void> f = null;
-            if (f != null) {
-                f.apply(this.Name);
-            }
-        }
-        {
-            Function<HyperparameterValuesConfigBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Value);
-            }
-        }
+        visitor.preVisitDeepString(this.Name);
+        visitor.preVisitDeepHyperparameterValuesConfigBlob(this.Value);
     }
 
     public HyperparameterConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitHyperparameterConfigBlob(this);
     }
 
     public HyperparameterConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<String,String> f = null;
-            if (f != null) {
-                this.Name = f.apply(this.Name);
-            }
-        }
-        {
-            Function<HyperparameterValuesConfigBlob,HyperparameterValuesConfigBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Value = f.apply(this.Value);
-            }
-        }
+        this.Name = visitor.postVisitDeepString(this.Name);
+        this.Value = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.Value);
         return this.postVisitShallow(visitor);
     }
 }

@@ -45,42 +45,22 @@ public class CodeBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitCodeBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<GitCodeBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Git);
-            }
-        }
-        {
-            Function<NotebookCodeBlob,Void> f = v -> {v.preVisitDeep(visitor); return null;};
-            if (f != null) {
-                f.apply(this.Notebook);
-            }
-        }
+        visitor.preVisitDeepGitCodeBlob(this.Git);
+        visitor.preVisitDeepNotebookCodeBlob(this.Notebook);
     }
 
     public CodeBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitCodeBlob(this);
     }
 
     public CodeBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<GitCodeBlob,GitCodeBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Git = f.apply(this.Git);
-            }
-        }
-        {
-            Function<NotebookCodeBlob,NotebookCodeBlob> f = v -> v.postVisitDeep(visitor);
-            if (f != null) {
-                this.Notebook = f.apply(this.Notebook);
-            }
-        }
+        this.Git = visitor.postVisitDeepGitCodeBlob(this.Git);
+        this.Notebook = visitor.postVisitDeepNotebookCodeBlob(this.Notebook);
         return this.postVisitShallow(visitor);
     }
 }

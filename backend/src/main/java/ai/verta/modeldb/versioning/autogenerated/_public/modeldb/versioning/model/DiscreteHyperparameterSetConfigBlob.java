@@ -33,30 +33,20 @@ public class DiscreteHyperparameterSetConfigBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitDiscreteHyperparameterSetConfigBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<List<HyperparameterValuesConfigBlob>,Void> f = v -> {v.stream().forEach(s -> s.preVisitDeep(visitor)); return null;};
-            if (f != null) {
-                f.apply(this.Values);
-            }
-        }
+        visitor.preVisitDeepListOfHyperparameterValuesConfigBlob(this.Values);
     }
 
     public DiscreteHyperparameterSetConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitDiscreteHyperparameterSetConfigBlob(this);
     }
 
     public DiscreteHyperparameterSetConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<List<HyperparameterValuesConfigBlob>,List<HyperparameterValuesConfigBlob>> f = v -> v.stream().map(s -> s.postVisitDeep(visitor)).collect(Collectors.toList());
-            if (f != null) {
-                this.Values = f.apply(this.Values);
-            }
-        }
+        this.Values = visitor.postVisitDeepListOfHyperparameterValuesConfigBlob(this.Values);
         return this.postVisitShallow(visitor);
     }
 }

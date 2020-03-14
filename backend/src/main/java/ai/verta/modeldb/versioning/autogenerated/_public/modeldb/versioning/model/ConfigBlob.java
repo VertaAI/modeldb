@@ -45,42 +45,22 @@ public class ConfigBlob {
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
-        visitor.preVisit(this);
+        visitor.preVisitConfigBlob(this);
     }
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        {
-            Function<List<HyperparameterSetConfigBlob>,Void> f = v -> {v.stream().forEach(s -> s.preVisitDeep(visitor)); return null;};
-            if (f != null) {
-                f.apply(this.HyperparameterSet);
-            }
-        }
-        {
-            Function<List<HyperparameterConfigBlob>,Void> f = v -> {v.stream().forEach(s -> s.preVisitDeep(visitor)); return null;};
-            if (f != null) {
-                f.apply(this.Hyperparameters);
-            }
-        }
+        visitor.preVisitDeepListOfHyperparameterSetConfigBlob(this.HyperparameterSet);
+        visitor.preVisitDeepListOfHyperparameterConfigBlob(this.Hyperparameters);
     }
 
     public ConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
-        return visitor.postVisit(this);
+        return visitor.postVisitConfigBlob(this);
     }
 
     public ConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        {
-            Function<List<HyperparameterSetConfigBlob>,List<HyperparameterSetConfigBlob>> f = v -> v.stream().map(s -> s.postVisitDeep(visitor)).collect(Collectors.toList());
-            if (f != null) {
-                this.HyperparameterSet = f.apply(this.HyperparameterSet);
-            }
-        }
-        {
-            Function<List<HyperparameterConfigBlob>,List<HyperparameterConfigBlob>> f = v -> v.stream().map(s -> s.postVisitDeep(visitor)).collect(Collectors.toList());
-            if (f != null) {
-                this.Hyperparameters = f.apply(this.Hyperparameters);
-            }
-        }
+        this.HyperparameterSet = visitor.postVisitDeepListOfHyperparameterSetConfigBlob(this.HyperparameterSet);
+        this.Hyperparameters = visitor.postVisitDeepListOfHyperparameterConfigBlob(this.Hyperparameters);
         return this.postVisitShallow(visitor);
     }
 }
