@@ -47,7 +47,7 @@
   <span> · </span>
   <a href="https://docs.verta.ai/en/master/guides/examples.html">Examples</a>
   <span> · </span>
-  <a href="https://github.com/VertaAI/modeldb/blob/master/client/CONTRIBUTING.md">Contribute</a>
+  <a href="#contributions">Contribute</a>
   <span> · </span>
   <a href="http://bit.ly/modeldb-mlops">Support (Slack)</a>
 </h3>
