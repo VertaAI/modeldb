@@ -1,16 +1,10 @@
-Class Models
-============
+Deeploying Custom  Models
+=========================
 
-For many users and many relatively small models, pickling and uploading the serialized model object
-is sufficient for reproducibility and deployment.
+If you are deploying a model that is not purely a scikit-learn, xgboost, Tensorflow or PyTorch model,
+Verta provides a simple means to package any model for deployment.
 
-However, there are cases when the model or its framework make serializing the trained model
-prohibitively expensive or outright impossible. Alternatively, there may be configuration steps
-needed to set up the model on a new machine, which can be a hassle to define within Python's
-pickling mechanisms.
-
-For these use cases, you can deploy a **class as a model** through Verta.
-
+For such cases, Verta provides an interface that model classes must implement.
 
 Class Model Definition
 ----------------------
@@ -19,7 +13,7 @@ A *Class Model* should implement this interface:
 
 .. code-block:: python
 
-    class Model(object):
+    class MyModel(object):
         def __init__(self, artifacts):
             pass
 
@@ -53,42 +47,40 @@ As you may have noticed, the values in this dictionary don't matter too much whe
 model. ``__init__()`` only needs to care about indexing the dictionary items by the keys of the
 artifacts; Verta will take care of the values when the model is deployed.
 
-``predict()`` is identical to other types of user-defined models: it takes one argument and returns
-anything you'd like. It is exposed Clientside through :meth:`DeployedModel.predict()
+``predict()`` takes one argument, which is the model input data and returns the model output. 
+The model input can be of arbitrary type as defined in :meth:`DeployedModel.predict()
 <verta.deployment.DeployedModel.predict>`.
 
+In order to deploy this model, one must also register this model and dependencies with Verta.
 
 Class Model Logging
 -------------------
 
-A *Class Model* also must be linked to its artifacts during logging, so that Verta knows what to
-supply it with.
-
-Of course, the artifacts must first be logged.
+First, we log the dependencies (or artifacts) that the model depends on.
+For example, if a model depends on a tensorflow saved model and a nearest neighbor index,
+it can be registered as follows.
+This call will store the dependencies on Verta and make them available with this run.
 
 .. code-block:: python
 
     run.log_artifact("tensorflow_saved_model", "experiment/generated/tensorflow/saved_model/")
     run.log_artifact("nearest_neighbor_index", "experiment/generated/annoy/index.ann")
 
-Then, the keys of those artifacts must be provided to :meth:`ExperimentRun.log_model()
-<verta.client.ExperimentRun.log_model>` as its ``artifacts`` parameter. Now Verta will be able to
-provide the deployed model's ``__init__()`` with the ``artifacts`` dictionary it needs.
+Next, we register the model as defined above and provide the keys of the dependencies via
+:meth:`ExperimentRun.log_model()<verta.client.ExperimentRun.log_model>`.
 
 .. code-block:: python
 
     run.log_model(
-        Model,  # class, not instance
+        MyModel,  # class, not instance
         artifacts=["tensorflow_saved_model", "nearest_neighbor_index"],  # logged artifact keys
     )
+    # any special library requirements
     run.log_requirements(["annoy", "tensorflow"])
 
-    run.deploy(wait=True)
-    run.get_deployed_model().predict(...)
-
-For local testing, :meth:`ExperimentRun.fetch_artifacts()
-<verta.client.ExperimentRun.fetch_artifacts>` returns a dictionary in the aforementioned format
-that can be used to initialize a model.
+For local testing, use :meth:`ExperimentRun.fetch_artifacts()
+<verta.client.ExperimentRun.fetch_artifacts>` to fetch the artifact dependencies and initialize the
+model.
 
 .. code-block:: python
 
@@ -96,11 +88,18 @@ that can be used to initialize a model.
     model = Model(artifacts=artifacts)
     model.predict(...)
 
+To deploy a model registered as shown above, use these two calls:
+
+.. code-block:: python
+
+    run.deploy(wait=True)
+    run.get_deployed_model().predict(...)
+
 
 See Also
 --------
 
-This walkthrough was loosely based on `this Client example notebook`_ that uses TensorFlow, Annoy,
+This walkthrough was loosely based on `this example`_ that uses TensorFlow, Annoy,
 and Python 2.7 for text embedding and nearest neighbor search.
 
 `This annotated example notebook`_ using TensorFlow Hub and Annoy also takes advantage of *Class

@@ -1,5 +1,8 @@
-Verta: The Complete MLOps Platform
-==================================
+Verta
+=====
+
+The Complete MLOps Platform
+---------------------------
 
 Verta is a complete MLOps (ML Operations) platform focused on operationalization of ML 
 models, i.e., integrating ML development and delivery into regular software in a way 
@@ -87,16 +90,12 @@ integrated into end-to-end examples. Here are a few we like:
 - Model Versioning for Compliance
 - Model Deployment using Jenkins and Prometheus (from Strata San Jose, March 2020)
 
-
 .. toctree::
     :hidden:
     :titlesonly:
 
-    Verta <verta>
-    Quickstart (done) <quickstart>
-    Examples & Tutorials (done) <examples>
-    Support & Community (done) <support>
-    Resources <learn>
-    FAQs (done) <faqs>
-    Release Notes (done) <change_log>
-    API Reference (done) <api_reference>
+    Concepts <overview/concepts>
+    Versioning and Metadata <overview/versioning>
+    Deployment and Release <overview/deployment>
+    Model Monitoring <overview/monitoring>
+    ModelDB <overview/modeldb>

@@ -1,5 +1,8 @@
-Verta: The Complete MLOps Platform
-==================================
+Verta Overview
+==============
+
+Verta is a Complete MLOps Platform
+----------------------------------
 
 Verta is a complete MLOps (ML Operations) platform focused on operationalization of ML 
 models, i.e., integrating ML development and delivery into regular software in a way 
@@ -68,35 +71,16 @@ Verta's model monitoring provides both system and data monitoring to ensure real
 health. Head over to `Model Monitoring (fix this) <link>`__ to learn more about how to monitor
 your live models.
 
-
-Getting Started
-^^^^^^^^^^^^^^^
-
-Install the Verta package into your ML environment and get started with Verta.
-
-- `Quickstart (fix this) <quickstart.html>`__
-- Version PyTorch  models
-- Version TF models
-
-Examples
-^^^^^^^^
-
-Head over to `Examples  & Tutorials(fix this) <examples.html>`__ to see how Verta 
-integrated into end-to-end examples. Here are a few we like:
-
-- Model Versioning for Compliance
-- Model Deployment using Jenkins and Prometheus (from Strata San Jose, March 2020)
-
+.. 
 
 .. toctree::
     :hidden:
     :titlesonly:
 
-    Verta <verta>
-    Quickstart (done) <quickstart>
-    Examples & Tutorials (done) <examples>
-    Support & Community (done) <support>
-    Resources <learn>
-    FAQs (done) <faqs>
-    Release Notes (done) <change_log>
-    API Reference (done) <api_reference>
+    Concepts <overview/concepts>
+    Versioning and Metadata <overview/versioning>
+    Deployment and Release <overview/deployment>
+    Model Monitoring <overview/monitoring>
+    ModelDB <overview/modeldb>
+
+..

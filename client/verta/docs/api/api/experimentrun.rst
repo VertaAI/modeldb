@@ -3,13 +3,6 @@
 ExperimentRun
 =============
 
-.. autoclass:: verta.client.ExperimentRun
-
-Functionality
--------------
-
-- `Miscellaneous`_
-
 - `Basic Metadata`_
 
   - `Attributes`_
@@ -29,12 +22,6 @@ Functionality
   - `Code Versioning`_
   - `Data Versioning`_
   - `Deployment`_
-  - `Versioning`_
-
-Miscellaneous
--------------
-
-.. automethod:: ExperimentRun.clone
 
 Basic Metadata
 --------------
@@ -141,9 +128,7 @@ Deprecated
 .. automethod:: ExperimentRun.log_model_for_deployment
 .. automethod:: ExperimentRun.log_modules
 
-.. _experiment-run-versioning:
+Miscellaneous
+-------------
 
-Versioning
-^^^^^^^^^^
-.. automethod:: ExperimentRun.log_commit
-.. automethod:: ExperimentRun.get_commit
+.. automethod:: ExperimentRun.clone
