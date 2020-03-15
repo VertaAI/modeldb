@@ -22,15 +22,27 @@ public class S3DatasetComponentBlob {
     }
 
     static public S3DatasetComponentBlob fromProto(ai.verta.modeldb.versioning.S3DatasetComponentBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         S3DatasetComponentBlob obj = new S3DatasetComponentBlob();
         {
-            Function<ai.verta.modeldb.versioning.S3DatasetComponentBlob,PathDatasetComponentBlob> f = x -> { return PathDatasetComponentBlob.fromProto(x.getPath()); };
-            //PathDatasetComponentBlob.fromProto;
-            if (f != null) {
-                obj.Path = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.S3DatasetComponentBlob,PathDatasetComponentBlob> f = x -> PathDatasetComponentBlob.fromProto(blob.getPath());
+            obj.Path = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.S3DatasetComponentBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.S3DatasetComponentBlob.Builder builder = ai.verta.modeldb.versioning.S3DatasetComponentBlob.newBuilder();
+        {
+            if (this.Path != null) {
+                Function<ai.verta.modeldb.versioning.S3DatasetComponentBlob.Builder,Void> f = x -> { builder.setPath(this.Path.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

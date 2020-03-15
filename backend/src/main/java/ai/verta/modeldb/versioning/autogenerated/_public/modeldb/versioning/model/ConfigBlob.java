@@ -28,22 +28,37 @@ public class ConfigBlob {
     }
 
     static public ConfigBlob fromProto(ai.verta.modeldb.versioning.ConfigBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         ConfigBlob obj = new ConfigBlob();
         {
-            Function<ai.verta.modeldb.versioning.ConfigBlob,List<HyperparameterSetConfigBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob>,List<HyperparameterSetConfigBlob>>) y -> y.stream().map(z -> HyperparameterSetConfigBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getHyperparameterSetList()); };
-            //((Function<List<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob>,List<HyperparameterSetConfigBlob>>) y -> y.stream().map(z -> HyperparameterSetConfigBlob.fromProto(z)).collect(Collectors.toList())).apply;
-            if (f != null) {
-                obj.HyperparameterSet = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.ConfigBlob,List<HyperparameterSetConfigBlob>> f = x -> blob.getHyperparameterSetList().stream().map(HyperparameterSetConfigBlob::fromProto).collect(Collectors.toList());
+            obj.HyperparameterSet = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.ConfigBlob,List<HyperparameterConfigBlob>> f = x -> blob.getHyperparametersList().stream().map(HyperparameterConfigBlob::fromProto).collect(Collectors.toList());
+            obj.Hyperparameters = f.apply(blob);
+        }
+        return obj;
+    }
+
+    public ai.verta.modeldb.versioning.ConfigBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.ConfigBlob.Builder builder = ai.verta.modeldb.versioning.ConfigBlob.newBuilder();
+        {
+            if (this.HyperparameterSet != null) {
+                Function<ai.verta.modeldb.versioning.ConfigBlob.Builder,Void> f = x -> { builder.addAllHyperparameterSet(this.HyperparameterSet.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                f.apply(builder);
             }
         }
         {
-            Function<ai.verta.modeldb.versioning.ConfigBlob,List<HyperparameterConfigBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.HyperparameterConfigBlob>,List<HyperparameterConfigBlob>>) y -> y.stream().map(z -> HyperparameterConfigBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getHyperparametersList()); };
-            //((Function<List<ai.verta.modeldb.versioning.HyperparameterConfigBlob>,List<HyperparameterConfigBlob>>) y -> y.stream().map(z -> HyperparameterConfigBlob.fromProto(z)).collect(Collectors.toList())).apply;
-            if (f != null) {
-                obj.Hyperparameters = f.apply(blob);
+            if (this.Hyperparameters != null) {
+                Function<ai.verta.modeldb.versioning.ConfigBlob.Builder,Void> f = x -> { builder.addAllHyperparameters(this.Hyperparameters.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                f.apply(builder);
             }
         }
-        return obj;
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

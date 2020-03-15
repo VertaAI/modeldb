@@ -28,22 +28,37 @@ public class HyperparameterConfigBlob {
     }
 
     static public HyperparameterConfigBlob fromProto(ai.verta.modeldb.versioning.HyperparameterConfigBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         HyperparameterConfigBlob obj = new HyperparameterConfigBlob();
         {
-            Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob,String> f = x -> { return (x.getName()); };
-            //;
-            if (f != null) {
-                obj.Name = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob,String> f = x -> (blob.getName());
+            obj.Name = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob,HyperparameterValuesConfigBlob> f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getValue());
+            obj.Value = f.apply(blob);
+        }
+        return obj;
+    }
+
+    public ai.verta.modeldb.versioning.HyperparameterConfigBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.HyperparameterConfigBlob.Builder builder = ai.verta.modeldb.versioning.HyperparameterConfigBlob.newBuilder();
+        {
+            if (this.Name != null) {
+                Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob.Builder,Void> f = x -> { builder.setName(this.Name); return null; };
+                f.apply(builder);
             }
         }
         {
-            Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob,HyperparameterValuesConfigBlob> f = x -> { return HyperparameterValuesConfigBlob.fromProto(x.getValue()); };
-            //HyperparameterValuesConfigBlob.fromProto;
-            if (f != null) {
-                obj.Value = f.apply(blob);
+            if (this.Value != null) {
+                Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob.Builder,Void> f = x -> { builder.setValue(this.Value.toProto()); return null; };
+                f.apply(builder);
             }
         }
-        return obj;
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

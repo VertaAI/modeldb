@@ -28,22 +28,37 @@ public class EnvironmentVariablesBlob {
     }
 
     static public EnvironmentVariablesBlob fromProto(ai.verta.modeldb.versioning.EnvironmentVariablesBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         EnvironmentVariablesBlob obj = new EnvironmentVariablesBlob();
         {
-            Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob,String> f = x -> { return (x.getName()); };
-            //;
-            if (f != null) {
-                obj.Name = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob,String> f = x -> (blob.getName());
+            obj.Name = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob,String> f = x -> (blob.getValue());
+            obj.Value = f.apply(blob);
+        }
+        return obj;
+    }
+
+    public ai.verta.modeldb.versioning.EnvironmentVariablesBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.EnvironmentVariablesBlob.Builder builder = ai.verta.modeldb.versioning.EnvironmentVariablesBlob.newBuilder();
+        {
+            if (this.Name != null) {
+                Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob.Builder,Void> f = x -> { builder.setName(this.Name); return null; };
+                f.apply(builder);
             }
         }
         {
-            Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob,String> f = x -> { return (x.getValue()); };
-            //;
-            if (f != null) {
-                obj.Value = f.apply(blob);
+            if (this.Value != null) {
+                Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob.Builder,Void> f = x -> { builder.setValue(this.Value); return null; };
+                f.apply(builder);
             }
         }
-        return obj;
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

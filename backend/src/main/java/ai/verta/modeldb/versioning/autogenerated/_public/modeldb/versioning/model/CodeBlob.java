@@ -28,22 +28,37 @@ public class CodeBlob {
     }
 
     static public CodeBlob fromProto(ai.verta.modeldb.versioning.CodeBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         CodeBlob obj = new CodeBlob();
         {
-            Function<ai.verta.modeldb.versioning.CodeBlob,GitCodeBlob> f = x -> { return GitCodeBlob.fromProto(x.getGit()); };
-            //GitCodeBlob.fromProto;
-            if (f != null) {
-                obj.Git = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.CodeBlob,GitCodeBlob> f = x -> GitCodeBlob.fromProto(blob.getGit());
+            obj.Git = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.CodeBlob,NotebookCodeBlob> f = x -> NotebookCodeBlob.fromProto(blob.getNotebook());
+            obj.Notebook = f.apply(blob);
+        }
+        return obj;
+    }
+
+    public ai.verta.modeldb.versioning.CodeBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.CodeBlob.Builder builder = ai.verta.modeldb.versioning.CodeBlob.newBuilder();
+        {
+            if (this.Git != null) {
+                Function<ai.verta.modeldb.versioning.CodeBlob.Builder,Void> f = x -> { builder.setGit(this.Git.toProto()); return null; };
+                f.apply(builder);
             }
         }
         {
-            Function<ai.verta.modeldb.versioning.CodeBlob,NotebookCodeBlob> f = x -> { return NotebookCodeBlob.fromProto(x.getNotebook()); };
-            //NotebookCodeBlob.fromProto;
-            if (f != null) {
-                obj.Notebook = f.apply(blob);
+            if (this.Notebook != null) {
+                Function<ai.verta.modeldb.versioning.CodeBlob.Builder,Void> f = x -> { builder.setNotebook(this.Notebook.toProto()); return null; };
+                f.apply(builder);
             }
         }
-        return obj;
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

@@ -34,29 +34,47 @@ public class HyperparameterValuesConfigBlob {
     }
 
     static public HyperparameterValuesConfigBlob fromProto(ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         HyperparameterValuesConfigBlob obj = new HyperparameterValuesConfigBlob();
         {
-            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,Long> f = x -> { return (x.getIntValue()); };
-            //;
-            if (f != null) {
-                obj.IntValue = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,Long> f = x -> (blob.getIntValue());
+            obj.IntValue = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,Float> f = x -> { return (x.getFloatValue()); };
-            //;
-            if (f != null) {
-                obj.FloatValue = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,Float> f = x -> (blob.getFloatValue());
+            obj.FloatValue = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,String> f = x -> { return (x.getStringValue()); };
-            //;
-            if (f != null) {
-                obj.StringValue = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,String> f = x -> (blob.getStringValue());
+            obj.StringValue = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder builder = ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.newBuilder();
+        {
+            if (this.IntValue != null) {
+                Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder,Void> f = x -> { builder.setIntValue(this.IntValue); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.FloatValue != null) {
+                Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder,Void> f = x -> { builder.setFloatValue(this.FloatValue); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.StringValue != null) {
+                Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder,Void> f = x -> { builder.setStringValue(this.StringValue); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

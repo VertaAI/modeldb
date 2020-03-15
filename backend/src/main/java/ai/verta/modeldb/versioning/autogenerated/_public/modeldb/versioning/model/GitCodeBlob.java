@@ -46,43 +46,67 @@ public class GitCodeBlob {
     }
 
     static public GitCodeBlob fromProto(ai.verta.modeldb.versioning.GitCodeBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         GitCodeBlob obj = new GitCodeBlob();
         {
-            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> { return (x.getRepo()); };
-            //;
-            if (f != null) {
-                obj.Repo = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> (blob.getRepo());
+            obj.Repo = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> { return (x.getHash()); };
-            //;
-            if (f != null) {
-                obj.Hash = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> (blob.getHash());
+            obj.Hash = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> { return (x.getBranch()); };
-            //;
-            if (f != null) {
-                obj.Branch = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> (blob.getBranch());
+            obj.Branch = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> { return (x.getTag()); };
-            //;
-            if (f != null) {
-                obj.Tag = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> (blob.getTag());
+            obj.Tag = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.GitCodeBlob,Boolean> f = x -> { return (x.getIsDirty()); };
-            //;
-            if (f != null) {
-                obj.IsDirty = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,Boolean> f = x -> (blob.getIsDirty());
+            obj.IsDirty = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.GitCodeBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.GitCodeBlob.Builder builder = ai.verta.modeldb.versioning.GitCodeBlob.newBuilder();
+        {
+            if (this.Repo != null) {
+                Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder,Void> f = x -> { builder.setRepo(this.Repo); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Hash != null) {
+                Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder,Void> f = x -> { builder.setHash(this.Hash); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Branch != null) {
+                Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder,Void> f = x -> { builder.setBranch(this.Branch); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Tag != null) {
+                Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder,Void> f = x -> { builder.setTag(this.Tag); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.IsDirty != null) {
+                Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder,Void> f = x -> { builder.setIsDirty(this.IsDirty); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

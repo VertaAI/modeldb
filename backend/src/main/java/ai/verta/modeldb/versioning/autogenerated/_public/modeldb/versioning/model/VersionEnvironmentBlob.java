@@ -40,36 +40,57 @@ public class VersionEnvironmentBlob {
     }
 
     static public VersionEnvironmentBlob fromProto(ai.verta.modeldb.versioning.VersionEnvironmentBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         VersionEnvironmentBlob obj = new VersionEnvironmentBlob();
         {
-            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> { return (x.getMajor()); };
-            //;
-            if (f != null) {
-                obj.Major = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> (blob.getMajor());
+            obj.Major = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> { return (x.getMinor()); };
-            //;
-            if (f != null) {
-                obj.Minor = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> (blob.getMinor());
+            obj.Minor = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> { return (x.getPatch()); };
-            //;
-            if (f != null) {
-                obj.Patch = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> (blob.getPatch());
+            obj.Patch = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,String> f = x -> { return (x.getSuffix()); };
-            //;
-            if (f != null) {
-                obj.Suffix = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,String> f = x -> (blob.getSuffix());
+            obj.Suffix = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder builder = ai.verta.modeldb.versioning.VersionEnvironmentBlob.newBuilder();
+        {
+            if (this.Major != null) {
+                Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder,Void> f = x -> { builder.setMajor(this.Major); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Minor != null) {
+                Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder,Void> f = x -> { builder.setMinor(this.Minor); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Patch != null) {
+                Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder,Void> f = x -> { builder.setPatch(this.Patch); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Suffix != null) {
+                Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder,Void> f = x -> { builder.setSuffix(this.Suffix); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

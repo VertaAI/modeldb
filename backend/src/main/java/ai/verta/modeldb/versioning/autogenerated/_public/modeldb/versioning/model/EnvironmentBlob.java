@@ -40,36 +40,57 @@ public class EnvironmentBlob {
     }
 
     static public EnvironmentBlob fromProto(ai.verta.modeldb.versioning.EnvironmentBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         EnvironmentBlob obj = new EnvironmentBlob();
         {
-            Function<ai.verta.modeldb.versioning.EnvironmentBlob,PythonEnvironmentBlob> f = x -> { return PythonEnvironmentBlob.fromProto(x.getPython()); };
-            //PythonEnvironmentBlob.fromProto;
-            if (f != null) {
-                obj.Python = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.EnvironmentBlob,PythonEnvironmentBlob> f = x -> PythonEnvironmentBlob.fromProto(blob.getPython());
+            obj.Python = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.EnvironmentBlob,DockerEnvironmentBlob> f = x -> { return DockerEnvironmentBlob.fromProto(x.getDocker()); };
-            //DockerEnvironmentBlob.fromProto;
-            if (f != null) {
-                obj.Docker = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.EnvironmentBlob,DockerEnvironmentBlob> f = x -> DockerEnvironmentBlob.fromProto(blob.getDocker());
+            obj.Docker = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.EnvironmentBlob,List<EnvironmentVariablesBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.EnvironmentVariablesBlob>,List<EnvironmentVariablesBlob>>) y -> y.stream().map(z -> EnvironmentVariablesBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getEnvironmentVariablesList()); };
-            //((Function<List<ai.verta.modeldb.versioning.EnvironmentVariablesBlob>,List<EnvironmentVariablesBlob>>) y -> y.stream().map(z -> EnvironmentVariablesBlob.fromProto(z)).collect(Collectors.toList())).apply;
-            if (f != null) {
-                obj.EnvironmentVariables = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.EnvironmentBlob,List<EnvironmentVariablesBlob>> f = x -> blob.getEnvironmentVariablesList().stream().map(EnvironmentVariablesBlob::fromProto).collect(Collectors.toList());
+            obj.EnvironmentVariables = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.EnvironmentBlob,List<String>> f = x -> { return (x.getCommandLineList()); };
-            //;
-            if (f != null) {
-                obj.CommandLine = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.EnvironmentBlob,List<String>> f = x -> blob.getCommandLineList();
+            obj.CommandLine = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.EnvironmentBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.EnvironmentBlob.Builder builder = ai.verta.modeldb.versioning.EnvironmentBlob.newBuilder();
+        {
+            if (this.Python != null) {
+                Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder,Void> f = x -> { builder.setPython(this.Python.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Docker != null) {
+                Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder,Void> f = x -> { builder.setDocker(this.Docker.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.EnvironmentVariables != null) {
+                Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder,Void> f = x -> { builder.addAllEnvironmentVariables(this.EnvironmentVariables.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.CommandLine != null) {
+                Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder,Void> f = x -> { builder.addAllCommandLine(this.CommandLine); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

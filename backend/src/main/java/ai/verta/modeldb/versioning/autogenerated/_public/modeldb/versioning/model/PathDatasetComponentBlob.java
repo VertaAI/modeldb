@@ -46,43 +46,67 @@ public class PathDatasetComponentBlob {
     }
 
     static public PathDatasetComponentBlob fromProto(ai.verta.modeldb.versioning.PathDatasetComponentBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         PathDatasetComponentBlob obj = new PathDatasetComponentBlob();
         {
-            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> { return (x.getPath()); };
-            //;
-            if (f != null) {
-                obj.Path = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> (blob.getPath());
+            obj.Path = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,Long> f = x -> { return (x.getSize()); };
-            //;
-            if (f != null) {
-                obj.Size = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,Long> f = x -> (blob.getSize());
+            obj.Size = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,Long> f = x -> { return (x.getLastModifiedAtSource()); };
-            //;
-            if (f != null) {
-                obj.LastModifiedAtSource = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,Long> f = x -> (blob.getLastModifiedAtSource());
+            obj.LastModifiedAtSource = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> { return (x.getSha256()); };
-            //;
-            if (f != null) {
-                obj.Sha256 = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> (blob.getSha256());
+            obj.Sha256 = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> { return (x.getMd5()); };
-            //;
-            if (f != null) {
-                obj.Md5 = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> (blob.getMd5());
+            obj.Md5 = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder builder = ai.verta.modeldb.versioning.PathDatasetComponentBlob.newBuilder();
+        {
+            if (this.Path != null) {
+                Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder,Void> f = x -> { builder.setPath(this.Path); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Size != null) {
+                Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder,Void> f = x -> { builder.setSize(this.Size); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.LastModifiedAtSource != null) {
+                Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder,Void> f = x -> { builder.setLastModifiedAtSource(this.LastModifiedAtSource); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Sha256 != null) {
+                Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder,Void> f = x -> { builder.setSha256(this.Sha256); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Md5 != null) {
+                Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder,Void> f = x -> { builder.setMd5(this.Md5); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

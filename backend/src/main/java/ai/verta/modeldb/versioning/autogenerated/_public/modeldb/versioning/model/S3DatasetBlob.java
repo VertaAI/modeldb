@@ -22,15 +22,27 @@ public class S3DatasetBlob {
     }
 
     static public S3DatasetBlob fromProto(ai.verta.modeldb.versioning.S3DatasetBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         S3DatasetBlob obj = new S3DatasetBlob();
         {
-            Function<ai.verta.modeldb.versioning.S3DatasetBlob,List<S3DatasetComponentBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.S3DatasetComponentBlob>,List<S3DatasetComponentBlob>>) y -> y.stream().map(z -> S3DatasetComponentBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getComponentsList()); };
-            //((Function<List<ai.verta.modeldb.versioning.S3DatasetComponentBlob>,List<S3DatasetComponentBlob>>) y -> y.stream().map(z -> S3DatasetComponentBlob.fromProto(z)).collect(Collectors.toList())).apply;
-            if (f != null) {
-                obj.Components = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.S3DatasetBlob,List<S3DatasetComponentBlob>> f = x -> blob.getComponentsList().stream().map(S3DatasetComponentBlob::fromProto).collect(Collectors.toList());
+            obj.Components = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.S3DatasetBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.S3DatasetBlob.Builder builder = ai.verta.modeldb.versioning.S3DatasetBlob.newBuilder();
+        {
+            if (this.Components != null) {
+                Function<ai.verta.modeldb.versioning.S3DatasetBlob.Builder,Void> f = x -> { builder.addAllComponents(this.Components.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

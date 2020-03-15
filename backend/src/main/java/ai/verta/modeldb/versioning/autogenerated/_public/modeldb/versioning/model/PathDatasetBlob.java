@@ -22,15 +22,27 @@ public class PathDatasetBlob {
     }
 
     static public PathDatasetBlob fromProto(ai.verta.modeldb.versioning.PathDatasetBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         PathDatasetBlob obj = new PathDatasetBlob();
         {
-            Function<ai.verta.modeldb.versioning.PathDatasetBlob,List<PathDatasetComponentBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.PathDatasetComponentBlob>,List<PathDatasetComponentBlob>>) y -> y.stream().map(z -> PathDatasetComponentBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getComponentsList()); };
-            //((Function<List<ai.verta.modeldb.versioning.PathDatasetComponentBlob>,List<PathDatasetComponentBlob>>) y -> y.stream().map(z -> PathDatasetComponentBlob.fromProto(z)).collect(Collectors.toList())).apply;
-            if (f != null) {
-                obj.Components = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.PathDatasetBlob,List<PathDatasetComponentBlob>> f = x -> blob.getComponentsList().stream().map(PathDatasetComponentBlob::fromProto).collect(Collectors.toList());
+            obj.Components = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.PathDatasetBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.PathDatasetBlob.Builder builder = ai.verta.modeldb.versioning.PathDatasetBlob.newBuilder();
+        {
+            if (this.Components != null) {
+                Function<ai.verta.modeldb.versioning.PathDatasetBlob.Builder,Void> f = x -> { builder.addAllComponents(this.Components.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

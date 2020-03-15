@@ -34,29 +34,47 @@ public class ContinuousHyperparameterSetConfigBlob {
     }
 
     static public ContinuousHyperparameterSetConfigBlob fromProto(ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         ContinuousHyperparameterSetConfigBlob obj = new ContinuousHyperparameterSetConfigBlob();
         {
-            Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,HyperparameterValuesConfigBlob> f = x -> { return HyperparameterValuesConfigBlob.fromProto(x.getIntervalBegin()); };
-            //HyperparameterValuesConfigBlob.fromProto;
-            if (f != null) {
-                obj.IntervalBegin = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,HyperparameterValuesConfigBlob> f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getIntervalBegin());
+            obj.IntervalBegin = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,HyperparameterValuesConfigBlob> f = x -> { return HyperparameterValuesConfigBlob.fromProto(x.getIntervalEnd()); };
-            //HyperparameterValuesConfigBlob.fromProto;
-            if (f != null) {
-                obj.IntervalEnd = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,HyperparameterValuesConfigBlob> f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getIntervalEnd());
+            obj.IntervalEnd = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,HyperparameterValuesConfigBlob> f = x -> { return HyperparameterValuesConfigBlob.fromProto(x.getIntervalStep()); };
-            //HyperparameterValuesConfigBlob.fromProto;
-            if (f != null) {
-                obj.IntervalStep = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,HyperparameterValuesConfigBlob> f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getIntervalStep());
+            obj.IntervalStep = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder builder = ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.newBuilder();
+        {
+            if (this.IntervalBegin != null) {
+                Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder,Void> f = x -> { builder.setIntervalBegin(this.IntervalBegin.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.IntervalEnd != null) {
+                Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder,Void> f = x -> { builder.setIntervalEnd(this.IntervalEnd.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.IntervalStep != null) {
+                Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder,Void> f = x -> { builder.setIntervalStep(this.IntervalStep.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

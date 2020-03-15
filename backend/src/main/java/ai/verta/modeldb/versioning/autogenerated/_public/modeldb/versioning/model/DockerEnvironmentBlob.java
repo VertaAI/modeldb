@@ -34,29 +34,47 @@ public class DockerEnvironmentBlob {
     }
 
     static public DockerEnvironmentBlob fromProto(ai.verta.modeldb.versioning.DockerEnvironmentBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         DockerEnvironmentBlob obj = new DockerEnvironmentBlob();
         {
-            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> { return (x.getRepository()); };
-            //;
-            if (f != null) {
-                obj.Repository = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> (blob.getRepository());
+            obj.Repository = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> { return (x.getTag()); };
-            //;
-            if (f != null) {
-                obj.Tag = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> (blob.getTag());
+            obj.Tag = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> { return (x.getSha()); };
-            //;
-            if (f != null) {
-                obj.Sha = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> (blob.getSha());
+            obj.Sha = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder builder = ai.verta.modeldb.versioning.DockerEnvironmentBlob.newBuilder();
+        {
+            if (this.Repository != null) {
+                Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder,Void> f = x -> { builder.setRepository(this.Repository); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Tag != null) {
+                Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder,Void> f = x -> { builder.setTag(this.Tag); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Sha != null) {
+                Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder,Void> f = x -> { builder.setSha(this.Sha); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

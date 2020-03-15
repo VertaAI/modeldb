@@ -40,36 +40,57 @@ public class Blob {
     }
 
     static public Blob fromProto(ai.verta.modeldb.versioning.Blob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         Blob obj = new Blob();
         {
-            Function<ai.verta.modeldb.versioning.Blob,DatasetBlob> f = x -> { return DatasetBlob.fromProto(x.getDataset()); };
-            //DatasetBlob.fromProto;
-            if (f != null) {
-                obj.Dataset = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.Blob,DatasetBlob> f = x -> DatasetBlob.fromProto(blob.getDataset());
+            obj.Dataset = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.Blob,EnvironmentBlob> f = x -> { return EnvironmentBlob.fromProto(x.getEnvironment()); };
-            //EnvironmentBlob.fromProto;
-            if (f != null) {
-                obj.Environment = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.Blob,EnvironmentBlob> f = x -> EnvironmentBlob.fromProto(blob.getEnvironment());
+            obj.Environment = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.Blob,CodeBlob> f = x -> { return CodeBlob.fromProto(x.getCode()); };
-            //CodeBlob.fromProto;
-            if (f != null) {
-                obj.Code = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.Blob,CodeBlob> f = x -> CodeBlob.fromProto(blob.getCode());
+            obj.Code = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.Blob,ConfigBlob> f = x -> { return ConfigBlob.fromProto(x.getConfig()); };
-            //ConfigBlob.fromProto;
-            if (f != null) {
-                obj.Config = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.Blob,ConfigBlob> f = x -> ConfigBlob.fromProto(blob.getConfig());
+            obj.Config = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.Blob.Builder toProto() {
+        ai.verta.modeldb.versioning.Blob.Builder builder = ai.verta.modeldb.versioning.Blob.newBuilder();
+        {
+            if (this.Dataset != null) {
+                Function<ai.verta.modeldb.versioning.Blob.Builder,Void> f = x -> { builder.setDataset(this.Dataset.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Environment != null) {
+                Function<ai.verta.modeldb.versioning.Blob.Builder,Void> f = x -> { builder.setEnvironment(this.Environment.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Code != null) {
+                Function<ai.verta.modeldb.versioning.Blob.Builder,Void> f = x -> { builder.setCode(this.Code.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Config != null) {
+                Function<ai.verta.modeldb.versioning.Blob.Builder,Void> f = x -> { builder.setConfig(this.Config.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

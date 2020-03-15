@@ -28,22 +28,37 @@ public class DatasetBlob {
     }
 
     static public DatasetBlob fromProto(ai.verta.modeldb.versioning.DatasetBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         DatasetBlob obj = new DatasetBlob();
         {
-            Function<ai.verta.modeldb.versioning.DatasetBlob,S3DatasetBlob> f = x -> { return S3DatasetBlob.fromProto(x.getS3()); };
-            //S3DatasetBlob.fromProto;
-            if (f != null) {
-                obj.S3 = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.DatasetBlob,S3DatasetBlob> f = x -> S3DatasetBlob.fromProto(blob.getS3());
+            obj.S3 = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.DatasetBlob,PathDatasetBlob> f = x -> PathDatasetBlob.fromProto(blob.getPath());
+            obj.Path = f.apply(blob);
+        }
+        return obj;
+    }
+
+    public ai.verta.modeldb.versioning.DatasetBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.DatasetBlob.Builder builder = ai.verta.modeldb.versioning.DatasetBlob.newBuilder();
+        {
+            if (this.S3 != null) {
+                Function<ai.verta.modeldb.versioning.DatasetBlob.Builder,Void> f = x -> { builder.setS3(this.S3.toProto()); return null; };
+                f.apply(builder);
             }
         }
         {
-            Function<ai.verta.modeldb.versioning.DatasetBlob,PathDatasetBlob> f = x -> { return PathDatasetBlob.fromProto(x.getPath()); };
-            //PathDatasetBlob.fromProto;
-            if (f != null) {
-                obj.Path = f.apply(blob);
+            if (this.Path != null) {
+                Function<ai.verta.modeldb.versioning.DatasetBlob.Builder,Void> f = x -> { builder.setPath(this.Path.toProto()); return null; };
+                f.apply(builder);
             }
         }
-        return obj;
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

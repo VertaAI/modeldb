@@ -28,22 +28,37 @@ public class NotebookCodeBlob {
     }
 
     static public NotebookCodeBlob fromProto(ai.verta.modeldb.versioning.NotebookCodeBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         NotebookCodeBlob obj = new NotebookCodeBlob();
         {
-            Function<ai.verta.modeldb.versioning.NotebookCodeBlob,PathDatasetBlob> f = x -> { return PathDatasetBlob.fromProto(x.getPath()); };
-            //PathDatasetBlob.fromProto;
-            if (f != null) {
-                obj.Path = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.NotebookCodeBlob,PathDatasetBlob> f = x -> PathDatasetBlob.fromProto(blob.getPath());
+            obj.Path = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.NotebookCodeBlob,GitCodeBlob> f = x -> GitCodeBlob.fromProto(blob.getGitRepo());
+            obj.GitRepo = f.apply(blob);
+        }
+        return obj;
+    }
+
+    public ai.verta.modeldb.versioning.NotebookCodeBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.NotebookCodeBlob.Builder builder = ai.verta.modeldb.versioning.NotebookCodeBlob.newBuilder();
+        {
+            if (this.Path != null) {
+                Function<ai.verta.modeldb.versioning.NotebookCodeBlob.Builder,Void> f = x -> { builder.setPath(this.Path.toProto()); return null; };
+                f.apply(builder);
             }
         }
         {
-            Function<ai.verta.modeldb.versioning.NotebookCodeBlob,GitCodeBlob> f = x -> { return GitCodeBlob.fromProto(x.getGitRepo()); };
-            //GitCodeBlob.fromProto;
-            if (f != null) {
-                obj.GitRepo = f.apply(blob);
+            if (this.GitRepo != null) {
+                Function<ai.verta.modeldb.versioning.NotebookCodeBlob.Builder,Void> f = x -> { builder.setGitRepo(this.GitRepo.toProto()); return null; };
+                f.apply(builder);
             }
         }
-        return obj;
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

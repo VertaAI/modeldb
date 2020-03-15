@@ -34,19 +34,35 @@ public class {{class_name}} {
     {{/properties}}
 
     static public {{class_name}} fromProto(ai.verta.modeldb.versioning.{{class_name}} blob) {
+        if (blob == null) {
+            return null;
+        }
+
         {{class_name}} obj = new {{class_name}}();
         {{#properties}}
         {{^required}}
         {
-            Function<ai.verta.modeldb.versioning.{{class_name}},{{#type}}{{> type}}{{/type}}> f = x -> { return {{#type}}{{> fromproto}}{{/type}}(x.get{{name}}{{#type}}{{#is_list}}List{{/is_list}}{{/type}}()); };
-            //{{#type}}{{> fromproto}}{{/type}};
-            if (f != null) {
-                obj.{{name}} = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.{{class_name}},{{#type}}{{> type}}{{/type}}> f = x -> {{#type}}{{#is_list}}blob.get{{name}}List(){{#list_type}}{{#custom}}.stream().map({{name}}::fromProto).collect(Collectors.toList()){{/custom}}{{/list_type}}{{/is_list}}{{^is_list}}{{#custom}}{{name}}.fromProto{{/custom}}(blob.get{{name}}()){{/is_list}}{{/type}};
+            obj.{{name}} = f.apply(blob);
         }
         {{/required}}
         {{/properties}}
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.{{class_name}}.Builder toProto() {
+        ai.verta.modeldb.versioning.{{class_name}}.Builder builder = ai.verta.modeldb.versioning.{{class_name}}.newBuilder();
+        {{#properties}}
+        {{^required}}
+        {
+            if (this.{{name}} != null) {
+                Function<ai.verta.modeldb.versioning.{{class_name}}.Builder,Void> f = x -> { {{#type}}{{#is_list}}builder.addAll{{name}}(this.{{name}}{{#list_type}}{{#is_custom}}.stream().map(y -> y.toProto().build()).collect(Collectors.toList()){{/is_custom}}{{/list_type}}){{/is_list}}{{^is_list}}builder.set{{name}}(this.{{name}}{{#is_custom}}.toProto(){{/is_custom}}){{/is_list}}{{/type}}; return null; };
+                f.apply(builder);
+            }
+        }
+        {{/required}}
+        {{/properties}}
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

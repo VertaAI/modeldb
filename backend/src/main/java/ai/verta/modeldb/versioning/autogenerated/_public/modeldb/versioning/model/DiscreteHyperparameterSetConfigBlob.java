@@ -22,15 +22,27 @@ public class DiscreteHyperparameterSetConfigBlob {
     }
 
     static public DiscreteHyperparameterSetConfigBlob fromProto(ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob blob) {
+        if (blob == null) {
+            return null;
+        }
+
         DiscreteHyperparameterSetConfigBlob obj = new DiscreteHyperparameterSetConfigBlob();
         {
-            Function<ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob,List<HyperparameterValuesConfigBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob>,List<HyperparameterValuesConfigBlob>>) y -> y.stream().map(z -> HyperparameterValuesConfigBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getValuesList()); };
-            //((Function<List<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob>,List<HyperparameterValuesConfigBlob>>) y -> y.stream().map(z -> HyperparameterValuesConfigBlob.fromProto(z)).collect(Collectors.toList())).apply;
-            if (f != null) {
-                obj.Values = f.apply(blob);
-            }
+            Function<ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob,List<HyperparameterValuesConfigBlob>> f = x -> blob.getValuesList().stream().map(HyperparameterValuesConfigBlob::fromProto).collect(Collectors.toList());
+            obj.Values = f.apply(blob);
         }
         return obj;
+    }
+
+    public ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob.Builder toProto() {
+        ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob.Builder builder = ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob.newBuilder();
+        {
+            if (this.Values != null) {
+                Function<ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob.Builder,Void> f = x -> { builder.addAllValues(this.Values.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                f.apply(builder);
+            }
+        }
+        return builder;
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {
