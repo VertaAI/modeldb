@@ -24,9 +24,10 @@ public class PathDatasetBlob {
     static public PathDatasetBlob fromProto(ai.verta.modeldb.versioning.PathDatasetBlob blob) {
         PathDatasetBlob obj = new PathDatasetBlob();
         {
-            Function<List<PathDatasetComponentBlob>,List<PathDatasetComponentBlob>> f = null;
+            Function<ai.verta.modeldb.versioning.PathDatasetBlob,List<PathDatasetComponentBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.PathDatasetComponentBlob>,List<PathDatasetComponentBlob>>) y -> y.stream().map(z -> PathDatasetComponentBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getComponentsList()); };
+            //((Function<List<ai.verta.modeldb.versioning.PathDatasetComponentBlob>,List<PathDatasetComponentBlob>>) y -> y.stream().map(z -> PathDatasetComponentBlob.fromProto(z)).collect(Collectors.toList())).apply;
             if (f != null) {
-                obj.Components = f.apply(null);
+                obj.Components = f.apply(blob);
             }
         }
         return obj;

@@ -24,9 +24,10 @@ public class S3DatasetBlob {
     static public S3DatasetBlob fromProto(ai.verta.modeldb.versioning.S3DatasetBlob blob) {
         S3DatasetBlob obj = new S3DatasetBlob();
         {
-            Function<List<S3DatasetComponentBlob>,List<S3DatasetComponentBlob>> f = null;
+            Function<ai.verta.modeldb.versioning.S3DatasetBlob,List<S3DatasetComponentBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.S3DatasetComponentBlob>,List<S3DatasetComponentBlob>>) y -> y.stream().map(z -> S3DatasetComponentBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getComponentsList()); };
+            //((Function<List<ai.verta.modeldb.versioning.S3DatasetComponentBlob>,List<S3DatasetComponentBlob>>) y -> y.stream().map(z -> S3DatasetComponentBlob.fromProto(z)).collect(Collectors.toList())).apply;
             if (f != null) {
-                obj.Components = f.apply(null);
+                obj.Components = f.apply(blob);
             }
         }
         return obj;

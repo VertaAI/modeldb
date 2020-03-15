@@ -42,27 +42,31 @@ public class EnvironmentBlob {
     static public EnvironmentBlob fromProto(ai.verta.modeldb.versioning.EnvironmentBlob blob) {
         EnvironmentBlob obj = new EnvironmentBlob();
         {
-            Function<Void,PythonEnvironmentBlob> f = x -> PythonEnvironmentBlob.fromProto(blob.getPython());
+            Function<ai.verta.modeldb.versioning.EnvironmentBlob,PythonEnvironmentBlob> f = x -> { return PythonEnvironmentBlob.fromProto(x.getPython()); };
+            //PythonEnvironmentBlob.fromProto;
             if (f != null) {
-                obj.Python = f.apply(null);
+                obj.Python = f.apply(blob);
             }
         }
         {
-            Function<Void,DockerEnvironmentBlob> f = x -> DockerEnvironmentBlob.fromProto(blob.getDocker());
+            Function<ai.verta.modeldb.versioning.EnvironmentBlob,DockerEnvironmentBlob> f = x -> { return DockerEnvironmentBlob.fromProto(x.getDocker()); };
+            //DockerEnvironmentBlob.fromProto;
             if (f != null) {
-                obj.Docker = f.apply(null);
+                obj.Docker = f.apply(blob);
             }
         }
         {
-            Function<List<EnvironmentVariablesBlob>,List<EnvironmentVariablesBlob>> f = null;
+            Function<ai.verta.modeldb.versioning.EnvironmentBlob,List<EnvironmentVariablesBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.EnvironmentVariablesBlob>,List<EnvironmentVariablesBlob>>) y -> y.stream().map(z -> EnvironmentVariablesBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getEnvironmentVariablesList()); };
+            //((Function<List<ai.verta.modeldb.versioning.EnvironmentVariablesBlob>,List<EnvironmentVariablesBlob>>) y -> y.stream().map(z -> EnvironmentVariablesBlob.fromProto(z)).collect(Collectors.toList())).apply;
             if (f != null) {
-                obj.EnvironmentVariables = f.apply(null);
+                obj.EnvironmentVariables = f.apply(blob);
             }
         }
         {
-            Function<List<String>,List<String>> f = null;
+            Function<ai.verta.modeldb.versioning.EnvironmentBlob,List<String>> f = x -> { return (x.getCommandLineList()); };
+            //;
             if (f != null) {
-                obj.CommandLine = f.apply(null);
+                obj.CommandLine = f.apply(blob);
             }
         }
         return obj;

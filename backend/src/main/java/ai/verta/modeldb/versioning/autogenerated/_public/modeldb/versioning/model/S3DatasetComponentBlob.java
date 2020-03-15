@@ -24,9 +24,10 @@ public class S3DatasetComponentBlob {
     static public S3DatasetComponentBlob fromProto(ai.verta.modeldb.versioning.S3DatasetComponentBlob blob) {
         S3DatasetComponentBlob obj = new S3DatasetComponentBlob();
         {
-            Function<Void,PathDatasetComponentBlob> f = x -> PathDatasetComponentBlob.fromProto(blob.getPath());
+            Function<ai.verta.modeldb.versioning.S3DatasetComponentBlob,PathDatasetComponentBlob> f = x -> { return PathDatasetComponentBlob.fromProto(x.getPath()); };
+            //PathDatasetComponentBlob.fromProto;
             if (f != null) {
-                obj.Path = f.apply(null);
+                obj.Path = f.apply(blob);
             }
         }
         return obj;

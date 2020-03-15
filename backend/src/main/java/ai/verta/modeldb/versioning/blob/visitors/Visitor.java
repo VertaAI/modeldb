@@ -808,4 +808,68 @@ public class Visitor {
     public void preVisitDeepInteger(Integer blob) throws ModelDBException {}
     public Integer postVisitInteger(Integer blob) throws ModelDBException { return blob; }
     public Integer postVisitDeepInteger(Integer blob) throws ModelDBException { return blob; }
+    public void preVisitListOfLong(List<Long> lst) throws ModelDBException {
+        for (Long val : lst) {
+            preVisitLong(val);
+        }
+    }
+
+    public void preVisitDeepListOfLong(List<Long> lst) throws ModelDBException {
+        for (Long val : lst) {
+            preVisitDeepLong(val);
+        }
+    }
+
+    public List<Long> postVisitListOfLong(List<Long> lst) throws ModelDBException {
+        final List<Long> collect = new ArrayList<>(lst.size());
+        for (Long val : lst) {
+            collect.add(postVisitLong(val));
+        }
+        return collect;
+    }
+
+    public List<Long> postVisitDeepListOfLong(List<Long> lst) throws ModelDBException {
+        final List<Long> collect = new ArrayList<>(lst.size());
+        for (Long val : lst) {
+            collect.add(postVisitDeepLong(val));
+        }
+        return collect;
+    }
+
+    public void preVisitLong(Long blob) throws ModelDBException {}
+    public void preVisitDeepLong(Long blob) throws ModelDBException {}
+    public Long postVisitLong(Long blob) throws ModelDBException { return blob; }
+    public Long postVisitDeepLong(Long blob) throws ModelDBException { return blob; }
+    public void preVisitListOfFloat(List<Float> lst) throws ModelDBException {
+        for (Float val : lst) {
+            preVisitFloat(val);
+        }
+    }
+
+    public void preVisitDeepListOfFloat(List<Float> lst) throws ModelDBException {
+        for (Float val : lst) {
+            preVisitDeepFloat(val);
+        }
+    }
+
+    public List<Float> postVisitListOfFloat(List<Float> lst) throws ModelDBException {
+        final List<Float> collect = new ArrayList<>(lst.size());
+        for (Float val : lst) {
+            collect.add(postVisitFloat(val));
+        }
+        return collect;
+    }
+
+    public List<Float> postVisitDeepListOfFloat(List<Float> lst) throws ModelDBException {
+        final List<Float> collect = new ArrayList<>(lst.size());
+        for (Float val : lst) {
+            collect.add(postVisitDeepFloat(val));
+        }
+        return collect;
+    }
+
+    public void preVisitFloat(Float blob) throws ModelDBException {}
+    public void preVisitDeepFloat(Float blob) throws ModelDBException {}
+    public Float postVisitFloat(Float blob) throws ModelDBException { return blob; }
+    public Float postVisitDeepFloat(Float blob) throws ModelDBException { return blob; }
 }

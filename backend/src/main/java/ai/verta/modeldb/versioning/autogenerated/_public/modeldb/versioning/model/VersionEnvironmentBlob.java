@@ -42,27 +42,31 @@ public class VersionEnvironmentBlob {
     static public VersionEnvironmentBlob fromProto(ai.verta.modeldb.versioning.VersionEnvironmentBlob blob) {
         VersionEnvironmentBlob obj = new VersionEnvironmentBlob();
         {
-            Function<Integer,Integer> f = null;
+            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> { return (x.getMajor()); };
+            //;
             if (f != null) {
-                obj.Major = f.apply(null);
+                obj.Major = f.apply(blob);
             }
         }
         {
-            Function<Integer,Integer> f = null;
+            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> { return (x.getMinor()); };
+            //;
             if (f != null) {
-                obj.Minor = f.apply(null);
+                obj.Minor = f.apply(blob);
             }
         }
         {
-            Function<Integer,Integer> f = null;
+            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,Integer> f = x -> { return (x.getPatch()); };
+            //;
             if (f != null) {
-                obj.Patch = f.apply(null);
+                obj.Patch = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob,String> f = x -> { return (x.getSuffix()); };
+            //;
             if (f != null) {
-                obj.Suffix = f.apply(null);
+                obj.Suffix = f.apply(blob);
             }
         }
         return obj;

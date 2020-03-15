@@ -24,9 +24,10 @@ public class DiscreteHyperparameterSetConfigBlob {
     static public DiscreteHyperparameterSetConfigBlob fromProto(ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob blob) {
         DiscreteHyperparameterSetConfigBlob obj = new DiscreteHyperparameterSetConfigBlob();
         {
-            Function<List<HyperparameterValuesConfigBlob>,List<HyperparameterValuesConfigBlob>> f = null;
+            Function<ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob,List<HyperparameterValuesConfigBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob>,List<HyperparameterValuesConfigBlob>>) y -> y.stream().map(z -> HyperparameterValuesConfigBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getValuesList()); };
+            //((Function<List<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob>,List<HyperparameterValuesConfigBlob>>) y -> y.stream().map(z -> HyperparameterValuesConfigBlob.fromProto(z)).collect(Collectors.toList())).apply;
             if (f != null) {
-                obj.Values = f.apply(null);
+                obj.Values = f.apply(blob);
             }
         }
         return obj;

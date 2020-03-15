@@ -36,21 +36,24 @@ public class PythonEnvironmentBlob {
     static public PythonEnvironmentBlob fromProto(ai.verta.modeldb.versioning.PythonEnvironmentBlob blob) {
         PythonEnvironmentBlob obj = new PythonEnvironmentBlob();
         {
-            Function<Void,VersionEnvironmentBlob> f = x -> VersionEnvironmentBlob.fromProto(blob.getVersion());
+            Function<ai.verta.modeldb.versioning.PythonEnvironmentBlob,VersionEnvironmentBlob> f = x -> { return VersionEnvironmentBlob.fromProto(x.getVersion()); };
+            //VersionEnvironmentBlob.fromProto;
             if (f != null) {
-                obj.Version = f.apply(null);
+                obj.Version = f.apply(blob);
             }
         }
         {
-            Function<List<PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>> f = null;
+            Function<ai.verta.modeldb.versioning.PythonEnvironmentBlob,List<PythonRequirementEnvironmentBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>>) y -> y.stream().map(z -> PythonRequirementEnvironmentBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getRequirementsList()); };
+            //((Function<List<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>>) y -> y.stream().map(z -> PythonRequirementEnvironmentBlob.fromProto(z)).collect(Collectors.toList())).apply;
             if (f != null) {
-                obj.Requirements = f.apply(null);
+                obj.Requirements = f.apply(blob);
             }
         }
         {
-            Function<List<PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>> f = null;
+            Function<ai.verta.modeldb.versioning.PythonEnvironmentBlob,List<PythonRequirementEnvironmentBlob>> f = x -> { return ((Function<List<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>>) y -> y.stream().map(z -> PythonRequirementEnvironmentBlob.fromProto(z)).collect(Collectors.toList())).apply(x.getConstraintsList()); };
+            //((Function<List<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>>) y -> y.stream().map(z -> PythonRequirementEnvironmentBlob.fromProto(z)).collect(Collectors.toList())).apply;
             if (f != null) {
-                obj.Constraints = f.apply(null);
+                obj.Constraints = f.apply(blob);
             }
         }
         return obj;

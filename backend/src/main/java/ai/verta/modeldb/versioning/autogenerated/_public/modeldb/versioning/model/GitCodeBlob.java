@@ -48,33 +48,38 @@ public class GitCodeBlob {
     static public GitCodeBlob fromProto(ai.verta.modeldb.versioning.GitCodeBlob blob) {
         GitCodeBlob obj = new GitCodeBlob();
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> { return (x.getRepo()); };
+            //;
             if (f != null) {
-                obj.Repo = f.apply(null);
+                obj.Repo = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> { return (x.getHash()); };
+            //;
             if (f != null) {
-                obj.Hash = f.apply(null);
+                obj.Hash = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> { return (x.getBranch()); };
+            //;
             if (f != null) {
-                obj.Branch = f.apply(null);
+                obj.Branch = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,String> f = x -> { return (x.getTag()); };
+            //;
             if (f != null) {
-                obj.Tag = f.apply(null);
+                obj.Tag = f.apply(blob);
             }
         }
         {
-            Function<Boolean,Boolean> f = null;
+            Function<ai.verta.modeldb.versioning.GitCodeBlob,Boolean> f = x -> { return (x.getIsDirty()); };
+            //;
             if (f != null) {
-                obj.IsDirty = f.apply(null);
+                obj.IsDirty = f.apply(blob);
             }
         }
         return obj;

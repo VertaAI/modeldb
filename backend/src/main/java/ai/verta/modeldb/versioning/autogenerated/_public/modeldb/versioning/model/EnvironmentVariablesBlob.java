@@ -30,15 +30,17 @@ public class EnvironmentVariablesBlob {
     static public EnvironmentVariablesBlob fromProto(ai.verta.modeldb.versioning.EnvironmentVariablesBlob blob) {
         EnvironmentVariablesBlob obj = new EnvironmentVariablesBlob();
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob,String> f = x -> { return (x.getName()); };
+            //;
             if (f != null) {
-                obj.Name = f.apply(null);
+                obj.Name = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob,String> f = x -> { return (x.getValue()); };
+            //;
             if (f != null) {
-                obj.Value = f.apply(null);
+                obj.Value = f.apply(blob);
             }
         }
         return obj;

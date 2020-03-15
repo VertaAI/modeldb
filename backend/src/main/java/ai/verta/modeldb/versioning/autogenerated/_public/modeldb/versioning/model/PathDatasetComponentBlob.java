@@ -11,15 +11,15 @@ import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class PathDatasetComponentBlob {
     public String Path;
-    public String Size;
-    public String LastModifiedAtSource;
+    public Long Size;
+    public Long LastModifiedAtSource;
     public String Sha256;
     public String Md5;
 
     public PathDatasetComponentBlob() {
         this.Path = null;
-        this.Size = null;
-        this.LastModifiedAtSource = null;
+        this.Size = 0l;
+        this.LastModifiedAtSource = 0l;
         this.Sha256 = null;
         this.Md5 = null;
     }
@@ -28,11 +28,11 @@ public class PathDatasetComponentBlob {
         this.Path = value;
         return this;
     }
-    public PathDatasetComponentBlob setSize(String value) {
+    public PathDatasetComponentBlob setSize(Long value) {
         this.Size = value;
         return this;
     }
-    public PathDatasetComponentBlob setLastModifiedAtSource(String value) {
+    public PathDatasetComponentBlob setLastModifiedAtSource(Long value) {
         this.LastModifiedAtSource = value;
         return this;
     }
@@ -48,33 +48,38 @@ public class PathDatasetComponentBlob {
     static public PathDatasetComponentBlob fromProto(ai.verta.modeldb.versioning.PathDatasetComponentBlob blob) {
         PathDatasetComponentBlob obj = new PathDatasetComponentBlob();
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> { return (x.getPath()); };
+            //;
             if (f != null) {
-                obj.Path = f.apply(null);
+                obj.Path = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,Long> f = x -> { return (x.getSize()); };
+            //;
             if (f != null) {
-                obj.Size = f.apply(null);
+                obj.Size = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,Long> f = x -> { return (x.getLastModifiedAtSource()); };
+            //;
             if (f != null) {
-                obj.LastModifiedAtSource = f.apply(null);
+                obj.LastModifiedAtSource = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> { return (x.getSha256()); };
+            //;
             if (f != null) {
-                obj.Sha256 = f.apply(null);
+                obj.Sha256 = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob,String> f = x -> { return (x.getMd5()); };
+            //;
             if (f != null) {
-                obj.Md5 = f.apply(null);
+                obj.Md5 = f.apply(blob);
             }
         }
         return obj;
@@ -87,8 +92,8 @@ public class PathDatasetComponentBlob {
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
         visitor.preVisitDeepString(this.Path);
-        visitor.preVisitDeepString(this.Size);
-        visitor.preVisitDeepString(this.LastModifiedAtSource);
+        visitor.preVisitDeepLong(this.Size);
+        visitor.preVisitDeepLong(this.LastModifiedAtSource);
         visitor.preVisitDeepString(this.Sha256);
         visitor.preVisitDeepString(this.Md5);
     }
@@ -99,8 +104,8 @@ public class PathDatasetComponentBlob {
 
     public PathDatasetComponentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
         this.Path = visitor.postVisitDeepString(this.Path);
-        this.Size = visitor.postVisitDeepString(this.Size);
-        this.LastModifiedAtSource = visitor.postVisitDeepString(this.LastModifiedAtSource);
+        this.Size = visitor.postVisitDeepLong(this.Size);
+        this.LastModifiedAtSource = visitor.postVisitDeepLong(this.LastModifiedAtSource);
         this.Sha256 = visitor.postVisitDeepString(this.Sha256);
         this.Md5 = visitor.postVisitDeepString(this.Md5);
         return this.postVisitShallow(visitor);

@@ -36,21 +36,24 @@ public class DockerEnvironmentBlob {
     static public DockerEnvironmentBlob fromProto(ai.verta.modeldb.versioning.DockerEnvironmentBlob blob) {
         DockerEnvironmentBlob obj = new DockerEnvironmentBlob();
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> { return (x.getRepository()); };
+            //;
             if (f != null) {
-                obj.Repository = f.apply(null);
+                obj.Repository = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> { return (x.getTag()); };
+            //;
             if (f != null) {
-                obj.Tag = f.apply(null);
+                obj.Tag = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob,String> f = x -> { return (x.getSha()); };
+            //;
             if (f != null) {
-                obj.Sha = f.apply(null);
+                obj.Sha = f.apply(blob);
             }
         }
         return obj;

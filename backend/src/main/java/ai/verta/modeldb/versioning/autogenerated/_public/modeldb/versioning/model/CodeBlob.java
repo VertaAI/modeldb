@@ -30,15 +30,17 @@ public class CodeBlob {
     static public CodeBlob fromProto(ai.verta.modeldb.versioning.CodeBlob blob) {
         CodeBlob obj = new CodeBlob();
         {
-            Function<Void,GitCodeBlob> f = x -> GitCodeBlob.fromProto(blob.getGit());
+            Function<ai.verta.modeldb.versioning.CodeBlob,GitCodeBlob> f = x -> { return GitCodeBlob.fromProto(x.getGit()); };
+            //GitCodeBlob.fromProto;
             if (f != null) {
-                obj.Git = f.apply(null);
+                obj.Git = f.apply(blob);
             }
         }
         {
-            Function<Void,NotebookCodeBlob> f = x -> NotebookCodeBlob.fromProto(blob.getNotebook());
+            Function<ai.verta.modeldb.versioning.CodeBlob,NotebookCodeBlob> f = x -> { return NotebookCodeBlob.fromProto(x.getNotebook()); };
+            //NotebookCodeBlob.fromProto;
             if (f != null) {
-                obj.Notebook = f.apply(null);
+                obj.Notebook = f.apply(blob);
             }
         }
         return obj;

@@ -42,27 +42,31 @@ public class Blob {
     static public Blob fromProto(ai.verta.modeldb.versioning.Blob blob) {
         Blob obj = new Blob();
         {
-            Function<Void,DatasetBlob> f = x -> DatasetBlob.fromProto(blob.getDataset());
+            Function<ai.verta.modeldb.versioning.Blob,DatasetBlob> f = x -> { return DatasetBlob.fromProto(x.getDataset()); };
+            //DatasetBlob.fromProto;
             if (f != null) {
-                obj.Dataset = f.apply(null);
+                obj.Dataset = f.apply(blob);
             }
         }
         {
-            Function<Void,EnvironmentBlob> f = x -> EnvironmentBlob.fromProto(blob.getEnvironment());
+            Function<ai.verta.modeldb.versioning.Blob,EnvironmentBlob> f = x -> { return EnvironmentBlob.fromProto(x.getEnvironment()); };
+            //EnvironmentBlob.fromProto;
             if (f != null) {
-                obj.Environment = f.apply(null);
+                obj.Environment = f.apply(blob);
             }
         }
         {
-            Function<Void,CodeBlob> f = x -> CodeBlob.fromProto(blob.getCode());
+            Function<ai.verta.modeldb.versioning.Blob,CodeBlob> f = x -> { return CodeBlob.fromProto(x.getCode()); };
+            //CodeBlob.fromProto;
             if (f != null) {
-                obj.Code = f.apply(null);
+                obj.Code = f.apply(blob);
             }
         }
         {
-            Function<Void,ConfigBlob> f = x -> ConfigBlob.fromProto(blob.getConfig());
+            Function<ai.verta.modeldb.versioning.Blob,ConfigBlob> f = x -> { return ConfigBlob.fromProto(x.getConfig()); };
+            //ConfigBlob.fromProto;
             if (f != null) {
-                obj.Config = f.apply(null);
+                obj.Config = f.apply(blob);
             }
         }
         return obj;

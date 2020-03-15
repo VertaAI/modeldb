@@ -30,15 +30,17 @@ public class NotebookCodeBlob {
     static public NotebookCodeBlob fromProto(ai.verta.modeldb.versioning.NotebookCodeBlob blob) {
         NotebookCodeBlob obj = new NotebookCodeBlob();
         {
-            Function<Void,PathDatasetBlob> f = x -> PathDatasetBlob.fromProto(blob.getPath());
+            Function<ai.verta.modeldb.versioning.NotebookCodeBlob,PathDatasetBlob> f = x -> { return PathDatasetBlob.fromProto(x.getPath()); };
+            //PathDatasetBlob.fromProto;
             if (f != null) {
-                obj.Path = f.apply(null);
+                obj.Path = f.apply(blob);
             }
         }
         {
-            Function<Void,GitCodeBlob> f = x -> GitCodeBlob.fromProto(blob.getGitRepo());
+            Function<ai.verta.modeldb.versioning.NotebookCodeBlob,GitCodeBlob> f = x -> { return GitCodeBlob.fromProto(x.getGitRepo()); };
+            //GitCodeBlob.fromProto;
             if (f != null) {
-                obj.GitRepo = f.apply(null);
+                obj.GitRepo = f.apply(blob);
             }
         }
         return obj;

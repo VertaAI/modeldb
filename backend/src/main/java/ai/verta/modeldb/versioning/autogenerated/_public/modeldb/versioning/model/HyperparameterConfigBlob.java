@@ -30,15 +30,17 @@ public class HyperparameterConfigBlob {
     static public HyperparameterConfigBlob fromProto(ai.verta.modeldb.versioning.HyperparameterConfigBlob blob) {
         HyperparameterConfigBlob obj = new HyperparameterConfigBlob();
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob,String> f = x -> { return (x.getName()); };
+            //;
             if (f != null) {
-                obj.Name = f.apply(null);
+                obj.Name = f.apply(blob);
             }
         }
         {
-            Function<Void,HyperparameterValuesConfigBlob> f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getValue());
+            Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob,HyperparameterValuesConfigBlob> f = x -> { return HyperparameterValuesConfigBlob.fromProto(x.getValue()); };
+            //HyperparameterValuesConfigBlob.fromProto;
             if (f != null) {
-                obj.Value = f.apply(null);
+                obj.Value = f.apply(blob);
             }
         }
         return obj;

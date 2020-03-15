@@ -30,15 +30,17 @@ public class DatasetBlob {
     static public DatasetBlob fromProto(ai.verta.modeldb.versioning.DatasetBlob blob) {
         DatasetBlob obj = new DatasetBlob();
         {
-            Function<Void,S3DatasetBlob> f = x -> S3DatasetBlob.fromProto(blob.getS3());
+            Function<ai.verta.modeldb.versioning.DatasetBlob,S3DatasetBlob> f = x -> { return S3DatasetBlob.fromProto(x.getS3()); };
+            //S3DatasetBlob.fromProto;
             if (f != null) {
-                obj.S3 = f.apply(null);
+                obj.S3 = f.apply(blob);
             }
         }
         {
-            Function<Void,PathDatasetBlob> f = x -> PathDatasetBlob.fromProto(blob.getPath());
+            Function<ai.verta.modeldb.versioning.DatasetBlob,PathDatasetBlob> f = x -> { return PathDatasetBlob.fromProto(x.getPath()); };
+            //PathDatasetBlob.fromProto;
             if (f != null) {
-                obj.Path = f.apply(null);
+                obj.Path = f.apply(blob);
             }
         }
         return obj;

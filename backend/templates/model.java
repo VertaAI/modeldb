@@ -38,9 +38,10 @@ public class {{class_name}} {
         {{#properties}}
         {{^required}}
         {
-            {{#type}}{{> fromproto}}{{/type}}
+            Function<ai.verta.modeldb.versioning.{{class_name}},{{#type}}{{> type}}{{/type}}> f = x -> { return {{#type}}{{> fromproto}}{{/type}}(x.get{{name}}{{#type}}{{#is_list}}List{{/is_list}}{{/type}}()); };
+            //{{#type}}{{> fromproto}}{{/type}};
             if (f != null) {
-                obj.{{name}} = f.apply(null);
+                obj.{{name}} = f.apply(blob);
             }
         }
         {{/required}}

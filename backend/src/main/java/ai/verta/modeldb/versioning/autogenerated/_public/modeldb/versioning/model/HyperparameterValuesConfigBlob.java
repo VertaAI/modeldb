@@ -10,21 +10,21 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class HyperparameterValuesConfigBlob {
-    public String IntValue;
-    public Double FloatValue;
+    public Long IntValue;
+    public Float FloatValue;
     public String StringValue;
 
     public HyperparameterValuesConfigBlob() {
-        this.IntValue = null;
-        this.FloatValue = 0.;
+        this.IntValue = 0l;
+        this.FloatValue = 0.f;
         this.StringValue = null;
     }
 
-    public HyperparameterValuesConfigBlob setIntValue(String value) {
+    public HyperparameterValuesConfigBlob setIntValue(Long value) {
         this.IntValue = value;
         return this;
     }
-    public HyperparameterValuesConfigBlob setFloatValue(Double value) {
+    public HyperparameterValuesConfigBlob setFloatValue(Float value) {
         this.FloatValue = value;
         return this;
     }
@@ -36,21 +36,24 @@ public class HyperparameterValuesConfigBlob {
     static public HyperparameterValuesConfigBlob fromProto(ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob blob) {
         HyperparameterValuesConfigBlob obj = new HyperparameterValuesConfigBlob();
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,Long> f = x -> { return (x.getIntValue()); };
+            //;
             if (f != null) {
-                obj.IntValue = f.apply(null);
+                obj.IntValue = f.apply(blob);
             }
         }
         {
-            Function<Double,Double> f = null;
+            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,Float> f = x -> { return (x.getFloatValue()); };
+            //;
             if (f != null) {
-                obj.FloatValue = f.apply(null);
+                obj.FloatValue = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob,String> f = x -> { return (x.getStringValue()); };
+            //;
             if (f != null) {
-                obj.StringValue = f.apply(null);
+                obj.StringValue = f.apply(blob);
             }
         }
         return obj;
@@ -62,8 +65,8 @@ public class HyperparameterValuesConfigBlob {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        visitor.preVisitDeepString(this.IntValue);
-        visitor.preVisitDeepDouble(this.FloatValue);
+        visitor.preVisitDeepLong(this.IntValue);
+        visitor.preVisitDeepFloat(this.FloatValue);
         visitor.preVisitDeepString(this.StringValue);
     }
 
@@ -72,8 +75,8 @@ public class HyperparameterValuesConfigBlob {
     }
 
     public HyperparameterValuesConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        this.IntValue = visitor.postVisitDeepString(this.IntValue);
-        this.FloatValue = visitor.postVisitDeepDouble(this.FloatValue);
+        this.IntValue = visitor.postVisitDeepLong(this.IntValue);
+        this.FloatValue = visitor.postVisitDeepFloat(this.FloatValue);
         this.StringValue = visitor.postVisitDeepString(this.StringValue);
         return this.postVisitShallow(visitor);
     }

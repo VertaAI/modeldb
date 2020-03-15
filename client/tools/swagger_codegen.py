@@ -209,7 +209,9 @@ def create_typedef(**kwargs):
         'is_map': kwargs.get('is_map', False),
         'string': kwargs.get('string', False),
         'integer': kwargs.get('integer', False),
+        'long': kwargs.get('long', False),
         'double': kwargs.get('double', False),
+        'float': kwargs.get('float', False),
         'any': kwargs.get('any', False),
         'is_custom': kwargs.get('custom', None) is not None,
     })
@@ -225,6 +227,12 @@ def resolve_type(typedef):
         return resolve_type(typedef['schema'])
 
     if typedef['type'] == 'string':
+        if 'format' in typedef:
+            # TODO: support long?
+            if typedef['format'] == 'uint64':
+                return create_typedef(long=True, is_basic=True)
+            if typedef['format'] == 'int64':
+                return create_typedef(long=True, is_basic=True)
         return create_typedef(string=True, is_basic=True)
     elif typedef['type'] == 'boolean':
         return create_typedef(boolean=True, is_basic=True)
@@ -237,7 +245,7 @@ def resolve_type(typedef):
         if typedef['format'] == 'double':
             return create_typedef(double=True, is_basic=True)
         elif typedef['format'] == 'float':
-            return create_typedef(double=True, is_basic=True)
+            return create_typedef(float=True, is_basic=True)
         else:
             raise ValueError(typedef['format'])
     elif typedef['type'] == 'array':

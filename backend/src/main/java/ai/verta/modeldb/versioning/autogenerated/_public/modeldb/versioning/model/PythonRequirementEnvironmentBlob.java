@@ -36,21 +36,24 @@ public class PythonRequirementEnvironmentBlob {
     static public PythonRequirementEnvironmentBlob fromProto(ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob blob) {
         PythonRequirementEnvironmentBlob obj = new PythonRequirementEnvironmentBlob();
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob,String> f = x -> { return (x.getLibrary()); };
+            //;
             if (f != null) {
-                obj.Library = f.apply(null);
+                obj.Library = f.apply(blob);
             }
         }
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob,String> f = x -> { return (x.getConstraint()); };
+            //;
             if (f != null) {
-                obj.Constraint = f.apply(null);
+                obj.Constraint = f.apply(blob);
             }
         }
         {
-            Function<Void,VersionEnvironmentBlob> f = x -> VersionEnvironmentBlob.fromProto(blob.getVersion());
+            Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob,VersionEnvironmentBlob> f = x -> { return VersionEnvironmentBlob.fromProto(x.getVersion()); };
+            //VersionEnvironmentBlob.fromProto;
             if (f != null) {
-                obj.Version = f.apply(null);
+                obj.Version = f.apply(blob);
             }
         }
         return obj;

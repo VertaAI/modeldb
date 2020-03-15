@@ -36,21 +36,24 @@ public class HyperparameterSetConfigBlob {
     static public HyperparameterSetConfigBlob fromProto(ai.verta.modeldb.versioning.HyperparameterSetConfigBlob blob) {
         HyperparameterSetConfigBlob obj = new HyperparameterSetConfigBlob();
         {
-            Function<String,String> f = null;
+            Function<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,String> f = x -> { return (x.getName()); };
+            //;
             if (f != null) {
-                obj.Name = f.apply(null);
+                obj.Name = f.apply(blob);
             }
         }
         {
-            Function<Void,ContinuousHyperparameterSetConfigBlob> f = x -> ContinuousHyperparameterSetConfigBlob.fromProto(blob.getContinuous());
+            Function<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,ContinuousHyperparameterSetConfigBlob> f = x -> { return ContinuousHyperparameterSetConfigBlob.fromProto(x.getContinuous()); };
+            //ContinuousHyperparameterSetConfigBlob.fromProto;
             if (f != null) {
-                obj.Continuous = f.apply(null);
+                obj.Continuous = f.apply(blob);
             }
         }
         {
-            Function<Void,DiscreteHyperparameterSetConfigBlob> f = x -> DiscreteHyperparameterSetConfigBlob.fromProto(blob.getDiscrete());
+            Function<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,DiscreteHyperparameterSetConfigBlob> f = x -> { return DiscreteHyperparameterSetConfigBlob.fromProto(x.getDiscrete()); };
+            //DiscreteHyperparameterSetConfigBlob.fromProto;
             if (f != null) {
-                obj.Discrete = f.apply(null);
+                obj.Discrete = f.apply(blob);
             }
         }
         return obj;

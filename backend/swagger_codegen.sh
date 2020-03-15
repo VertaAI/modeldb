@@ -78,7 +78,7 @@ do
     public ${type} postVisitDeep${type}(${type} blob) throws ModelDBException { return blob.postVisitDeep(this); }
 EOF
 done
-for type in String Boolean Double Integer
+for type in String Boolean Double Integer Long Float
 do
     cat >> $VISITOR <<EOF
     public void preVisitListOf${type}(List<${type}> lst) throws ModelDBException {
