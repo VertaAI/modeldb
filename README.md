@@ -108,7 +108,7 @@ pip install verta
 
 ```python
 from verta import Client
-client = Client("localhost:8085")
+client = Client("localhost:3000")
 
 proj = client.set_project("My first ModelDB project")
 expt = client.set_experiment("Default Experiment")
