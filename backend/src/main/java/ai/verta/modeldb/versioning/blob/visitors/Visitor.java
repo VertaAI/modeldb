@@ -40,6 +40,38 @@ public class Visitor {
     public void preVisitDeepBlob(Blob blob) throws ModelDBException {}
     public Blob postVisitBlob(Blob blob) throws ModelDBException { return blob; }
     public Blob postVisitDeepBlob(Blob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfBlobDiff(List<BlobDiff> lst) throws ModelDBException {
+        for (BlobDiff val : lst) {
+            preVisitBlobDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfBlobDiff(List<BlobDiff> lst) throws ModelDBException {
+        for (BlobDiff val : lst) {
+            preVisitDeepBlobDiff(val);
+        }
+    }
+
+    public List<BlobDiff> postVisitListOfBlobDiff(List<BlobDiff> lst) throws ModelDBException {
+        final List<BlobDiff> collect = new ArrayList<>(lst.size());
+        for (BlobDiff val : lst) {
+            collect.add(postVisitBlobDiff(val));
+        }
+        return collect;
+    }
+
+    public List<BlobDiff> postVisitDeepListOfBlobDiff(List<BlobDiff> lst) throws ModelDBException {
+        final List<BlobDiff> collect = new ArrayList<>(lst.size());
+        for (BlobDiff val : lst) {
+            collect.add(postVisitDeepBlobDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitBlobDiff(BlobDiff blob) throws ModelDBException {}
+    public void preVisitDeepBlobDiff(BlobDiff blob) throws ModelDBException {}
+    public BlobDiff postVisitBlobDiff(BlobDiff blob) throws ModelDBException { return blob; }
+    public BlobDiff postVisitDeepBlobDiff(BlobDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfCodeBlob(List<CodeBlob> lst) throws ModelDBException {
         for (CodeBlob val : lst) {
             preVisitCodeBlob(val);
@@ -72,6 +104,38 @@ public class Visitor {
     public void preVisitDeepCodeBlob(CodeBlob blob) throws ModelDBException {}
     public CodeBlob postVisitCodeBlob(CodeBlob blob) throws ModelDBException { return blob; }
     public CodeBlob postVisitDeepCodeBlob(CodeBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfCodeDiff(List<CodeDiff> lst) throws ModelDBException {
+        for (CodeDiff val : lst) {
+            preVisitCodeDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfCodeDiff(List<CodeDiff> lst) throws ModelDBException {
+        for (CodeDiff val : lst) {
+            preVisitDeepCodeDiff(val);
+        }
+    }
+
+    public List<CodeDiff> postVisitListOfCodeDiff(List<CodeDiff> lst) throws ModelDBException {
+        final List<CodeDiff> collect = new ArrayList<>(lst.size());
+        for (CodeDiff val : lst) {
+            collect.add(postVisitCodeDiff(val));
+        }
+        return collect;
+    }
+
+    public List<CodeDiff> postVisitDeepListOfCodeDiff(List<CodeDiff> lst) throws ModelDBException {
+        final List<CodeDiff> collect = new ArrayList<>(lst.size());
+        for (CodeDiff val : lst) {
+            collect.add(postVisitDeepCodeDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitCodeDiff(CodeDiff blob) throws ModelDBException {}
+    public void preVisitDeepCodeDiff(CodeDiff blob) throws ModelDBException {}
+    public CodeDiff postVisitCodeDiff(CodeDiff blob) throws ModelDBException { return blob; }
+    public CodeDiff postVisitDeepCodeDiff(CodeDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfConfigBlob(List<ConfigBlob> lst) throws ModelDBException {
         for (ConfigBlob val : lst) {
             preVisitConfigBlob(val);
@@ -104,6 +168,38 @@ public class Visitor {
     public void preVisitDeepConfigBlob(ConfigBlob blob) throws ModelDBException {}
     public ConfigBlob postVisitConfigBlob(ConfigBlob blob) throws ModelDBException { return blob; }
     public ConfigBlob postVisitDeepConfigBlob(ConfigBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfConfigDiff(List<ConfigDiff> lst) throws ModelDBException {
+        for (ConfigDiff val : lst) {
+            preVisitConfigDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfConfigDiff(List<ConfigDiff> lst) throws ModelDBException {
+        for (ConfigDiff val : lst) {
+            preVisitDeepConfigDiff(val);
+        }
+    }
+
+    public List<ConfigDiff> postVisitListOfConfigDiff(List<ConfigDiff> lst) throws ModelDBException {
+        final List<ConfigDiff> collect = new ArrayList<>(lst.size());
+        for (ConfigDiff val : lst) {
+            collect.add(postVisitConfigDiff(val));
+        }
+        return collect;
+    }
+
+    public List<ConfigDiff> postVisitDeepListOfConfigDiff(List<ConfigDiff> lst) throws ModelDBException {
+        final List<ConfigDiff> collect = new ArrayList<>(lst.size());
+        for (ConfigDiff val : lst) {
+            collect.add(postVisitDeepConfigDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitConfigDiff(ConfigDiff blob) throws ModelDBException {}
+    public void preVisitDeepConfigDiff(ConfigDiff blob) throws ModelDBException {}
+    public ConfigDiff postVisitConfigDiff(ConfigDiff blob) throws ModelDBException { return blob; }
+    public ConfigDiff postVisitDeepConfigDiff(ConfigDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfContinuousHyperparameterSetConfigBlob(List<ContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
         for (ContinuousHyperparameterSetConfigBlob val : lst) {
             preVisitContinuousHyperparameterSetConfigBlob(val);
@@ -168,6 +264,38 @@ public class Visitor {
     public void preVisitDeepDatasetBlob(DatasetBlob blob) throws ModelDBException {}
     public DatasetBlob postVisitDatasetBlob(DatasetBlob blob) throws ModelDBException { return blob; }
     public DatasetBlob postVisitDeepDatasetBlob(DatasetBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfDatasetDiff(List<DatasetDiff> lst) throws ModelDBException {
+        for (DatasetDiff val : lst) {
+            preVisitDatasetDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfDatasetDiff(List<DatasetDiff> lst) throws ModelDBException {
+        for (DatasetDiff val : lst) {
+            preVisitDeepDatasetDiff(val);
+        }
+    }
+
+    public List<DatasetDiff> postVisitListOfDatasetDiff(List<DatasetDiff> lst) throws ModelDBException {
+        final List<DatasetDiff> collect = new ArrayList<>(lst.size());
+        for (DatasetDiff val : lst) {
+            collect.add(postVisitDatasetDiff(val));
+        }
+        return collect;
+    }
+
+    public List<DatasetDiff> postVisitDeepListOfDatasetDiff(List<DatasetDiff> lst) throws ModelDBException {
+        final List<DatasetDiff> collect = new ArrayList<>(lst.size());
+        for (DatasetDiff val : lst) {
+            collect.add(postVisitDeepDatasetDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitDatasetDiff(DatasetDiff blob) throws ModelDBException {}
+    public void preVisitDeepDatasetDiff(DatasetDiff blob) throws ModelDBException {}
+    public DatasetDiff postVisitDatasetDiff(DatasetDiff blob) throws ModelDBException { return blob; }
+    public DatasetDiff postVisitDeepDatasetDiff(DatasetDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfDiscreteHyperparameterSetConfigBlob(List<DiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
         for (DiscreteHyperparameterSetConfigBlob val : lst) {
             preVisitDiscreteHyperparameterSetConfigBlob(val);
@@ -232,6 +360,38 @@ public class Visitor {
     public void preVisitDeepDockerEnvironmentBlob(DockerEnvironmentBlob blob) throws ModelDBException {}
     public DockerEnvironmentBlob postVisitDockerEnvironmentBlob(DockerEnvironmentBlob blob) throws ModelDBException { return blob; }
     public DockerEnvironmentBlob postVisitDeepDockerEnvironmentBlob(DockerEnvironmentBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfDockerEnvironmentDiff(List<DockerEnvironmentDiff> lst) throws ModelDBException {
+        for (DockerEnvironmentDiff val : lst) {
+            preVisitDockerEnvironmentDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfDockerEnvironmentDiff(List<DockerEnvironmentDiff> lst) throws ModelDBException {
+        for (DockerEnvironmentDiff val : lst) {
+            preVisitDeepDockerEnvironmentDiff(val);
+        }
+    }
+
+    public List<DockerEnvironmentDiff> postVisitListOfDockerEnvironmentDiff(List<DockerEnvironmentDiff> lst) throws ModelDBException {
+        final List<DockerEnvironmentDiff> collect = new ArrayList<>(lst.size());
+        for (DockerEnvironmentDiff val : lst) {
+            collect.add(postVisitDockerEnvironmentDiff(val));
+        }
+        return collect;
+    }
+
+    public List<DockerEnvironmentDiff> postVisitDeepListOfDockerEnvironmentDiff(List<DockerEnvironmentDiff> lst) throws ModelDBException {
+        final List<DockerEnvironmentDiff> collect = new ArrayList<>(lst.size());
+        for (DockerEnvironmentDiff val : lst) {
+            collect.add(postVisitDeepDockerEnvironmentDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitDockerEnvironmentDiff(DockerEnvironmentDiff blob) throws ModelDBException {}
+    public void preVisitDeepDockerEnvironmentDiff(DockerEnvironmentDiff blob) throws ModelDBException {}
+    public DockerEnvironmentDiff postVisitDockerEnvironmentDiff(DockerEnvironmentDiff blob) throws ModelDBException { return blob; }
+    public DockerEnvironmentDiff postVisitDeepDockerEnvironmentDiff(DockerEnvironmentDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfEnvironmentBlob(List<EnvironmentBlob> lst) throws ModelDBException {
         for (EnvironmentBlob val : lst) {
             preVisitEnvironmentBlob(val);
@@ -264,6 +424,38 @@ public class Visitor {
     public void preVisitDeepEnvironmentBlob(EnvironmentBlob blob) throws ModelDBException {}
     public EnvironmentBlob postVisitEnvironmentBlob(EnvironmentBlob blob) throws ModelDBException { return blob; }
     public EnvironmentBlob postVisitDeepEnvironmentBlob(EnvironmentBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfEnvironmentDiff(List<EnvironmentDiff> lst) throws ModelDBException {
+        for (EnvironmentDiff val : lst) {
+            preVisitEnvironmentDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfEnvironmentDiff(List<EnvironmentDiff> lst) throws ModelDBException {
+        for (EnvironmentDiff val : lst) {
+            preVisitDeepEnvironmentDiff(val);
+        }
+    }
+
+    public List<EnvironmentDiff> postVisitListOfEnvironmentDiff(List<EnvironmentDiff> lst) throws ModelDBException {
+        final List<EnvironmentDiff> collect = new ArrayList<>(lst.size());
+        for (EnvironmentDiff val : lst) {
+            collect.add(postVisitEnvironmentDiff(val));
+        }
+        return collect;
+    }
+
+    public List<EnvironmentDiff> postVisitDeepListOfEnvironmentDiff(List<EnvironmentDiff> lst) throws ModelDBException {
+        final List<EnvironmentDiff> collect = new ArrayList<>(lst.size());
+        for (EnvironmentDiff val : lst) {
+            collect.add(postVisitDeepEnvironmentDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitEnvironmentDiff(EnvironmentDiff blob) throws ModelDBException {}
+    public void preVisitDeepEnvironmentDiff(EnvironmentDiff blob) throws ModelDBException {}
+    public EnvironmentDiff postVisitEnvironmentDiff(EnvironmentDiff blob) throws ModelDBException { return blob; }
+    public EnvironmentDiff postVisitDeepEnvironmentDiff(EnvironmentDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfEnvironmentVariablesBlob(List<EnvironmentVariablesBlob> lst) throws ModelDBException {
         for (EnvironmentVariablesBlob val : lst) {
             preVisitEnvironmentVariablesBlob(val);
@@ -328,6 +520,38 @@ public class Visitor {
     public void preVisitDeepGitCodeBlob(GitCodeBlob blob) throws ModelDBException {}
     public GitCodeBlob postVisitGitCodeBlob(GitCodeBlob blob) throws ModelDBException { return blob; }
     public GitCodeBlob postVisitDeepGitCodeBlob(GitCodeBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfGitCodeDiff(List<GitCodeDiff> lst) throws ModelDBException {
+        for (GitCodeDiff val : lst) {
+            preVisitGitCodeDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfGitCodeDiff(List<GitCodeDiff> lst) throws ModelDBException {
+        for (GitCodeDiff val : lst) {
+            preVisitDeepGitCodeDiff(val);
+        }
+    }
+
+    public List<GitCodeDiff> postVisitListOfGitCodeDiff(List<GitCodeDiff> lst) throws ModelDBException {
+        final List<GitCodeDiff> collect = new ArrayList<>(lst.size());
+        for (GitCodeDiff val : lst) {
+            collect.add(postVisitGitCodeDiff(val));
+        }
+        return collect;
+    }
+
+    public List<GitCodeDiff> postVisitDeepListOfGitCodeDiff(List<GitCodeDiff> lst) throws ModelDBException {
+        final List<GitCodeDiff> collect = new ArrayList<>(lst.size());
+        for (GitCodeDiff val : lst) {
+            collect.add(postVisitDeepGitCodeDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitGitCodeDiff(GitCodeDiff blob) throws ModelDBException {}
+    public void preVisitDeepGitCodeDiff(GitCodeDiff blob) throws ModelDBException {}
+    public GitCodeDiff postVisitGitCodeDiff(GitCodeDiff blob) throws ModelDBException { return blob; }
+    public GitCodeDiff postVisitDeepGitCodeDiff(GitCodeDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfHyperparameterConfigBlob(List<HyperparameterConfigBlob> lst) throws ModelDBException {
         for (HyperparameterConfigBlob val : lst) {
             preVisitHyperparameterConfigBlob(val);
@@ -360,6 +584,38 @@ public class Visitor {
     public void preVisitDeepHyperparameterConfigBlob(HyperparameterConfigBlob blob) throws ModelDBException {}
     public HyperparameterConfigBlob postVisitHyperparameterConfigBlob(HyperparameterConfigBlob blob) throws ModelDBException { return blob; }
     public HyperparameterConfigBlob postVisitDeepHyperparameterConfigBlob(HyperparameterConfigBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfHyperparameterConfigDiff(List<HyperparameterConfigDiff> lst) throws ModelDBException {
+        for (HyperparameterConfigDiff val : lst) {
+            preVisitHyperparameterConfigDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfHyperparameterConfigDiff(List<HyperparameterConfigDiff> lst) throws ModelDBException {
+        for (HyperparameterConfigDiff val : lst) {
+            preVisitDeepHyperparameterConfigDiff(val);
+        }
+    }
+
+    public List<HyperparameterConfigDiff> postVisitListOfHyperparameterConfigDiff(List<HyperparameterConfigDiff> lst) throws ModelDBException {
+        final List<HyperparameterConfigDiff> collect = new ArrayList<>(lst.size());
+        for (HyperparameterConfigDiff val : lst) {
+            collect.add(postVisitHyperparameterConfigDiff(val));
+        }
+        return collect;
+    }
+
+    public List<HyperparameterConfigDiff> postVisitDeepListOfHyperparameterConfigDiff(List<HyperparameterConfigDiff> lst) throws ModelDBException {
+        final List<HyperparameterConfigDiff> collect = new ArrayList<>(lst.size());
+        for (HyperparameterConfigDiff val : lst) {
+            collect.add(postVisitDeepHyperparameterConfigDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitHyperparameterConfigDiff(HyperparameterConfigDiff blob) throws ModelDBException {}
+    public void preVisitDeepHyperparameterConfigDiff(HyperparameterConfigDiff blob) throws ModelDBException {}
+    public HyperparameterConfigDiff postVisitHyperparameterConfigDiff(HyperparameterConfigDiff blob) throws ModelDBException { return blob; }
+    public HyperparameterConfigDiff postVisitDeepHyperparameterConfigDiff(HyperparameterConfigDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfHyperparameterSetConfigBlob(List<HyperparameterSetConfigBlob> lst) throws ModelDBException {
         for (HyperparameterSetConfigBlob val : lst) {
             preVisitHyperparameterSetConfigBlob(val);
@@ -392,6 +648,38 @@ public class Visitor {
     public void preVisitDeepHyperparameterSetConfigBlob(HyperparameterSetConfigBlob blob) throws ModelDBException {}
     public HyperparameterSetConfigBlob postVisitHyperparameterSetConfigBlob(HyperparameterSetConfigBlob blob) throws ModelDBException { return blob; }
     public HyperparameterSetConfigBlob postVisitDeepHyperparameterSetConfigBlob(HyperparameterSetConfigBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfHyperparameterSetConfigDiff(List<HyperparameterSetConfigDiff> lst) throws ModelDBException {
+        for (HyperparameterSetConfigDiff val : lst) {
+            preVisitHyperparameterSetConfigDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfHyperparameterSetConfigDiff(List<HyperparameterSetConfigDiff> lst) throws ModelDBException {
+        for (HyperparameterSetConfigDiff val : lst) {
+            preVisitDeepHyperparameterSetConfigDiff(val);
+        }
+    }
+
+    public List<HyperparameterSetConfigDiff> postVisitListOfHyperparameterSetConfigDiff(List<HyperparameterSetConfigDiff> lst) throws ModelDBException {
+        final List<HyperparameterSetConfigDiff> collect = new ArrayList<>(lst.size());
+        for (HyperparameterSetConfigDiff val : lst) {
+            collect.add(postVisitHyperparameterSetConfigDiff(val));
+        }
+        return collect;
+    }
+
+    public List<HyperparameterSetConfigDiff> postVisitDeepListOfHyperparameterSetConfigDiff(List<HyperparameterSetConfigDiff> lst) throws ModelDBException {
+        final List<HyperparameterSetConfigDiff> collect = new ArrayList<>(lst.size());
+        for (HyperparameterSetConfigDiff val : lst) {
+            collect.add(postVisitDeepHyperparameterSetConfigDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitHyperparameterSetConfigDiff(HyperparameterSetConfigDiff blob) throws ModelDBException {}
+    public void preVisitDeepHyperparameterSetConfigDiff(HyperparameterSetConfigDiff blob) throws ModelDBException {}
+    public HyperparameterSetConfigDiff postVisitHyperparameterSetConfigDiff(HyperparameterSetConfigDiff blob) throws ModelDBException { return blob; }
+    public HyperparameterSetConfigDiff postVisitDeepHyperparameterSetConfigDiff(HyperparameterSetConfigDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfHyperparameterValuesConfigBlob(List<HyperparameterValuesConfigBlob> lst) throws ModelDBException {
         for (HyperparameterValuesConfigBlob val : lst) {
             preVisitHyperparameterValuesConfigBlob(val);
@@ -456,6 +744,38 @@ public class Visitor {
     public void preVisitDeepNotebookCodeBlob(NotebookCodeBlob blob) throws ModelDBException {}
     public NotebookCodeBlob postVisitNotebookCodeBlob(NotebookCodeBlob blob) throws ModelDBException { return blob; }
     public NotebookCodeBlob postVisitDeepNotebookCodeBlob(NotebookCodeBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfNotebookCodeDiff(List<NotebookCodeDiff> lst) throws ModelDBException {
+        for (NotebookCodeDiff val : lst) {
+            preVisitNotebookCodeDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfNotebookCodeDiff(List<NotebookCodeDiff> lst) throws ModelDBException {
+        for (NotebookCodeDiff val : lst) {
+            preVisitDeepNotebookCodeDiff(val);
+        }
+    }
+
+    public List<NotebookCodeDiff> postVisitListOfNotebookCodeDiff(List<NotebookCodeDiff> lst) throws ModelDBException {
+        final List<NotebookCodeDiff> collect = new ArrayList<>(lst.size());
+        for (NotebookCodeDiff val : lst) {
+            collect.add(postVisitNotebookCodeDiff(val));
+        }
+        return collect;
+    }
+
+    public List<NotebookCodeDiff> postVisitDeepListOfNotebookCodeDiff(List<NotebookCodeDiff> lst) throws ModelDBException {
+        final List<NotebookCodeDiff> collect = new ArrayList<>(lst.size());
+        for (NotebookCodeDiff val : lst) {
+            collect.add(postVisitDeepNotebookCodeDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitNotebookCodeDiff(NotebookCodeDiff blob) throws ModelDBException {}
+    public void preVisitDeepNotebookCodeDiff(NotebookCodeDiff blob) throws ModelDBException {}
+    public NotebookCodeDiff postVisitNotebookCodeDiff(NotebookCodeDiff blob) throws ModelDBException { return blob; }
+    public NotebookCodeDiff postVisitDeepNotebookCodeDiff(NotebookCodeDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfPathDatasetBlob(List<PathDatasetBlob> lst) throws ModelDBException {
         for (PathDatasetBlob val : lst) {
             preVisitPathDatasetBlob(val);
@@ -520,6 +840,38 @@ public class Visitor {
     public void preVisitDeepPathDatasetComponentBlob(PathDatasetComponentBlob blob) throws ModelDBException {}
     public PathDatasetComponentBlob postVisitPathDatasetComponentBlob(PathDatasetComponentBlob blob) throws ModelDBException { return blob; }
     public PathDatasetComponentBlob postVisitDeepPathDatasetComponentBlob(PathDatasetComponentBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfPathDatasetDiff(List<PathDatasetDiff> lst) throws ModelDBException {
+        for (PathDatasetDiff val : lst) {
+            preVisitPathDatasetDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfPathDatasetDiff(List<PathDatasetDiff> lst) throws ModelDBException {
+        for (PathDatasetDiff val : lst) {
+            preVisitDeepPathDatasetDiff(val);
+        }
+    }
+
+    public List<PathDatasetDiff> postVisitListOfPathDatasetDiff(List<PathDatasetDiff> lst) throws ModelDBException {
+        final List<PathDatasetDiff> collect = new ArrayList<>(lst.size());
+        for (PathDatasetDiff val : lst) {
+            collect.add(postVisitPathDatasetDiff(val));
+        }
+        return collect;
+    }
+
+    public List<PathDatasetDiff> postVisitDeepListOfPathDatasetDiff(List<PathDatasetDiff> lst) throws ModelDBException {
+        final List<PathDatasetDiff> collect = new ArrayList<>(lst.size());
+        for (PathDatasetDiff val : lst) {
+            collect.add(postVisitDeepPathDatasetDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitPathDatasetDiff(PathDatasetDiff blob) throws ModelDBException {}
+    public void preVisitDeepPathDatasetDiff(PathDatasetDiff blob) throws ModelDBException {}
+    public PathDatasetDiff postVisitPathDatasetDiff(PathDatasetDiff blob) throws ModelDBException { return blob; }
+    public PathDatasetDiff postVisitDeepPathDatasetDiff(PathDatasetDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfPythonEnvironmentBlob(List<PythonEnvironmentBlob> lst) throws ModelDBException {
         for (PythonEnvironmentBlob val : lst) {
             preVisitPythonEnvironmentBlob(val);
@@ -552,6 +904,38 @@ public class Visitor {
     public void preVisitDeepPythonEnvironmentBlob(PythonEnvironmentBlob blob) throws ModelDBException {}
     public PythonEnvironmentBlob postVisitPythonEnvironmentBlob(PythonEnvironmentBlob blob) throws ModelDBException { return blob; }
     public PythonEnvironmentBlob postVisitDeepPythonEnvironmentBlob(PythonEnvironmentBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfPythonEnvironmentDiff(List<PythonEnvironmentDiff> lst) throws ModelDBException {
+        for (PythonEnvironmentDiff val : lst) {
+            preVisitPythonEnvironmentDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfPythonEnvironmentDiff(List<PythonEnvironmentDiff> lst) throws ModelDBException {
+        for (PythonEnvironmentDiff val : lst) {
+            preVisitDeepPythonEnvironmentDiff(val);
+        }
+    }
+
+    public List<PythonEnvironmentDiff> postVisitListOfPythonEnvironmentDiff(List<PythonEnvironmentDiff> lst) throws ModelDBException {
+        final List<PythonEnvironmentDiff> collect = new ArrayList<>(lst.size());
+        for (PythonEnvironmentDiff val : lst) {
+            collect.add(postVisitPythonEnvironmentDiff(val));
+        }
+        return collect;
+    }
+
+    public List<PythonEnvironmentDiff> postVisitDeepListOfPythonEnvironmentDiff(List<PythonEnvironmentDiff> lst) throws ModelDBException {
+        final List<PythonEnvironmentDiff> collect = new ArrayList<>(lst.size());
+        for (PythonEnvironmentDiff val : lst) {
+            collect.add(postVisitDeepPythonEnvironmentDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitPythonEnvironmentDiff(PythonEnvironmentDiff blob) throws ModelDBException {}
+    public void preVisitDeepPythonEnvironmentDiff(PythonEnvironmentDiff blob) throws ModelDBException {}
+    public PythonEnvironmentDiff postVisitPythonEnvironmentDiff(PythonEnvironmentDiff blob) throws ModelDBException { return blob; }
+    public PythonEnvironmentDiff postVisitDeepPythonEnvironmentDiff(PythonEnvironmentDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfPythonRequirementEnvironmentBlob(List<PythonRequirementEnvironmentBlob> lst) throws ModelDBException {
         for (PythonRequirementEnvironmentBlob val : lst) {
             preVisitPythonRequirementEnvironmentBlob(val);
@@ -648,6 +1032,38 @@ public class Visitor {
     public void preVisitDeepS3DatasetComponentBlob(S3DatasetComponentBlob blob) throws ModelDBException {}
     public S3DatasetComponentBlob postVisitS3DatasetComponentBlob(S3DatasetComponentBlob blob) throws ModelDBException { return blob; }
     public S3DatasetComponentBlob postVisitDeepS3DatasetComponentBlob(S3DatasetComponentBlob blob) throws ModelDBException { return blob.postVisitDeep(this); }
+    public void preVisitListOfS3DatasetDiff(List<S3DatasetDiff> lst) throws ModelDBException {
+        for (S3DatasetDiff val : lst) {
+            preVisitS3DatasetDiff(val);
+        }
+    }
+
+    public void preVisitDeepListOfS3DatasetDiff(List<S3DatasetDiff> lst) throws ModelDBException {
+        for (S3DatasetDiff val : lst) {
+            preVisitDeepS3DatasetDiff(val);
+        }
+    }
+
+    public List<S3DatasetDiff> postVisitListOfS3DatasetDiff(List<S3DatasetDiff> lst) throws ModelDBException {
+        final List<S3DatasetDiff> collect = new ArrayList<>(lst.size());
+        for (S3DatasetDiff val : lst) {
+            collect.add(postVisitS3DatasetDiff(val));
+        }
+        return collect;
+    }
+
+    public List<S3DatasetDiff> postVisitDeepListOfS3DatasetDiff(List<S3DatasetDiff> lst) throws ModelDBException {
+        final List<S3DatasetDiff> collect = new ArrayList<>(lst.size());
+        for (S3DatasetDiff val : lst) {
+            collect.add(postVisitDeepS3DatasetDiff(val));
+        }
+        return collect;
+    }
+
+    public void preVisitS3DatasetDiff(S3DatasetDiff blob) throws ModelDBException {}
+    public void preVisitDeepS3DatasetDiff(S3DatasetDiff blob) throws ModelDBException {}
+    public S3DatasetDiff postVisitS3DatasetDiff(S3DatasetDiff blob) throws ModelDBException { return blob; }
+    public S3DatasetDiff postVisitDeepS3DatasetDiff(S3DatasetDiff blob) throws ModelDBException { return blob.postVisitDeep(this); }
     public void preVisitListOfVersionEnvironmentBlob(List<VersionEnvironmentBlob> lst) throws ModelDBException {
         for (VersionEnvironmentBlob val : lst) {
             preVisitVersionEnvironmentBlob(val);
@@ -872,4 +1288,36 @@ public class Visitor {
     public void preVisitDeepFloat(Float blob) throws ModelDBException {}
     public Float postVisitFloat(Float blob) throws ModelDBException { return blob; }
     public Float postVisitDeepFloat(Float blob) throws ModelDBException { return blob; }
+    public void preVisitListOfDiffStatusEnumDiffStatus(List<DiffStatusEnumDiffStatus> lst) throws ModelDBException {
+        for (DiffStatusEnumDiffStatus val : lst) {
+            preVisitDiffStatusEnumDiffStatus(val);
+        }
+    }
+
+    public void preVisitDeepListOfDiffStatusEnumDiffStatus(List<DiffStatusEnumDiffStatus> lst) throws ModelDBException {
+        for (DiffStatusEnumDiffStatus val : lst) {
+            preVisitDeepDiffStatusEnumDiffStatus(val);
+        }
+    }
+
+    public List<DiffStatusEnumDiffStatus> postVisitListOfDiffStatusEnumDiffStatus(List<DiffStatusEnumDiffStatus> lst) throws ModelDBException {
+        final List<DiffStatusEnumDiffStatus> collect = new ArrayList<>(lst.size());
+        for (DiffStatusEnumDiffStatus val : lst) {
+            collect.add(postVisitDiffStatusEnumDiffStatus(val));
+        }
+        return collect;
+    }
+
+    public List<DiffStatusEnumDiffStatus> postVisitDeepListOfDiffStatusEnumDiffStatus(List<DiffStatusEnumDiffStatus> lst) throws ModelDBException {
+        final List<DiffStatusEnumDiffStatus> collect = new ArrayList<>(lst.size());
+        for (DiffStatusEnumDiffStatus val : lst) {
+            collect.add(postVisitDeepDiffStatusEnumDiffStatus(val));
+        }
+        return collect;
+    }
+
+    public void preVisitDiffStatusEnumDiffStatus(DiffStatusEnumDiffStatus blob) throws ModelDBException {}
+    public void preVisitDeepDiffStatusEnumDiffStatus(DiffStatusEnumDiffStatus blob) throws ModelDBException {}
+    public DiffStatusEnumDiffStatus postVisitDiffStatusEnumDiffStatus(DiffStatusEnumDiffStatus blob) throws ModelDBException { return blob; }
+    public DiffStatusEnumDiffStatus postVisitDeepDiffStatusEnumDiffStatus(DiffStatusEnumDiffStatus blob) throws ModelDBException { return blob; }
 }
