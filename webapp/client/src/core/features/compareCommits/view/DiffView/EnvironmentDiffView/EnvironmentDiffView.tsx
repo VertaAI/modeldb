@@ -17,7 +17,7 @@ import PythonRequirementEnvironment from 'core/shared/view/domain/Repository/Blo
 import PythonVersion from 'core/shared/view/domain/Repository/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
 
 import { IComparedCommitsInfo } from '../../types';
-import sortArrayByAnotherArrayKeys from '../ConfigDiffView/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
+import sortArrayByAnotherArrayKeys from '../shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
 import { diffColors } from '../shared/styles';
 import CompareTable from './CompareTable/CompareTable';
 import styles from './EnvironmentDiffView.module.css';

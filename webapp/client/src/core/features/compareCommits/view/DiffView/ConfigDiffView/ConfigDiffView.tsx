@@ -13,7 +13,7 @@ import HyperparameterSetItem from 'core/shared/view/domain/Repository/Blob/Confi
 import { IComparedCommitsInfo } from '../../types';
 import { diffColors } from '../shared/styles';
 import CompareTable from './CompareTable/CompareTable';
-import sortArrayByAnotherArrayKeys from './sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
+import sortArrayByAnotherArrayKeys from '../shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
 
 interface ILocalProps {
   diff: IConfigBlobDiff;
