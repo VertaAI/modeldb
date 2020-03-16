@@ -371,7 +371,26 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listBlobExperimentRuns(
       ListBlobExperimentRunsRequest request,
       StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
-    super.listBlobExperimentRuns(request, responseObserver);
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListBlobExperimentRunsRequest.Response response =
+          experimentRunDAO.listBlobExperimentRuns(
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      e.printStackTrace();
+      ModelDBUtils.observeError(
+          responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
+    }
   }
 
   @Override

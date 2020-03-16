@@ -26,6 +26,7 @@ import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.GetBranchRequest;
+import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -9456,8 +9457,8 @@ public class ExperimentRunTest {
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun-1");
     Map<String, Location> locationMap = new HashMap<>();
-    locationMap.put(
-        "location-2", Location.newBuilder().addLocation("dataset").addLocation("train").build());
+    Location location1 = Location.newBuilder().addLocation("dataset").addLocation("train").build();
+    locationMap.put("location-2", location1);
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
@@ -9473,6 +9474,8 @@ public class ExperimentRunTest {
     ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun1 created successfully");
 
+    Location location2 =
+        Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
@@ -9481,12 +9484,7 @@ public class ExperimentRunTest {
                 createExperimentRunRequest
                     .getVersionedInputs()
                     .toBuilder()
-                    .putKeyLocationMap(
-                        "XYZ",
-                        Location.newBuilder()
-                            .addLocation("test-1")
-                            .addLocation("test1.json")
-                            .build())
+                    .putKeyLocationMap("XYZ", location2)
                     .build())
             .build();
     createExperimentRunResponse =
@@ -9494,6 +9492,8 @@ public class ExperimentRunTest {
     ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun2 created successfully");
 
+    Location location3 =
+        Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
@@ -9502,12 +9502,7 @@ public class ExperimentRunTest {
                 createExperimentRunRequest
                     .getVersionedInputs()
                     .toBuilder()
-                    .putKeyLocationMap(
-                        "PQR",
-                        Location.newBuilder()
-                            .addLocation("test-2")
-                            .addLocation("test2.json")
-                            .build())
+                    .putKeyLocationMap("PQR", location3)
                     .build())
             .build();
     createExperimentRunResponse =
@@ -9515,17 +9510,43 @@ public class ExperimentRunTest {
     ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun3 created successfully");
 
-    ListCommitExperimentRunsRequest listCommitExperimentRunsRequest =
-        ListCommitExperimentRunsRequest.newBuilder()
+    ListBlobExperimentRunsRequest listBlobExperimentRunsRequest =
+        ListBlobExperimentRunsRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
             .setCommitSha(commit.getCommitSha())
+            .addAllLocation(location1.getLocationList())
             .build();
-    ListCommitExperimentRunsRequest.Response listCommitExperimentRunsResponse =
-        versioningServiceBlockingStub.listCommitExperimentRuns(listCommitExperimentRunsRequest);
+    ListBlobExperimentRunsRequest.Response listBlobExperimentRunsResponse =
+        versioningServiceBlockingStub.listBlobExperimentRuns(listBlobExperimentRunsRequest);
     assertEquals(
         "ExperimentRun total records not match with expected ExperimentRun total records",
         3,
-        listCommitExperimentRunsResponse.getTotalRecords());
+        listBlobExperimentRunsResponse.getTotalRecords());
+    assertEquals(
+        "ExperimentRun not match with expected ExperimentRun",
+        experimentRun1,
+        listBlobExperimentRunsResponse.getRuns(0));
+    assertEquals(
+        "ExperimentRun not match with expected ExperimentRun",
+        experimentRun3,
+        listBlobExperimentRunsResponse.getRuns(2));
+
+    listBlobExperimentRunsRequest =
+        ListBlobExperimentRunsRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setCommitSha(commit.getCommitSha())
+            .addAllLocation(location2.getLocationList())
+            .build();
+    listBlobExperimentRunsResponse =
+        versioningServiceBlockingStub.listBlobExperimentRuns(listBlobExperimentRunsRequest);
+    assertEquals(
+        "ExperimentRun total records not match with expected ExperimentRun total records",
+        2,
+        listBlobExperimentRunsResponse.getTotalRecords());
+    assertEquals(
+        "ExperimentRun not match with expected ExperimentRun",
+        experimentRun3,
+        listBlobExperimentRunsResponse.getRuns(1));
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()

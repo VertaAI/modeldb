@@ -205,4 +205,5 @@ public interface ModelDBConstants {
   String INITIAL_COMMIT_MESSAGE = "Initial commit";
   String MASTER_BRANCH = "master";
   String COMMIT = "commit";
+  String VERSIONING_LOCATION = "versioning_location";
 }
