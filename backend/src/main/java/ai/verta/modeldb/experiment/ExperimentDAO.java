@@ -1,10 +1,10 @@
 package ai.verta.modeldb.experiment;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.uac.UserInfo;

@@ -11,7 +11,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "tag_mapping")
+@Table(name = "TagMapping")
 public class TagsMapping {
 
   public TagsMapping() {}
@@ -33,7 +33,7 @@ public class TagsMapping {
   }
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", updatable = false, nullable = false)
   private Long id;
 

@@ -1,9 +1,9 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.FindProjects;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.collaborator.CollaboratorBase;

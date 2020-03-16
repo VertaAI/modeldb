@@ -1,6 +1,5 @@
 package ai.verta.modeldb.advancedService;
 
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse;
 import ai.verta.modeldb.AdvancedQueryDatasetsResponse;
 import ai.verta.modeldb.AdvancedQueryExperimentRunsResponse;
@@ -24,7 +23,6 @@ import ai.verta.modeldb.FindHydratedProjectsByOrganization;
 import ai.verta.modeldb.FindHydratedProjectsByTeam;
 import ai.verta.modeldb.FindHydratedProjectsByUser;
 import ai.verta.modeldb.FindProjects;
-import ai.verta.modeldb.GetDatasetByName;
 import ai.verta.modeldb.GetHydratedDatasetByName;
 import ai.verta.modeldb.GetHydratedDatasetsByProjectId;
 import ai.verta.modeldb.GetHydratedExperimentRunById;
@@ -82,10 +80,8 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
@@ -97,7 +93,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -145,37 +140,27 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
     List<HydratedProject> hydratedProjects = new ArrayList<>();
     // Map from project id to list of users (owners + collaborators) which need to be resolved
-    Map<String, List<GetCollaboratorResponse>> projectCollaboratorMap =
-        new ConcurrentHashMap<String, List<GetCollaboratorResponse>>();
-    Set<String> vertaIds = new HashSet<>();
-    Set<String> emailIds = new HashSet<>();
+    Map<String, List<GetCollaboratorResponse>> projectCollaboratorMap = new HashMap<>();
+    List<String> vertaIds = new ArrayList<>();
+    List<String> emailIds = new ArrayList<>();
     LOGGER.trace("projects {}", projects);
     List<String> resourceIds = new LinkedList<>();
-    Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+    for (Project project : projects) {
+      // Get list of collaborators
+      List<GetCollaboratorResponse> projectCollaboratorList =
+          roleService.getResourceCollaborators(
+              ModelDBServiceResourceTypes.PROJECT, project.getId(), project.getOwner());
+      projectCollaboratorMap.put(project.getId(), projectCollaboratorList);
 
-    projects
-        .parallelStream()
-        .forEach(
-            (project) -> {
-              vertaIds.add(project.getOwner());
-              resourceIds.add(project.getId());
-              List<GetCollaboratorResponse> projectCollaboratorList =
-                  roleService.getResourceCollaborators(
-                      ModelDBServiceResourceTypes.PROJECT,
-                      project.getId(),
-                      project.getOwner(),
-                      requestHeaders);
-              projectCollaboratorMap.put(project.getId(), projectCollaboratorList);
-            });
+      Map<String, List<String>> vertaIdAndEmailIdMap =
+          ModelDBUtils.getVertaIdOrEmailIdMapFromCollaborator(projectCollaboratorList);
 
-    projectCollaboratorMap.forEach(
-        (k, projectCollaboratorList) -> {
-          Map<String, List<String>> vertaIdAndEmailIdMap =
-              ModelDBUtils.getVertaIdOrEmailIdMapFromCollaborator(projectCollaboratorList);
-          vertaIds.addAll(vertaIdAndEmailIdMap.get(ModelDBConstants.VERTA_ID));
-          emailIds.addAll(vertaIdAndEmailIdMap.get(ModelDBConstants.EMAILID));
-        });
+      vertaIds.addAll(vertaIdAndEmailIdMap.get(ModelDBConstants.VERTA_ID));
+      emailIds.addAll(vertaIdAndEmailIdMap.get(ModelDBConstants.EMAILID));
 
+      vertaIds.add(project.getOwner());
+      resourceIds.add(project.getId());
+    }
     LOGGER.trace("getHydratedProjects vertaIds : {}", vertaIds);
     LOGGER.trace("getHydratedProjects emailIds : {}", emailIds);
 
@@ -199,10 +184,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (project.getOwner() != null && userInfoMap.get(project.getOwner()) != null) {
         hydratedProjectBuilder.setOwnerUserInfo(userInfoMap.get(project.getOwner()));
 
-        if (selfAllowedActions != null
-            && selfAllowedActions.size() > 0
-            && selfAllowedActions.containsKey(project.getId())
-            && selfAllowedActions.get(project.getId()).getActionsList().size() > 0) {
+        if (selfAllowedActions != null && selfAllowedActions.size() > 0) {
           hydratedProjectBuilder.addAllAllowedActions(
               selfAllowedActions.get(project.getId()).getActionsList());
         }
@@ -500,7 +482,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.debug(
         "experimentRuns count in getHydratedExperimentRuns method : {}", experimentRuns.size());
     Set<String> experimentIdSet = new HashSet<>();
-    Set<String> vertaIdList = new HashSet<>();
+    List<String> vertaIdList = new ArrayList<>();
     Set<String> projectIdSet = new HashSet<>();
     for (ExperimentRun experimentRun : experimentRuns) {
       vertaIdList.add(experimentRun.getOwner());
@@ -962,7 +944,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         roleService.getSelfAllowedActionsBatch(
             Collections.singletonList(projectId), ModelDBServiceResourceTypes.PROJECT);
     LOGGER.debug("experiments count in getHydratedExperiments method : {}", experiments.size());
-    Set<String> vertaIdList = new HashSet<>();
+    List<String> vertaIdList = new ArrayList<>();
     for (Experiment experiment : experiments) {
       vertaIdList.add(experiment.getOwner());
     }
@@ -1168,32 +1150,26 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
     // Map from dataset id to list of users (owners + collaborators) which need to be resolved
     Map<String, List<GetCollaboratorResponse>> datasetCollaboratorMap = new HashMap<>();
-    Set<String> vertaIds = new HashSet<>();
-    Set<String> emailIds = new HashSet<>();
-    Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
-    List<String> resourceIds = new LinkedList<>();
+    List<String> vertaIds = new ArrayList<>();
+    List<String> emailIds = new ArrayList<>();
 
-    datasets
-        .parallelStream()
-        .forEach(
-            (dataset) -> {
-              vertaIds.add(dataset.getOwner());
-              resourceIds.add(dataset.getId());
-              List<GetCollaboratorResponse> datasetCollaboratorList =
-                  roleService.getResourceCollaborators(
-                      ModelDBServiceResourceTypes.DATASET,
-                      dataset.getId(),
-                      dataset.getOwner(),
-                      requestHeaders);
-              datasetCollaboratorMap.put(dataset.getId(), datasetCollaboratorList);
-            });
-    datasetCollaboratorMap.forEach(
-        (k, datasetCollaboratorList) -> {
-          Map<String, List<String>> vertaIdAndEmailIdMap =
-              ModelDBUtils.getVertaIdOrEmailIdMapFromCollaborator(datasetCollaboratorList);
-          vertaIds.addAll(vertaIdAndEmailIdMap.get(ModelDBConstants.VERTA_ID));
-          emailIds.addAll(vertaIdAndEmailIdMap.get(ModelDBConstants.EMAILID));
-        });
+    List<String> resourceIds = new LinkedList<>();
+    for (Dataset dataset : datasets) {
+      // Get list of collaborators
+      List<GetCollaboratorResponse> datasetCollaboratorList =
+          roleService.getResourceCollaborators(
+              ModelDBServiceResourceTypes.DATASET, dataset.getId(), dataset.getOwner());
+      datasetCollaboratorMap.put(dataset.getId(), datasetCollaboratorList);
+
+      Map<String, List<String>> vertaIdAndEmailIdMap =
+          ModelDBUtils.getVertaIdOrEmailIdMapFromCollaborator(datasetCollaboratorList);
+
+      vertaIds.addAll(vertaIdAndEmailIdMap.get(ModelDBConstants.VERTA_ID));
+      emailIds.addAll(vertaIdAndEmailIdMap.get(ModelDBConstants.EMAILID));
+
+      vertaIds.add(dataset.getOwner());
+      resourceIds.add(dataset.getId());
+    }
 
     LOGGER.trace("getHydratedDatasets vertaIds : {}", vertaIds.size());
     LOGGER.trace("getHydratedDatasets emailIds : {}", emailIds.size());
@@ -1222,10 +1198,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       } else {
         LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, dataset.getOwner());
       }
-      if (selfAllowedActions != null
-          && selfAllowedActions.size() > 0
-          && selfAllowedActions.containsKey(dataset.getId())
-          && selfAllowedActions.get(dataset.getId()).getActionsList().size() > 0) {
+      if (selfAllowedActions != null && selfAllowedActions.size() > 0) {
         hydratedDatasetBuilder.addAllAllowedActions(
             selfAllowedActions.get(dataset.getId()).getActionsList());
       }
@@ -1456,42 +1429,34 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
-      FindDatasets.Builder findDatasets =
-          FindDatasets.newBuilder()
-              .addPredicates(
-                  KeyValueQuery.newBuilder()
-                      .setKey(ModelDBConstants.NAME)
-                      .setValue(Value.newBuilder().setStringValue(request.getName()).build())
-                      .setOperator(OperatorEnum.Operator.EQ)
-                      .setValueType(ValueTypeEnum.ValueType.STRING)
-                      .build())
-              .setWorkspaceName(
-                  request.getWorkspaceName().isEmpty()
-                      ? authService.getUsernameFromUserInfo(userInfo)
-                      : request.getWorkspaceName());
+      List<Dataset> datasets =
+          datasetDAO.getDatasets(ModelDBConstants.NAME, request.getName(), userInfo);
 
-      DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
-
-      if (datasetPaginationDTO.getTotalRecords() == 0) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Dataset not found")
-                .addDetails(Any.pack(GetDatasetByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      Dataset selfOwnerdataset = null;
+      Dataset datasetByUser = null;
       List<Dataset> sharedDatasets = new ArrayList<>();
+      boolean isDatasetFound = false;
+      StatusRuntimeException statusRuntimeException = null;
 
-      for (Dataset dataset : datasetPaginationDTO.getDatasets()) {
-        if (userInfo == null
-            || dataset.getOwner().equals(authService.getVertaIdFromUserInfo(userInfo))) {
-          selfOwnerdataset = dataset;
-        } else {
-          sharedDatasets.add(dataset);
+      for (Dataset dataset : datasets) {
+        try {
+          // Validate if current user has access to the entity or not
+          roleService.validateEntityUserWithUserInfo(
+              ModelDBServiceResourceTypes.DATASET, dataset.getId(), ModelDBServiceActions.READ);
+          if (userInfo == null
+              || dataset.getOwner().equals(authService.getVertaIdFromUserInfo(userInfo))) {
+            datasetByUser = dataset;
+          } else {
+            sharedDatasets.add(dataset);
+          }
+          isDatasetFound = true;
+        } catch (StatusRuntimeException e) {
+          statusRuntimeException = e;
         }
+      }
+
+      if (!isDatasetFound) {
+        responseObserver.onError(statusRuntimeException);
+        responseObserver.onCompleted();
       }
 
       List<HydratedDataset> sharedHydratedDatasets = new ArrayList<>();
@@ -1503,9 +1468,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           GetHydratedDatasetByName.Response.newBuilder()
               .addAllSharedHydratedDatasets(sharedHydratedDatasets);
 
-      if (selfOwnerdataset != null) {
+      if (datasetByUser != null) {
         getHydratedDatasetByNameResponse.setHydratedDatasetByUser(
-            getHydratedDatasets(Collections.singletonList(selfOwnerdataset)).get(0));
+            getHydratedDatasets(Collections.singletonList(datasetByUser)).get(0));
       }
 
       responseObserver.onNext(getHydratedDatasetByNameResponse.build());

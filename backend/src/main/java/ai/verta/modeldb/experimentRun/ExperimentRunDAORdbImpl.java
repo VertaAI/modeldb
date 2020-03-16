@@ -1,24 +1,19 @@
 package ai.verta.modeldb.experimentRun;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
-import ai.verta.modeldb.GetVersionedInput;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.KeyValueQuery;
-import ai.verta.modeldb.Location;
-import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
-import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -29,14 +24,8 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
 import ai.verta.modeldb.entities.TagsMapping;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.modeldb.versioning.BlobDAO;
-import ai.verta.modeldb.versioning.BlobExpanded;
-import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -70,9 +59,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
   private final AuthService authService;
-  private final RepositoryDAO repositoryDAO;
-  private final CommitDAO commitDAO;
-  private final BlobDAO blobDAO;
   private static final String UPDATE_PROJECT_HQL =
       new StringBuilder("UPDATE ProjectEntity p SET p.")
           .append(ModelDBConstants.DATE_UPDATED)
@@ -166,12 +152,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append(" IN (:experimentIds) ")
           .toString();
 
-  public ExperimentRunDAORdbImpl(
-      AuthService authService, RepositoryDAO repositoryDAO, CommitDAO commitDAO, BlobDAO blobDAO) {
+  public ExperimentRunDAORdbImpl(AuthService authService) {
     this.authService = authService;
-    this.repositoryDAO = repositoryDAO;
-    this.commitDAO = commitDAO;
-    this.blobDAO = blobDAO;
   }
 
   private void updateParentEntitiesTimestamp(
@@ -232,49 +214,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private void validateVersioningEntity(Session session, VersioningEntry versioningEntry)
-      throws ModelDBException {
-    String errorMessage = null;
-    if (versioningEntry.getRepositoryId() == 0L) {
-      errorMessage = "Repository Id not found in VersioningEntry";
-    } else if (versioningEntry.getCommit().isEmpty()) {
-      errorMessage = "Commit hash not found in VersioningEntry";
-    } else if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
-      errorMessage = "Location map should not be empty in VersioningEntry";
-    }
-
-    if (errorMessage != null) {
-      throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
-    }
-    RepositoryIdentification repositoryIdentification =
-        RepositoryIdentification.newBuilder().setRepoId(versioningEntry.getRepositoryId()).build();
-    CommitEntity commitEntity =
-        commitDAO.getCommitEntity(
-            session,
-            versioningEntry.getCommit(),
-            (session1) -> repositoryDAO.getRepositoryById(session, repositoryIdentification));
-    Map<String, BlobExpanded> locationBlobMap =
-        blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
-    for (Map.Entry<String, Location> locationBlobKeyMap :
-        versioningEntry.getKeyLocationMapMap().entrySet()) {
-      if (!locationBlobMap.containsKey(
-          String.join("#", locationBlobKeyMap.getValue().getLocationList()))) {
-        throw new ModelDBException(
-            "Location list for key '" + locationBlobKeyMap.getKey() + "' not found in commit blobs",
-            io.grpc.Status.Code.INVALID_ARGUMENT);
-      }
-    }
-  }
-
   @Override
   public ExperimentRun insertExperimentRun(ExperimentRun experimentRun)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
       Transaction transaction = session.beginTransaction();
-      if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
-        validateVersioningEntity(session, experimentRun.getVersionedInputs());
-      }
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       session.saveOrUpdate(experimentRunObj);
       // Update parent entity timestamp
@@ -466,13 +411,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LOGGER.debug("Got ExperimentRun successfully");
       return experimentRunEntity.getProtoObject();
     }
-  }
-
-  @Override
-  public boolean isExperimentRunExists(Session session, String experimentRunId) {
-    ExperimentRunEntity experimentRunEntity =
-        session.get(ExperimentRunEntity.class, experimentRunId);
-    return experimentRunEntity != null;
   }
 
   @Override
@@ -1585,56 +1523,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRunIds.add(experimentRunEntity.getId());
       }
       return experimentRunIds;
-    }
-  }
-
-  @Override
-  public LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
-      throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      VersioningEntry versioningEntry = request.getVersionedInputs();
-      validateVersioningEntity(session, versioningEntry);
-      ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
-      runEntity.setVersioningModeldbEntityMappings(
-          RdbmsUtils.getVersioningMappingFromVersioningInput(versioningEntry, runEntity));
-      long currentTimestamp = Calendar.getInstance().getTimeInMillis();
-      runEntity.setDate_updated(currentTimestamp);
-      session.saveOrUpdate(runEntity);
-      // Update parent entity timestamp
-      updateParentEntitiesTimestamp(
-          session,
-          Collections.singletonList(runEntity.getProject_id()),
-          Collections.singletonList(runEntity.getExperiment_id()),
-          currentTimestamp);
-      transaction.commit();
-      LOGGER.debug("ExperimentRun versioning added successfully");
-      return LogVersionedInput.Response.newBuilder()
-          .setExperimentRun(runEntity.getProtoObject())
-          .build();
-    }
-  }
-
-  @Override
-  public GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunObj =
-          session.get(ExperimentRunEntity.class, request.getId());
-      if (experimentRunObj != null) {
-        LOGGER.debug("ExperimentRun versioning fetch successfully");
-        return GetVersionedInput.Response.newBuilder()
-            .setVersionedInputs(
-                RdbmsUtils.getVersioningEntryFromList(
-                    experimentRunObj.getVersioningModeldbEntityMappings()))
-            .build();
-      } else {
-        String errorMessage = "ExperimentRun not found for given ID : " + request.getId();
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
     }
   }
 }

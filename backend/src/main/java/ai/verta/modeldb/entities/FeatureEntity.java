@@ -12,7 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "feature")
+@Table(name = "Feature")
 public class FeatureEntity {
 
   public FeatureEntity() {}
@@ -32,7 +32,7 @@ public class FeatureEntity {
   }
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", updatable = false, nullable = false)
   private Long id;
 

@@ -1,11 +1,9 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
-import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.TernaryEnum;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceBlockingStub;
@@ -25,6 +23,7 @@ import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddCollaboratorRequest.Response;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.uac.EntitiesEnum.EntitiesTypes;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -293,21 +292,14 @@ public class HydratedServiceOrgTeamTest {
           .setCollaboratorType(CollaboratorType.READ_WRITE)
           .setAuthzEntityType(EntitiesTypes.TEAM)
           .setCanDeploy(Ternary.TRUE);
-      Mockito.doAnswer(
-              (arg) -> {
-                Assert.assertEquals(ModelDBServiceResourceTypes.PROJECT, arg.getArgument(0));
-                Assert.assertEquals(RESOURCE_OWNER_ID, arg.getArgument(2));
-                if (project1.getId().equals(arg.getArgument(1))) {
-                  return Collections.singletonList(response1.build());
-                } else if (project2.getId().equals(arg.getArgument(1))) {
-                  return Collections.singletonList(response2.build());
-                }
-                Assert.fail("project id unknown");
-                return null;
-              })
+      Mockito.doReturn(Collections.singletonList(response1.build()))
           .when(roleService)
           .getResourceCollaborators(
-              Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.any());
+              ModelDBServiceResourceTypes.PROJECT, project1.getId(), project1.getOwner());
+      Mockito.doReturn(Collections.singletonList(response2.build()))
+          .when(roleService)
+          .getResourceCollaborators(
+              ModelDBServiceResourceTypes.PROJECT, project2.getId(), project2.getOwner());
       Mockito.doReturn(Collections.singletonList(project1.getId()))
           .when(roleService)
           .getAccessibleResourceIds(

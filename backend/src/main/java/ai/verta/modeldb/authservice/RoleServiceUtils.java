@@ -1,9 +1,7 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.TernaryEnum;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.ProjectVisibility;
@@ -15,6 +13,7 @@ import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
+import ai.verta.uac.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.uac.DeleteRoleBinding;
 import ai.verta.uac.Entities;
 import ai.verta.uac.GetAllowedEntities;
@@ -44,7 +43,6 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
@@ -53,8 +51,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -153,11 +149,8 @@ public class RoleServiceUtils implements RoleService {
                       .build())
               .build();
 
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
       IsSelfAllowed.Response isSelfAllowedResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
-              .isSelfAllowed(isSelfAllowedRequest);
+          authServiceChannel.getAuthzServiceBlockingStub().isSelfAllowed(isSelfAllowedRequest);
       LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, isSelfAllowedResponse);
 
@@ -198,10 +191,9 @@ public class RoleServiceUtils implements RoleService {
                       .build())
               .build();
 
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedActionsBatch.Response getSelfAllowedActionsBatchResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
+              .getAuthzServiceBlockingStub()
               .getSelfAllowedActionsBatch(getSelfAllowedActionsBatch);
       LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
@@ -307,16 +299,10 @@ public class RoleServiceUtils implements RoleService {
   public List<GetCollaboratorResponse> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
-      String resourceOwnerId,
-      Metadata requestHeaders) {
+      String resourceOwnerId) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.debug("getting Resource collaborator with authChannel {}", authServiceChannel);
       return getCollaborators(
-          authServiceChannel,
-          resourceOwnerId,
-          resourceId,
-          modelDBServiceResourceTypes,
-          requestHeaders);
+          authServiceChannel, resourceOwnerId, resourceId, modelDBServiceResourceTypes);
     } catch (StatusRuntimeException ex) {
       LOGGER.warn(ex.getMessage(), ex);
       if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
@@ -336,8 +322,7 @@ public class RoleServiceUtils implements RoleService {
       String resourceOwnerId,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      Metadata requestHeaders) {
+      ModelDBServiceActions modelDBServiceActions) {
     GetAllowedEntities getAllowedEntitiesRequest =
         GetAllowedEntities.newBuilder()
             .addActions(
@@ -355,7 +340,7 @@ public class RoleServiceUtils implements RoleService {
     LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
     GetAllowedEntities.Response getAllowedEntitiesResponse =
         authServiceChannel
-            .getAuthzServiceBlockingStub(requestHeaders)
+            .getAuthzServiceBlockingStub()
             .getAllowedEntities(getAllowedEntitiesRequest);
     LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
     LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedEntitiesResponse);
@@ -412,95 +397,65 @@ public class RoleServiceUtils implements RoleService {
       AuthServiceChannel authServiceChannel,
       String resourceOwnerId,
       String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      Metadata requestHeaders) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     List<GetCollaboratorResponse> getCollaboratorResponseList = new ArrayList<>();
 
-    try {
-      // Run a task specified by a Supplier object asynchronously
-      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.DEPLOY,
-                      requestHeaders));
+    Set<CollaboratorBase> deployCollaborators =
+        getCollaborators(
+            authServiceChannel,
+            resourceOwnerId,
+            resourceId,
+            modelDBServiceResourceTypes,
+            ModelDBServiceActions.DEPLOY);
+    Set<CollaboratorBase> readOnlyCollaborators =
+        getCollaborators(
+            authServiceChannel,
+            resourceOwnerId,
+            resourceId,
+            modelDBServiceResourceTypes,
+            ModelDBServiceActions.READ);
+    Set<CollaboratorBase> readWriteCollaborators =
+        getCollaborators(
+            authServiceChannel,
+            resourceOwnerId,
+            resourceId,
+            modelDBServiceResourceTypes,
+            ModelDBServiceActions.UPDATE);
 
-      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.READ,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.UPDATE,
-                      requestHeaders));
-
-      CompletableFuture<Void> collaboratorCombineFuture =
-          CompletableFuture.allOf(
-              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
-
-      // Wait for all task complete
-      collaboratorCombineFuture.get();
-
-      Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
-      Set<CollaboratorBase> readOnlyCollaborators = readOnlyCollaboratorsFuture.get();
-      Set<CollaboratorBase> readWriteCollaborators = readWriteCollaboratorsFuture.get();
-
-      readOnlyCollaborators.removeAll(readWriteCollaborators);
-      if (readOnlyCollaborators.size() > 0) {
-        LOGGER.debug("ReadOnly Collaborators count: " + readOnlyCollaborators.size());
-        for (CollaboratorBase collaborator : readOnlyCollaborators) {
-          GetCollaboratorResponse.Builder getCollaboratorResponseBuilder =
-              GetCollaboratorResponse.newBuilder()
-                  .setAuthzEntityType(collaborator.getAuthzEntityType())
-                  .setVertaId(collaborator.getId())
-                  .setCollaboratorType(CollaboratorType.READ_ONLY);
-          if (deployCollaborators.contains(collaborator)) {
-            getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
-          } else {
-            getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
-          }
-
-          getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
+    readOnlyCollaborators.removeAll(readWriteCollaborators);
+    if (readOnlyCollaborators.size() > 0) {
+      LOGGER.debug("ReadOnly Collaborators count: " + readOnlyCollaborators.size());
+      for (CollaboratorBase collaborator : readOnlyCollaborators) {
+        GetCollaboratorResponse.Builder getCollaboratorResponseBuilder =
+            GetCollaboratorResponse.newBuilder()
+                .setAuthzEntityType(collaborator.getAuthzEntityType())
+                .setVertaId(collaborator.getId())
+                .setCollaboratorType(CollaboratorType.READ_ONLY);
+        if (deployCollaborators.contains(collaborator)) {
+          getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
+        } else {
+          getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
         }
-      }
 
-      if (readWriteCollaborators.size() > 0) {
-        LOGGER.debug("ReadWrite Collaborators count: " + readWriteCollaborators.size());
-        for (CollaboratorBase collaborator : readWriteCollaborators) {
-          GetCollaboratorResponse.Builder getCollaboratorResponseBuilder =
-              GetCollaboratorResponse.newBuilder()
-                  .setAuthzEntityType(collaborator.getAuthzEntityType())
-                  .setVertaId(collaborator.getId())
-                  .setCollaboratorType(CollaboratorType.READ_WRITE);
-          if (deployCollaborators.contains(collaborator)) {
-            getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
-          } else {
-            getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
-          }
-          getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
-        }
+        getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
       }
-    } catch (InterruptedException | ExecutionException ex) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
+    }
+
+    if (readWriteCollaborators.size() > 0) {
+      LOGGER.debug("ReadWrite Collaborators count: " + readWriteCollaborators.size());
+      for (CollaboratorBase collaborator : readWriteCollaborators) {
+        GetCollaboratorResponse.Builder getCollaboratorResponseBuilder =
+            GetCollaboratorResponse.newBuilder()
+                .setAuthzEntityType(collaborator.getAuthzEntityType())
+                .setVertaId(collaborator.getId())
+                .setCollaboratorType(CollaboratorType.READ_WRITE);
+        if (deployCollaborators.contains(collaborator)) {
+          getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
+        } else {
+          getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
+        }
+        getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
+      }
     }
     LOGGER.debug("Total Collaborators count: " + getCollaboratorResponseList.size());
     return getCollaboratorResponseList;
@@ -611,51 +566,27 @@ public class RoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
 
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
-      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.READ,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.UPDATE,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.DEPLOY,
-                      requestHeaders));
-
-      CompletableFuture<Void> collaboratorCombineFuture =
-          CompletableFuture.allOf(
-              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
-
-      // Wait for all task complete
-      collaboratorCombineFuture.get();
-
-      Set<CollaboratorBase> readCollaborators = readOnlyCollaboratorsFuture.get();
-      Set<CollaboratorBase> readWriteCollaborators = readWriteCollaboratorsFuture.get();
-      Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
+      Set<CollaboratorBase> readCollaborators =
+          getCollaborators(
+              authServiceChannel,
+              resourceOwnerId,
+              resourceId,
+              modelDBServiceResourceTypes,
+              ModelDBServiceActions.READ);
+      Set<CollaboratorBase> readWriteCollaborators =
+          getCollaborators(
+              authServiceChannel,
+              resourceOwnerId,
+              resourceId,
+              modelDBServiceResourceTypes,
+              ModelDBServiceActions.UPDATE);
+      Set<CollaboratorBase> deployCollaborators =
+          getCollaborators(
+              authServiceChannel,
+              resourceOwnerId,
+              resourceId,
+              modelDBServiceResourceTypes,
+              ModelDBServiceActions.DEPLOY);
 
       Set<CollaboratorBase> finalCollaborators = new HashSet<>();
       finalCollaborators.addAll(readCollaborators);
@@ -700,10 +631,6 @@ public class RoleServiceUtils implements RoleService {
         throw StatusProto.toStatusRuntimeException(status);
       }
       throw ex;
-    } catch (InterruptedException | ExecutionException ex) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
     }
   }
 
@@ -751,10 +678,9 @@ public class RoleServiceUtils implements RoleService {
         GetSelfAllowedResources.newBuilder().addActions(action).build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
+              .getAuthzServiceBlockingStub()
               .getSelfAllowedResources(getAllowedResourcesRequest);
       LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
@@ -798,10 +724,9 @@ public class RoleServiceUtils implements RoleService {
         GetSelfAllowedResources.newBuilder().addActions(action).build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
+              .getAuthzServiceBlockingStub()
               .getSelfDirectlyAllowedResources(getAllowedResourcesRequest);
       LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
@@ -847,10 +772,9 @@ public class RoleServiceUtils implements RoleService {
         GetAllowedResources.newBuilder().addActions(action).addEntities(entity).build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
       GetAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
+              .getAuthzServiceBlockingStub()
               .getAllowedResources(getAllowedResourcesRequest);
       LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
@@ -1042,16 +966,18 @@ public class RoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       List<String> requestedIdList) {
+    List<String> allowedResourceIds = new ArrayList<>();
     if (requestedIdList.size() == 1) {
       isSelfAllowed(modelDBServiceResourceTypes, modelDBServiceActions, requestedIdList.get(0));
-      return requestedIdList;
+      allowedResourceIds.addAll(requestedIdList);
     } else {
       List<String> allowedResourceIdList =
           getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedResourceIdList.retainAll(requestedIdList);
-      return allowedResourceIdList;
+      allowedResourceIds.addAll(allowedResourceIdList);
     }
+    return allowedResourceIds;
   }
 
   @Override

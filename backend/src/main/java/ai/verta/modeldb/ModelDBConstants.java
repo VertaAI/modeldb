@@ -82,18 +82,8 @@ public interface ModelDBConstants {
   String TAGS = "tags";
   String VALUE = "value";
   String WORKSPACE = "workspace";
-  String WORKSPACE_ID = "workspace_id";
   String WORKSPACE_NAME = "workspace_name";
   String WORKSPACE_TYPE = "workspace_type";
-  String PROJECTS = "projects";
-  String EXPERIMENTS = "experiments";
-  String EXPERIMENT_RUNS = "experimentruns";
-  String DATASETS_VERSIONS = "datasetversions";
-  String COMMENTS = "comments";
-  String CODEVERSIONS = "codeversions";
-  String GIT_SNAPSHOTS = "gitsnapshots";
-  String KEY_VALUES = "keyvalues";
-  String TAG_MAPPINGS = "tagmappings";
 
   // Common verb constants
   String ORDER_ASC = "asc";
@@ -181,25 +171,4 @@ public interface ModelDBConstants {
   String ROLE_PROJECT_DEPLOY = "PROJECT_DEPLOY";
   String ROLE_PROJECT_ADMIN = "PROJECT_ADMIN";
   String ROLE_DATASET_ADMIN = "DATASET_ADMIN";
-
-  // Telemetry Constants
-  String TELEMETRY = "telemetry";
-  String OPT_IN = "opt_in";
-  String TELEMENTRY_FREQUENCY = "frequency"; // frequency to share data in hours
-  String TELEMETRY_CONSUMER = "consumer";
-  String TELEMETRY_CONSUMER_URL =
-      "https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry";
-
-  // Versioning constant
-  String BLOBS = "blobs";
-  String SUBTREES = "subtrees";
-  String REPOSITORY_ID = "repository_id";
-  String TAG = "tag";
-  String ENTITY_HASH = "entity_hash";
-  String ENTITY_TYPE = "entity_type";
-  String LABEL = "label";
-  String BRANCH = "branch";
-  String BRANCH_NOT_FOUND = "Branch not found";
-  String INITIAL_COMMIT_MESSAGE = "Initial commit";
-  String MASTER_BRANCH = "master";
 }

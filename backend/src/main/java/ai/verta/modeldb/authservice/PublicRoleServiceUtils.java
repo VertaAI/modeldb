@@ -10,9 +10,6 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
-import ai.verta.modeldb.versioning.BlobDAORdbImpl;
-import ai.verta.modeldb.versioning.CommitDAORdbImpl;
-import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -25,7 +22,6 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
-import io.grpc.Metadata;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,12 +34,7 @@ public class PublicRoleServiceUtils implements RoleService {
 
   public PublicRoleServiceUtils(AuthService authService) {
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService);
-    ExperimentRunDAO experimentRunDAO =
-        new ExperimentRunDAORdbImpl(
-            authService,
-            new RepositoryDAORdbImpl(authService, this),
-            new CommitDAORdbImpl(),
-            new BlobDAORdbImpl());
+    ExperimentRunDAO experimentRunDAO = new ExperimentRunDAORdbImpl(authService);
     this.projectDAO = new ProjectDAORdbImpl(authService, this, experimentDAO, experimentRunDAO);
     this.datasetDAO = new DatasetDAORdbImpl(authService, this);
   }
@@ -98,8 +89,7 @@ public class PublicRoleServiceUtils implements RoleService {
   public List<GetCollaboratorResponse> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
-      String resourceOwnerId,
-      Metadata requestHeaders) {
+      String resourceOwnerId) {
     return Collections.emptyList();
   }
 

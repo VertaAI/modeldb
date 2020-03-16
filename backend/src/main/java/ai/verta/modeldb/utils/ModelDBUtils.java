@@ -1,16 +1,13 @@
 package ai.verta.modeldb.utils;
 
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.GetHydratedProjects;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.OperatorEnum;
-import ai.verta.modeldb.UpdateProjectName;
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.ValueTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -18,7 +15,6 @@ import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.EntitiesEnum.EntitiesTypes;
@@ -26,7 +22,6 @@ import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
-import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
@@ -36,7 +31,6 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import io.grpc.stub.StreamObserver;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -50,10 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -395,67 +385,5 @@ public class ModelDBUtils {
       workspaceQueries.add(workspaceTypePredicates);
     }
     return workspaceQueries;
-  }
-
-  public static void scheduleTask(TimerTask task, int frequency, TimeUnit timeUnit) {
-    // scheduling the timer instance
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleAtFixedRate(task, frequency, frequency, timeUnit);
-  }
-
-  public static <T extends GeneratedMessageV3> void observeError(
-      StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
-    Status status;
-    Exception statusRuntimeException;
-    if (e instanceof StatusRuntimeException) {
-      statusRuntimeException = e;
-    } else {
-      if (e instanceof ModelDBException) {
-        LOGGER.warn("Exception occured: {}", e.getMessage());
-        ModelDBException ModelDBException = (ModelDBException) e;
-        status =
-            Status.newBuilder()
-                .setCode(ModelDBException.getCode().value())
-                .setMessage(ModelDBException.getMessage())
-                .addDetails(Any.pack(defaultInstance))
-                .build();
-      } else {
-        LOGGER.error("Exception occured:", e);
-        status =
-            Status.newBuilder()
-                .setCode(io.grpc.Status.Code.INTERNAL.value())
-                .setMessage(ModelDBConstants.INTERNAL_ERROR)
-                .addDetails(Any.pack(defaultInstance))
-                .build();
-      }
-      statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-    }
-    ErrorCountResource.inc(statusRuntimeException);
-    responseObserver.onError(statusRuntimeException);
-  }
-
-  /**
-   * If so throws an error if the workspace type is USER and the workspaceId and userID do not
-   * match. Is a NO-OP if userinfo is null.
-   */
-  public static void checkPersonalWorkspace(
-      UserInfo userInfo,
-      WorkspaceType workspaceType,
-      String workspaceId,
-      String resourceNameString) {
-    if (userInfo != null
-        && workspaceType == WorkspaceType.USER
-        && !workspaceId.equals(userInfo.getVertaInfo().getUserId())) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Creation of "
-                      + resourceNameString
-                      + " in other user's workspace is not permitted")
-              .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
   }
 }

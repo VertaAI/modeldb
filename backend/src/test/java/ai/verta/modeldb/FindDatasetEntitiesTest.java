@@ -2,7 +2,6 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;

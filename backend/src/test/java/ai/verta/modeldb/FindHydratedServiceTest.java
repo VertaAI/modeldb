@@ -4,7 +4,6 @@ import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProject;
 import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
 
-import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
@@ -18,6 +17,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.CollaboratorTypeEnum;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UACServiceGrpc.UACServiceBlockingStub;
@@ -52,6 +52,8 @@ public class FindHydratedServiceTest {
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
+      InProcessChannelBuilder.forName(serverName).directExecutor();
+  private static InProcessChannelBuilder client2ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static AuthService authService;
@@ -115,10 +117,12 @@ public class FindHydratedServiceTest {
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
       authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
+      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
 
     serverBuilder.build().start();
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       ManagedChannel authServiceChannel =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())

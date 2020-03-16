@@ -1,9 +1,9 @@
 package ai.verta.modeldb.dataset;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.UserInfo;

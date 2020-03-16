@@ -2,7 +2,7 @@
 <Configuration status="INFO">
     <Appenders>
         <Console name="ConsoleJSONAppender" target="SYSTEM_OUT">
-            <JsonLayout complete="false" compact="true" eventEol="true" stacktraceAsString="true">
+            <JsonLayout complete="false" compact="true" eventEol="true">
             </JsonLayout>
         </Console>
     </Appenders>

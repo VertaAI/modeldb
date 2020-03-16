@@ -1,6 +1,5 @@
 package ai.verta.modeldb.datasetVersion;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.Dataset;
@@ -8,6 +7,7 @@ import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasetVersions;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.QueryDatasetVersionInfo;
@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
 
 public interface DatasetVersionDAO {
 
@@ -382,6 +381,4 @@ public interface DatasetVersionDAO {
     datasetVersionList.add(datasetVersionBuilder.build());
     return datasetVersionList;
   }
-
-  boolean isDatasetVersionExists(Session session, String id);
 }

@@ -1,139 +1,207 @@
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
-        logicalFilePath="src/main/resources/liquibase/db-changelog-1.0.xml">
+  logicalFilePath="src/main/resources/liquibase/db-changelog-1.0.xml">
 
-    <include file="src/main/resources/liquibase/create-tables-changelog-1.0.xml"/>
+	<changeSet id="1" author="anandJ">
+		<sqlFile path="src/main/resources/liquibase/create_tables.sql" />
+	</changeSet>
 
-    <changeSet id="1" author="anandJ">
-        <sqlFile path="src/main/resources/liquibase/create_indexes.sql"/>
+	<changeSet id="2" author="anandJ">
+		<sqlFile
+			path="src/main/resources/liquibase/create_indexes.sql" />
+	</changeSet>
+
+	<changeSet id="tag-1.0" author="anandJ">
+		<tagDatabase tag="1.0" />
+	</changeSet>
+
+
+	<changeSet author="raviS" id="3-createSequence">
+		<createSequence incrementBy="1" schemaName="public"
+			sequenceName="hibernate_sequence" startValue="1" />
+	</changeSet>
+
+	<changeSet id="tag-1.1" author="raviS">
+		<tagDatabase tag="1.1" />
+	</changeSet>
+
+	<changeSet id="tables-4" author="anandJ" >
+		<addColumn catalogName="cat"
+				   schemaName="public"
+				   tableName="user_comment">
+			<column name="owner" type="varchar(255)"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="tables-5" author="anandJ">
+		<addColumn catalogName="cat"
+				   schemaName="public"
+				   tableName="collaborator">
+			<column name="verta_id" type="varchar(255)"/>
+		</addColumn>
+		<addColumn catalogName="cat"
+				   schemaName="public"
+				   tableName="collaboratormappings">
+			<column name="collaborator_verta_id" type="varchar(255)"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="tables-tag-1.2" author="anandJ">
+		<tagDatabase tag="tables-1.2" />
+	</changeSet>
+
+	<changeSet id="tables-6" author="anandJ">
+		<addColumn catalogName="cat"
+				   schemaName="public"
+				   tableName="artifact">
+			<column name="store_type_path" type="text"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="tables-tag-1.3" author="anandJ">
+		<tagDatabase tag="tables-1.3" />
+	</changeSet>
+
+	<changeSet id="7-indexes-on-attribute" author="anandJ">
+		<sql>CREATE TABLE attribute as (SELECT * FROM keyvalue WHERE field_type = 'attributes' and entity_name is not null);</sql>
+	</changeSet>
+
+	<changeSet id="8-indexes-on-attribute" author="anandJ">
+		<createIndex catalogName="cat" indexName="attr_id"
+					 schemaName="public" tableName="attribute" unique="false">
+			<column name="id" type="int8" />
+		</createIndex>
+		<createIndex catalogName="cat" indexName="attr_field_type"
+					 schemaName="public" tableName="attribute" unique="false">
+			<column name="field_type" type="varchar(50)" />
+		</createIndex>
+		<createIndex catalogName="cat" indexName="attr_kv_key"
+					 schemaName="public" tableName="attribute" unique="false">
+			<column name="kv_key" type="text" />
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="tables-tag-1.4" author="anandJ">
+		<tagDatabase tag="tables-1.4" />
+	</changeSet>
+
+    <changeSet id="9-remove-attributes" author="raviS">
+        <sql>DELETE FROM keyvalue WHERE field_type = 'attributes' and entity_name is not null;</sql>
     </changeSet>
 
-    <changeSet id="tag-1.0" author="anandJ">
-        <tagDatabase tag="1.0"/>
-    </changeSet>
-
-    <changeSet author="raviS" id="2-createSequence">
-        <createSequence incrementBy="1"
-                        sequenceName="hibernate_sequence" startValue="1"/>
-    </changeSet>
-
-    <changeSet id="tag-1.1" author="raviS">
-        <tagDatabase tag="1.1"/>
-    </changeSet>
-
-    <changeSet id="tables-3" author="anandJ">
-        <addColumn tableName="user_comment">
-            <column name="owner" type="varchar(255)"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="tables-tag-1.2" author="anandJ">
-        <tagDatabase tag="tables-1.2"/>
-    </changeSet>
-
-    <changeSet id="tables-4" author="anandJ">
-        <addColumn tableName="artifact">
-            <column name="store_type_path" type="text"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="tables-tag-1.3" author="anandJ">
-        <tagDatabase tag="tables-1.3"/>
-    </changeSet>
-
-    <changeSet id="5-indexes-on-attribute" author="anandJ">
-        <createIndex indexName="attr_id"
-                     tableName="attribute" unique="false">
-            <column name="id" type="int8"/>
+    <changeSet id="10-indexes-on-keyValue" author="raviS">
+        <createIndex catalogName="cat" indexName="kv_val"
+                     schemaName="public" tableName="keyvalue" unique="false">
+            <column name="kv_value" type="text" />
         </createIndex>
-        <createIndex indexName="attr_field_type"
-                     tableName="attribute" unique="false">
-            <column name="field_type" type="varchar(50)"/>
+    </changeSet>
+
+    <changeSet id="11-indexes-on-keyValue" author="raviS">
+        <createIndex catalogName="cat" indexName="kv_field_type"
+                     schemaName="public" tableName="keyvalue" unique="false">
+            <column name="field_type" type="varchar(50)" />
         </createIndex>
     </changeSet>
 
-    <changeSet id="tables-tag-1.4" author="anandJ">
-        <tagDatabase tag="tables-1.4"/>
-    </changeSet>
-
-    <changeSet id="6-indexes-on-keyValue" author="raviS">
-        <createIndex indexName="kv_field_type"
-                     tableName="keyvalue" unique="false">
-            <column name="field_type" type="varchar(50)"/>
+    <changeSet id="12-indexes-on-keyValue" author="raviS">
+        <createIndex catalogName="cat" indexName="kv_key"
+                     schemaName="public" tableName="keyvalue" unique="false">
+            <column name="kv_key" type="text" />
         </createIndex>
     </changeSet>
 
     <changeSet id="tables-tag-1.5" author="raviS">
-        <tagDatabase tag="tables-1.5"/>
+        <tagDatabase tag="tables-1.5" />
     </changeSet>
 
-    <changeSet id="7-indexes-on-project-name-owner" author="anandJ">
-        <createIndex indexName="p_name_owner"
-                     tableName="project" unique="false">
-            <column name="name" type="varchar(255)"/>
-            <column name="owner" type="varchar(255)"/>
+    <changeSet id="13-indexes-on-project-name-owner" author="anandJ">
+        <createIndex catalogName="cat" indexName="p_name_owner"
+                     schemaName="public" tableName="project" unique="false">
+            <column name="name" type="varchar(255)" />
+            <column name="owner" type="varchar(255)" />
         </createIndex>
     </changeSet>
 
     <changeSet id="tables-tag-1.6" author="anandJ">
-        <tagDatabase tag="tables-1.6"/>
+        <tagDatabase tag="tables-1.6" />
     </changeSet>
-    <changeSet id="8-workspaces-project" author="raviS">
-        <dropIndex indexName="p_name_owner"
-                   tableName="project"/>
-        <addColumn tableName="project">
-            <column name="workspace" type="varchar(255)"/>
-        </addColumn>
-        <addColumn tableName="project">
-            <column name="workspace_type" type="int"/>
-        </addColumn>
+    <changeSet id="14-workspaces-project" author="raviS">
+        <dropIndex catalogName="cat" indexName="p_name_owner"
+                     schemaName="public" tableName="project" />
+		<addColumn catalogName="cat"
+				   schemaName="public"
+				   tableName="project">
+			<column name="workspace" type="varchar(255)"/>
+		</addColumn>
+		<addColumn catalogName="cat"
+				   schemaName="public"
+				   tableName="project">
+			<column name="workspace_type" type="int"/>
+		</addColumn>
     </changeSet>
-    <changeSet id="9-workspaces-dataset" author="raviS">
-        <addColumn tableName="dataset">
-            <column name="workspace" type="varchar(255)"/>
-        </addColumn>
-        <addColumn tableName="dataset">
-            <column name="workspace_type" type="int"/>
-        </addColumn>
+    <changeSet id="15-workspaces-dataset" author="raviS">
+		<addColumn catalogName="cat"
+				   schemaName="public"
+				   tableName="dataset">
+			<column name="workspace" type="varchar(255)"/>
+		</addColumn>
+		<addColumn catalogName="cat"
+				   schemaName="public"
+				   tableName="dataset">
+			<column name="workspace_type" type="int"/>
+		</addColumn>
     </changeSet>
-    <changeSet id="10-workspaces-assign-workspace" author="raviS">
-        <sql>UPDATE project SET workspace = owner where owner is not null</sql>
-        <sql>UPDATE project SET workspace_type = 2 where owner is not null</sql>
-        <sql>UPDATE dataset SET workspace = owner where owner is not null</sql>
-        <sql>UPDATE dataset SET workspace_type = 2 where owner is not null</sql>
+    <changeSet id="16-workspaces-assign-workspace" author="raviS">
+		<sql>UPDATE project SET workspace = owner where owner is not null</sql>
+		<sql>UPDATE project SET workspace_type = 2 where owner is not null</sql>
+		<sql>UPDATE dataset SET workspace = owner where owner is not null</sql>
+		<sql>UPDATE dataset SET workspace_type = 2 where owner is not null</sql>
     </changeSet>
-    <changeSet id="11-index-projectname-workspace-workspacetype" author="raviS">
-        <createIndex indexName="p_name_wspace_wspace_type"
-                     tableName="project" unique="true">
-            <column name="name" type="varchar(255)"/>
-            <column name="workspace" type="varchar(255)"/>
-            <column name="workspace_type" type="int"/>
+    <changeSet id="17-index-projectname-workspace-workspacetype" author="raviS">
+        <createIndex catalogName="cat" indexName="p_name_wspace_wspace_type"
+                     schemaName="public" tableName="project" unique="true">
+            <column name="name" type="varchar(255)" />
+            <column name="workspace" type="varchar(255)" />
+            <column name="workspace_type" type="int" />
         </createIndex>
-        <createIndex indexName="d_name_wspace_wspace_type"
-                     tableName="dataset" unique="true">
-            <column name="name" type="varchar(255)"/>
-            <column name="workspace" type="varchar(255)"/>
-            <column name="workspace_type" type="int"/>
-        </createIndex>
-    </changeSet>
-
-    <changeSet id="12-create-indexes-lineage" author="lezhevg">
-        <createIndex indexName="p_input_lineage"
-                     tableName="lineage">
-            <column name="input_external_id" type="varchar(256)"/>
-            <column name="input_type" type="int4"/>
-        </createIndex>
-        <createIndex indexName="p_output_lineage"
-                     tableName="lineage">
-            <column name="output_external_id" type="varchar(256)"/>
-            <column name="output_type" type="int4"/>
+        <createIndex catalogName="cat" indexName="d_name_wspace_wspace_type"
+                     schemaName="public" tableName="dataset" unique="true">
+            <column name="name" type="varchar(255)" />
+            <column name="workspace" type="varchar(255)" />
+            <column name="workspace_type" type="int" />
         </createIndex>
     </changeSet>
-
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
-    <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
+	<changeSet id="19-create-tables-lineage" author="lezhevg">
+		<createTable catalogName="modeldb"
+			schemaName="public"
+			tableName="lineage">
+			<column name="input_external_id" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="input_type" type="int4">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="output_external_id" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="output_type" type="int4">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+		</createTable>
+	</changeSet>
+	<changeSet id="20-create-indexes-lineage" author="lezhevg">
+		<createIndex catalogName="cat" indexName="p_input_lineage"
+			schemaName="public" tableName="lineage">
+			<column name="input_external_id" type="varchar(256)" />
+			<column name="input_type" type="int4" />
+		</createIndex>
+		<createIndex catalogName="cat" indexName="p_output_lineage"
+			schemaName="public" tableName="lineage">
+			<column name="output_external_id" type="varchar(256)" />
+			<column name="output_type" type="int4" />
+		</createIndex>
+	</changeSet>
 </databaseChangeLog>

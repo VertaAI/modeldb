@@ -1,12 +1,13 @@
 package ai.verta.modeldb.datasetVersion;
 
-import ai.verta.common.KeyValue;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
@@ -349,6 +350,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       // Validate if current user has access to the entity or not where predicate key has a
       // datasetId
+      App app = App.getInstance();
       for (KeyValueQuery predicate : predicates) {
         if (predicate.getKey().equals(ModelDBConstants.ID)) {
           if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
@@ -646,12 +648,5 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();
     }
-  }
-
-  @Override
-  public boolean isDatasetVersionExists(Session session, String datasetVersionId) {
-    DatasetVersionEntity datasetVersionEntity =
-        session.get(DatasetVersionEntity.class, datasetVersionId);
-    return datasetVersionEntity != null;
   }
 }

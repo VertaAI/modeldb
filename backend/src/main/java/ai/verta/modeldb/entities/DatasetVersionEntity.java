@@ -19,7 +19,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
-@Table(name = "dataset_version")
+@Table(name = "datasetversion")
 public class DatasetVersionEntity {
 
   public DatasetVersionEntity() {}

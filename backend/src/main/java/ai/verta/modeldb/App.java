@@ -34,26 +34,11 @@ import ai.verta.modeldb.health.HealthStatusManager;
 import ai.verta.modeldb.job.JobDAO;
 import ai.verta.modeldb.job.JobDAORdbImpl;
 import ai.verta.modeldb.job.JobServiceImpl;
-import ai.verta.modeldb.lineage.LineageDAO;
-import ai.verta.modeldb.lineage.LineageDAORdbImpl;
-import ai.verta.modeldb.lineage.LineageServiceImpl;
-import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
-import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.project.ProjectServiceImpl;
-import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.BlobDAO;
-import ai.verta.modeldb.versioning.BlobDAORdbImpl;
-import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.CommitDAORdbImpl;
-import ai.verta.modeldb.versioning.FileHasher;
-import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
-import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
@@ -61,8 +46,6 @@ import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import java.util.Map;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -335,7 +318,6 @@ public class App implements ApplicationContextAware {
 
     // --------------- Finish Initialize Database base on configuration --------------------------
 
-    initializeTelemetryBasedOnConfig(propertiesMap);
   }
 
   private static void initializeRelationalDBServices(
@@ -345,22 +327,15 @@ public class App implements ApplicationContextAware {
       RoleService roleService) {
 
     // --------------- Start Initialize DAO --------------------------
-    CommitDAO commitDAO = new CommitDAORdbImpl();
-    RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
-    BlobDAO blobDAO = new BlobDAORdbImpl();
-
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService);
-    ExperimentRunDAO experimentRunDAO =
-        new ExperimentRunDAORdbImpl(authService, repositoryDAO, commitDAO, blobDAO);
+    ExperimentRunDAO experimentRunDAO = new ExperimentRunDAORdbImpl(authService);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
     ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
     JobDAO jobDAO = new JobDAORdbImpl(authService);
     CommentDAO commentDAO = new CommentDAORdbImpl(authService);
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
-    LineageDAO lineageDAO = new LineageDAORdbImpl();
     DatasetVersionDAO datasetVersionDAO = new DatasetVersionDAORdbImpl(authService, roleService);
-    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
     LOGGER.info("All DAO initialized");
     // --------------- Finish Initialize DAO --------------------------
     initializeBackendServices(
@@ -373,11 +348,6 @@ public class App implements ApplicationContextAware {
         artifactStoreDAO,
         jobDAO,
         commentDAO,
-        lineageDAO,
-        metadataDAO,
-        repositoryDAO,
-        commitDAO,
-        blobDAO,
         authService,
         roleService);
   }
@@ -392,11 +362,6 @@ public class App implements ApplicationContextAware {
       ArtifactStoreDAO artifactStoreDAO,
       JobDAO jobDAO,
       CommentDAO commentDAO,
-      LineageDAO lineageDAO,
-      MetadataDAO metadataDAO,
-      RepositoryDAO repositoryDAO,
-      CommitDAO commitDAO,
-      BlobDAO blobDAO,
       AuthService authService,
       RoleService roleService) {
     App app = App.getInstance();
@@ -451,24 +416,6 @@ public class App implements ApplicationContextAware {
           new CollaboratorServiceImpl(authService, roleService, projectDAO, datasetDAO));
       LOGGER.debug("Collaborator serviceImpl initialized");
     }
-    serverBuilder.addService(
-        new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
-    LOGGER.trace("Lineage serviceImpl initialized");
-
-    serverBuilder.addService(
-        new VersioningServiceImpl(
-            authService,
-            roleService,
-            repositoryDAO,
-            commitDAO,
-            blobDAO,
-            experimentDAO,
-            experimentRunDAO,
-            new ModelDBAuthInterceptor(),
-            new FileHasher()));
-    LOGGER.trace("Versioning serviceImpl initialized");
-    serverBuilder.addService(new MetadataServiceImpl(metadataDAO));
-    LOGGER.trace("Metadata serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
 
@@ -559,32 +506,6 @@ public class App implements ApplicationContextAware {
     LOGGER.info(
         "ArtifactStore service initialized and resolved storage dependency before server start");
     return artifactStoreService;
-  }
-
-  public static void initializeTelemetryBasedOnConfig(Map<String, Object> propertiesMap) {
-    boolean optIn = true;
-    int frequency = 1;
-    String consumer = null;
-    if (propertiesMap.containsKey(ModelDBConstants.TELEMETRY)) {
-      Map<String, Object> telemetryMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.TELEMETRY);
-      if (telemetryMap != null) {
-        optIn = (boolean) telemetryMap.getOrDefault(ModelDBConstants.OPT_IN, true);
-        frequency = (int) telemetryMap.getOrDefault(ModelDBConstants.TELEMENTRY_FREQUENCY, 1);
-        if (telemetryMap.containsKey(ModelDBConstants.TELEMETRY_CONSUMER)) {
-          consumer = (String) telemetryMap.get(ModelDBConstants.TELEMETRY_CONSUMER);
-        }
-      }
-    }
-
-    if (optIn) {
-      // creating an instance of task to be scheduled
-      TimerTask task = new TelemetryCron(consumer);
-      ModelDBUtils.scheduleTask(task, frequency, TimeUnit.HOURS);
-      LOGGER.info("Telemetry scheduled successfully");
-    } else {
-      LOGGER.info("Telemetry opt out by user");
-    }
   }
 
   public String getStarterProjectID() {

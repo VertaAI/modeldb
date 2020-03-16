@@ -2,14 +2,12 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
-import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
-import ai.verta.common.KeyValue;
-import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.CommentServiceGrpc.CommentServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceStub;
+import ai.verta.modeldb.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -20,6 +18,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.uac.GetCollaborator;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
@@ -1756,6 +1755,8 @@ public class ProjectTest {
     UserInfo secondUserInfo = uaServiceStub.getUser(getUserRequest);
 
     getUserRequest = GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo firstUserInfo = uaServiceStub.getUser(getUserRequest);
 
     // Create project
     CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
@@ -1811,6 +1812,25 @@ public class ProjectTest {
         "Project name not match",
         getProjectByNameResponse.getProjectByUser() == null
             || getProjectByNameResponse.getProjectByUser().getId().isEmpty());
+    for (Project sharedProject : getProjectByNameResponse.getSharedProjectsList()) {
+      assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
+    }
+
+    getProject =
+        GetProjectByName.newBuilder()
+            .setName(selfProject.getName())
+            .setWorkspaceName(firstUserInfo.getVertaInfo().getUsername())
+            .build();
+    getProjectByNameResponse = projectServiceStub.getProjectByName(getProject);
+    LOGGER.info(
+        "Response ProjectByUser of Project : " + getProjectByNameResponse.getProjectByUser());
+    LOGGER.info(
+        "Response SharedProjectsList of Projects : "
+            + getProjectByNameResponse.getSharedProjectsList());
+    assertTrue(
+        "Project name not match",
+        getProjectByNameResponse.getProjectByUser() != null
+            && getProjectByNameResponse.getProjectByUser().equals(selfProject));
     for (Project sharedProject : getProjectByNameResponse.getSharedProjectsList()) {
       assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
     }
@@ -2937,7 +2957,8 @@ public class ProjectTest {
         GetCollaborator getCollaboratorRequest =
             GetCollaborator.newBuilder().setEntityId(project.getId()).build();
         try {
-          collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
+          GetCollaborator.Response getCollaboratorResponse =
+              collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
           fail();
         } catch (StatusRuntimeException e) {
           checkEqualsAssert(e);

@@ -1,6 +1,5 @@
 package ai.verta.modeldb.experiment;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.AddAttributes;
 import ai.verta.modeldb.AddExperimentAttributes;
 import ai.verta.modeldb.AddExperimentTag;
@@ -28,6 +27,7 @@ import ai.verta.modeldb.GetExperimentCodeVersion;
 import ai.verta.modeldb.GetExperimentsInProject;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.ModelDBAuthInterceptor;

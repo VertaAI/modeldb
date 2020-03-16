@@ -1,7 +1,5 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.KeyValue;
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddProjectAttributes;
 import ai.verta.modeldb.AddProjectTag;
 import ai.verta.modeldb.AddProjectTags;
@@ -32,6 +30,7 @@ import ai.verta.modeldb.GetPublicProjects;
 import ai.verta.modeldb.GetSummary;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.LastModifiedExperimentRunSummary;
 import ai.verta.modeldb.LogProjectArtifacts;
@@ -51,7 +50,9 @@ import ai.verta.modeldb.SetProjectWorkspace;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.UpdateProjectName;
+import ai.verta.modeldb.ValueTypeEnum;
 import ai.verta.modeldb.VerifyConnectionResponse;
+import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -194,8 +195,17 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Project project = getProjectFromRequest(request, userInfo);
 
-      ModelDBUtils.checkPersonalWorkspace(
-          userInfo, project.getWorkspaceType(), project.getWorkspaceId(), "project");
+      if (userInfo != null
+          && project.getWorkspaceType() == WorkspaceType.USER
+          && project.getWorkspaceId() != userInfo.getVertaInfo().getUserId()) {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.PERMISSION_DENIED_VALUE)
+                .setMessage("Creation of project in other user's workspace is not permitted")
+                .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
       project = projectDAO.insertProject(project, userInfo);
 
       responseObserver.onNext(CreateProject.Response.newBuilder().setProject(project).build());

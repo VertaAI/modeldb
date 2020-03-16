@@ -3,10 +3,8 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestUser;
 import static org.junit.Assert.*;
 
-import ai.verta.common.CollaboratorTypeEnum;
-import ai.verta.common.KeyValue;
-import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
+import ai.verta.modeldb.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -16,6 +14,7 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.CollaboratorTypeEnum;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
@@ -145,7 +144,7 @@ public class DatasetVersionTest {
         KeyValue.newBuilder()
             .setKey("attribute_2_" + Calendar.getInstance().getTimeInMillis())
             .setValue(intValue)
-            .setValueType(ValueType.NUMBER)
+            .setValueType(ValueTypeEnum.ValueType.NUMBER)
             .build();
     attributeList.add(keyValue);
 
@@ -157,7 +156,7 @@ public class DatasetVersionTest {
         KeyValue.newBuilder()
             .setKey("attribute_3_" + Calendar.getInstance().getTimeInMillis())
             .setValue(listValue)
-            .setValueType(ValueType.LIST)
+            .setValueType(ValueTypeEnum.ValueType.LIST)
             .build();
     attributeList.add(keyValue);
 

@@ -1,6 +1,5 @@
 package ai.verta.modeldb.datasetVersion;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
 import ai.verta.modeldb.CreateDataset;
@@ -19,6 +18,7 @@ import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetDatasetVersionById;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;

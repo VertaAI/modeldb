@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "artifact_store")
+@Table(name = "artifactStore")
 public class ArtifactStoreMapping {
 
   public ArtifactStoreMapping() {}
@@ -28,7 +28,7 @@ public class ArtifactStoreMapping {
   }
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", updatable = false, nullable = false)
   private Long id;
 

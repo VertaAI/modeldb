@@ -2,7 +2,6 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
@@ -721,7 +720,7 @@ public class FindProjectEntitiesTest {
     assertEquals(
         "Project Id not match with expected project Id",
         project4.getId(),
-        response.getProjects(3).getId());
+        response.getProjects(0).getId());
 
     LOGGER.info("FindProjects by attributes test stop ................................");
   }

@@ -1,7 +1,5 @@
 package ai.verta.modeldb.dataset;
 
-import ai.verta.common.KeyValue;
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddDatasetAttributes;
 import ai.verta.modeldb.AddDatasetTags;
 import ai.verta.modeldb.App;
@@ -26,6 +24,7 @@ import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.GetDatasetByName;
 import ai.verta.modeldb.GetExperimentRunByDataset;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.LastExperimentByDatasetId;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
@@ -38,6 +37,9 @@ import ai.verta.modeldb.SetDatasetWorkspace.Response;
 import ai.verta.modeldb.UpdateDatasetAttributes;
 import ai.verta.modeldb.UpdateDatasetDescription;
 import ai.verta.modeldb.UpdateDatasetName;
+import ai.verta.modeldb.UpdateProjectName;
+import ai.verta.modeldb.ValueTypeEnum;
+import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
@@ -125,8 +127,17 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       Dataset dataset = getDatasetFromRequest(request, userInfo);
-      ModelDBUtils.checkPersonalWorkspace(
-          userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "dataset");
+      if (userInfo != null
+          && dataset.getWorkspaceType() == WorkspaceType.USER
+          && dataset.getWorkspaceId() != userInfo.getVertaInfo().getUserId()) {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.PERMISSION_DENIED_VALUE)
+                .setMessage("Creation of project in other user's workspace is not permitted")
+                .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
       Dataset createdDataset = datasetDAO.createDataset(dataset, userInfo);
 
       responseObserver.onNext(
@@ -214,7 +225,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .setAscending(request.getAscending())
               .setSortKey(request.getSortKey())
               .setWorkspaceName(request.getWorkspaceName());
-
+      ;
       DatasetPaginationDTO datasetPaginationDTO =
           datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
 

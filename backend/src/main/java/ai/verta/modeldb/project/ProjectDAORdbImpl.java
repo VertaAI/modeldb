@@ -1,19 +1,19 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.KeyValue;
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindProjects;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
+import ai.verta.modeldb.ValueTypeEnum;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -31,7 +31,6 @@ import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -186,17 +185,39 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   private void checkIfEntityAlreadyExists(Session session, Project project) {
-    ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-        session,
-        "p",
-        GET_PROJECT_COUNT_BY_NAME_PREFIX_HQL,
-        "Project",
-        "projectName",
-        project.getName(),
-        ModelDBConstants.WORKSPACE,
-        project.getWorkspaceId(),
-        project.getWorkspaceType(),
-        LOGGER);
+    String stringQueryBuilder = GET_PROJECT_COUNT_BY_NAME_PREFIX_HQL;
+
+    if (!project.getWorkspaceId().isEmpty()) {
+      stringQueryBuilder =
+          stringQueryBuilder
+              + " AND p."
+              + ModelDBConstants.WORKSPACE
+              + " =: "
+              + ModelDBConstants.WORKSPACE
+              + " AND p."
+              + ModelDBConstants.WORKSPACE_TYPE
+              + " =: "
+              + ModelDBConstants.WORKSPACE_TYPE;
+    }
+
+    Query query = session.createQuery(stringQueryBuilder);
+    query.setParameter("projectName", project.getName());
+    if (!project.getWorkspaceId().isEmpty()) {
+      query.setParameter(ModelDBConstants.WORKSPACE, project.getWorkspaceId());
+      query.setParameter(ModelDBConstants.WORKSPACE_TYPE, project.getWorkspaceTypeValue());
+    }
+    Long count = (Long) query.uniqueResult();
+
+    if (count > 0) {
+      // Throw error if it is an insert request and project with same name already exists
+      LOGGER.warn("Project with name {} already exists", project.getName());
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.ALREADY_EXISTS_VALUE)
+              .setMessage("Project already exists in database")
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
   }
 
   @Override
@@ -233,7 +254,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       transaction.commit();
       LOGGER.debug("Project created successfully");
-      TelemetryUtils.insertModelDBDeploymentInfo();
       return projectEntity.getProtoObject();
     }
   }
@@ -1173,10 +1193,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         accessibleProjectIds =
             roleService.getSelfDirectlyAllowedResources(
                 ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
-        if (queryParameters.getProjectIdsList() != null
-            && !queryParameters.getProjectIdsList().isEmpty()) {
-          accessibleProjectIds.retainAll(queryParameters.getProjectIdsList());
-        }
         // user is in his workspace and has no projects, return empty
         if (accessibleProjectIds.isEmpty()) {
           ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
@@ -1188,7 +1204,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             roleService.listMyOrganizations().stream()
                 .map(Organization::getId)
                 .collect(Collectors.toList());
-        if (!orgIds.isEmpty()) {
+        if (orgIds != null && !orgIds.isEmpty()) {
           finalPredicatesList.add(
               builder.not(
                   builder.and(
@@ -1227,7 +1243,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       if (!accessibleProjectIds.isEmpty()) {
         Expression<String> exp = projectRoot.get(ModelDBConstants.ID);
         Predicate predicate2 = exp.in(accessibleProjectIds);
-        finalPredicatesList.add(predicate2);
+        finalPredicatesList.add(
+            builder.or(
+                predicate2,
+                builder.equal(
+                    projectRoot.get(ModelDBConstants.PROJECT_VISIBILITY),
+                    ProjectVisibility.PUBLIC.getNumber())));
       }
 
       String entityName = "projectEntity";

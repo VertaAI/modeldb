@@ -2,7 +2,6 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.JobServiceGrpc.JobServiceBlockingStub;
 import ai.verta.modeldb.JobStatusEnum.JobStatus;
 import ai.verta.modeldb.JobTypeEnum.JobType;

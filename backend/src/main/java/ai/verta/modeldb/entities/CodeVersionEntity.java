@@ -14,7 +14,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "code_version")
+@Table(name = "codeversion")
 public class CodeVersionEntity {
 
   public CodeVersionEntity() {}
@@ -35,7 +35,7 @@ public class CodeVersionEntity {
   }
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", updatable = false, nullable = false)
   private Long id;
 

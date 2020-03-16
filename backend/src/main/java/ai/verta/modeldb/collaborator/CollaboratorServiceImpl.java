@@ -1,6 +1,5 @@
 package ai.verta.modeldb.collaborator;
 
-import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
@@ -19,6 +18,7 @@ import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddCollaboratorRequest.Response;
 import ai.verta.uac.AddCollaboratorRequest.Response.Builder;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceImplBase;
+import ai.verta.uac.CollaboratorTypeEnum;
 import ai.verta.uac.EntitiesEnum;
 import ai.verta.uac.GetCollaborator;
 import ai.verta.uac.GetCollaboratorResponse;
@@ -35,7 +35,6 @@ import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
@@ -160,15 +159,8 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
         && collaboratorType.equals(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)) {
       return ModelDBConstants.ROLE_DATASET_READ_ONLY;
     } else {
-      String errorMessage = "collaborator type and resource type are not found as expected";
-      LOGGER.warn(errorMessage);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage(errorMessage)
-              .addDetails(Any.pack(AddCollaboratorRequest.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      // TODO: throw runtime exception
+      return null;
     }
   }
 
@@ -505,13 +497,11 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
           getEntityOwnerMap(
               Collections.singletonList(request.getEntityId()),
               ModelDBServiceResourceTypes.PROJECT);
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
       List<GetCollaboratorResponse> responseData =
           roleService.getResourceCollaborators(
               ModelDBServiceResourceTypes.PROJECT,
               request.getEntityId(),
-              projectOwnersMap.get(request.getEntityId()),
-              requestHeaders);
+              projectOwnersMap.get(request.getEntityId()));
       responseObserver.onNext(
           GetCollaborator.Response.newBuilder().addAllSharedUsers(responseData).build());
       responseObserver.onCompleted();
@@ -592,13 +582,11 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
           getEntityOwnerMap(
               Collections.singletonList(request.getEntityId()),
               ModelDBServiceResourceTypes.DATASET);
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
       List<GetCollaboratorResponse> responseData =
           roleService.getResourceCollaborators(
               ModelDBServiceResourceTypes.DATASET,
               request.getEntityId(),
-              datasetOwnersMap.get(request.getEntityId()),
-              requestHeaders);
+              datasetOwnersMap.get(request.getEntityId()));
       responseObserver.onNext(
           GetCollaborator.Response.newBuilder().addAllSharedUsers(responseData).build());
       responseObserver.onCompleted();

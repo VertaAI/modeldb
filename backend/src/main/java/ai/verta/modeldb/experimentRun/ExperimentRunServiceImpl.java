@@ -1,6 +1,5 @@
 package ai.verta.modeldb.experimentRun;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.AddExperimentRunAttributes;
 import ai.verta.modeldb.AddExperimentRunTag;
 import ai.verta.modeldb.AddExperimentRunTags;
@@ -36,7 +35,7 @@ import ai.verta.modeldb.GetMetrics;
 import ai.verta.modeldb.GetObservations;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.GetVersionedInput;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.LogArtifact;
 import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttribute;
@@ -52,10 +51,8 @@ import ai.verta.modeldb.LogMetric;
 import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservation;
 import ai.verta.modeldb.LogObservations;
-import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SetParentExperimentRunId;
@@ -201,9 +198,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     if (request.getCodeVersionSnapshot() != null) {
       experimentRunBuilder.setCodeVersionSnapshot(request.getCodeVersionSnapshot());
     }
-    if (request.getVersionedInputs() != null && request.hasVersionedInputs()) {
-      experimentRunBuilder.setVersionedInputs(request.getVersionedInputs());
-    }
     if (userInfo != null) {
       experimentRunBuilder.setOwner(authService.getVertaIdFromUserInfo(userInfo));
     }
@@ -241,9 +235,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build());
       responseObserver.onCompleted();
 
+    } catch (StatusRuntimeException e) {
+      LOGGER.warn(e.getMessage(), e);
+      ErrorCountResource.inc(e);
+      responseObserver.onError(e);
     } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, CreateExperimentRun.Response.getDefaultInstance());
+      LOGGER.warn(e.getMessage(), e);
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.INTERNAL.getNumber())
+              .setMessage(ModelDBConstants.INTERNAL_ERROR)
+              .addDetails(Any.pack(CreateExperimentRun.Response.getDefaultInstance()))
+              .build();
+      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
+      ErrorCountResource.inc(statusRuntimeException);
+      responseObserver.onError(statusRuntimeException);
     }
   }
 
@@ -2975,65 +2981,5 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     }
 
     return experimentRunDAO.deleteExperimentRuns(accessibleExperimentRunIds);
-  }
-
-  @Override
-  public void logVersionedInput(
-      LogVersionedInput request, StreamObserver<LogVersionedInput.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      String errorMessage = null;
-      if (request.getId().isEmpty() && request.getVersionedInputs() == null) {
-        errorMessage =
-            "ExperimentRun ID and Versioning value not found in LogVersionedInput request";
-      } else if (request.getId().isEmpty()) {
-        errorMessage = "ExperimentRun ID not found in LogVersionedInput request";
-      } else if (request.getVersionedInputs() == null || !request.hasVersionedInputs()) {
-        errorMessage = "Versioning value not found in LogVersionedInput request";
-      }
-
-      if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      LogVersionedInput.Response response = experimentRunDAO.logVersionedInput(request);
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, LogVersionedInput.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void getVersionedInputs(
-      GetVersionedInput request, StreamObserver<GetVersionedInput.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      String errorMessage = null;
-      if (request.getId().isEmpty()) {
-        errorMessage = "ExperimentRun ID not found in GetVersionedInput request";
-      }
-
-      if (errorMessage != null) {
-        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
-      }
-
-      GetVersionedInput.Response response = experimentRunDAO.getVersionedInputs(request);
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, GetVersionedInput.Response.getDefaultInstance());
-    }
   }
 }

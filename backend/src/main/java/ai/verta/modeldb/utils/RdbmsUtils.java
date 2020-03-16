@@ -1,6 +1,5 @@
 package ai.verta.modeldb.utils;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Comment;
@@ -13,8 +12,8 @@ import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.Feature;
 import ai.verta.modeldb.GitSnapshot;
 import ai.verta.modeldb.Job;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.KeyValueQuery;
-import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.OperatorEnum.Operator;
@@ -24,7 +23,6 @@ import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.QueryDatasetVersionInfo;
 import ai.verta.modeldb.QueryParameter;
 import ai.verta.modeldb.RawDatasetVersionInfo;
-import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -46,7 +44,6 @@ import ai.verta.modeldb.entities.QueryParameterEntity;
 import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.entities.UserCommentEntity;
-import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -675,18 +672,8 @@ public class RdbmsUtils {
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
         LOGGER.debug("Called switch case : number_value");
-        //        return getOperatorPredicate(
-        //            builder,
-        //            builder.function("CAST", BigDecimal.class, valueExpression,
-        //            		builder.function("DECIMAL", BigDecimal.class,
-        // builder.literal(10),builder.literal(10))),
-        //            operator, value.getNumberValue());
         return getOperatorPredicate(
-            builder,
-            builder.toBigDecimal(valueExpression),
-            // valueExpression.as(Float.class),
-            operator,
-            value.getNumberValue());
+            builder, valueExpression.as(Double.class), operator, value.getNumberValue());
       case STRING_VALUE:
         LOGGER.debug("Called switch case : string_value");
         if (!value.getStringValue().isEmpty()) {
@@ -1361,38 +1348,5 @@ public class RdbmsUtils {
     } else {
       return exp.in(subquery);
     }
-  }
-
-  public static List<VersioningModeldbEntityMapping> getVersioningMappingFromVersioningInput(
-      VersioningEntry versioningEntry, Object entity) throws InvalidProtocolBufferException {
-    List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = new ArrayList<>();
-    for (Map.Entry<String, Location> locationEntry :
-        versioningEntry.getKeyLocationMapMap().entrySet()) {
-      versioningModeldbEntityMappings.add(
-          new VersioningModeldbEntityMapping(
-              versioningEntry.getRepositoryId(),
-              versioningEntry.getCommit(),
-              locationEntry.getKey(),
-              ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()),
-              entity));
-    }
-    return versioningModeldbEntityMappings;
-  }
-
-  public static VersioningEntry getVersioningEntryFromList(
-      List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings)
-      throws InvalidProtocolBufferException {
-    VersioningEntry.Builder versioningEntry = VersioningEntry.newBuilder();
-    for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
-        versioningModeldbEntityMappings) {
-      versioningEntry.setRepositoryId(versioningModeldbEntityMapping.getRepository_id());
-      versioningEntry.setCommit(versioningModeldbEntityMapping.getCommit());
-      Location.Builder locationBuilder = Location.newBuilder();
-      ModelDBUtils.getProtoObjectFromString(
-          versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
-      versioningEntry.putKeyLocationMap(
-          versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());
-    }
-    return versioningEntry.build();
   }
 }

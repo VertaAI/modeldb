@@ -2,7 +2,6 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.modeldb.LineageEntry;
 import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -51,25 +50,5 @@ public class LineageEntity implements Serializable {
 
   public Integer getOutputType() {
     return outputType;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    LineageEntity that = (LineageEntity) o;
-    return Objects.equals(inputExternalId, that.inputExternalId)
-        && Objects.equals(inputType, that.inputType)
-        && Objects.equals(outputExternalId, that.outputExternalId)
-        && Objects.equals(outputType, that.outputType);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(inputExternalId, inputType, outputExternalId, outputType);
   }
 }

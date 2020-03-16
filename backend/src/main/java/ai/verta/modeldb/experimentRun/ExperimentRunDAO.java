@@ -1,14 +1,11 @@
 package ai.verta.modeldb.experimentRun;
 
-import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
-import ai.verta.modeldb.GetVersionedInput;
-import ai.verta.modeldb.LogVersionedInput;
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.KeyValue;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
@@ -18,7 +15,6 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.Map;
-import org.hibernate.Session;
 
 public interface ExperimentRunDAO {
 
@@ -30,7 +26,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   ExperimentRun insertExperimentRun(ExperimentRun experimentRun)
-      throws InvalidProtocolBufferException, ModelDBException;
+      throws InvalidProtocolBufferException;
 
   /**
    * Delete the ExperimentRun from database using experimentRunId.
@@ -100,8 +96,6 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   ExperimentRun getExperimentRun(String experimentRunId) throws InvalidProtocolBufferException;
-
-  boolean isExperimentRunExists(Session session, String experimentRunId);
 
   /**
    * @param experimentRunId : experimentRun.id
@@ -464,11 +458,5 @@ public interface ExperimentRunDAO {
    * @return {@link List<String>} : list of experimentRun Ids
    */
   List<String> getExperimentRunIdsByExperimentIds(List<String> experimentIds)
-      throws InvalidProtocolBufferException;
-
-  LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
-      throws InvalidProtocolBufferException, ModelDBException;
-
-  GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException;
 }

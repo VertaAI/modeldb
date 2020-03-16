@@ -1,10 +1,10 @@
 package ai.verta.modeldb.utils;
 
-import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.uac.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.uac.EntitiesEnum.EntitiesTypes;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.Organization;
