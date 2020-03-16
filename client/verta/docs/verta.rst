@@ -28,7 +28,7 @@ developed by the Verta team that is freely available. Find more information abou
 open-source technology `here (fix this) <https://app.verta.ai/profile>`__ and in subsequent
 sections.
 
-We categorize Verta functionality into three key areas as below: model versioning and metadata, 
+Verta provides MLOps functionality in three key areas: model versioning and metadata, 
 model deployment and release, and real-time model monitoring.
 
 ===========================
@@ -36,11 +36,11 @@ Model Versioning & Metadata
 ===========================
 
 The first step to enable operationalization of ML models is to make them reproducible and 
-associate governance data with them. Verta's open-source `ModelDB (fix this) <link>`__ 
+associate governance data with them. Verta's open-source `ModelDB <https://github.com/VertaAI/modeldb>`_ 
 component is the only system to provide full model versioning and reproducibility along
 with a rich metadata system.
 
-Head over to `Versioning & Metadata (fix this) <link>`__ to learn more about to use ModelDB
+Head over to :doc:`overview/versioning` to learn more about to use ModelDB
 in your ML workflows.
 
 ==========================
@@ -57,7 +57,7 @@ One of Verta's key innovations is our open-core model deployment and release sys
 works seamlessly with models built in over a dozen frameworks and languages, and integrates
 with state-of-the-art DevOps and software delivery systems.
 
-Head over to `Deployment and Release (fix this) <linnk>`__ to deploy your models. 
+Head over to :doc:`overview/deployment` to deploy your models. 
 
 ==========================
 Real-time Model Monitoring
@@ -68,34 +68,23 @@ memory, network) as well as the feature and data level to ensure that the model 
 at the highest levels and rapidly remedy production incidents.
 
 Verta's model monitoring provides both system and data monitoring to ensure real-time model
-health. Head over to `Model Monitoring (fix this) <link>`__ to learn more about how to monitor
+health. Head over to :doc:`overview/monitoring` to learn more about how to monitor
 your live models.
 
 
-Getting Started
-^^^^^^^^^^^^^^^
+Getting Started with Verta
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Install the Verta package into your ML environment and get started with Verta.
+Ready to get started? We recommend the following:
 
-- `Quickstart (fix this) <quickstart.html>`__
-- Version PyTorch  models
-- Version TF models
-
-Examples
-^^^^^^^^
-
-Head over to `Examples  & Tutorials(fix this) <examples.html>`__ to see how Verta 
-integrated into end-to-end examples. Here are a few we like:
-
-- Model Versioning for Compliance
-- Model Deployment using Jenkins and Prometheus (from Strata San Jose, March 2020)
+- :doc:`quickstart`
+- :doc:`examples`
 
 .. toctree::
     :hidden:
     :titlesonly:
 
-    Concepts <overview/concepts>
-    Versioning and Metadata <overview/versioning>
-    Deployment and Release <overview/deployment>
+    Versioning & Metadata <overview/versioning>
+    Deployment & Release <overview/deployment>
     Model Monitoring <overview/monitoring>
     ModelDB <overview/modeldb>

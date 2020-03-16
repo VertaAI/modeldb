@@ -93,10 +93,10 @@ integrated into end-to-end examples. Here are a few we like:
     :titlesonly:
 
     Verta <verta>
-    Quickstart (done) <quickstart>
-    Examples & Tutorials (done) <examples>
-    Support & Community (done) <support>
+    Quickstart <quickstart>
+    Examples & Tutorials <examples>
+    Support & Community <support>
     Resources <learn>
-    FAQs (done) <faqs>
-    Release Notes (done) <change_log>
-    API Reference (done) <api_reference>
+    FAQs <faqs>
+    Release Notes <change_log>
+    API Reference <api_reference>
