@@ -45,6 +45,6 @@ An **artifact** is any object that is the result of an Experiment Run. Examples 
     Client <api/client>
     Project <api/project>
     Experiment <api/experiment>
-    ExperimentRun <api/experimentrun_basic>
+    ExperimentRun (Core) <api/experimentrun_basic>
     ExperimentRuns <api/experimentruns>
     

@@ -3,7 +3,7 @@ Versioning and Metadata
 
 Verta provides versioning and metadata functionality via the `ExperimentRun` abstraction.
 Read on for the raw APIs, automated integration into frameworks like scikit-learn, TensorFlow,
-and PyTorch, and  helpful utilities.
+and PyTorch, and other helpful utilities.
 
 .. toctree::
     :hidden:
