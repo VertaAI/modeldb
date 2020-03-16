@@ -5,6 +5,7 @@ import { ThunkAction } from 'redux-thunk';
 
 import ServiceFactory from 'services/ServiceFactory';
 
+import * as CommitsHistory from 'core/features/commitsHistory';
 import * as CompareChanges from 'core/features/compareChanges';
 import * as CompareCommits from 'core/features/compareCommits';
 import * as ViewCommit from 'core/features/viewCommit';
@@ -58,6 +59,7 @@ export interface IApplicationState
   datasetVersions: IDatasetVersionsState;
   workspaces: Workspaces.IWorkspaces;
   repositories: Repositories.types.IRepositoriesState;
+  commitsHistory: CommitsHistory.types.ICommitsHistoryState;
   compareCommits: CompareCommits.types.ICompareCommitsState;
   compareChanges: CompareChanges.types.ICompareChangesState;
   viewCommit: ViewCommit.types.IViewCommitState;
@@ -89,6 +91,7 @@ export const createRootReducer = (history: History) =>
     datasetVersions: datasetVersionsReducer,
     workspaces: Workspaces.workspacesReducer,
     repositories: Repositories.reducer,
+    commitsHistory: CommitsHistory.reducer,
     viewCommit: ViewCommit.reducer,
     compareCommits: CompareCommits.reducer,
     compareChanges: CompareChanges.reducer,

@@ -1,0 +1,9 @@
+.breadcrumbs {
+  margin-bottom: 15px;
+}
+
+.pagination {
+  display: flex;
+  margin-top: 15px;
+  justify-content: center;
+}
