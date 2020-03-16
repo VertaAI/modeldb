@@ -38,6 +38,7 @@ public class {{class_name}} implements ProtoType {
         return true;
     }
 
+    // TODO: not consider order on lists
     public Boolean equals({{class_name}} other) {
         if (other == null) {
             return false;

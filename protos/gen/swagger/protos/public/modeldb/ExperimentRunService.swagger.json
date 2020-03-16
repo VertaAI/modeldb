@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/experiment-run/addExperimentRunAttributes": {
+    "/v1/experiment-run/addExperimentRunAttributes": {
       "post": {
         "operationId": "addExperimentRunAttributes",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/experiment-run/addExperimentRunTag": {
+    "/v1/experiment-run/addExperimentRunTag": {
       "post": {
         "summary": "tag",
         "operationId": "addExperimentRunTag",
@@ -76,7 +76,7 @@
         ]
       }
     },
-    "/experiment-run/addExperimentRunTags": {
+    "/v1/experiment-run/addExperimentRunTags": {
       "post": {
         "summary": "tags",
         "operationId": "addExperimentRunTags",
@@ -109,7 +109,7 @@
         ]
       }
     },
-    "/experiment-run/createExperimentRun": {
+    "/v1/experiment-run/createExperimentRun": {
       "post": {
         "operationId": "createExperimentRun",
         "responses": {
@@ -141,7 +141,7 @@
         ]
       }
     },
-    "/experiment-run/deleteArtifact": {
+    "/v1/experiment-run/deleteArtifact": {
       "delete": {
         "operationId": "deleteArtifact",
         "responses": {
@@ -173,7 +173,7 @@
         ]
       }
     },
-    "/experiment-run/deleteExperimentRun": {
+    "/v1/experiment-run/deleteExperimentRun": {
       "delete": {
         "operationId": "deleteExperimentRun",
         "responses": {
@@ -205,7 +205,7 @@
         ]
       }
     },
-    "/experiment-run/deleteExperimentRunAttributes": {
+    "/v1/experiment-run/deleteExperimentRunAttributes": {
       "delete": {
         "operationId": "deleteExperimentRunAttributes",
         "responses": {
@@ -252,7 +252,7 @@
         ]
       }
     },
-    "/experiment-run/deleteExperimentRunTag": {
+    "/v1/experiment-run/deleteExperimentRunTag": {
       "delete": {
         "operationId": "deleteExperimentRunTag",
         "responses": {
@@ -284,7 +284,7 @@
         ]
       }
     },
-    "/experiment-run/deleteExperimentRunTags": {
+    "/v1/experiment-run/deleteExperimentRunTags": {
       "delete": {
         "operationId": "deleteExperimentRunTags",
         "responses": {
@@ -316,7 +316,7 @@
         ]
       }
     },
-    "/experiment-run/deleteExperimentRuns": {
+    "/v1/experiment-run/deleteExperimentRuns": {
       "delete": {
         "operationId": "deleteExperimentRuns",
         "responses": {
@@ -348,7 +348,7 @@
         ]
       }
     },
-    "/experiment-run/findExperimentRuns": {
+    "/v1/experiment-run/findExperimentRuns": {
       "post": {
         "summary": "queries",
         "operationId": "findExperimentRuns",
@@ -381,7 +381,7 @@
         ]
       }
     },
-    "/experiment-run/getArtifacts": {
+    "/v1/experiment-run/getArtifacts": {
       "get": {
         "operationId": "getArtifacts",
         "responses": {
@@ -417,7 +417,7 @@
         ]
       }
     },
-    "/experiment-run/getAttributes": {
+    "/v1/experiment-run/getAttributes": {
       "get": {
         "operationId": "getExperimentRunAttributes",
         "responses": {
@@ -464,7 +464,7 @@
         ]
       }
     },
-    "/experiment-run/getChildrenExperimentRuns": {
+    "/v1/experiment-run/getChildrenExperimentRuns": {
       "get": {
         "operationId": "getChildrenExperimentRuns",
         "responses": {
@@ -521,7 +521,7 @@
         ]
       }
     },
-    "/experiment-run/getDatasets": {
+    "/v1/experiment-run/getDatasets": {
       "get": {
         "operationId": "getDatasets",
         "responses": {
@@ -551,7 +551,7 @@
         ]
       }
     },
-    "/experiment-run/getExperimentRunById": {
+    "/v1/experiment-run/getExperimentRunById": {
       "get": {
         "operationId": "getExperimentRunById",
         "responses": {
@@ -581,7 +581,7 @@
         ]
       }
     },
-    "/experiment-run/getExperimentRunByName": {
+    "/v1/experiment-run/getExperimentRunByName": {
       "get": {
         "operationId": "getExperimentRunByName",
         "responses": {
@@ -617,7 +617,7 @@
         ]
       }
     },
-    "/experiment-run/getExperimentRunCodeVersion": {
+    "/v1/experiment-run/getExperimentRunCodeVersion": {
       "get": {
         "operationId": "getExperimentRunCodeVersion",
         "responses": {
@@ -647,7 +647,7 @@
         ]
       }
     },
-    "/experiment-run/getExperimentRunTags": {
+    "/v1/experiment-run/getExperimentRunTags": {
       "get": {
         "operationId": "getExperimentRunTags",
         "responses": {
@@ -677,7 +677,7 @@
         ]
       }
     },
-    "/experiment-run/getExperimentRunsByDatasetVersionId": {
+    "/v1/experiment-run/getExperimentRunsByDatasetVersionId": {
       "get": {
         "operationId": "getExperimentRunsByDatasetVersionId",
         "responses": {
@@ -734,7 +734,7 @@
         ]
       }
     },
-    "/experiment-run/getExperimentRunsInExperiment": {
+    "/v1/experiment-run/getExperimentRunsInExperiment": {
       "get": {
         "operationId": "getExperimentRunsInExperiment",
         "responses": {
@@ -791,7 +791,7 @@
         ]
       }
     },
-    "/experiment-run/getExperimentRunsInProject": {
+    "/v1/experiment-run/getExperimentRunsInProject": {
       "get": {
         "summary": "basic queries",
         "operationId": "getExperimentRunsInProject",
@@ -849,7 +849,7 @@
         ]
       }
     },
-    "/experiment-run/getHyperparameters": {
+    "/v1/experiment-run/getHyperparameters": {
       "get": {
         "operationId": "getHyperparameters",
         "responses": {
@@ -879,7 +879,7 @@
         ]
       }
     },
-    "/experiment-run/getJobId": {
+    "/v1/experiment-run/getJobId": {
       "get": {
         "operationId": "getJobId",
         "responses": {
@@ -909,7 +909,7 @@
         ]
       }
     },
-    "/experiment-run/getMetrics": {
+    "/v1/experiment-run/getMetrics": {
       "get": {
         "operationId": "getMetrics",
         "responses": {
@@ -939,7 +939,7 @@
         ]
       }
     },
-    "/experiment-run/getObservations": {
+    "/v1/experiment-run/getObservations": {
       "get": {
         "operationId": "getObservations",
         "responses": {
@@ -975,7 +975,7 @@
         ]
       }
     },
-    "/experiment-run/getTopExperimentRuns": {
+    "/v1/experiment-run/getTopExperimentRuns": {
       "get": {
         "operationId": "getTopExperimentRuns",
         "responses": {
@@ -1048,7 +1048,7 @@
         ]
       }
     },
-    "/experiment-run/getUrlForArtifact": {
+    "/v1/experiment-run/getUrlForArtifact": {
       "post": {
         "operationId": "getUrlForArtifact",
         "responses": {
@@ -1080,7 +1080,7 @@
         ]
       }
     },
-    "/experiment-run/getVersionedInput": {
+    "/v1/experiment-run/getVersionedInput": {
       "get": {
         "operationId": "getVersionedInputs",
         "responses": {
@@ -1110,7 +1110,7 @@
         ]
       }
     },
-    "/experiment-run/logArtifact": {
+    "/v1/experiment-run/logArtifact": {
       "post": {
         "summary": "artifact",
         "operationId": "logArtifact",
@@ -1143,7 +1143,7 @@
         ]
       }
     },
-    "/experiment-run/logArtifacts": {
+    "/v1/experiment-run/logArtifacts": {
       "post": {
         "summary": "artifacts",
         "operationId": "logArtifacts",
@@ -1176,7 +1176,7 @@
         ]
       }
     },
-    "/experiment-run/logAttribute": {
+    "/v1/experiment-run/logAttribute": {
       "post": {
         "summary": "attribute",
         "operationId": "logAttribute",
@@ -1209,7 +1209,7 @@
         ]
       }
     },
-    "/experiment-run/logAttributes": {
+    "/v1/experiment-run/logAttributes": {
       "post": {
         "summary": "attributes",
         "operationId": "logAttributes",
@@ -1242,7 +1242,7 @@
         ]
       }
     },
-    "/experiment-run/logDataset": {
+    "/v1/experiment-run/logDataset": {
       "post": {
         "summary": "dataset",
         "operationId": "logDataset",
@@ -1275,7 +1275,7 @@
         ]
       }
     },
-    "/experiment-run/logDatasets": {
+    "/v1/experiment-run/logDatasets": {
       "post": {
         "summary": "datasets",
         "operationId": "logDatasets",
@@ -1308,7 +1308,7 @@
         ]
       }
     },
-    "/experiment-run/logExperimentRunCodeVersion": {
+    "/v1/experiment-run/logExperimentRunCodeVersion": {
       "post": {
         "summary": "code version",
         "operationId": "logExperimentRunCodeVersion",
@@ -1341,7 +1341,7 @@
         ]
       }
     },
-    "/experiment-run/logHyperparameter": {
+    "/v1/experiment-run/logHyperparameter": {
       "post": {
         "summary": "hyperparameter",
         "operationId": "logHyperparameter",
@@ -1374,7 +1374,7 @@
         ]
       }
     },
-    "/experiment-run/logHyperparameters": {
+    "/v1/experiment-run/logHyperparameters": {
       "post": {
         "summary": "hyperparameters",
         "operationId": "logHyperparameters",
@@ -1407,7 +1407,7 @@
         ]
       }
     },
-    "/experiment-run/logJobId": {
+    "/v1/experiment-run/logJobId": {
       "get": {
         "summary": "jobs",
         "operationId": "logJobId",
@@ -1444,7 +1444,7 @@
         ]
       }
     },
-    "/experiment-run/logMetric": {
+    "/v1/experiment-run/logMetric": {
       "post": {
         "summary": "metric",
         "operationId": "logMetric",
@@ -1477,7 +1477,7 @@
         ]
       }
     },
-    "/experiment-run/logMetrics": {
+    "/v1/experiment-run/logMetrics": {
       "post": {
         "summary": "metrics",
         "operationId": "logMetrics",
@@ -1510,7 +1510,7 @@
         ]
       }
     },
-    "/experiment-run/logObservation": {
+    "/v1/experiment-run/logObservation": {
       "post": {
         "summary": "observation",
         "operationId": "logObservation",
@@ -1543,7 +1543,7 @@
         ]
       }
     },
-    "/experiment-run/logObservations": {
+    "/v1/experiment-run/logObservations": {
       "post": {
         "summary": "observations",
         "operationId": "logObservations",
@@ -1576,7 +1576,7 @@
         ]
       }
     },
-    "/experiment-run/logVersionedInput": {
+    "/v1/experiment-run/logVersionedInput": {
       "post": {
         "operationId": "logVersionedInput",
         "responses": {
@@ -1608,7 +1608,7 @@
         ]
       }
     },
-    "/experiment-run/setParentExperimentRunId": {
+    "/v1/experiment-run/setParentExperimentRunId": {
       "post": {
         "operationId": "setParentExperimentRunId",
         "responses": {
@@ -1640,7 +1640,7 @@
         ]
       }
     },
-    "/experiment-run/sortExperimentRuns": {
+    "/v1/experiment-run/sortExperimentRuns": {
       "get": {
         "operationId": "sortExperimentRuns",
         "responses": {
@@ -1694,7 +1694,7 @@
         ]
       }
     },
-    "/experiment-run/updateExperimentRunDescription": {
+    "/v1/experiment-run/updateExperimentRunDescription": {
       "post": {
         "operationId": "updateExperimentRunDescription",
         "responses": {
@@ -1726,7 +1726,7 @@
         ]
       }
     },
-    "/experiment-run/updateExperimentRunName": {
+    "/v1/experiment-run/updateExperimentRunName": {
       "post": {
         "operationId": "updateExperimentRunName",
         "responses": {
@@ -3041,6 +3041,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }

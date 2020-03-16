@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/metadata/labels": {
+    "/v1/metadata/labels": {
       "get": {
         "operationId": "GetLabels",
         "responses": {
@@ -236,6 +236,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }

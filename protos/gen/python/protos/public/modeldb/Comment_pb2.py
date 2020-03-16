@@ -12,7 +12,7 @@ _sym_db = _symbol_database.Default()
 
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
-from ...public.uac import UACService_pb2 as protos_dot_public_dot_uac_dot_UACService__pb2
+from protos.public.uac import UACService_pb2 as protos_dot_public_dot_uac_dot_UACService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

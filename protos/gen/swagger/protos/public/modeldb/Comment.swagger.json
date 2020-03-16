@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/comment/addExperimentRunComment": {
+    "/v1/comment/addExperimentRunComment": {
       "post": {
         "operationId": "addExperimentRunComment",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/comment/deleteExperimentRunComment": {
+    "/v1/comment/deleteExperimentRunComment": {
       "delete": {
         "operationId": "deleteExperimentRunComment",
         "responses": {
@@ -79,7 +79,7 @@
         ]
       }
     },
-    "/comment/getExperimentRunComments": {
+    "/v1/comment/getExperimentRunComments": {
       "get": {
         "operationId": "getExperimentRunComments",
         "responses": {
@@ -109,7 +109,7 @@
         ]
       }
     },
-    "/comment/updateExperimentRunComment": {
+    "/v1/comment/updateExperimentRunComment": {
       "post": {
         "operationId": "updateExperimentRunComment",
         "responses": {
@@ -353,6 +353,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }
