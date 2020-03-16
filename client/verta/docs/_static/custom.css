@@ -108,6 +108,7 @@ p.logo {
   padding: 2rem;
   border-bottom: 1px solid #e6ecf1;
   margin: 0;
+  margin-bottom: 8px;
 }
 
 .footer {
@@ -132,6 +133,7 @@ p.logo {
   border-top: 1px solid #e6ecf1;
   margin-top: auto;
   padding: 1rem 2rem;
+  margin-top: 8px;
 }
 
 .search {
@@ -174,7 +176,7 @@ h6 {
 }
 
 .sphinxsidebarwrapper > ul > li {
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 
 .sphinxsidebar ul {
@@ -265,7 +267,7 @@ h4 {
 .documentwrapper p {
   margin: 0;
   padding-bottom: 1rem;
-  font-size: 16px;
+  font-size: 1.1rem;
   font-family: Content-font, Roboto, sans-serif;
   font-weight: 400;
   line-height: 1.625;
@@ -346,7 +348,7 @@ code {
   margin: 0;
   display: inline-block;
   padding: 2px;
-  font-size: 85%;
+  font-size: 14px;
   font-family: "Source Code Pro", Menlo, monospace;
   border-radius: 3px;
   background-color: #f5f7f9;
@@ -491,6 +493,7 @@ table.docutils tbody tr {
 
 table.docutils td,
 table.docutils th {
+  border: none;
   padding: 10px;
 }
 
@@ -509,4 +512,29 @@ ul.simple ol.simple p {
 
 ul.simple li {
   padding: 10px 0;
+}
+
+.sphinxsidebarwrapper > h3 {
+  display: none;
+}
+
+ul.search {
+  flex-direction: column;
+  margin: 0;
+}
+
+ul.search li {
+  margin-bottom: 2px;
+}
+
+li > p {
+  padding: 0 !important;
+}
+
+ul.simple {
+  margin: 0;
+}
+
+table.docutils {
+  border: none;
 }

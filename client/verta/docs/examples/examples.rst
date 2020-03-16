@@ -1,27 +1,11 @@
-Integrations and Examples
-=========================
+Examples
+========
 
-Framework Integrations
-----------------------
-Out of the box, Verta provides integrations to capture items from popular machine learning
-frameworks. For example usage, see `the documentation page <../reference/api/integrations.html>`__.
-
-====================  ===========================================
-Framework             Logged Metadata
-====================  ===========================================
-Keras                 network topology, training hyperparameters,
-                      fitting metrics
-PyTorch               network topology
-scikit-learn          model hyperparameters
-TensorFlow 1.X & 2.X  TensorBoard metrics
-XGBoost               evaluation metrics
-====================  ===========================================
-
-Example Notebooks
------------------
 `Verta's GitHub repository <https://github.com/VertaAI/modeldb>`_ houses `various example
 projects <https://github.com/VertaAI/modeldb/tree/master/client/workflows>`_ for reference and
 exploration.
+
+Here are some of our most popular examples.
 
 Annoy
 ^^^^^

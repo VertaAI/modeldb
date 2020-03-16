@@ -1,0 +1,4 @@
+Release Notes
+=============
+
+<reference/changelog>

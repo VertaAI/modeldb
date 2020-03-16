@@ -10,6 +10,7 @@ import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorksp
 import ai.verta.swagger.client.objects._
 
 case class VersioningGitCodeDiff (
+  status: Option[DiffStatusEnumDiffStatus] = None,
   A: Option[VersioningGitCodeBlob] = None,
   B: Option[VersioningGitCodeBlob] = None
 ) extends BaseSwagger {
@@ -20,6 +21,7 @@ object VersioningGitCodeDiff {
   def toJson(obj: VersioningGitCodeDiff): JObject = {
     new JObject(
       List[Option[JField]](
+        obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x))),
         obj.A.map(x => JField("A", ((x: VersioningGitCodeBlob) => VersioningGitCodeBlob.toJson(x))(x))),
         obj.B.map(x => JField("B", ((x: VersioningGitCodeBlob) => VersioningGitCodeBlob.toJson(x))(x)))
       ).flatMap(x => x match {
@@ -35,6 +37,7 @@ object VersioningGitCodeDiff {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningGitCodeDiff(
           // TODO: handle required
+          status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson),
           A = fieldsMap.get("A").map(VersioningGitCodeBlob.fromJson),
           B = fieldsMap.get("B").map(VersioningGitCodeBlob.fromJson)
         )

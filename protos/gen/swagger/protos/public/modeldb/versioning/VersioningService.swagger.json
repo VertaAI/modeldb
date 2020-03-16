@@ -2273,10 +2273,16 @@
       "type": "object",
       "properties": {
         "hyperparameter_set": {
-          "$ref": "#/definitions/versioningHyperparameterSetConfigDiff"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningHyperparameterSetConfigDiff"
+          }
         },
         "hyperparameters": {
-          "$ref": "#/definitions/versioningHyperparameterConfigDiff"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningHyperparameterConfigDiff"
+          }
         }
       }
     },
@@ -2397,6 +2403,9 @@
     "versioningDockerEnvironmentDiff": {
       "type": "object",
       "properties": {
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
         "A": {
           "$ref": "#/definitions/versioningDockerEnvironmentBlob"
         },
@@ -2437,26 +2446,23 @@
         "docker": {
           "$ref": "#/definitions/versioningDockerEnvironmentDiff"
         },
-        "environment_variables_A": {
+        "environment_variables": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
+            "$ref": "#/definitions/versioningEnvironmentVariablesDiff"
           },
           "title": "Should only contain environment variables unique to A/B (considering all fields)"
         },
-        "environment_variables_B": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
-          }
+        "command_line_status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "command_line_A": {
+        "command_line_a": {
           "type": "array",
           "items": {
             "type": "string"
           }
         },
-        "command_line_B": {
+        "command_line_b": {
           "type": "array",
           "items": {
             "type": "string"
@@ -2471,6 +2477,23 @@
           "type": "string"
         },
         "value": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningEnvironmentVariablesDiff": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value_a": {
+          "type": "string"
+        },
+        "value_b": {
           "type": "string"
         }
       }
@@ -2576,6 +2599,9 @@
     "versioningGitCodeDiff": {
       "type": "object",
       "properties": {
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
         "A": {
           "$ref": "#/definitions/versioningGitCodeBlob"
         },
@@ -2598,18 +2624,17 @@
     "versioningHyperparameterConfigDiff": {
       "type": "object",
       "properties": {
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
+        "name": {
+          "type": "string"
+        },
         "A": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningHyperparameterConfigBlob"
-          },
-          "description": "Hyperparameters only in A/B *or* modified between them. We can identify the modification by matching on the name."
+          "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
         },
         "B": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningHyperparameterConfigBlob"
-          }
+          "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
         }
       }
     },
@@ -2630,18 +2655,23 @@
     "versioningHyperparameterSetConfigDiff": {
       "type": "object",
       "properties": {
-        "A": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
-          },
-          "description": "Sets only in A/B *or* modified between them. We can identify the modification by matching on the name."
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "B": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
-          }
+        "name": {
+          "type": "string"
+        },
+        "continuous_a": {
+          "$ref": "#/definitions/versioningContinuousHyperparameterSetConfigBlob"
+        },
+        "discrete_a": {
+          "$ref": "#/definitions/versioningDiscreteHyperparameterSetConfigBlob"
+        },
+        "continuous_b": {
+          "$ref": "#/definitions/versioningContinuousHyperparameterSetConfigBlob"
+        },
+        "discrete_b": {
+          "$ref": "#/definitions/versioningDiscreteHyperparameterSetConfigBlob"
         }
       }
     },
@@ -2755,7 +2785,7 @@
       "type": "object",
       "properties": {
         "path": {
-          "$ref": "#/definitions/versioningPathDatasetBlob"
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
         "git_repo": {
           "$ref": "#/definitions/versioningGitCodeBlob"
@@ -2765,11 +2795,11 @@
     "versioningNotebookCodeDiff": {
       "type": "object",
       "properties": {
-        "A": {
-          "$ref": "#/definitions/versioningNotebookCodeBlob"
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentDiff"
         },
-        "B": {
-          "$ref": "#/definitions/versioningNotebookCodeBlob"
+        "git_repo": {
+          "$ref": "#/definitions/versioningGitCodeDiff"
         }
       }
     },
@@ -2820,22 +2850,28 @@
         }
       }
     },
+    "versioningPathDatasetComponentDiff": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
+        "A": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "B": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        }
+      }
+    },
     "versioningPathDatasetDiff": {
       "type": "object",
       "properties": {
-        "A": {
+        "components": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/versioningPathDatasetComponentBlob"
-          },
-          "title": "Things are modified when they have same path but different metadata.\nComponents only present in A"
-        },
-        "B": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningPathDatasetComponentBlob"
-          },
-          "title": "Components only present in B"
+            "$ref": "#/definitions/versioningPathDatasetComponentDiff"
+          }
         }
       }
     },
@@ -2862,12 +2898,26 @@
     "versioningPythonEnvironmentDiff": {
       "type": "object",
       "properties": {
-        "A": {
-          "$ref": "#/definitions/versioningPythonEnvironmentBlob",
-          "title": "Should only contain requirements and constraints unique to A/B (considering all fields)"
+        "version_status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "B": {
-          "$ref": "#/definitions/versioningPythonEnvironmentBlob"
+        "version_a": {
+          "$ref": "#/definitions/versioningVersionEnvironmentBlob"
+        },
+        "version_b": {
+          "$ref": "#/definitions/versioningVersionEnvironmentBlob"
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPythonRequirementEnvironmentDiff"
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPythonRequirementEnvironmentDiff"
+          }
         }
       }
     },
@@ -2882,6 +2932,20 @@
         },
         "version": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
+        }
+      }
+    },
+    "versioningPythonRequirementEnvironmentDiff": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
+        "A": {
+          "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
+        },
+        "B": {
+          "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
         }
       }
     },
@@ -2958,22 +3022,22 @@
         }
       }
     },
+    "versioningS3DatasetComponentDiff": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentDiff"
+        }
+      }
+    },
     "versioningS3DatasetDiff": {
       "type": "object",
       "properties": {
-        "A": {
+        "components": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/versioningS3DatasetComponentBlob"
-          },
-          "title": "Components only present in A"
-        },
-        "B": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningS3DatasetComponentBlob"
-          },
-          "title": "Components only present in B"
+            "$ref": "#/definitions/versioningS3DatasetComponentDiff"
+          }
         }
       }
     },
