@@ -10,7 +10,7 @@ import {
 } from 'core/features/Layout';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceNameOrDefault } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 type ILocalProps = Omit<
   React.ComponentProps<typeof Layout>,
@@ -19,7 +19,7 @@ type ILocalProps = Omit<
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
-    workspaceName: selectCurrentWorkspaceNameOrDefault(state),
+    workspaceName: selectCurrentWorkspaceName(state),
   };
 };
 

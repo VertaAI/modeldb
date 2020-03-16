@@ -14,7 +14,7 @@ import routes, { IRoute } from 'routes';
 import { IApplicationState } from 'store/store';
 import {
   selectWorkspaceByName,
-  selectCurrentWorkspaceNameOrDefault,
+  selectCurrentWorkspaceName,
 } from 'store/workspaces';
 
 import NotFoundPage from './NotFoundPage/NotFoundPage';
@@ -39,7 +39,7 @@ interface IRouteDescription<T extends IRoute<any, any>> {
 const mapStateToProps = (state: IApplicationState) => {
   const params = routes.workspace.getMatch(window.location.pathname, false);
   return {
-    currentWorkspaceNameOrDefault: selectCurrentWorkspaceNameOrDefault(state),
+    currentWorkspaceName: selectCurrentWorkspaceName(state),
     isCurrentWorkspaceExisted: params
       ? Boolean(selectWorkspaceByName(state, params.workspaceName))
       : false,
@@ -52,12 +52,12 @@ type AllProps = CurrentRouteProps & ReturnType<typeof mapStateToProps>;
 class Pages extends React.Component<AllProps> {
   public render() {
     const {
-      currentWorkspaceNameOrDefault,
+      currentWorkspaceName,
       isCurrentWorkspaceExisted,
       location,
     } = this.props;
     const defaultPagePathname = routes.projects.getRedirectPath({
-      workspaceName: currentWorkspaceNameOrDefault,
+      workspaceName: currentWorkspaceName,
     });
 
     if (
