@@ -1,11 +1,9 @@
 syntax = "proto3";
 
 package ai.verta.modeldb;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
 
 option java_multiple_files = true;
 
-import "protos/public/common/CommonService.proto";
 import "protos/public/modeldb/CommonService.proto";
 import "google/api/annotations.proto";
 import "protos/public/modeldb/ExperimentService.proto";
@@ -16,10 +14,10 @@ message Dataset {
     string name = 2;
     string owner = 3;
     string description = 4;
-    repeated string tags = 5;
+    repeated string tags = 5; 
     DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 6;
     DatasetTypeEnum.DatasetType dataset_type = 7;
-    repeated common.KeyValue attributes = 8;
+    repeated KeyValue attributes = 8;
     uint64 time_created = 9;
     uint64 time_updated = 10;
     string workspace_id = 11;
@@ -46,7 +44,7 @@ message CreateDataset {
     string name = 1;
     string description = 2;
     repeated string tags = 3;
-    repeated common.KeyValue attributes = 4;
+    repeated KeyValue attributes = 4;
     DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 5;
     DatasetTypeEnum.DatasetType dataset_type = 6;
     string workspace_name = 7;
@@ -163,7 +161,7 @@ message DeleteDatasetTags {
 
 message AddDatasetAttributes {
     string id = 1;
-    repeated common.KeyValue attributes = 2;
+    repeated KeyValue attributes = 2;
 
     message Response {
         Dataset dataset = 1;
@@ -172,7 +170,7 @@ message AddDatasetAttributes {
 
 message UpdateDatasetAttributes {
     string id = 1;
-    common.KeyValue attribute = 2;
+    KeyValue attribute = 2;
 
     message Response {
         Dataset dataset = 1;
@@ -183,7 +181,7 @@ message GetDatasetAttributes {
     string id = 1;
 
     message Response {
-        repeated common.KeyValue attributes = 1;
+        repeated KeyValue attributes = 1;
     }
 }
 

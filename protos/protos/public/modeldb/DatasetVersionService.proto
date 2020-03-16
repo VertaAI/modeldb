@@ -1,11 +1,9 @@
 syntax = "proto3";
 
 package ai.verta.modeldb;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
 
 option java_multiple_files = true;
 
-import "protos/public/common/CommonService.proto";
 import "protos/public/modeldb/CommonService.proto";
 import "protos/public/modeldb/DatasetService.proto";
 import "google/api/annotations.proto";
@@ -22,7 +20,7 @@ message DatasetVersion {
     repeated string tags = 6;
     DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 7;
     DatasetTypeEnum.DatasetType dataset_type = 8;// this acts as a quick check on which type of DataSetInfo to look at for more details.
-    repeated common.KeyValue attributes = 9;
+    repeated KeyValue attributes = 9;
     string owner = 10;
     uint64 version = 11;
     oneof dataset_version_info {
@@ -44,7 +42,7 @@ message QueryDatasetVersionInfo {
 
 message QueryParameter {
     string parameter_name = 1;
-    common.ValueTypeEnum.ValueType parameter_type = 2;
+    ValueTypeEnum.ValueType parameter_type = 2;
     google.protobuf.Value value = 3;
 }
 
@@ -86,7 +84,7 @@ message CreateDatasetVersion {
     repeated string tags = 5;
     DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 6;
     DatasetTypeEnum.DatasetType dataset_type = 7;// this acts as a quick check on which type of DataSetInfo to look at for more details.
-    repeated common.KeyValue attributes = 8;
+    repeated KeyValue attributes = 8;
     uint64 version = 9;
     oneof dataset_version_info {
         RawDatasetVersionInfo raw_dataset_version_info = 10;
@@ -194,7 +192,7 @@ message DeleteDatasetVersionTags {
 
 message AddDatasetVersionAttributes {
     string id = 1;
-    repeated common.KeyValue attributes = 2;
+    repeated KeyValue attributes = 2;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -203,7 +201,7 @@ message AddDatasetVersionAttributes {
 
 message UpdateDatasetVersionAttributes {
     string id = 1;
-    common.KeyValue attribute = 2;
+    KeyValue attribute = 2;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -214,7 +212,7 @@ message GetDatasetVersionAttributes {
     string id = 1;
 
     message Response {
-        repeated common.KeyValue attributes = 1;
+        repeated KeyValue attributes = 1;
     }
 }
 

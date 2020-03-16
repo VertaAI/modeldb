@@ -1,12 +1,10 @@
 syntax = "proto3";
 
 package ai.verta.modeldb;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
 
-import "protos/public/common/CommonService.proto";
 import "protos/public/modeldb/CommonService.proto";
 
 /*
@@ -25,7 +23,7 @@ message Project {
     string workspace_id = 9;
     WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
 
-    repeated common.KeyValue attributes = 20;
+    repeated KeyValue attributes = 20;
     repeated string tags = 21;
     string owner = 22;
     CodeVersion code_version_snapshot = 23;
@@ -41,7 +39,7 @@ enum ProjectVisibility {
 message CreateProject {
     string name = 1;
     string description = 2;
-    repeated common.KeyValue attributes = 3;
+    repeated KeyValue attributes = 3;
     repeated string tags = 4;
     string readme_text = 5;
     ProjectVisibility project_visibility = 6;
@@ -121,13 +119,13 @@ message GetProjectAttributes {
     string id = 1;
 
     message Response {
-        repeated common.KeyValue attributes = 1;
+        repeated KeyValue attributes = 1;
     }
 }
 
 message AddProjectAttributes {
     string id = 1;
-    repeated common.KeyValue attributes = 2;
+    repeated KeyValue attributes = 2;
 
     message Response {
         Project project = 1;
@@ -136,7 +134,7 @@ message AddProjectAttributes {
 
 message UpdateProjectAttributes {
     string id = 1;
-    common.KeyValue attribute = 2;
+    KeyValue attribute = 2;
 
     message Response {
         Project project = 1;

@@ -245,16 +245,6 @@ class ExperimentRunServiceStub(object):
         request_serializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.DeleteExperimentRuns.SerializeToString,
         response_deserializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.DeleteExperimentRuns.Response.FromString,
         )
-    self.logVersionedInput = channel.unary_unary(
-        '/ai.verta.modeldb.ExperimentRunService/logVersionedInput',
-        request_serializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.LogVersionedInput.SerializeToString,
-        response_deserializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.LogVersionedInput.Response.FromString,
-        )
-    self.getVersionedInputs = channel.unary_unary(
-        '/ai.verta.modeldb.ExperimentRunService/getVersionedInputs',
-        request_serializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.GetVersionedInput.SerializeToString,
-        response_deserializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.GetVersionedInput.Response.FromString,
-        )
 
 
 class ExperimentRunServiceServicer(object):
@@ -583,20 +573,6 @@ class ExperimentRunServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def logVersionedInput(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getVersionedInputs(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_ExperimentRunServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -829,16 +805,6 @@ def add_ExperimentRunServiceServicer_to_server(servicer, server):
           servicer.deleteExperimentRuns,
           request_deserializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.DeleteExperimentRuns.FromString,
           response_serializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.DeleteExperimentRuns.Response.SerializeToString,
-      ),
-      'logVersionedInput': grpc.unary_unary_rpc_method_handler(
-          servicer.logVersionedInput,
-          request_deserializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.LogVersionedInput.FromString,
-          response_serializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.LogVersionedInput.Response.SerializeToString,
-      ),
-      'getVersionedInputs': grpc.unary_unary_rpc_method_handler(
-          servicer.getVersionedInputs,
-          request_deserializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.GetVersionedInput.FromString,
-          response_serializer=protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.GetVersionedInput.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

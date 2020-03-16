@@ -1,12 +1,35 @@
 syntax = "proto3";
 
 package ai.verta.modeldb;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 import "protos/public/common/CommonService.proto";
+
+/*
+ * All proto common entity
+ */
+
+message KeyValue {
+    string key = 1;
+    google.protobuf.Value value = 2;
+
+    /*
+    *   As per documentation of proto buffer 3.
+    *   For enums, the default value is the first defined enum value, which must be 0.
+    */
+    ValueTypeEnum.ValueType value_type = 3;
+}
+
+message ValueTypeEnum {
+    enum ValueType {
+        STRING = 0;
+        NUMBER = 1;
+        LIST = 2;
+        BLOB = 3;
+    }
+}
 
 message ArtifactTypeEnum{
     enum ArtifactType {
@@ -40,14 +63,14 @@ message GetAttributes {
     bool get_all = 3;
 
     message Response {
-        repeated common.KeyValue attributes = 1;
+        repeated KeyValue attributes = 1;
     }
 }
 
 // TODO: make this update attribute
 message AddAttributes {
     string id = 1;
-    common.KeyValue attribute = 2;
+    KeyValue attribute = 2;
 
     message Response {
         bool status = 1;
@@ -81,7 +104,7 @@ message GitSnapshot {
 message KeyValueQuery {
     string key = 1; //entity field key
     google.protobuf.Value value = 2; //entity field value
-    common.ValueTypeEnum.ValueType value_type = 3; // Default = STRING
+    ValueTypeEnum.ValueType value_type = 3; // Default = STRING
     OperatorEnum.Operator operator = 4; // Default = EQ
 }
 

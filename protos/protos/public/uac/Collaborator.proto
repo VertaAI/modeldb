@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 package ai.verta.uac;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
 
 option java_multiple_files = true;
 
@@ -15,7 +14,7 @@ import "protos/public/common/CommonService.proto";
 message AddCollaboratorRequest {
     repeated string entity_ids = 1; // List of project.id, experiment.id etc.
     string share_with = 2; // Collaborator user Id
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 3;
+    CollaboratorTypeEnum.CollaboratorType collaborator_type = 3;
     string message = 4; // Shared message for reference
     uint64 date_created = 5; // shared on
     uint64 date_updated = 6; // CollaboratorType updated on
@@ -40,6 +39,13 @@ enum ShareViaEnum {
     USERNAME = 2;
 }
 
+message CollaboratorTypeEnum {
+    enum CollaboratorType {
+        READ_ONLY = 0;
+        READ_WRITE = 1;
+    }
+}
+
 message RemoveCollaborator {
     string entity_id = 1; // project.id, experiment.id etc.
     string share_with = 2; // Collaborator user Id
@@ -54,7 +60,7 @@ message RemoveCollaborator {
 
 message GetCollaboratorResponse {
     string user_id = 1 [deprecated=true];
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
+    CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
     ShareViaEnum share_via_type = 3;
     string verta_id = 4; //user_verta_id, team_id, org_id
     common.TernaryEnum.Ternary can_deploy = 5;
@@ -106,4 +112,4 @@ service CollaboratorService {
             get: "/v1/collaborator/getDatasetCollaborators"
         };
     };
-}
+} 

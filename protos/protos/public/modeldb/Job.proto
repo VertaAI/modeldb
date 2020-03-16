@@ -1,11 +1,9 @@
 syntax = "proto3";
 
 package ai.verta.modeldb;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
 
 option java_multiple_files = true;
 
-import "protos/public/common/CommonService.proto";
 import "protos/public/modeldb/CommonService.proto";
 import "google/api/annotations.proto";
 
@@ -28,7 +26,7 @@ message Job {
     string description = 2;
     string start_time = 3;
     string end_time = 4;
-    repeated common.KeyValue metadata  = 5;
+    repeated KeyValue metadata  = 5;
     JobStatusEnum.JobStatus job_status = 6;
     JobTypeEnum.JobType job_type = 7;
     string owner = 8;
@@ -38,7 +36,7 @@ message CreateJob {
     string description = 1;
     string start_time = 2;
     string end_time = 3;
-    repeated common.KeyValue metadata  = 4;
+    repeated KeyValue metadata  = 4;
     JobStatusEnum.JobStatus job_status = 5;
     JobTypeEnum.JobType job_type = 6;
 

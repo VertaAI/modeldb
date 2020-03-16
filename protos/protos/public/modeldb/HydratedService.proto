@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 package ai.verta.modeldb;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
@@ -40,7 +39,7 @@ message CollaboratorUserInfo {
       uac.Organization collaborator_organization = 3;
       uac.Team collaborator_team = 4;
     }
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
+    uac.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
     common.TernaryEnum.Ternary can_deploy = 8;
     uac.EntitiesEnum.EntitiesTypes entity_type = 9;
 }

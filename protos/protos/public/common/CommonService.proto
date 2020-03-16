@@ -1,10 +1,8 @@
 syntax = "proto3";
 
 package ai.verta.common;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common";
 
 option java_multiple_files = true;
-import "google/protobuf/struct.proto";
 import "google/api/annotations.proto";
 
 /*
@@ -16,36 +14,5 @@ message TernaryEnum {
         UNKNOWN = 0;
         TRUE = 1;
         FALSE = 2;
-    }
-}
-
-/*
- * All proto common entity
- */
-
-message KeyValue {
-    string key = 1;
-    google.protobuf.Value value = 2;
-
-    /*
-    *   As per documentation of proto buffer 3.
-    *   For enums, the default value is the first defined enum value, which must be 0.
-    */
-    ValueTypeEnum.ValueType value_type = 3;
-}
-
-message ValueTypeEnum {
-    enum ValueType {
-        STRING = 0;
-        NUMBER = 1;
-        LIST = 2;
-        BLOB = 3;
-    }
-}
-
-message CollaboratorTypeEnum {
-    enum CollaboratorType {
-        READ_ONLY = 0;
-        READ_WRITE = 1;
     }
 }
