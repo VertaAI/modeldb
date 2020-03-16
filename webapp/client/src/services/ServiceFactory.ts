@@ -1,4 +1,10 @@
 import axios, { AxiosError } from 'axios';
+
+import { MetaDataService } from 'core/services/metaData';
+import RepositoryDataService from 'core/services/repositoryData/RepositoryDataService';
+import CompareCommitsService from 'core/services/compareCommits/CompareCommitsService';
+
+import { RepositoriesDataService } from '../core/services/repositories';
 import { DatasetsDataService } from './datasets';
 import { DatasetVersionsDataService } from './datasetVersions';
 import { DescActionDataService } from './descriptionActions';
@@ -45,5 +51,21 @@ export default class ServiceFactory {
   }
   public static crudDescService() {
     return new DescActionDataService();
+  }
+
+  public static getRepositoriesService() {
+    return new RepositoriesDataService();
+  }
+
+  public static getRepositoryDataService() {
+    return new RepositoryDataService();
+  }
+
+  public static getMetaDataService() {
+    return new MetaDataService();
+  }
+
+  public static getCompareCommitsService() {
+    return new CompareCommitsService();
   }
 }

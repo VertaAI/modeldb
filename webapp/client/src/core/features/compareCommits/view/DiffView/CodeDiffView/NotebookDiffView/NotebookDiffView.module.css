@@ -1,0 +1,9 @@
+.root {
+}
+
+.diff {
+  margin-bottom: 15px;
+}
+.diff:last-child {
+  margin-bottom: 0;
+}

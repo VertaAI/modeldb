@@ -5,6 +5,7 @@ import { ThunkAction } from 'redux-thunk';
 
 import ServiceFactory from 'services/ServiceFactory';
 
+import * as CompareCommits from 'core/features/compareCommits';
 import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
 import * as Filter from 'core/features/filter';
 import * as Layout from 'core/features/Layout';
@@ -51,6 +52,7 @@ export interface IApplicationState
   artifactManager: IArtifactManagerState;
   datasets: IDatasetsState;
   datasetVersions: IDatasetVersionsState;
+  compareCommits: CompareCommits.types.ICompareCommitsState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -77,6 +79,7 @@ export const createRootReducer = (history: History) =>
     artifactManager: artifactManagerReducer,
     datasets: datasetsReducer,
     datasetVersions: datasetVersionsReducer,
+    compareCommits: CompareCommits.reducer,
   });
 
 export interface IThunkActionDependencies

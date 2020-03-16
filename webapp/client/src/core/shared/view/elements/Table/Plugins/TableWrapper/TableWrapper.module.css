@@ -5,3 +5,8 @@
   font-size: 13px;
   background-color: white;
 }
+
+.root > div {
+  height: auto !important;
+  max-height: 300px;
+}
