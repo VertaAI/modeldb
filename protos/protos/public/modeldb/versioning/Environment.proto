@@ -5,8 +5,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
-import "protos/public/modeldb/versioning/Enums.proto";
-
 message EnvironmentBlob {
     oneof content {
         PythonEnvironmentBlob python = 1;
@@ -52,37 +50,20 @@ message EnvironmentDiff {
         DockerEnvironmentDiff docker = 2;
     }
     // Should only contain environment variables unique to A/B (considering all fields)
-    repeated EnvironmentVariablesDiff environment_variables = 3;
+    repeated EnvironmentVariablesBlob environment_variables_A = 3;
+    repeated EnvironmentVariablesBlob environment_variables_B = 4;
 
-    DiffStatusEnum.DiffStatus command_line_status = 4;
-    repeated string command_line_a = 5;
-    repeated string command_line_b = 6;
-}
-
-message EnvironmentVariablesDiff {
-    DiffStatusEnum.DiffStatus status = 1;
-    string name = 2;
-    string value_a = 3;
-    string value_b = 4;
-}
-
-message PythonRequirementEnvironmentDiff {
-    DiffStatusEnum.DiffStatus status = 1;
-    PythonRequirementEnvironmentBlob A = 2;
-    PythonRequirementEnvironmentBlob B = 3;
+    repeated string command_line_A = 5;
+    repeated string command_line_B = 6;
 }
 
 message PythonEnvironmentDiff {
-    DiffStatusEnum.DiffStatus version_status = 1;
-    VersionEnvironmentBlob version_a = 2;
-    VersionEnvironmentBlob version_b = 3;
-
-    repeated PythonRequirementEnvironmentDiff requirements = 4;
-    repeated PythonRequirementEnvironmentDiff constraints = 5;
+    // Should only contain requirements and constraints unique to A/B (considering all fields)
+    PythonEnvironmentBlob A = 1;
+    PythonEnvironmentBlob B = 2;
 }
 
 message DockerEnvironmentDiff {
-    DiffStatusEnum.DiffStatus status = 1;
-    DockerEnvironmentBlob A = 2;
-    DockerEnvironmentBlob B = 3;
+    DockerEnvironmentBlob A = 1;
+    DockerEnvironmentBlob B = 2;
 }

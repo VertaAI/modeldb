@@ -5,8 +5,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
-import "protos/public/modeldb/versioning/Enums.proto";
-
 message DatasetBlob {
     oneof content {
         S3DatasetBlob s3 = 1;     // Blob of the type S3 dataset
@@ -42,20 +40,17 @@ message DatasetDiff {
     }
 }
 
-message PathDatasetComponentDiff {
-    DiffStatusEnum.DiffStatus status = 1;
-    PathDatasetComponentBlob A = 2;
-    PathDatasetComponentBlob B = 3;
-}
-
 message PathDatasetDiff {
-    repeated PathDatasetComponentDiff components = 1;
-}
-
-message S3DatasetComponentDiff {
-    PathDatasetComponentDiff path = 1;
+    // Things are modified when they have same path but different metadata.
+    // Components only present in A
+    repeated PathDatasetComponentBlob A = 3;
+    // Components only present in B
+    repeated PathDatasetComponentBlob B = 4;
 }
 
 message S3DatasetDiff {
-    repeated S3DatasetComponentDiff components = 1;
+    // Components only present in A
+    repeated S3DatasetComponentBlob A = 3;
+    // Components only present in B
+    repeated S3DatasetComponentBlob B = 4;
 }
