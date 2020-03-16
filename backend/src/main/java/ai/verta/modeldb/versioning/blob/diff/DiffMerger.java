@@ -98,7 +98,7 @@ public class DiffMerger {
     static public NotebookCodeBlob mergeNotebookCode(NotebookCodeBlob a, NotebookCodeDiff d) {
         return new NotebookCodeBlob()
                 .setGitRepo(merge(a, d, x -> x.GitRepo, x -> x.GitRepo, DiffMerger::mergeGitCode))
-                .setPath(merge(a, d, x -> x.Path, x -> x.Path, DiffMerger::));
+                .setPath(merge(a, d, x -> x.Path, x -> x.Path, DiffMerger::mergePathDatasetComponent));
     }
 
     static public ConfigBlob mergeConfig(ConfigBlob a, ConfigDiff d) {
