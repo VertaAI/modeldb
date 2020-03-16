@@ -327,9 +327,11 @@ class Commit(object):
     def get_revert_diff(self):
         return self.parent.diff_from(self)
 
-    def revert(self, message, other=None):
+    def revert(self, other=None, message=None):
         if other is None:
             other = self
+        if message is None:
+            message = "Revert {}".format(other.id[:7])
 
         self.apply_diff(other.get_revert_diff(), message)
 
