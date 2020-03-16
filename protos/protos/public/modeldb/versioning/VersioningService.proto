@@ -485,9 +485,9 @@ service VersioningService {
     // Getting ExperimentRuns linked to a blob
     rpc ListBlobExperimentRuns(ListBlobExperimentRunsRequest) returns (ListBlobExperimentRunsRequest.Response) {
         option (google.api.http) = {
-            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blob/{blob_sha}/runs"
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runs"
             additional_bindings {
-                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blob/{blob_sha}/runs"
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs"
             }
         };
     }
