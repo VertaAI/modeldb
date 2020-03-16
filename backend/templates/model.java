@@ -47,14 +47,14 @@ public class {{class_name}} implements ProtoType {
             {{#type}}
             Function3<{{> type}},{{> type}},Boolean> f = {{> equals}};
             {{/type}}
-            if (this.{{name}} == null && other.{{name}} == null)
-                return true;
-            if (this.{{name}} == null && other.{{name}} != null)
-                return false;
-            if (this.{{name}} != null && other.{{name}} == null)
-                return false;
-            if (!f.apply(this.{{name}}, other.{{name}}))
-                return false;
+            if (this.{{name}} != null || other.{{name}} != null) {
+                if (this.{{name}} == null && other.{{name}} != null)
+                    return false;
+                if (this.{{name}} != null && other.{{name}} == null)
+                    return false;
+                if (!f.apply(this.{{name}}, other.{{name}}))
+                    return false;
+            }
         }
         {{/properties}}
         return true;
