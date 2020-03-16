@@ -2,12 +2,6 @@ package ai.verta.modeldb.versioning.blob.diffFactory;
 
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.BlobExpanded;
-import ai.verta.modeldb.versioning.ConfigBlob;
-import ai.verta.modeldb.versioning.ConfigDiff;
-import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
-import ai.verta.modeldb.versioning.HyperparameterConfigDiff;
-import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
-import ai.verta.modeldb.versioning.HyperparameterSetConfigDiff;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,7 +27,7 @@ public class ConfigBlobDiffFactory extends BlobDiffFactory {
   }
 
   private void modify(BlobDiff.Builder blobDiffBuilder, boolean add) {
-    final ConfigDiff.Builder configBuilder = ConfigDiff.newBuilder();
+    /*final ConfigDiff.Builder configBuilder = ConfigDiff.newBuilder();
     final ConfigBlob config = getBlobExpanded().getBlob().getConfig();
     HyperparameterConfigDiff.Builder hyperparameterBuilder;
     HyperparameterSetConfigDiff.Builder hyperparameterSetBuilder;
@@ -77,7 +71,8 @@ public class ConfigBlobDiffFactory extends BlobDiffFactory {
 
     configBuilder.setHyperparameters(hyperparameterBuilder);
     configBuilder.setHyperparameterSet(hyperparameterSetBuilder);
-    blobDiffBuilder.setConfig(configBuilder);
+    blobDiffBuilder.setConfig(configBuilder);*/
+    return;
   }
 
   static <T> void removeCommon(Set<T> componentsBlobsA, Set<T> componentsBlobsB) {

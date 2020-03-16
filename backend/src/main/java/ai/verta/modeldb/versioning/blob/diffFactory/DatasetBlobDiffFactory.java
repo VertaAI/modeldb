@@ -1,11 +1,6 @@
 package ai.verta.modeldb.versioning.blob.diffFactory;
 
-import static ai.verta.modeldb.versioning.blob.diffFactory.ConfigBlobDiffFactory.removeCommon;
-
 import ai.verta.modeldb.versioning.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 public class DatasetBlobDiffFactory extends BlobDiffFactory {
 
@@ -34,7 +29,7 @@ public class DatasetBlobDiffFactory extends BlobDiffFactory {
   }
 
   private void modify(BlobDiff.Builder blobDiffBuilder, boolean add) {
-    final DatasetDiff.Builder datasetBuilder = DatasetDiff.newBuilder();
+    /*final DatasetDiff.Builder datasetBuilder = DatasetDiff.newBuilder();
     final DatasetBlob dataset = getBlobExpanded().getBlob().getDataset();
     switch (dataset.getContentCase()) {
       case PATH:
@@ -135,6 +130,6 @@ public class DatasetBlobDiffFactory extends BlobDiffFactory {
         datasetBuilder.setS3(s3Builder).build();
         break;
     }
-    blobDiffBuilder.setDataset(datasetBuilder.build());
+    blobDiffBuilder.setDataset(datasetBuilder.build());*/
   }
 }
