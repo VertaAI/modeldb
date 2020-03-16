@@ -32,14 +32,14 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
         }
         {
             Function3<List<HyperparameterValuesConfigBlob>,List<HyperparameterValuesConfigBlob>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<HyperparameterValuesConfigBlob,HyperparameterValuesConfigBlob,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Values == null && other.Values == null)
-                return true;
-            if (this.Values == null && other.Values != null)
-                return false;
-            if (this.Values != null && other.Values == null)
-                return false;
-            if (!f.apply(this.Values, other.Values))
-                return false;
+            if (this.Values != null || other.Values != null) {
+                if (this.Values == null && other.Values != null)
+                    return false;
+                if (this.Values != null && other.Values == null)
+                    return false;
+                if (!f.apply(this.Values, other.Values))
+                    return false;
+            }
         }
         return true;
     }

@@ -52,58 +52,58 @@ public class PathDatasetComponentBlob implements ProtoType {
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Path == null && other.Path == null)
-                return true;
-            if (this.Path == null && other.Path != null)
-                return false;
-            if (this.Path != null && other.Path == null)
-                return false;
-            if (!f.apply(this.Path, other.Path))
-                return false;
+            if (this.Path != null || other.Path != null) {
+                if (this.Path == null && other.Path != null)
+                    return false;
+                if (this.Path != null && other.Path == null)
+                    return false;
+                if (!f.apply(this.Path, other.Path))
+                    return false;
+            }
         }
         {
             Function3<Long,Long,Boolean> f = (x, y) -> x == y;
-            if (this.Size == null && other.Size == null)
-                return true;
-            if (this.Size == null && other.Size != null)
-                return false;
-            if (this.Size != null && other.Size == null)
-                return false;
-            if (!f.apply(this.Size, other.Size))
-                return false;
+            if (this.Size != null || other.Size != null) {
+                if (this.Size == null && other.Size != null)
+                    return false;
+                if (this.Size != null && other.Size == null)
+                    return false;
+                if (!f.apply(this.Size, other.Size))
+                    return false;
+            }
         }
         {
             Function3<Long,Long,Boolean> f = (x, y) -> x == y;
-            if (this.LastModifiedAtSource == null && other.LastModifiedAtSource == null)
-                return true;
-            if (this.LastModifiedAtSource == null && other.LastModifiedAtSource != null)
-                return false;
-            if (this.LastModifiedAtSource != null && other.LastModifiedAtSource == null)
-                return false;
-            if (!f.apply(this.LastModifiedAtSource, other.LastModifiedAtSource))
-                return false;
+            if (this.LastModifiedAtSource != null || other.LastModifiedAtSource != null) {
+                if (this.LastModifiedAtSource == null && other.LastModifiedAtSource != null)
+                    return false;
+                if (this.LastModifiedAtSource != null && other.LastModifiedAtSource == null)
+                    return false;
+                if (!f.apply(this.LastModifiedAtSource, other.LastModifiedAtSource))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Sha256 == null && other.Sha256 == null)
-                return true;
-            if (this.Sha256 == null && other.Sha256 != null)
-                return false;
-            if (this.Sha256 != null && other.Sha256 == null)
-                return false;
-            if (!f.apply(this.Sha256, other.Sha256))
-                return false;
+            if (this.Sha256 != null || other.Sha256 != null) {
+                if (this.Sha256 == null && other.Sha256 != null)
+                    return false;
+                if (this.Sha256 != null && other.Sha256 == null)
+                    return false;
+                if (!f.apply(this.Sha256, other.Sha256))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Md5 == null && other.Md5 == null)
-                return true;
-            if (this.Md5 == null && other.Md5 != null)
-                return false;
-            if (this.Md5 != null && other.Md5 == null)
-                return false;
-            if (!f.apply(this.Md5, other.Md5))
-                return false;
+            if (this.Md5 != null || other.Md5 != null) {
+                if (this.Md5 == null && other.Md5 != null)
+                    return false;
+                if (this.Md5 != null && other.Md5 == null)
+                    return false;
+                if (!f.apply(this.Md5, other.Md5))
+                    return false;
+            }
         }
         return true;
     }

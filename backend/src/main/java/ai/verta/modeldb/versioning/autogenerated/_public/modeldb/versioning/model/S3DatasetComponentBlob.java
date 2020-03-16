@@ -32,14 +32,14 @@ public class S3DatasetComponentBlob implements ProtoType {
         }
         {
             Function3<PathDatasetComponentBlob,PathDatasetComponentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Path == null && other.Path == null)
-                return true;
-            if (this.Path == null && other.Path != null)
-                return false;
-            if (this.Path != null && other.Path == null)
-                return false;
-            if (!f.apply(this.Path, other.Path))
-                return false;
+            if (this.Path != null || other.Path != null) {
+                if (this.Path == null && other.Path != null)
+                    return false;
+                if (this.Path != null && other.Path == null)
+                    return false;
+                if (!f.apply(this.Path, other.Path))
+                    return false;
+            }
         }
         return true;
     }

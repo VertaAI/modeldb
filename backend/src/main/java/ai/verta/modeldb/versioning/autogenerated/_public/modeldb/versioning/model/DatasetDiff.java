@@ -37,25 +37,25 @@ public class DatasetDiff implements ProtoType {
         }
         {
             Function3<S3DatasetDiff,S3DatasetDiff,Boolean> f = (x, y) -> x.equals(y);
-            if (this.S3 == null && other.S3 == null)
-                return true;
-            if (this.S3 == null && other.S3 != null)
-                return false;
-            if (this.S3 != null && other.S3 == null)
-                return false;
-            if (!f.apply(this.S3, other.S3))
-                return false;
+            if (this.S3 != null || other.S3 != null) {
+                if (this.S3 == null && other.S3 != null)
+                    return false;
+                if (this.S3 != null && other.S3 == null)
+                    return false;
+                if (!f.apply(this.S3, other.S3))
+                    return false;
+            }
         }
         {
             Function3<PathDatasetDiff,PathDatasetDiff,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Path == null && other.Path == null)
-                return true;
-            if (this.Path == null && other.Path != null)
-                return false;
-            if (this.Path != null && other.Path == null)
-                return false;
-            if (!f.apply(this.Path, other.Path))
-                return false;
+            if (this.Path != null || other.Path != null) {
+                if (this.Path == null && other.Path != null)
+                    return false;
+                if (this.Path != null && other.Path == null)
+                    return false;
+                if (!f.apply(this.Path, other.Path))
+                    return false;
+            }
         }
         return true;
     }

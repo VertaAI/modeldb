@@ -37,25 +37,25 @@ public class NotebookCodeBlob implements ProtoType {
         }
         {
             Function3<PathDatasetComponentBlob,PathDatasetComponentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Path == null && other.Path == null)
-                return true;
-            if (this.Path == null && other.Path != null)
-                return false;
-            if (this.Path != null && other.Path == null)
-                return false;
-            if (!f.apply(this.Path, other.Path))
-                return false;
+            if (this.Path != null || other.Path != null) {
+                if (this.Path == null && other.Path != null)
+                    return false;
+                if (this.Path != null && other.Path == null)
+                    return false;
+                if (!f.apply(this.Path, other.Path))
+                    return false;
+            }
         }
         {
             Function3<GitCodeBlob,GitCodeBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.GitRepo == null && other.GitRepo == null)
-                return true;
-            if (this.GitRepo == null && other.GitRepo != null)
-                return false;
-            if (this.GitRepo != null && other.GitRepo == null)
-                return false;
-            if (!f.apply(this.GitRepo, other.GitRepo))
-                return false;
+            if (this.GitRepo != null || other.GitRepo != null) {
+                if (this.GitRepo == null && other.GitRepo != null)
+                    return false;
+                if (this.GitRepo != null && other.GitRepo == null)
+                    return false;
+                if (!f.apply(this.GitRepo, other.GitRepo))
+                    return false;
+            }
         }
         return true;
     }

@@ -42,36 +42,36 @@ public class PythonEnvironmentBlob implements ProtoType {
         }
         {
             Function3<VersionEnvironmentBlob,VersionEnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Version == null && other.Version == null)
-                return true;
-            if (this.Version == null && other.Version != null)
-                return false;
-            if (this.Version != null && other.Version == null)
-                return false;
-            if (!f.apply(this.Version, other.Version))
-                return false;
+            if (this.Version != null || other.Version != null) {
+                if (this.Version == null && other.Version != null)
+                    return false;
+                if (this.Version != null && other.Version == null)
+                    return false;
+                if (!f.apply(this.Version, other.Version))
+                    return false;
+            }
         }
         {
             Function3<List<PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<PythonRequirementEnvironmentBlob,PythonRequirementEnvironmentBlob,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Requirements == null && other.Requirements == null)
-                return true;
-            if (this.Requirements == null && other.Requirements != null)
-                return false;
-            if (this.Requirements != null && other.Requirements == null)
-                return false;
-            if (!f.apply(this.Requirements, other.Requirements))
-                return false;
+            if (this.Requirements != null || other.Requirements != null) {
+                if (this.Requirements == null && other.Requirements != null)
+                    return false;
+                if (this.Requirements != null && other.Requirements == null)
+                    return false;
+                if (!f.apply(this.Requirements, other.Requirements))
+                    return false;
+            }
         }
         {
             Function3<List<PythonRequirementEnvironmentBlob>,List<PythonRequirementEnvironmentBlob>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<PythonRequirementEnvironmentBlob,PythonRequirementEnvironmentBlob,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Constraints == null && other.Constraints == null)
-                return true;
-            if (this.Constraints == null && other.Constraints != null)
-                return false;
-            if (this.Constraints != null && other.Constraints == null)
-                return false;
-            if (!f.apply(this.Constraints, other.Constraints))
-                return false;
+            if (this.Constraints != null || other.Constraints != null) {
+                if (this.Constraints == null && other.Constraints != null)
+                    return false;
+                if (this.Constraints != null && other.Constraints == null)
+                    return false;
+                if (!f.apply(this.Constraints, other.Constraints))
+                    return false;
+            }
         }
         return true;
     }

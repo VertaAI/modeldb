@@ -32,14 +32,14 @@ public class S3DatasetDiff implements ProtoType {
         }
         {
             Function3<List<S3DatasetComponentDiff>,List<S3DatasetComponentDiff>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<S3DatasetComponentDiff,S3DatasetComponentDiff,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Components == null && other.Components == null)
-                return true;
-            if (this.Components == null && other.Components != null)
-                return false;
-            if (this.Components != null && other.Components == null)
-                return false;
-            if (!f.apply(this.Components, other.Components))
-                return false;
+            if (this.Components != null || other.Components != null) {
+                if (this.Components == null && other.Components != null)
+                    return false;
+                if (this.Components != null && other.Components == null)
+                    return false;
+                if (!f.apply(this.Components, other.Components))
+                    return false;
+            }
         }
         return true;
     }

@@ -42,36 +42,36 @@ public class PythonRequirementEnvironmentDiff implements ProtoType {
         }
         {
             Function3<DiffStatusEnumDiffStatus,DiffStatusEnumDiffStatus,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Status == null && other.Status == null)
-                return true;
-            if (this.Status == null && other.Status != null)
-                return false;
-            if (this.Status != null && other.Status == null)
-                return false;
-            if (!f.apply(this.Status, other.Status))
-                return false;
+            if (this.Status != null || other.Status != null) {
+                if (this.Status == null && other.Status != null)
+                    return false;
+                if (this.Status != null && other.Status == null)
+                    return false;
+                if (!f.apply(this.Status, other.Status))
+                    return false;
+            }
         }
         {
             Function3<PythonRequirementEnvironmentBlob,PythonRequirementEnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.A == null && other.A == null)
-                return true;
-            if (this.A == null && other.A != null)
-                return false;
-            if (this.A != null && other.A == null)
-                return false;
-            if (!f.apply(this.A, other.A))
-                return false;
+            if (this.A != null || other.A != null) {
+                if (this.A == null && other.A != null)
+                    return false;
+                if (this.A != null && other.A == null)
+                    return false;
+                if (!f.apply(this.A, other.A))
+                    return false;
+            }
         }
         {
             Function3<PythonRequirementEnvironmentBlob,PythonRequirementEnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.B == null && other.B == null)
-                return true;
-            if (this.B == null && other.B != null)
-                return false;
-            if (this.B != null && other.B == null)
-                return false;
-            if (!f.apply(this.B, other.B))
-                return false;
+            if (this.B != null || other.B != null) {
+                if (this.B == null && other.B != null)
+                    return false;
+                if (this.B != null && other.B == null)
+                    return false;
+                if (!f.apply(this.B, other.B))
+                    return false;
+            }
         }
         return true;
     }

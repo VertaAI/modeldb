@@ -52,58 +52,58 @@ public class PythonEnvironmentDiff implements ProtoType {
         }
         {
             Function3<DiffStatusEnumDiffStatus,DiffStatusEnumDiffStatus,Boolean> f = (x, y) -> x.equals(y);
-            if (this.VersionStatus == null && other.VersionStatus == null)
-                return true;
-            if (this.VersionStatus == null && other.VersionStatus != null)
-                return false;
-            if (this.VersionStatus != null && other.VersionStatus == null)
-                return false;
-            if (!f.apply(this.VersionStatus, other.VersionStatus))
-                return false;
+            if (this.VersionStatus != null || other.VersionStatus != null) {
+                if (this.VersionStatus == null && other.VersionStatus != null)
+                    return false;
+                if (this.VersionStatus != null && other.VersionStatus == null)
+                    return false;
+                if (!f.apply(this.VersionStatus, other.VersionStatus))
+                    return false;
+            }
         }
         {
             Function3<VersionEnvironmentBlob,VersionEnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.VersionA == null && other.VersionA == null)
-                return true;
-            if (this.VersionA == null && other.VersionA != null)
-                return false;
-            if (this.VersionA != null && other.VersionA == null)
-                return false;
-            if (!f.apply(this.VersionA, other.VersionA))
-                return false;
+            if (this.VersionA != null || other.VersionA != null) {
+                if (this.VersionA == null && other.VersionA != null)
+                    return false;
+                if (this.VersionA != null && other.VersionA == null)
+                    return false;
+                if (!f.apply(this.VersionA, other.VersionA))
+                    return false;
+            }
         }
         {
             Function3<VersionEnvironmentBlob,VersionEnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.VersionB == null && other.VersionB == null)
-                return true;
-            if (this.VersionB == null && other.VersionB != null)
-                return false;
-            if (this.VersionB != null && other.VersionB == null)
-                return false;
-            if (!f.apply(this.VersionB, other.VersionB))
-                return false;
+            if (this.VersionB != null || other.VersionB != null) {
+                if (this.VersionB == null && other.VersionB != null)
+                    return false;
+                if (this.VersionB != null && other.VersionB == null)
+                    return false;
+                if (!f.apply(this.VersionB, other.VersionB))
+                    return false;
+            }
         }
         {
             Function3<List<PythonRequirementEnvironmentDiff>,List<PythonRequirementEnvironmentDiff>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<PythonRequirementEnvironmentDiff,PythonRequirementEnvironmentDiff,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Requirements == null && other.Requirements == null)
-                return true;
-            if (this.Requirements == null && other.Requirements != null)
-                return false;
-            if (this.Requirements != null && other.Requirements == null)
-                return false;
-            if (!f.apply(this.Requirements, other.Requirements))
-                return false;
+            if (this.Requirements != null || other.Requirements != null) {
+                if (this.Requirements == null && other.Requirements != null)
+                    return false;
+                if (this.Requirements != null && other.Requirements == null)
+                    return false;
+                if (!f.apply(this.Requirements, other.Requirements))
+                    return false;
+            }
         }
         {
             Function3<List<PythonRequirementEnvironmentDiff>,List<PythonRequirementEnvironmentDiff>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<PythonRequirementEnvironmentDiff,PythonRequirementEnvironmentDiff,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Constraints == null && other.Constraints == null)
-                return true;
-            if (this.Constraints == null && other.Constraints != null)
-                return false;
-            if (this.Constraints != null && other.Constraints == null)
-                return false;
-            if (!f.apply(this.Constraints, other.Constraints))
-                return false;
+            if (this.Constraints != null || other.Constraints != null) {
+                if (this.Constraints == null && other.Constraints != null)
+                    return false;
+                if (this.Constraints != null && other.Constraints == null)
+                    return false;
+                if (!f.apply(this.Constraints, other.Constraints))
+                    return false;
+            }
         }
         return true;
     }

@@ -42,36 +42,36 @@ public class HyperparameterSetConfigBlob implements ProtoType {
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Name == null && other.Name == null)
-                return true;
-            if (this.Name == null && other.Name != null)
-                return false;
-            if (this.Name != null && other.Name == null)
-                return false;
-            if (!f.apply(this.Name, other.Name))
-                return false;
+            if (this.Name != null || other.Name != null) {
+                if (this.Name == null && other.Name != null)
+                    return false;
+                if (this.Name != null && other.Name == null)
+                    return false;
+                if (!f.apply(this.Name, other.Name))
+                    return false;
+            }
         }
         {
             Function3<ContinuousHyperparameterSetConfigBlob,ContinuousHyperparameterSetConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Continuous == null && other.Continuous == null)
-                return true;
-            if (this.Continuous == null && other.Continuous != null)
-                return false;
-            if (this.Continuous != null && other.Continuous == null)
-                return false;
-            if (!f.apply(this.Continuous, other.Continuous))
-                return false;
+            if (this.Continuous != null || other.Continuous != null) {
+                if (this.Continuous == null && other.Continuous != null)
+                    return false;
+                if (this.Continuous != null && other.Continuous == null)
+                    return false;
+                if (!f.apply(this.Continuous, other.Continuous))
+                    return false;
+            }
         }
         {
             Function3<DiscreteHyperparameterSetConfigBlob,DiscreteHyperparameterSetConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Discrete == null && other.Discrete == null)
-                return true;
-            if (this.Discrete == null && other.Discrete != null)
-                return false;
-            if (this.Discrete != null && other.Discrete == null)
-                return false;
-            if (!f.apply(this.Discrete, other.Discrete))
-                return false;
+            if (this.Discrete != null || other.Discrete != null) {
+                if (this.Discrete == null && other.Discrete != null)
+                    return false;
+                if (this.Discrete != null && other.Discrete == null)
+                    return false;
+                if (!f.apply(this.Discrete, other.Discrete))
+                    return false;
+            }
         }
         return true;
     }

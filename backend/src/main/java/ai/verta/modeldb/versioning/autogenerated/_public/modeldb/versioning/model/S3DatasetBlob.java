@@ -32,14 +32,14 @@ public class S3DatasetBlob implements ProtoType {
         }
         {
             Function3<List<S3DatasetComponentBlob>,List<S3DatasetComponentBlob>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<S3DatasetComponentBlob,S3DatasetComponentBlob,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Components == null && other.Components == null)
-                return true;
-            if (this.Components == null && other.Components != null)
-                return false;
-            if (this.Components != null && other.Components == null)
-                return false;
-            if (!f.apply(this.Components, other.Components))
-                return false;
+            if (this.Components != null || other.Components != null) {
+                if (this.Components == null && other.Components != null)
+                    return false;
+                if (this.Components != null && other.Components == null)
+                    return false;
+                if (!f.apply(this.Components, other.Components))
+                    return false;
+            }
         }
         return true;
     }

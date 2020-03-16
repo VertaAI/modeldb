@@ -42,36 +42,36 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Library == null && other.Library == null)
-                return true;
-            if (this.Library == null && other.Library != null)
-                return false;
-            if (this.Library != null && other.Library == null)
-                return false;
-            if (!f.apply(this.Library, other.Library))
-                return false;
+            if (this.Library != null || other.Library != null) {
+                if (this.Library == null && other.Library != null)
+                    return false;
+                if (this.Library != null && other.Library == null)
+                    return false;
+                if (!f.apply(this.Library, other.Library))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Constraint == null && other.Constraint == null)
-                return true;
-            if (this.Constraint == null && other.Constraint != null)
-                return false;
-            if (this.Constraint != null && other.Constraint == null)
-                return false;
-            if (!f.apply(this.Constraint, other.Constraint))
-                return false;
+            if (this.Constraint != null || other.Constraint != null) {
+                if (this.Constraint == null && other.Constraint != null)
+                    return false;
+                if (this.Constraint != null && other.Constraint == null)
+                    return false;
+                if (!f.apply(this.Constraint, other.Constraint))
+                    return false;
+            }
         }
         {
             Function3<VersionEnvironmentBlob,VersionEnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Version == null && other.Version == null)
-                return true;
-            if (this.Version == null && other.Version != null)
-                return false;
-            if (this.Version != null && other.Version == null)
-                return false;
-            if (!f.apply(this.Version, other.Version))
-                return false;
+            if (this.Version != null || other.Version != null) {
+                if (this.Version == null && other.Version != null)
+                    return false;
+                if (this.Version != null && other.Version == null)
+                    return false;
+                if (!f.apply(this.Version, other.Version))
+                    return false;
+            }
         }
         return true;
     }

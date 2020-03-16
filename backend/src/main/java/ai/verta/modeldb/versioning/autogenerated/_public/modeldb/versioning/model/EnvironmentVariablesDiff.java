@@ -47,47 +47,47 @@ public class EnvironmentVariablesDiff implements ProtoType {
         }
         {
             Function3<DiffStatusEnumDiffStatus,DiffStatusEnumDiffStatus,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Status == null && other.Status == null)
-                return true;
-            if (this.Status == null && other.Status != null)
-                return false;
-            if (this.Status != null && other.Status == null)
-                return false;
-            if (!f.apply(this.Status, other.Status))
-                return false;
+            if (this.Status != null || other.Status != null) {
+                if (this.Status == null && other.Status != null)
+                    return false;
+                if (this.Status != null && other.Status == null)
+                    return false;
+                if (!f.apply(this.Status, other.Status))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Name == null && other.Name == null)
-                return true;
-            if (this.Name == null && other.Name != null)
-                return false;
-            if (this.Name != null && other.Name == null)
-                return false;
-            if (!f.apply(this.Name, other.Name))
-                return false;
+            if (this.Name != null || other.Name != null) {
+                if (this.Name == null && other.Name != null)
+                    return false;
+                if (this.Name != null && other.Name == null)
+                    return false;
+                if (!f.apply(this.Name, other.Name))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.ValueA == null && other.ValueA == null)
-                return true;
-            if (this.ValueA == null && other.ValueA != null)
-                return false;
-            if (this.ValueA != null && other.ValueA == null)
-                return false;
-            if (!f.apply(this.ValueA, other.ValueA))
-                return false;
+            if (this.ValueA != null || other.ValueA != null) {
+                if (this.ValueA == null && other.ValueA != null)
+                    return false;
+                if (this.ValueA != null && other.ValueA == null)
+                    return false;
+                if (!f.apply(this.ValueA, other.ValueA))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.ValueB == null && other.ValueB == null)
-                return true;
-            if (this.ValueB == null && other.ValueB != null)
-                return false;
-            if (this.ValueB != null && other.ValueB == null)
-                return false;
-            if (!f.apply(this.ValueB, other.ValueB))
-                return false;
+            if (this.ValueB != null || other.ValueB != null) {
+                if (this.ValueB == null && other.ValueB != null)
+                    return false;
+                if (this.ValueB != null && other.ValueB == null)
+                    return false;
+                if (!f.apply(this.ValueB, other.ValueB))
+                    return false;
+            }
         }
         return true;
     }

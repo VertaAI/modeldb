@@ -37,25 +37,25 @@ public class ConfigBlob implements ProtoType {
         }
         {
             Function3<List<HyperparameterSetConfigBlob>,List<HyperparameterSetConfigBlob>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<HyperparameterSetConfigBlob,HyperparameterSetConfigBlob,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.HyperparameterSet == null && other.HyperparameterSet == null)
-                return true;
-            if (this.HyperparameterSet == null && other.HyperparameterSet != null)
-                return false;
-            if (this.HyperparameterSet != null && other.HyperparameterSet == null)
-                return false;
-            if (!f.apply(this.HyperparameterSet, other.HyperparameterSet))
-                return false;
+            if (this.HyperparameterSet != null || other.HyperparameterSet != null) {
+                if (this.HyperparameterSet == null && other.HyperparameterSet != null)
+                    return false;
+                if (this.HyperparameterSet != null && other.HyperparameterSet == null)
+                    return false;
+                if (!f.apply(this.HyperparameterSet, other.HyperparameterSet))
+                    return false;
+            }
         }
         {
             Function3<List<HyperparameterConfigBlob>,List<HyperparameterConfigBlob>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<HyperparameterConfigBlob,HyperparameterConfigBlob,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Hyperparameters == null && other.Hyperparameters == null)
-                return true;
-            if (this.Hyperparameters == null && other.Hyperparameters != null)
-                return false;
-            if (this.Hyperparameters != null && other.Hyperparameters == null)
-                return false;
-            if (!f.apply(this.Hyperparameters, other.Hyperparameters))
-                return false;
+            if (this.Hyperparameters != null || other.Hyperparameters != null) {
+                if (this.Hyperparameters == null && other.Hyperparameters != null)
+                    return false;
+                if (this.Hyperparameters != null && other.Hyperparameters == null)
+                    return false;
+                if (!f.apply(this.Hyperparameters, other.Hyperparameters))
+                    return false;
+            }
         }
         return true;
     }

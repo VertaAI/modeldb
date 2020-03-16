@@ -57,69 +57,69 @@ public class HyperparameterSetConfigDiff implements ProtoType {
         }
         {
             Function3<DiffStatusEnumDiffStatus,DiffStatusEnumDiffStatus,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Status == null && other.Status == null)
-                return true;
-            if (this.Status == null && other.Status != null)
-                return false;
-            if (this.Status != null && other.Status == null)
-                return false;
-            if (!f.apply(this.Status, other.Status))
-                return false;
+            if (this.Status != null || other.Status != null) {
+                if (this.Status == null && other.Status != null)
+                    return false;
+                if (this.Status != null && other.Status == null)
+                    return false;
+                if (!f.apply(this.Status, other.Status))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Name == null && other.Name == null)
-                return true;
-            if (this.Name == null && other.Name != null)
-                return false;
-            if (this.Name != null && other.Name == null)
-                return false;
-            if (!f.apply(this.Name, other.Name))
-                return false;
+            if (this.Name != null || other.Name != null) {
+                if (this.Name == null && other.Name != null)
+                    return false;
+                if (this.Name != null && other.Name == null)
+                    return false;
+                if (!f.apply(this.Name, other.Name))
+                    return false;
+            }
         }
         {
             Function3<ContinuousHyperparameterSetConfigBlob,ContinuousHyperparameterSetConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.ContinuousA == null && other.ContinuousA == null)
-                return true;
-            if (this.ContinuousA == null && other.ContinuousA != null)
-                return false;
-            if (this.ContinuousA != null && other.ContinuousA == null)
-                return false;
-            if (!f.apply(this.ContinuousA, other.ContinuousA))
-                return false;
+            if (this.ContinuousA != null || other.ContinuousA != null) {
+                if (this.ContinuousA == null && other.ContinuousA != null)
+                    return false;
+                if (this.ContinuousA != null && other.ContinuousA == null)
+                    return false;
+                if (!f.apply(this.ContinuousA, other.ContinuousA))
+                    return false;
+            }
         }
         {
             Function3<DiscreteHyperparameterSetConfigBlob,DiscreteHyperparameterSetConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.DiscreteA == null && other.DiscreteA == null)
-                return true;
-            if (this.DiscreteA == null && other.DiscreteA != null)
-                return false;
-            if (this.DiscreteA != null && other.DiscreteA == null)
-                return false;
-            if (!f.apply(this.DiscreteA, other.DiscreteA))
-                return false;
+            if (this.DiscreteA != null || other.DiscreteA != null) {
+                if (this.DiscreteA == null && other.DiscreteA != null)
+                    return false;
+                if (this.DiscreteA != null && other.DiscreteA == null)
+                    return false;
+                if (!f.apply(this.DiscreteA, other.DiscreteA))
+                    return false;
+            }
         }
         {
             Function3<ContinuousHyperparameterSetConfigBlob,ContinuousHyperparameterSetConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.ContinuousB == null && other.ContinuousB == null)
-                return true;
-            if (this.ContinuousB == null && other.ContinuousB != null)
-                return false;
-            if (this.ContinuousB != null && other.ContinuousB == null)
-                return false;
-            if (!f.apply(this.ContinuousB, other.ContinuousB))
-                return false;
+            if (this.ContinuousB != null || other.ContinuousB != null) {
+                if (this.ContinuousB == null && other.ContinuousB != null)
+                    return false;
+                if (this.ContinuousB != null && other.ContinuousB == null)
+                    return false;
+                if (!f.apply(this.ContinuousB, other.ContinuousB))
+                    return false;
+            }
         }
         {
             Function3<DiscreteHyperparameterSetConfigBlob,DiscreteHyperparameterSetConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.DiscreteB == null && other.DiscreteB == null)
-                return true;
-            if (this.DiscreteB == null && other.DiscreteB != null)
-                return false;
-            if (this.DiscreteB != null && other.DiscreteB == null)
-                return false;
-            if (!f.apply(this.DiscreteB, other.DiscreteB))
-                return false;
+            if (this.DiscreteB != null || other.DiscreteB != null) {
+                if (this.DiscreteB == null && other.DiscreteB != null)
+                    return false;
+                if (this.DiscreteB != null && other.DiscreteB == null)
+                    return false;
+                if (!f.apply(this.DiscreteB, other.DiscreteB))
+                    return false;
+            }
         }
         return true;
     }

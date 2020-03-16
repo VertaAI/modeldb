@@ -57,69 +57,69 @@ public class BlobDiff implements ProtoType {
         }
         {
             Function3<List<String>,List<String>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<String,String,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.Location == null && other.Location == null)
-                return true;
-            if (this.Location == null && other.Location != null)
-                return false;
-            if (this.Location != null && other.Location == null)
-                return false;
-            if (!f.apply(this.Location, other.Location))
-                return false;
+            if (this.Location != null || other.Location != null) {
+                if (this.Location == null && other.Location != null)
+                    return false;
+                if (this.Location != null && other.Location == null)
+                    return false;
+                if (!f.apply(this.Location, other.Location))
+                    return false;
+            }
         }
         {
             Function3<DiffStatusEnumDiffStatus,DiffStatusEnumDiffStatus,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Status == null && other.Status == null)
-                return true;
-            if (this.Status == null && other.Status != null)
-                return false;
-            if (this.Status != null && other.Status == null)
-                return false;
-            if (!f.apply(this.Status, other.Status))
-                return false;
+            if (this.Status != null || other.Status != null) {
+                if (this.Status == null && other.Status != null)
+                    return false;
+                if (this.Status != null && other.Status == null)
+                    return false;
+                if (!f.apply(this.Status, other.Status))
+                    return false;
+            }
         }
         {
             Function3<DatasetDiff,DatasetDiff,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Dataset == null && other.Dataset == null)
-                return true;
-            if (this.Dataset == null && other.Dataset != null)
-                return false;
-            if (this.Dataset != null && other.Dataset == null)
-                return false;
-            if (!f.apply(this.Dataset, other.Dataset))
-                return false;
+            if (this.Dataset != null || other.Dataset != null) {
+                if (this.Dataset == null && other.Dataset != null)
+                    return false;
+                if (this.Dataset != null && other.Dataset == null)
+                    return false;
+                if (!f.apply(this.Dataset, other.Dataset))
+                    return false;
+            }
         }
         {
             Function3<EnvironmentDiff,EnvironmentDiff,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Environment == null && other.Environment == null)
-                return true;
-            if (this.Environment == null && other.Environment != null)
-                return false;
-            if (this.Environment != null && other.Environment == null)
-                return false;
-            if (!f.apply(this.Environment, other.Environment))
-                return false;
+            if (this.Environment != null || other.Environment != null) {
+                if (this.Environment == null && other.Environment != null)
+                    return false;
+                if (this.Environment != null && other.Environment == null)
+                    return false;
+                if (!f.apply(this.Environment, other.Environment))
+                    return false;
+            }
         }
         {
             Function3<CodeDiff,CodeDiff,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Code == null && other.Code == null)
-                return true;
-            if (this.Code == null && other.Code != null)
-                return false;
-            if (this.Code != null && other.Code == null)
-                return false;
-            if (!f.apply(this.Code, other.Code))
-                return false;
+            if (this.Code != null || other.Code != null) {
+                if (this.Code == null && other.Code != null)
+                    return false;
+                if (this.Code != null && other.Code == null)
+                    return false;
+                if (!f.apply(this.Code, other.Code))
+                    return false;
+            }
         }
         {
             Function3<ConfigDiff,ConfigDiff,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Config == null && other.Config == null)
-                return true;
-            if (this.Config == null && other.Config != null)
-                return false;
-            if (this.Config != null && other.Config == null)
-                return false;
-            if (!f.apply(this.Config, other.Config))
-                return false;
+            if (this.Config != null || other.Config != null) {
+                if (this.Config == null && other.Config != null)
+                    return false;
+                if (this.Config != null && other.Config == null)
+                    return false;
+                if (!f.apply(this.Config, other.Config))
+                    return false;
+            }
         }
         return true;
     }

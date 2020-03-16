@@ -42,36 +42,36 @@ public class DockerEnvironmentBlob implements ProtoType {
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Repository == null && other.Repository == null)
-                return true;
-            if (this.Repository == null && other.Repository != null)
-                return false;
-            if (this.Repository != null && other.Repository == null)
-                return false;
-            if (!f.apply(this.Repository, other.Repository))
-                return false;
+            if (this.Repository != null || other.Repository != null) {
+                if (this.Repository == null && other.Repository != null)
+                    return false;
+                if (this.Repository != null && other.Repository == null)
+                    return false;
+                if (!f.apply(this.Repository, other.Repository))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Tag == null && other.Tag == null)
-                return true;
-            if (this.Tag == null && other.Tag != null)
-                return false;
-            if (this.Tag != null && other.Tag == null)
-                return false;
-            if (!f.apply(this.Tag, other.Tag))
-                return false;
+            if (this.Tag != null || other.Tag != null) {
+                if (this.Tag == null && other.Tag != null)
+                    return false;
+                if (this.Tag != null && other.Tag == null)
+                    return false;
+                if (!f.apply(this.Tag, other.Tag))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Sha == null && other.Sha == null)
-                return true;
-            if (this.Sha == null && other.Sha != null)
-                return false;
-            if (this.Sha != null && other.Sha == null)
-                return false;
-            if (!f.apply(this.Sha, other.Sha))
-                return false;
+            if (this.Sha != null || other.Sha != null) {
+                if (this.Sha == null && other.Sha != null)
+                    return false;
+                if (this.Sha != null && other.Sha == null)
+                    return false;
+                if (!f.apply(this.Sha, other.Sha))
+                    return false;
+            }
         }
         return true;
     }

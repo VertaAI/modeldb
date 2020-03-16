@@ -47,47 +47,47 @@ public class VersionEnvironmentBlob implements ProtoType {
         }
         {
             Function3<Integer,Integer,Boolean> f = (x, y) -> x == y;
-            if (this.Major == null && other.Major == null)
-                return true;
-            if (this.Major == null && other.Major != null)
-                return false;
-            if (this.Major != null && other.Major == null)
-                return false;
-            if (!f.apply(this.Major, other.Major))
-                return false;
+            if (this.Major != null || other.Major != null) {
+                if (this.Major == null && other.Major != null)
+                    return false;
+                if (this.Major != null && other.Major == null)
+                    return false;
+                if (!f.apply(this.Major, other.Major))
+                    return false;
+            }
         }
         {
             Function3<Integer,Integer,Boolean> f = (x, y) -> x == y;
-            if (this.Minor == null && other.Minor == null)
-                return true;
-            if (this.Minor == null && other.Minor != null)
-                return false;
-            if (this.Minor != null && other.Minor == null)
-                return false;
-            if (!f.apply(this.Minor, other.Minor))
-                return false;
+            if (this.Minor != null || other.Minor != null) {
+                if (this.Minor == null && other.Minor != null)
+                    return false;
+                if (this.Minor != null && other.Minor == null)
+                    return false;
+                if (!f.apply(this.Minor, other.Minor))
+                    return false;
+            }
         }
         {
             Function3<Integer,Integer,Boolean> f = (x, y) -> x == y;
-            if (this.Patch == null && other.Patch == null)
-                return true;
-            if (this.Patch == null && other.Patch != null)
-                return false;
-            if (this.Patch != null && other.Patch == null)
-                return false;
-            if (!f.apply(this.Patch, other.Patch))
-                return false;
+            if (this.Patch != null || other.Patch != null) {
+                if (this.Patch == null && other.Patch != null)
+                    return false;
+                if (this.Patch != null && other.Patch == null)
+                    return false;
+                if (!f.apply(this.Patch, other.Patch))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Suffix == null && other.Suffix == null)
-                return true;
-            if (this.Suffix == null && other.Suffix != null)
-                return false;
-            if (this.Suffix != null && other.Suffix == null)
-                return false;
-            if (!f.apply(this.Suffix, other.Suffix))
-                return false;
+            if (this.Suffix != null || other.Suffix != null) {
+                if (this.Suffix == null && other.Suffix != null)
+                    return false;
+                if (this.Suffix != null && other.Suffix == null)
+                    return false;
+                if (!f.apply(this.Suffix, other.Suffix))
+                    return false;
+            }
         }
         return true;
     }

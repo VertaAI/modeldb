@@ -47,47 +47,47 @@ public class EnvironmentBlob implements ProtoType {
         }
         {
             Function3<PythonEnvironmentBlob,PythonEnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Python == null && other.Python == null)
-                return true;
-            if (this.Python == null && other.Python != null)
-                return false;
-            if (this.Python != null && other.Python == null)
-                return false;
-            if (!f.apply(this.Python, other.Python))
-                return false;
+            if (this.Python != null || other.Python != null) {
+                if (this.Python == null && other.Python != null)
+                    return false;
+                if (this.Python != null && other.Python == null)
+                    return false;
+                if (!f.apply(this.Python, other.Python))
+                    return false;
+            }
         }
         {
             Function3<DockerEnvironmentBlob,DockerEnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Docker == null && other.Docker == null)
-                return true;
-            if (this.Docker == null && other.Docker != null)
-                return false;
-            if (this.Docker != null && other.Docker == null)
-                return false;
-            if (!f.apply(this.Docker, other.Docker))
-                return false;
+            if (this.Docker != null || other.Docker != null) {
+                if (this.Docker == null && other.Docker != null)
+                    return false;
+                if (this.Docker != null && other.Docker == null)
+                    return false;
+                if (!f.apply(this.Docker, other.Docker))
+                    return false;
+            }
         }
         {
             Function3<List<EnvironmentVariablesBlob>,List<EnvironmentVariablesBlob>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<EnvironmentVariablesBlob,EnvironmentVariablesBlob,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.EnvironmentVariables == null && other.EnvironmentVariables == null)
-                return true;
-            if (this.EnvironmentVariables == null && other.EnvironmentVariables != null)
-                return false;
-            if (this.EnvironmentVariables != null && other.EnvironmentVariables == null)
-                return false;
-            if (!f.apply(this.EnvironmentVariables, other.EnvironmentVariables))
-                return false;
+            if (this.EnvironmentVariables != null || other.EnvironmentVariables != null) {
+                if (this.EnvironmentVariables == null && other.EnvironmentVariables != null)
+                    return false;
+                if (this.EnvironmentVariables != null && other.EnvironmentVariables == null)
+                    return false;
+                if (!f.apply(this.EnvironmentVariables, other.EnvironmentVariables))
+                    return false;
+            }
         }
         {
             Function3<List<String>,List<String>,Boolean> f = (x2, y2) -> IntStream.range(0, Math.min(x2.size(), y2.size())).mapToObj(i -> { Function3<String,String,Boolean> f2 = (x, y) -> x.equals(y); return f2.apply(x2.get(i), y2.get(i));}).filter(x -> x != null).collect(Collectors.toList()).isEmpty();
-            if (this.CommandLine == null && other.CommandLine == null)
-                return true;
-            if (this.CommandLine == null && other.CommandLine != null)
-                return false;
-            if (this.CommandLine != null && other.CommandLine == null)
-                return false;
-            if (!f.apply(this.CommandLine, other.CommandLine))
-                return false;
+            if (this.CommandLine != null || other.CommandLine != null) {
+                if (this.CommandLine == null && other.CommandLine != null)
+                    return false;
+                if (this.CommandLine != null && other.CommandLine == null)
+                    return false;
+                if (!f.apply(this.CommandLine, other.CommandLine))
+                    return false;
+            }
         }
         return true;
     }

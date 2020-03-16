@@ -42,36 +42,36 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
         }
         {
             Function3<Long,Long,Boolean> f = (x, y) -> x == y;
-            if (this.IntValue == null && other.IntValue == null)
-                return true;
-            if (this.IntValue == null && other.IntValue != null)
-                return false;
-            if (this.IntValue != null && other.IntValue == null)
-                return false;
-            if (!f.apply(this.IntValue, other.IntValue))
-                return false;
+            if (this.IntValue != null || other.IntValue != null) {
+                if (this.IntValue == null && other.IntValue != null)
+                    return false;
+                if (this.IntValue != null && other.IntValue == null)
+                    return false;
+                if (!f.apply(this.IntValue, other.IntValue))
+                    return false;
+            }
         }
         {
             Function3<Float,Float,Boolean> f = (x, y) -> x == y;
-            if (this.FloatValue == null && other.FloatValue == null)
-                return true;
-            if (this.FloatValue == null && other.FloatValue != null)
-                return false;
-            if (this.FloatValue != null && other.FloatValue == null)
-                return false;
-            if (!f.apply(this.FloatValue, other.FloatValue))
-                return false;
+            if (this.FloatValue != null || other.FloatValue != null) {
+                if (this.FloatValue == null && other.FloatValue != null)
+                    return false;
+                if (this.FloatValue != null && other.FloatValue == null)
+                    return false;
+                if (!f.apply(this.FloatValue, other.FloatValue))
+                    return false;
+            }
         }
         {
             Function3<String,String,Boolean> f = (x, y) -> x.equals(y);
-            if (this.StringValue == null && other.StringValue == null)
-                return true;
-            if (this.StringValue == null && other.StringValue != null)
-                return false;
-            if (this.StringValue != null && other.StringValue == null)
-                return false;
-            if (!f.apply(this.StringValue, other.StringValue))
-                return false;
+            if (this.StringValue != null || other.StringValue != null) {
+                if (this.StringValue == null && other.StringValue != null)
+                    return false;
+                if (this.StringValue != null && other.StringValue == null)
+                    return false;
+                if (!f.apply(this.StringValue, other.StringValue))
+                    return false;
+            }
         }
         return true;
     }

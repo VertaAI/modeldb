@@ -42,36 +42,36 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
         }
         {
             Function3<HyperparameterValuesConfigBlob,HyperparameterValuesConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.IntervalBegin == null && other.IntervalBegin == null)
-                return true;
-            if (this.IntervalBegin == null && other.IntervalBegin != null)
-                return false;
-            if (this.IntervalBegin != null && other.IntervalBegin == null)
-                return false;
-            if (!f.apply(this.IntervalBegin, other.IntervalBegin))
-                return false;
+            if (this.IntervalBegin != null || other.IntervalBegin != null) {
+                if (this.IntervalBegin == null && other.IntervalBegin != null)
+                    return false;
+                if (this.IntervalBegin != null && other.IntervalBegin == null)
+                    return false;
+                if (!f.apply(this.IntervalBegin, other.IntervalBegin))
+                    return false;
+            }
         }
         {
             Function3<HyperparameterValuesConfigBlob,HyperparameterValuesConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.IntervalEnd == null && other.IntervalEnd == null)
-                return true;
-            if (this.IntervalEnd == null && other.IntervalEnd != null)
-                return false;
-            if (this.IntervalEnd != null && other.IntervalEnd == null)
-                return false;
-            if (!f.apply(this.IntervalEnd, other.IntervalEnd))
-                return false;
+            if (this.IntervalEnd != null || other.IntervalEnd != null) {
+                if (this.IntervalEnd == null && other.IntervalEnd != null)
+                    return false;
+                if (this.IntervalEnd != null && other.IntervalEnd == null)
+                    return false;
+                if (!f.apply(this.IntervalEnd, other.IntervalEnd))
+                    return false;
+            }
         }
         {
             Function3<HyperparameterValuesConfigBlob,HyperparameterValuesConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.IntervalStep == null && other.IntervalStep == null)
-                return true;
-            if (this.IntervalStep == null && other.IntervalStep != null)
-                return false;
-            if (this.IntervalStep != null && other.IntervalStep == null)
-                return false;
-            if (!f.apply(this.IntervalStep, other.IntervalStep))
-                return false;
+            if (this.IntervalStep != null || other.IntervalStep != null) {
+                if (this.IntervalStep == null && other.IntervalStep != null)
+                    return false;
+                if (this.IntervalStep != null && other.IntervalStep == null)
+                    return false;
+                if (!f.apply(this.IntervalStep, other.IntervalStep))
+                    return false;
+            }
         }
         return true;
     }

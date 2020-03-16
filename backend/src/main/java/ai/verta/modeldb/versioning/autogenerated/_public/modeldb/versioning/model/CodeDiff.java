@@ -37,25 +37,25 @@ public class CodeDiff implements ProtoType {
         }
         {
             Function3<GitCodeDiff,GitCodeDiff,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Git == null && other.Git == null)
-                return true;
-            if (this.Git == null && other.Git != null)
-                return false;
-            if (this.Git != null && other.Git == null)
-                return false;
-            if (!f.apply(this.Git, other.Git))
-                return false;
+            if (this.Git != null || other.Git != null) {
+                if (this.Git == null && other.Git != null)
+                    return false;
+                if (this.Git != null && other.Git == null)
+                    return false;
+                if (!f.apply(this.Git, other.Git))
+                    return false;
+            }
         }
         {
             Function3<NotebookCodeDiff,NotebookCodeDiff,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Notebook == null && other.Notebook == null)
-                return true;
-            if (this.Notebook == null && other.Notebook != null)
-                return false;
-            if (this.Notebook != null && other.Notebook == null)
-                return false;
-            if (!f.apply(this.Notebook, other.Notebook))
-                return false;
+            if (this.Notebook != null || other.Notebook != null) {
+                if (this.Notebook == null && other.Notebook != null)
+                    return false;
+                if (this.Notebook != null && other.Notebook == null)
+                    return false;
+                if (!f.apply(this.Notebook, other.Notebook))
+                    return false;
+            }
         }
         return true;
     }

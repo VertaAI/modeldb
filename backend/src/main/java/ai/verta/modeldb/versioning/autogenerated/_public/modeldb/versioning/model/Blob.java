@@ -47,47 +47,47 @@ public class Blob implements ProtoType {
         }
         {
             Function3<DatasetBlob,DatasetBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Dataset == null && other.Dataset == null)
-                return true;
-            if (this.Dataset == null && other.Dataset != null)
-                return false;
-            if (this.Dataset != null && other.Dataset == null)
-                return false;
-            if (!f.apply(this.Dataset, other.Dataset))
-                return false;
+            if (this.Dataset != null || other.Dataset != null) {
+                if (this.Dataset == null && other.Dataset != null)
+                    return false;
+                if (this.Dataset != null && other.Dataset == null)
+                    return false;
+                if (!f.apply(this.Dataset, other.Dataset))
+                    return false;
+            }
         }
         {
             Function3<EnvironmentBlob,EnvironmentBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Environment == null && other.Environment == null)
-                return true;
-            if (this.Environment == null && other.Environment != null)
-                return false;
-            if (this.Environment != null && other.Environment == null)
-                return false;
-            if (!f.apply(this.Environment, other.Environment))
-                return false;
+            if (this.Environment != null || other.Environment != null) {
+                if (this.Environment == null && other.Environment != null)
+                    return false;
+                if (this.Environment != null && other.Environment == null)
+                    return false;
+                if (!f.apply(this.Environment, other.Environment))
+                    return false;
+            }
         }
         {
             Function3<CodeBlob,CodeBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Code == null && other.Code == null)
-                return true;
-            if (this.Code == null && other.Code != null)
-                return false;
-            if (this.Code != null && other.Code == null)
-                return false;
-            if (!f.apply(this.Code, other.Code))
-                return false;
+            if (this.Code != null || other.Code != null) {
+                if (this.Code == null && other.Code != null)
+                    return false;
+                if (this.Code != null && other.Code == null)
+                    return false;
+                if (!f.apply(this.Code, other.Code))
+                    return false;
+            }
         }
         {
             Function3<ConfigBlob,ConfigBlob,Boolean> f = (x, y) -> x.equals(y);
-            if (this.Config == null && other.Config == null)
-                return true;
-            if (this.Config == null && other.Config != null)
-                return false;
-            if (this.Config != null && other.Config == null)
-                return false;
-            if (!f.apply(this.Config, other.Config))
-                return false;
+            if (this.Config != null || other.Config != null) {
+                if (this.Config == null && other.Config != null)
+                    return false;
+                if (this.Config != null && other.Config == null)
+                    return false;
+                if (!f.apply(this.Config, other.Config))
+                    return false;
+            }
         }
         return true;
     }
