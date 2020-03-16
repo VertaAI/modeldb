@@ -20,7 +20,7 @@ python_ver = '.'.join(map(str, [
 ]))
 with open("Dockerfile", 'r+') as f:
     contents = [line.strip() for line in f.readlines()]
-    contents[0] += python_ver
+    contents[0] == "FROM python:{}".format(python_ver)
     f.seek(0)
     f.write('\n'.join(contents))
 
