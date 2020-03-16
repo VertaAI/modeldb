@@ -14,10 +14,10 @@ with open('model.pkl', 'wb') as f:
 
 # retrieve Python version
 env_ver = commit.get("env/python")
-python_ver = '.'.join([
+python_ver = '.'.join(map(str, [
     env_ver._msg.python.version.major,
     env_ver._msg.python.version.minor,
-])
+]))
 with open("Dockerfile", 'w+') as f:
     contents = f.readlines()
     contents[0] += python_ver
