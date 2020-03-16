@@ -1,7 +1,8 @@
 import { bind } from 'decko';
+import * as R from 'ramda';
 
 import { BaseDataService } from 'core/services/BaseDataService';
-import User from 'models/User';
+import User, { unknownUser } from 'models/User';
 import { convertServerUser } from 'core/services/serverModel/User/converters';
 
 export default class UsersService extends BaseDataService {
@@ -11,6 +12,9 @@ export default class UsersService extends BaseDataService {
 
   @bind
   public async loadUser(userId: string): Promise<User> {
+    if (!userId) {
+      return unknownUser;
+    }
     const response = await this.get<any>({
       url: '/v1/uac-proxy/uac/getUser',
       config: {
@@ -25,6 +29,12 @@ export default class UsersService extends BaseDataService {
 
   @bind
   public async loadUsers(userIds: string[]): Promise<User[]> {
+    if (!userIds) {
+      return [unknownUser];
+    }
+    if (userIds.every(R.isNil)) {
+      return userIds.map(() => unknownUser);
+    }
     if (userIds.length === 0) {
       return [];
     }

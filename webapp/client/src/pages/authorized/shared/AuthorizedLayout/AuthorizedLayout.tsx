@@ -39,6 +39,11 @@ class AuthorizedLayout extends React.Component<AllProps> {
         iconType: 'bookmarks',
         text: 'Datasets',
       },
+      {
+        to: routes.repositories.getRedirectPath({ workspaceName }),
+        iconType: 'repository',
+        text: 'Repositories',
+      },
     ];
 
     return (

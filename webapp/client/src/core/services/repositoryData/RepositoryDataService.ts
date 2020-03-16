@@ -30,6 +30,7 @@ import {
   convertServerFolderToClient,
   convertServerCommitToClient,
 } from '../serverModel/RepositoryData/converters';
+import { unknownUser } from 'models/User';
 
 export default class RepositoryDataService extends BaseDataService {
   constructor() {
@@ -171,7 +172,7 @@ export default class RepositoryDataService extends BaseDataService {
         .map(convertServerCommitToClient)
         .map((c: ICommit) => ({
           ...c,
-          author: users.find(user => user.id === c.authorId),
+          author: users.find(user => user.id === c.authorId) || unknownUser,
         })),
       totalCount: Number(response.data.total_records),
     };
