@@ -232,7 +232,7 @@ message ListCommitExperimentRunsRequest {
     string commit_sha = 3;
 
     message Response {
-        repeated ExperimentRuns runs = 1;
+        repeated ExperimentRun runs = 1;
         int64 total_records = 2;
     }
 }
@@ -245,7 +245,7 @@ message ListBlobExperimentRunsRequest {
     repeated string location = 4;
 
     message Response {
-        repeated ExperimentRuns runs = 1;
+        repeated ExperimentRun runs = 1;
         int64 total_records = 2;
     }
 }
