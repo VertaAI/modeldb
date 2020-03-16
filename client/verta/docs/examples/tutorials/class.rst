@@ -1,4 +1,4 @@
-Deeploying Custom  Models
+Deploying Custom  Models
 =========================
 
 If you are deploying a model that is not purely a scikit-learn, xgboost, Tensorflow or PyTorch model,
