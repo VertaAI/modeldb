@@ -54,7 +54,7 @@ message EnvironmentDiff {
     // Should only contain environment variables unique to A/B (considering all fields)
     repeated EnvironmentVariablesDiff environment_variables = 3;
 
-    DiffStatusEnum.DiffStatus status = 4;
+    DiffStatusEnum.DiffStatus command_line_status = 4;
     repeated string command_line_a = 5;
     repeated string command_line_b = 6;
 }
@@ -73,7 +73,7 @@ message PythonRequirementEnvironmentDiff {
 }
 
 message PythonEnvironmentDiff {
-    DiffStatusEnum.DiffStatus status = 1;
+    DiffStatusEnum.DiffStatus version_status = 1;
     VersionEnvironmentBlob version_a = 2;
     VersionEnvironmentBlob version_b = 3;
 
