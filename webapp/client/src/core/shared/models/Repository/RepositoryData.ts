@@ -123,3 +123,8 @@ export interface IFullDataLocationComponents {
   location: DataLocation;
   commitPointer: CommitPointer;
 }
+
+export interface ICommitWithData {
+  commit: IHydratedCommit;
+  data: IRepositoryData;
+}
