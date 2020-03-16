@@ -37,14 +37,27 @@ import java.util.stream.Collectors;
 
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.versioning.*;
+import ai.verta.modeldb.versioning.blob.diff.ProtoType;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
 
-public class DiffStatusEnumDiffStatus {
+public class DiffStatusEnumDiffStatus implements ProtoType {
     public DiffStatusEnum.DiffStatus Status;
 
     public DiffStatusEnumDiffStatus() {
         Status = DiffStatus.UNKNOWN;
+    }
+
+    public DiffStatusEnumDiffStatus(DiffStatusEnum.DiffStatus s) {
+        Status = s;
+    }
+
+    public Boolean isEmpty() {
+        return Status == DiffStatus.UNKNOWN;
+    }
+
+    public Boolean equals(DiffStatusEnumDiffStatus other) {
+        return Status == other.Status;
     }
 
     static public DiffStatusEnumDiffStatus fromProto(ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus blob) {

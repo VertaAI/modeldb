@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// TODO: handle collisions instead of just overwriting? It will be useful for merging
+// TODO: handle collisions instead of just overwriting? It will be useful for mergingit
 public class DiffMerger {
     static public <T,T2> T2 getOrNull(T v, Function<T, T2> getter) {
         if (v == null) {
