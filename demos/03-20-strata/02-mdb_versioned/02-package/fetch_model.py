@@ -19,7 +19,7 @@ python_ver = '.'.join(map(str, [
     env_ver._msg.python.version.minor,
 ]))
 with open("Dockerfile", 'r+') as f:
-    contents = f.readlines()
+    contents = [line.strip() for line in f.readlines()]
     contents[0] += python_ver
     f.seek(0)
     f.write('\n'.join(contents))
