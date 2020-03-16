@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/hydratedData/findHydratedDatasetVersions": {
+    "/v1/hydratedData/findHydratedDatasetVersions": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedDatasetVersions",
@@ -44,7 +44,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedDatasets": {
+    "/v1/hydratedData/findHydratedDatasets": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedDatasets",
@@ -77,7 +77,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedDatasetsByOrganization": {
+    "/v1/hydratedData/findHydratedDatasetsByOrganization": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedDatasetsByOrganization",
@@ -110,7 +110,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedDatasetsByTeam": {
+    "/v1/hydratedData/findHydratedDatasetsByTeam": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedDatasetsByTeam",
@@ -143,7 +143,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedExperimentRuns": {
+    "/v1/hydratedData/findHydratedExperimentRuns": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedExperimentRuns",
@@ -176,7 +176,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedExperiments": {
+    "/v1/hydratedData/findHydratedExperiments": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedExperiments",
@@ -209,7 +209,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedProjects": {
+    "/v1/hydratedData/findHydratedProjects": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedProjects",
@@ -242,7 +242,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedProjectsByOrganization": {
+    "/v1/hydratedData/findHydratedProjectsByOrganization": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedProjectsByOrganization",
@@ -275,7 +275,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedProjectsByTeam": {
+    "/v1/hydratedData/findHydratedProjectsByTeam": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedProjectsByTeam",
@@ -308,7 +308,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedProjectsByUser": {
+    "/v1/hydratedData/findHydratedProjectsByUser": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedProjectsByUser",
@@ -341,7 +341,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedPublicDatasets": {
+    "/v1/hydratedData/findHydratedPublicDatasets": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedPublicDatasets",
@@ -374,7 +374,7 @@
         ]
       }
     },
-    "/hydratedData/findHydratedPublicProjects": {
+    "/v1/hydratedData/findHydratedPublicProjects": {
       "post": {
         "summary": "queries",
         "operationId": "findHydratedPublicProjects",
@@ -407,7 +407,7 @@
         ]
       }
     },
-    "/hydratedData/getHydratedDatasetByName": {
+    "/v1/hydratedData/getHydratedDatasetByName": {
       "get": {
         "operationId": "getHydratedDatasetByName",
         "responses": {
@@ -443,7 +443,7 @@
         ]
       }
     },
-    "/hydratedData/getHydratedDatasetsByProjectId": {
+    "/v1/hydratedData/getHydratedDatasetsByProjectId": {
       "get": {
         "operationId": "getHydratedDatasetsByProjectId",
         "responses": {
@@ -500,7 +500,7 @@
         ]
       }
     },
-    "/hydratedData/getHydratedExperimentRunById": {
+    "/v1/hydratedData/getHydratedExperimentRunById": {
       "get": {
         "operationId": "getHydratedExperimentRunById",
         "responses": {
@@ -530,7 +530,7 @@
         ]
       }
     },
-    "/hydratedData/getHydratedExperimentRunsInProject": {
+    "/v1/hydratedData/getHydratedExperimentRunsInProject": {
       "get": {
         "operationId": "getHydratedExperimentRunsInProject",
         "responses": {
@@ -587,7 +587,7 @@
         ]
       }
     },
-    "/hydratedData/getHydratedExperimentsByProjectId": {
+    "/v1/hydratedData/getHydratedExperimentsByProjectId": {
       "get": {
         "operationId": "getHydratedExperimentsByProjectId",
         "responses": {
@@ -644,7 +644,7 @@
         ]
       }
     },
-    "/hydratedData/getHydratedProjectById": {
+    "/v1/hydratedData/getHydratedProjectById": {
       "get": {
         "operationId": "getHydratedProjectById",
         "responses": {
@@ -674,7 +674,7 @@
         ]
       }
     },
-    "/hydratedData/getHydratedProjects": {
+    "/v1/hydratedData/getHydratedProjects": {
       "get": {
         "operationId": "getHydratedProjects",
         "responses": {
@@ -731,7 +731,7 @@
         ]
       }
     },
-    "/hydratedData/getHydratedPublicProjects": {
+    "/v1/hydratedData/getHydratedPublicProjects": {
       "get": {
         "operationId": "getHydratedPublicProjects",
         "responses": {
@@ -788,7 +788,7 @@
         ]
       }
     },
-    "/hydratedData/getTopHydratedExperimentRuns": {
+    "/v1/hydratedData/getTopHydratedExperimentRuns": {
       "get": {
         "operationId": "getTopHydratedExperimentRuns",
         "responses": {
@@ -861,7 +861,7 @@
         ]
       }
     },
-    "/hydratedData/sortHydratedExperimentRuns": {
+    "/v1/hydratedData/sortHydratedExperimentRuns": {
       "get": {
         "operationId": "sortHydratedExperimentRuns",
         "responses": {
@@ -2458,6 +2458,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }

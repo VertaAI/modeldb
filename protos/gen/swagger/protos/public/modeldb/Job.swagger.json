@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/job/createJob": {
+    "/v1/job/createJob": {
       "post": {
         "operationId": "createJob",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/job/deleteJob": {
+    "/v1/job/deleteJob": {
       "get": {
         "operationId": "deleteJob",
         "responses": {
@@ -73,7 +73,7 @@
         ]
       }
     },
-    "/job/getJob": {
+    "/v1/job/getJob": {
       "get": {
         "operationId": "getJob",
         "responses": {
@@ -103,7 +103,7 @@
         ]
       }
     },
-    "/job/updateJob": {
+    "/v1/job/updateJob": {
       "get": {
         "operationId": "updateJob",
         "responses": {
@@ -326,6 +326,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }
