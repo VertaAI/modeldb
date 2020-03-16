@@ -396,26 +396,27 @@ def blob_msg_to_object(blob_msg):
     content_type = blob_msg.WhichOneof('content')
     content_subtype = None
     obj = None
-    if content_type == 'code':
-        content_subtype = blob_msg.code.WhichOneof('content')
-        if content_subtype == 'git':
-            obj = code.Git()  # TODO: skip obj init, because it requires git
-        elif content_subtype == 'notebook':
-            obj = code.Notebook()  # TODO: skip obj init, because it requires Jupyter
-    elif content_type == 'config':
-        obj = configuration.Hyperparameters()
-    elif content_type == 'dataset':
-        content_subtype = blob_msg.dataset.WhichOneof('content')
-        if content_subtype == 's3':
-            obj = dataset.S3(paths=[])
-        elif content_subtype == 'path':
-            obj = dataset.Path(paths=[])
-    elif content_type == 'environment':
-        content_subtype = blob_msg.environment.WhichOneof('content')
-        if content_subtype == 'python':
-            obj = environment.Python()
-        elif content_subtype == 'docker':
-            raise NotImplementedError
+    # if content_type == 'code':
+    #     content_subtype = blob_msg.code.WhichOneof('content')
+    #     if content_subtype == 'git':
+    #         obj = code.Git()  # TODO: skip obj init, because it requires git
+    #     elif content_subtype == 'notebook':
+    #         obj = code.Notebook()  # TODO: skip obj init, because it requires Jupyter
+    # elif content_type == 'config':
+    #     obj = configuration.Hyperparameters()
+    # elif content_type == 'dataset':
+    #     content_subtype = blob_msg.dataset.WhichOneof('content')
+    #     if content_subtype == 's3':
+    #         obj = dataset.S3(paths=[])
+    #     elif content_subtype == 'path':
+    #         obj = dataset.Path(paths=[])
+    # elif content_type == 'environment':
+    #     content_subtype = blob_msg.environment.WhichOneof('content')
+    #     if content_subtype == 'python':
+    #         obj = environment.Python()
+    #     elif content_subtype == 'docker':
+    #         raise NotImplementedError
+    obj = blob_module.Blob()
 
     if obj is None:
         if content_subtype is None:
@@ -425,7 +426,8 @@ def blob_msg_to_object(blob_msg):
             raise NotImplementedError("found unexpected {} type {};"
                                       " please notify the Verta development team".format(content_type, content_subtype))
 
-    obj._msg.CopyFrom(getattr(blob_msg, content_type))
+    # obj._msg.CopyFrom(getattr(blob_msg, content_type))
+    obj._msg = getattr(blob_msg, content_type)
     return obj
 
 
