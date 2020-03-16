@@ -18,6 +18,7 @@ import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -331,7 +332,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           blobDAO.getCommitBlobsList(
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               request.getCommitSha(),
-              request.getLocationPrefixList());
+              new ArrayList<String>());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
