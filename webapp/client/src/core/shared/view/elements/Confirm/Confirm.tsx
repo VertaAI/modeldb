@@ -1,17 +1,13 @@
 import * as React from 'react';
 
-import Button, { IButtonLocalProps } from '../Button/Button';
-import { IconType } from '../Icon/Icon';
-import Popup from '../Popup/Popup';
-import styles from './Confirm.module.css';
+import Dialog from '../Dialog/Dialog';
 
 interface ILocalProps {
   isOpen: boolean;
   title: string;
-  titleIcon?: IconType;
   children: Exclude<React.ReactNode, null | undefined>;
-  confirmButtonTheme?: IButtonLocalProps['theme'];
-  cancelButtonTheme?: IButtonLocalProps['theme'];
+  confirmButtonText?: string;
+  cancelButtonText?: string;
   onConfirm(e: React.MouseEvent): void;
   onCancel(e: React.MouseEvent | MouseEvent): void;
 }
@@ -22,43 +18,30 @@ class Confirm extends React.PureComponent<ILocalProps> {
       children,
       isOpen,
       title,
-      titleIcon,
       onConfirm,
       onCancel,
-      confirmButtonTheme,
-      cancelButtonTheme,
+      cancelButtonText,
+      confirmButtonText,
     } = this.props;
     return (
-      <Popup
+      <Dialog
         title={title}
+        type="warning"
+        cancelButtonProps={{
+          dataTest: 'confirm-cancel-button',
+          text: cancelButtonText,
+          onClick: onCancel as any,
+        }}
         isOpen={isOpen}
+        okButtonProps={{
+          dataTest: 'confirm-ok-button',
+          text: confirmButtonText,
+          onClick: onConfirm as any,
+        }}
         onRequestClose={onCancel}
-        titleIcon={titleIcon}
       >
-        <div className={styles.root} data-test="confirm">
-          <div className={styles.message}>{children}</div>
-          <div className={styles.actions}>
-            <div className={styles.action}>
-              <Button
-                theme={cancelButtonTheme || 'secondary'}
-                onClick={onCancel}
-                dataTest="confirm-cancel-button"
-              >
-                Cancel
-              </Button>
-            </div>
-            <div className={styles.action}>
-              <Button
-                theme={confirmButtonTheme || 'primary'}
-                onClick={onConfirm}
-                dataTest="confirm-ok-button"
-              >
-                Ok
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Popup>
+        {children}
+      </Dialog>
     );
   }
 }
