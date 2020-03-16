@@ -29,6 +29,10 @@ public class DiffComputer {
         return computer.apply(getOrNull(a, getter), getOrNull(b, getter));
     }
 
+    // This applies an algorithm similar to what I discussed with Ravi for merges: gather sets based on a key
+    // 1. if there is a key collision and both sets have size 1, then compute the diff of those elements
+    // 2. if there is a key collision and both sets have more than 1 element, consider all A as removal and B as addition, ignoring any modifications (by passing null values)
+    // 3. if there is no key collision, then just process the right side
     static public <T,T2,T3> List<T3> computeListDiff(T a, T b, Function<T,List<T2>> getter, Function<T2,String> hasher, Function3<T2,T2,T3> computer) {
         HashMap<String, HashSet<T2>> mapA = new HashMap<>();
         HashMap<String, HashSet<T2>> mapB = new HashMap<>();
@@ -42,10 +46,12 @@ public class DiffComputer {
         return keys.stream().flatMap(key -> {
             HashSet<T2> elA = mapA.get(key);
             HashSet<T2> elB = mapB.get(key);
+            // Key collision and one element, process it
             if (elA != null && elB != null && elA.size() == 1 && elB.size() == 1) {
                 return Stream.of(computer.apply(elA.iterator().next(), elB.iterator().next()));
             }
 
+            // Key collision and more elements, consider removal + addition
             if (elA != null && elB != null) {
                 return Stream.concat(
                         elA.stream().map(el -> computer.apply(el, null)),
