@@ -11,6 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from ....public.modeldb.versioning import Enums_pb2 as protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -18,8 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.versioning',
   syntax='proto3',
   serialized_options=b'P\001ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning',
-  serialized_pb=b'\n-protos/public/modeldb/versioning/Config.proto\x12\x1b\x61i.verta.modeldb.versioning\"\xb2\x01\n\nConfigBlob\x12T\n\x12hyperparameter_set\x18\x01 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\x12N\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlob\"t\n\x18HyperparameterConfigBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12J\n\x05value\x18\x02 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"m\n\x1eHyperparameterValuesConfigBlob\x12\x13\n\tint_value\x18\x01 \x01(\x03H\x00\x12\x15\n\x0b\x66loat_value\x18\x02 \x01(\x02H\x00\x12\x16\n\x0cstring_value\x18\x03 \x01(\tH\x00\x42\x07\n\x05value\"\xe4\x01\n\x1bHyperparameterSetConfigBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12X\n\ncontinuous\x18\x02 \x01(\x0b\x32\x42.ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlobH\x00\x12T\n\x08\x64iscrete\x18\x03 \x01(\x0b\x32@.ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlobH\x00\x42\x07\n\x05value\"\xa3\x02\n%ContinuousHyperparameterSetConfigBlob\x12S\n\x0einterval_begin\x18\x02 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12Q\n\x0cinterval_end\x18\x03 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12R\n\rinterval_step\x18\x04 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"r\n#DiscreteHyperparameterSetConfigBlob\x12K\n\x06values\x18\x04 \x03(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"\xb2\x01\n\nConfigDiff\x12T\n\x12hyperparameter_set\x18\x01 \x01(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigDiff\x12N\n\x0fhyperparameters\x18\x02 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigDiff\"\xa7\x01\n\x1bHyperparameterSetConfigDiff\x12\x43\n\x01\x41\x18\x01 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\x12\x43\n\x01\x42\x18\x02 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\"\x9e\x01\n\x18HyperparameterConfigDiff\x12@\n\x01\x41\x18\x01 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlob\x12@\n\x01\x42\x18\x02 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlobBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
-)
+  serialized_pb=b'\n-protos/public/modeldb/versioning/Config.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a,protos/public/modeldb/versioning/Enums.proto\"\xb2\x01\n\nConfigBlob\x12T\n\x12hyperparameter_set\x18\x01 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\x12N\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlob\"t\n\x18HyperparameterConfigBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12J\n\x05value\x18\x02 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"m\n\x1eHyperparameterValuesConfigBlob\x12\x13\n\tint_value\x18\x01 \x01(\x03H\x00\x12\x15\n\x0b\x66loat_value\x18\x02 \x01(\x02H\x00\x12\x16\n\x0cstring_value\x18\x03 \x01(\tH\x00\x42\x07\n\x05value\"\xe4\x01\n\x1bHyperparameterSetConfigBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12X\n\ncontinuous\x18\x02 \x01(\x0b\x32\x42.ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlobH\x00\x12T\n\x08\x64iscrete\x18\x03 \x01(\x0b\x32@.ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlobH\x00\x42\x07\n\x05value\"\xa3\x02\n%ContinuousHyperparameterSetConfigBlob\x12S\n\x0einterval_begin\x18\x02 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12Q\n\x0cinterval_end\x18\x03 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12R\n\rinterval_step\x18\x04 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"r\n#DiscreteHyperparameterSetConfigBlob\x12K\n\x06values\x18\x04 \x03(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"\xb2\x01\n\nConfigDiff\x12T\n\x12hyperparameter_set\x18\x01 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigDiff\x12N\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigDiff\"\xe5\x03\n\x1bHyperparameterSetConfigDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x0c\n\x04name\x18\x02 \x01(\t\x12Z\n\x0c\x63ontinuous_a\x18\x03 \x01(\x0b\x32\x42.ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlobH\x00\x12V\n\ndiscrete_a\x18\x04 \x01(\x0b\x32@.ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlobH\x00\x12Z\n\x0c\x63ontinuous_b\x18\x05 \x01(\x0b\x32\x42.ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlobH\x01\x12V\n\ndiscrete_b\x18\x06 \x01(\x0b\x32@.ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlobH\x01\x42\x03\n\x01\x41\x42\x03\n\x01\x42\"\x80\x02\n\x18HyperparameterConfigDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x46\n\x01\x41\x18\x03 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12\x46\n\x01\x42\x18\x04 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlobBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
+  ,
+  dependencies=[protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2.DESCRIPTOR,])
 
 
 
@@ -57,8 +59,8 @@ _CONFIGBLOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=79,
-  serialized_end=257,
+  serialized_start=125,
+  serialized_end=303,
 )
 
 
@@ -95,8 +97,8 @@ _HYPERPARAMETERCONFIGBLOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=259,
-  serialized_end=375,
+  serialized_start=305,
+  serialized_end=421,
 )
 
 
@@ -143,8 +145,8 @@ _HYPERPARAMETERVALUESCONFIGBLOB = _descriptor.Descriptor(
       name='value', full_name='ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.value',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=377,
-  serialized_end=486,
+  serialized_start=423,
+  serialized_end=532,
 )
 
 
@@ -191,8 +193,8 @@ _HYPERPARAMETERSETCONFIGBLOB = _descriptor.Descriptor(
       name='value', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigBlob.value',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=489,
-  serialized_end=717,
+  serialized_start=535,
+  serialized_end=763,
 )
 
 
@@ -236,8 +238,8 @@ _CONTINUOUSHYPERPARAMETERSETCONFIGBLOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=720,
-  serialized_end=1011,
+  serialized_start=766,
+  serialized_end=1057,
 )
 
 
@@ -267,8 +269,8 @@ _DISCRETEHYPERPARAMETERSETCONFIGBLOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1013,
-  serialized_end=1127,
+  serialized_start=1059,
+  serialized_end=1173,
 )
 
 
@@ -281,15 +283,15 @@ _CONFIGDIFF = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='hyperparameter_set', full_name='ai.verta.modeldb.versioning.ConfigDiff.hyperparameter_set', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='hyperparameters', full_name='ai.verta.modeldb.versioning.ConfigDiff.hyperparameters', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -305,8 +307,8 @@ _CONFIGDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1130,
-  serialized_end=1308,
+  serialized_start=1176,
+  serialized_end=1354,
 )
 
 
@@ -318,16 +320,44 @@ _HYPERPARAMETERSETCONFIGDIFF = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='A', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.A', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='status', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.status', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='B', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.B', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='name', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='continuous_a', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.continuous_a', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='discrete_a', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.discrete_a', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='continuous_b', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.continuous_b', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='discrete_b', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.discrete_b', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -342,9 +372,15 @@ _HYPERPARAMETERSETCONFIGDIFF = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
+    _descriptor.OneofDescriptor(
+      name='A', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.A',
+      index=0, containing_type=None, fields=[]),
+    _descriptor.OneofDescriptor(
+      name='B', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.B',
+      index=1, containing_type=None, fields=[]),
   ],
-  serialized_start=1311,
-  serialized_end=1478,
+  serialized_start=1357,
+  serialized_end=1842,
 )
 
 
@@ -356,16 +392,30 @@ _HYPERPARAMETERCONFIGDIFF = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='A', full_name='ai.verta.modeldb.versioning.HyperparameterConfigDiff.A', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='status', full_name='ai.verta.modeldb.versioning.HyperparameterConfigDiff.status', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='B', full_name='ai.verta.modeldb.versioning.HyperparameterConfigDiff.B', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='name', full_name='ai.verta.modeldb.versioning.HyperparameterConfigDiff.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='A', full_name='ai.verta.modeldb.versioning.HyperparameterConfigDiff.A', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='B', full_name='ai.verta.modeldb.versioning.HyperparameterConfigDiff.B', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -381,8 +431,8 @@ _HYPERPARAMETERCONFIGDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1481,
-  serialized_end=1639,
+  serialized_start=1845,
+  serialized_end=2101,
 )
 
 _CONFIGBLOB.fields_by_name['hyperparameter_set'].message_type = _HYPERPARAMETERSETCONFIGBLOB
@@ -411,10 +461,26 @@ _CONTINUOUSHYPERPARAMETERSETCONFIGBLOB.fields_by_name['interval_step'].message_t
 _DISCRETEHYPERPARAMETERSETCONFIGBLOB.fields_by_name['values'].message_type = _HYPERPARAMETERVALUESCONFIGBLOB
 _CONFIGDIFF.fields_by_name['hyperparameter_set'].message_type = _HYPERPARAMETERSETCONFIGDIFF
 _CONFIGDIFF.fields_by_name['hyperparameters'].message_type = _HYPERPARAMETERCONFIGDIFF
-_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['A'].message_type = _HYPERPARAMETERSETCONFIGBLOB
-_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['B'].message_type = _HYPERPARAMETERSETCONFIGBLOB
-_HYPERPARAMETERCONFIGDIFF.fields_by_name['A'].message_type = _HYPERPARAMETERCONFIGBLOB
-_HYPERPARAMETERCONFIGDIFF.fields_by_name['B'].message_type = _HYPERPARAMETERCONFIGBLOB
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['continuous_a'].message_type = _CONTINUOUSHYPERPARAMETERSETCONFIGBLOB
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['discrete_a'].message_type = _DISCRETEHYPERPARAMETERSETCONFIGBLOB
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['continuous_b'].message_type = _CONTINUOUSHYPERPARAMETERSETCONFIGBLOB
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['discrete_b'].message_type = _DISCRETEHYPERPARAMETERSETCONFIGBLOB
+_HYPERPARAMETERSETCONFIGDIFF.oneofs_by_name['A'].fields.append(
+  _HYPERPARAMETERSETCONFIGDIFF.fields_by_name['continuous_a'])
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['continuous_a'].containing_oneof = _HYPERPARAMETERSETCONFIGDIFF.oneofs_by_name['A']
+_HYPERPARAMETERSETCONFIGDIFF.oneofs_by_name['A'].fields.append(
+  _HYPERPARAMETERSETCONFIGDIFF.fields_by_name['discrete_a'])
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['discrete_a'].containing_oneof = _HYPERPARAMETERSETCONFIGDIFF.oneofs_by_name['A']
+_HYPERPARAMETERSETCONFIGDIFF.oneofs_by_name['B'].fields.append(
+  _HYPERPARAMETERSETCONFIGDIFF.fields_by_name['continuous_b'])
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['continuous_b'].containing_oneof = _HYPERPARAMETERSETCONFIGDIFF.oneofs_by_name['B']
+_HYPERPARAMETERSETCONFIGDIFF.oneofs_by_name['B'].fields.append(
+  _HYPERPARAMETERSETCONFIGDIFF.fields_by_name['discrete_b'])
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['discrete_b'].containing_oneof = _HYPERPARAMETERSETCONFIGDIFF.oneofs_by_name['B']
+_HYPERPARAMETERCONFIGDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
+_HYPERPARAMETERCONFIGDIFF.fields_by_name['A'].message_type = _HYPERPARAMETERVALUESCONFIGBLOB
+_HYPERPARAMETERCONFIGDIFF.fields_by_name['B'].message_type = _HYPERPARAMETERVALUESCONFIGBLOB
 DESCRIPTOR.message_types_by_name['ConfigBlob'] = _CONFIGBLOB
 DESCRIPTOR.message_types_by_name['HyperparameterConfigBlob'] = _HYPERPARAMETERCONFIGBLOB
 DESCRIPTOR.message_types_by_name['HyperparameterValuesConfigBlob'] = _HYPERPARAMETERVALUESCONFIGBLOB

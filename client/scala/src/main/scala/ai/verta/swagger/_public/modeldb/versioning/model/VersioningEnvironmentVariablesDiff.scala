@@ -9,23 +9,23 @@ import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatu
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class VersioningHyperparameterConfigDiff (
+case class VersioningEnvironmentVariablesDiff (
   status: Option[DiffStatusEnumDiffStatus] = None,
   name: Option[String] = None,
-  A: Option[VersioningHyperparameterValuesConfigBlob] = None,
-  B: Option[VersioningHyperparameterValuesConfigBlob] = None
+  value_a: Option[String] = None,
+  value_b: Option[String] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningHyperparameterConfigDiff.toJson(this)
+  def toJson(): JValue = VersioningEnvironmentVariablesDiff.toJson(this)
 }
 
-object VersioningHyperparameterConfigDiff {
-  def toJson(obj: VersioningHyperparameterConfigDiff): JObject = {
+object VersioningEnvironmentVariablesDiff {
+  def toJson(obj: VersioningEnvironmentVariablesDiff): JObject = {
     new JObject(
       List[Option[JField]](
         obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x))),
         obj.name.map(x => JField("name", JString(x))),
-        obj.A.map(x => JField("A", ((x: VersioningHyperparameterValuesConfigBlob) => VersioningHyperparameterValuesConfigBlob.toJson(x))(x))),
-        obj.B.map(x => JField("B", ((x: VersioningHyperparameterValuesConfigBlob) => VersioningHyperparameterValuesConfigBlob.toJson(x))(x)))
+        obj.value_a.map(x => JField("value_a", JString(x))),
+        obj.value_b.map(x => JField("value_b", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -33,16 +33,16 @@ object VersioningHyperparameterConfigDiff {
     )
   }
 
-  def fromJson(value: JValue): VersioningHyperparameterConfigDiff =
+  def fromJson(value: JValue): VersioningEnvironmentVariablesDiff =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningHyperparameterConfigDiff(
+        VersioningEnvironmentVariablesDiff(
           // TODO: handle required
           status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
-          A = fieldsMap.get("A").map(VersioningHyperparameterValuesConfigBlob.fromJson),
-          B = fieldsMap.get("B").map(VersioningHyperparameterValuesConfigBlob.fromJson)
+          value_a = fieldsMap.get("value_a").map(JsonConverter.fromJsonString),
+          value_b = fieldsMap.get("value_b").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

@@ -9,21 +9,21 @@ import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatu
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class VersioningGitCodeDiff (
+case class VersioningPathDatasetComponentDiff (
   status: Option[DiffStatusEnumDiffStatus] = None,
-  A: Option[VersioningGitCodeBlob] = None,
-  B: Option[VersioningGitCodeBlob] = None
+  A: Option[VersioningPathDatasetComponentBlob] = None,
+  B: Option[VersioningPathDatasetComponentBlob] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningGitCodeDiff.toJson(this)
+  def toJson(): JValue = VersioningPathDatasetComponentDiff.toJson(this)
 }
 
-object VersioningGitCodeDiff {
-  def toJson(obj: VersioningGitCodeDiff): JObject = {
+object VersioningPathDatasetComponentDiff {
+  def toJson(obj: VersioningPathDatasetComponentDiff): JObject = {
     new JObject(
       List[Option[JField]](
         obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x))),
-        obj.A.map(x => JField("A", ((x: VersioningGitCodeBlob) => VersioningGitCodeBlob.toJson(x))(x))),
-        obj.B.map(x => JField("B", ((x: VersioningGitCodeBlob) => VersioningGitCodeBlob.toJson(x))(x)))
+        obj.A.map(x => JField("A", ((x: VersioningPathDatasetComponentBlob) => VersioningPathDatasetComponentBlob.toJson(x))(x))),
+        obj.B.map(x => JField("B", ((x: VersioningPathDatasetComponentBlob) => VersioningPathDatasetComponentBlob.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -31,15 +31,15 @@ object VersioningGitCodeDiff {
     )
   }
 
-  def fromJson(value: JValue): VersioningGitCodeDiff =
+  def fromJson(value: JValue): VersioningPathDatasetComponentDiff =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningGitCodeDiff(
+        VersioningPathDatasetComponentDiff(
           // TODO: handle required
           status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson),
-          A = fieldsMap.get("A").map(VersioningGitCodeBlob.fromJson),
-          B = fieldsMap.get("B").map(VersioningGitCodeBlob.fromJson)
+          A = fieldsMap.get("A").map(VersioningPathDatasetComponentBlob.fromJson),
+          B = fieldsMap.get("B").map(VersioningPathDatasetComponentBlob.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

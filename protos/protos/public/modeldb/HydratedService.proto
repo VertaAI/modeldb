@@ -8,7 +8,7 @@ import "google/api/annotations.proto";
 import "protos/public/uac/UACService.proto";
 import "protos/public/uac/Organization.proto";
 import "protos/public/uac/Team.proto";
-import "protos/public/uac/Collaborator.proto";
+// import "protos/public/uac/Collaborator.proto";
 import "protos/public/modeldb/Comment.proto";
 import "protos/public/modeldb/ProjectService.proto";
 import "protos/public/modeldb/ExperimentService.proto";
