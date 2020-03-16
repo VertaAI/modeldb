@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/v1/project/addProjectAttributes": {
+    "/project/addProjectAttributes": {
       "post": {
         "operationId": "addProjectAttributes",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/v1/project/addProjectTag": {
+    "/project/addProjectTag": {
       "post": {
         "operationId": "addProjectTag",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/v1/project/addProjectTags": {
+    "/project/addProjectTags": {
       "post": {
         "operationId": "addProjectTags",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/v1/project/createProject": {
+    "/project/createProject": {
       "post": {
         "operationId": "createProject",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/v1/project/deepCopyProject": {
+    "/project/deepCopyProject": {
       "post": {
         "operationId": "deepCopyProject",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/v1/project/deleteArtifact": {
+    "/project/deleteArtifact": {
       "delete": {
         "operationId": "deleteArtifact",
         "responses": {
@@ -203,7 +203,7 @@
         ]
       }
     },
-    "/v1/project/deleteProject": {
+    "/project/deleteProject": {
       "delete": {
         "operationId": "deleteProject",
         "responses": {
@@ -235,7 +235,7 @@
         ]
       }
     },
-    "/v1/project/deleteProjectAttributes": {
+    "/project/deleteProjectAttributes": {
       "delete": {
         "operationId": "deleteProjectAttributes",
         "responses": {
@@ -282,7 +282,7 @@
         ]
       }
     },
-    "/v1/project/deleteProjectTag": {
+    "/project/deleteProjectTag": {
       "delete": {
         "operationId": "deleteProjectTag",
         "responses": {
@@ -314,7 +314,7 @@
         ]
       }
     },
-    "/v1/project/deleteProjectTags": {
+    "/project/deleteProjectTags": {
       "delete": {
         "operationId": "deleteProjectTags",
         "responses": {
@@ -346,7 +346,7 @@
         ]
       }
     },
-    "/v1/project/deleteProjects": {
+    "/project/deleteProjects": {
       "delete": {
         "operationId": "deleteProjects",
         "responses": {
@@ -378,7 +378,7 @@
         ]
       }
     },
-    "/v1/project/findProjects": {
+    "/project/findProjects": {
       "post": {
         "summary": "queries",
         "operationId": "findProjects",
@@ -411,7 +411,7 @@
         ]
       }
     },
-    "/v1/project/getArtifacts": {
+    "/project/getArtifacts": {
       "get": {
         "operationId": "getArtifacts",
         "responses": {
@@ -447,7 +447,7 @@
         ]
       }
     },
-    "/v1/project/getProjectAttributes": {
+    "/project/getProjectAttributes": {
       "get": {
         "operationId": "getProjectAttributes",
         "responses": {
@@ -494,7 +494,7 @@
         ]
       }
     },
-    "/v1/project/getProjectById": {
+    "/project/getProjectById": {
       "get": {
         "operationId": "getProjectById",
         "responses": {
@@ -524,7 +524,7 @@
         ]
       }
     },
-    "/v1/project/getProjectByName": {
+    "/project/getProjectByName": {
       "get": {
         "operationId": "getProjectByName",
         "responses": {
@@ -560,7 +560,7 @@
         ]
       }
     },
-    "/v1/project/getProjectCodeVersion": {
+    "/project/getProjectCodeVersion": {
       "get": {
         "operationId": "getProjectCodeVersion",
         "responses": {
@@ -590,7 +590,7 @@
         ]
       }
     },
-    "/v1/project/getProjectReadme": {
+    "/project/getProjectReadme": {
       "get": {
         "operationId": "getProjectReadme",
         "responses": {
@@ -620,7 +620,7 @@
         ]
       }
     },
-    "/v1/project/getProjectShortName": {
+    "/project/getProjectShortName": {
       "get": {
         "operationId": "getProjectShortName",
         "responses": {
@@ -650,7 +650,7 @@
         ]
       }
     },
-    "/v1/project/getProjectTags": {
+    "/project/getProjectTags": {
       "get": {
         "operationId": "getProjectTags",
         "responses": {
@@ -680,7 +680,7 @@
         ]
       }
     },
-    "/v1/project/getProjects": {
+    "/project/getProjects": {
       "get": {
         "operationId": "getProjects",
         "responses": {
@@ -737,7 +737,7 @@
         ]
       }
     },
-    "/v1/project/getPublicProjects": {
+    "/project/getPublicProjects": {
       "get": {
         "operationId": "getPublicProjects",
         "responses": {
@@ -773,7 +773,7 @@
         ]
       }
     },
-    "/v1/project/getSummary": {
+    "/project/getSummary": {
       "get": {
         "operationId": "getSummary",
         "responses": {
@@ -803,7 +803,7 @@
         ]
       }
     },
-    "/v1/project/getUrlForArtifact": {
+    "/project/getUrlForArtifact": {
       "post": {
         "summary": "artifacts",
         "operationId": "getUrlForArtifact",
@@ -836,7 +836,7 @@
         ]
       }
     },
-    "/v1/project/logArtifacts": {
+    "/project/logArtifacts": {
       "post": {
         "summary": "artifacts",
         "operationId": "logArtifacts",
@@ -869,7 +869,7 @@
         ]
       }
     },
-    "/v1/project/logProjectCodeVersion": {
+    "/project/logProjectCodeVersion": {
       "post": {
         "summary": "code version",
         "operationId": "logProjectCodeVersion",
@@ -902,7 +902,7 @@
         ]
       }
     },
-    "/v1/project/setProjectReadme": {
+    "/project/setProjectReadme": {
       "post": {
         "operationId": "setProjectReadme",
         "responses": {
@@ -934,7 +934,7 @@
         ]
       }
     },
-    "/v1/project/setProjectShortName": {
+    "/project/setProjectShortName": {
       "post": {
         "operationId": "setProjectShortName",
         "responses": {
@@ -966,7 +966,7 @@
         ]
       }
     },
-    "/v1/project/setProjectVisibility": {
+    "/project/setProjectVisibility": {
       "post": {
         "operationId": "setProjectVisibility",
         "responses": {
@@ -998,7 +998,7 @@
         ]
       }
     },
-    "/v1/project/setProjectWorkspace": {
+    "/project/setProjectWorkspace": {
       "post": {
         "operationId": "setProjectWorkspace",
         "responses": {
@@ -1030,7 +1030,7 @@
         ]
       }
     },
-    "/v1/project/updateProjectAttributes": {
+    "/project/updateProjectAttributes": {
       "post": {
         "operationId": "updateProjectAttributes",
         "responses": {
@@ -1062,7 +1062,7 @@
         ]
       }
     },
-    "/v1/project/updateProjectDescription": {
+    "/project/updateProjectDescription": {
       "post": {
         "operationId": "updateProjectDescription",
         "responses": {
@@ -1094,7 +1094,7 @@
         ]
       }
     },
-    "/v1/project/updateProjectName": {
+    "/project/updateProjectName": {
       "post": {
         "operationId": "updateProjectName",
         "responses": {
@@ -1126,7 +1126,7 @@
         ]
       }
     },
-    "/v1/project/verifyConnection": {
+    "/project/verifyConnection": {
       "get": {
         "operationId": "verifyConnection",
         "responses": {
@@ -2080,5 +2080,6 @@
         }
       }
     }
-  }
+  },
+  "basePath": "/v1"
 }
