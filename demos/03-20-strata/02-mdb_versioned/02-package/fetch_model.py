@@ -18,7 +18,11 @@ python_ver = '.'.join([
     env_ver._msg.python.version.major,
     env_ver._msg.python.version.minor,
 ])
-# TODO: this
+with open("Dockerfile", 'w+') as f:
+    contents = f.readlines()
+    contents[0] += python_ver
+    f.seek(0)
+    f.write('\n'.join(contents))
 
 # retrieve Python package version pins
 requirements = '\n'.join([
