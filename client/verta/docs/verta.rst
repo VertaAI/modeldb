@@ -7,29 +7,28 @@ The Complete MLOps Platform
 Verta is a complete MLOps (ML Operations) platform focused on operationalization of ML 
 models, i.e., integrating ML development and delivery into regular software in a way 
 that allows data scientists to continue focus on machine learning and data science, 
-while providing ML and DevOps Engineers to safely and reliably integrate ML into the
+while providing ML and DevOps Engineers the means to safely and reliably integrate ML into the
 broader software ecosystem in any organization.
 
 
 As shown below, the full ML lifecycle consists of three components: the data preparation
-stage, the model development, and model operationalization. 
-Verta comes in during model development and provides model versioning that serves as the
-connection between the development and operationalization phases.
-During operationalization, Verta provides modular components for model deployment, release,
+loop (including ETL, Data Cleaning), the model development loop (including training, feature pre-processing,
+model validation), and model operationalization (including packaging, release, monitoring and operations). 
+Verta comes in during model development and provides model versioning capabilities via ModelDB.
+ModelDB then serves as the connection between the development and operationalization phases.
+During the operationalization phase, Verta provides modular components for model deployment, release,
 monitoring, and maintenance.
 
 .. image:: /_static/images/ml-lifecycle-1.png
     :width: 100%
 
-(Learn more about the full ML lifecycle `here (fix this) <https://app.verta.ai/profile>`__.)
-
 Verta is an open-core platform; i.e., the platform is based on core open-source technology
 developed by the Verta team that is freely available. Find more information about our
-open-source technology `here (fix this) <https://app.verta.ai/profile>`__ and in subsequent
+open-source technology `here <https://verta.ai/open-source>`_ and in subsequent
 sections.
 
-Verta provides MLOps functionality in three key areas: model versioning and metadata, 
-model deployment and release, and real-time model monitoring.
+Verta provides MLOps functionality in three key areas: **model versioning and metadata**, 
+**model deployment and release**, and **real-time model monitoring**.
 
 ===========================
 Model Versioning & Metadata
