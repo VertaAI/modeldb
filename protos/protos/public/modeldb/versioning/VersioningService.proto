@@ -11,7 +11,6 @@ import "protos/public/modeldb/ExperimentRunService.proto";
 import "protos/public/modeldb/versioning/Code.proto";
 import "protos/public/modeldb/versioning/Config.proto";
 import "protos/public/modeldb/versioning/Dataset.proto";
-import "protos/public/modeldb/versioning/Enums.proto";
 import "protos/public/modeldb/versioning/Environment.proto";
 
 // Base commit for the versioning system
@@ -73,6 +72,15 @@ message BlobExpanded {
     // Each element goes one level deeper. So ["foo", "bar"] represents the same as /foo/bar
     repeated string location = 1;
     Blob blob = 2;
+}
+
+message DiffStatusEnum {
+    enum DiffStatus {
+        UNKNOWN = 0;
+        ADDED = 1;
+        DELETED = 2;
+        MODIFIED = 3;
+    }
 }
 
 message BlobDiff {
