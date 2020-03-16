@@ -4,7 +4,7 @@ import cloudpickle
 client = Client('https://dev.verta.ai')
 proj = client.set_project('Tweet Classification', workspace='Convoliution')
 expt = client.set_experiment('SpaCy')
-run = client.get_experiment_run('First Model')
+run = client.set_experiment_run('First Model')
 commit = run.get_commit()[0]
 
 # retrieve model
