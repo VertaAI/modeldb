@@ -10,20 +10,14 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class PathDatasetDiff {
-    public List<PathDatasetComponentBlob> A;
-    public List<PathDatasetComponentBlob> B;
+    public List<PathDatasetComponentDiff> Components;
 
     public PathDatasetDiff() {
-        this.A = null;
-        this.B = null;
+        this.Components = null;
     }
 
-    public PathDatasetDiff setA(List<PathDatasetComponentBlob> value) {
-        this.A = value;
-        return this;
-    }
-    public PathDatasetDiff setB(List<PathDatasetComponentBlob> value) {
-        this.B = value;
+    public PathDatasetDiff setComponents(List<PathDatasetComponentDiff> value) {
+        this.Components = value;
         return this;
     }
 
@@ -34,12 +28,8 @@ public class PathDatasetDiff {
 
         PathDatasetDiff obj = new PathDatasetDiff();
         {
-            Function<ai.verta.modeldb.versioning.PathDatasetDiff,List<PathDatasetComponentBlob>> f = x -> blob.getAList().stream().map(PathDatasetComponentBlob::fromProto).collect(Collectors.toList());
-            obj.A = f.apply(blob);
-        }
-        {
-            Function<ai.verta.modeldb.versioning.PathDatasetDiff,List<PathDatasetComponentBlob>> f = x -> blob.getBList().stream().map(PathDatasetComponentBlob::fromProto).collect(Collectors.toList());
-            obj.B = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.PathDatasetDiff,List<PathDatasetComponentDiff>> f = x -> blob.getComponentsList().stream().map(PathDatasetComponentDiff::fromProto).collect(Collectors.toList());
+            obj.Components = f.apply(blob);
         }
         return obj;
     }
@@ -47,14 +37,8 @@ public class PathDatasetDiff {
     public ai.verta.modeldb.versioning.PathDatasetDiff.Builder toProto() {
         ai.verta.modeldb.versioning.PathDatasetDiff.Builder builder = ai.verta.modeldb.versioning.PathDatasetDiff.newBuilder();
         {
-            if (this.A != null) {
-                Function<ai.verta.modeldb.versioning.PathDatasetDiff.Builder,Void> f = x -> { builder.addAllA(this.A.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
-                f.apply(builder);
-            }
-        }
-        {
-            if (this.B != null) {
-                Function<ai.verta.modeldb.versioning.PathDatasetDiff.Builder,Void> f = x -> { builder.addAllB(this.B.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+            if (this.Components != null) {
+                Function<ai.verta.modeldb.versioning.PathDatasetDiff.Builder,Void> f = x -> { builder.addAllComponents(this.Components.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
                 f.apply(builder);
             }
         }
@@ -67,8 +51,7 @@ public class PathDatasetDiff {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        visitor.preVisitDeepListOfPathDatasetComponentBlob(this.A);
-        visitor.preVisitDeepListOfPathDatasetComponentBlob(this.B);
+        visitor.preVisitDeepListOfPathDatasetComponentDiff(this.Components);
     }
 
     public PathDatasetDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -76,8 +59,7 @@ public class PathDatasetDiff {
     }
 
     public PathDatasetDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-        this.A = visitor.postVisitDeepListOfPathDatasetComponentBlob(this.A);
-        this.B = visitor.postVisitDeepListOfPathDatasetComponentBlob(this.B);
+        this.Components = visitor.postVisitDeepListOfPathDatasetComponentDiff(this.Components);
         return this.postVisitShallow(visitor);
     }
 }

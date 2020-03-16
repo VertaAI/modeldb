@@ -12,16 +12,16 @@ import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 public class EnvironmentDiff {
     public PythonEnvironmentDiff Python;
     public DockerEnvironmentDiff Docker;
-    public List<EnvironmentVariablesBlob> EnvironmentVariablesA;
-    public List<EnvironmentVariablesBlob> EnvironmentVariablesB;
+    public List<EnvironmentVariablesDiff> EnvironmentVariables;
+    public DiffStatusEnumDiffStatus CommandLineStatus;
     public List<String> CommandLineA;
     public List<String> CommandLineB;
 
     public EnvironmentDiff() {
         this.Python = null;
         this.Docker = null;
-        this.EnvironmentVariablesA = null;
-        this.EnvironmentVariablesB = null;
+        this.EnvironmentVariables = null;
+        this.CommandLineStatus = null;
         this.CommandLineA = null;
         this.CommandLineB = null;
     }
@@ -34,12 +34,12 @@ public class EnvironmentDiff {
         this.Docker = value;
         return this;
     }
-    public EnvironmentDiff setEnvironmentVariablesA(List<EnvironmentVariablesBlob> value) {
-        this.EnvironmentVariablesA = value;
+    public EnvironmentDiff setEnvironmentVariables(List<EnvironmentVariablesDiff> value) {
+        this.EnvironmentVariables = value;
         return this;
     }
-    public EnvironmentDiff setEnvironmentVariablesB(List<EnvironmentVariablesBlob> value) {
-        this.EnvironmentVariablesB = value;
+    public EnvironmentDiff setCommandLineStatus(DiffStatusEnumDiffStatus value) {
+        this.CommandLineStatus = value;
         return this;
     }
     public EnvironmentDiff setCommandLineA(List<String> value) {
@@ -66,12 +66,12 @@ public class EnvironmentDiff {
             obj.Docker = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.EnvironmentDiff,List<EnvironmentVariablesBlob>> f = x -> blob.getEnvironmentVariablesAList().stream().map(EnvironmentVariablesBlob::fromProto).collect(Collectors.toList());
-            obj.EnvironmentVariablesA = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.EnvironmentDiff,List<EnvironmentVariablesDiff>> f = x -> blob.getEnvironmentVariablesList().stream().map(EnvironmentVariablesDiff::fromProto).collect(Collectors.toList());
+            obj.EnvironmentVariables = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.EnvironmentDiff,List<EnvironmentVariablesBlob>> f = x -> blob.getEnvironmentVariablesBList().stream().map(EnvironmentVariablesBlob::fromProto).collect(Collectors.toList());
-            obj.EnvironmentVariablesB = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.EnvironmentDiff,DiffStatusEnumDiffStatus> f = x -> DiffStatusEnumDiffStatus.fromProto(blob.getCommandLineStatus());
+            obj.CommandLineStatus = f.apply(blob);
         }
         {
             Function<ai.verta.modeldb.versioning.EnvironmentDiff,List<String>> f = x -> blob.getCommandLineAList();
@@ -99,14 +99,14 @@ public class EnvironmentDiff {
             }
         }
         {
-            if (this.EnvironmentVariablesA != null) {
-                Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder,Void> f = x -> { builder.addAllEnvironmentVariablesA(this.EnvironmentVariablesA.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+            if (this.EnvironmentVariables != null) {
+                Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder,Void> f = x -> { builder.addAllEnvironmentVariables(this.EnvironmentVariables.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
                 f.apply(builder);
             }
         }
         {
-            if (this.EnvironmentVariablesB != null) {
-                Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder,Void> f = x -> { builder.addAllEnvironmentVariablesB(this.EnvironmentVariablesB.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+            if (this.CommandLineStatus != null) {
+                Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder,Void> f = x -> { builder.setCommandLineStatus(this.CommandLineStatus.toProto()); return null; };
                 f.apply(builder);
             }
         }
@@ -133,8 +133,8 @@ public class EnvironmentDiff {
         this.preVisitShallow(visitor);
         visitor.preVisitDeepPythonEnvironmentDiff(this.Python);
         visitor.preVisitDeepDockerEnvironmentDiff(this.Docker);
-        visitor.preVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariablesA);
-        visitor.preVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariablesB);
+        visitor.preVisitDeepListOfEnvironmentVariablesDiff(this.EnvironmentVariables);
+        visitor.preVisitDeepDiffStatusEnumDiffStatus(this.CommandLineStatus);
         visitor.preVisitDeepListOfString(this.CommandLineA);
         visitor.preVisitDeepListOfString(this.CommandLineB);
     }
@@ -146,8 +146,8 @@ public class EnvironmentDiff {
     public EnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
         this.Python = visitor.postVisitDeepPythonEnvironmentDiff(this.Python);
         this.Docker = visitor.postVisitDeepDockerEnvironmentDiff(this.Docker);
-        this.EnvironmentVariablesA = visitor.postVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariablesA);
-        this.EnvironmentVariablesB = visitor.postVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariablesB);
+        this.EnvironmentVariables = visitor.postVisitDeepListOfEnvironmentVariablesDiff(this.EnvironmentVariables);
+        this.CommandLineStatus = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.CommandLineStatus);
         this.CommandLineA = visitor.postVisitDeepListOfString(this.CommandLineA);
         this.CommandLineB = visitor.postVisitDeepListOfString(this.CommandLineB);
         return this.postVisitShallow(visitor);

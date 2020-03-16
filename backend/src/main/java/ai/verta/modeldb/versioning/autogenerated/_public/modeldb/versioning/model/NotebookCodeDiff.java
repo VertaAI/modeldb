@@ -10,20 +10,20 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class NotebookCodeDiff {
-    public NotebookCodeBlob A;
-    public NotebookCodeBlob B;
+    public PathDatasetComponentDiff Path;
+    public GitCodeDiff GitRepo;
 
     public NotebookCodeDiff() {
-        this.A = null;
-        this.B = null;
+        this.Path = null;
+        this.GitRepo = null;
     }
 
-    public NotebookCodeDiff setA(NotebookCodeBlob value) {
-        this.A = value;
+    public NotebookCodeDiff setPath(PathDatasetComponentDiff value) {
+        this.Path = value;
         return this;
     }
-    public NotebookCodeDiff setB(NotebookCodeBlob value) {
-        this.B = value;
+    public NotebookCodeDiff setGitRepo(GitCodeDiff value) {
+        this.GitRepo = value;
         return this;
     }
 
@@ -34,12 +34,12 @@ public class NotebookCodeDiff {
 
         NotebookCodeDiff obj = new NotebookCodeDiff();
         {
-            Function<ai.verta.modeldb.versioning.NotebookCodeDiff,NotebookCodeBlob> f = x -> NotebookCodeBlob.fromProto(blob.getA());
-            obj.A = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.NotebookCodeDiff,PathDatasetComponentDiff> f = x -> PathDatasetComponentDiff.fromProto(blob.getPath());
+            obj.Path = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.NotebookCodeDiff,NotebookCodeBlob> f = x -> NotebookCodeBlob.fromProto(blob.getB());
-            obj.B = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.NotebookCodeDiff,GitCodeDiff> f = x -> GitCodeDiff.fromProto(blob.getGitRepo());
+            obj.GitRepo = f.apply(blob);
         }
         return obj;
     }
@@ -47,14 +47,14 @@ public class NotebookCodeDiff {
     public ai.verta.modeldb.versioning.NotebookCodeDiff.Builder toProto() {
         ai.verta.modeldb.versioning.NotebookCodeDiff.Builder builder = ai.verta.modeldb.versioning.NotebookCodeDiff.newBuilder();
         {
-            if (this.A != null) {
-                Function<ai.verta.modeldb.versioning.NotebookCodeDiff.Builder,Void> f = x -> { builder.setA(this.A.toProto()); return null; };
+            if (this.Path != null) {
+                Function<ai.verta.modeldb.versioning.NotebookCodeDiff.Builder,Void> f = x -> { builder.setPath(this.Path.toProto()); return null; };
                 f.apply(builder);
             }
         }
         {
-            if (this.B != null) {
-                Function<ai.verta.modeldb.versioning.NotebookCodeDiff.Builder,Void> f = x -> { builder.setB(this.B.toProto()); return null; };
+            if (this.GitRepo != null) {
+                Function<ai.verta.modeldb.versioning.NotebookCodeDiff.Builder,Void> f = x -> { builder.setGitRepo(this.GitRepo.toProto()); return null; };
                 f.apply(builder);
             }
         }
@@ -67,8 +67,8 @@ public class NotebookCodeDiff {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        visitor.preVisitDeepNotebookCodeBlob(this.A);
-        visitor.preVisitDeepNotebookCodeBlob(this.B);
+        visitor.preVisitDeepPathDatasetComponentDiff(this.Path);
+        visitor.preVisitDeepGitCodeDiff(this.GitRepo);
     }
 
     public NotebookCodeDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -76,8 +76,8 @@ public class NotebookCodeDiff {
     }
 
     public NotebookCodeDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-        this.A = visitor.postVisitDeepNotebookCodeBlob(this.A);
-        this.B = visitor.postVisitDeepNotebookCodeBlob(this.B);
+        this.Path = visitor.postVisitDeepPathDatasetComponentDiff(this.Path);
+        this.GitRepo = visitor.postVisitDeepGitCodeDiff(this.GitRepo);
         return this.postVisitShallow(visitor);
     }
 }

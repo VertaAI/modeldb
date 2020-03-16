@@ -10,14 +10,20 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class GitCodeDiff {
+    public DiffStatusEnumDiffStatus Status;
     public GitCodeBlob A;
     public GitCodeBlob B;
 
     public GitCodeDiff() {
+        this.Status = null;
         this.A = null;
         this.B = null;
     }
 
+    public GitCodeDiff setStatus(DiffStatusEnumDiffStatus value) {
+        this.Status = value;
+        return this;
+    }
     public GitCodeDiff setA(GitCodeBlob value) {
         this.A = value;
         return this;
@@ -34,6 +40,10 @@ public class GitCodeDiff {
 
         GitCodeDiff obj = new GitCodeDiff();
         {
+            Function<ai.verta.modeldb.versioning.GitCodeDiff,DiffStatusEnumDiffStatus> f = x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
+            obj.Status = f.apply(blob);
+        }
+        {
             Function<ai.verta.modeldb.versioning.GitCodeDiff,GitCodeBlob> f = x -> GitCodeBlob.fromProto(blob.getA());
             obj.A = f.apply(blob);
         }
@@ -46,6 +56,12 @@ public class GitCodeDiff {
 
     public ai.verta.modeldb.versioning.GitCodeDiff.Builder toProto() {
         ai.verta.modeldb.versioning.GitCodeDiff.Builder builder = ai.verta.modeldb.versioning.GitCodeDiff.newBuilder();
+        {
+            if (this.Status != null) {
+                Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder,Void> f = x -> { builder.setStatus(this.Status.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
         {
             if (this.A != null) {
                 Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder,Void> f = x -> { builder.setA(this.A.toProto()); return null; };
@@ -67,6 +83,7 @@ public class GitCodeDiff {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
+        visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
         visitor.preVisitDeepGitCodeBlob(this.A);
         visitor.preVisitDeepGitCodeBlob(this.B);
     }
@@ -76,6 +93,7 @@ public class GitCodeDiff {
     }
 
     public GitCodeDiff postVisitDeep(Visitor visitor) throws ModelDBException {
+        this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
         this.A = visitor.postVisitDeepGitCodeBlob(this.A);
         this.B = visitor.postVisitDeepGitCodeBlob(this.B);
         return this.postVisitShallow(visitor);

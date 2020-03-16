@@ -10,20 +10,38 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class PythonEnvironmentDiff {
-    public PythonEnvironmentBlob A;
-    public PythonEnvironmentBlob B;
+    public DiffStatusEnumDiffStatus VersionStatus;
+    public VersionEnvironmentBlob VersionA;
+    public VersionEnvironmentBlob VersionB;
+    public List<PythonRequirementEnvironmentDiff> Requirements;
+    public List<PythonRequirementEnvironmentDiff> Constraints;
 
     public PythonEnvironmentDiff() {
-        this.A = null;
-        this.B = null;
+        this.VersionStatus = null;
+        this.VersionA = null;
+        this.VersionB = null;
+        this.Requirements = null;
+        this.Constraints = null;
     }
 
-    public PythonEnvironmentDiff setA(PythonEnvironmentBlob value) {
-        this.A = value;
+    public PythonEnvironmentDiff setVersionStatus(DiffStatusEnumDiffStatus value) {
+        this.VersionStatus = value;
         return this;
     }
-    public PythonEnvironmentDiff setB(PythonEnvironmentBlob value) {
-        this.B = value;
+    public PythonEnvironmentDiff setVersionA(VersionEnvironmentBlob value) {
+        this.VersionA = value;
+        return this;
+    }
+    public PythonEnvironmentDiff setVersionB(VersionEnvironmentBlob value) {
+        this.VersionB = value;
+        return this;
+    }
+    public PythonEnvironmentDiff setRequirements(List<PythonRequirementEnvironmentDiff> value) {
+        this.Requirements = value;
+        return this;
+    }
+    public PythonEnvironmentDiff setConstraints(List<PythonRequirementEnvironmentDiff> value) {
+        this.Constraints = value;
         return this;
     }
 
@@ -34,12 +52,24 @@ public class PythonEnvironmentDiff {
 
         PythonEnvironmentDiff obj = new PythonEnvironmentDiff();
         {
-            Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff,PythonEnvironmentBlob> f = x -> PythonEnvironmentBlob.fromProto(blob.getA());
-            obj.A = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff,DiffStatusEnumDiffStatus> f = x -> DiffStatusEnumDiffStatus.fromProto(blob.getVersionStatus());
+            obj.VersionStatus = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff,PythonEnvironmentBlob> f = x -> PythonEnvironmentBlob.fromProto(blob.getB());
-            obj.B = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff,VersionEnvironmentBlob> f = x -> VersionEnvironmentBlob.fromProto(blob.getVersionA());
+            obj.VersionA = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff,VersionEnvironmentBlob> f = x -> VersionEnvironmentBlob.fromProto(blob.getVersionB());
+            obj.VersionB = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff,List<PythonRequirementEnvironmentDiff>> f = x -> blob.getRequirementsList().stream().map(PythonRequirementEnvironmentDiff::fromProto).collect(Collectors.toList());
+            obj.Requirements = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff,List<PythonRequirementEnvironmentDiff>> f = x -> blob.getConstraintsList().stream().map(PythonRequirementEnvironmentDiff::fromProto).collect(Collectors.toList());
+            obj.Constraints = f.apply(blob);
         }
         return obj;
     }
@@ -47,14 +77,32 @@ public class PythonEnvironmentDiff {
     public ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder toProto() {
         ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder builder = ai.verta.modeldb.versioning.PythonEnvironmentDiff.newBuilder();
         {
-            if (this.A != null) {
-                Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder,Void> f = x -> { builder.setA(this.A.toProto()); return null; };
+            if (this.VersionStatus != null) {
+                Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder,Void> f = x -> { builder.setVersionStatus(this.VersionStatus.toProto()); return null; };
                 f.apply(builder);
             }
         }
         {
-            if (this.B != null) {
-                Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder,Void> f = x -> { builder.setB(this.B.toProto()); return null; };
+            if (this.VersionA != null) {
+                Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder,Void> f = x -> { builder.setVersionA(this.VersionA.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.VersionB != null) {
+                Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder,Void> f = x -> { builder.setVersionB(this.VersionB.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Requirements != null) {
+                Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder,Void> f = x -> { builder.addAllRequirements(this.Requirements.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Constraints != null) {
+                Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff.Builder,Void> f = x -> { builder.addAllConstraints(this.Constraints.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
                 f.apply(builder);
             }
         }
@@ -67,8 +115,11 @@ public class PythonEnvironmentDiff {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        visitor.preVisitDeepPythonEnvironmentBlob(this.A);
-        visitor.preVisitDeepPythonEnvironmentBlob(this.B);
+        visitor.preVisitDeepDiffStatusEnumDiffStatus(this.VersionStatus);
+        visitor.preVisitDeepVersionEnvironmentBlob(this.VersionA);
+        visitor.preVisitDeepVersionEnvironmentBlob(this.VersionB);
+        visitor.preVisitDeepListOfPythonRequirementEnvironmentDiff(this.Requirements);
+        visitor.preVisitDeepListOfPythonRequirementEnvironmentDiff(this.Constraints);
     }
 
     public PythonEnvironmentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -76,8 +127,11 @@ public class PythonEnvironmentDiff {
     }
 
     public PythonEnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-        this.A = visitor.postVisitDeepPythonEnvironmentBlob(this.A);
-        this.B = visitor.postVisitDeepPythonEnvironmentBlob(this.B);
+        this.VersionStatus = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.VersionStatus);
+        this.VersionA = visitor.postVisitDeepVersionEnvironmentBlob(this.VersionA);
+        this.VersionB = visitor.postVisitDeepVersionEnvironmentBlob(this.VersionB);
+        this.Requirements = visitor.postVisitDeepListOfPythonRequirementEnvironmentDiff(this.Requirements);
+        this.Constraints = visitor.postVisitDeepListOfPythonRequirementEnvironmentDiff(this.Constraints);
         return this.postVisitShallow(visitor);
     }
 }

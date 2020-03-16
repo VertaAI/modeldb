@@ -10,7 +10,7 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class NotebookCodeBlob {
-    public PathDatasetBlob Path;
+    public PathDatasetComponentBlob Path;
     public GitCodeBlob GitRepo;
 
     public NotebookCodeBlob() {
@@ -18,7 +18,7 @@ public class NotebookCodeBlob {
         this.GitRepo = null;
     }
 
-    public NotebookCodeBlob setPath(PathDatasetBlob value) {
+    public NotebookCodeBlob setPath(PathDatasetComponentBlob value) {
         this.Path = value;
         return this;
     }
@@ -34,7 +34,7 @@ public class NotebookCodeBlob {
 
         NotebookCodeBlob obj = new NotebookCodeBlob();
         {
-            Function<ai.verta.modeldb.versioning.NotebookCodeBlob,PathDatasetBlob> f = x -> PathDatasetBlob.fromProto(blob.getPath());
+            Function<ai.verta.modeldb.versioning.NotebookCodeBlob,PathDatasetComponentBlob> f = x -> PathDatasetComponentBlob.fromProto(blob.getPath());
             obj.Path = f.apply(blob);
         }
         {
@@ -67,7 +67,7 @@ public class NotebookCodeBlob {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        visitor.preVisitDeepPathDatasetBlob(this.Path);
+        visitor.preVisitDeepPathDatasetComponentBlob(this.Path);
         visitor.preVisitDeepGitCodeBlob(this.GitRepo);
     }
 
@@ -76,7 +76,7 @@ public class NotebookCodeBlob {
     }
 
     public NotebookCodeBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-        this.Path = visitor.postVisitDeepPathDatasetBlob(this.Path);
+        this.Path = visitor.postVisitDeepPathDatasetComponentBlob(this.Path);
         this.GitRepo = visitor.postVisitDeepGitCodeBlob(this.GitRepo);
         return this.postVisitShallow(visitor);
     }

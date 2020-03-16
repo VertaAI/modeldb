@@ -10,14 +10,20 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class DockerEnvironmentDiff {
+    public DiffStatusEnumDiffStatus Status;
     public DockerEnvironmentBlob A;
     public DockerEnvironmentBlob B;
 
     public DockerEnvironmentDiff() {
+        this.Status = null;
         this.A = null;
         this.B = null;
     }
 
+    public DockerEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
+        this.Status = value;
+        return this;
+    }
     public DockerEnvironmentDiff setA(DockerEnvironmentBlob value) {
         this.A = value;
         return this;
@@ -34,6 +40,10 @@ public class DockerEnvironmentDiff {
 
         DockerEnvironmentDiff obj = new DockerEnvironmentDiff();
         {
+            Function<ai.verta.modeldb.versioning.DockerEnvironmentDiff,DiffStatusEnumDiffStatus> f = x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
+            obj.Status = f.apply(blob);
+        }
+        {
             Function<ai.verta.modeldb.versioning.DockerEnvironmentDiff,DockerEnvironmentBlob> f = x -> DockerEnvironmentBlob.fromProto(blob.getA());
             obj.A = f.apply(blob);
         }
@@ -46,6 +56,12 @@ public class DockerEnvironmentDiff {
 
     public ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder toProto() {
         ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder builder = ai.verta.modeldb.versioning.DockerEnvironmentDiff.newBuilder();
+        {
+            if (this.Status != null) {
+                Function<ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder,Void> f = x -> { builder.setStatus(this.Status.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
         {
             if (this.A != null) {
                 Function<ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder,Void> f = x -> { builder.setA(this.A.toProto()); return null; };
@@ -67,6 +83,7 @@ public class DockerEnvironmentDiff {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
+        visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
         visitor.preVisitDeepDockerEnvironmentBlob(this.A);
         visitor.preVisitDeepDockerEnvironmentBlob(this.B);
     }
@@ -76,6 +93,7 @@ public class DockerEnvironmentDiff {
     }
 
     public DockerEnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
+        this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
         this.A = visitor.postVisitDeepDockerEnvironmentBlob(this.A);
         this.B = visitor.postVisitDeepDockerEnvironmentBlob(this.B);
         return this.postVisitShallow(visitor);

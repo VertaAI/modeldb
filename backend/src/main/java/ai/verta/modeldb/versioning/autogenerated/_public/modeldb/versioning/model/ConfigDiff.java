@@ -10,19 +10,19 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class ConfigDiff {
-    public HyperparameterSetConfigDiff HyperparameterSet;
-    public HyperparameterConfigDiff Hyperparameters;
+    public List<HyperparameterSetConfigDiff> HyperparameterSet;
+    public List<HyperparameterConfigDiff> Hyperparameters;
 
     public ConfigDiff() {
         this.HyperparameterSet = null;
         this.Hyperparameters = null;
     }
 
-    public ConfigDiff setHyperparameterSet(HyperparameterSetConfigDiff value) {
+    public ConfigDiff setHyperparameterSet(List<HyperparameterSetConfigDiff> value) {
         this.HyperparameterSet = value;
         return this;
     }
-    public ConfigDiff setHyperparameters(HyperparameterConfigDiff value) {
+    public ConfigDiff setHyperparameters(List<HyperparameterConfigDiff> value) {
         this.Hyperparameters = value;
         return this;
     }
@@ -34,11 +34,11 @@ public class ConfigDiff {
 
         ConfigDiff obj = new ConfigDiff();
         {
-            Function<ai.verta.modeldb.versioning.ConfigDiff,HyperparameterSetConfigDiff> f = x -> HyperparameterSetConfigDiff.fromProto(blob.getHyperparameterSet());
+            Function<ai.verta.modeldb.versioning.ConfigDiff,List<HyperparameterSetConfigDiff>> f = x -> blob.getHyperparameterSetList().stream().map(HyperparameterSetConfigDiff::fromProto).collect(Collectors.toList());
             obj.HyperparameterSet = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.ConfigDiff,HyperparameterConfigDiff> f = x -> HyperparameterConfigDiff.fromProto(blob.getHyperparameters());
+            Function<ai.verta.modeldb.versioning.ConfigDiff,List<HyperparameterConfigDiff>> f = x -> blob.getHyperparametersList().stream().map(HyperparameterConfigDiff::fromProto).collect(Collectors.toList());
             obj.Hyperparameters = f.apply(blob);
         }
         return obj;
@@ -48,13 +48,13 @@ public class ConfigDiff {
         ai.verta.modeldb.versioning.ConfigDiff.Builder builder = ai.verta.modeldb.versioning.ConfigDiff.newBuilder();
         {
             if (this.HyperparameterSet != null) {
-                Function<ai.verta.modeldb.versioning.ConfigDiff.Builder,Void> f = x -> { builder.setHyperparameterSet(this.HyperparameterSet.toProto()); return null; };
+                Function<ai.verta.modeldb.versioning.ConfigDiff.Builder,Void> f = x -> { builder.addAllHyperparameterSet(this.HyperparameterSet.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
                 f.apply(builder);
             }
         }
         {
             if (this.Hyperparameters != null) {
-                Function<ai.verta.modeldb.versioning.ConfigDiff.Builder,Void> f = x -> { builder.setHyperparameters(this.Hyperparameters.toProto()); return null; };
+                Function<ai.verta.modeldb.versioning.ConfigDiff.Builder,Void> f = x -> { builder.addAllHyperparameters(this.Hyperparameters.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
                 f.apply(builder);
             }
         }
@@ -67,8 +67,8 @@ public class ConfigDiff {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        visitor.preVisitDeepHyperparameterSetConfigDiff(this.HyperparameterSet);
-        visitor.preVisitDeepHyperparameterConfigDiff(this.Hyperparameters);
+        visitor.preVisitDeepListOfHyperparameterSetConfigDiff(this.HyperparameterSet);
+        visitor.preVisitDeepListOfHyperparameterConfigDiff(this.Hyperparameters);
     }
 
     public ConfigDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -76,8 +76,8 @@ public class ConfigDiff {
     }
 
     public ConfigDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-        this.HyperparameterSet = visitor.postVisitDeepHyperparameterSetConfigDiff(this.HyperparameterSet);
-        this.Hyperparameters = visitor.postVisitDeepHyperparameterConfigDiff(this.Hyperparameters);
+        this.HyperparameterSet = visitor.postVisitDeepListOfHyperparameterSetConfigDiff(this.HyperparameterSet);
+        this.Hyperparameters = visitor.postVisitDeepListOfHyperparameterConfigDiff(this.Hyperparameters);
         return this.postVisitShallow(visitor);
     }
 }

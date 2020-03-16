@@ -10,19 +10,31 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class HyperparameterConfigDiff {
-    public List<HyperparameterConfigBlob> A;
-    public List<HyperparameterConfigBlob> B;
+    public DiffStatusEnumDiffStatus Status;
+    public String Name;
+    public HyperparameterValuesConfigBlob A;
+    public HyperparameterValuesConfigBlob B;
 
     public HyperparameterConfigDiff() {
+        this.Status = null;
+        this.Name = null;
         this.A = null;
         this.B = null;
     }
 
-    public HyperparameterConfigDiff setA(List<HyperparameterConfigBlob> value) {
+    public HyperparameterConfigDiff setStatus(DiffStatusEnumDiffStatus value) {
+        this.Status = value;
+        return this;
+    }
+    public HyperparameterConfigDiff setName(String value) {
+        this.Name = value;
+        return this;
+    }
+    public HyperparameterConfigDiff setA(HyperparameterValuesConfigBlob value) {
         this.A = value;
         return this;
     }
-    public HyperparameterConfigDiff setB(List<HyperparameterConfigBlob> value) {
+    public HyperparameterConfigDiff setB(HyperparameterValuesConfigBlob value) {
         this.B = value;
         return this;
     }
@@ -34,11 +46,19 @@ public class HyperparameterConfigDiff {
 
         HyperparameterConfigDiff obj = new HyperparameterConfigDiff();
         {
-            Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff,List<HyperparameterConfigBlob>> f = x -> blob.getAList().stream().map(HyperparameterConfigBlob::fromProto).collect(Collectors.toList());
+            Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff,DiffStatusEnumDiffStatus> f = x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
+            obj.Status = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff,String> f = x -> (blob.getName());
+            obj.Name = f.apply(blob);
+        }
+        {
+            Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff,HyperparameterValuesConfigBlob> f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getA());
             obj.A = f.apply(blob);
         }
         {
-            Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff,List<HyperparameterConfigBlob>> f = x -> blob.getBList().stream().map(HyperparameterConfigBlob::fromProto).collect(Collectors.toList());
+            Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff,HyperparameterValuesConfigBlob> f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getB());
             obj.B = f.apply(blob);
         }
         return obj;
@@ -47,14 +67,26 @@ public class HyperparameterConfigDiff {
     public ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder toProto() {
         ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder builder = ai.verta.modeldb.versioning.HyperparameterConfigDiff.newBuilder();
         {
+            if (this.Status != null) {
+                Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder,Void> f = x -> { builder.setStatus(this.Status.toProto()); return null; };
+                f.apply(builder);
+            }
+        }
+        {
+            if (this.Name != null) {
+                Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder,Void> f = x -> { builder.setName(this.Name); return null; };
+                f.apply(builder);
+            }
+        }
+        {
             if (this.A != null) {
-                Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder,Void> f = x -> { builder.addAllA(this.A.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder,Void> f = x -> { builder.setA(this.A.toProto()); return null; };
                 f.apply(builder);
             }
         }
         {
             if (this.B != null) {
-                Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder,Void> f = x -> { builder.addAllB(this.B.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+                Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder,Void> f = x -> { builder.setB(this.B.toProto()); return null; };
                 f.apply(builder);
             }
         }
@@ -67,8 +99,10 @@ public class HyperparameterConfigDiff {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        visitor.preVisitDeepListOfHyperparameterConfigBlob(this.A);
-        visitor.preVisitDeepListOfHyperparameterConfigBlob(this.B);
+        visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
+        visitor.preVisitDeepString(this.Name);
+        visitor.preVisitDeepHyperparameterValuesConfigBlob(this.A);
+        visitor.preVisitDeepHyperparameterValuesConfigBlob(this.B);
     }
 
     public HyperparameterConfigDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -76,8 +110,10 @@ public class HyperparameterConfigDiff {
     }
 
     public HyperparameterConfigDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-        this.A = visitor.postVisitDeepListOfHyperparameterConfigBlob(this.A);
-        this.B = visitor.postVisitDeepListOfHyperparameterConfigBlob(this.B);
+        this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
+        this.Name = visitor.postVisitDeepString(this.Name);
+        this.A = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.A);
+        this.B = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.B);
         return this.postVisitShallow(visitor);
     }
 }

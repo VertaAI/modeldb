@@ -10,20 +10,14 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class S3DatasetDiff {
-    public List<S3DatasetComponentBlob> A;
-    public List<S3DatasetComponentBlob> B;
+    public List<S3DatasetComponentDiff> Components;
 
     public S3DatasetDiff() {
-        this.A = null;
-        this.B = null;
+        this.Components = null;
     }
 
-    public S3DatasetDiff setA(List<S3DatasetComponentBlob> value) {
-        this.A = value;
-        return this;
-    }
-    public S3DatasetDiff setB(List<S3DatasetComponentBlob> value) {
-        this.B = value;
+    public S3DatasetDiff setComponents(List<S3DatasetComponentDiff> value) {
+        this.Components = value;
         return this;
     }
 
@@ -34,12 +28,8 @@ public class S3DatasetDiff {
 
         S3DatasetDiff obj = new S3DatasetDiff();
         {
-            Function<ai.verta.modeldb.versioning.S3DatasetDiff,List<S3DatasetComponentBlob>> f = x -> blob.getAList().stream().map(S3DatasetComponentBlob::fromProto).collect(Collectors.toList());
-            obj.A = f.apply(blob);
-        }
-        {
-            Function<ai.verta.modeldb.versioning.S3DatasetDiff,List<S3DatasetComponentBlob>> f = x -> blob.getBList().stream().map(S3DatasetComponentBlob::fromProto).collect(Collectors.toList());
-            obj.B = f.apply(blob);
+            Function<ai.verta.modeldb.versioning.S3DatasetDiff,List<S3DatasetComponentDiff>> f = x -> blob.getComponentsList().stream().map(S3DatasetComponentDiff::fromProto).collect(Collectors.toList());
+            obj.Components = f.apply(blob);
         }
         return obj;
     }
@@ -47,14 +37,8 @@ public class S3DatasetDiff {
     public ai.verta.modeldb.versioning.S3DatasetDiff.Builder toProto() {
         ai.verta.modeldb.versioning.S3DatasetDiff.Builder builder = ai.verta.modeldb.versioning.S3DatasetDiff.newBuilder();
         {
-            if (this.A != null) {
-                Function<ai.verta.modeldb.versioning.S3DatasetDiff.Builder,Void> f = x -> { builder.addAllA(this.A.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
-                f.apply(builder);
-            }
-        }
-        {
-            if (this.B != null) {
-                Function<ai.verta.modeldb.versioning.S3DatasetDiff.Builder,Void> f = x -> { builder.addAllB(this.B.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
+            if (this.Components != null) {
+                Function<ai.verta.modeldb.versioning.S3DatasetDiff.Builder,Void> f = x -> { builder.addAllComponents(this.Components.stream().map(y -> y.toProto().build()).collect(Collectors.toList())); return null; };
                 f.apply(builder);
             }
         }
@@ -67,8 +51,7 @@ public class S3DatasetDiff {
 
     public void preVisitDeep(Visitor visitor) throws ModelDBException {
         this.preVisitShallow(visitor);
-        visitor.preVisitDeepListOfS3DatasetComponentBlob(this.A);
-        visitor.preVisitDeepListOfS3DatasetComponentBlob(this.B);
+        visitor.preVisitDeepListOfS3DatasetComponentDiff(this.Components);
     }
 
     public S3DatasetDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -76,8 +59,7 @@ public class S3DatasetDiff {
     }
 
     public S3DatasetDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-        this.A = visitor.postVisitDeepListOfS3DatasetComponentBlob(this.A);
-        this.B = visitor.postVisitDeepListOfS3DatasetComponentBlob(this.B);
+        this.Components = visitor.postVisitDeepListOfS3DatasetComponentDiff(this.Components);
         return this.postVisitShallow(visitor);
     }
 }
