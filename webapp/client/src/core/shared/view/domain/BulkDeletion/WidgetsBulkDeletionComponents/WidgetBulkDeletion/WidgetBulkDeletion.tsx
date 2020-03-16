@@ -39,7 +39,7 @@ class WidgetBulkDeletion extends React.PureComponent<AllProps> {
         >
           {children(
             <Fai
-              theme={isSelected ? 'red' : 'primary'}
+              theme={isSelected ? 'red' : 'tertiary'}
               variant="outlined"
               icon={<Icon type={isSelected ? 'minus-solid' : 'trash'} />}
               dataTest={'toggler-entity-for-deleting'}

@@ -1,5 +1,5 @@
-Logging a Data Version
-======================
+Versioning Data in Verta
+========================
 
 We'll walk briefly through the concept of data versioning, and how it can be handled by the Verta
 client!

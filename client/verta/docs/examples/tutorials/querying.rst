@@ -1,11 +1,8 @@
-Clientside Querying
-===================
+Querying Model Metadata
+=======================
 
-For revisiting past Experiment Runs, the Client offers the ability to find Runs based on their
+For revisiting past Experiment Runs, the Verta API offers the ability to find Runs based on their
 properties and logged values.
-
-``ExperimentRuns``
-------------------
 
 To start, you can obtain a collection of Experiment Runs under a Project or an Experiment using
 their ``expt_runs`` attribute:

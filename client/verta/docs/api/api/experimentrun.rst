@@ -3,13 +3,6 @@
 ExperimentRun
 =============
 
-.. autoclass:: verta.client.ExperimentRun
-
-Functionality
--------------
-
-- `Miscellaneous`_
-
 - `Basic Metadata`_
 
   - `Attributes`_
@@ -17,6 +10,8 @@ Functionality
   - `Metrics`_
   - `Observations`_
   - `Tags`_
+
+- `Versioning`_
 
 - `Artifacts`_
 
@@ -29,12 +24,8 @@ Functionality
   - `Code Versioning`_
   - `Data Versioning`_
   - `Deployment`_
-  - `Versioning`_
 
-Miscellaneous
--------------
-
-.. automethod:: ExperimentRun.clone
+If you are looking for APIs to create an ExperimentRun, go to the :doc:`experimentrun_basic` API reference.
 
 Basic Metadata
 --------------
@@ -103,6 +94,11 @@ Images
 .. automethod:: ExperimentRun.log_image_path
 .. automethod:: ExperimentRun.get_image
 
+Versioning
+----------
+.. automethod:: ExperimentRun.log_commit
+.. automethod:: ExperimentRun.get_commit
+
 Advanced Uses
 -------------
 
@@ -141,9 +137,7 @@ Deprecated
 .. automethod:: ExperimentRun.log_model_for_deployment
 .. automethod:: ExperimentRun.log_modules
 
-.. _experiment-run-versioning:
+Miscellaneous
+-------------
 
-Versioning
-^^^^^^^^^^
-.. automethod:: ExperimentRun.log_commit
-.. automethod:: ExperimentRun.get_commit
+.. automethod:: ExperimentRun.clone

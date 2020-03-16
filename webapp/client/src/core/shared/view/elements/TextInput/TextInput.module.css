@@ -63,7 +63,6 @@
 }
 
 .disabled {
-  color: #dddddd;
-  cursor: default;
-  background-color: #dddddd;
+  opacity: 0.6;
+  pointer-events: none;
 }

@@ -7,6 +7,7 @@ option java_multiple_files = true;
 
 import "google/api/annotations.proto";
 import "protos/public/modeldb/CommonService.proto";
+import "protos/public/modeldb/ExperimentRunService.proto";
 import "protos/public/modeldb/versioning/Code.proto";
 import "protos/public/modeldb/versioning/Config.proto";
 import "protos/public/modeldb/versioning/Dataset.proto";
@@ -220,14 +221,39 @@ message DeleteCommitRequest {
 // Getting blobs and folders in a commit
 message ListCommitBlobsRequest {
     RepositoryIdentification repository_id = 1;
-    Pagination pagination = 2;
+    // Pagination pagination = 2;
     string commit_sha = 3;
     // List of folder names (with the last element potentially representing the blob name)
     // This will be used to limit the search to scope just this location, like `git log /my/path` would do
-    repeated string location_prefix = 4;
+    // repeated string location_prefix = 4;
 
     message Response {
         repeated BlobExpanded blobs = 1;
+        int64 total_records = 2;
+    }
+}
+
+// Getting experimentRuns linked to a commit
+message ListCommitExperimentRunsRequest {
+    RepositoryIdentification repository_id = 1;
+    Pagination pagination = 2;
+    string commit_sha = 3;
+
+    message Response {
+        repeated ExperimentRun runs = 1;
+        int64 total_records = 2;
+    }
+}
+
+// Getting experimentRuns linked to a blob
+message ListBlobExperimentRunsRequest {
+    RepositoryIdentification repository_id = 1;
+    Pagination pagination = 2;
+    string commit_sha = 3;
+    repeated string location = 4;
+
+    message Response {
+        repeated ExperimentRun runs = 1;
         int64 total_records = 2;
     }
 }
@@ -264,7 +290,7 @@ message ComputeRepositoryDiffRequest {
 
 message ListBranchCommitsRequest {
     RepositoryIdentification repository_id = 1;
-    Pagination pagination = 2;
+    // Pagination pagination = 2;
     string branch = 3;
     // List of folder names (with the last element potentially representing the blob name)
     // This will be used to limit the search to scope just this location, like `git log /my/path` would do
@@ -442,6 +468,26 @@ service VersioningService {
             get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blobs"
             additional_bindings {
                 get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blobs"
+            }
+        };
+    }
+
+    // Getting ExperimentRuns linked to a commit
+    rpc ListCommitExperimentRuns(ListCommitExperimentRunsRequest) returns (ListCommitExperimentRunsRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runs"
+            additional_bindings {
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs"
+            }
+        };
+    }
+
+    // Getting ExperimentRuns linked to a blob
+    rpc ListBlobExperimentRuns(ListBlobExperimentRunsRequest) returns (ListBlobExperimentRunsRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runs"
+            additional_bindings {
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs"
             }
         };
     }

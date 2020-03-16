@@ -1,14 +1,18 @@
-Verta: Model Lifecycle Management
-=================================
+Verta: The Complete MLOps Platform
+==================================
 
-This documentation is for the **Verta** Python package.
-
-Use the sidebar on the left to navigate to topics of interest.
-
+Welcome! Select from the Navigation Items on the left to learn more about the Verta Platform
+and access the API reference.
 
 .. toctree::
     :hidden:
     :titlesonly:
 
-    Guides <guides>
-    Reference <reference>
+    Verta <verta>
+    Quickstart <quickstart>
+    Examples & Tutorials <examples>
+    API Reference <api_reference>
+    Support & Community <support>
+    Resources <learn>
+    FAQs <faqs>
+    Release Notes <change_log>

@@ -4,6 +4,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.ProtocolStringList;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
@@ -18,7 +19,7 @@ public interface BlobDAO {
       throws NoSuchAlgorithmException, ModelDBException;
 
   ListCommitBlobsRequest.Response getCommitBlobsList(
-      RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
+      RepositoryFunction repositoryFunction, String commitHash, ArrayList<String> locationList)
       throws NoSuchAlgorithmException, ModelDBException;
 
   Map<String, BlobExpanded> getCommitBlobMap(
