@@ -28,7 +28,7 @@ However, the differentiator for ModelDB 2.0 (latest version) is the full-fledged
 supported by ModelDB.
 ModelDB provides a Git-like versioning system for all model ingredients including code, data, config,
 and environment,  providing reproducibility  guarantees not provided by any other tools.
-Read more about versioning vs. metadata `here <overview/versioning.rst>`_.
+Read more about versioning vs. metadata `here <overview/versioning.html>`_.
 
 In addition to versioning, of course, ModelDB 2.0 continues to provide the metadata and experiment
 management as before and is freely available as open-source.
