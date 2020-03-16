@@ -94,6 +94,7 @@ public interface ModelDBConstants {
   String GIT_SNAPSHOTS = "gitsnapshots";
   String KEY_VALUES = "keyvalues";
   String TAG_MAPPINGS = "tagmappings";
+  String VERSIONED_INPUTS = "versioned_inputs";
 
   // Common verb constants
   String ORDER_ASC = "asc";
@@ -155,6 +156,7 @@ public interface ModelDBConstants {
   String METRICS_ALIAS = "_met_";
   String OBSERVATION_ALIAS = "_ob_";
   String TAGS_ALIAS = "tm_";
+  String VERSIONED_ALIAS = "ver_";
 
   // Migration Constants
   String COLLABORATORS_RBAC_MIGRATION = "collaborators_rbac";
@@ -202,4 +204,5 @@ public interface ModelDBConstants {
   String BRANCH_NOT_FOUND = "Branch not found";
   String INITIAL_COMMIT_MESSAGE = "Initial commit";
   String MASTER_BRANCH = "master";
+  String COMMIT = "commit";
 }
