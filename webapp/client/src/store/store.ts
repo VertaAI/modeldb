@@ -10,6 +10,7 @@ import * as CompareChanges from 'core/features/compareChanges';
 import * as CompareCommits from 'core/features/compareCommits';
 import * as ViewCommit from 'core/features/viewCommit';
 import * as Repositories from 'core/features/repositories';
+import * as RepositoryData from 'core/features/repositoryData';
 import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
 import * as Filter from 'core/features/filter';
 import * as Layout from 'core/features/Layout';
@@ -59,6 +60,7 @@ export interface IApplicationState
   datasetVersions: IDatasetVersionsState;
   workspaces: Workspaces.IWorkspaces;
   repositories: Repositories.types.IRepositoriesState;
+  repositoryData: RepositoryData.types.IRepositoryDataState;
   commitsHistory: CommitsHistory.types.ICommitsHistoryState;
   compareCommits: CompareCommits.types.ICompareCommitsState;
   compareChanges: CompareChanges.types.ICompareChangesState;
@@ -91,6 +93,7 @@ export const createRootReducer = (history: History) =>
     datasetVersions: datasetVersionsReducer,
     workspaces: Workspaces.workspacesReducer,
     repositories: Repositories.reducer,
+    repositoryData: RepositoryData.reducer,
     commitsHistory: CommitsHistory.reducer,
     viewCommit: ViewCommit.reducer,
     compareCommits: CompareCommits.reducer,
