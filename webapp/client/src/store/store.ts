@@ -7,6 +7,7 @@ import ServiceFactory from 'services/ServiceFactory';
 
 import * as CompareChanges from 'core/features/compareChanges';
 import * as CompareCommits from 'core/features/compareCommits';
+import * as ViewCommit from 'core/features/viewCommit';
 import * as Repositories from 'core/features/repositories';
 import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
 import * as Filter from 'core/features/filter';
@@ -59,6 +60,7 @@ export interface IApplicationState
   repositories: Repositories.types.IRepositoriesState;
   compareCommits: CompareCommits.types.ICompareCommitsState;
   compareChanges: CompareChanges.types.ICompareChangesState;
+  viewCommit: ViewCommit.types.IViewCommitState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -87,6 +89,7 @@ export const createRootReducer = (history: History) =>
     datasetVersions: datasetVersionsReducer,
     workspaces: Workspaces.workspacesReducer,
     repositories: Repositories.reducer,
+    viewCommit: ViewCommit.reducer,
     compareCommits: CompareCommits.reducer,
     compareChanges: CompareChanges.reducer,
   });

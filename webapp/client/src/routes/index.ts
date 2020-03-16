@@ -115,23 +115,6 @@ const routes = {
   }>({
     getPath: () => `/repositories/:repositoryName/data`,
   }),
-  repositoryCommitsHistory: makeRouteWithWorkspace<
-    {
-      repositoryName: IRepository['name'];
-      commitPointerValue: CommitPointer['value'];
-      locationPathname?: string;
-    },
-    { page?: string }
-  >({
-    getPath: () =>
-      `/repositories/:repositoryName/data/commits/:commitPointerValue/:locationPathname*`,
-  }),
-  repositoryCommit: makeRouteWithWorkspace<{
-    commitSha: ICommit['sha'];
-    repositoryName: IRepository['name'];
-  }>({
-    getPath: () => `/repositories/:repositoryName/data/commit/:commitSha`,
-  }),
   repositoryDataWithLocation: (() => {
     const route = makeRouteWithWorkspace<{
       repositoryName: IRepository['name'];
@@ -160,6 +143,23 @@ const routes = {
       },
     } as typeof route;
   })(),
+  repositoryCommitsHistory: makeRouteWithWorkspace<
+    {
+      repositoryName: IRepository['name'];
+      commitPointerValue: CommitPointer['value'];
+      locationPathname?: string;
+    },
+    { page?: string }
+  >({
+    getPath: () =>
+      `/repositories/:repositoryName/data/commits/:commitPointerValue/:locationPathname*`,
+  }),
+  repositoryCommit: makeRouteWithWorkspace<{
+    commitSha: ICommit['sha'];
+    repositoryName: IRepository['name'];
+  }>({
+    getPath: () => `/repositories/:repositoryName/data/commit/:commitSha`,
+  }),
   repositorySettings: makeRouteWithWorkspace<{
     repositoryName: IRepository['name'];
   }>({
