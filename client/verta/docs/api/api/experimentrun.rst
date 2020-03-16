@@ -11,6 +11,8 @@ ExperimentRun
   - `Observations`_
   - `Tags`_
 
+- `Versioning`_
+
 - `Artifacts`_
 
   - `General`_
@@ -89,6 +91,11 @@ Images
 .. automethod:: ExperimentRun.log_image
 .. automethod:: ExperimentRun.log_image_path
 .. automethod:: ExperimentRun.get_image
+
+Versioning
+----------
+.. automethod:: ExperimentRun.log_commit
+.. automethod:: ExperimentRun.get_commit
 
 Advanced Uses
 -------------
