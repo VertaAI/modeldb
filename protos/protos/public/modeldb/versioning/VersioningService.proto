@@ -245,7 +245,7 @@ message ListCommitExperimentRunsRequest {
     }
 }
 
-// Getting experimentRuns linked to a commit
+// Getting experimentRuns linked to a blob
 message ListBlobExperimentRunsRequest {
     RepositoryIdentification repository_id = 1;
     Pagination pagination = 2;
