@@ -42,6 +42,6 @@ public class TypeChecker {
     }
 
     static public Boolean sameType(Blob a, Blob b) {
-        return getType(a) == getType(b);
+        return getType(a).equals(getType(b));
     }
 }
