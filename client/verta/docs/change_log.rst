@@ -32,33 +32,33 @@ Release Notes
      <>`__
 
 
-v0.14.1 (2020-03-15)
+v0.14.1 (2020-03-17)
 --------------------
-
-Backwards Incompatibilities
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-- `
-  <>`__
-
-Deprecations
-^^^^^^^^^^^^
-- `
-  <>`__
 
 New Features
 ^^^^^^^^^^^^
-- `
-  <>`__
+- `add complete versioning system
+  <api/api/versioning.html>`__
+- `enable going directly from Client to ExperimentRun using Verta config
+  <https://github.com/VertaAI/modeldb-verta/pull/96>`__
+- `add public_within_org option for set_project() and set_dataset()
+  <https://github.com/VertaAI/modeldb-verta/pull/121>`__
+- `add aliases for Client's set/get-or-create methods
+  <https://github.com/VertaAI/modeldb-verta/pull/272/files>`__
 
 Bug Fixes
 ^^^^^^^^^
-- `
-  <>`__
+- `enable larger sets of ExperimentRuns to be queried
+  <https://github.com/VertaAI/modeldb-verta/pull/72>`__
+- `enable ZIPing files that have invalid timestamps
+  <https://github.com/VertaAI/modeldb-verta/pull/154>`__
 
 Internal Changes
 ^^^^^^^^^^^^^^^^
-- `move cloned dependencies to their own subdirectory
-  <>`__
+- `move cloned dependencies to their own submodule
+  <https://github.com/VertaAI/modeldb-verta/pull/22>`__
+- `move internal utils into their own submodule
+  <https://github.com/VertaAI/modeldb-verta/pull/217>`__
 
 
 v0.14.0 (2020-02-11)
