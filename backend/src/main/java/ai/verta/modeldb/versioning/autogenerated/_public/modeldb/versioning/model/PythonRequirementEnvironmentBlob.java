@@ -10,24 +10,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PythonRequirementEnvironmentBlob implements ProtoType {
-  public Optional<String> Library;
-  public Optional<String> Constraint;
-  public Optional<VersionEnvironmentBlob> Version;
+  public String Library;
+  public String Constraint;
+  public VersionEnvironmentBlob Version;
 
   public PythonRequirementEnvironmentBlob() {
-    this.Library = Optional.empty();
-    this.Constraint = Optional.empty();
-    this.Version = Optional.empty();
+    this.Library = null;
+    this.Constraint = null;
+    this.Version = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Library.isPresent()) {
+    if (this.Library != null) {
       return false;
     }
-    if (this.Constraint.isPresent()) {
+    if (this.Constraint != null) {
       return false;
     }
-    if (this.Version.isPresent()) {
+    if (this.Version != null) {
       return false;
     }
     return true;
@@ -43,26 +43,26 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Library.isPresent() || other.Library.isPresent()) {
-        if (!this.Library.isPresent()) return false;
-        if (other.Library.isPresent()) return false;
-        if (!f.apply(this.Library.get(), other.Library.get())) return false;
+      if (this.Library != null || other.Library != null) {
+        if (this.Library == null && other.Library != null) return false;
+        if (this.Library != null && other.Library == null) return false;
+        if (!f.apply(this.Library, other.Library)) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Constraint.isPresent() || other.Constraint.isPresent()) {
-        if (!this.Constraint.isPresent()) return false;
-        if (other.Constraint.isPresent()) return false;
-        if (!f.apply(this.Constraint.get(), other.Constraint.get())) return false;
+      if (this.Constraint != null || other.Constraint != null) {
+        if (this.Constraint == null && other.Constraint != null) return false;
+        if (this.Constraint != null && other.Constraint == null) return false;
+        if (!f.apply(this.Constraint, other.Constraint)) return false;
       }
     }
     {
       Function3<VersionEnvironmentBlob, VersionEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Version.isPresent() || other.Version.isPresent()) {
-        if (!this.Version.isPresent()) return false;
-        if (other.Version.isPresent()) return false;
-        if (!f.apply(this.Version.get(), other.Version.get())) return false;
+      if (this.Version != null || other.Version != null) {
+        if (this.Version == null && other.Version != null) return false;
+        if (this.Version != null && other.Version == null) return false;
+        if (!f.apply(this.Version, other.Version)) return false;
       }
     }
     return true;
@@ -73,36 +73,18 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
     return Objects.hash(this.Library, this.Constraint, this.Version);
   }
 
-  public PythonRequirementEnvironmentBlob setLibrary(Optional<String> value) {
+  public PythonRequirementEnvironmentBlob setLibrary(String value) {
     this.Library = value;
     return this;
   }
 
-  public PythonRequirementEnvironmentBlob setLibrary(String value) {
-    if (value == null) this.Library = Optional.empty();
-    else this.Library = Optional.of(value);
-    return this;
-  }
-
-  public PythonRequirementEnvironmentBlob setConstraint(Optional<String> value) {
+  public PythonRequirementEnvironmentBlob setConstraint(String value) {
     this.Constraint = value;
     return this;
   }
 
-  public PythonRequirementEnvironmentBlob setConstraint(String value) {
-    if (value == null) this.Constraint = Optional.empty();
-    else this.Constraint = Optional.of(value);
-    return this;
-  }
-
-  public PythonRequirementEnvironmentBlob setVersion(Optional<VersionEnvironmentBlob> value) {
-    this.Version = value;
-    return this;
-  }
-
   public PythonRequirementEnvironmentBlob setVersion(VersionEnvironmentBlob value) {
-    if (value == null) this.Version = Optional.empty();
-    else this.Version = Optional.of(value);
+    this.Version = value;
     return this;
   }
 
@@ -134,9 +116,36 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
   public ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob.Builder toProto() {
     ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob.Builder builder =
         ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob.newBuilder();
-    this.Library.ifPresent(x -> builder.setLibrary(x));
-    this.Constraint.ifPresent(x -> builder.setConstraint(x));
-    this.Version.ifPresent(x -> builder.setVersion(x.toProto()));
+    {
+      if (this.Library != null) {
+        Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob.Builder, Void> f =
+            x -> {
+              builder.setLibrary(this.Library);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Constraint != null) {
+        Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob.Builder, Void> f =
+            x -> {
+              builder.setConstraint(this.Constraint);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Version != null) {
+        Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob.Builder, Void> f =
+            x -> {
+              builder.setVersion(this.Version.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -146,9 +155,9 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Library.isPresent()) visitor.preVisitDeepString(this.Library.get());
-    if (this.Constraint.isPresent()) visitor.preVisitDeepString(this.Constraint.get());
-    if (this.Version.isPresent()) visitor.preVisitDeepVersionEnvironmentBlob(this.Version.get());
+    visitor.preVisitDeepString(this.Library);
+    visitor.preVisitDeepString(this.Constraint);
+    visitor.preVisitDeepVersionEnvironmentBlob(this.Version);
   }
 
   public PythonRequirementEnvironmentBlob postVisitShallow(Visitor visitor)
@@ -157,11 +166,9 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
   }
 
   public PythonRequirementEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Library.isPresent()) this.setLibrary(visitor.postVisitDeepString(this.Library.get()));
-    if (this.Constraint.isPresent())
-      this.setConstraint(visitor.postVisitDeepString(this.Constraint.get()));
-    if (this.Version.isPresent())
-      this.setVersion(visitor.postVisitDeepVersionEnvironmentBlob(this.Version.get()));
+    this.Library = visitor.postVisitDeepString(this.Library);
+    this.Constraint = visitor.postVisitDeepString(this.Constraint);
+    this.Version = visitor.postVisitDeepVersionEnvironmentBlob(this.Version);
     return this.postVisitShallow(visitor);
   }
 }

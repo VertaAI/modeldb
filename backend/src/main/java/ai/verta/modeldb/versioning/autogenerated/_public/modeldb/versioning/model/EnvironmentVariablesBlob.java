@@ -10,19 +10,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class EnvironmentVariablesBlob implements ProtoType {
-  public Optional<String> Name;
-  public Optional<String> Value;
+  public String Name;
+  public String Value;
 
   public EnvironmentVariablesBlob() {
-    this.Name = Optional.empty();
-    this.Value = Optional.empty();
+    this.Name = null;
+    this.Value = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Name.isPresent()) {
+    if (this.Name != null) {
       return false;
     }
-    if (this.Value.isPresent()) {
+    if (this.Value != null) {
       return false;
     }
     return true;
@@ -38,18 +38,18 @@ public class EnvironmentVariablesBlob implements ProtoType {
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Name.isPresent() || other.Name.isPresent()) {
-        if (!this.Name.isPresent()) return false;
-        if (other.Name.isPresent()) return false;
-        if (!f.apply(this.Name.get(), other.Name.get())) return false;
+      if (this.Name != null || other.Name != null) {
+        if (this.Name == null && other.Name != null) return false;
+        if (this.Name != null && other.Name == null) return false;
+        if (!f.apply(this.Name, other.Name)) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Value.isPresent() || other.Value.isPresent()) {
-        if (!this.Value.isPresent()) return false;
-        if (other.Value.isPresent()) return false;
-        if (!f.apply(this.Value.get(), other.Value.get())) return false;
+      if (this.Value != null || other.Value != null) {
+        if (this.Value == null && other.Value != null) return false;
+        if (this.Value != null && other.Value == null) return false;
+        if (!f.apply(this.Value, other.Value)) return false;
       }
     }
     return true;
@@ -60,25 +60,13 @@ public class EnvironmentVariablesBlob implements ProtoType {
     return Objects.hash(this.Name, this.Value);
   }
 
-  public EnvironmentVariablesBlob setName(Optional<String> value) {
+  public EnvironmentVariablesBlob setName(String value) {
     this.Name = value;
     return this;
   }
 
-  public EnvironmentVariablesBlob setName(String value) {
-    if (value == null) this.Name = Optional.empty();
-    else this.Name = Optional.of(value);
-    return this;
-  }
-
-  public EnvironmentVariablesBlob setValue(Optional<String> value) {
-    this.Value = value;
-    return this;
-  }
-
   public EnvironmentVariablesBlob setValue(String value) {
-    if (value == null) this.Value = Optional.empty();
-    else this.Value = Optional.of(value);
+    this.Value = value;
     return this;
   }
 
@@ -105,8 +93,26 @@ public class EnvironmentVariablesBlob implements ProtoType {
   public ai.verta.modeldb.versioning.EnvironmentVariablesBlob.Builder toProto() {
     ai.verta.modeldb.versioning.EnvironmentVariablesBlob.Builder builder =
         ai.verta.modeldb.versioning.EnvironmentVariablesBlob.newBuilder();
-    this.Name.ifPresent(x -> builder.setName(x));
-    this.Value.ifPresent(x -> builder.setValue(x));
+    {
+      if (this.Name != null) {
+        Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob.Builder, Void> f =
+            x -> {
+              builder.setName(this.Name);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Value != null) {
+        Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob.Builder, Void> f =
+            x -> {
+              builder.setValue(this.Value);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -116,8 +122,8 @@ public class EnvironmentVariablesBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Name.isPresent()) visitor.preVisitDeepString(this.Name.get());
-    if (this.Value.isPresent()) visitor.preVisitDeepString(this.Value.get());
+    visitor.preVisitDeepString(this.Name);
+    visitor.preVisitDeepString(this.Value);
   }
 
   public EnvironmentVariablesBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -125,8 +131,8 @@ public class EnvironmentVariablesBlob implements ProtoType {
   }
 
   public EnvironmentVariablesBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Name.isPresent()) this.setName(visitor.postVisitDeepString(this.Name.get()));
-    if (this.Value.isPresent()) this.setValue(visitor.postVisitDeepString(this.Value.get()));
+    this.Name = visitor.postVisitDeepString(this.Name);
+    this.Value = visitor.postVisitDeepString(this.Value);
     return this.postVisitShallow(visitor);
   }
 }

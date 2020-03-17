@@ -10,19 +10,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class CodeDiff implements ProtoType {
-  public Optional<GitCodeDiff> Git;
-  public Optional<NotebookCodeDiff> Notebook;
+  public GitCodeDiff Git;
+  public NotebookCodeDiff Notebook;
 
   public CodeDiff() {
-    this.Git = Optional.empty();
-    this.Notebook = Optional.empty();
+    this.Git = null;
+    this.Notebook = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Git.isPresent()) {
+    if (this.Git != null) {
       return false;
     }
-    if (this.Notebook.isPresent()) {
+    if (this.Notebook != null) {
       return false;
     }
     return true;
@@ -38,18 +38,18 @@ public class CodeDiff implements ProtoType {
 
     {
       Function3<GitCodeDiff, GitCodeDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Git.isPresent() || other.Git.isPresent()) {
-        if (!this.Git.isPresent()) return false;
-        if (other.Git.isPresent()) return false;
-        if (!f.apply(this.Git.get(), other.Git.get())) return false;
+      if (this.Git != null || other.Git != null) {
+        if (this.Git == null && other.Git != null) return false;
+        if (this.Git != null && other.Git == null) return false;
+        if (!f.apply(this.Git, other.Git)) return false;
       }
     }
     {
       Function3<NotebookCodeDiff, NotebookCodeDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Notebook.isPresent() || other.Notebook.isPresent()) {
-        if (!this.Notebook.isPresent()) return false;
-        if (other.Notebook.isPresent()) return false;
-        if (!f.apply(this.Notebook.get(), other.Notebook.get())) return false;
+      if (this.Notebook != null || other.Notebook != null) {
+        if (this.Notebook == null && other.Notebook != null) return false;
+        if (this.Notebook != null && other.Notebook == null) return false;
+        if (!f.apply(this.Notebook, other.Notebook)) return false;
       }
     }
     return true;
@@ -60,25 +60,13 @@ public class CodeDiff implements ProtoType {
     return Objects.hash(this.Git, this.Notebook);
   }
 
-  public CodeDiff setGit(Optional<GitCodeDiff> value) {
+  public CodeDiff setGit(GitCodeDiff value) {
     this.Git = value;
     return this;
   }
 
-  public CodeDiff setGit(GitCodeDiff value) {
-    if (value == null) this.Git = Optional.empty();
-    else this.Git = Optional.of(value);
-    return this;
-  }
-
-  public CodeDiff setNotebook(Optional<NotebookCodeDiff> value) {
-    this.Notebook = value;
-    return this;
-  }
-
   public CodeDiff setNotebook(NotebookCodeDiff value) {
-    if (value == null) this.Notebook = Optional.empty();
-    else this.Notebook = Optional.of(value);
+    this.Notebook = value;
     return this;
   }
 
@@ -104,8 +92,26 @@ public class CodeDiff implements ProtoType {
   public ai.verta.modeldb.versioning.CodeDiff.Builder toProto() {
     ai.verta.modeldb.versioning.CodeDiff.Builder builder =
         ai.verta.modeldb.versioning.CodeDiff.newBuilder();
-    this.Git.ifPresent(x -> builder.setGit(x.toProto()));
-    this.Notebook.ifPresent(x -> builder.setNotebook(x.toProto()));
+    {
+      if (this.Git != null) {
+        Function<ai.verta.modeldb.versioning.CodeDiff.Builder, Void> f =
+            x -> {
+              builder.setGit(this.Git.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Notebook != null) {
+        Function<ai.verta.modeldb.versioning.CodeDiff.Builder, Void> f =
+            x -> {
+              builder.setNotebook(this.Notebook.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -115,8 +121,8 @@ public class CodeDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Git.isPresent()) visitor.preVisitDeepGitCodeDiff(this.Git.get());
-    if (this.Notebook.isPresent()) visitor.preVisitDeepNotebookCodeDiff(this.Notebook.get());
+    visitor.preVisitDeepGitCodeDiff(this.Git);
+    visitor.preVisitDeepNotebookCodeDiff(this.Notebook);
   }
 
   public CodeDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -124,9 +130,8 @@ public class CodeDiff implements ProtoType {
   }
 
   public CodeDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Git.isPresent()) this.setGit(visitor.postVisitDeepGitCodeDiff(this.Git.get()));
-    if (this.Notebook.isPresent())
-      this.setNotebook(visitor.postVisitDeepNotebookCodeDiff(this.Notebook.get()));
+    this.Git = visitor.postVisitDeepGitCodeDiff(this.Git);
+    this.Notebook = visitor.postVisitDeepNotebookCodeDiff(this.Notebook);
     return this.postVisitShallow(visitor);
   }
 }

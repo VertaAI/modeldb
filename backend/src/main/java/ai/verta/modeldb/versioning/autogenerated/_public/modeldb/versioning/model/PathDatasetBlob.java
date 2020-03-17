@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PathDatasetBlob implements ProtoType {
-  public Optional<List<PathDatasetComponentBlob>> Components;
+  public List<PathDatasetComponentBlob> Components;
 
   public PathDatasetBlob() {
-    this.Components = Optional.empty();
+    this.Components = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Components.isPresent()) {
+    if (this.Components != null) {
       return false;
     }
     return true;
@@ -46,10 +46,10 @@ public class PathDatasetBlob implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.Components.isPresent() || other.Components.isPresent()) {
-        if (!this.Components.isPresent()) return false;
-        if (other.Components.isPresent()) return false;
-        if (!f.apply(this.Components.get(), other.Components.get())) return false;
+      if (this.Components != null || other.Components != null) {
+        if (this.Components == null && other.Components != null) return false;
+        if (this.Components != null && other.Components == null) return false;
+        if (!f.apply(this.Components, other.Components)) return false;
       }
     }
     return true;
@@ -60,14 +60,8 @@ public class PathDatasetBlob implements ProtoType {
     return Objects.hash(this.Components);
   }
 
-  public PathDatasetBlob setComponents(Optional<List<PathDatasetComponentBlob>> value) {
-    this.Components = value;
-    return this;
-  }
-
   public PathDatasetBlob setComponents(List<PathDatasetComponentBlob> value) {
-    if (value == null) this.Components = Optional.empty();
-    else this.Components = Optional.of(value);
+    this.Components = value;
     return this;
   }
 
@@ -91,10 +85,19 @@ public class PathDatasetBlob implements ProtoType {
   public ai.verta.modeldb.versioning.PathDatasetBlob.Builder toProto() {
     ai.verta.modeldb.versioning.PathDatasetBlob.Builder builder =
         ai.verta.modeldb.versioning.PathDatasetBlob.newBuilder();
-    this.Components.ifPresent(
-        x ->
-            builder.addAllComponents(
-                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
+    {
+      if (this.Components != null) {
+        Function<ai.verta.modeldb.versioning.PathDatasetBlob.Builder, Void> f =
+            x -> {
+              builder.addAllComponents(
+                  this.Components.stream()
+                      .map(y -> y.toProto().build())
+                      .collect(Collectors.toList()));
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -104,8 +107,7 @@ public class PathDatasetBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Components.isPresent())
-      visitor.preVisitDeepListOfPathDatasetComponentBlob(this.Components.get());
+    visitor.preVisitDeepListOfPathDatasetComponentBlob(this.Components);
   }
 
   public PathDatasetBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -113,9 +115,7 @@ public class PathDatasetBlob implements ProtoType {
   }
 
   public PathDatasetBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Components.isPresent())
-      this.setComponents(
-          visitor.postVisitDeepListOfPathDatasetComponentBlob(this.Components.get()));
+    this.Components = visitor.postVisitDeepListOfPathDatasetComponentBlob(this.Components);
     return this.postVisitShallow(visitor);
   }
 }

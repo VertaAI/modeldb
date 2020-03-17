@@ -34,8 +34,8 @@ case class ModeldbDataset (
   dataset_visibility: Option[DatasetVisibilityEnumDatasetVisibility] = None,
   dataset_type: Option[DatasetTypeEnumDatasetType] = None,
   attributes: Option[List[CommonKeyValue]] = None,
-  time_created: Option[] = None,
-  time_updated: Option[] = None,
+  time_created: Option[String] = None,
+  time_updated: Option[String] = None,
   workspace_id: Option[String] = None,
   workspace_type: Option[WorkspaceTypeEnumWorkspaceType] = None
 ) extends BaseSwagger {
@@ -54,8 +54,8 @@ object ModeldbDataset {
         obj.dataset_visibility.map(x => JField("dataset_visibility", ((x: DatasetVisibilityEnumDatasetVisibility) => DatasetVisibilityEnumDatasetVisibility.toJson(x))(x))),
         obj.dataset_type.map(x => JField("dataset_type", ((x: DatasetTypeEnumDatasetType) => DatasetTypeEnumDatasetType.toJson(x))(x))),
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
-        obj.time_created.map(x => JField("time_created", (x))),
-        obj.time_updated.map(x => JField("time_updated", (x))),
+        obj.time_created.map(x => JField("time_created", JString(x))),
+        obj.time_updated.map(x => JField("time_updated", JString(x))),
         obj.workspace_id.map(x => JField("workspace_id", JString(x))),
         obj.workspace_type.map(x => JField("workspace_type", ((x: WorkspaceTypeEnumWorkspaceType) => WorkspaceTypeEnumWorkspaceType.toJson(x))(x)))
       ).flatMap(x => x match {
@@ -79,8 +79,8 @@ object ModeldbDataset {
           dataset_visibility = fieldsMap.get("dataset_visibility").map(DatasetVisibilityEnumDatasetVisibility.fromJson),
           dataset_type = fieldsMap.get("dataset_type").map(DatasetTypeEnumDatasetType.fromJson),
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          time_created = fieldsMap.get("time_created").map(),
-          time_updated = fieldsMap.get("time_updated").map(),
+          time_created = fieldsMap.get("time_created").map(JsonConverter.fromJsonString),
+          time_updated = fieldsMap.get("time_updated").map(JsonConverter.fromJsonString),
           workspace_id = fieldsMap.get("workspace_id").map(JsonConverter.fromJsonString),
           workspace_type = fieldsMap.get("workspace_type").map(WorkspaceTypeEnumWorkspaceType.fromJson)
         )

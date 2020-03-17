@@ -10,34 +10,34 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PathDatasetComponentBlob implements ProtoType {
-  public Optional<String> Path;
-  public Optional<Long> Size;
-  public Optional<Long> LastModifiedAtSource;
-  public Optional<String> Sha256;
-  public Optional<String> Md5;
+  public String Path;
+  public Long Size;
+  public Long LastModifiedAtSource;
+  public String Sha256;
+  public String Md5;
 
   public PathDatasetComponentBlob() {
-    this.Path = Optional.empty();
-    this.Size = Optional.empty();
-    this.LastModifiedAtSource = Optional.empty();
-    this.Sha256 = Optional.empty();
-    this.Md5 = Optional.empty();
+    this.Path = null;
+    this.Size = 0l;
+    this.LastModifiedAtSource = 0l;
+    this.Sha256 = null;
+    this.Md5 = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Path.isPresent()) {
+    if (this.Path != null) {
       return false;
     }
-    if (this.Size.isPresent()) {
+    if (this.Size != null) {
       return false;
     }
-    if (this.LastModifiedAtSource.isPresent()) {
+    if (this.LastModifiedAtSource != null) {
       return false;
     }
-    if (this.Sha256.isPresent()) {
+    if (this.Sha256 != null) {
       return false;
     }
-    if (this.Md5.isPresent()) {
+    if (this.Md5 != null) {
       return false;
     }
     return true;
@@ -53,43 +53,42 @@ public class PathDatasetComponentBlob implements ProtoType {
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Path.isPresent() || other.Path.isPresent()) {
-        if (!this.Path.isPresent()) return false;
-        if (other.Path.isPresent()) return false;
-        if (!f.apply(this.Path.get(), other.Path.get())) return false;
+      if (this.Path != null || other.Path != null) {
+        if (this.Path == null && other.Path != null) return false;
+        if (this.Path != null && other.Path == null) return false;
+        if (!f.apply(this.Path, other.Path)) return false;
       }
     }
     {
       Function3<Long, Long, Boolean> f = (x, y) -> x == y;
-      if (this.Size.isPresent() || other.Size.isPresent()) {
-        if (!this.Size.isPresent()) return false;
-        if (other.Size.isPresent()) return false;
-        if (!f.apply(this.Size.get(), other.Size.get())) return false;
+      if (this.Size != null || other.Size != null) {
+        if (this.Size == null && other.Size != null) return false;
+        if (this.Size != null && other.Size == null) return false;
+        if (!f.apply(this.Size, other.Size)) return false;
       }
     }
     {
       Function3<Long, Long, Boolean> f = (x, y) -> x == y;
-      if (this.LastModifiedAtSource.isPresent() || other.LastModifiedAtSource.isPresent()) {
-        if (!this.LastModifiedAtSource.isPresent()) return false;
-        if (other.LastModifiedAtSource.isPresent()) return false;
-        if (!f.apply(this.LastModifiedAtSource.get(), other.LastModifiedAtSource.get()))
-          return false;
+      if (this.LastModifiedAtSource != null || other.LastModifiedAtSource != null) {
+        if (this.LastModifiedAtSource == null && other.LastModifiedAtSource != null) return false;
+        if (this.LastModifiedAtSource != null && other.LastModifiedAtSource == null) return false;
+        if (!f.apply(this.LastModifiedAtSource, other.LastModifiedAtSource)) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Sha256.isPresent() || other.Sha256.isPresent()) {
-        if (!this.Sha256.isPresent()) return false;
-        if (other.Sha256.isPresent()) return false;
-        if (!f.apply(this.Sha256.get(), other.Sha256.get())) return false;
+      if (this.Sha256 != null || other.Sha256 != null) {
+        if (this.Sha256 == null && other.Sha256 != null) return false;
+        if (this.Sha256 != null && other.Sha256 == null) return false;
+        if (!f.apply(this.Sha256, other.Sha256)) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Md5.isPresent() || other.Md5.isPresent()) {
-        if (!this.Md5.isPresent()) return false;
-        if (other.Md5.isPresent()) return false;
-        if (!f.apply(this.Md5.get(), other.Md5.get())) return false;
+      if (this.Md5 != null || other.Md5 != null) {
+        if (this.Md5 == null && other.Md5 != null) return false;
+        if (this.Md5 != null && other.Md5 == null) return false;
+        if (!f.apply(this.Md5, other.Md5)) return false;
       }
     }
     return true;
@@ -100,58 +99,28 @@ public class PathDatasetComponentBlob implements ProtoType {
     return Objects.hash(this.Path, this.Size, this.LastModifiedAtSource, this.Sha256, this.Md5);
   }
 
-  public PathDatasetComponentBlob setPath(Optional<String> value) {
+  public PathDatasetComponentBlob setPath(String value) {
     this.Path = value;
     return this;
   }
 
-  public PathDatasetComponentBlob setPath(String value) {
-    if (value == null) this.Path = Optional.empty();
-    else this.Path = Optional.of(value);
-    return this;
-  }
-
-  public PathDatasetComponentBlob setSize(Optional<Long> value) {
+  public PathDatasetComponentBlob setSize(Long value) {
     this.Size = value;
     return this;
   }
 
-  public PathDatasetComponentBlob setSize(Long value) {
-    if (value == null) this.Size = Optional.empty();
-    else this.Size = Optional.of(value);
-    return this;
-  }
-
-  public PathDatasetComponentBlob setLastModifiedAtSource(Optional<Long> value) {
+  public PathDatasetComponentBlob setLastModifiedAtSource(Long value) {
     this.LastModifiedAtSource = value;
     return this;
   }
 
-  public PathDatasetComponentBlob setLastModifiedAtSource(Long value) {
-    if (value == null) this.LastModifiedAtSource = Optional.empty();
-    else this.LastModifiedAtSource = Optional.of(value);
-    return this;
-  }
-
-  public PathDatasetComponentBlob setSha256(Optional<String> value) {
+  public PathDatasetComponentBlob setSha256(String value) {
     this.Sha256 = value;
     return this;
   }
 
-  public PathDatasetComponentBlob setSha256(String value) {
-    if (value == null) this.Sha256 = Optional.empty();
-    else this.Sha256 = Optional.of(value);
-    return this;
-  }
-
-  public PathDatasetComponentBlob setMd5(Optional<String> value) {
-    this.Md5 = value;
-    return this;
-  }
-
   public PathDatasetComponentBlob setMd5(String value) {
-    if (value == null) this.Md5 = Optional.empty();
-    else this.Md5 = Optional.of(value);
+    this.Md5 = value;
     return this;
   }
 
@@ -193,11 +162,56 @@ public class PathDatasetComponentBlob implements ProtoType {
   public ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder toProto() {
     ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder builder =
         ai.verta.modeldb.versioning.PathDatasetComponentBlob.newBuilder();
-    this.Path.ifPresent(x -> builder.setPath(x));
-    this.Size.ifPresent(x -> builder.setSize(x));
-    this.LastModifiedAtSource.ifPresent(x -> builder.setLastModifiedAtSource(x));
-    this.Sha256.ifPresent(x -> builder.setSha256(x));
-    this.Md5.ifPresent(x -> builder.setMd5(x));
+    {
+      if (this.Path != null) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setPath(this.Path);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Size != null) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setSize(this.Size);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.LastModifiedAtSource != null) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setLastModifiedAtSource(this.LastModifiedAtSource);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Sha256 != null) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setSha256(this.Sha256);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Md5 != null) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setMd5(this.Md5);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -207,12 +221,11 @@ public class PathDatasetComponentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Path.isPresent()) visitor.preVisitDeepString(this.Path.get());
-    if (this.Size.isPresent()) visitor.preVisitDeepLong(this.Size.get());
-    if (this.LastModifiedAtSource.isPresent())
-      visitor.preVisitDeepLong(this.LastModifiedAtSource.get());
-    if (this.Sha256.isPresent()) visitor.preVisitDeepString(this.Sha256.get());
-    if (this.Md5.isPresent()) visitor.preVisitDeepString(this.Md5.get());
+    visitor.preVisitDeepString(this.Path);
+    visitor.preVisitDeepLong(this.Size);
+    visitor.preVisitDeepLong(this.LastModifiedAtSource);
+    visitor.preVisitDeepString(this.Sha256);
+    visitor.preVisitDeepString(this.Md5);
   }
 
   public PathDatasetComponentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -220,12 +233,11 @@ public class PathDatasetComponentBlob implements ProtoType {
   }
 
   public PathDatasetComponentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Path.isPresent()) this.setPath(visitor.postVisitDeepString(this.Path.get()));
-    if (this.Size.isPresent()) this.setSize(visitor.postVisitDeepLong(this.Size.get()));
-    if (this.LastModifiedAtSource.isPresent())
-      this.setLastModifiedAtSource(visitor.postVisitDeepLong(this.LastModifiedAtSource.get()));
-    if (this.Sha256.isPresent()) this.setSha256(visitor.postVisitDeepString(this.Sha256.get()));
-    if (this.Md5.isPresent()) this.setMd5(visitor.postVisitDeepString(this.Md5.get()));
+    this.Path = visitor.postVisitDeepString(this.Path);
+    this.Size = visitor.postVisitDeepLong(this.Size);
+    this.LastModifiedAtSource = visitor.postVisitDeepLong(this.LastModifiedAtSource);
+    this.Sha256 = visitor.postVisitDeepString(this.Sha256);
+    this.Md5 = visitor.postVisitDeepString(this.Md5);
     return this.postVisitShallow(visitor);
   }
 }

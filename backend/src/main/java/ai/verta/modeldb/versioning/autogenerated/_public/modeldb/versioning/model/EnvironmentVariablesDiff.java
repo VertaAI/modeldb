@@ -10,29 +10,29 @@ import java.util.*;
 import java.util.function.Function;
 
 public class EnvironmentVariablesDiff implements ProtoType {
-  public Optional<DiffStatusEnumDiffStatus> Status;
-  public Optional<String> Name;
-  public Optional<String> ValueA;
-  public Optional<String> ValueB;
+  public DiffStatusEnumDiffStatus Status;
+  public String Name;
+  public String ValueA;
+  public String ValueB;
 
   public EnvironmentVariablesDiff() {
-    this.Status = Optional.empty();
-    this.Name = Optional.empty();
-    this.ValueA = Optional.empty();
-    this.ValueB = Optional.empty();
+    this.Status = null;
+    this.Name = null;
+    this.ValueA = null;
+    this.ValueB = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Status.isPresent()) {
+    if (this.Status != null) {
       return false;
     }
-    if (this.Name.isPresent()) {
+    if (this.Name != null) {
       return false;
     }
-    if (this.ValueA.isPresent()) {
+    if (this.ValueA != null) {
       return false;
     }
-    if (this.ValueB.isPresent()) {
+    if (this.ValueB != null) {
       return false;
     }
     return true;
@@ -49,34 +49,34 @@ public class EnvironmentVariablesDiff implements ProtoType {
     {
       Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Status.isPresent() || other.Status.isPresent()) {
-        if (!this.Status.isPresent()) return false;
-        if (other.Status.isPresent()) return false;
-        if (!f.apply(this.Status.get(), other.Status.get())) return false;
+      if (this.Status != null || other.Status != null) {
+        if (this.Status == null && other.Status != null) return false;
+        if (this.Status != null && other.Status == null) return false;
+        if (!f.apply(this.Status, other.Status)) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Name.isPresent() || other.Name.isPresent()) {
-        if (!this.Name.isPresent()) return false;
-        if (other.Name.isPresent()) return false;
-        if (!f.apply(this.Name.get(), other.Name.get())) return false;
+      if (this.Name != null || other.Name != null) {
+        if (this.Name == null && other.Name != null) return false;
+        if (this.Name != null && other.Name == null) return false;
+        if (!f.apply(this.Name, other.Name)) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.ValueA.isPresent() || other.ValueA.isPresent()) {
-        if (!this.ValueA.isPresent()) return false;
-        if (other.ValueA.isPresent()) return false;
-        if (!f.apply(this.ValueA.get(), other.ValueA.get())) return false;
+      if (this.ValueA != null || other.ValueA != null) {
+        if (this.ValueA == null && other.ValueA != null) return false;
+        if (this.ValueA != null && other.ValueA == null) return false;
+        if (!f.apply(this.ValueA, other.ValueA)) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.ValueB.isPresent() || other.ValueB.isPresent()) {
-        if (!this.ValueB.isPresent()) return false;
-        if (other.ValueB.isPresent()) return false;
-        if (!f.apply(this.ValueB.get(), other.ValueB.get())) return false;
+      if (this.ValueB != null || other.ValueB != null) {
+        if (this.ValueB == null && other.ValueB != null) return false;
+        if (this.ValueB != null && other.ValueB == null) return false;
+        if (!f.apply(this.ValueB, other.ValueB)) return false;
       }
     }
     return true;
@@ -87,47 +87,23 @@ public class EnvironmentVariablesDiff implements ProtoType {
     return Objects.hash(this.Status, this.Name, this.ValueA, this.ValueB);
   }
 
-  public EnvironmentVariablesDiff setStatus(Optional<DiffStatusEnumDiffStatus> value) {
+  public EnvironmentVariablesDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = value;
     return this;
   }
 
-  public EnvironmentVariablesDiff setStatus(DiffStatusEnumDiffStatus value) {
-    if (value == null) this.Status = Optional.empty();
-    else this.Status = Optional.of(value);
-    return this;
-  }
-
-  public EnvironmentVariablesDiff setName(Optional<String> value) {
+  public EnvironmentVariablesDiff setName(String value) {
     this.Name = value;
     return this;
   }
 
-  public EnvironmentVariablesDiff setName(String value) {
-    if (value == null) this.Name = Optional.empty();
-    else this.Name = Optional.of(value);
-    return this;
-  }
-
-  public EnvironmentVariablesDiff setValueA(Optional<String> value) {
+  public EnvironmentVariablesDiff setValueA(String value) {
     this.ValueA = value;
     return this;
   }
 
-  public EnvironmentVariablesDiff setValueA(String value) {
-    if (value == null) this.ValueA = Optional.empty();
-    else this.ValueA = Optional.of(value);
-    return this;
-  }
-
-  public EnvironmentVariablesDiff setValueB(Optional<String> value) {
-    this.ValueB = value;
-    return this;
-  }
-
   public EnvironmentVariablesDiff setValueB(String value) {
-    if (value == null) this.ValueB = Optional.empty();
-    else this.ValueB = Optional.of(value);
+    this.ValueB = value;
     return this;
   }
 
@@ -164,10 +140,46 @@ public class EnvironmentVariablesDiff implements ProtoType {
   public ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder toProto() {
     ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder builder =
         ai.verta.modeldb.versioning.EnvironmentVariablesDiff.newBuilder();
-    this.Status.ifPresent(x -> builder.setStatus(x.toProto()));
-    this.Name.ifPresent(x -> builder.setName(x));
-    this.ValueA.ifPresent(x -> builder.setValueA(x));
-    this.ValueB.ifPresent(x -> builder.setValueB(x));
+    {
+      if (this.Status != null) {
+        Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
+            x -> {
+              builder.setStatus(this.Status.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Name != null) {
+        Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
+            x -> {
+              builder.setName(this.Name);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.ValueA != null) {
+        Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
+            x -> {
+              builder.setValueA(this.ValueA);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.ValueB != null) {
+        Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
+            x -> {
+              builder.setValueB(this.ValueB);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -177,10 +189,10 @@ public class EnvironmentVariablesDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Status.isPresent()) visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status.get());
-    if (this.Name.isPresent()) visitor.preVisitDeepString(this.Name.get());
-    if (this.ValueA.isPresent()) visitor.preVisitDeepString(this.ValueA.get());
-    if (this.ValueB.isPresent()) visitor.preVisitDeepString(this.ValueB.get());
+    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
+    visitor.preVisitDeepString(this.Name);
+    visitor.preVisitDeepString(this.ValueA);
+    visitor.preVisitDeepString(this.ValueB);
   }
 
   public EnvironmentVariablesDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -188,11 +200,10 @@ public class EnvironmentVariablesDiff implements ProtoType {
   }
 
   public EnvironmentVariablesDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Status.isPresent())
-      this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status.get()));
-    if (this.Name.isPresent()) this.setName(visitor.postVisitDeepString(this.Name.get()));
-    if (this.ValueA.isPresent()) this.setValueA(visitor.postVisitDeepString(this.ValueA.get()));
-    if (this.ValueB.isPresent()) this.setValueB(visitor.postVisitDeepString(this.ValueB.get()));
+    this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
+    this.Name = visitor.postVisitDeepString(this.Name);
+    this.ValueA = visitor.postVisitDeepString(this.ValueA);
+    this.ValueB = visitor.postVisitDeepString(this.ValueB);
     return this.postVisitShallow(visitor);
   }
 }

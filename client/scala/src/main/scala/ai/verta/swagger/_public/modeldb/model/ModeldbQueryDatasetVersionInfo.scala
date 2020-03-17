@@ -30,8 +30,8 @@ case class ModeldbQueryDatasetVersionInfo (
   query_template: Option[String] = None,
   query_parameters: Option[List[ModeldbQueryParameter]] = None,
   data_source_uri: Option[String] = None,
-  execution_timestamp: Option[] = None,
-  num_records: Option[] = None
+  execution_timestamp: Option[String] = None,
+  num_records: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbQueryDatasetVersionInfo.toJson(this)
 }
@@ -44,8 +44,8 @@ object ModeldbQueryDatasetVersionInfo {
         obj.query_template.map(x => JField("query_template", JString(x))),
         obj.query_parameters.map(x => JField("query_parameters", ((x: List[ModeldbQueryParameter]) => JArray(x.map(((x: ModeldbQueryParameter) => ModeldbQueryParameter.toJson(x)))))(x))),
         obj.data_source_uri.map(x => JField("data_source_uri", JString(x))),
-        obj.execution_timestamp.map(x => JField("execution_timestamp", (x))),
-        obj.num_records.map(x => JField("num_records", (x)))
+        obj.execution_timestamp.map(x => JField("execution_timestamp", JString(x))),
+        obj.num_records.map(x => JField("num_records", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -63,8 +63,8 @@ object ModeldbQueryDatasetVersionInfo {
           query_template = fieldsMap.get("query_template").map(JsonConverter.fromJsonString),
           query_parameters = fieldsMap.get("query_parameters").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbQueryParameter.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           data_source_uri = fieldsMap.get("data_source_uri").map(JsonConverter.fromJsonString),
-          execution_timestamp = fieldsMap.get("execution_timestamp").map(),
-          num_records = fieldsMap.get("num_records").map()
+          execution_timestamp = fieldsMap.get("execution_timestamp").map(JsonConverter.fromJsonString),
+          num_records = fieldsMap.get("num_records").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

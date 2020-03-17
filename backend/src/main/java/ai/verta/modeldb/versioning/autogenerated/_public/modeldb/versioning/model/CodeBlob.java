@@ -10,19 +10,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class CodeBlob implements ProtoType {
-  public Optional<GitCodeBlob> Git;
-  public Optional<NotebookCodeBlob> Notebook;
+  public GitCodeBlob Git;
+  public NotebookCodeBlob Notebook;
 
   public CodeBlob() {
-    this.Git = Optional.empty();
-    this.Notebook = Optional.empty();
+    this.Git = null;
+    this.Notebook = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Git.isPresent()) {
+    if (this.Git != null) {
       return false;
     }
-    if (this.Notebook.isPresent()) {
+    if (this.Notebook != null) {
       return false;
     }
     return true;
@@ -38,18 +38,18 @@ public class CodeBlob implements ProtoType {
 
     {
       Function3<GitCodeBlob, GitCodeBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Git.isPresent() || other.Git.isPresent()) {
-        if (!this.Git.isPresent()) return false;
-        if (other.Git.isPresent()) return false;
-        if (!f.apply(this.Git.get(), other.Git.get())) return false;
+      if (this.Git != null || other.Git != null) {
+        if (this.Git == null && other.Git != null) return false;
+        if (this.Git != null && other.Git == null) return false;
+        if (!f.apply(this.Git, other.Git)) return false;
       }
     }
     {
       Function3<NotebookCodeBlob, NotebookCodeBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Notebook.isPresent() || other.Notebook.isPresent()) {
-        if (!this.Notebook.isPresent()) return false;
-        if (other.Notebook.isPresent()) return false;
-        if (!f.apply(this.Notebook.get(), other.Notebook.get())) return false;
+      if (this.Notebook != null || other.Notebook != null) {
+        if (this.Notebook == null && other.Notebook != null) return false;
+        if (this.Notebook != null && other.Notebook == null) return false;
+        if (!f.apply(this.Notebook, other.Notebook)) return false;
       }
     }
     return true;
@@ -60,25 +60,13 @@ public class CodeBlob implements ProtoType {
     return Objects.hash(this.Git, this.Notebook);
   }
 
-  public CodeBlob setGit(Optional<GitCodeBlob> value) {
+  public CodeBlob setGit(GitCodeBlob value) {
     this.Git = value;
     return this;
   }
 
-  public CodeBlob setGit(GitCodeBlob value) {
-    if (value == null) this.Git = Optional.empty();
-    else this.Git = Optional.of(value);
-    return this;
-  }
-
-  public CodeBlob setNotebook(Optional<NotebookCodeBlob> value) {
-    this.Notebook = value;
-    return this;
-  }
-
   public CodeBlob setNotebook(NotebookCodeBlob value) {
-    if (value == null) this.Notebook = Optional.empty();
-    else this.Notebook = Optional.of(value);
+    this.Notebook = value;
     return this;
   }
 
@@ -104,8 +92,26 @@ public class CodeBlob implements ProtoType {
   public ai.verta.modeldb.versioning.CodeBlob.Builder toProto() {
     ai.verta.modeldb.versioning.CodeBlob.Builder builder =
         ai.verta.modeldb.versioning.CodeBlob.newBuilder();
-    this.Git.ifPresent(x -> builder.setGit(x.toProto()));
-    this.Notebook.ifPresent(x -> builder.setNotebook(x.toProto()));
+    {
+      if (this.Git != null) {
+        Function<ai.verta.modeldb.versioning.CodeBlob.Builder, Void> f =
+            x -> {
+              builder.setGit(this.Git.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Notebook != null) {
+        Function<ai.verta.modeldb.versioning.CodeBlob.Builder, Void> f =
+            x -> {
+              builder.setNotebook(this.Notebook.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -115,8 +121,8 @@ public class CodeBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Git.isPresent()) visitor.preVisitDeepGitCodeBlob(this.Git.get());
-    if (this.Notebook.isPresent()) visitor.preVisitDeepNotebookCodeBlob(this.Notebook.get());
+    visitor.preVisitDeepGitCodeBlob(this.Git);
+    visitor.preVisitDeepNotebookCodeBlob(this.Notebook);
   }
 
   public CodeBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -124,9 +130,8 @@ public class CodeBlob implements ProtoType {
   }
 
   public CodeBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Git.isPresent()) this.setGit(visitor.postVisitDeepGitCodeBlob(this.Git.get()));
-    if (this.Notebook.isPresent())
-      this.setNotebook(visitor.postVisitDeepNotebookCodeBlob(this.Notebook.get()));
+    this.Git = visitor.postVisitDeepGitCodeBlob(this.Git);
+    this.Notebook = visitor.postVisitDeepNotebookCodeBlob(this.Notebook);
     return this.postVisitShallow(visitor);
   }
 }

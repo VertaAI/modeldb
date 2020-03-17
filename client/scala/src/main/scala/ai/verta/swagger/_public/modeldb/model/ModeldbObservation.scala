@@ -28,7 +28,7 @@ import ai.verta.swagger.client.objects._
 case class ModeldbObservation (
   attribute: Option[CommonKeyValue] = None,
   artifact: Option[ModeldbArtifact] = None,
-  timestamp: Option[] = None
+  timestamp: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbObservation.toJson(this)
 }
@@ -39,7 +39,7 @@ object ModeldbObservation {
       List[Option[JField]](
         obj.attribute.map(x => JField("attribute", ((x: CommonKeyValue) => CommonKeyValue.toJson(x))(x))),
         obj.artifact.map(x => JField("artifact", ((x: ModeldbArtifact) => ModeldbArtifact.toJson(x))(x))),
-        obj.timestamp.map(x => JField("timestamp", (x)))
+        obj.timestamp.map(x => JField("timestamp", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -55,7 +55,7 @@ object ModeldbObservation {
           // TODO: handle required
           attribute = fieldsMap.get("attribute").map(CommonKeyValue.fromJson),
           artifact = fieldsMap.get("artifact").map(ModeldbArtifact.fromJson),
-          timestamp = fieldsMap.get("timestamp").map()
+          timestamp = fieldsMap.get("timestamp").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

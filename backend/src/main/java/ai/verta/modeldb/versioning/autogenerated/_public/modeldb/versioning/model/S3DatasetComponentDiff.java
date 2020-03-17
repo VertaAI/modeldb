@@ -10,14 +10,14 @@ import java.util.*;
 import java.util.function.Function;
 
 public class S3DatasetComponentDiff implements ProtoType {
-  public Optional<PathDatasetComponentDiff> Path;
+  public PathDatasetComponentDiff Path;
 
   public S3DatasetComponentDiff() {
-    this.Path = Optional.empty();
+    this.Path = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Path.isPresent()) {
+    if (this.Path != null) {
       return false;
     }
     return true;
@@ -34,10 +34,10 @@ public class S3DatasetComponentDiff implements ProtoType {
     {
       Function3<PathDatasetComponentDiff, PathDatasetComponentDiff, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Path.isPresent() || other.Path.isPresent()) {
-        if (!this.Path.isPresent()) return false;
-        if (other.Path.isPresent()) return false;
-        if (!f.apply(this.Path.get(), other.Path.get())) return false;
+      if (this.Path != null || other.Path != null) {
+        if (this.Path == null && other.Path != null) return false;
+        if (this.Path != null && other.Path == null) return false;
+        if (!f.apply(this.Path, other.Path)) return false;
       }
     }
     return true;
@@ -48,14 +48,8 @@ public class S3DatasetComponentDiff implements ProtoType {
     return Objects.hash(this.Path);
   }
 
-  public S3DatasetComponentDiff setPath(Optional<PathDatasetComponentDiff> value) {
-    this.Path = value;
-    return this;
-  }
-
   public S3DatasetComponentDiff setPath(PathDatasetComponentDiff value) {
-    if (value == null) this.Path = Optional.empty();
-    else this.Path = Optional.of(value);
+    this.Path = value;
     return this;
   }
 
@@ -77,7 +71,16 @@ public class S3DatasetComponentDiff implements ProtoType {
   public ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder toProto() {
     ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder builder =
         ai.verta.modeldb.versioning.S3DatasetComponentDiff.newBuilder();
-    this.Path.ifPresent(x -> builder.setPath(x.toProto()));
+    {
+      if (this.Path != null) {
+        Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder, Void> f =
+            x -> {
+              builder.setPath(this.Path.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -87,7 +90,7 @@ public class S3DatasetComponentDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Path.isPresent()) visitor.preVisitDeepPathDatasetComponentDiff(this.Path.get());
+    visitor.preVisitDeepPathDatasetComponentDiff(this.Path);
   }
 
   public S3DatasetComponentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -95,8 +98,7 @@ public class S3DatasetComponentDiff implements ProtoType {
   }
 
   public S3DatasetComponentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Path.isPresent())
-      this.setPath(visitor.postVisitDeepPathDatasetComponentDiff(this.Path.get()));
+    this.Path = visitor.postVisitDeepPathDatasetComponentDiff(this.Path);
     return this.postVisitShallow(visitor);
   }
 }

@@ -16,7 +16,7 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbLastModifiedExperimentRunSummary (
   name: Option[String] = None,
-  last_updated_time: Option[] = None
+  last_updated_time: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbLastModifiedExperimentRunSummary.toJson(this)
 }
@@ -26,7 +26,7 @@ object ModeldbLastModifiedExperimentRunSummary {
     new JObject(
       List[Option[JField]](
         obj.name.map(x => JField("name", JString(x))),
-        obj.last_updated_time.map(x => JField("last_updated_time", (x)))
+        obj.last_updated_time.map(x => JField("last_updated_time", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -41,7 +41,7 @@ object ModeldbLastModifiedExperimentRunSummary {
         ModeldbLastModifiedExperimentRunSummary(
           // TODO: handle required
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
-          last_updated_time = fieldsMap.get("last_updated_time").map()
+          last_updated_time = fieldsMap.get("last_updated_time").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

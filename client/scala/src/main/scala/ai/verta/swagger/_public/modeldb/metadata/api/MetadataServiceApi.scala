@@ -28,7 +28,7 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def DeleteLabels(body: MetadataDeleteLabelsRequest)(implicit ec: ExecutionContext): Try[MetadataDeleteLabelsRequestResponse] = Await.result(DeleteLabelsAsync(body), Duration.Inf)
 
-  def GetLabelsAsync(id_id_type: String, id_int_id: , id_string_id: String)(implicit ec: ExecutionContext): Future[Try[MetadataGetLabelsRequestResponse]] = {
+  def GetLabelsAsync(id_id_type: String, id_int_id: String, id_string_id: String)(implicit ec: ExecutionContext): Future[Try[MetadataGetLabelsRequestResponse]] = {
     val __query = Map[String,String](
       "id.id_type" -> client.toQuery(id_id_type),
       "id.int_id" -> client.toQuery(id_int_id),
@@ -38,6 +38,6 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
     return client.request[String, MetadataGetLabelsRequestResponse]("GET", basePath + s"/metadata/labels", __query, body, MetadataGetLabelsRequestResponse.fromJson)
   }
 
-  def GetLabels(id_id_type: String, id_int_id: , id_string_id: String)(implicit ec: ExecutionContext): Try[MetadataGetLabelsRequestResponse] = Await.result(GetLabelsAsync(id_id_type, id_int_id, id_string_id), Duration.Inf)
+  def GetLabels(id_id_type: String, id_int_id: String, id_string_id: String)(implicit ec: ExecutionContext): Try[MetadataGetLabelsRequestResponse] = Await.result(GetLabelsAsync(id_id_type, id_int_id, id_string_id), Duration.Inf)
 
 }

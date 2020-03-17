@@ -11,7 +11,7 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbAddComment (
   entity_id: Option[String] = None,
-  date_time: Option[] = None,
+  date_time: Option[String] = None,
   message: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbAddComment.toJson(this)
@@ -22,7 +22,7 @@ object ModeldbAddComment {
     new JObject(
       List[Option[JField]](
         obj.entity_id.map(x => JField("entity_id", JString(x))),
-        obj.date_time.map(x => JField("date_time", (x))),
+        obj.date_time.map(x => JField("date_time", JString(x))),
         obj.message.map(x => JField("message", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -38,7 +38,7 @@ object ModeldbAddComment {
         ModeldbAddComment(
           // TODO: handle required
           entity_id = fieldsMap.get("entity_id").map(JsonConverter.fromJsonString),
-          date_time = fieldsMap.get("date_time").map(),
+          date_time = fieldsMap.get("date_time").map(JsonConverter.fromJsonString),
           message = fieldsMap.get("message").map(JsonConverter.fromJsonString)
         )
       }

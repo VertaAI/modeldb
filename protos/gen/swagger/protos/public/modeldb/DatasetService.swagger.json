@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/dataset/addDatasetAttributes": {
+    "/v1/dataset/addDatasetAttributes": {
       "post": {
         "operationId": "addDatasetAttributes",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/dataset/addDatasetTags": {
+    "/v1/dataset/addDatasetTags": {
       "post": {
         "operationId": "addDatasetTags",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/dataset/createDataset": {
+    "/v1/dataset/createDataset": {
       "post": {
         "operationId": "createDataset",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/dataset/deleteDataset": {
+    "/v1/dataset/deleteDataset": {
       "delete": {
         "operationId": "deleteDataset",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/dataset/deleteDatasetAttributes": {
+    "/v1/dataset/deleteDatasetAttributes": {
       "delete": {
         "operationId": "deleteDatasetAttributes",
         "responses": {
@@ -186,7 +186,7 @@
         ]
       }
     },
-    "/dataset/deleteDatasetTags": {
+    "/v1/dataset/deleteDatasetTags": {
       "delete": {
         "operationId": "deleteDatasetTags",
         "responses": {
@@ -218,7 +218,7 @@
         ]
       }
     },
-    "/dataset/deleteDatasets": {
+    "/v1/dataset/deleteDatasets": {
       "delete": {
         "operationId": "deleteDatasets",
         "responses": {
@@ -250,7 +250,7 @@
         ]
       }
     },
-    "/dataset/findDatasets": {
+    "/v1/dataset/findDatasets": {
       "post": {
         "summary": "queries",
         "operationId": "findDatasets",
@@ -283,7 +283,7 @@
         ]
       }
     },
-    "/dataset/getAllDatasets": {
+    "/v1/dataset/getAllDatasets": {
       "get": {
         "operationId": "getAllDatasets",
         "responses": {
@@ -341,7 +341,7 @@
         ]
       }
     },
-    "/dataset/getDatasetAttributes": {
+    "/v1/dataset/getDatasetAttributes": {
       "get": {
         "operationId": "getDatasetAttributes",
         "responses": {
@@ -388,7 +388,7 @@
         ]
       }
     },
-    "/dataset/getDatasetById": {
+    "/v1/dataset/getDatasetById": {
       "get": {
         "operationId": "getDatasetById",
         "responses": {
@@ -418,7 +418,7 @@
         ]
       }
     },
-    "/dataset/getDatasetByName": {
+    "/v1/dataset/getDatasetByName": {
       "get": {
         "operationId": "getDatasetByName",
         "responses": {
@@ -454,7 +454,7 @@
         ]
       }
     },
-    "/dataset/getDatasetTags": {
+    "/v1/dataset/getDatasetTags": {
       "get": {
         "operationId": "getDatasetTags",
         "responses": {
@@ -484,7 +484,7 @@
         ]
       }
     },
-    "/dataset/getExperimentRunByDataset": {
+    "/v1/dataset/getExperimentRunByDataset": {
       "post": {
         "operationId": "getExperimentRunByDataset",
         "responses": {
@@ -516,7 +516,7 @@
         ]
       }
     },
-    "/dataset/getLastExperimentByDatasetId": {
+    "/v1/dataset/getLastExperimentByDatasetId": {
       "get": {
         "operationId": "getLastExperimentByDatasetId",
         "responses": {
@@ -546,7 +546,7 @@
         ]
       }
     },
-    "/dataset/setDatasetVisibility": {
+    "/v1/dataset/setDatasetVisibility": {
       "post": {
         "operationId": "setDatasetVisibility",
         "responses": {
@@ -578,7 +578,7 @@
         ]
       }
     },
-    "/dataset/setDatasetWorkspace": {
+    "/v1/dataset/setDatasetWorkspace": {
       "post": {
         "operationId": "setDatasetWorkspace",
         "responses": {
@@ -610,7 +610,7 @@
         ]
       }
     },
-    "/dataset/updateDatasetAttributes": {
+    "/v1/dataset/updateDatasetAttributes": {
       "post": {
         "operationId": "updateDatasetAttributes",
         "responses": {
@@ -642,7 +642,7 @@
         ]
       }
     },
-    "/dataset/updateDatasetDescription": {
+    "/v1/dataset/updateDatasetDescription": {
       "post": {
         "operationId": "updateDatasetDescription",
         "responses": {
@@ -674,7 +674,7 @@
         ]
       }
     },
-    "/dataset/updateDatasetName": {
+    "/v1/dataset/updateDatasetName": {
       "post": {
         "operationId": "updateDatasetName",
         "responses": {
@@ -1564,6 +1564,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }

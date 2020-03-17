@@ -10,19 +10,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DatasetBlob implements ProtoType {
-  public Optional<S3DatasetBlob> S3;
-  public Optional<PathDatasetBlob> Path;
+  public S3DatasetBlob S3;
+  public PathDatasetBlob Path;
 
   public DatasetBlob() {
-    this.S3 = Optional.empty();
-    this.Path = Optional.empty();
+    this.S3 = null;
+    this.Path = null;
   }
 
   public Boolean isEmpty() {
-    if (this.S3.isPresent()) {
+    if (this.S3 != null) {
       return false;
     }
-    if (this.Path.isPresent()) {
+    if (this.Path != null) {
       return false;
     }
     return true;
@@ -38,18 +38,18 @@ public class DatasetBlob implements ProtoType {
 
     {
       Function3<S3DatasetBlob, S3DatasetBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.S3.isPresent() || other.S3.isPresent()) {
-        if (!this.S3.isPresent()) return false;
-        if (other.S3.isPresent()) return false;
-        if (!f.apply(this.S3.get(), other.S3.get())) return false;
+      if (this.S3 != null || other.S3 != null) {
+        if (this.S3 == null && other.S3 != null) return false;
+        if (this.S3 != null && other.S3 == null) return false;
+        if (!f.apply(this.S3, other.S3)) return false;
       }
     }
     {
       Function3<PathDatasetBlob, PathDatasetBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Path.isPresent() || other.Path.isPresent()) {
-        if (!this.Path.isPresent()) return false;
-        if (other.Path.isPresent()) return false;
-        if (!f.apply(this.Path.get(), other.Path.get())) return false;
+      if (this.Path != null || other.Path != null) {
+        if (this.Path == null && other.Path != null) return false;
+        if (this.Path != null && other.Path == null) return false;
+        if (!f.apply(this.Path, other.Path)) return false;
       }
     }
     return true;
@@ -60,25 +60,13 @@ public class DatasetBlob implements ProtoType {
     return Objects.hash(this.S3, this.Path);
   }
 
-  public DatasetBlob setS3(Optional<S3DatasetBlob> value) {
+  public DatasetBlob setS3(S3DatasetBlob value) {
     this.S3 = value;
     return this;
   }
 
-  public DatasetBlob setS3(S3DatasetBlob value) {
-    if (value == null) this.S3 = Optional.empty();
-    else this.S3 = Optional.of(value);
-    return this;
-  }
-
-  public DatasetBlob setPath(Optional<PathDatasetBlob> value) {
-    this.Path = value;
-    return this;
-  }
-
   public DatasetBlob setPath(PathDatasetBlob value) {
-    if (value == null) this.Path = Optional.empty();
-    else this.Path = Optional.of(value);
+    this.Path = value;
     return this;
   }
 
@@ -104,8 +92,26 @@ public class DatasetBlob implements ProtoType {
   public ai.verta.modeldb.versioning.DatasetBlob.Builder toProto() {
     ai.verta.modeldb.versioning.DatasetBlob.Builder builder =
         ai.verta.modeldb.versioning.DatasetBlob.newBuilder();
-    this.S3.ifPresent(x -> builder.setS3(x.toProto()));
-    this.Path.ifPresent(x -> builder.setPath(x.toProto()));
+    {
+      if (this.S3 != null) {
+        Function<ai.verta.modeldb.versioning.DatasetBlob.Builder, Void> f =
+            x -> {
+              builder.setS3(this.S3.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Path != null) {
+        Function<ai.verta.modeldb.versioning.DatasetBlob.Builder, Void> f =
+            x -> {
+              builder.setPath(this.Path.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -115,8 +121,8 @@ public class DatasetBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.S3.isPresent()) visitor.preVisitDeepS3DatasetBlob(this.S3.get());
-    if (this.Path.isPresent()) visitor.preVisitDeepPathDatasetBlob(this.Path.get());
+    visitor.preVisitDeepS3DatasetBlob(this.S3);
+    visitor.preVisitDeepPathDatasetBlob(this.Path);
   }
 
   public DatasetBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -124,8 +130,8 @@ public class DatasetBlob implements ProtoType {
   }
 
   public DatasetBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.S3.isPresent()) this.setS3(visitor.postVisitDeepS3DatasetBlob(this.S3.get()));
-    if (this.Path.isPresent()) this.setPath(visitor.postVisitDeepPathDatasetBlob(this.Path.get()));
+    this.S3 = visitor.postVisitDeepS3DatasetBlob(this.S3);
+    this.Path = visitor.postVisitDeepPathDatasetBlob(this.Path);
     return this.postVisitShallow(visitor);
   }
 }

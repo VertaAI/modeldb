@@ -23,7 +23,7 @@ case class ModeldbCreateProject (
   project_visibility: Option[ModeldbProjectVisibility] = None,
   artifacts: Option[List[ModeldbArtifact]] = None,
   workspace_name: Option[String] = None,
-  date_created: Option[] = None
+  date_created: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbCreateProject.toJson(this)
 }
@@ -40,7 +40,7 @@ object ModeldbCreateProject {
         obj.project_visibility.map(x => JField("project_visibility", ((x: ModeldbProjectVisibility) => ModeldbProjectVisibility.toJson(x))(x))),
         obj.artifacts.map(x => JField("artifacts", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x))),
         obj.workspace_name.map(x => JField("workspace_name", JString(x))),
-        obj.date_created.map(x => JField("date_created", (x)))
+        obj.date_created.map(x => JField("date_created", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -62,7 +62,7 @@ object ModeldbCreateProject {
           project_visibility = fieldsMap.get("project_visibility").map(ModeldbProjectVisibility.fromJson),
           artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           workspace_name = fieldsMap.get("workspace_name").map(JsonConverter.fromJsonString),
-          date_created = fieldsMap.get("date_created").map()
+          date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

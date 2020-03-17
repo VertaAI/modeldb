@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PathDatasetDiff implements ProtoType {
-  public Optional<List<PathDatasetComponentDiff>> Components;
+  public List<PathDatasetComponentDiff> Components;
 
   public PathDatasetDiff() {
-    this.Components = Optional.empty();
+    this.Components = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Components.isPresent()) {
+    if (this.Components != null) {
       return false;
     }
     return true;
@@ -46,10 +46,10 @@ public class PathDatasetDiff implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.Components.isPresent() || other.Components.isPresent()) {
-        if (!this.Components.isPresent()) return false;
-        if (other.Components.isPresent()) return false;
-        if (!f.apply(this.Components.get(), other.Components.get())) return false;
+      if (this.Components != null || other.Components != null) {
+        if (this.Components == null && other.Components != null) return false;
+        if (this.Components != null && other.Components == null) return false;
+        if (!f.apply(this.Components, other.Components)) return false;
       }
     }
     return true;
@@ -60,14 +60,8 @@ public class PathDatasetDiff implements ProtoType {
     return Objects.hash(this.Components);
   }
 
-  public PathDatasetDiff setComponents(Optional<List<PathDatasetComponentDiff>> value) {
-    this.Components = value;
-    return this;
-  }
-
   public PathDatasetDiff setComponents(List<PathDatasetComponentDiff> value) {
-    if (value == null) this.Components = Optional.empty();
-    else this.Components = Optional.of(value);
+    this.Components = value;
     return this;
   }
 
@@ -91,10 +85,19 @@ public class PathDatasetDiff implements ProtoType {
   public ai.verta.modeldb.versioning.PathDatasetDiff.Builder toProto() {
     ai.verta.modeldb.versioning.PathDatasetDiff.Builder builder =
         ai.verta.modeldb.versioning.PathDatasetDiff.newBuilder();
-    this.Components.ifPresent(
-        x ->
-            builder.addAllComponents(
-                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
+    {
+      if (this.Components != null) {
+        Function<ai.verta.modeldb.versioning.PathDatasetDiff.Builder, Void> f =
+            x -> {
+              builder.addAllComponents(
+                  this.Components.stream()
+                      .map(y -> y.toProto().build())
+                      .collect(Collectors.toList()));
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -104,8 +107,7 @@ public class PathDatasetDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Components.isPresent())
-      visitor.preVisitDeepListOfPathDatasetComponentDiff(this.Components.get());
+    visitor.preVisitDeepListOfPathDatasetComponentDiff(this.Components);
   }
 
   public PathDatasetDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -113,9 +115,7 @@ public class PathDatasetDiff implements ProtoType {
   }
 
   public PathDatasetDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Components.isPresent())
-      this.setComponents(
-          visitor.postVisitDeepListOfPathDatasetComponentDiff(this.Components.get()));
+    this.Components = visitor.postVisitDeepListOfPathDatasetComponentDiff(this.Components);
     return this.postVisitShallow(visitor);
   }
 }

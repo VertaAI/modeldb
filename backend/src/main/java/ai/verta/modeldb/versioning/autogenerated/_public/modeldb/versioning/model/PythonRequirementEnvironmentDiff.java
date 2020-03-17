@@ -10,24 +10,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PythonRequirementEnvironmentDiff implements ProtoType {
-  public Optional<DiffStatusEnumDiffStatus> Status;
-  public Optional<PythonRequirementEnvironmentBlob> A;
-  public Optional<PythonRequirementEnvironmentBlob> B;
+  public DiffStatusEnumDiffStatus Status;
+  public PythonRequirementEnvironmentBlob A;
+  public PythonRequirementEnvironmentBlob B;
 
   public PythonRequirementEnvironmentDiff() {
-    this.Status = Optional.empty();
-    this.A = Optional.empty();
-    this.B = Optional.empty();
+    this.Status = null;
+    this.A = null;
+    this.B = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Status.isPresent()) {
+    if (this.Status != null) {
       return false;
     }
-    if (this.A.isPresent()) {
+    if (this.A != null) {
       return false;
     }
-    if (this.B.isPresent()) {
+    if (this.B != null) {
       return false;
     }
     return true;
@@ -44,28 +44,28 @@ public class PythonRequirementEnvironmentDiff implements ProtoType {
     {
       Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Status.isPresent() || other.Status.isPresent()) {
-        if (!this.Status.isPresent()) return false;
-        if (other.Status.isPresent()) return false;
-        if (!f.apply(this.Status.get(), other.Status.get())) return false;
+      if (this.Status != null || other.Status != null) {
+        if (this.Status == null && other.Status != null) return false;
+        if (this.Status != null && other.Status == null) return false;
+        if (!f.apply(this.Status, other.Status)) return false;
       }
     }
     {
       Function3<PythonRequirementEnvironmentBlob, PythonRequirementEnvironmentBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.A.isPresent() || other.A.isPresent()) {
-        if (!this.A.isPresent()) return false;
-        if (other.A.isPresent()) return false;
-        if (!f.apply(this.A.get(), other.A.get())) return false;
+      if (this.A != null || other.A != null) {
+        if (this.A == null && other.A != null) return false;
+        if (this.A != null && other.A == null) return false;
+        if (!f.apply(this.A, other.A)) return false;
       }
     }
     {
       Function3<PythonRequirementEnvironmentBlob, PythonRequirementEnvironmentBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.B.isPresent() || other.B.isPresent()) {
-        if (!this.B.isPresent()) return false;
-        if (other.B.isPresent()) return false;
-        if (!f.apply(this.B.get(), other.B.get())) return false;
+      if (this.B != null || other.B != null) {
+        if (this.B == null && other.B != null) return false;
+        if (this.B != null && other.B == null) return false;
+        if (!f.apply(this.B, other.B)) return false;
       }
     }
     return true;
@@ -76,36 +76,18 @@ public class PythonRequirementEnvironmentDiff implements ProtoType {
     return Objects.hash(this.Status, this.A, this.B);
   }
 
-  public PythonRequirementEnvironmentDiff setStatus(Optional<DiffStatusEnumDiffStatus> value) {
+  public PythonRequirementEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = value;
     return this;
   }
 
-  public PythonRequirementEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
-    if (value == null) this.Status = Optional.empty();
-    else this.Status = Optional.of(value);
-    return this;
-  }
-
-  public PythonRequirementEnvironmentDiff setA(Optional<PythonRequirementEnvironmentBlob> value) {
+  public PythonRequirementEnvironmentDiff setA(PythonRequirementEnvironmentBlob value) {
     this.A = value;
     return this;
   }
 
-  public PythonRequirementEnvironmentDiff setA(PythonRequirementEnvironmentBlob value) {
-    if (value == null) this.A = Optional.empty();
-    else this.A = Optional.of(value);
-    return this;
-  }
-
-  public PythonRequirementEnvironmentDiff setB(Optional<PythonRequirementEnvironmentBlob> value) {
-    this.B = value;
-    return this;
-  }
-
   public PythonRequirementEnvironmentDiff setB(PythonRequirementEnvironmentBlob value) {
-    if (value == null) this.B = Optional.empty();
-    else this.B = Optional.of(value);
+    this.B = value;
     return this;
   }
 
@@ -143,9 +125,36 @@ public class PythonRequirementEnvironmentDiff implements ProtoType {
   public ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff.Builder toProto() {
     ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff.Builder builder =
         ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff.newBuilder();
-    this.Status.ifPresent(x -> builder.setStatus(x.toProto()));
-    this.A.ifPresent(x -> builder.setA(x.toProto()));
-    this.B.ifPresent(x -> builder.setB(x.toProto()));
+    {
+      if (this.Status != null) {
+        Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setStatus(this.Status.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.A != null) {
+        Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setA(this.A.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.B != null) {
+        Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setB(this.B.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -155,9 +164,9 @@ public class PythonRequirementEnvironmentDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Status.isPresent()) visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status.get());
-    if (this.A.isPresent()) visitor.preVisitDeepPythonRequirementEnvironmentBlob(this.A.get());
-    if (this.B.isPresent()) visitor.preVisitDeepPythonRequirementEnvironmentBlob(this.B.get());
+    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
+    visitor.preVisitDeepPythonRequirementEnvironmentBlob(this.A);
+    visitor.preVisitDeepPythonRequirementEnvironmentBlob(this.B);
   }
 
   public PythonRequirementEnvironmentDiff postVisitShallow(Visitor visitor)
@@ -166,12 +175,9 @@ public class PythonRequirementEnvironmentDiff implements ProtoType {
   }
 
   public PythonRequirementEnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Status.isPresent())
-      this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status.get()));
-    if (this.A.isPresent())
-      this.setA(visitor.postVisitDeepPythonRequirementEnvironmentBlob(this.A.get()));
-    if (this.B.isPresent())
-      this.setB(visitor.postVisitDeepPythonRequirementEnvironmentBlob(this.B.get()));
+    this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
+    this.A = visitor.postVisitDeepPythonRequirementEnvironmentBlob(this.A);
+    this.B = visitor.postVisitDeepPythonRequirementEnvironmentBlob(this.B);
     return this.postVisitShallow(visitor);
   }
 }

@@ -10,19 +10,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class NotebookCodeDiff implements ProtoType {
-  public Optional<PathDatasetComponentDiff> Path;
-  public Optional<GitCodeDiff> GitRepo;
+  public PathDatasetComponentDiff Path;
+  public GitCodeDiff GitRepo;
 
   public NotebookCodeDiff() {
-    this.Path = Optional.empty();
-    this.GitRepo = Optional.empty();
+    this.Path = null;
+    this.GitRepo = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Path.isPresent()) {
+    if (this.Path != null) {
       return false;
     }
-    if (this.GitRepo.isPresent()) {
+    if (this.GitRepo != null) {
       return false;
     }
     return true;
@@ -39,18 +39,18 @@ public class NotebookCodeDiff implements ProtoType {
     {
       Function3<PathDatasetComponentDiff, PathDatasetComponentDiff, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Path.isPresent() || other.Path.isPresent()) {
-        if (!this.Path.isPresent()) return false;
-        if (other.Path.isPresent()) return false;
-        if (!f.apply(this.Path.get(), other.Path.get())) return false;
+      if (this.Path != null || other.Path != null) {
+        if (this.Path == null && other.Path != null) return false;
+        if (this.Path != null && other.Path == null) return false;
+        if (!f.apply(this.Path, other.Path)) return false;
       }
     }
     {
       Function3<GitCodeDiff, GitCodeDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.GitRepo.isPresent() || other.GitRepo.isPresent()) {
-        if (!this.GitRepo.isPresent()) return false;
-        if (other.GitRepo.isPresent()) return false;
-        if (!f.apply(this.GitRepo.get(), other.GitRepo.get())) return false;
+      if (this.GitRepo != null || other.GitRepo != null) {
+        if (this.GitRepo == null && other.GitRepo != null) return false;
+        if (this.GitRepo != null && other.GitRepo == null) return false;
+        if (!f.apply(this.GitRepo, other.GitRepo)) return false;
       }
     }
     return true;
@@ -61,25 +61,13 @@ public class NotebookCodeDiff implements ProtoType {
     return Objects.hash(this.Path, this.GitRepo);
   }
 
-  public NotebookCodeDiff setPath(Optional<PathDatasetComponentDiff> value) {
+  public NotebookCodeDiff setPath(PathDatasetComponentDiff value) {
     this.Path = value;
     return this;
   }
 
-  public NotebookCodeDiff setPath(PathDatasetComponentDiff value) {
-    if (value == null) this.Path = Optional.empty();
-    else this.Path = Optional.of(value);
-    return this;
-  }
-
-  public NotebookCodeDiff setGitRepo(Optional<GitCodeDiff> value) {
-    this.GitRepo = value;
-    return this;
-  }
-
   public NotebookCodeDiff setGitRepo(GitCodeDiff value) {
-    if (value == null) this.GitRepo = Optional.empty();
-    else this.GitRepo = Optional.of(value);
+    this.GitRepo = value;
     return this;
   }
 
@@ -105,8 +93,26 @@ public class NotebookCodeDiff implements ProtoType {
   public ai.verta.modeldb.versioning.NotebookCodeDiff.Builder toProto() {
     ai.verta.modeldb.versioning.NotebookCodeDiff.Builder builder =
         ai.verta.modeldb.versioning.NotebookCodeDiff.newBuilder();
-    this.Path.ifPresent(x -> builder.setPath(x.toProto()));
-    this.GitRepo.ifPresent(x -> builder.setGitRepo(x.toProto()));
+    {
+      if (this.Path != null) {
+        Function<ai.verta.modeldb.versioning.NotebookCodeDiff.Builder, Void> f =
+            x -> {
+              builder.setPath(this.Path.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.GitRepo != null) {
+        Function<ai.verta.modeldb.versioning.NotebookCodeDiff.Builder, Void> f =
+            x -> {
+              builder.setGitRepo(this.GitRepo.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -116,8 +122,8 @@ public class NotebookCodeDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Path.isPresent()) visitor.preVisitDeepPathDatasetComponentDiff(this.Path.get());
-    if (this.GitRepo.isPresent()) visitor.preVisitDeepGitCodeDiff(this.GitRepo.get());
+    visitor.preVisitDeepPathDatasetComponentDiff(this.Path);
+    visitor.preVisitDeepGitCodeDiff(this.GitRepo);
   }
 
   public NotebookCodeDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -125,10 +131,8 @@ public class NotebookCodeDiff implements ProtoType {
   }
 
   public NotebookCodeDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Path.isPresent())
-      this.setPath(visitor.postVisitDeepPathDatasetComponentDiff(this.Path.get()));
-    if (this.GitRepo.isPresent())
-      this.setGitRepo(visitor.postVisitDeepGitCodeDiff(this.GitRepo.get()));
+    this.Path = visitor.postVisitDeepPathDatasetComponentDiff(this.Path);
+    this.GitRepo = visitor.postVisitDeepGitCodeDiff(this.GitRepo);
     return this.postVisitShallow(visitor);
   }
 }

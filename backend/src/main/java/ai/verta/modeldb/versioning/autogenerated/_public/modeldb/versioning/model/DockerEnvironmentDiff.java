@@ -10,24 +10,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DockerEnvironmentDiff implements ProtoType {
-  public Optional<DiffStatusEnumDiffStatus> Status;
-  public Optional<DockerEnvironmentBlob> A;
-  public Optional<DockerEnvironmentBlob> B;
+  public DiffStatusEnumDiffStatus Status;
+  public DockerEnvironmentBlob A;
+  public DockerEnvironmentBlob B;
 
   public DockerEnvironmentDiff() {
-    this.Status = Optional.empty();
-    this.A = Optional.empty();
-    this.B = Optional.empty();
+    this.Status = null;
+    this.A = null;
+    this.B = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Status.isPresent()) {
+    if (this.Status != null) {
       return false;
     }
-    if (this.A.isPresent()) {
+    if (this.A != null) {
       return false;
     }
-    if (this.B.isPresent()) {
+    if (this.B != null) {
       return false;
     }
     return true;
@@ -44,26 +44,26 @@ public class DockerEnvironmentDiff implements ProtoType {
     {
       Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Status.isPresent() || other.Status.isPresent()) {
-        if (!this.Status.isPresent()) return false;
-        if (other.Status.isPresent()) return false;
-        if (!f.apply(this.Status.get(), other.Status.get())) return false;
+      if (this.Status != null || other.Status != null) {
+        if (this.Status == null && other.Status != null) return false;
+        if (this.Status != null && other.Status == null) return false;
+        if (!f.apply(this.Status, other.Status)) return false;
       }
     }
     {
       Function3<DockerEnvironmentBlob, DockerEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.A.isPresent() || other.A.isPresent()) {
-        if (!this.A.isPresent()) return false;
-        if (other.A.isPresent()) return false;
-        if (!f.apply(this.A.get(), other.A.get())) return false;
+      if (this.A != null || other.A != null) {
+        if (this.A == null && other.A != null) return false;
+        if (this.A != null && other.A == null) return false;
+        if (!f.apply(this.A, other.A)) return false;
       }
     }
     {
       Function3<DockerEnvironmentBlob, DockerEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.B.isPresent() || other.B.isPresent()) {
-        if (!this.B.isPresent()) return false;
-        if (other.B.isPresent()) return false;
-        if (!f.apply(this.B.get(), other.B.get())) return false;
+      if (this.B != null || other.B != null) {
+        if (this.B == null && other.B != null) return false;
+        if (this.B != null && other.B == null) return false;
+        if (!f.apply(this.B, other.B)) return false;
       }
     }
     return true;
@@ -74,36 +74,18 @@ public class DockerEnvironmentDiff implements ProtoType {
     return Objects.hash(this.Status, this.A, this.B);
   }
 
-  public DockerEnvironmentDiff setStatus(Optional<DiffStatusEnumDiffStatus> value) {
+  public DockerEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = value;
     return this;
   }
 
-  public DockerEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
-    if (value == null) this.Status = Optional.empty();
-    else this.Status = Optional.of(value);
-    return this;
-  }
-
-  public DockerEnvironmentDiff setA(Optional<DockerEnvironmentBlob> value) {
+  public DockerEnvironmentDiff setA(DockerEnvironmentBlob value) {
     this.A = value;
     return this;
   }
 
-  public DockerEnvironmentDiff setA(DockerEnvironmentBlob value) {
-    if (value == null) this.A = Optional.empty();
-    else this.A = Optional.of(value);
-    return this;
-  }
-
-  public DockerEnvironmentDiff setB(Optional<DockerEnvironmentBlob> value) {
-    this.B = value;
-    return this;
-  }
-
   public DockerEnvironmentDiff setB(DockerEnvironmentBlob value) {
-    if (value == null) this.B = Optional.empty();
-    else this.B = Optional.of(value);
+    this.B = value;
     return this;
   }
 
@@ -135,9 +117,36 @@ public class DockerEnvironmentDiff implements ProtoType {
   public ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder toProto() {
     ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder builder =
         ai.verta.modeldb.versioning.DockerEnvironmentDiff.newBuilder();
-    this.Status.ifPresent(x -> builder.setStatus(x.toProto()));
-    this.A.ifPresent(x -> builder.setA(x.toProto()));
-    this.B.ifPresent(x -> builder.setB(x.toProto()));
+    {
+      if (this.Status != null) {
+        Function<ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setStatus(this.Status.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.A != null) {
+        Function<ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setA(this.A.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.B != null) {
+        Function<ai.verta.modeldb.versioning.DockerEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setB(this.B.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -147,9 +156,9 @@ public class DockerEnvironmentDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    if (this.Status.isPresent()) visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status.get());
-    if (this.A.isPresent()) visitor.preVisitDeepDockerEnvironmentBlob(this.A.get());
-    if (this.B.isPresent()) visitor.preVisitDeepDockerEnvironmentBlob(this.B.get());
+    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
+    visitor.preVisitDeepDockerEnvironmentBlob(this.A);
+    visitor.preVisitDeepDockerEnvironmentBlob(this.B);
   }
 
   public DockerEnvironmentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -157,10 +166,9 @@ public class DockerEnvironmentDiff implements ProtoType {
   }
 
   public DockerEnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    if (this.Status.isPresent())
-      this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status.get()));
-    if (this.A.isPresent()) this.setA(visitor.postVisitDeepDockerEnvironmentBlob(this.A.get()));
-    if (this.B.isPresent()) this.setB(visitor.postVisitDeepDockerEnvironmentBlob(this.B.get()));
+    this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
+    this.A = visitor.postVisitDeepDockerEnvironmentBlob(this.A);
+    this.B = visitor.postVisitDeepDockerEnvironmentBlob(this.B);
     return this.postVisitShallow(visitor);
   }
 }
