@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import { SHA } from '../RepositoryData';
 import { GenericDiff } from './Diff';
 
@@ -92,16 +94,16 @@ export interface IPythonRequirementEnvironment {
 }
 
 export interface IVersionEnvironmentBlob {
-  major: number;
+  major?: number;
   minor?: number;
   patch?: number;
   suffix?: string;
 }
 export const versionEnvironmentToString = ({
-  major,
-  minor,
-  patch,
+  major = 0,
+  minor = 0,
+  patch = 0,
   suffix,
 }: IVersionEnvironmentBlob): string => {
-  return [major, minor, patch, suffix].filter(Boolean).join('.');
+  return [major, minor, patch, suffix].filter(R.complement(R.isNil)).join('.');
 };
