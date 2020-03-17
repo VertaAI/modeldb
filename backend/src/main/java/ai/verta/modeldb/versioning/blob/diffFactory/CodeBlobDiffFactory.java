@@ -2,10 +2,6 @@ package ai.verta.modeldb.versioning.blob.diffFactory;
 
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.BlobExpanded;
-import ai.verta.modeldb.versioning.CodeBlob;
-import ai.verta.modeldb.versioning.CodeDiff;
-import ai.verta.modeldb.versioning.GitCodeDiff;
-import ai.verta.modeldb.versioning.NotebookCodeDiff;
 
 public class CodeBlobDiffFactory extends BlobDiffFactory {
 
@@ -34,7 +30,7 @@ public class CodeBlobDiffFactory extends BlobDiffFactory {
   }
 
   private void modify(BlobDiff.Builder blobDiffBuilder, boolean add) {
-    final CodeDiff.Builder codeBuilder = CodeDiff.newBuilder();
+    /*final CodeDiff.Builder codeBuilder = CodeDiff.newBuilder();
     final CodeBlob code = getBlobExpanded().getBlob().getCode();
     switch (code.getContentCase()) {
       case GIT:
@@ -68,6 +64,6 @@ public class CodeBlobDiffFactory extends BlobDiffFactory {
         codeBuilder.setNotebook(notebookBuilder).build();
         break;
     }
-    blobDiffBuilder.setCode(codeBuilder.build());
+    blobDiffBuilder.setCode(codeBuilder.build());*/
   }
 }

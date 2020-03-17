@@ -1,20 +1,7 @@
 package ai.verta.modeldb.versioning.blob.diffFactory;
 
-import static ai.verta.modeldb.versioning.blob.diffFactory.ConfigBlobDiffFactory.removeCommon;
-
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.BlobExpanded;
-import ai.verta.modeldb.versioning.DockerEnvironmentDiff;
-import ai.verta.modeldb.versioning.EnvironmentBlob;
-import ai.verta.modeldb.versioning.EnvironmentDiff;
-import ai.verta.modeldb.versioning.EnvironmentVariablesBlob;
-import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
-import ai.verta.modeldb.versioning.PythonEnvironmentDiff;
-import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
-import com.google.protobuf.ProtocolStringList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class EnvironmentBlobDiffFactory extends BlobDiffFactory {
 
@@ -43,7 +30,7 @@ public class EnvironmentBlobDiffFactory extends BlobDiffFactory {
   }
 
   private void modify(BlobDiff.Builder blobBuilder, boolean add) {
-    final EnvironmentDiff.Builder environmentBuilder = EnvironmentDiff.newBuilder();
+    /*final EnvironmentDiff.Builder environmentBuilder = EnvironmentDiff.newBuilder();
     final EnvironmentBlob environment = getBlobExpanded().getBlob().getEnvironment();
     List<EnvironmentVariablesBlob> environmentValiablesList =
         environment.getEnvironmentVariablesList();
@@ -131,6 +118,6 @@ public class EnvironmentBlobDiffFactory extends BlobDiffFactory {
         environmentBuilder.setDocker(dockerBuilder).build();
         break;
     }
-    blobBuilder.setEnvironment(environmentBuilder.build());
+    blobBuilder.setEnvironment(environmentBuilder.build());*/
   }
 }

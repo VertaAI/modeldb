@@ -1,17 +1,6 @@
 package ai.verta.modeldb.versioning.blob.diffFactory;
 
-import static ai.verta.modeldb.versioning.blob.diffFactory.ConfigBlobDiffFactory.removeCommon;
-
-import ai.verta.modeldb.versioning.BlobDiff;
-import ai.verta.modeldb.versioning.BlobExpanded;
-import ai.verta.modeldb.versioning.DatasetBlob;
-import ai.verta.modeldb.versioning.DatasetDiff;
-import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
-import ai.verta.modeldb.versioning.PathDatasetDiff;
-import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
-import ai.verta.modeldb.versioning.S3DatasetDiff;
-import java.util.HashSet;
-import java.util.Set;
+import ai.verta.modeldb.versioning.*;
 
 public class DatasetBlobDiffFactory extends BlobDiffFactory {
 
@@ -40,7 +29,7 @@ public class DatasetBlobDiffFactory extends BlobDiffFactory {
   }
 
   private void modify(BlobDiff.Builder blobDiffBuilder, boolean add) {
-    final DatasetDiff.Builder datasetBuilder = DatasetDiff.newBuilder();
+    /*final DatasetDiff.Builder datasetBuilder = DatasetDiff.newBuilder();
     final DatasetBlob dataset = getBlobExpanded().getBlob().getDataset();
     switch (dataset.getContentCase()) {
       case PATH:
@@ -51,20 +40,65 @@ public class DatasetBlobDiffFactory extends BlobDiffFactory {
           pathBuilder = PathDatasetDiff.newBuilder();
         }
         if (add) {
-          if (pathBuilder.getACount() != 0) {
-            HashSet<PathDatasetComponentBlob> pathDatasetComponentBlobsA =
-                new HashSet<>(pathBuilder.getAList());
-            Set<PathDatasetComponentBlob> pathDatasetComponentBlobsB =
-                new HashSet<>(dataset.getPath().getComponentsList());
-            removeCommon(pathDatasetComponentBlobsA, pathDatasetComponentBlobsB);
+          if (pathBuilder.getComponentsCount() != 0) {
+            HashMap<String, PathDatasetComponentBlob> pathDatasetComponentBlobsA =
+                new HashMap<>(pathBuilder.getComponentsCount());
+            pathBuilder.getComponentsList().stream()
+                .map(c -> c.getA())
+                .forEach(c -> pathDatasetComponentBlobsA.put(c.getPath(), c));
+            HashMap<String, PathDatasetComponentBlob> pathDatasetComponentBlobsB =
+                new HashMap<>(dataset.getPath().getComponentsCount());
+            dataset.getPath().getComponentsList().stream()
+                .forEach(c -> pathDatasetComponentBlobsB.put(c.getPath(), c));
+
+            Set<String> keys = pathDatasetComponentBlobsA.keySet();
+            keys.addAll(pathDatasetComponentBlobsB.keySet());
+
             pathBuilder.clear();
-            pathBuilder.addAllA(pathDatasetComponentBlobsA);
-            pathBuilder.addAllB(pathDatasetComponentBlobsB);
+            pathBuilder.addAllComponents(
+                keys.stream()
+                        .map(
+                            key -> {
+                              PathDatasetComponentDiff.Builder builder =
+                                  PathDatasetComponentDiff.newBuilder();
+                              if (!pathDatasetComponentBlobsB.containsKey(key)) {
+                                builder
+                                    .setA(pathDatasetComponentBlobsA.get(key))
+                                    .setStatus(DiffStatusEnum.DiffStatus.DELETED);
+                              } else if (!pathDatasetComponentBlobsA.containsKey(key)) {
+                                builder
+                                    .setB(pathDatasetComponentBlobsB.get(key))
+                                    .setStatus(DiffStatusEnum.DiffStatus.ADDED);
+                              } else {
+                                builder
+                                    .setA(pathDatasetComponentBlobsA.get(key))
+                                    .setB(pathDatasetComponentBlobsB.get(key))
+                                    .setStatus(DiffStatusEnum.DiffStatus.MODIFIED);
+                              }
+                              return builder.build();
+                            })
+                    ::iterator);
           } else {
-            pathBuilder.addAllB(dataset.getPath().getComponentsList());
+            pathBuilder.addAllComponents(
+                dataset.getPath().getComponentsList().stream()
+                        .map(
+                            c ->
+                                PathDatasetComponentDiff.newBuilder()
+                                    .setB(c)
+                                    .setStatus(DiffStatusEnum.DiffStatus.ADDED)
+                                    .build())
+                    ::iterator);
           }
         } else {
-          pathBuilder.addAllA(dataset.getPath().getComponentsList());
+          pathBuilder.addAllComponents(
+              dataset.getPath().getComponentsList().stream()
+                      .map(
+                          c ->
+                              PathDatasetComponentDiff.newBuilder()
+                                  .setA(c)
+                                  .setStatus(DiffStatusEnum.DiffStatus.DELETED)
+                                  .build())
+                  ::iterator);
         }
 
         datasetBuilder.setPath(pathBuilder).build();
@@ -96,6 +130,6 @@ public class DatasetBlobDiffFactory extends BlobDiffFactory {
         datasetBuilder.setS3(s3Builder).build();
         break;
     }
-    blobDiffBuilder.setDataset(datasetBuilder.build());
+    blobDiffBuilder.setDataset(datasetBuilder.build());*/
   }
 }
