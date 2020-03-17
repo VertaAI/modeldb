@@ -554,12 +554,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       // List of commits to be traversed
       List<String> childCommitSHAs = new LinkedList<String>();
       childCommitSHAs.add(branchEntity.getCommit_hash());
-      String getParentCommitsQuery = "SELECT parent_hash FROM commit_parent WHERE child_hash = \"";
+      String getParentCommitsQuery = "SELECT parent_hash FROM commit_parent WHERE child_hash = \'";
 
       while (!childCommitSHAs.isEmpty()) {
         String childCommit = childCommitSHAs.remove(0);
         commitSHAs.add(childCommit);
-        Query sqlQuery = session.createSQLQuery(getParentCommitsQuery + childCommit + "\"");
+        Query sqlQuery = session.createSQLQuery(getParentCommitsQuery + childCommit + "\'");
         List<String> parentCommitSHAs = sqlQuery.list();
         childCommitSHAs.addAll(parentCommitSHAs);
       }
