@@ -55,55 +55,59 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
+  public List<CommitEntity> fetchCommitEntityList(
+      Session session, ListCommitsRequest request, Long repoId) throws ModelDBException {
+    StringBuilder commitQueryBuilder =
+        new StringBuilder(
+            "SELECT cm FROM "
+                + CommitEntity.class.getSimpleName()
+                + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ");
+    if (!request.getCommitBase().isEmpty()) {
+      CommitEntity baseCommitEntity =
+          Optional.ofNullable(session.get(CommitEntity.class, request.getCommitBase()))
+              .orElseThrow(
+                  () ->
+                      new ModelDBException(
+                          "Couldn't find base commit by sha : " + request.getCommitBase(),
+                          Code.NOT_FOUND));
+      Long baseTime = baseCommitEntity.getDate_created();
+      commitQueryBuilder.append(" AND cm.date_created >= " + baseTime);
+    }
+
+    if (!request.getCommitHead().isEmpty()) {
+      CommitEntity headCommitEntity =
+          Optional.ofNullable(session.get(CommitEntity.class, request.getCommitHead()))
+              .orElseThrow(
+                  () ->
+                      new ModelDBException(
+                          "Couldn't find head commit by sha : " + request.getCommitHead(),
+                          Code.NOT_FOUND));
+      Long headTime = headCommitEntity.getDate_created();
+      commitQueryBuilder.append(" AND cm.date_created <= " + headTime);
+    }
+
+    Query<CommitEntity> commitEntityQuery =
+        session.createQuery(commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
+    commitEntityQuery.setParameter("repoId", repoId);
+    if (request.hasPagination()) {
+      int pageLimit = request.getPagination().getPageLimit();
+      final int startPosition = (request.getPagination().getPageNumber() - 1) * pageLimit;
+      commitEntityQuery.setFirstResult(startPosition);
+      commitEntityQuery.setMaxResults(pageLimit);
+    }
+    return commitEntityQuery.list();
+  }
+
+  @Override
   public ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepository.apply(session);
 
-      StringBuilder commitQueryBuilder =
-          new StringBuilder(
-              "SELECT cm FROM "
-                  + CommitEntity.class.getSimpleName()
-                  + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ");
-      if (!request.getCommitBase().isEmpty()) {
-        CommitEntity baseCommitEntity =
-            Optional.ofNullable(session.get(CommitEntity.class, request.getCommitBase()))
-                .orElseThrow(
-                    () ->
-                        new ModelDBException(
-                            "Couldn't find base commit by sha : " + request.getCommitBase(),
-                            Code.NOT_FOUND));
-        Long baseTime = baseCommitEntity.getDate_created();
-        commitQueryBuilder.append(" AND cm.date_created >= " + baseTime);
-      }
-
-      if (!request.getCommitHead().isEmpty()) {
-        CommitEntity headCommitEntity =
-            Optional.ofNullable(session.get(CommitEntity.class, request.getCommitHead()))
-                .orElseThrow(
-                    () ->
-                        new ModelDBException(
-                            "Couldn't find head commit by sha : " + request.getCommitHead(),
-                            Code.NOT_FOUND));
-        Long headTime = headCommitEntity.getDate_created();
-        commitQueryBuilder.append(" AND cm.date_created <= " + headTime);
-      }
-
-      Query<CommitEntity> commitEntityQuery =
-          session.createQuery(
-              commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
-      commitEntityQuery.setParameter("repoId", repository.getId());
-      if (request.hasPagination()) {
-        int pageLimit = request.getPagination().getPageLimit();
-        final int startPosition = (request.getPagination().getPageNumber() - 1) * pageLimit;
-        commitEntityQuery.setFirstResult(startPosition);
-        commitEntityQuery.setMaxResults(pageLimit);
-      }
-
+      List<CommitEntity> commitEntities =
+          fetchCommitEntityList(session, request, repository.getId());
       List<Commit> commits =
-          commitEntityQuery.list().stream()
-              .map(CommitEntity::toCommitProto)
-              .collect(Collectors.toList());
+          commitEntities.stream().map(CommitEntity::toCommitProto).collect(Collectors.toList());
       return ListCommitsRequest.Response.newBuilder().addAllCommits(commits).build();
     }
   }

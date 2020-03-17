@@ -173,7 +173,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        DeleteRepositoryRequest.Response response = repositoryDAO.deleteRepository(request);
+        DeleteRepositoryRequest.Response response =
+            repositoryDAO.deleteRepository(request, commitDAO);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }

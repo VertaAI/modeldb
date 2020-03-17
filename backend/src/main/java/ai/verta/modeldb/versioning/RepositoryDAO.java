@@ -14,8 +14,8 @@ public interface RepositoryDAO {
   SetRepository.Response setRepository(SetRepository request, boolean create)
       throws ModelDBException;
 
-  DeleteRepositoryRequest.Response deleteRepository(DeleteRepositoryRequest request)
-      throws ModelDBException;
+  DeleteRepositoryRequest.Response deleteRepository(
+      DeleteRepositoryRequest request, CommitDAO commitDAO) throws ModelDBException;
 
   ListRepositoriesRequest.Response listRepositories(ListRepositoriesRequest request)
       throws ModelDBException;

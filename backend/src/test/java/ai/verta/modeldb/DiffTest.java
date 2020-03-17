@@ -150,7 +150,7 @@ public class DiffTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub);
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
