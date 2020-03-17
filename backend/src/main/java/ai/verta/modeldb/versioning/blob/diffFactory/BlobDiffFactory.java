@@ -45,12 +45,16 @@ public abstract class BlobDiffFactory {
       //hack
       if (blobExpanded.getBlob().getContentCase() == ContentCase.ENVIRONMENT
           && blobExpanded.getBlob().getEnvironment().getContentCase() == EnvironmentBlob.ContentCase.PYTHON) {
-        PythonEnvironmentBlob pythonA = blobExpanded.getBlob().getEnvironment().getPython();
-        PythonEnvironmentBlob pythonB = blobDiffFactoryB
-            .getBlobExpanded().getBlob().getEnvironment().getPython();
+        final EnvironmentBlob environmentA = blobExpanded.getBlob().getEnvironment();
+        final EnvironmentBlob environmentB = blobDiffFactoryB
+            .getBlobExpanded().getBlob().getEnvironment();
+        PythonEnvironmentBlob pythonA = environmentA.getPython();
+        PythonEnvironmentBlob pythonB = environmentB.getPython();
         if (pythonA.getVersion().equals(pythonB.getVersion())
             && new HashSet<>(pythonA.getRequirementsList()).equals(new HashSet<>(pythonB.getRequirementsList()))
-            && new HashSet<>(pythonA.getConstraintsList()).equals(new HashSet<>(pythonB.getConstraintsList()))) {
+            && new HashSet<>(pythonA.getConstraintsList()).equals(new HashSet<>(pythonB.getConstraintsList()))
+        && new HashSet<>(environmentA.getEnvironmentVariablesList()).equals(new HashSet<>(environmentB.getEnvironmentVariablesList()))
+        && environmentA.getCommandLineList().equals(environmentB.getCommandLineList())) {
           return Collections.emptyList();
         }
       }
