@@ -39,10 +39,12 @@ public class {{class_name}} implements ProtoType {
     }
 
     // TODO: not consider order on lists
-    public Boolean equals({{class_name}} other) {
-        if (other == null) {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (!(o instanceof {{class_name}})) return false;
+        {{class_name}} other = ({{class_name}}) o;
+
         {{#properties}}
         {
             {{#type}}
