@@ -231,13 +231,19 @@ class Client(object):
         )
 
         if response.ok:
-            return response.json()['verta_info']['username']
+            try:
+                response_json = response.json()
+            except ValueError:  # not JSON response
+                pass
+            else:
+                return response_json['verta_info']['username']
         else:
             if response.status_code == 404:
                 # UAC not found
-                return _OSS_DEFAULT_WORKSPACE
+                pass
             else:
                 _utils.raise_for_http_error(response)
+        return _OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
         config_file = self._find_config_in_all_dirs()
