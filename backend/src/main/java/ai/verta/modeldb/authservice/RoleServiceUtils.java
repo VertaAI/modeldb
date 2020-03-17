@@ -1034,4 +1034,10 @@ public class RoleServiceUtils implements RoleService {
       throw ex;
     }
   }
+
+  @Override
+  public boolean isCurrentUser(String vertaID) {
+    // TODO Auto-generated method stub
+    return false;
+  }
 }

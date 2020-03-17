@@ -134,4 +134,12 @@ public interface RoleService {
   WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
   List<Organization> listMyOrganizations();
+
+  /**
+   * returns if the vertaID passed matches the current user
+   *
+   * @param vertaID
+   * @return
+   */
+  boolean isCurrentUser(String vertaID);
 }

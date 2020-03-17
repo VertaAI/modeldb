@@ -72,10 +72,12 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
@@ -532,9 +534,19 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         LOGGER.trace("comments {}", comments);
         hydratedExperimentRunBuilder.addAllComments(comments);
 
+        List<Action> actionList =
+            ModelDBUtils.getActionsList(new ArrayList<>(projectIdSet), actions);
+        Action deleteAction =
+            Action.newBuilder()
+                .setModeldbServiceAction(ModelDBServiceActions.DELETE)
+                .setService(Service.MODELDB_SERVICE)
+                .build();
+        if (roleService.isCurrentUser(experimentRun.getOwner())
+            && !actionList.contains(deleteAction)) {
+          actionList.add(deleteAction);
+        }
         // Add user specific actions
-        hydratedExperimentRunBuilder.addAllAllowedActions(
-            ModelDBUtils.getActionsList(new ArrayList<>(projectIdSet), actions));
+        hydratedExperimentRunBuilder.addAllAllowedActions(actionList);
       } else {
         LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
       }
@@ -961,10 +973,20 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       UserInfo userInfoValue = userInfoMap.get(experiment.getOwner());
       if (userInfoValue != null) {
         hydratedExperimentBuilder.setOwnerUserInfo(userInfoValue);
+        List<Action> actionList = new LinkedList<Action>();
         if (actions != null && actions.size() > 0) {
-          hydratedExperimentBuilder.addAllAllowedActions(
-              ModelDBUtils.getActionsList(Collections.singletonList(projectId), actions));
+          actionList = ModelDBUtils.getActionsList(Collections.singletonList(projectId), actions);
         }
+        Action deleteAction =
+            Action.newBuilder()
+                .setModeldbServiceAction(ModelDBServiceActions.DELETE)
+                .setService(Service.MODELDB_SERVICE)
+                .build();
+        if (roleService.isCurrentUser(experiment.getOwner())
+            && !actionList.contains(deleteAction)) {
+          actionList.add(deleteAction);
+        }
+        hydratedExperimentBuilder.addAllAllowedActions(actionList);
       } else {
         LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
       }
@@ -1326,8 +1348,20 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       hydratedDatasetVersionBuilder.setOwnerUserInfo(ownerUserInfo);
     }
     if (selfAllowedActions != null && selfAllowedActions.size() > 0) {
-      hydratedDatasetVersionBuilder.addAllAllowedActions(
-          selfAllowedActions.get(datasetVersion.getDatasetId()).getActionsList());
+      List<Action> actionList =
+          selfAllowedActions.get(datasetVersion.getDatasetId()).getActionsList();
+      if (ownerUserInfo != null) {
+        Action deleteAction =
+            Action.newBuilder()
+                .setModeldbServiceAction(ModelDBServiceActions.DELETE)
+                .setService(Service.MODELDB_SERVICE)
+                .build();
+        if (roleService.isCurrentUser(datasetVersion.getOwner())
+            && !actionList.contains(deleteAction)) {
+          actionList.add(deleteAction);
+        }
+      }
+      hydratedDatasetVersionBuilder.addAllAllowedActions(actionList);
     }
     return hydratedDatasetVersionBuilder.build();
   }
