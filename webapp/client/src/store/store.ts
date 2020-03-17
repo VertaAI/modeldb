@@ -5,12 +5,12 @@ import { ThunkAction } from 'redux-thunk';
 
 import ServiceFactory from 'services/ServiceFactory';
 
-import * as CommitsHistory from 'core/features/repository/commitsHistory';
-import * as CompareChanges from 'core/features/repository/compareChanges';
-import * as CompareCommits from 'core/features/repository/compareCommits';
-import * as ViewCommit from 'core/features/repository/viewCommit';
-import * as Repositories from 'core/features/repository/repositories';
-import * as RepositoryData from 'core/features/repository/repositoryData';
+import * as CommitsHistory from 'core/features/versioning/commitsHistory';
+import * as CompareChanges from 'core/features/versioning/compareChanges';
+import * as CompareCommits from 'core/features/versioning/compareCommits';
+import * as ViewCommit from 'core/features/versioning/viewCommit';
+import * as Repositories from 'core/features/versioning/repositories';
+import * as RepositoryData from 'core/features/versioning/repositoryData';
 import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
 import * as Filter from 'core/features/filter';
 import * as Layout from 'core/features/Layout';
