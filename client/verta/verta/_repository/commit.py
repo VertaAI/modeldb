@@ -327,9 +327,11 @@ class Commit(object):
     def get_revert_diff(self):
         return self.parent.diff_from(self)
 
-    def revert(self, message, other=None):
+    def revert(self, other=None, message=None):
         if other is None:
             other = self
+        if message is None:
+            message = "Revert {}".format(other.id[:7])
 
         self.apply_diff(other.get_revert_diff(), message)
 
@@ -380,7 +382,10 @@ class Commit(object):
 
     def merge(self, other, message=None):
         if message is None:
-            message = "Merge {} into {}".format(other.id[:7], self.id[:7])
+            message = "Merge {} into {}".format(
+                other.branch_name or other.id[:7],
+                self.branch_name or self.id[:7],
+            )
 
         self.apply_diff(other.diff_from(self.get_common_parent(other)), message=message)
 
