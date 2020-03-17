@@ -27,6 +27,7 @@ public class S3DatasetComponentDiff implements ProtoType {
     }
 
     // TODO: not consider order on lists
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
@@ -47,6 +48,7 @@ public class S3DatasetComponentDiff implements ProtoType {
         return true;
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(
         this.Path

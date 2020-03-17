@@ -32,6 +32,7 @@ public class CodeDiff implements ProtoType {
     }
 
     // TODO: not consider order on lists
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
@@ -63,6 +64,7 @@ public class CodeDiff implements ProtoType {
         return true;
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(
         this.Git,
