@@ -2,8 +2,8 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 
 import { BaseDataService } from 'core/services/BaseDataService';
-import { convertServerRepositoryToClient } from 'core/services/serverModel/Repository/converters';
-import { IServerRepository } from 'core/services/serverModel/Repository/Repository';
+import { convertServerRepositoryToClient } from 'core/services/serverModel/Versioning/Repository/converters';
+import { IServerRepository } from 'core/services/serverModel/Versioning/Repository/Repository';
 import { EntityErrorType } from 'core/shared/models/Common';
 import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
 import {

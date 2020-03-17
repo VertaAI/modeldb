@@ -5,7 +5,7 @@ import { IRepository } from 'core/shared/models/Repository/Repository';
 import { SHA } from 'core/shared/models/Repository/RepositoryData';
 
 import { BaseDataService } from '../../BaseDataService';
-import { convertServerDiffsToClient } from '../../serverModel/CompareCommits/converters';
+import { convertServerDiffsToClient } from '../../serverModel/Versioning/CompareCommits/converters';
 
 export default class CompareCommitsService extends BaseDataService {
   constructor() {

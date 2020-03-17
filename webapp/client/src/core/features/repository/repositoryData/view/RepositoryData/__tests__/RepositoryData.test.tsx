@@ -47,9 +47,9 @@ const repositoryDataParams: GetRouteParams<typeof routes.repositoryData> = {
   workspaceName: currentWorkspace.name,
 };
 
-jest.mock('core/services/repositoryData/RepositoryDataService');
+jest.mock('core/services/repository/repositoryData/RepositoryDataService');
 const mockedRepositoryDataService = makeMockedService({
-  path: 'core/services/repositoryData/RepositoryDataService',
+  path: 'core/services/repository/repositoryData/RepositoryDataService',
   service: RepositoryDataService,
 });
 
