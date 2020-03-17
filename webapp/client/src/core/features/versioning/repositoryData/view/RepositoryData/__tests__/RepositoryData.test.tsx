@@ -27,7 +27,7 @@ import { repositories } from 'utils/tests/mocks/models/repositoriesMocks';
 import { users } from 'utils/tests/mocks/models/users';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/Repository/blobMocks';
-import { branchesAndTagsListHelpers } from 'core/shared/view/domain/Repository/RepositoryData/BranchesAndTagsList/__tests__/helpers';
+import { branchesAndTagsListHelpers } from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/__tests__/helpers';
 
 import RepositoryData from '../RepositoryData';
 
@@ -47,9 +47,9 @@ const repositoryDataParams: GetRouteParams<typeof routes.repositoryData> = {
   workspaceName: currentWorkspace.name,
 };
 
-jest.mock('core/services/repository/repositoryData/RepositoryDataService');
+jest.mock('core/services/versioning/repositoryData/RepositoryDataService');
 const mockedRepositoryDataService = makeMockedService({
-  path: 'core/services/repository/repositoryData/RepositoryDataService',
+  path: 'core/services/versioning/repositoryData/RepositoryDataService',
   service: RepositoryDataService,
 });
 

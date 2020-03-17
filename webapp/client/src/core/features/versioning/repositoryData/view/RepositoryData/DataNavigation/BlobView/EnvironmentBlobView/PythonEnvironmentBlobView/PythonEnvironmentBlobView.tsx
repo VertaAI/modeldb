@@ -4,14 +4,14 @@ import {
   IPythonEnvironmentBlob,
   versionEnvironmentToString,
 } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import PythonVersion from 'core/shared/view/domain/Repository/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
+import PythonVersion from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
 import {
   PageHeader,
   RecordInfo,
 } from 'core/shared/view/elements/PageComponents';
 
 import styles from './PythonEnvironmentBlobView.module.css';
-import PythonRequirementEnvironment from 'core/shared/view/domain/Repository/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
+import PythonRequirementEnvironment from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
 
 interface ILocalProps {
   blob: IPythonEnvironmentBlob;

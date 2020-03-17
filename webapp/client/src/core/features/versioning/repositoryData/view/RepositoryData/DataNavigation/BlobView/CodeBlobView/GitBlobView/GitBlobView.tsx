@@ -6,10 +6,10 @@ import {
   RecordInfo,
   PageHeader,
 } from 'core/shared/view/elements/PageComponents';
-import BranchProp from 'core/shared/view/domain/Repository/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
-import HashProp from 'core/shared/view/domain/Repository/Blob/CodeBlob/GitBlob/HashProp/HashProp';
-import RepoProp from 'core/shared/view/domain/Repository/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
-import TagProp from 'core/shared/view/domain/Repository/Blob/CodeBlob/GitBlob/TagProp/TagProp';
+import BranchProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
+import HashProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/HashProp/HashProp';
+import RepoProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
+import TagProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/TagProp/TagProp';
 
 import styles from './GitBlobView.module.css';
 

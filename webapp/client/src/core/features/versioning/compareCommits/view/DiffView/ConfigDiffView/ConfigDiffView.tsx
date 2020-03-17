@@ -1,14 +1,14 @@
 import * as React from 'react';
 
-import { shortenSHA } from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
+import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import { IConfigBlobDiff } from 'core/shared/models/Versioning/Blob/ConfigBlob';
 import {
   DiffType,
   ComparedCommitType,
   getDiffBlobsData,
 } from 'core/shared/models/Versioning/Blob/Diff';
-import HyperparameterItem from 'core/shared/view/domain/Repository/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
-import HyperparameterSetItem from 'core/shared/view/domain/Repository/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
+import HyperparameterItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
+import HyperparameterSetItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
 
 import { IComparedCommitsInfo } from '../../types';
 import { diffColors } from '../shared/styles';

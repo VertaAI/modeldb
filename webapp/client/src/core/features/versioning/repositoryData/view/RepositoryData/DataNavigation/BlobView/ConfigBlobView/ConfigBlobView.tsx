@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { IConfigBlob } from 'core/shared/models/Versioning/Blob/ConfigBlob';
-import HyperparameterItem from 'core/shared/view/domain/Repository/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
-import HyperparameterSetItem from 'core/shared/view/domain/Repository/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
+import HyperparameterItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
+import HyperparameterSetItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
 import {
   PageHeader,
   RecordInfo,

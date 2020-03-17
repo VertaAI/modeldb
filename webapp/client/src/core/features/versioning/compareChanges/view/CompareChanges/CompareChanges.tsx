@@ -14,7 +14,7 @@ import {
   RepositoryBranches,
   CommitPointerHelpers,
 } from 'core/shared/models/Versioning/RepositoryData';
-import BranchesAndTagsList from 'core/shared/view/domain/Repository/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
+import BranchesAndTagsList from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
 import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import { IApplicationState } from 'store/store';

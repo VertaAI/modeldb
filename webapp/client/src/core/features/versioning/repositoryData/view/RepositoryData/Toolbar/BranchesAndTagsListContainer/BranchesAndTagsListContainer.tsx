@@ -10,7 +10,7 @@ import {
 import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { CommitPointer } from 'core/shared/models/Versioning/RepositoryData';
-import BranchesAndTagsList from 'core/shared/view/domain/Repository/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
+import BranchesAndTagsList from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
 import { IApplicationState } from 'store/store';
 
 import * as routeHelpers from '../../routeHelpers';

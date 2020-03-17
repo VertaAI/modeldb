@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import KeyValuePairs from 'core/shared/view/elements/KeyValuePairs/KeyValuePairs';
-import { shortenSHA } from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
+import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import {
   DiffType,
   ComparedCommitType,
@@ -13,8 +13,8 @@ import {
   safeMapPythonBlobDataDiff,
   checkCommonEnvironmentDataIsChanged,
 } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import PythonRequirementEnvironment from 'core/shared/view/domain/Repository/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
-import PythonVersion from 'core/shared/view/domain/Repository/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
+import PythonRequirementEnvironment from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
+import PythonVersion from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
 
 import { IComparedCommitsInfo } from '../../types';
 import sortArrayByAnotherArrayKeys from '../shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';

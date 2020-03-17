@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as React from 'react';
 
-import { shortenSHA } from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
+import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import { IGitCodeDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
 import {
   DiffType,
@@ -14,10 +14,10 @@ import { IComparedCommitsInfo } from '../../../types';
 import { diffColors } from '../../shared/styles';
 import CompareTable from './CompareTable/CompareTable';
 import styles from './GitDiffView.module.css';
-import HashProp from 'core/shared/view/domain/Repository/Blob/CodeBlob/GitBlob/HashProp/HashProp';
-import BranchProp from 'core/shared/view/domain/Repository/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
-import TagProp from 'core/shared/view/domain/Repository/Blob/CodeBlob/GitBlob/TagProp/TagProp';
-import RepoProp from 'core/shared/view/domain/Repository/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
+import HashProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/HashProp/HashProp';
+import BranchProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
+import TagProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/TagProp/TagProp';
+import RepoProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
 
 interface ILocalProps {
   diff: IGitCodeDiff;

@@ -6,7 +6,7 @@ import { bindActionCreators, Dispatch } from 'redux';
 import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 import { CompareCommits } from 'core/features/versioning/compareCommits';
 import { getRedirectPathToRepositoryDataPage } from 'core/features/versioning/repositoryData';
-import ShortenedSHA from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
+import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {

@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 import routes from 'routes';
 import { getRedirectPathToRepositoryDataPage } from 'core/features/versioning/repositoryData';
-import ShortenedSHA from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
+import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {

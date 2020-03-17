@@ -7,7 +7,7 @@ import {
   actions,
   selectors,
 } from 'core/features/versioning/compareCommits/store';
-import ShortenedSHA from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
+import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import * as DataLocationHelpers from 'core/shared/models/Versioning/DataLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { SHA } from 'core/shared/models/Versioning/RepositoryData';
