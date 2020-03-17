@@ -549,9 +549,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                 .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        LOGGER.info(
-            "roleService.isCurrentUser(experimentRun.getOwner() {}",
-            authService.isCurrentUser(experimentRun.getOwner()));
         if (currentUserVertaID.equalsIgnoreCase(experimentRun.getOwner())
             && !actionList.contains(deleteAction)
             && actionList.contains(updateAction)) {
