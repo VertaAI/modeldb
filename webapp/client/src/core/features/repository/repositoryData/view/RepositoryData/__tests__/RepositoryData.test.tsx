@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Switch, Route } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
 
-import RepositoryDataService from 'core/services/repositoryData/RepositoryDataService';
+import RepositoryDataService from 'core/services/repository/repositoryData/RepositoryDataService';
 import * as B from 'core/shared/models/Repository/BuildCommitTree';
 import * as DataLocation from 'core/shared/models/Repository/DataLocation';
 import { IRepository } from 'core/shared/models/Repository/Repository';
@@ -47,9 +47,9 @@ const repositoryDataParams: GetRouteParams<typeof routes.repositoryData> = {
   workspaceName: currentWorkspace.name,
 };
 
-jest.mock('core/services/repositoryData/RepositoryDataService');
+jest.mock('core/services/repository/repositoryData/RepositoryDataService');
 const mockedRepositoryDataService = makeMockedService({
-  path: 'core/services/repositoryData/RepositoryDataService',
+  path: 'core/services/repository/repositoryData/RepositoryDataService',
   service: RepositoryDataService,
 });
 

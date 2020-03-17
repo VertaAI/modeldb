@@ -25,11 +25,11 @@ import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import { convertClientPaginationToNamespacedServerPagination } from 'core/services/serverModel/Pagination/converters';
 import UsersService from 'core/services/users/UsersService';
 
-import { convertServerBlobToClient } from '../serverModel/RepositoryData/Blob';
+import { convertServerBlobToClient } from '../../serverModel/Versioning/RepositoryData/Blob';
 import {
   convertServerFolderToClient,
   convertServerCommitToClient,
-} from '../serverModel/RepositoryData/converters';
+} from '../../serverModel/Versioning/RepositoryData/converters';
 import { unknownUser } from 'models/User';
 
 export default class RepositoryDataService extends BaseDataService {
