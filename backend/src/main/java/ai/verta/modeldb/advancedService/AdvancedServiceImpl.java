@@ -542,10 +542,17 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                 .setModeldbServiceAction(ModelDBServiceActions.DELETE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        LOGGER.info("experimentRun.getOwner() {}", experimentRun.getOwner());
-        LOGGER.info("roleService.isCurrentUser(experimentRun.getOwner() {}", roleService.isCurrentUser(experimentRun.getOwner()));
-        if (roleService.isCurrentUser(experimentRun.getOwner())
-            && !actionList.contains(deleteAction)) {
+        Action updateAction =
+            Action.newBuilder()
+                .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
+                .setService(Service.MODELDB_SERVICE)
+                .build();
+        LOGGER.info(
+            "roleService.isCurrentUser(experimentRun.getOwner() {}",
+            authService.isCurrentUser(experimentRun.getOwner()));
+        if ((authService.isCurrentUser(experimentRun.getOwner())
+                && !actionList.contains(deleteAction))
+            || actionList.contains(updateAction)) {
           actionList.add(deleteAction);
         }
         LOGGER.info("actionList {}", actionList);
@@ -977,7 +984,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       UserInfo userInfoValue = userInfoMap.get(experiment.getOwner());
       if (userInfoValue != null) {
         hydratedExperimentBuilder.setOwnerUserInfo(userInfoValue);
-        List<Action> actionList = new LinkedList<Action>();
+        List<Action> actionList = new LinkedList<>();
         if (actions != null && actions.size() > 0) {
           actionList = ModelDBUtils.getActionsList(Collections.singletonList(projectId), actions);
         }
@@ -986,8 +993,13 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                 .setModeldbServiceAction(ModelDBServiceActions.DELETE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        if (roleService.isCurrentUser(experiment.getOwner())
-            && !actionList.contains(deleteAction)) {
+        Action updateAction =
+            Action.newBuilder()
+                .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
+                .setService(Service.MODELDB_SERVICE)
+                .build();
+        if ((authService.isCurrentUser(experiment.getOwner()) && !actionList.contains(deleteAction))
+            || actionList.contains(updateAction)) {
           actionList.add(deleteAction);
         }
         hydratedExperimentBuilder.addAllAllowedActions(actionList);
@@ -1360,8 +1372,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                 .setModeldbServiceAction(ModelDBServiceActions.DELETE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        if (roleService.isCurrentUser(datasetVersion.getOwner())
-            && !actionList.contains(deleteAction)) {
+        Action updateAction =
+            Action.newBuilder()
+                .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
+                .setService(Service.MODELDB_SERVICE)
+                .build();
+        if ((authService.isCurrentUser(datasetVersion.getOwner())
+                && !actionList.contains(deleteAction))
+            || actionList.contains(updateAction)) {
           actionList.add(deleteAction);
         }
       }

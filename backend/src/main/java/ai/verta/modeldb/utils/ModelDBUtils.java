@@ -344,18 +344,19 @@ public class ModelDBUtils {
   }
 
   public static List<Action> getActionsList(List<String> ids, Map<String, Actions> actions) {
-    return actions.values().stream()
-        .findFirst()
-        .orElseThrow(
-            () -> {
-              Status status =
-                  Status.newBuilder()
-                      .setCode(Code.INTERNAL_VALUE)
-                      .setMessage("Can't find allowed actions of current user for: " + ids)
-                      .build();
-              return StatusProto.toStatusRuntimeException(status);
-            })
-        .getActionsList();
+    return new ArrayList<>(
+        actions.values().stream()
+            .findFirst()
+            .orElseThrow(
+                () -> {
+                  Status status =
+                      Status.newBuilder()
+                          .setCode(Code.INTERNAL_VALUE)
+                          .setMessage("Can't find allowed actions of current user for: " + ids)
+                          .build();
+                  return StatusProto.toStatusRuntimeException(status);
+                })
+            .getActionsList());
   }
 
   public static List<KeyValueQuery> getKeyValueQueriesByWorkspace(

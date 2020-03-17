@@ -230,9 +230,4 @@ public class PublicRoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return null;
   }
-
-  @Override
-  public boolean isCurrentUser(String vertaID) {
-    return true;
-  }
 }
