@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Switch, Route } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
 
-import RepositoryDataService from 'core/services/repository/repositoryData/RepositoryDataService';
+import RepositoryDataService from 'core/services/versioning/repositoryData/RepositoryDataService';
 import * as B from 'core/shared/models/Versioning/BuildCommitTree';
 import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
