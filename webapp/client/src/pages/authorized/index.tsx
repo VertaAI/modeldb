@@ -29,9 +29,9 @@ import { IRouteWithWorkspace } from 'routes/routeWithWorkspace';
 import DatasetCreationPage from './DatasetPages/DatasetCreationPage/DatasetCreationPage';
 import ProjectCreationPage from './ProjectsPages/ProjectCreationPage/ProjectCreationPage';
 import ExperimentCreationPage from './ProjectsPages/ProjectDetailsPages/ExperimentCreationPage/ExperimentCreationPage';
-import RepositoriesPage from './RepositoriesPages/RepositoriesPage/RepositoriesPage';
-import RepositoryCreationPage from './RepositoriesPages/RepositoryCreationPage/RepositoryCreationPage';
-import RepositoryDetailsPages from './RepositoriesPages/RepositoryDetailsPages/RepositoryDetailsPages';
+import RepositoriesPage from './VersioningPages/RepositoriesPage/RepositoriesPage';
+import RepositoryCreationPage from './VersioningPages/RepositoryCreationPage/RepositoryCreationPage';
+import RepositoryDetailsPages from './VersioningPages/RepositoryDetailsPages/RepositoryDetailsPages';
 
 interface IRouteDescription<T extends IRoute<any, any>> {
   route: T | T[];
