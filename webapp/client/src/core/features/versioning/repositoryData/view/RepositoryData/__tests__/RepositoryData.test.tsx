@@ -23,10 +23,10 @@ import { makeMockedService } from 'core/shared/utils/tests/integrations/mockServ
 import { findByText } from 'core/shared/utils/tests/react/helpers';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
-import { repositories } from 'utils/tests/mocks/models/repositoriesMocks';
+import { repositories } from 'core/shared/utils/tests/mocks/Versioning/repositoriesMocks';
 import { users } from 'utils/tests/mocks/models/users';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
-import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/Repository/blobMocks';
+import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/Versioning/blobMocks';
 import { branchesAndTagsListHelpers } from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/__tests__/helpers';
 
 import RepositoryData from '../RepositoryData';

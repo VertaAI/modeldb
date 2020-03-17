@@ -6,7 +6,7 @@ import {
   defaultCommitPointer,
 } from 'core/shared/models/Versioning/RepositoryData';
 import routes, { GetRouteParams } from 'routes';
-import { repositories } from 'utils/tests/mocks/models/repositoriesMocks';
+import { repositories } from 'core/shared/utils/tests/mocks/Versioning/repositoriesMocks';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
 import * as RouteHelpers from '../index';
