@@ -32,6 +32,35 @@ Release Notes
      <>`__
 
 
+v0.14.1 (2020-03-17)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add complete versioning system
+  <api/api/versioning.html>`__
+- `enable going directly from Client to ExperimentRun using Verta config
+  <https://github.com/VertaAI/modeldb-verta/pull/96>`__
+- `add public_within_org option for set_project() and set_dataset()
+  <https://github.com/VertaAI/modeldb-verta/pull/121>`__
+- `add aliases for Client's set/get-or-create methods
+  <https://github.com/VertaAI/modeldb-verta/pull/272/files>`__
+
+Bug Fixes
+^^^^^^^^^
+- `enable larger sets of ExperimentRuns to be queried
+  <https://github.com/VertaAI/modeldb-verta/pull/72>`__
+- `enable ZIPing files that have invalid timestamps
+  <https://github.com/VertaAI/modeldb-verta/pull/154>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `move cloned dependencies to their own submodule
+  <https://github.com/VertaAI/modeldb-verta/pull/22>`__
+- `move internal utils into their own submodule
+  <https://github.com/VertaAI/modeldb-verta/pull/217>`__
+
+
 v0.14.0 (2020-02-11)
 --------------------
 
@@ -51,27 +80,27 @@ New Features
 - `implement PyTorch Client integration
   <https://github.com/VertaAI/modeldb-client/pull/337>`__
 - `implement scikit-learn Client integration
-  <https://github.com/VertaAI/modeldb/pull/23>`__
+  <https://github.com/VertaAI/modeldb-verta/pull/23>`__
 - `implement TensorFlow Client integration
   <https://github.com/VertaAI/modeldb-client/pull/331>`__
 - `implement TensorBoard Client integration
-  <https://github.com/VertaAI/modeldb/pull/38>`__
+  <https://github.com/VertaAI/modeldb-verta/pull/38>`__
 - `implement XGBoost Client intergation
   <https://github.com/VertaAI/modeldb-client/pull/334>`__
 
 Bug Fixes
 ^^^^^^^^^
 - `allow negative numbers in Python 3 expt_runs.find() queries
-  <https://github.com/VertaAI/modeldb/pull/77>`__
+  <https://github.com/VertaAI/modeldb-verta/pull/77>`__
 
 Internal Changes
 ^^^^^^^^^^^^^^^^
 - `interpret HTTP 403s on getProject as project not found
-  <https://github.com/VertaAI/modeldb/pull/10>`__
+  <https://github.com/VertaAI/modeldb-verta/pull/10>`__
 - `include gorilla as internal dependency
-  <https://github.com/VertaAI/modeldb/pull/22>`__
+  <https://github.com/VertaAI/modeldb-verta/pull/22>`__
 - `explicitly include ModelDB in RPC endpoints
-  <https://github.com/VertaAI/modeldb/pull/28>`__
+  <https://github.com/VertaAI/modeldb-verta/pull/28>`__
 
 
 v0.13.19 (2020-01-08)
