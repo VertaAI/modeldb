@@ -98,14 +98,14 @@ public class DiffComputer {
     return Optional.empty();
   }
 
-  public static <T> DiffStatusEnumDiffStatus getStatus(Optional<T> a, Optional<T> b) {
-    if (!a.isPresent() && !b.isPresent()) {
-      return null;
+  public static <T> DiffStatusEnumDiffStatus getStatus(T a, T b) {
+    if (a == null && b == null) {
+      return new DiffStatusEnumDiffStatus(DiffStatus.DELETED);
     }
-    if (!a.isPresent()) {
+    if (a == null) {
       return new DiffStatusEnumDiffStatus(DiffStatus.ADDED);
     }
-    if (!b.isPresent()) {
+    if (b == null) {
       return new DiffStatusEnumDiffStatus(DiffStatus.DELETED);
     }
     return new DiffStatusEnumDiffStatus(DiffStatus.MODIFIED);
