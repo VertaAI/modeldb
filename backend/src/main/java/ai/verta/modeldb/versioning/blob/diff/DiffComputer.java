@@ -39,10 +39,20 @@ public class DiffComputer {
     HashMap<String, HashSet<F>> mapB = new HashMap<>();
     a.flatMap(getter::apply)
         .ifPresent(
-            x -> x.forEach(el -> mapA.getOrDefault(hasher.apply(el), new HashSet<>()).add(el)));
+            x ->
+                x.forEach(
+                    el ->
+                        hasher
+                            .apply(el)
+                            .ifPresent(h -> mapA.getOrDefault(h, new HashSet<>()).add(el))));
     b.flatMap(getter::apply)
         .ifPresent(
-            x -> x.forEach(el -> mapB.getOrDefault(hasher.apply(el), new HashSet<>()).add(el)));
+            x ->
+                x.forEach(
+                    el ->
+                        hasher
+                            .apply(el)
+                            .ifPresent(h -> mapB.getOrDefault(h, new HashSet<>()).add(el))));
 
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
