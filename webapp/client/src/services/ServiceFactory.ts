@@ -1,10 +1,10 @@
 import axios, { AxiosError } from 'axios';
 
-import { MetaDataService } from 'core/services/metaData';
-import RepositoryDataService from 'core/services/repositoryData/RepositoryDataService';
-import CompareCommitsService from 'core/services/compareCommits/CompareCommitsService';
+import { MetaDataService } from 'core/services/repository/metaData';
+import RepositoryDataService from 'core/services/repository/repositoryData/RepositoryDataService';
+import CompareCommitsService from 'core/services/repository/compareCommits/CompareCommitsService';
 
-import { RepositoriesDataService } from '../core/services/repositories';
+import { RepositoriesDataService } from '../core/services/repository/repositories';
 import { DatasetsDataService } from './datasets';
 import { DatasetVersionsDataService } from './datasetVersions';
 import { DescActionDataService } from './descriptionActions';

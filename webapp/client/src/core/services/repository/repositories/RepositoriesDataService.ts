@@ -16,7 +16,7 @@ import { IAdditionalServerPaginationInRequest } from 'core/services/serverModel/
 import { addHandlingEntityAlrearyExistsErrorToRequestConfig } from 'core/services/shared/EntityAlreadyExistError';
 
 import { MetaDataService } from '../metaData';
-import * as UnavailableEntityApiError from '../shared/UnavailableEntityApiError';
+import * as UnavailableEntityApiError from '../../shared/UnavailableEntityApiError';
 import UsersService from 'core/services/users/UsersService';
 import User, { unknownUser } from 'models/User';
 
