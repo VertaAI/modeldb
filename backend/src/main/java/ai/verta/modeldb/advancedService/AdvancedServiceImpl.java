@@ -536,15 +536,19 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
         List<Action> actionList =
             ModelDBUtils.getActionsList(new ArrayList<>(projectIdSet), actions);
+        LOGGER.info("actionList {}", actionList);
         Action deleteAction =
             Action.newBuilder()
                 .setModeldbServiceAction(ModelDBServiceActions.DELETE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
+        LOGGER.info("experimentRun.getOwner() {}", experimentRun.getOwner());
+        LOGGER.info("roleService.isCurrentUser(experimentRun.getOwner() {}", roleService.isCurrentUser(experimentRun.getOwner()));
         if (roleService.isCurrentUser(experimentRun.getOwner())
             && !actionList.contains(deleteAction)) {
           actionList.add(deleteAction);
         }
+        LOGGER.info("actionList {}", actionList);
         // Add user specific actions
         hydratedExperimentRunBuilder.addAllAllowedActions(actionList);
       } else {
