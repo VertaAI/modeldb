@@ -94,6 +94,10 @@ public class EnvironmentBlobDiffFactory extends BlobDiffFactory {
             removeCommon(pythonConstraintsBlobsA, pythonConstraintsBlobsB);
             final PythonEnvironmentBlob.Builder aBuilder = pythonDiff.getA().toBuilder();
             final PythonEnvironmentBlob.Builder bBuilder = python.toBuilder();
+            if (aBuilder.getVersion().equals(bBuilder.getVersion())) {
+              aBuilder.clearVersion();
+              bBuilder.clearVersion();
+            }
             pythonDiff.setA(
                 aBuilder
                     .clearRequirements()

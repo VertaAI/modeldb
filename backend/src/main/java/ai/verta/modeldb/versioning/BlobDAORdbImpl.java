@@ -9,6 +9,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.BlobDiff.ContentCase;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
+import ai.verta.modeldb.versioning.PythonEnvironmentBlob.Builder;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import ai.verta.modeldb.versioning.blob.diffFactory.BlobDiffFactory;
 import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
@@ -751,11 +752,15 @@ public class BlobDAORdbImpl implements BlobDAO {
                 convertComponentsListToMap(
                     pythonDiff.getB().getConstraintsList(),
                     PythonRequirementEnvironmentBlob::getLibrary));
+            final Builder builder = environmentDiff
+                .getPython()
+                .getB()
+                .toBuilder();
+            if (builder.getVersion().equals(environmentDiff.getPython().getA().getVersion())) {
+              builder.setVersion(environment.getPython().getVersion());
+            }
             environmentBlob.setPython(
-                environmentDiff
-                    .getPython()
-                    .getB()
-                    .toBuilder()
+                builder
                     .clearRequirements()
                     .clearConstraints()
                     .addAllRequirements(pythonRequirementEnvironmentBlobMap.values())
