@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.diff.Function3;
-import ai.verta.modeldb.versioning.blob.diff.ProtoType;
+import ai.verta.modeldb.versioning.blob.diff.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class {{class_name}} implements ProtoType {
@@ -80,7 +80,7 @@ public class {{class_name}} implements ProtoType {
         {{^required}}
         {
             Function<ai.verta.modeldb.versioning.{{class_name}},{{#type}}{{> type}}{{/type}}> f = x -> {{#type}}{{#is_list}}blob.get{{name}}List(){{#list_type}}{{#custom}}.stream().map({{name}}::fromProto).collect(Collectors.toList()){{/custom}}{{/list_type}}{{/is_list}}{{^is_list}}{{#custom}}{{name}}.fromProto{{/custom}}(blob.get{{name}}()){{/is_list}}{{/type}};
-            obj.{{name}} = f.apply(blob);
+            obj.{{name}} = Utils.removeEmpty(f.apply(blob));
         }
         {{/required}}
         {{/properties}}
