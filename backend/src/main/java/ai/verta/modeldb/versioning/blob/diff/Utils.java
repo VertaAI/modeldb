@@ -29,4 +29,11 @@ public class Utils {
     }
     return Optional.of(obj);
   }
+
+  public static <T, T2> T2 getOrNull(T v, Function<T, T2> getter) {
+    if (v == null) {
+      return null;
+    }
+    return getter.apply(v);
+  }
 }
