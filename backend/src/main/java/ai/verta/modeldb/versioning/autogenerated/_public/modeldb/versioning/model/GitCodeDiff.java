@@ -79,6 +79,14 @@ public class GitCodeDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Status,
+        this.A,
+        this.B
+        );
+      }
+
     public GitCodeDiff setStatus(DiffStatusEnumDiffStatus value) {
         this.Status = value;
         return this;

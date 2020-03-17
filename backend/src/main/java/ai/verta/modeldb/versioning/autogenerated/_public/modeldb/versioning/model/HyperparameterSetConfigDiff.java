@@ -127,6 +127,17 @@ public class HyperparameterSetConfigDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Status,
+        this.Name,
+        this.ContinuousA,
+        this.DiscreteA,
+        this.ContinuousB,
+        this.DiscreteB
+        );
+      }
+
     public HyperparameterSetConfigDiff setStatus(DiffStatusEnumDiffStatus value) {
         this.Status = value;
         return this;

@@ -95,6 +95,15 @@ public class EnvironmentVariablesDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Status,
+        this.Name,
+        this.ValueA,
+        this.ValueB
+        );
+      }
+
     public EnvironmentVariablesDiff setStatus(DiffStatusEnumDiffStatus value) {
         this.Status = value;
         return this;

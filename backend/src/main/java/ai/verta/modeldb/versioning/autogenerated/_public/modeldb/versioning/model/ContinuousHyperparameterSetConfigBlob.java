@@ -79,6 +79,14 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.IntervalBegin,
+        this.IntervalEnd,
+        this.IntervalStep
+        );
+      }
+
     public ContinuousHyperparameterSetConfigBlob setIntervalBegin(HyperparameterValuesConfigBlob value) {
         this.IntervalBegin = value;
         return this;

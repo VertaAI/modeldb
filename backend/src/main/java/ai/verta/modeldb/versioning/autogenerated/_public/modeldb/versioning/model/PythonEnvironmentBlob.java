@@ -79,6 +79,14 @@ public class PythonEnvironmentBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Version,
+        this.Requirements,
+        this.Constraints
+        );
+      }
+
     public PythonEnvironmentBlob setVersion(VersionEnvironmentBlob value) {
         this.Version = value;
         return this;

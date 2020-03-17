@@ -111,6 +111,16 @@ public class PathDatasetComponentBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Path,
+        this.Size,
+        this.LastModifiedAtSource,
+        this.Sha256,
+        this.Md5
+        );
+      }
+
     public PathDatasetComponentBlob setPath(String value) {
         this.Path = value;
         return this;

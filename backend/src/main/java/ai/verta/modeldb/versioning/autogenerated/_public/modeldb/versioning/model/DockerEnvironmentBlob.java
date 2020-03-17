@@ -79,6 +79,14 @@ public class DockerEnvironmentBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Repository,
+        this.Tag,
+        this.Sha
+        );
+      }
+
     public DockerEnvironmentBlob setRepository(String value) {
         this.Repository = value;
         return this;

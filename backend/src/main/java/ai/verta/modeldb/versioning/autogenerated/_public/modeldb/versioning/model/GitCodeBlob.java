@@ -111,6 +111,16 @@ public class GitCodeBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Repo,
+        this.Hash,
+        this.Branch,
+        this.Tag,
+        this.IsDirty
+        );
+      }
+
     public GitCodeBlob setRepo(String value) {
         this.Repo = value;
         return this;

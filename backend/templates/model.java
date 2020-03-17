@@ -63,6 +63,14 @@ public class {{class_name}} implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        {{#properties}}
+        this.{{name}}{{^last}},{{/last}}
+        {{/properties}}
+        );
+      }
+
     {{#properties}}
     {{^required}}
     public {{class_name}} set{{name}}({{#type}}{{> type}}{{/type}} value) {

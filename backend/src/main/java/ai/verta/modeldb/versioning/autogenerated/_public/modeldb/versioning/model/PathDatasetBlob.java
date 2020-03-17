@@ -47,6 +47,12 @@ public class PathDatasetBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Components
+        );
+      }
+
     public PathDatasetBlob setComponents(List<PathDatasetComponentBlob> value) {
         this.Components = value;
         return this;

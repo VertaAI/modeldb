@@ -111,6 +111,16 @@ public class PythonEnvironmentDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.VersionStatus,
+        this.VersionA,
+        this.VersionB,
+        this.Requirements,
+        this.Constraints
+        );
+      }
+
     public PythonEnvironmentDiff setVersionStatus(DiffStatusEnumDiffStatus value) {
         this.VersionStatus = value;
         return this;

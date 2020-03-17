@@ -47,6 +47,12 @@ public class S3DatasetBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Components
+        );
+      }
+
     public S3DatasetBlob setComponents(List<S3DatasetComponentBlob> value) {
         this.Components = value;
         return this;

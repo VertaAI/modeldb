@@ -63,6 +63,13 @@ public class CodeDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Git,
+        this.Notebook
+        );
+      }
+
     public CodeDiff setGit(GitCodeDiff value) {
         this.Git = value;
         return this;

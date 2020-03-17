@@ -63,6 +63,13 @@ public class DatasetBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.S3,
+        this.Path
+        );
+      }
+
     public DatasetBlob setS3(S3DatasetBlob value) {
         this.S3 = value;
         return this;

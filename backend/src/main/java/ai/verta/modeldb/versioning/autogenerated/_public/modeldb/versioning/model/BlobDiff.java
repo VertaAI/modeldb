@@ -127,6 +127,17 @@ public class BlobDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Location,
+        this.Status,
+        this.Dataset,
+        this.Environment,
+        this.Code,
+        this.Config
+        );
+      }
+
     public BlobDiff setLocation(List<String> value) {
         this.Location = value;
         return this;

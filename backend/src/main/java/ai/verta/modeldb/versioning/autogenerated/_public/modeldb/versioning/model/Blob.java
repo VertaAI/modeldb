@@ -95,6 +95,15 @@ public class Blob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Dataset,
+        this.Environment,
+        this.Code,
+        this.Config
+        );
+      }
+
     public Blob setDataset(DatasetBlob value) {
         this.Dataset = value;
         return this;

@@ -63,6 +63,13 @@ public class CodeBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Git,
+        this.Notebook
+        );
+      }
+
     public CodeBlob setGit(GitCodeBlob value) {
         this.Git = value;
         return this;

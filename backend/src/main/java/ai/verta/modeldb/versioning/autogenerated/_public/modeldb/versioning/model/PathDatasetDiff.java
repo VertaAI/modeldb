@@ -47,6 +47,12 @@ public class PathDatasetDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Components
+        );
+      }
+
     public PathDatasetDiff setComponents(List<PathDatasetComponentDiff> value) {
         this.Components = value;
         return this;

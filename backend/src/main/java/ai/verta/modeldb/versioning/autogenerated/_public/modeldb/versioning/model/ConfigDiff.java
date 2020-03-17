@@ -63,6 +63,13 @@ public class ConfigDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.HyperparameterSet,
+        this.Hyperparameters
+        );
+      }
+
     public ConfigDiff setHyperparameterSet(List<HyperparameterSetConfigDiff> value) {
         this.HyperparameterSet = value;
         return this;

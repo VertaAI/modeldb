@@ -127,6 +127,17 @@ public class EnvironmentDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Python,
+        this.Docker,
+        this.EnvironmentVariables,
+        this.CommandLineStatus,
+        this.CommandLineA,
+        this.CommandLineB
+        );
+      }
+
     public EnvironmentDiff setPython(PythonEnvironmentDiff value) {
         this.Python = value;
         return this;

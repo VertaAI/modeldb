@@ -79,6 +79,14 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Library,
+        this.Constraint,
+        this.Version
+        );
+      }
+
     public PythonRequirementEnvironmentBlob setLibrary(String value) {
         this.Library = value;
         return this;

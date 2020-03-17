@@ -95,6 +95,15 @@ public class EnvironmentBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Python,
+        this.Docker,
+        this.EnvironmentVariables,
+        this.CommandLine
+        );
+      }
+
     public EnvironmentBlob setPython(PythonEnvironmentBlob value) {
         this.Python = value;
         return this;

@@ -63,6 +63,13 @@ public class ConfigBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.HyperparameterSet,
+        this.Hyperparameters
+        );
+      }
+
     public ConfigBlob setHyperparameterSet(List<HyperparameterSetConfigBlob> value) {
         this.HyperparameterSet = value;
         return this;

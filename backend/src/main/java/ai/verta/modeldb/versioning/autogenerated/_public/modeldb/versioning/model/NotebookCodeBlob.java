@@ -63,6 +63,13 @@ public class NotebookCodeBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Path,
+        this.GitRepo
+        );
+      }
+
     public NotebookCodeBlob setPath(PathDatasetComponentBlob value) {
         this.Path = value;
         return this;

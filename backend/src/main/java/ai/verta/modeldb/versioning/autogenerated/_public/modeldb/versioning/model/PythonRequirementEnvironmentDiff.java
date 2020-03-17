@@ -79,6 +79,14 @@ public class PythonRequirementEnvironmentDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Status,
+        this.A,
+        this.B
+        );
+      }
+
     public PythonRequirementEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
         this.Status = value;
         return this;

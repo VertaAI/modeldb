@@ -79,6 +79,14 @@ public class HyperparameterSetConfigBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Name,
+        this.Continuous,
+        this.Discrete
+        );
+      }
+
     public HyperparameterSetConfigBlob setName(String value) {
         this.Name = value;
         return this;

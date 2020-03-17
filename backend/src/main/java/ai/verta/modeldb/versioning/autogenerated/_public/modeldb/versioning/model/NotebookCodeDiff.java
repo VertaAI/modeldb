@@ -63,6 +63,13 @@ public class NotebookCodeDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Path,
+        this.GitRepo
+        );
+      }
+
     public NotebookCodeDiff setPath(PathDatasetComponentDiff value) {
         this.Path = value;
         return this;

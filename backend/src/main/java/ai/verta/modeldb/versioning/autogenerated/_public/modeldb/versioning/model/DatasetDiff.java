@@ -63,6 +63,13 @@ public class DatasetDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.S3,
+        this.Path
+        );
+      }
+
     public DatasetDiff setS3(S3DatasetDiff value) {
         this.S3 = value;
         return this;

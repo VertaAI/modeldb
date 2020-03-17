@@ -47,6 +47,12 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Values
+        );
+      }
+
     public DiscreteHyperparameterSetConfigBlob setValues(List<HyperparameterValuesConfigBlob> value) {
         this.Values = value;
         return this;

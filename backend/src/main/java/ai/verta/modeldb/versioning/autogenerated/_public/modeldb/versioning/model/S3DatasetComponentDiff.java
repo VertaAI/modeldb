@@ -47,6 +47,12 @@ public class S3DatasetComponentDiff implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Path
+        );
+      }
+
     public S3DatasetComponentDiff setPath(PathDatasetComponentDiff value) {
         this.Path = value;
         return this;

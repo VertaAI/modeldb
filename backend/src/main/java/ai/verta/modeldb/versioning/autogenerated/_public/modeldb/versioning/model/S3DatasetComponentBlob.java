@@ -47,6 +47,12 @@ public class S3DatasetComponentBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Path
+        );
+      }
+
     public S3DatasetComponentBlob setPath(PathDatasetComponentBlob value) {
         this.Path = value;
         return this;

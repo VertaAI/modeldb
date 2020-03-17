@@ -95,6 +95,15 @@ public class VersionEnvironmentBlob implements ProtoType {
         return true;
     }
 
+    public int hashCode() {
+        return Objects.hash(
+        this.Major,
+        this.Minor,
+        this.Patch,
+        this.Suffix
+        );
+      }
+
     public VersionEnvironmentBlob setMajor(Integer value) {
         this.Major = value;
         return this;
