@@ -238,8 +238,7 @@ class Client(object):
             else:
                 return response_json['verta_info']['username']
         else:
-            if response.status_code == 404:
-                # UAC not found
+            if response.status_code == 404:  # UAC not found
                 pass
             else:
                 _utils.raise_for_http_error(response)
