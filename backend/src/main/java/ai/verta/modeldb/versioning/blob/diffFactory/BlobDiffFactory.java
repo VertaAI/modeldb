@@ -42,7 +42,7 @@ public abstract class BlobDiffFactory {
       final Builder builder =
           BlobDiff.newBuilder().addAllLocation(Arrays.asList(location.split("#")));
       builder.setStatus(DiffStatus.MODIFIED);
-      //hack
+      //FIXME : remove hack
       if (blobExpanded.getBlob().getContentCase() == ContentCase.ENVIRONMENT
           && blobExpanded.getBlob().getEnvironment().getContentCase() == EnvironmentBlob.ContentCase.PYTHON) {
         final EnvironmentBlob environmentA = blobExpanded.getBlob().getEnvironment();
