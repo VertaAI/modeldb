@@ -29,18 +29,18 @@ case class ModeldbDatasetVersion (
   id: Option[String] = None,
   parent_id: Option[String] = None,
   dataset_id: Option[String] = None,
-  time_logged: Option[String] = None,
+  time_logged: Option[] = None,
   description: Option[String] = None,
   tags: Option[List[String]] = None,
   dataset_version_visibility: Option[DatasetVisibilityEnumDatasetVisibility] = None,
   dataset_type: Option[DatasetTypeEnumDatasetType] = None,
   attributes: Option[List[CommonKeyValue]] = None,
   owner: Option[String] = None,
-  version: Option[String] = None,
+  version: Option[] = None,
   raw_dataset_version_info: Option[ModeldbRawDatasetVersionInfo] = None,
   path_dataset_version_info: Option[ModeldbPathDatasetVersionInfo] = None,
   query_dataset_version_info: Option[ModeldbQueryDatasetVersionInfo] = None,
-  time_updated: Option[String] = None
+  time_updated: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbDatasetVersion.toJson(this)
 }
@@ -52,18 +52,18 @@ object ModeldbDatasetVersion {
         obj.id.map(x => JField("id", JString(x))),
         obj.parent_id.map(x => JField("parent_id", JString(x))),
         obj.dataset_id.map(x => JField("dataset_id", JString(x))),
-        obj.time_logged.map(x => JField("time_logged", JString(x))),
+        obj.time_logged.map(x => JField("time_logged", (x))),
         obj.description.map(x => JField("description", JString(x))),
         obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x))),
         obj.dataset_version_visibility.map(x => JField("dataset_version_visibility", ((x: DatasetVisibilityEnumDatasetVisibility) => DatasetVisibilityEnumDatasetVisibility.toJson(x))(x))),
         obj.dataset_type.map(x => JField("dataset_type", ((x: DatasetTypeEnumDatasetType) => DatasetTypeEnumDatasetType.toJson(x))(x))),
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
         obj.owner.map(x => JField("owner", JString(x))),
-        obj.version.map(x => JField("version", JString(x))),
+        obj.version.map(x => JField("version", (x))),
         obj.raw_dataset_version_info.map(x => JField("raw_dataset_version_info", ((x: ModeldbRawDatasetVersionInfo) => ModeldbRawDatasetVersionInfo.toJson(x))(x))),
         obj.path_dataset_version_info.map(x => JField("path_dataset_version_info", ((x: ModeldbPathDatasetVersionInfo) => ModeldbPathDatasetVersionInfo.toJson(x))(x))),
         obj.query_dataset_version_info.map(x => JField("query_dataset_version_info", ((x: ModeldbQueryDatasetVersionInfo) => ModeldbQueryDatasetVersionInfo.toJson(x))(x))),
-        obj.time_updated.map(x => JField("time_updated", JString(x)))
+        obj.time_updated.map(x => JField("time_updated", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -80,18 +80,18 @@ object ModeldbDatasetVersion {
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           parent_id = fieldsMap.get("parent_id").map(JsonConverter.fromJsonString),
           dataset_id = fieldsMap.get("dataset_id").map(JsonConverter.fromJsonString),
-          time_logged = fieldsMap.get("time_logged").map(JsonConverter.fromJsonString),
+          time_logged = fieldsMap.get("time_logged").map(),
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
           tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           dataset_version_visibility = fieldsMap.get("dataset_version_visibility").map(DatasetVisibilityEnumDatasetVisibility.fromJson),
           dataset_type = fieldsMap.get("dataset_type").map(DatasetTypeEnumDatasetType.fromJson),
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           owner = fieldsMap.get("owner").map(JsonConverter.fromJsonString),
-          version = fieldsMap.get("version").map(JsonConverter.fromJsonString),
+          version = fieldsMap.get("version").map(),
           raw_dataset_version_info = fieldsMap.get("raw_dataset_version_info").map(ModeldbRawDatasetVersionInfo.fromJson),
           path_dataset_version_info = fieldsMap.get("path_dataset_version_info").map(ModeldbPathDatasetVersionInfo.fromJson),
           query_dataset_version_info = fieldsMap.get("query_dataset_version_info").map(ModeldbQueryDatasetVersionInfo.fromJson),
-          time_updated = fieldsMap.get("time_updated").map(JsonConverter.fromJsonString)
+          time_updated = fieldsMap.get("time_updated").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

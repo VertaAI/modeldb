@@ -23,7 +23,7 @@ case class ModeldbCreateDataset (
   dataset_visibility: Option[DatasetVisibilityEnumDatasetVisibility] = None,
   dataset_type: Option[DatasetTypeEnumDatasetType] = None,
   workspace_name: Option[String] = None,
-  time_created: Option[String] = None
+  time_created: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbCreateDataset.toJson(this)
 }
@@ -39,7 +39,7 @@ object ModeldbCreateDataset {
         obj.dataset_visibility.map(x => JField("dataset_visibility", ((x: DatasetVisibilityEnumDatasetVisibility) => DatasetVisibilityEnumDatasetVisibility.toJson(x))(x))),
         obj.dataset_type.map(x => JField("dataset_type", ((x: DatasetTypeEnumDatasetType) => DatasetTypeEnumDatasetType.toJson(x))(x))),
         obj.workspace_name.map(x => JField("workspace_name", JString(x))),
-        obj.time_created.map(x => JField("time_created", JString(x)))
+        obj.time_created.map(x => JField("time_created", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -60,7 +60,7 @@ object ModeldbCreateDataset {
           dataset_visibility = fieldsMap.get("dataset_visibility").map(DatasetVisibilityEnumDatasetVisibility.fromJson),
           dataset_type = fieldsMap.get("dataset_type").map(DatasetTypeEnumDatasetType.fromJson),
           workspace_name = fieldsMap.get("workspace_name").map(JsonConverter.fromJsonString),
-          time_created = fieldsMap.get("time_created").map(JsonConverter.fromJsonString)
+          time_created = fieldsMap.get("time_created").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

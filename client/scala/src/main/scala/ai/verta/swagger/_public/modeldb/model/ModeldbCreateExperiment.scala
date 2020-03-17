@@ -16,8 +16,8 @@ case class ModeldbCreateExperiment (
   project_id: Option[String] = None,
   name: Option[String] = None,
   description: Option[String] = None,
-  date_created: Option[String] = None,
-  date_updated: Option[String] = None,
+  date_created: Option[] = None,
+  date_updated: Option[] = None,
   attributes: Option[List[CommonKeyValue]] = None,
   tags: Option[List[String]] = None,
   artifacts: Option[List[ModeldbArtifact]] = None
@@ -32,8 +32,8 @@ object ModeldbCreateExperiment {
         obj.project_id.map(x => JField("project_id", JString(x))),
         obj.name.map(x => JField("name", JString(x))),
         obj.description.map(x => JField("description", JString(x))),
-        obj.date_created.map(x => JField("date_created", JString(x))),
-        obj.date_updated.map(x => JField("date_updated", JString(x))),
+        obj.date_created.map(x => JField("date_created", (x))),
+        obj.date_updated.map(x => JField("date_updated", (x))),
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
         obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x))),
         obj.artifacts.map(x => JField("artifacts", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x)))
@@ -53,8 +53,8 @@ object ModeldbCreateExperiment {
           project_id = fieldsMap.get("project_id").map(JsonConverter.fromJsonString),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
-          date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonString),
-          date_updated = fieldsMap.get("date_updated").map(JsonConverter.fromJsonString),
+          date_created = fieldsMap.get("date_created").map(),
+          date_updated = fieldsMap.get("date_updated").map(),
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})

@@ -10,24 +10,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class GitCodeDiff implements ProtoType {
-  public DiffStatusEnumDiffStatus Status;
-  public GitCodeBlob A;
-  public GitCodeBlob B;
+  public Optional<DiffStatusEnumDiffStatus> Status;
+  public Optional<GitCodeBlob> A;
+  public Optional<GitCodeBlob> B;
 
   public GitCodeDiff() {
-    this.Status = null;
-    this.A = null;
-    this.B = null;
+    this.Status = Optional.empty();
+    this.A = Optional.empty();
+    this.B = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Status != null) {
+    if (this.Status.isPresent()) {
       return false;
     }
-    if (this.A != null) {
+    if (this.A.isPresent()) {
       return false;
     }
-    if (this.B != null) {
+    if (this.B.isPresent()) {
       return false;
     }
     return true;
@@ -44,26 +44,26 @@ public class GitCodeDiff implements ProtoType {
     {
       Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Status != null || other.Status != null) {
-        if (this.Status == null && other.Status != null) return false;
-        if (this.Status != null && other.Status == null) return false;
-        if (!f.apply(this.Status, other.Status)) return false;
+      if (this.Status.isPresent() || other.Status.isPresent()) {
+        if (!this.Status.isPresent()) return false;
+        if (other.Status.isPresent()) return false;
+        if (!f.apply(this.Status.get(), other.Status.get())) return false;
       }
     }
     {
       Function3<GitCodeBlob, GitCodeBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.A != null || other.A != null) {
-        if (this.A == null && other.A != null) return false;
-        if (this.A != null && other.A == null) return false;
-        if (!f.apply(this.A, other.A)) return false;
+      if (this.A.isPresent() || other.A.isPresent()) {
+        if (!this.A.isPresent()) return false;
+        if (other.A.isPresent()) return false;
+        if (!f.apply(this.A.get(), other.A.get())) return false;
       }
     }
     {
       Function3<GitCodeBlob, GitCodeBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.B != null || other.B != null) {
-        if (this.B == null && other.B != null) return false;
-        if (this.B != null && other.B == null) return false;
-        if (!f.apply(this.B, other.B)) return false;
+      if (this.B.isPresent() || other.B.isPresent()) {
+        if (!this.B.isPresent()) return false;
+        if (other.B.isPresent()) return false;
+        if (!f.apply(this.B.get(), other.B.get())) return false;
       }
     }
     return true;
@@ -74,18 +74,36 @@ public class GitCodeDiff implements ProtoType {
     return Objects.hash(this.Status, this.A, this.B);
   }
 
-  public GitCodeDiff setStatus(DiffStatusEnumDiffStatus value) {
+  public GitCodeDiff setStatus(Optional<DiffStatusEnumDiffStatus> value) {
     this.Status = value;
     return this;
   }
 
-  public GitCodeDiff setA(GitCodeBlob value) {
+  public GitCodeDiff setStatus(DiffStatusEnumDiffStatus value) {
+    if (value == null) this.Status = Optional.empty();
+    else this.Status = Optional.of(value);
+    return this;
+  }
+
+  public GitCodeDiff setA(Optional<GitCodeBlob> value) {
     this.A = value;
     return this;
   }
 
-  public GitCodeDiff setB(GitCodeBlob value) {
+  public GitCodeDiff setA(GitCodeBlob value) {
+    if (value == null) this.A = Optional.empty();
+    else this.A = Optional.of(value);
+    return this;
+  }
+
+  public GitCodeDiff setB(Optional<GitCodeBlob> value) {
     this.B = value;
+    return this;
+  }
+
+  public GitCodeDiff setB(GitCodeBlob value) {
+    if (value == null) this.B = Optional.empty();
+    else this.B = Optional.of(value);
     return this;
   }
 
@@ -116,36 +134,9 @@ public class GitCodeDiff implements ProtoType {
   public ai.verta.modeldb.versioning.GitCodeDiff.Builder toProto() {
     ai.verta.modeldb.versioning.GitCodeDiff.Builder builder =
         ai.verta.modeldb.versioning.GitCodeDiff.newBuilder();
-    {
-      if (this.Status != null) {
-        Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder, Void> f =
-            x -> {
-              builder.setStatus(this.Status.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.A != null) {
-        Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder, Void> f =
-            x -> {
-              builder.setA(this.A.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.B != null) {
-        Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder, Void> f =
-            x -> {
-              builder.setB(this.B.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Status.ifPresent(x -> builder.setStatus(x.toProto()));
+    this.A.ifPresent(x -> builder.setA(x.toProto()));
+    this.B.ifPresent(x -> builder.setB(x.toProto()));
     return builder;
   }
 
@@ -155,9 +146,9 @@ public class GitCodeDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
-    visitor.preVisitDeepGitCodeBlob(this.A);
-    visitor.preVisitDeepGitCodeBlob(this.B);
+    if (this.Status.isPresent()) visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status.get());
+    if (this.A.isPresent()) visitor.preVisitDeepGitCodeBlob(this.A.get());
+    if (this.B.isPresent()) visitor.preVisitDeepGitCodeBlob(this.B.get());
   }
 
   public GitCodeDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -165,9 +156,10 @@ public class GitCodeDiff implements ProtoType {
   }
 
   public GitCodeDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
-    this.A = visitor.postVisitDeepGitCodeBlob(this.A);
-    this.B = visitor.postVisitDeepGitCodeBlob(this.B);
+    if (this.Status.isPresent())
+      this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status.get()));
+    if (this.A.isPresent()) this.setA(visitor.postVisitDeepGitCodeBlob(this.A.get()));
+    if (this.B.isPresent()) this.setB(visitor.postVisitDeepGitCodeBlob(this.B.get()));
     return this.postVisitShallow(visitor);
   }
 }

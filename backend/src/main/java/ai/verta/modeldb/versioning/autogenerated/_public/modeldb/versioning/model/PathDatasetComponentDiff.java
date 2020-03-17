@@ -10,24 +10,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PathDatasetComponentDiff implements ProtoType {
-  public DiffStatusEnumDiffStatus Status;
-  public PathDatasetComponentBlob A;
-  public PathDatasetComponentBlob B;
+  public Optional<DiffStatusEnumDiffStatus> Status;
+  public Optional<PathDatasetComponentBlob> A;
+  public Optional<PathDatasetComponentBlob> B;
 
   public PathDatasetComponentDiff() {
-    this.Status = null;
-    this.A = null;
-    this.B = null;
+    this.Status = Optional.empty();
+    this.A = Optional.empty();
+    this.B = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Status != null) {
+    if (this.Status.isPresent()) {
       return false;
     }
-    if (this.A != null) {
+    if (this.A.isPresent()) {
       return false;
     }
-    if (this.B != null) {
+    if (this.B.isPresent()) {
       return false;
     }
     return true;
@@ -44,28 +44,28 @@ public class PathDatasetComponentDiff implements ProtoType {
     {
       Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Status != null || other.Status != null) {
-        if (this.Status == null && other.Status != null) return false;
-        if (this.Status != null && other.Status == null) return false;
-        if (!f.apply(this.Status, other.Status)) return false;
+      if (this.Status.isPresent() || other.Status.isPresent()) {
+        if (!this.Status.isPresent()) return false;
+        if (other.Status.isPresent()) return false;
+        if (!f.apply(this.Status.get(), other.Status.get())) return false;
       }
     }
     {
       Function3<PathDatasetComponentBlob, PathDatasetComponentBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.A != null || other.A != null) {
-        if (this.A == null && other.A != null) return false;
-        if (this.A != null && other.A == null) return false;
-        if (!f.apply(this.A, other.A)) return false;
+      if (this.A.isPresent() || other.A.isPresent()) {
+        if (!this.A.isPresent()) return false;
+        if (other.A.isPresent()) return false;
+        if (!f.apply(this.A.get(), other.A.get())) return false;
       }
     }
     {
       Function3<PathDatasetComponentBlob, PathDatasetComponentBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.B != null || other.B != null) {
-        if (this.B == null && other.B != null) return false;
-        if (this.B != null && other.B == null) return false;
-        if (!f.apply(this.B, other.B)) return false;
+      if (this.B.isPresent() || other.B.isPresent()) {
+        if (!this.B.isPresent()) return false;
+        if (other.B.isPresent()) return false;
+        if (!f.apply(this.B.get(), other.B.get())) return false;
       }
     }
     return true;
@@ -76,18 +76,36 @@ public class PathDatasetComponentDiff implements ProtoType {
     return Objects.hash(this.Status, this.A, this.B);
   }
 
-  public PathDatasetComponentDiff setStatus(DiffStatusEnumDiffStatus value) {
+  public PathDatasetComponentDiff setStatus(Optional<DiffStatusEnumDiffStatus> value) {
     this.Status = value;
     return this;
   }
 
-  public PathDatasetComponentDiff setA(PathDatasetComponentBlob value) {
+  public PathDatasetComponentDiff setStatus(DiffStatusEnumDiffStatus value) {
+    if (value == null) this.Status = Optional.empty();
+    else this.Status = Optional.of(value);
+    return this;
+  }
+
+  public PathDatasetComponentDiff setA(Optional<PathDatasetComponentBlob> value) {
     this.A = value;
     return this;
   }
 
-  public PathDatasetComponentDiff setB(PathDatasetComponentBlob value) {
+  public PathDatasetComponentDiff setA(PathDatasetComponentBlob value) {
+    if (value == null) this.A = Optional.empty();
+    else this.A = Optional.of(value);
+    return this;
+  }
+
+  public PathDatasetComponentDiff setB(Optional<PathDatasetComponentBlob> value) {
     this.B = value;
+    return this;
+  }
+
+  public PathDatasetComponentDiff setB(PathDatasetComponentBlob value) {
+    if (value == null) this.B = Optional.empty();
+    else this.B = Optional.of(value);
     return this;
   }
 
@@ -119,36 +137,9 @@ public class PathDatasetComponentDiff implements ProtoType {
   public ai.verta.modeldb.versioning.PathDatasetComponentDiff.Builder toProto() {
     ai.verta.modeldb.versioning.PathDatasetComponentDiff.Builder builder =
         ai.verta.modeldb.versioning.PathDatasetComponentDiff.newBuilder();
-    {
-      if (this.Status != null) {
-        Function<ai.verta.modeldb.versioning.PathDatasetComponentDiff.Builder, Void> f =
-            x -> {
-              builder.setStatus(this.Status.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.A != null) {
-        Function<ai.verta.modeldb.versioning.PathDatasetComponentDiff.Builder, Void> f =
-            x -> {
-              builder.setA(this.A.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.B != null) {
-        Function<ai.verta.modeldb.versioning.PathDatasetComponentDiff.Builder, Void> f =
-            x -> {
-              builder.setB(this.B.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Status.ifPresent(x -> builder.setStatus(x.toProto()));
+    this.A.ifPresent(x -> builder.setA(x.toProto()));
+    this.B.ifPresent(x -> builder.setB(x.toProto()));
     return builder;
   }
 
@@ -158,9 +149,9 @@ public class PathDatasetComponentDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
-    visitor.preVisitDeepPathDatasetComponentBlob(this.A);
-    visitor.preVisitDeepPathDatasetComponentBlob(this.B);
+    if (this.Status.isPresent()) visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status.get());
+    if (this.A.isPresent()) visitor.preVisitDeepPathDatasetComponentBlob(this.A.get());
+    if (this.B.isPresent()) visitor.preVisitDeepPathDatasetComponentBlob(this.B.get());
   }
 
   public PathDatasetComponentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -168,9 +159,10 @@ public class PathDatasetComponentDiff implements ProtoType {
   }
 
   public PathDatasetComponentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
-    this.A = visitor.postVisitDeepPathDatasetComponentBlob(this.A);
-    this.B = visitor.postVisitDeepPathDatasetComponentBlob(this.B);
+    if (this.Status.isPresent())
+      this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status.get()));
+    if (this.A.isPresent()) this.setA(visitor.postVisitDeepPathDatasetComponentBlob(this.A.get()));
+    if (this.B.isPresent()) this.setB(visitor.postVisitDeepPathDatasetComponentBlob(this.B.get()));
     return this.postVisitShallow(visitor);
   }
 }

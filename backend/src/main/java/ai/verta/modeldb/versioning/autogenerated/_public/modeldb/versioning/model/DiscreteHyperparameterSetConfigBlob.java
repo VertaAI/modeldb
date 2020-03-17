@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
-  public List<HyperparameterValuesConfigBlob> Values;
+  public Optional<List<HyperparameterValuesConfigBlob>> Values;
 
   public DiscreteHyperparameterSetConfigBlob() {
-    this.Values = null;
+    this.Values = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Values != null) {
+    if (this.Values.isPresent()) {
       return false;
     }
     return true;
@@ -50,10 +50,10 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
                       .filter(x -> x != null)
                       .collect(Collectors.toList())
                       .isEmpty();
-      if (this.Values != null || other.Values != null) {
-        if (this.Values == null && other.Values != null) return false;
-        if (this.Values != null && other.Values == null) return false;
-        if (!f.apply(this.Values, other.Values)) return false;
+      if (this.Values.isPresent() || other.Values.isPresent()) {
+        if (!this.Values.isPresent()) return false;
+        if (other.Values.isPresent()) return false;
+        if (!f.apply(this.Values.get(), other.Values.get())) return false;
       }
     }
     return true;
@@ -64,8 +64,15 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
     return Objects.hash(this.Values);
   }
 
-  public DiscreteHyperparameterSetConfigBlob setValues(List<HyperparameterValuesConfigBlob> value) {
+  public DiscreteHyperparameterSetConfigBlob setValues(
+      Optional<List<HyperparameterValuesConfigBlob>> value) {
     this.Values = value;
+    return this;
+  }
+
+  public DiscreteHyperparameterSetConfigBlob setValues(List<HyperparameterValuesConfigBlob> value) {
+    if (value == null) this.Values = Optional.empty();
+    else this.Values = Optional.of(value);
     return this;
   }
 
@@ -93,17 +100,10 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
   public ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob.Builder toProto() {
     ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob.Builder builder =
         ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob.newBuilder();
-    {
-      if (this.Values != null) {
-        Function<ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob.Builder, Void> f =
-            x -> {
-              builder.addAllValues(
-                  this.Values.stream().map(y -> y.toProto().build()).collect(Collectors.toList()));
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Values.ifPresent(
+        x ->
+            builder.addAllValues(
+                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
     return builder;
   }
 
@@ -113,7 +113,8 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepListOfHyperparameterValuesConfigBlob(this.Values);
+    if (this.Values.isPresent())
+      visitor.preVisitDeepListOfHyperparameterValuesConfigBlob(this.Values.get());
   }
 
   public DiscreteHyperparameterSetConfigBlob postVisitShallow(Visitor visitor)
@@ -123,7 +124,8 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
 
   public DiscreteHyperparameterSetConfigBlob postVisitDeep(Visitor visitor)
       throws ModelDBException {
-    this.Values = visitor.postVisitDeepListOfHyperparameterValuesConfigBlob(this.Values);
+    if (this.Values.isPresent())
+      this.setValues(visitor.postVisitDeepListOfHyperparameterValuesConfigBlob(this.Values.get()));
     return this.postVisitShallow(visitor);
   }
 }

@@ -10,29 +10,29 @@ import java.util.*;
 import java.util.function.Function;
 
 public class Blob implements ProtoType {
-  public DatasetBlob Dataset;
-  public EnvironmentBlob Environment;
-  public CodeBlob Code;
-  public ConfigBlob Config;
+  public Optional<DatasetBlob> Dataset;
+  public Optional<EnvironmentBlob> Environment;
+  public Optional<CodeBlob> Code;
+  public Optional<ConfigBlob> Config;
 
   public Blob() {
-    this.Dataset = null;
-    this.Environment = null;
-    this.Code = null;
-    this.Config = null;
+    this.Dataset = Optional.empty();
+    this.Environment = Optional.empty();
+    this.Code = Optional.empty();
+    this.Config = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Dataset != null) {
+    if (this.Dataset.isPresent()) {
       return false;
     }
-    if (this.Environment != null) {
+    if (this.Environment.isPresent()) {
       return false;
     }
-    if (this.Code != null) {
+    if (this.Code.isPresent()) {
       return false;
     }
-    if (this.Config != null) {
+    if (this.Config.isPresent()) {
       return false;
     }
     return true;
@@ -48,34 +48,34 @@ public class Blob implements ProtoType {
 
     {
       Function3<DatasetBlob, DatasetBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Dataset != null || other.Dataset != null) {
-        if (this.Dataset == null && other.Dataset != null) return false;
-        if (this.Dataset != null && other.Dataset == null) return false;
-        if (!f.apply(this.Dataset, other.Dataset)) return false;
+      if (this.Dataset.isPresent() || other.Dataset.isPresent()) {
+        if (!this.Dataset.isPresent()) return false;
+        if (other.Dataset.isPresent()) return false;
+        if (!f.apply(this.Dataset.get(), other.Dataset.get())) return false;
       }
     }
     {
       Function3<EnvironmentBlob, EnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Environment != null || other.Environment != null) {
-        if (this.Environment == null && other.Environment != null) return false;
-        if (this.Environment != null && other.Environment == null) return false;
-        if (!f.apply(this.Environment, other.Environment)) return false;
+      if (this.Environment.isPresent() || other.Environment.isPresent()) {
+        if (!this.Environment.isPresent()) return false;
+        if (other.Environment.isPresent()) return false;
+        if (!f.apply(this.Environment.get(), other.Environment.get())) return false;
       }
     }
     {
       Function3<CodeBlob, CodeBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Code != null || other.Code != null) {
-        if (this.Code == null && other.Code != null) return false;
-        if (this.Code != null && other.Code == null) return false;
-        if (!f.apply(this.Code, other.Code)) return false;
+      if (this.Code.isPresent() || other.Code.isPresent()) {
+        if (!this.Code.isPresent()) return false;
+        if (other.Code.isPresent()) return false;
+        if (!f.apply(this.Code.get(), other.Code.get())) return false;
       }
     }
     {
       Function3<ConfigBlob, ConfigBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Config != null || other.Config != null) {
-        if (this.Config == null && other.Config != null) return false;
-        if (this.Config != null && other.Config == null) return false;
-        if (!f.apply(this.Config, other.Config)) return false;
+      if (this.Config.isPresent() || other.Config.isPresent()) {
+        if (!this.Config.isPresent()) return false;
+        if (other.Config.isPresent()) return false;
+        if (!f.apply(this.Config.get(), other.Config.get())) return false;
       }
     }
     return true;
@@ -86,23 +86,47 @@ public class Blob implements ProtoType {
     return Objects.hash(this.Dataset, this.Environment, this.Code, this.Config);
   }
 
-  public Blob setDataset(DatasetBlob value) {
+  public Blob setDataset(Optional<DatasetBlob> value) {
     this.Dataset = value;
     return this;
   }
 
-  public Blob setEnvironment(EnvironmentBlob value) {
+  public Blob setDataset(DatasetBlob value) {
+    if (value == null) this.Dataset = Optional.empty();
+    else this.Dataset = Optional.of(value);
+    return this;
+  }
+
+  public Blob setEnvironment(Optional<EnvironmentBlob> value) {
     this.Environment = value;
     return this;
   }
 
-  public Blob setCode(CodeBlob value) {
+  public Blob setEnvironment(EnvironmentBlob value) {
+    if (value == null) this.Environment = Optional.empty();
+    else this.Environment = Optional.of(value);
+    return this;
+  }
+
+  public Blob setCode(Optional<CodeBlob> value) {
     this.Code = value;
     return this;
   }
 
-  public Blob setConfig(ConfigBlob value) {
+  public Blob setCode(CodeBlob value) {
+    if (value == null) this.Code = Optional.empty();
+    else this.Code = Optional.of(value);
+    return this;
+  }
+
+  public Blob setConfig(Optional<ConfigBlob> value) {
     this.Config = value;
+    return this;
+  }
+
+  public Blob setConfig(ConfigBlob value) {
+    if (value == null) this.Config = Optional.empty();
+    else this.Config = Optional.of(value);
     return this;
   }
 
@@ -138,46 +162,10 @@ public class Blob implements ProtoType {
   public ai.verta.modeldb.versioning.Blob.Builder toProto() {
     ai.verta.modeldb.versioning.Blob.Builder builder =
         ai.verta.modeldb.versioning.Blob.newBuilder();
-    {
-      if (this.Dataset != null) {
-        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
-            x -> {
-              builder.setDataset(this.Dataset.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Environment != null) {
-        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
-            x -> {
-              builder.setEnvironment(this.Environment.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Code != null) {
-        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
-            x -> {
-              builder.setCode(this.Code.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Config != null) {
-        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
-            x -> {
-              builder.setConfig(this.Config.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Dataset.ifPresent(x -> builder.setDataset(x.toProto()));
+    this.Environment.ifPresent(x -> builder.setEnvironment(x.toProto()));
+    this.Code.ifPresent(x -> builder.setCode(x.toProto()));
+    this.Config.ifPresent(x -> builder.setConfig(x.toProto()));
     return builder;
   }
 
@@ -187,10 +175,10 @@ public class Blob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepDatasetBlob(this.Dataset);
-    visitor.preVisitDeepEnvironmentBlob(this.Environment);
-    visitor.preVisitDeepCodeBlob(this.Code);
-    visitor.preVisitDeepConfigBlob(this.Config);
+    if (this.Dataset.isPresent()) visitor.preVisitDeepDatasetBlob(this.Dataset.get());
+    if (this.Environment.isPresent()) visitor.preVisitDeepEnvironmentBlob(this.Environment.get());
+    if (this.Code.isPresent()) visitor.preVisitDeepCodeBlob(this.Code.get());
+    if (this.Config.isPresent()) visitor.preVisitDeepConfigBlob(this.Config.get());
   }
 
   public Blob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -198,10 +186,12 @@ public class Blob implements ProtoType {
   }
 
   public Blob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Dataset = visitor.postVisitDeepDatasetBlob(this.Dataset);
-    this.Environment = visitor.postVisitDeepEnvironmentBlob(this.Environment);
-    this.Code = visitor.postVisitDeepCodeBlob(this.Code);
-    this.Config = visitor.postVisitDeepConfigBlob(this.Config);
+    if (this.Dataset.isPresent())
+      this.setDataset(visitor.postVisitDeepDatasetBlob(this.Dataset.get()));
+    if (this.Environment.isPresent())
+      this.setEnvironment(visitor.postVisitDeepEnvironmentBlob(this.Environment.get()));
+    if (this.Code.isPresent()) this.setCode(visitor.postVisitDeepCodeBlob(this.Code.get()));
+    if (this.Config.isPresent()) this.setConfig(visitor.postVisitDeepConfigBlob(this.Config.get()));
     return this.postVisitShallow(visitor);
   }
 }

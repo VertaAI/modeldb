@@ -10,19 +10,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DatasetDiff implements ProtoType {
-  public S3DatasetDiff S3;
-  public PathDatasetDiff Path;
+  public Optional<S3DatasetDiff> S3;
+  public Optional<PathDatasetDiff> Path;
 
   public DatasetDiff() {
-    this.S3 = null;
-    this.Path = null;
+    this.S3 = Optional.empty();
+    this.Path = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.S3 != null) {
+    if (this.S3.isPresent()) {
       return false;
     }
-    if (this.Path != null) {
+    if (this.Path.isPresent()) {
       return false;
     }
     return true;
@@ -38,18 +38,18 @@ public class DatasetDiff implements ProtoType {
 
     {
       Function3<S3DatasetDiff, S3DatasetDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.S3 != null || other.S3 != null) {
-        if (this.S3 == null && other.S3 != null) return false;
-        if (this.S3 != null && other.S3 == null) return false;
-        if (!f.apply(this.S3, other.S3)) return false;
+      if (this.S3.isPresent() || other.S3.isPresent()) {
+        if (!this.S3.isPresent()) return false;
+        if (other.S3.isPresent()) return false;
+        if (!f.apply(this.S3.get(), other.S3.get())) return false;
       }
     }
     {
       Function3<PathDatasetDiff, PathDatasetDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Path != null || other.Path != null) {
-        if (this.Path == null && other.Path != null) return false;
-        if (this.Path != null && other.Path == null) return false;
-        if (!f.apply(this.Path, other.Path)) return false;
+      if (this.Path.isPresent() || other.Path.isPresent()) {
+        if (!this.Path.isPresent()) return false;
+        if (other.Path.isPresent()) return false;
+        if (!f.apply(this.Path.get(), other.Path.get())) return false;
       }
     }
     return true;
@@ -60,13 +60,25 @@ public class DatasetDiff implements ProtoType {
     return Objects.hash(this.S3, this.Path);
   }
 
-  public DatasetDiff setS3(S3DatasetDiff value) {
+  public DatasetDiff setS3(Optional<S3DatasetDiff> value) {
     this.S3 = value;
     return this;
   }
 
-  public DatasetDiff setPath(PathDatasetDiff value) {
+  public DatasetDiff setS3(S3DatasetDiff value) {
+    if (value == null) this.S3 = Optional.empty();
+    else this.S3 = Optional.of(value);
+    return this;
+  }
+
+  public DatasetDiff setPath(Optional<PathDatasetDiff> value) {
     this.Path = value;
+    return this;
+  }
+
+  public DatasetDiff setPath(PathDatasetDiff value) {
+    if (value == null) this.Path = Optional.empty();
+    else this.Path = Optional.of(value);
     return this;
   }
 
@@ -92,26 +104,8 @@ public class DatasetDiff implements ProtoType {
   public ai.verta.modeldb.versioning.DatasetDiff.Builder toProto() {
     ai.verta.modeldb.versioning.DatasetDiff.Builder builder =
         ai.verta.modeldb.versioning.DatasetDiff.newBuilder();
-    {
-      if (this.S3 != null) {
-        Function<ai.verta.modeldb.versioning.DatasetDiff.Builder, Void> f =
-            x -> {
-              builder.setS3(this.S3.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Path != null) {
-        Function<ai.verta.modeldb.versioning.DatasetDiff.Builder, Void> f =
-            x -> {
-              builder.setPath(this.Path.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.S3.ifPresent(x -> builder.setS3(x.toProto()));
+    this.Path.ifPresent(x -> builder.setPath(x.toProto()));
     return builder;
   }
 
@@ -121,8 +115,8 @@ public class DatasetDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepS3DatasetDiff(this.S3);
-    visitor.preVisitDeepPathDatasetDiff(this.Path);
+    if (this.S3.isPresent()) visitor.preVisitDeepS3DatasetDiff(this.S3.get());
+    if (this.Path.isPresent()) visitor.preVisitDeepPathDatasetDiff(this.Path.get());
   }
 
   public DatasetDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -130,8 +124,8 @@ public class DatasetDiff implements ProtoType {
   }
 
   public DatasetDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.S3 = visitor.postVisitDeepS3DatasetDiff(this.S3);
-    this.Path = visitor.postVisitDeepPathDatasetDiff(this.Path);
+    if (this.S3.isPresent()) this.setS3(visitor.postVisitDeepS3DatasetDiff(this.S3.get()));
+    if (this.Path.isPresent()) this.setPath(visitor.postVisitDeepPathDatasetDiff(this.Path.get()));
     return this.postVisitShallow(visitor);
   }
 }

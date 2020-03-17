@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/v1/artifact/deleteArtifact": {
+    "/artifact/deleteArtifact": {
       "post": {
         "operationId": "deleteArtifact",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/v1/artifact/getArtifact": {
+    "/artifact/getArtifact": {
       "get": {
         "operationId": "getArtifact",
         "responses": {
@@ -73,7 +73,7 @@
         ]
       }
     },
-    "/v1/artifact/storeArtifact": {
+    "/artifact/storeArtifact": {
       "post": {
         "operationId": "storeArtifact",
         "responses": {
@@ -105,7 +105,7 @@
         ]
       }
     },
-    "/v1/artifact/storeArtifactWithStream": {
+    "/artifact/storeArtifactWithStream": {
       "post": {
         "operationId": "storeArtifactWithStream",
         "responses": {
@@ -243,5 +243,6 @@
         }
       }
     }
-  }
+  },
+  "basePath": "/v1"
 }

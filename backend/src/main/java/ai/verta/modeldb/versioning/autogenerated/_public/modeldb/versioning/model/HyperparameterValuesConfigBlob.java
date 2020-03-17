@@ -10,24 +10,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterValuesConfigBlob implements ProtoType {
-  public Long IntValue;
-  public Float FloatValue;
-  public String StringValue;
+  public Optional<Long> IntValue;
+  public Optional<Float> FloatValue;
+  public Optional<String> StringValue;
 
   public HyperparameterValuesConfigBlob() {
-    this.IntValue = 0l;
-    this.FloatValue = 0.f;
-    this.StringValue = null;
+    this.IntValue = Optional.empty();
+    this.FloatValue = Optional.empty();
+    this.StringValue = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.IntValue != null) {
+    if (this.IntValue.isPresent()) {
       return false;
     }
-    if (this.FloatValue != null) {
+    if (this.FloatValue.isPresent()) {
       return false;
     }
-    if (this.StringValue != null) {
+    if (this.StringValue.isPresent()) {
       return false;
     }
     return true;
@@ -43,26 +43,26 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
 
     {
       Function3<Long, Long, Boolean> f = (x, y) -> x == y;
-      if (this.IntValue != null || other.IntValue != null) {
-        if (this.IntValue == null && other.IntValue != null) return false;
-        if (this.IntValue != null && other.IntValue == null) return false;
-        if (!f.apply(this.IntValue, other.IntValue)) return false;
+      if (this.IntValue.isPresent() || other.IntValue.isPresent()) {
+        if (!this.IntValue.isPresent()) return false;
+        if (other.IntValue.isPresent()) return false;
+        if (!f.apply(this.IntValue.get(), other.IntValue.get())) return false;
       }
     }
     {
       Function3<Float, Float, Boolean> f = (x, y) -> x == y;
-      if (this.FloatValue != null || other.FloatValue != null) {
-        if (this.FloatValue == null && other.FloatValue != null) return false;
-        if (this.FloatValue != null && other.FloatValue == null) return false;
-        if (!f.apply(this.FloatValue, other.FloatValue)) return false;
+      if (this.FloatValue.isPresent() || other.FloatValue.isPresent()) {
+        if (!this.FloatValue.isPresent()) return false;
+        if (other.FloatValue.isPresent()) return false;
+        if (!f.apply(this.FloatValue.get(), other.FloatValue.get())) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.StringValue != null || other.StringValue != null) {
-        if (this.StringValue == null && other.StringValue != null) return false;
-        if (this.StringValue != null && other.StringValue == null) return false;
-        if (!f.apply(this.StringValue, other.StringValue)) return false;
+      if (this.StringValue.isPresent() || other.StringValue.isPresent()) {
+        if (!this.StringValue.isPresent()) return false;
+        if (other.StringValue.isPresent()) return false;
+        if (!f.apply(this.StringValue.get(), other.StringValue.get())) return false;
       }
     }
     return true;
@@ -73,18 +73,36 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
     return Objects.hash(this.IntValue, this.FloatValue, this.StringValue);
   }
 
-  public HyperparameterValuesConfigBlob setIntValue(Long value) {
+  public HyperparameterValuesConfigBlob setIntValue(Optional<Long> value) {
     this.IntValue = value;
     return this;
   }
 
-  public HyperparameterValuesConfigBlob setFloatValue(Float value) {
+  public HyperparameterValuesConfigBlob setIntValue(Long value) {
+    if (value == null) this.IntValue = Optional.empty();
+    else this.IntValue = Optional.of(value);
+    return this;
+  }
+
+  public HyperparameterValuesConfigBlob setFloatValue(Optional<Float> value) {
     this.FloatValue = value;
     return this;
   }
 
-  public HyperparameterValuesConfigBlob setStringValue(String value) {
+  public HyperparameterValuesConfigBlob setFloatValue(Float value) {
+    if (value == null) this.FloatValue = Optional.empty();
+    else this.FloatValue = Optional.of(value);
+    return this;
+  }
+
+  public HyperparameterValuesConfigBlob setStringValue(Optional<String> value) {
     this.StringValue = value;
+    return this;
+  }
+
+  public HyperparameterValuesConfigBlob setStringValue(String value) {
+    if (value == null) this.StringValue = Optional.empty();
+    else this.StringValue = Optional.of(value);
     return this;
   }
 
@@ -116,36 +134,9 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
   public ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder toProto() {
     ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder builder =
         ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.newBuilder();
-    {
-      if (this.IntValue != null) {
-        Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder, Void> f =
-            x -> {
-              builder.setIntValue(this.IntValue);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.FloatValue != null) {
-        Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder, Void> f =
-            x -> {
-              builder.setFloatValue(this.FloatValue);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.StringValue != null) {
-        Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder, Void> f =
-            x -> {
-              builder.setStringValue(this.StringValue);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.IntValue.ifPresent(x -> builder.setIntValue(x));
+    this.FloatValue.ifPresent(x -> builder.setFloatValue(x));
+    this.StringValue.ifPresent(x -> builder.setStringValue(x));
     return builder;
   }
 
@@ -155,9 +146,9 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepLong(this.IntValue);
-    visitor.preVisitDeepFloat(this.FloatValue);
-    visitor.preVisitDeepString(this.StringValue);
+    if (this.IntValue.isPresent()) visitor.preVisitDeepLong(this.IntValue.get());
+    if (this.FloatValue.isPresent()) visitor.preVisitDeepFloat(this.FloatValue.get());
+    if (this.StringValue.isPresent()) visitor.preVisitDeepString(this.StringValue.get());
   }
 
   public HyperparameterValuesConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -165,9 +156,11 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
   }
 
   public HyperparameterValuesConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.IntValue = visitor.postVisitDeepLong(this.IntValue);
-    this.FloatValue = visitor.postVisitDeepFloat(this.FloatValue);
-    this.StringValue = visitor.postVisitDeepString(this.StringValue);
+    if (this.IntValue.isPresent()) this.setIntValue(visitor.postVisitDeepLong(this.IntValue.get()));
+    if (this.FloatValue.isPresent())
+      this.setFloatValue(visitor.postVisitDeepFloat(this.FloatValue.get()));
+    if (this.StringValue.isPresent())
+      this.setStringValue(visitor.postVisitDeepString(this.StringValue.get()));
     return this.postVisitShallow(visitor);
   }
 }

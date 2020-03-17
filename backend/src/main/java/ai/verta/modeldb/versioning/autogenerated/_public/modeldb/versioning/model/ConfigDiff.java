@@ -12,19 +12,19 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ConfigDiff implements ProtoType {
-  public List<HyperparameterSetConfigDiff> HyperparameterSet;
-  public List<HyperparameterConfigDiff> Hyperparameters;
+  public Optional<List<HyperparameterSetConfigDiff>> HyperparameterSet;
+  public Optional<List<HyperparameterConfigDiff>> Hyperparameters;
 
   public ConfigDiff() {
-    this.HyperparameterSet = null;
-    this.Hyperparameters = null;
+    this.HyperparameterSet = Optional.empty();
+    this.Hyperparameters = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.HyperparameterSet != null) {
+    if (this.HyperparameterSet.isPresent()) {
       return false;
     }
-    if (this.Hyperparameters != null) {
+    if (this.Hyperparameters.isPresent()) {
       return false;
     }
     return true;
@@ -51,10 +51,10 @@ public class ConfigDiff implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.HyperparameterSet != null || other.HyperparameterSet != null) {
-        if (this.HyperparameterSet == null && other.HyperparameterSet != null) return false;
-        if (this.HyperparameterSet != null && other.HyperparameterSet == null) return false;
-        if (!f.apply(this.HyperparameterSet, other.HyperparameterSet)) return false;
+      if (this.HyperparameterSet.isPresent() || other.HyperparameterSet.isPresent()) {
+        if (!this.HyperparameterSet.isPresent()) return false;
+        if (other.HyperparameterSet.isPresent()) return false;
+        if (!f.apply(this.HyperparameterSet.get(), other.HyperparameterSet.get())) return false;
       }
     }
     {
@@ -70,10 +70,10 @@ public class ConfigDiff implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.Hyperparameters != null || other.Hyperparameters != null) {
-        if (this.Hyperparameters == null && other.Hyperparameters != null) return false;
-        if (this.Hyperparameters != null && other.Hyperparameters == null) return false;
-        if (!f.apply(this.Hyperparameters, other.Hyperparameters)) return false;
+      if (this.Hyperparameters.isPresent() || other.Hyperparameters.isPresent()) {
+        if (!this.Hyperparameters.isPresent()) return false;
+        if (other.Hyperparameters.isPresent()) return false;
+        if (!f.apply(this.Hyperparameters.get(), other.Hyperparameters.get())) return false;
       }
     }
     return true;
@@ -84,13 +84,25 @@ public class ConfigDiff implements ProtoType {
     return Objects.hash(this.HyperparameterSet, this.Hyperparameters);
   }
 
-  public ConfigDiff setHyperparameterSet(List<HyperparameterSetConfigDiff> value) {
+  public ConfigDiff setHyperparameterSet(Optional<List<HyperparameterSetConfigDiff>> value) {
     this.HyperparameterSet = value;
     return this;
   }
 
-  public ConfigDiff setHyperparameters(List<HyperparameterConfigDiff> value) {
+  public ConfigDiff setHyperparameterSet(List<HyperparameterSetConfigDiff> value) {
+    if (value == null) this.HyperparameterSet = Optional.empty();
+    else this.HyperparameterSet = Optional.of(value);
+    return this;
+  }
+
+  public ConfigDiff setHyperparameters(Optional<List<HyperparameterConfigDiff>> value) {
     this.Hyperparameters = value;
+    return this;
+  }
+
+  public ConfigDiff setHyperparameters(List<HyperparameterConfigDiff> value) {
+    if (value == null) this.Hyperparameters = Optional.empty();
+    else this.Hyperparameters = Optional.of(value);
     return this;
   }
 
@@ -122,32 +134,14 @@ public class ConfigDiff implements ProtoType {
   public ai.verta.modeldb.versioning.ConfigDiff.Builder toProto() {
     ai.verta.modeldb.versioning.ConfigDiff.Builder builder =
         ai.verta.modeldb.versioning.ConfigDiff.newBuilder();
-    {
-      if (this.HyperparameterSet != null) {
-        Function<ai.verta.modeldb.versioning.ConfigDiff.Builder, Void> f =
-            x -> {
-              builder.addAllHyperparameterSet(
-                  this.HyperparameterSet.stream()
-                      .map(y -> y.toProto().build())
-                      .collect(Collectors.toList()));
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Hyperparameters != null) {
-        Function<ai.verta.modeldb.versioning.ConfigDiff.Builder, Void> f =
-            x -> {
-              builder.addAllHyperparameters(
-                  this.Hyperparameters.stream()
-                      .map(y -> y.toProto().build())
-                      .collect(Collectors.toList()));
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.HyperparameterSet.ifPresent(
+        x ->
+            builder.addAllHyperparameterSet(
+                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
+    this.Hyperparameters.ifPresent(
+        x ->
+            builder.addAllHyperparameters(
+                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
     return builder;
   }
 
@@ -157,8 +151,10 @@ public class ConfigDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepListOfHyperparameterSetConfigDiff(this.HyperparameterSet);
-    visitor.preVisitDeepListOfHyperparameterConfigDiff(this.Hyperparameters);
+    if (this.HyperparameterSet.isPresent())
+      visitor.preVisitDeepListOfHyperparameterSetConfigDiff(this.HyperparameterSet.get());
+    if (this.Hyperparameters.isPresent())
+      visitor.preVisitDeepListOfHyperparameterConfigDiff(this.Hyperparameters.get());
   }
 
   public ConfigDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -166,10 +162,12 @@ public class ConfigDiff implements ProtoType {
   }
 
   public ConfigDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.HyperparameterSet =
-        visitor.postVisitDeepListOfHyperparameterSetConfigDiff(this.HyperparameterSet);
-    this.Hyperparameters =
-        visitor.postVisitDeepListOfHyperparameterConfigDiff(this.Hyperparameters);
+    if (this.HyperparameterSet.isPresent())
+      this.setHyperparameterSet(
+          visitor.postVisitDeepListOfHyperparameterSetConfigDiff(this.HyperparameterSet.get()));
+    if (this.Hyperparameters.isPresent())
+      this.setHyperparameters(
+          visitor.postVisitDeepListOfHyperparameterConfigDiff(this.Hyperparameters.get()));
     return this.postVisitShallow(visitor);
   }
 }

@@ -12,19 +12,19 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ConfigBlob implements ProtoType {
-  public List<HyperparameterSetConfigBlob> HyperparameterSet;
-  public List<HyperparameterConfigBlob> Hyperparameters;
+  public Optional<List<HyperparameterSetConfigBlob>> HyperparameterSet;
+  public Optional<List<HyperparameterConfigBlob>> Hyperparameters;
 
   public ConfigBlob() {
-    this.HyperparameterSet = null;
-    this.Hyperparameters = null;
+    this.HyperparameterSet = Optional.empty();
+    this.Hyperparameters = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.HyperparameterSet != null) {
+    if (this.HyperparameterSet.isPresent()) {
       return false;
     }
-    if (this.Hyperparameters != null) {
+    if (this.Hyperparameters.isPresent()) {
       return false;
     }
     return true;
@@ -51,10 +51,10 @@ public class ConfigBlob implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.HyperparameterSet != null || other.HyperparameterSet != null) {
-        if (this.HyperparameterSet == null && other.HyperparameterSet != null) return false;
-        if (this.HyperparameterSet != null && other.HyperparameterSet == null) return false;
-        if (!f.apply(this.HyperparameterSet, other.HyperparameterSet)) return false;
+      if (this.HyperparameterSet.isPresent() || other.HyperparameterSet.isPresent()) {
+        if (!this.HyperparameterSet.isPresent()) return false;
+        if (other.HyperparameterSet.isPresent()) return false;
+        if (!f.apply(this.HyperparameterSet.get(), other.HyperparameterSet.get())) return false;
       }
     }
     {
@@ -70,10 +70,10 @@ public class ConfigBlob implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.Hyperparameters != null || other.Hyperparameters != null) {
-        if (this.Hyperparameters == null && other.Hyperparameters != null) return false;
-        if (this.Hyperparameters != null && other.Hyperparameters == null) return false;
-        if (!f.apply(this.Hyperparameters, other.Hyperparameters)) return false;
+      if (this.Hyperparameters.isPresent() || other.Hyperparameters.isPresent()) {
+        if (!this.Hyperparameters.isPresent()) return false;
+        if (other.Hyperparameters.isPresent()) return false;
+        if (!f.apply(this.Hyperparameters.get(), other.Hyperparameters.get())) return false;
       }
     }
     return true;
@@ -84,13 +84,25 @@ public class ConfigBlob implements ProtoType {
     return Objects.hash(this.HyperparameterSet, this.Hyperparameters);
   }
 
-  public ConfigBlob setHyperparameterSet(List<HyperparameterSetConfigBlob> value) {
+  public ConfigBlob setHyperparameterSet(Optional<List<HyperparameterSetConfigBlob>> value) {
     this.HyperparameterSet = value;
     return this;
   }
 
-  public ConfigBlob setHyperparameters(List<HyperparameterConfigBlob> value) {
+  public ConfigBlob setHyperparameterSet(List<HyperparameterSetConfigBlob> value) {
+    if (value == null) this.HyperparameterSet = Optional.empty();
+    else this.HyperparameterSet = Optional.of(value);
+    return this;
+  }
+
+  public ConfigBlob setHyperparameters(Optional<List<HyperparameterConfigBlob>> value) {
     this.Hyperparameters = value;
+    return this;
+  }
+
+  public ConfigBlob setHyperparameters(List<HyperparameterConfigBlob> value) {
+    if (value == null) this.Hyperparameters = Optional.empty();
+    else this.Hyperparameters = Optional.of(value);
     return this;
   }
 
@@ -122,32 +134,14 @@ public class ConfigBlob implements ProtoType {
   public ai.verta.modeldb.versioning.ConfigBlob.Builder toProto() {
     ai.verta.modeldb.versioning.ConfigBlob.Builder builder =
         ai.verta.modeldb.versioning.ConfigBlob.newBuilder();
-    {
-      if (this.HyperparameterSet != null) {
-        Function<ai.verta.modeldb.versioning.ConfigBlob.Builder, Void> f =
-            x -> {
-              builder.addAllHyperparameterSet(
-                  this.HyperparameterSet.stream()
-                      .map(y -> y.toProto().build())
-                      .collect(Collectors.toList()));
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Hyperparameters != null) {
-        Function<ai.verta.modeldb.versioning.ConfigBlob.Builder, Void> f =
-            x -> {
-              builder.addAllHyperparameters(
-                  this.Hyperparameters.stream()
-                      .map(y -> y.toProto().build())
-                      .collect(Collectors.toList()));
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.HyperparameterSet.ifPresent(
+        x ->
+            builder.addAllHyperparameterSet(
+                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
+    this.Hyperparameters.ifPresent(
+        x ->
+            builder.addAllHyperparameters(
+                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
     return builder;
   }
 
@@ -157,8 +151,10 @@ public class ConfigBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepListOfHyperparameterSetConfigBlob(this.HyperparameterSet);
-    visitor.preVisitDeepListOfHyperparameterConfigBlob(this.Hyperparameters);
+    if (this.HyperparameterSet.isPresent())
+      visitor.preVisitDeepListOfHyperparameterSetConfigBlob(this.HyperparameterSet.get());
+    if (this.Hyperparameters.isPresent())
+      visitor.preVisitDeepListOfHyperparameterConfigBlob(this.Hyperparameters.get());
   }
 
   public ConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -166,10 +162,12 @@ public class ConfigBlob implements ProtoType {
   }
 
   public ConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.HyperparameterSet =
-        visitor.postVisitDeepListOfHyperparameterSetConfigBlob(this.HyperparameterSet);
-    this.Hyperparameters =
-        visitor.postVisitDeepListOfHyperparameterConfigBlob(this.Hyperparameters);
+    if (this.HyperparameterSet.isPresent())
+      this.setHyperparameterSet(
+          visitor.postVisitDeepListOfHyperparameterSetConfigBlob(this.HyperparameterSet.get()));
+    if (this.Hyperparameters.isPresent())
+      this.setHyperparameters(
+          visitor.postVisitDeepListOfHyperparameterConfigBlob(this.Hyperparameters.get()));
     return this.postVisitShallow(visitor);
   }
 }

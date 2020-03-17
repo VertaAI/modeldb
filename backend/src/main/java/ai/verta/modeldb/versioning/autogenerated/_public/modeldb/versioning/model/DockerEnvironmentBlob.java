@@ -10,24 +10,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DockerEnvironmentBlob implements ProtoType {
-  public String Repository;
-  public String Tag;
-  public String Sha;
+  public Optional<String> Repository;
+  public Optional<String> Tag;
+  public Optional<String> Sha;
 
   public DockerEnvironmentBlob() {
-    this.Repository = null;
-    this.Tag = null;
-    this.Sha = null;
+    this.Repository = Optional.empty();
+    this.Tag = Optional.empty();
+    this.Sha = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Repository != null) {
+    if (this.Repository.isPresent()) {
       return false;
     }
-    if (this.Tag != null) {
+    if (this.Tag.isPresent()) {
       return false;
     }
-    if (this.Sha != null) {
+    if (this.Sha.isPresent()) {
       return false;
     }
     return true;
@@ -43,26 +43,26 @@ public class DockerEnvironmentBlob implements ProtoType {
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Repository != null || other.Repository != null) {
-        if (this.Repository == null && other.Repository != null) return false;
-        if (this.Repository != null && other.Repository == null) return false;
-        if (!f.apply(this.Repository, other.Repository)) return false;
+      if (this.Repository.isPresent() || other.Repository.isPresent()) {
+        if (!this.Repository.isPresent()) return false;
+        if (other.Repository.isPresent()) return false;
+        if (!f.apply(this.Repository.get(), other.Repository.get())) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Tag != null || other.Tag != null) {
-        if (this.Tag == null && other.Tag != null) return false;
-        if (this.Tag != null && other.Tag == null) return false;
-        if (!f.apply(this.Tag, other.Tag)) return false;
+      if (this.Tag.isPresent() || other.Tag.isPresent()) {
+        if (!this.Tag.isPresent()) return false;
+        if (other.Tag.isPresent()) return false;
+        if (!f.apply(this.Tag.get(), other.Tag.get())) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Sha != null || other.Sha != null) {
-        if (this.Sha == null && other.Sha != null) return false;
-        if (this.Sha != null && other.Sha == null) return false;
-        if (!f.apply(this.Sha, other.Sha)) return false;
+      if (this.Sha.isPresent() || other.Sha.isPresent()) {
+        if (!this.Sha.isPresent()) return false;
+        if (other.Sha.isPresent()) return false;
+        if (!f.apply(this.Sha.get(), other.Sha.get())) return false;
       }
     }
     return true;
@@ -73,18 +73,36 @@ public class DockerEnvironmentBlob implements ProtoType {
     return Objects.hash(this.Repository, this.Tag, this.Sha);
   }
 
-  public DockerEnvironmentBlob setRepository(String value) {
+  public DockerEnvironmentBlob setRepository(Optional<String> value) {
     this.Repository = value;
     return this;
   }
 
-  public DockerEnvironmentBlob setTag(String value) {
+  public DockerEnvironmentBlob setRepository(String value) {
+    if (value == null) this.Repository = Optional.empty();
+    else this.Repository = Optional.of(value);
+    return this;
+  }
+
+  public DockerEnvironmentBlob setTag(Optional<String> value) {
     this.Tag = value;
     return this;
   }
 
-  public DockerEnvironmentBlob setSha(String value) {
+  public DockerEnvironmentBlob setTag(String value) {
+    if (value == null) this.Tag = Optional.empty();
+    else this.Tag = Optional.of(value);
+    return this;
+  }
+
+  public DockerEnvironmentBlob setSha(Optional<String> value) {
     this.Sha = value;
+    return this;
+  }
+
+  public DockerEnvironmentBlob setSha(String value) {
+    if (value == null) this.Sha = Optional.empty();
+    else this.Sha = Optional.of(value);
     return this;
   }
 
@@ -114,36 +132,9 @@ public class DockerEnvironmentBlob implements ProtoType {
   public ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder toProto() {
     ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder builder =
         ai.verta.modeldb.versioning.DockerEnvironmentBlob.newBuilder();
-    {
-      if (this.Repository != null) {
-        Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setRepository(this.Repository);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Tag != null) {
-        Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setTag(this.Tag);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Sha != null) {
-        Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setSha(this.Sha);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Repository.ifPresent(x -> builder.setRepository(x));
+    this.Tag.ifPresent(x -> builder.setTag(x));
+    this.Sha.ifPresent(x -> builder.setSha(x));
     return builder;
   }
 
@@ -153,9 +144,9 @@ public class DockerEnvironmentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepString(this.Repository);
-    visitor.preVisitDeepString(this.Tag);
-    visitor.preVisitDeepString(this.Sha);
+    if (this.Repository.isPresent()) visitor.preVisitDeepString(this.Repository.get());
+    if (this.Tag.isPresent()) visitor.preVisitDeepString(this.Tag.get());
+    if (this.Sha.isPresent()) visitor.preVisitDeepString(this.Sha.get());
   }
 
   public DockerEnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -163,9 +154,10 @@ public class DockerEnvironmentBlob implements ProtoType {
   }
 
   public DockerEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Repository = visitor.postVisitDeepString(this.Repository);
-    this.Tag = visitor.postVisitDeepString(this.Tag);
-    this.Sha = visitor.postVisitDeepString(this.Sha);
+    if (this.Repository.isPresent())
+      this.setRepository(visitor.postVisitDeepString(this.Repository.get()));
+    if (this.Tag.isPresent()) this.setTag(visitor.postVisitDeepString(this.Tag.get()));
+    if (this.Sha.isPresent()) this.setSha(visitor.postVisitDeepString(this.Sha.get()));
     return this.postVisitShallow(visitor);
   }
 }

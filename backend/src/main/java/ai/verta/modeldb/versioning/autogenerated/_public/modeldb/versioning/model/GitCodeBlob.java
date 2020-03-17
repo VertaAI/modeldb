@@ -10,34 +10,34 @@ import java.util.*;
 import java.util.function.Function;
 
 public class GitCodeBlob implements ProtoType {
-  public String Repo;
-  public String Hash;
-  public String Branch;
-  public String Tag;
-  public Boolean IsDirty;
+  public Optional<String> Repo;
+  public Optional<String> Hash;
+  public Optional<String> Branch;
+  public Optional<String> Tag;
+  public Optional<Boolean> IsDirty;
 
   public GitCodeBlob() {
-    this.Repo = null;
-    this.Hash = null;
-    this.Branch = null;
-    this.Tag = null;
-    this.IsDirty = false;
+    this.Repo = Optional.empty();
+    this.Hash = Optional.empty();
+    this.Branch = Optional.empty();
+    this.Tag = Optional.empty();
+    this.IsDirty = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Repo != null) {
+    if (this.Repo.isPresent()) {
       return false;
     }
-    if (this.Hash != null) {
+    if (this.Hash.isPresent()) {
       return false;
     }
-    if (this.Branch != null) {
+    if (this.Branch.isPresent()) {
       return false;
     }
-    if (this.Tag != null) {
+    if (this.Tag.isPresent()) {
       return false;
     }
-    if (this.IsDirty != null) {
+    if (this.IsDirty.isPresent()) {
       return false;
     }
     return true;
@@ -53,42 +53,42 @@ public class GitCodeBlob implements ProtoType {
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Repo != null || other.Repo != null) {
-        if (this.Repo == null && other.Repo != null) return false;
-        if (this.Repo != null && other.Repo == null) return false;
-        if (!f.apply(this.Repo, other.Repo)) return false;
+      if (this.Repo.isPresent() || other.Repo.isPresent()) {
+        if (!this.Repo.isPresent()) return false;
+        if (other.Repo.isPresent()) return false;
+        if (!f.apply(this.Repo.get(), other.Repo.get())) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Hash != null || other.Hash != null) {
-        if (this.Hash == null && other.Hash != null) return false;
-        if (this.Hash != null && other.Hash == null) return false;
-        if (!f.apply(this.Hash, other.Hash)) return false;
+      if (this.Hash.isPresent() || other.Hash.isPresent()) {
+        if (!this.Hash.isPresent()) return false;
+        if (other.Hash.isPresent()) return false;
+        if (!f.apply(this.Hash.get(), other.Hash.get())) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Branch != null || other.Branch != null) {
-        if (this.Branch == null && other.Branch != null) return false;
-        if (this.Branch != null && other.Branch == null) return false;
-        if (!f.apply(this.Branch, other.Branch)) return false;
+      if (this.Branch.isPresent() || other.Branch.isPresent()) {
+        if (!this.Branch.isPresent()) return false;
+        if (other.Branch.isPresent()) return false;
+        if (!f.apply(this.Branch.get(), other.Branch.get())) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Tag != null || other.Tag != null) {
-        if (this.Tag == null && other.Tag != null) return false;
-        if (this.Tag != null && other.Tag == null) return false;
-        if (!f.apply(this.Tag, other.Tag)) return false;
+      if (this.Tag.isPresent() || other.Tag.isPresent()) {
+        if (!this.Tag.isPresent()) return false;
+        if (other.Tag.isPresent()) return false;
+        if (!f.apply(this.Tag.get(), other.Tag.get())) return false;
       }
     }
     {
       Function3<Boolean, Boolean, Boolean> f = (x, y) -> x == y;
-      if (this.IsDirty != null || other.IsDirty != null) {
-        if (this.IsDirty == null && other.IsDirty != null) return false;
-        if (this.IsDirty != null && other.IsDirty == null) return false;
-        if (!f.apply(this.IsDirty, other.IsDirty)) return false;
+      if (this.IsDirty.isPresent() || other.IsDirty.isPresent()) {
+        if (!this.IsDirty.isPresent()) return false;
+        if (other.IsDirty.isPresent()) return false;
+        if (!f.apply(this.IsDirty.get(), other.IsDirty.get())) return false;
       }
     }
     return true;
@@ -99,28 +99,58 @@ public class GitCodeBlob implements ProtoType {
     return Objects.hash(this.Repo, this.Hash, this.Branch, this.Tag, this.IsDirty);
   }
 
-  public GitCodeBlob setRepo(String value) {
+  public GitCodeBlob setRepo(Optional<String> value) {
     this.Repo = value;
     return this;
   }
 
-  public GitCodeBlob setHash(String value) {
+  public GitCodeBlob setRepo(String value) {
+    if (value == null) this.Repo = Optional.empty();
+    else this.Repo = Optional.of(value);
+    return this;
+  }
+
+  public GitCodeBlob setHash(Optional<String> value) {
     this.Hash = value;
     return this;
   }
 
-  public GitCodeBlob setBranch(String value) {
+  public GitCodeBlob setHash(String value) {
+    if (value == null) this.Hash = Optional.empty();
+    else this.Hash = Optional.of(value);
+    return this;
+  }
+
+  public GitCodeBlob setBranch(Optional<String> value) {
     this.Branch = value;
     return this;
   }
 
-  public GitCodeBlob setTag(String value) {
+  public GitCodeBlob setBranch(String value) {
+    if (value == null) this.Branch = Optional.empty();
+    else this.Branch = Optional.of(value);
+    return this;
+  }
+
+  public GitCodeBlob setTag(Optional<String> value) {
     this.Tag = value;
     return this;
   }
 
-  public GitCodeBlob setIsDirty(Boolean value) {
+  public GitCodeBlob setTag(String value) {
+    if (value == null) this.Tag = Optional.empty();
+    else this.Tag = Optional.of(value);
+    return this;
+  }
+
+  public GitCodeBlob setIsDirty(Optional<Boolean> value) {
     this.IsDirty = value;
+    return this;
+  }
+
+  public GitCodeBlob setIsDirty(Boolean value) {
+    if (value == null) this.IsDirty = Optional.empty();
+    else this.IsDirty = Optional.of(value);
     return this;
   }
 
@@ -156,56 +186,11 @@ public class GitCodeBlob implements ProtoType {
   public ai.verta.modeldb.versioning.GitCodeBlob.Builder toProto() {
     ai.verta.modeldb.versioning.GitCodeBlob.Builder builder =
         ai.verta.modeldb.versioning.GitCodeBlob.newBuilder();
-    {
-      if (this.Repo != null) {
-        Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder, Void> f =
-            x -> {
-              builder.setRepo(this.Repo);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Hash != null) {
-        Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder, Void> f =
-            x -> {
-              builder.setHash(this.Hash);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Branch != null) {
-        Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder, Void> f =
-            x -> {
-              builder.setBranch(this.Branch);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Tag != null) {
-        Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder, Void> f =
-            x -> {
-              builder.setTag(this.Tag);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.IsDirty != null) {
-        Function<ai.verta.modeldb.versioning.GitCodeBlob.Builder, Void> f =
-            x -> {
-              builder.setIsDirty(this.IsDirty);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Repo.ifPresent(x -> builder.setRepo(x));
+    this.Hash.ifPresent(x -> builder.setHash(x));
+    this.Branch.ifPresent(x -> builder.setBranch(x));
+    this.Tag.ifPresent(x -> builder.setTag(x));
+    this.IsDirty.ifPresent(x -> builder.setIsDirty(x));
     return builder;
   }
 
@@ -215,11 +200,11 @@ public class GitCodeBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepString(this.Repo);
-    visitor.preVisitDeepString(this.Hash);
-    visitor.preVisitDeepString(this.Branch);
-    visitor.preVisitDeepString(this.Tag);
-    visitor.preVisitDeepBoolean(this.IsDirty);
+    if (this.Repo.isPresent()) visitor.preVisitDeepString(this.Repo.get());
+    if (this.Hash.isPresent()) visitor.preVisitDeepString(this.Hash.get());
+    if (this.Branch.isPresent()) visitor.preVisitDeepString(this.Branch.get());
+    if (this.Tag.isPresent()) visitor.preVisitDeepString(this.Tag.get());
+    if (this.IsDirty.isPresent()) visitor.preVisitDeepBoolean(this.IsDirty.get());
   }
 
   public GitCodeBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -227,11 +212,11 @@ public class GitCodeBlob implements ProtoType {
   }
 
   public GitCodeBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Repo = visitor.postVisitDeepString(this.Repo);
-    this.Hash = visitor.postVisitDeepString(this.Hash);
-    this.Branch = visitor.postVisitDeepString(this.Branch);
-    this.Tag = visitor.postVisitDeepString(this.Tag);
-    this.IsDirty = visitor.postVisitDeepBoolean(this.IsDirty);
+    if (this.Repo.isPresent()) this.setRepo(visitor.postVisitDeepString(this.Repo.get()));
+    if (this.Hash.isPresent()) this.setHash(visitor.postVisitDeepString(this.Hash.get()));
+    if (this.Branch.isPresent()) this.setBranch(visitor.postVisitDeepString(this.Branch.get()));
+    if (this.Tag.isPresent()) this.setTag(visitor.postVisitDeepString(this.Tag.get()));
+    if (this.IsDirty.isPresent()) this.setIsDirty(visitor.postVisitDeepBoolean(this.IsDirty.get()));
     return this.postVisitShallow(visitor);
   }
 }

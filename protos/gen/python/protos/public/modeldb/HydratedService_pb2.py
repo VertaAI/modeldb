@@ -12,17 +12,17 @@ _sym_db = _symbol_database.Default()
 
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
-from protos.public.uac import UACService_pb2 as protos_dot_public_dot_uac_dot_UACService__pb2
-from protos.public.uac import Organization_pb2 as protos_dot_public_dot_uac_dot_Organization__pb2
-from protos.public.uac import Team_pb2 as protos_dot_public_dot_uac_dot_Team__pb2
-from protos.public.modeldb import Comment_pb2 as protos_dot_public_dot_modeldb_dot_Comment__pb2
-from protos.public.modeldb import ProjectService_pb2 as protos_dot_public_dot_modeldb_dot_ProjectService__pb2
-from protos.public.modeldb import ExperimentService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentService__pb2
-from protos.public.modeldb import ExperimentRunService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2
-from protos.public.modeldb import DatasetService_pb2 as protos_dot_public_dot_modeldb_dot_DatasetService__pb2
-from protos.public.modeldb import DatasetVersionService_pb2 as protos_dot_public_dot_modeldb_dot_DatasetVersionService__pb2
-from protos.public.uac import RoleService_pb2 as protos_dot_public_dot_uac_dot_RoleService__pb2
-from protos.public.common import CommonService_pb2 as protos_dot_public_dot_common_dot_CommonService__pb2
+from ...public.uac import UACService_pb2 as protos_dot_public_dot_uac_dot_UACService__pb2
+from ...public.uac import Organization_pb2 as protos_dot_public_dot_uac_dot_Organization__pb2
+from ...public.uac import Team_pb2 as protos_dot_public_dot_uac_dot_Team__pb2
+from ...public.modeldb import Comment_pb2 as protos_dot_public_dot_modeldb_dot_Comment__pb2
+from ...public.modeldb import ProjectService_pb2 as protos_dot_public_dot_modeldb_dot_ProjectService__pb2
+from ...public.modeldb import ExperimentService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentService__pb2
+from ...public.modeldb import ExperimentRunService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2
+from ...public.modeldb import DatasetService_pb2 as protos_dot_public_dot_modeldb_dot_DatasetService__pb2
+from ...public.modeldb import DatasetVersionService_pb2 as protos_dot_public_dot_modeldb_dot_DatasetVersionService__pb2
+from ...public.uac import RoleService_pb2 as protos_dot_public_dot_uac_dot_RoleService__pb2
+from ...public.common import CommonService_pb2 as protos_dot_public_dot_common_dot_CommonService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

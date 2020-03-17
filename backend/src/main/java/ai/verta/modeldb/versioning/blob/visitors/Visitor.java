@@ -166,6 +166,54 @@ public class Visitor {
     return blob.postVisitDeep(this);
   }
 
+  public void preVisitListOfCommandLineEnvironmentDiff(List<CommandLineEnvironmentDiff> lst)
+      throws ModelDBException {
+    for (CommandLineEnvironmentDiff val : lst) {
+      preVisitCommandLineEnvironmentDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfCommandLineEnvironmentDiff(List<CommandLineEnvironmentDiff> lst)
+      throws ModelDBException {
+    for (CommandLineEnvironmentDiff val : lst) {
+      preVisitDeepCommandLineEnvironmentDiff(val);
+    }
+  }
+
+  public List<CommandLineEnvironmentDiff> postVisitListOfCommandLineEnvironmentDiff(
+      List<CommandLineEnvironmentDiff> lst) throws ModelDBException {
+    final List<CommandLineEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (CommandLineEnvironmentDiff val : lst) {
+      collect.add(postVisitCommandLineEnvironmentDiff(val));
+    }
+    return collect;
+  }
+
+  public List<CommandLineEnvironmentDiff> postVisitDeepListOfCommandLineEnvironmentDiff(
+      List<CommandLineEnvironmentDiff> lst) throws ModelDBException {
+    final List<CommandLineEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (CommandLineEnvironmentDiff val : lst) {
+      collect.add(postVisitDeepCommandLineEnvironmentDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitCommandLineEnvironmentDiff(CommandLineEnvironmentDiff blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepCommandLineEnvironmentDiff(CommandLineEnvironmentDiff blob)
+      throws ModelDBException {}
+
+  public CommandLineEnvironmentDiff postVisitCommandLineEnvironmentDiff(
+      CommandLineEnvironmentDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public CommandLineEnvironmentDiff postVisitDeepCommandLineEnvironmentDiff(
+      CommandLineEnvironmentDiff blob) throws ModelDBException {
+    return blob.postVisitDeep(this);
+  }
+
   public void preVisitListOfConfigBlob(List<ConfigBlob> lst) throws ModelDBException {
     for (ConfigBlob val : lst) {
       preVisitConfigBlob(val);
@@ -1713,6 +1761,53 @@ public class Visitor {
   }
 
   public VersionEnvironmentBlob postVisitDeepVersionEnvironmentBlob(VersionEnvironmentBlob blob)
+      throws ModelDBException {
+    return blob.postVisitDeep(this);
+  }
+
+  public void preVisitListOfVersionEnvironmentDiff(List<VersionEnvironmentDiff> lst)
+      throws ModelDBException {
+    for (VersionEnvironmentDiff val : lst) {
+      preVisitVersionEnvironmentDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfVersionEnvironmentDiff(List<VersionEnvironmentDiff> lst)
+      throws ModelDBException {
+    for (VersionEnvironmentDiff val : lst) {
+      preVisitDeepVersionEnvironmentDiff(val);
+    }
+  }
+
+  public List<VersionEnvironmentDiff> postVisitListOfVersionEnvironmentDiff(
+      List<VersionEnvironmentDiff> lst) throws ModelDBException {
+    final List<VersionEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (VersionEnvironmentDiff val : lst) {
+      collect.add(postVisitVersionEnvironmentDiff(val));
+    }
+    return collect;
+  }
+
+  public List<VersionEnvironmentDiff> postVisitDeepListOfVersionEnvironmentDiff(
+      List<VersionEnvironmentDiff> lst) throws ModelDBException {
+    final List<VersionEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (VersionEnvironmentDiff val : lst) {
+      collect.add(postVisitDeepVersionEnvironmentDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitVersionEnvironmentDiff(VersionEnvironmentDiff blob) throws ModelDBException {}
+
+  public void preVisitDeepVersionEnvironmentDiff(VersionEnvironmentDiff blob)
+      throws ModelDBException {}
+
+  public VersionEnvironmentDiff postVisitVersionEnvironmentDiff(VersionEnvironmentDiff blob)
+      throws ModelDBException {
+    return blob;
+  }
+
+  public VersionEnvironmentDiff postVisitDeepVersionEnvironmentDiff(VersionEnvironmentDiff blob)
       throws ModelDBException {
     return blob.postVisitDeep(this);
   }

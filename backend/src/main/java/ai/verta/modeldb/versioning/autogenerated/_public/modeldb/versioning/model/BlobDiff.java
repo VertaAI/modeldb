@@ -12,39 +12,39 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class BlobDiff implements ProtoType {
-  public List<String> Location;
-  public DiffStatusEnumDiffStatus Status;
-  public DatasetDiff Dataset;
-  public EnvironmentDiff Environment;
-  public CodeDiff Code;
-  public ConfigDiff Config;
+  public Optional<List<String>> Location;
+  public Optional<DiffStatusEnumDiffStatus> Status;
+  public Optional<DatasetDiff> Dataset;
+  public Optional<EnvironmentDiff> Environment;
+  public Optional<CodeDiff> Code;
+  public Optional<ConfigDiff> Config;
 
   public BlobDiff() {
-    this.Location = null;
-    this.Status = null;
-    this.Dataset = null;
-    this.Environment = null;
-    this.Code = null;
-    this.Config = null;
+    this.Location = Optional.empty();
+    this.Status = Optional.empty();
+    this.Dataset = Optional.empty();
+    this.Environment = Optional.empty();
+    this.Code = Optional.empty();
+    this.Config = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Location != null) {
+    if (this.Location.isPresent()) {
       return false;
     }
-    if (this.Status != null) {
+    if (this.Status.isPresent()) {
       return false;
     }
-    if (this.Dataset != null) {
+    if (this.Dataset.isPresent()) {
       return false;
     }
-    if (this.Environment != null) {
+    if (this.Environment.isPresent()) {
       return false;
     }
-    if (this.Code != null) {
+    if (this.Code.isPresent()) {
       return false;
     }
-    if (this.Config != null) {
+    if (this.Config.isPresent()) {
       return false;
     }
     return true;
@@ -70,51 +70,51 @@ public class BlobDiff implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.Location != null || other.Location != null) {
-        if (this.Location == null && other.Location != null) return false;
-        if (this.Location != null && other.Location == null) return false;
-        if (!f.apply(this.Location, other.Location)) return false;
+      if (this.Location.isPresent() || other.Location.isPresent()) {
+        if (!this.Location.isPresent()) return false;
+        if (other.Location.isPresent()) return false;
+        if (!f.apply(this.Location.get(), other.Location.get())) return false;
       }
     }
     {
       Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Status != null || other.Status != null) {
-        if (this.Status == null && other.Status != null) return false;
-        if (this.Status != null && other.Status == null) return false;
-        if (!f.apply(this.Status, other.Status)) return false;
+      if (this.Status.isPresent() || other.Status.isPresent()) {
+        if (!this.Status.isPresent()) return false;
+        if (other.Status.isPresent()) return false;
+        if (!f.apply(this.Status.get(), other.Status.get())) return false;
       }
     }
     {
       Function3<DatasetDiff, DatasetDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Dataset != null || other.Dataset != null) {
-        if (this.Dataset == null && other.Dataset != null) return false;
-        if (this.Dataset != null && other.Dataset == null) return false;
-        if (!f.apply(this.Dataset, other.Dataset)) return false;
+      if (this.Dataset.isPresent() || other.Dataset.isPresent()) {
+        if (!this.Dataset.isPresent()) return false;
+        if (other.Dataset.isPresent()) return false;
+        if (!f.apply(this.Dataset.get(), other.Dataset.get())) return false;
       }
     }
     {
       Function3<EnvironmentDiff, EnvironmentDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Environment != null || other.Environment != null) {
-        if (this.Environment == null && other.Environment != null) return false;
-        if (this.Environment != null && other.Environment == null) return false;
-        if (!f.apply(this.Environment, other.Environment)) return false;
+      if (this.Environment.isPresent() || other.Environment.isPresent()) {
+        if (!this.Environment.isPresent()) return false;
+        if (other.Environment.isPresent()) return false;
+        if (!f.apply(this.Environment.get(), other.Environment.get())) return false;
       }
     }
     {
       Function3<CodeDiff, CodeDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Code != null || other.Code != null) {
-        if (this.Code == null && other.Code != null) return false;
-        if (this.Code != null && other.Code == null) return false;
-        if (!f.apply(this.Code, other.Code)) return false;
+      if (this.Code.isPresent() || other.Code.isPresent()) {
+        if (!this.Code.isPresent()) return false;
+        if (other.Code.isPresent()) return false;
+        if (!f.apply(this.Code.get(), other.Code.get())) return false;
       }
     }
     {
       Function3<ConfigDiff, ConfigDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Config != null || other.Config != null) {
-        if (this.Config == null && other.Config != null) return false;
-        if (this.Config != null && other.Config == null) return false;
-        if (!f.apply(this.Config, other.Config)) return false;
+      if (this.Config.isPresent() || other.Config.isPresent()) {
+        if (!this.Config.isPresent()) return false;
+        if (other.Config.isPresent()) return false;
+        if (!f.apply(this.Config.get(), other.Config.get())) return false;
       }
     }
     return true;
@@ -126,33 +126,69 @@ public class BlobDiff implements ProtoType {
         this.Location, this.Status, this.Dataset, this.Environment, this.Code, this.Config);
   }
 
-  public BlobDiff setLocation(List<String> value) {
+  public BlobDiff setLocation(Optional<List<String>> value) {
     this.Location = value;
     return this;
   }
 
-  public BlobDiff setStatus(DiffStatusEnumDiffStatus value) {
+  public BlobDiff setLocation(List<String> value) {
+    if (value == null) this.Location = Optional.empty();
+    else this.Location = Optional.of(value);
+    return this;
+  }
+
+  public BlobDiff setStatus(Optional<DiffStatusEnumDiffStatus> value) {
     this.Status = value;
     return this;
   }
 
-  public BlobDiff setDataset(DatasetDiff value) {
+  public BlobDiff setStatus(DiffStatusEnumDiffStatus value) {
+    if (value == null) this.Status = Optional.empty();
+    else this.Status = Optional.of(value);
+    return this;
+  }
+
+  public BlobDiff setDataset(Optional<DatasetDiff> value) {
     this.Dataset = value;
     return this;
   }
 
-  public BlobDiff setEnvironment(EnvironmentDiff value) {
+  public BlobDiff setDataset(DatasetDiff value) {
+    if (value == null) this.Dataset = Optional.empty();
+    else this.Dataset = Optional.of(value);
+    return this;
+  }
+
+  public BlobDiff setEnvironment(Optional<EnvironmentDiff> value) {
     this.Environment = value;
     return this;
   }
 
-  public BlobDiff setCode(CodeDiff value) {
+  public BlobDiff setEnvironment(EnvironmentDiff value) {
+    if (value == null) this.Environment = Optional.empty();
+    else this.Environment = Optional.of(value);
+    return this;
+  }
+
+  public BlobDiff setCode(Optional<CodeDiff> value) {
     this.Code = value;
     return this;
   }
 
-  public BlobDiff setConfig(ConfigDiff value) {
+  public BlobDiff setCode(CodeDiff value) {
+    if (value == null) this.Code = Optional.empty();
+    else this.Code = Optional.of(value);
+    return this;
+  }
+
+  public BlobDiff setConfig(Optional<ConfigDiff> value) {
     this.Config = value;
+    return this;
+  }
+
+  public BlobDiff setConfig(ConfigDiff value) {
+    if (value == null) this.Config = Optional.empty();
+    else this.Config = Optional.of(value);
     return this;
   }
 
@@ -197,66 +233,12 @@ public class BlobDiff implements ProtoType {
   public ai.verta.modeldb.versioning.BlobDiff.Builder toProto() {
     ai.verta.modeldb.versioning.BlobDiff.Builder builder =
         ai.verta.modeldb.versioning.BlobDiff.newBuilder();
-    {
-      if (this.Location != null) {
-        Function<ai.verta.modeldb.versioning.BlobDiff.Builder, Void> f =
-            x -> {
-              builder.addAllLocation(this.Location);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Status != null) {
-        Function<ai.verta.modeldb.versioning.BlobDiff.Builder, Void> f =
-            x -> {
-              builder.setStatus(this.Status.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Dataset != null) {
-        Function<ai.verta.modeldb.versioning.BlobDiff.Builder, Void> f =
-            x -> {
-              builder.setDataset(this.Dataset.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Environment != null) {
-        Function<ai.verta.modeldb.versioning.BlobDiff.Builder, Void> f =
-            x -> {
-              builder.setEnvironment(this.Environment.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Code != null) {
-        Function<ai.verta.modeldb.versioning.BlobDiff.Builder, Void> f =
-            x -> {
-              builder.setCode(this.Code.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Config != null) {
-        Function<ai.verta.modeldb.versioning.BlobDiff.Builder, Void> f =
-            x -> {
-              builder.setConfig(this.Config.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Location.ifPresent(x -> builder.addAllLocation(x));
+    this.Status.ifPresent(x -> builder.setStatus(x.toProto()));
+    this.Dataset.ifPresent(x -> builder.setDataset(x.toProto()));
+    this.Environment.ifPresent(x -> builder.setEnvironment(x.toProto()));
+    this.Code.ifPresent(x -> builder.setCode(x.toProto()));
+    this.Config.ifPresent(x -> builder.setConfig(x.toProto()));
     return builder;
   }
 
@@ -266,12 +248,12 @@ public class BlobDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepListOfString(this.Location);
-    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
-    visitor.preVisitDeepDatasetDiff(this.Dataset);
-    visitor.preVisitDeepEnvironmentDiff(this.Environment);
-    visitor.preVisitDeepCodeDiff(this.Code);
-    visitor.preVisitDeepConfigDiff(this.Config);
+    if (this.Location.isPresent()) visitor.preVisitDeepListOfString(this.Location.get());
+    if (this.Status.isPresent()) visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status.get());
+    if (this.Dataset.isPresent()) visitor.preVisitDeepDatasetDiff(this.Dataset.get());
+    if (this.Environment.isPresent()) visitor.preVisitDeepEnvironmentDiff(this.Environment.get());
+    if (this.Code.isPresent()) visitor.preVisitDeepCodeDiff(this.Code.get());
+    if (this.Config.isPresent()) visitor.preVisitDeepConfigDiff(this.Config.get());
   }
 
   public BlobDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -279,12 +261,16 @@ public class BlobDiff implements ProtoType {
   }
 
   public BlobDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Location = visitor.postVisitDeepListOfString(this.Location);
-    this.Status = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status);
-    this.Dataset = visitor.postVisitDeepDatasetDiff(this.Dataset);
-    this.Environment = visitor.postVisitDeepEnvironmentDiff(this.Environment);
-    this.Code = visitor.postVisitDeepCodeDiff(this.Code);
-    this.Config = visitor.postVisitDeepConfigDiff(this.Config);
+    if (this.Location.isPresent())
+      this.setLocation(visitor.postVisitDeepListOfString(this.Location.get()));
+    if (this.Status.isPresent())
+      this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status.get()));
+    if (this.Dataset.isPresent())
+      this.setDataset(visitor.postVisitDeepDatasetDiff(this.Dataset.get()));
+    if (this.Environment.isPresent())
+      this.setEnvironment(visitor.postVisitDeepEnvironmentDiff(this.Environment.get()));
+    if (this.Code.isPresent()) this.setCode(visitor.postVisitDeepCodeDiff(this.Code.get()));
+    if (this.Config.isPresent()) this.setConfig(visitor.postVisitDeepConfigDiff(this.Config.get()));
     return this.postVisitShallow(visitor);
   }
 }

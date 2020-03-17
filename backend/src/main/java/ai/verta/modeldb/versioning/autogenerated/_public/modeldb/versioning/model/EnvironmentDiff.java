@@ -12,39 +12,29 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class EnvironmentDiff implements ProtoType {
-  public PythonEnvironmentDiff Python;
-  public DockerEnvironmentDiff Docker;
-  public List<EnvironmentVariablesDiff> EnvironmentVariables;
-  public DiffStatusEnumDiffStatus CommandLineStatus;
-  public List<String> CommandLineA;
-  public List<String> CommandLineB;
+  public Optional<PythonEnvironmentDiff> Python;
+  public Optional<DockerEnvironmentDiff> Docker;
+  public Optional<List<EnvironmentVariablesDiff>> EnvironmentVariables;
+  public Optional<CommandLineEnvironmentDiff> CommandLine;
 
   public EnvironmentDiff() {
-    this.Python = null;
-    this.Docker = null;
-    this.EnvironmentVariables = null;
-    this.CommandLineStatus = null;
-    this.CommandLineA = null;
-    this.CommandLineB = null;
+    this.Python = Optional.empty();
+    this.Docker = Optional.empty();
+    this.EnvironmentVariables = Optional.empty();
+    this.CommandLine = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Python != null) {
+    if (this.Python.isPresent()) {
       return false;
     }
-    if (this.Docker != null) {
+    if (this.Docker.isPresent()) {
       return false;
     }
-    if (this.EnvironmentVariables != null) {
+    if (this.EnvironmentVariables.isPresent()) {
       return false;
     }
-    if (this.CommandLineStatus != null) {
-      return false;
-    }
-    if (this.CommandLineA != null) {
-      return false;
-    }
-    if (this.CommandLineB != null) {
+    if (this.CommandLine.isPresent()) {
       return false;
     }
     return true;
@@ -60,18 +50,18 @@ public class EnvironmentDiff implements ProtoType {
 
     {
       Function3<PythonEnvironmentDiff, PythonEnvironmentDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Python != null || other.Python != null) {
-        if (this.Python == null && other.Python != null) return false;
-        if (this.Python != null && other.Python == null) return false;
-        if (!f.apply(this.Python, other.Python)) return false;
+      if (this.Python.isPresent() || other.Python.isPresent()) {
+        if (!this.Python.isPresent()) return false;
+        if (other.Python.isPresent()) return false;
+        if (!f.apply(this.Python.get(), other.Python.get())) return false;
       }
     }
     {
       Function3<DockerEnvironmentDiff, DockerEnvironmentDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Docker != null || other.Docker != null) {
-        if (this.Docker == null && other.Docker != null) return false;
-        if (this.Docker != null && other.Docker == null) return false;
-        if (!f.apply(this.Docker, other.Docker)) return false;
+      if (this.Docker.isPresent() || other.Docker.isPresent()) {
+        if (!this.Docker.isPresent()) return false;
+        if (other.Docker.isPresent()) return false;
+        if (!f.apply(this.Docker.get(), other.Docker.get())) return false;
       }
     }
     {
@@ -87,55 +77,20 @@ public class EnvironmentDiff implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.EnvironmentVariables != null || other.EnvironmentVariables != null) {
-        if (this.EnvironmentVariables == null && other.EnvironmentVariables != null) return false;
-        if (this.EnvironmentVariables != null && other.EnvironmentVariables == null) return false;
-        if (!f.apply(this.EnvironmentVariables, other.EnvironmentVariables)) return false;
+      if (this.EnvironmentVariables.isPresent() || other.EnvironmentVariables.isPresent()) {
+        if (!this.EnvironmentVariables.isPresent()) return false;
+        if (other.EnvironmentVariables.isPresent()) return false;
+        if (!f.apply(this.EnvironmentVariables.get(), other.EnvironmentVariables.get()))
+          return false;
       }
     }
     {
-      Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
+      Function3<CommandLineEnvironmentDiff, CommandLineEnvironmentDiff, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.CommandLineStatus != null || other.CommandLineStatus != null) {
-        if (this.CommandLineStatus == null && other.CommandLineStatus != null) return false;
-        if (this.CommandLineStatus != null && other.CommandLineStatus == null) return false;
-        if (!f.apply(this.CommandLineStatus, other.CommandLineStatus)) return false;
-      }
-    }
-    {
-      Function3<List<String>, List<String>, Boolean> f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<String, String, Boolean> f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x != null)
-                  .collect(Collectors.toList())
-                  .isEmpty();
-      if (this.CommandLineA != null || other.CommandLineA != null) {
-        if (this.CommandLineA == null && other.CommandLineA != null) return false;
-        if (this.CommandLineA != null && other.CommandLineA == null) return false;
-        if (!f.apply(this.CommandLineA, other.CommandLineA)) return false;
-      }
-    }
-    {
-      Function3<List<String>, List<String>, Boolean> f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<String, String, Boolean> f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x != null)
-                  .collect(Collectors.toList())
-                  .isEmpty();
-      if (this.CommandLineB != null || other.CommandLineB != null) {
-        if (this.CommandLineB == null && other.CommandLineB != null) return false;
-        if (this.CommandLineB != null && other.CommandLineB == null) return false;
-        if (!f.apply(this.CommandLineB, other.CommandLineB)) return false;
+      if (this.CommandLine.isPresent() || other.CommandLine.isPresent()) {
+        if (!this.CommandLine.isPresent()) return false;
+        if (other.CommandLine.isPresent()) return false;
+        if (!f.apply(this.CommandLine.get(), other.CommandLine.get())) return false;
       }
     }
     return true;
@@ -143,42 +98,50 @@ public class EnvironmentDiff implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        this.Python,
-        this.Docker,
-        this.EnvironmentVariables,
-        this.CommandLineStatus,
-        this.CommandLineA,
-        this.CommandLineB);
+    return Objects.hash(this.Python, this.Docker, this.EnvironmentVariables, this.CommandLine);
   }
 
-  public EnvironmentDiff setPython(PythonEnvironmentDiff value) {
+  public EnvironmentDiff setPython(Optional<PythonEnvironmentDiff> value) {
     this.Python = value;
     return this;
   }
 
-  public EnvironmentDiff setDocker(DockerEnvironmentDiff value) {
+  public EnvironmentDiff setPython(PythonEnvironmentDiff value) {
+    if (value == null) this.Python = Optional.empty();
+    else this.Python = Optional.of(value);
+    return this;
+  }
+
+  public EnvironmentDiff setDocker(Optional<DockerEnvironmentDiff> value) {
     this.Docker = value;
     return this;
   }
 
-  public EnvironmentDiff setEnvironmentVariables(List<EnvironmentVariablesDiff> value) {
+  public EnvironmentDiff setDocker(DockerEnvironmentDiff value) {
+    if (value == null) this.Docker = Optional.empty();
+    else this.Docker = Optional.of(value);
+    return this;
+  }
+
+  public EnvironmentDiff setEnvironmentVariables(Optional<List<EnvironmentVariablesDiff>> value) {
     this.EnvironmentVariables = value;
     return this;
   }
 
-  public EnvironmentDiff setCommandLineStatus(DiffStatusEnumDiffStatus value) {
-    this.CommandLineStatus = value;
+  public EnvironmentDiff setEnvironmentVariables(List<EnvironmentVariablesDiff> value) {
+    if (value == null) this.EnvironmentVariables = Optional.empty();
+    else this.EnvironmentVariables = Optional.of(value);
     return this;
   }
 
-  public EnvironmentDiff setCommandLineA(List<String> value) {
-    this.CommandLineA = value;
+  public EnvironmentDiff setCommandLine(Optional<CommandLineEnvironmentDiff> value) {
+    this.CommandLine = value;
     return this;
   }
 
-  public EnvironmentDiff setCommandLineB(List<String> value) {
-    this.CommandLineB = value;
+  public EnvironmentDiff setCommandLine(CommandLineEnvironmentDiff value) {
+    if (value == null) this.CommandLine = Optional.empty();
+    else this.CommandLine = Optional.of(value);
     return this;
   }
 
@@ -207,19 +170,9 @@ public class EnvironmentDiff implements ProtoType {
       obj.EnvironmentVariables = Utils.removeEmpty(f.apply(blob));
     }
     {
-      Function<ai.verta.modeldb.versioning.EnvironmentDiff, DiffStatusEnumDiffStatus> f =
-          x -> DiffStatusEnumDiffStatus.fromProto(blob.getCommandLineStatus());
-      obj.CommandLineStatus = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<ai.verta.modeldb.versioning.EnvironmentDiff, List<String>> f =
-          x -> blob.getCommandLineAList();
-      obj.CommandLineA = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<ai.verta.modeldb.versioning.EnvironmentDiff, List<String>> f =
-          x -> blob.getCommandLineBList();
-      obj.CommandLineB = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.EnvironmentDiff, CommandLineEnvironmentDiff> f =
+          x -> CommandLineEnvironmentDiff.fromProto(blob.getCommandLine());
+      obj.CommandLine = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -227,69 +180,13 @@ public class EnvironmentDiff implements ProtoType {
   public ai.verta.modeldb.versioning.EnvironmentDiff.Builder toProto() {
     ai.verta.modeldb.versioning.EnvironmentDiff.Builder builder =
         ai.verta.modeldb.versioning.EnvironmentDiff.newBuilder();
-    {
-      if (this.Python != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder, Void> f =
-            x -> {
-              builder.setPython(this.Python.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Docker != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder, Void> f =
-            x -> {
-              builder.setDocker(this.Docker.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.EnvironmentVariables != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder, Void> f =
-            x -> {
-              builder.addAllEnvironmentVariables(
-                  this.EnvironmentVariables.stream()
-                      .map(y -> y.toProto().build())
-                      .collect(Collectors.toList()));
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.CommandLineStatus != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder, Void> f =
-            x -> {
-              builder.setCommandLineStatus(this.CommandLineStatus.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.CommandLineA != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder, Void> f =
-            x -> {
-              builder.addAllCommandLineA(this.CommandLineA);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.CommandLineB != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder, Void> f =
-            x -> {
-              builder.addAllCommandLineB(this.CommandLineB);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Python.ifPresent(x -> builder.setPython(x.toProto()));
+    this.Docker.ifPresent(x -> builder.setDocker(x.toProto()));
+    this.EnvironmentVariables.ifPresent(
+        x ->
+            builder.addAllEnvironmentVariables(
+                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
+    this.CommandLine.ifPresent(x -> builder.setCommandLine(x.toProto()));
     return builder;
   }
 
@@ -299,12 +196,12 @@ public class EnvironmentDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepPythonEnvironmentDiff(this.Python);
-    visitor.preVisitDeepDockerEnvironmentDiff(this.Docker);
-    visitor.preVisitDeepListOfEnvironmentVariablesDiff(this.EnvironmentVariables);
-    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.CommandLineStatus);
-    visitor.preVisitDeepListOfString(this.CommandLineA);
-    visitor.preVisitDeepListOfString(this.CommandLineB);
+    if (this.Python.isPresent()) visitor.preVisitDeepPythonEnvironmentDiff(this.Python.get());
+    if (this.Docker.isPresent()) visitor.preVisitDeepDockerEnvironmentDiff(this.Docker.get());
+    if (this.EnvironmentVariables.isPresent())
+      visitor.preVisitDeepListOfEnvironmentVariablesDiff(this.EnvironmentVariables.get());
+    if (this.CommandLine.isPresent())
+      visitor.preVisitDeepCommandLineEnvironmentDiff(this.CommandLine.get());
   }
 
   public EnvironmentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -312,13 +209,15 @@ public class EnvironmentDiff implements ProtoType {
   }
 
   public EnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Python = visitor.postVisitDeepPythonEnvironmentDiff(this.Python);
-    this.Docker = visitor.postVisitDeepDockerEnvironmentDiff(this.Docker);
-    this.EnvironmentVariables =
-        visitor.postVisitDeepListOfEnvironmentVariablesDiff(this.EnvironmentVariables);
-    this.CommandLineStatus = visitor.postVisitDeepDiffStatusEnumDiffStatus(this.CommandLineStatus);
-    this.CommandLineA = visitor.postVisitDeepListOfString(this.CommandLineA);
-    this.CommandLineB = visitor.postVisitDeepListOfString(this.CommandLineB);
+    if (this.Python.isPresent())
+      this.setPython(visitor.postVisitDeepPythonEnvironmentDiff(this.Python.get()));
+    if (this.Docker.isPresent())
+      this.setDocker(visitor.postVisitDeepDockerEnvironmentDiff(this.Docker.get()));
+    if (this.EnvironmentVariables.isPresent())
+      this.setEnvironmentVariables(
+          visitor.postVisitDeepListOfEnvironmentVariablesDiff(this.EnvironmentVariables.get()));
+    if (this.CommandLine.isPresent())
+      this.setCommandLine(visitor.postVisitDeepCommandLineEnvironmentDiff(this.CommandLine.get()));
     return this.postVisitShallow(visitor);
   }
 }

@@ -27,7 +27,7 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbGetHydratedExperimentsByProjectIdResponse (
   hydrated_experiments: Option[List[ModeldbHydratedExperiment]] = None,
-  total_records: Option[String] = None
+  total_records: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbGetHydratedExperimentsByProjectIdResponse.toJson(this)
 }
@@ -37,7 +37,7 @@ object ModeldbGetHydratedExperimentsByProjectIdResponse {
     new JObject(
       List[Option[JField]](
         obj.hydrated_experiments.map(x => JField("hydrated_experiments", ((x: List[ModeldbHydratedExperiment]) => JArray(x.map(((x: ModeldbHydratedExperiment) => ModeldbHydratedExperiment.toJson(x)))))(x))),
-        obj.total_records.map(x => JField("total_records", JString(x)))
+        obj.total_records.map(x => JField("total_records", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -52,7 +52,7 @@ object ModeldbGetHydratedExperimentsByProjectIdResponse {
         ModeldbGetHydratedExperimentsByProjectIdResponse(
           // TODO: handle required
           hydrated_experiments = fieldsMap.get("hydrated_experiments").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbHydratedExperiment.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          total_records = fieldsMap.get("total_records").map(JsonConverter.fromJsonString)
+          total_records = fieldsMap.get("total_records").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

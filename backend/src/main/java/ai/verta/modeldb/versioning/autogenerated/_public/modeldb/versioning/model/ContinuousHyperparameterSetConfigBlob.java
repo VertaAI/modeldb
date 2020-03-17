@@ -10,24 +10,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
-  public HyperparameterValuesConfigBlob IntervalBegin;
-  public HyperparameterValuesConfigBlob IntervalEnd;
-  public HyperparameterValuesConfigBlob IntervalStep;
+  public Optional<HyperparameterValuesConfigBlob> IntervalBegin;
+  public Optional<HyperparameterValuesConfigBlob> IntervalEnd;
+  public Optional<HyperparameterValuesConfigBlob> IntervalStep;
 
   public ContinuousHyperparameterSetConfigBlob() {
-    this.IntervalBegin = null;
-    this.IntervalEnd = null;
-    this.IntervalStep = null;
+    this.IntervalBegin = Optional.empty();
+    this.IntervalEnd = Optional.empty();
+    this.IntervalStep = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.IntervalBegin != null) {
+    if (this.IntervalBegin.isPresent()) {
       return false;
     }
-    if (this.IntervalEnd != null) {
+    if (this.IntervalEnd.isPresent()) {
       return false;
     }
-    if (this.IntervalStep != null) {
+    if (this.IntervalStep.isPresent()) {
       return false;
     }
     return true;
@@ -44,28 +44,28 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
     {
       Function3<HyperparameterValuesConfigBlob, HyperparameterValuesConfigBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.IntervalBegin != null || other.IntervalBegin != null) {
-        if (this.IntervalBegin == null && other.IntervalBegin != null) return false;
-        if (this.IntervalBegin != null && other.IntervalBegin == null) return false;
-        if (!f.apply(this.IntervalBegin, other.IntervalBegin)) return false;
+      if (this.IntervalBegin.isPresent() || other.IntervalBegin.isPresent()) {
+        if (!this.IntervalBegin.isPresent()) return false;
+        if (other.IntervalBegin.isPresent()) return false;
+        if (!f.apply(this.IntervalBegin.get(), other.IntervalBegin.get())) return false;
       }
     }
     {
       Function3<HyperparameterValuesConfigBlob, HyperparameterValuesConfigBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.IntervalEnd != null || other.IntervalEnd != null) {
-        if (this.IntervalEnd == null && other.IntervalEnd != null) return false;
-        if (this.IntervalEnd != null && other.IntervalEnd == null) return false;
-        if (!f.apply(this.IntervalEnd, other.IntervalEnd)) return false;
+      if (this.IntervalEnd.isPresent() || other.IntervalEnd.isPresent()) {
+        if (!this.IntervalEnd.isPresent()) return false;
+        if (other.IntervalEnd.isPresent()) return false;
+        if (!f.apply(this.IntervalEnd.get(), other.IntervalEnd.get())) return false;
       }
     }
     {
       Function3<HyperparameterValuesConfigBlob, HyperparameterValuesConfigBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.IntervalStep != null || other.IntervalStep != null) {
-        if (this.IntervalStep == null && other.IntervalStep != null) return false;
-        if (this.IntervalStep != null && other.IntervalStep == null) return false;
-        if (!f.apply(this.IntervalStep, other.IntervalStep)) return false;
+      if (this.IntervalStep.isPresent() || other.IntervalStep.isPresent()) {
+        if (!this.IntervalStep.isPresent()) return false;
+        if (other.IntervalStep.isPresent()) return false;
+        if (!f.apply(this.IntervalStep.get(), other.IntervalStep.get())) return false;
       }
     }
     return true;
@@ -77,20 +77,41 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
   }
 
   public ContinuousHyperparameterSetConfigBlob setIntervalBegin(
-      HyperparameterValuesConfigBlob value) {
+      Optional<HyperparameterValuesConfigBlob> value) {
     this.IntervalBegin = value;
+    return this;
+  }
+
+  public ContinuousHyperparameterSetConfigBlob setIntervalBegin(
+      HyperparameterValuesConfigBlob value) {
+    if (value == null) this.IntervalBegin = Optional.empty();
+    else this.IntervalBegin = Optional.of(value);
+    return this;
+  }
+
+  public ContinuousHyperparameterSetConfigBlob setIntervalEnd(
+      Optional<HyperparameterValuesConfigBlob> value) {
+    this.IntervalEnd = value;
     return this;
   }
 
   public ContinuousHyperparameterSetConfigBlob setIntervalEnd(
       HyperparameterValuesConfigBlob value) {
-    this.IntervalEnd = value;
+    if (value == null) this.IntervalEnd = Optional.empty();
+    else this.IntervalEnd = Optional.of(value);
+    return this;
+  }
+
+  public ContinuousHyperparameterSetConfigBlob setIntervalStep(
+      Optional<HyperparameterValuesConfigBlob> value) {
+    this.IntervalStep = value;
     return this;
   }
 
   public ContinuousHyperparameterSetConfigBlob setIntervalStep(
       HyperparameterValuesConfigBlob value) {
-    this.IntervalStep = value;
+    if (value == null) this.IntervalStep = Optional.empty();
+    else this.IntervalStep = Optional.of(value);
     return this;
   }
 
@@ -128,39 +149,9 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
   public ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder toProto() {
     ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder builder =
         ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.newBuilder();
-    {
-      if (this.IntervalBegin != null) {
-        Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
-            f =
-                x -> {
-                  builder.setIntervalBegin(this.IntervalBegin.toProto());
-                  return null;
-                };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.IntervalEnd != null) {
-        Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
-            f =
-                x -> {
-                  builder.setIntervalEnd(this.IntervalEnd.toProto());
-                  return null;
-                };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.IntervalStep != null) {
-        Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
-            f =
-                x -> {
-                  builder.setIntervalStep(this.IntervalStep.toProto());
-                  return null;
-                };
-        f.apply(builder);
-      }
-    }
+    this.IntervalBegin.ifPresent(x -> builder.setIntervalBegin(x.toProto()));
+    this.IntervalEnd.ifPresent(x -> builder.setIntervalEnd(x.toProto()));
+    this.IntervalStep.ifPresent(x -> builder.setIntervalStep(x.toProto()));
     return builder;
   }
 
@@ -170,9 +161,12 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalBegin);
-    visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalEnd);
-    visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalStep);
+    if (this.IntervalBegin.isPresent())
+      visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalBegin.get());
+    if (this.IntervalEnd.isPresent())
+      visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalEnd.get());
+    if (this.IntervalStep.isPresent())
+      visitor.preVisitDeepHyperparameterValuesConfigBlob(this.IntervalStep.get());
   }
 
   public ContinuousHyperparameterSetConfigBlob postVisitShallow(Visitor visitor)
@@ -182,9 +176,15 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
 
   public ContinuousHyperparameterSetConfigBlob postVisitDeep(Visitor visitor)
       throws ModelDBException {
-    this.IntervalBegin = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalBegin);
-    this.IntervalEnd = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalEnd);
-    this.IntervalStep = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalStep);
+    if (this.IntervalBegin.isPresent())
+      this.setIntervalBegin(
+          visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalBegin.get()));
+    if (this.IntervalEnd.isPresent())
+      this.setIntervalEnd(
+          visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalEnd.get()));
+    if (this.IntervalStep.isPresent())
+      this.setIntervalStep(
+          visitor.postVisitDeepHyperparameterValuesConfigBlob(this.IntervalStep.get()));
     return this.postVisitShallow(visitor);
   }
 }

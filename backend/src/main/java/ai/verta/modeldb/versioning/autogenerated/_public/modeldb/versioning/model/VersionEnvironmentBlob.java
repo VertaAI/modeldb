@@ -10,29 +10,29 @@ import java.util.*;
 import java.util.function.Function;
 
 public class VersionEnvironmentBlob implements ProtoType {
-  public Integer Major;
-  public Integer Minor;
-  public Integer Patch;
-  public String Suffix;
+  public Optional<Integer> Major;
+  public Optional<Integer> Minor;
+  public Optional<Integer> Patch;
+  public Optional<String> Suffix;
 
   public VersionEnvironmentBlob() {
-    this.Major = 0;
-    this.Minor = 0;
-    this.Patch = 0;
-    this.Suffix = null;
+    this.Major = Optional.empty();
+    this.Minor = Optional.empty();
+    this.Patch = Optional.empty();
+    this.Suffix = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Major != null) {
+    if (this.Major.isPresent()) {
       return false;
     }
-    if (this.Minor != null) {
+    if (this.Minor.isPresent()) {
       return false;
     }
-    if (this.Patch != null) {
+    if (this.Patch.isPresent()) {
       return false;
     }
-    if (this.Suffix != null) {
+    if (this.Suffix.isPresent()) {
       return false;
     }
     return true;
@@ -48,34 +48,34 @@ public class VersionEnvironmentBlob implements ProtoType {
 
     {
       Function3<Integer, Integer, Boolean> f = (x, y) -> x == y;
-      if (this.Major != null || other.Major != null) {
-        if (this.Major == null && other.Major != null) return false;
-        if (this.Major != null && other.Major == null) return false;
-        if (!f.apply(this.Major, other.Major)) return false;
+      if (this.Major.isPresent() || other.Major.isPresent()) {
+        if (!this.Major.isPresent()) return false;
+        if (other.Major.isPresent()) return false;
+        if (!f.apply(this.Major.get(), other.Major.get())) return false;
       }
     }
     {
       Function3<Integer, Integer, Boolean> f = (x, y) -> x == y;
-      if (this.Minor != null || other.Minor != null) {
-        if (this.Minor == null && other.Minor != null) return false;
-        if (this.Minor != null && other.Minor == null) return false;
-        if (!f.apply(this.Minor, other.Minor)) return false;
+      if (this.Minor.isPresent() || other.Minor.isPresent()) {
+        if (!this.Minor.isPresent()) return false;
+        if (other.Minor.isPresent()) return false;
+        if (!f.apply(this.Minor.get(), other.Minor.get())) return false;
       }
     }
     {
       Function3<Integer, Integer, Boolean> f = (x, y) -> x == y;
-      if (this.Patch != null || other.Patch != null) {
-        if (this.Patch == null && other.Patch != null) return false;
-        if (this.Patch != null && other.Patch == null) return false;
-        if (!f.apply(this.Patch, other.Patch)) return false;
+      if (this.Patch.isPresent() || other.Patch.isPresent()) {
+        if (!this.Patch.isPresent()) return false;
+        if (other.Patch.isPresent()) return false;
+        if (!f.apply(this.Patch.get(), other.Patch.get())) return false;
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Suffix != null || other.Suffix != null) {
-        if (this.Suffix == null && other.Suffix != null) return false;
-        if (this.Suffix != null && other.Suffix == null) return false;
-        if (!f.apply(this.Suffix, other.Suffix)) return false;
+      if (this.Suffix.isPresent() || other.Suffix.isPresent()) {
+        if (!this.Suffix.isPresent()) return false;
+        if (other.Suffix.isPresent()) return false;
+        if (!f.apply(this.Suffix.get(), other.Suffix.get())) return false;
       }
     }
     return true;
@@ -86,23 +86,47 @@ public class VersionEnvironmentBlob implements ProtoType {
     return Objects.hash(this.Major, this.Minor, this.Patch, this.Suffix);
   }
 
-  public VersionEnvironmentBlob setMajor(Integer value) {
+  public VersionEnvironmentBlob setMajor(Optional<Integer> value) {
     this.Major = value;
     return this;
   }
 
-  public VersionEnvironmentBlob setMinor(Integer value) {
+  public VersionEnvironmentBlob setMajor(Integer value) {
+    if (value == null) this.Major = Optional.empty();
+    else this.Major = Optional.of(value);
+    return this;
+  }
+
+  public VersionEnvironmentBlob setMinor(Optional<Integer> value) {
     this.Minor = value;
     return this;
   }
 
-  public VersionEnvironmentBlob setPatch(Integer value) {
+  public VersionEnvironmentBlob setMinor(Integer value) {
+    if (value == null) this.Minor = Optional.empty();
+    else this.Minor = Optional.of(value);
+    return this;
+  }
+
+  public VersionEnvironmentBlob setPatch(Optional<Integer> value) {
     this.Patch = value;
     return this;
   }
 
-  public VersionEnvironmentBlob setSuffix(String value) {
+  public VersionEnvironmentBlob setPatch(Integer value) {
+    if (value == null) this.Patch = Optional.empty();
+    else this.Patch = Optional.of(value);
+    return this;
+  }
+
+  public VersionEnvironmentBlob setSuffix(Optional<String> value) {
     this.Suffix = value;
+    return this;
+  }
+
+  public VersionEnvironmentBlob setSuffix(String value) {
+    if (value == null) this.Suffix = Optional.empty();
+    else this.Suffix = Optional.of(value);
     return this;
   }
 
@@ -139,46 +163,10 @@ public class VersionEnvironmentBlob implements ProtoType {
   public ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder toProto() {
     ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder builder =
         ai.verta.modeldb.versioning.VersionEnvironmentBlob.newBuilder();
-    {
-      if (this.Major != null) {
-        Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setMajor(this.Major);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Minor != null) {
-        Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setMinor(this.Minor);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Patch != null) {
-        Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setPatch(this.Patch);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Suffix != null) {
-        Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setSuffix(this.Suffix);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Major.ifPresent(x -> builder.setMajor(x));
+    this.Minor.ifPresent(x -> builder.setMinor(x));
+    this.Patch.ifPresent(x -> builder.setPatch(x));
+    this.Suffix.ifPresent(x -> builder.setSuffix(x));
     return builder;
   }
 
@@ -188,10 +176,10 @@ public class VersionEnvironmentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepInteger(this.Major);
-    visitor.preVisitDeepInteger(this.Minor);
-    visitor.preVisitDeepInteger(this.Patch);
-    visitor.preVisitDeepString(this.Suffix);
+    if (this.Major.isPresent()) visitor.preVisitDeepInteger(this.Major.get());
+    if (this.Minor.isPresent()) visitor.preVisitDeepInteger(this.Minor.get());
+    if (this.Patch.isPresent()) visitor.preVisitDeepInteger(this.Patch.get());
+    if (this.Suffix.isPresent()) visitor.preVisitDeepString(this.Suffix.get());
   }
 
   public VersionEnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -199,10 +187,10 @@ public class VersionEnvironmentBlob implements ProtoType {
   }
 
   public VersionEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Major = visitor.postVisitDeepInteger(this.Major);
-    this.Minor = visitor.postVisitDeepInteger(this.Minor);
-    this.Patch = visitor.postVisitDeepInteger(this.Patch);
-    this.Suffix = visitor.postVisitDeepString(this.Suffix);
+    if (this.Major.isPresent()) this.setMajor(visitor.postVisitDeepInteger(this.Major.get()));
+    if (this.Minor.isPresent()) this.setMinor(visitor.postVisitDeepInteger(this.Minor.get()));
+    if (this.Patch.isPresent()) this.setPatch(visitor.postVisitDeepInteger(this.Patch.get()));
+    if (this.Suffix.isPresent()) this.setSuffix(visitor.postVisitDeepString(this.Suffix.get()));
     return this.postVisitShallow(visitor);
   }
 }

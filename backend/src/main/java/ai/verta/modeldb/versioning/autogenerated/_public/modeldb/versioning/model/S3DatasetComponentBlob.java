@@ -10,14 +10,14 @@ import java.util.*;
 import java.util.function.Function;
 
 public class S3DatasetComponentBlob implements ProtoType {
-  public PathDatasetComponentBlob Path;
+  public Optional<PathDatasetComponentBlob> Path;
 
   public S3DatasetComponentBlob() {
-    this.Path = null;
+    this.Path = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Path != null) {
+    if (this.Path.isPresent()) {
       return false;
     }
     return true;
@@ -34,10 +34,10 @@ public class S3DatasetComponentBlob implements ProtoType {
     {
       Function3<PathDatasetComponentBlob, PathDatasetComponentBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Path != null || other.Path != null) {
-        if (this.Path == null && other.Path != null) return false;
-        if (this.Path != null && other.Path == null) return false;
-        if (!f.apply(this.Path, other.Path)) return false;
+      if (this.Path.isPresent() || other.Path.isPresent()) {
+        if (!this.Path.isPresent()) return false;
+        if (other.Path.isPresent()) return false;
+        if (!f.apply(this.Path.get(), other.Path.get())) return false;
       }
     }
     return true;
@@ -48,8 +48,14 @@ public class S3DatasetComponentBlob implements ProtoType {
     return Objects.hash(this.Path);
   }
 
-  public S3DatasetComponentBlob setPath(PathDatasetComponentBlob value) {
+  public S3DatasetComponentBlob setPath(Optional<PathDatasetComponentBlob> value) {
     this.Path = value;
+    return this;
+  }
+
+  public S3DatasetComponentBlob setPath(PathDatasetComponentBlob value) {
+    if (value == null) this.Path = Optional.empty();
+    else this.Path = Optional.of(value);
     return this;
   }
 
@@ -71,16 +77,7 @@ public class S3DatasetComponentBlob implements ProtoType {
   public ai.verta.modeldb.versioning.S3DatasetComponentBlob.Builder toProto() {
     ai.verta.modeldb.versioning.S3DatasetComponentBlob.Builder builder =
         ai.verta.modeldb.versioning.S3DatasetComponentBlob.newBuilder();
-    {
-      if (this.Path != null) {
-        Function<ai.verta.modeldb.versioning.S3DatasetComponentBlob.Builder, Void> f =
-            x -> {
-              builder.setPath(this.Path.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Path.ifPresent(x -> builder.setPath(x.toProto()));
     return builder;
   }
 
@@ -90,7 +87,7 @@ public class S3DatasetComponentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepPathDatasetComponentBlob(this.Path);
+    if (this.Path.isPresent()) visitor.preVisitDeepPathDatasetComponentBlob(this.Path.get());
   }
 
   public S3DatasetComponentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -98,7 +95,8 @@ public class S3DatasetComponentBlob implements ProtoType {
   }
 
   public S3DatasetComponentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Path = visitor.postVisitDeepPathDatasetComponentBlob(this.Path);
+    if (this.Path.isPresent())
+      this.setPath(visitor.postVisitDeepPathDatasetComponentBlob(this.Path.get()));
     return this.postVisitShallow(visitor);
   }
 }

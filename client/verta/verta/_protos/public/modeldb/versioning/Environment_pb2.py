@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.versioning',
   syntax='proto3',
   serialized_options=b'P\001ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning',
-  serialized_pb=b'\n2protos/public/modeldb/versioning/Environment.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a,protos/public/modeldb/versioning/Enums.proto\"\x94\x02\n\x0f\x45nvironmentBlob\x12\x44\n\x06python\x18\x01 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.PythonEnvironmentBlobH\x00\x12\x44\n\x06\x64ocker\x18\x02 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.DockerEnvironmentBlobH\x00\x12T\n\x15\x65nvironment_variables\x18\x03 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.EnvironmentVariablesBlob\x12\x14\n\x0c\x63ommand_line\x18\x04 \x03(\tB\t\n\x07\x63ontent\"7\n\x18\x45nvironmentVariablesBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"U\n\x16VersionEnvironmentBlob\x12\r\n\x05major\x18\x01 \x01(\x05\x12\r\n\x05minor\x18\x02 \x01(\x05\x12\r\n\x05patch\x18\x03 \x01(\x05\x12\x0e\n\x06suffix\x18\x04 \x01(\t\"\x8d\x01\n PythonRequirementEnvironmentBlob\x12\x0f\n\x07library\x18\x01 \x01(\t\x12\x12\n\nconstraint\x18\x02 \x01(\t\x12\x44\n\x07version\x18\x03 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentBlob\"\x86\x02\n\x15PythonEnvironmentBlob\x12\x44\n\x07version\x18\x01 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentBlob\x12S\n\x0crequirements\x18\x02 \x03(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob\x12R\n\x0b\x63onstraints\x18\x03 \x03(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob\"E\n\x15\x44ockerEnvironmentBlob\x12\x12\n\nrepository\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x12\x0b\n\x03sha\x18\x03 \x01(\t\"\x83\x03\n\x0f\x45nvironmentDiff\x12\x44\n\x06python\x18\x01 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.PythonEnvironmentDiffH\x00\x12\x44\n\x06\x64ocker\x18\x02 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.DockerEnvironmentDiffH\x00\x12T\n\x15\x65nvironment_variables\x18\x03 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.EnvironmentVariablesDiff\x12S\n\x13\x63ommand_line_status\x18\x04 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x16\n\x0e\x63ommand_line_a\x18\x05 \x03(\t\x12\x16\n\x0e\x63ommand_line_b\x18\x06 \x03(\tB\t\n\x07\x63ontent\"\x92\x01\n\x18\x45nvironmentVariablesDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07value_a\x18\x03 \x01(\t\x12\x0f\n\x07value_b\x18\x04 \x01(\t\"\xfe\x01\n PythonRequirementEnvironmentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12H\n\x01\x41\x18\x02 \x01(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob\x12H\n\x01\x42\x18\x03 \x01(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob\"\xa0\x03\n\x15PythonEnvironmentDiff\x12N\n\x0eversion_status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x46\n\tversion_a\x18\x02 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentBlob\x12\x46\n\tversion_b\x18\x03 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentBlob\x12S\n\x0crequirements\x18\x04 \x03(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff\x12R\n\x0b\x63onstraints\x18\x05 \x03(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff\"\xdd\x01\n\x15\x44ockerEnvironmentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12=\n\x01\x41\x18\x02 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.DockerEnvironmentBlob\x12=\n\x01\x42\x18\x03 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.DockerEnvironmentBlobBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
+  serialized_pb=b'\n2protos/public/modeldb/versioning/Environment.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a,protos/public/modeldb/versioning/Enums.proto\"\x94\x02\n\x0f\x45nvironmentBlob\x12\x44\n\x06python\x18\x01 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.PythonEnvironmentBlobH\x00\x12\x44\n\x06\x64ocker\x18\x02 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.DockerEnvironmentBlobH\x00\x12T\n\x15\x65nvironment_variables\x18\x03 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.EnvironmentVariablesBlob\x12\x14\n\x0c\x63ommand_line\x18\x04 \x03(\tB\t\n\x07\x63ontent\"7\n\x18\x45nvironmentVariablesBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"U\n\x16VersionEnvironmentBlob\x12\r\n\x05major\x18\x01 \x01(\x05\x12\r\n\x05minor\x18\x02 \x01(\x05\x12\r\n\x05patch\x18\x03 \x01(\x05\x12\x0e\n\x06suffix\x18\x04 \x01(\t\"\x8d\x01\n PythonRequirementEnvironmentBlob\x12\x0f\n\x07library\x18\x01 \x01(\t\x12\x12\n\nconstraint\x18\x02 \x01(\t\x12\x44\n\x07version\x18\x03 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentBlob\"\x86\x02\n\x15PythonEnvironmentBlob\x12\x44\n\x07version\x18\x01 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentBlob\x12S\n\x0crequirements\x18\x02 \x03(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob\x12R\n\x0b\x63onstraints\x18\x03 \x03(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob\"E\n\x15\x44ockerEnvironmentBlob\x12\x12\n\nrepository\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x12\x0b\n\x03sha\x18\x03 \x01(\t\"z\n\x1a\x43ommandLineEnvironmentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\t\n\x01\x41\x18\x02 \x03(\t\x12\t\n\x01\x42\x18\x03 \x03(\t\"\xcd\x02\n\x0f\x45nvironmentDiff\x12\x44\n\x06python\x18\x01 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.PythonEnvironmentDiffH\x00\x12\x44\n\x06\x64ocker\x18\x02 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.DockerEnvironmentDiffH\x00\x12T\n\x15\x65nvironment_variables\x18\x03 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.EnvironmentVariablesDiff\x12M\n\x0c\x63ommand_line\x18\x04 \x01(\x0b\x32\x37.ai.verta.modeldb.versioning.CommandLineEnvironmentDiffB\t\n\x07\x63ontent\"\x92\x01\n\x18\x45nvironmentVariablesDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07value_a\x18\x03 \x01(\t\x12\x0f\n\x07value_b\x18\x04 \x01(\t\"\xfe\x01\n PythonRequirementEnvironmentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12H\n\x01\x41\x18\x02 \x01(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob\x12H\n\x01\x42\x18\x03 \x01(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob\"\xe0\x01\n\x16VersionEnvironmentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12>\n\x01\x41\x18\x02 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentBlob\x12>\n\x01\x42\x18\x03 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentBlob\"\x86\x02\n\x15PythonEnvironmentDiff\x12\x44\n\x07version\x18\x01 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.VersionEnvironmentDiff\x12S\n\x0crequirements\x18\x02 \x03(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff\x12R\n\x0b\x63onstraints\x18\x03 \x03(\x0b\x32=.ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff\"\xdd\x01\n\x15\x44ockerEnvironmentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12=\n\x01\x41\x18\x02 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.DockerEnvironmentBlob\x12=\n\x01\x42\x18\x03 \x01(\x0b\x32\x32.ai.verta.modeldb.versioning.DockerEnvironmentBlobBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
   ,
   dependencies=[protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2.DESCRIPTOR,])
 
@@ -306,6 +306,51 @@ _DOCKERENVIRONMENTBLOB = _descriptor.Descriptor(
 )
 
 
+_COMMANDLINEENVIRONMENTDIFF = _descriptor.Descriptor(
+  name='CommandLineEnvironmentDiff',
+  full_name='ai.verta.modeldb.versioning.CommandLineEnvironmentDiff',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='status', full_name='ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.status', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='A', full_name='ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.A', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='B', full_name='ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.B', index=2,
+      number=3, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1032,
+  serialized_end=1154,
+)
+
+
 _ENVIRONMENTDIFF = _descriptor.Descriptor(
   name='EnvironmentDiff',
   full_name='ai.verta.modeldb.versioning.EnvironmentDiff',
@@ -335,23 +380,9 @@ _ENVIRONMENTDIFF = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='command_line_status', full_name='ai.verta.modeldb.versioning.EnvironmentDiff.command_line_status', index=3,
-      number=4, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='command_line_a', full_name='ai.verta.modeldb.versioning.EnvironmentDiff.command_line_a', index=4,
-      number=5, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='command_line_b', full_name='ai.verta.modeldb.versioning.EnvironmentDiff.command_line_b', index=5,
-      number=6, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
+      name='command_line', full_name='ai.verta.modeldb.versioning.EnvironmentDiff.command_line', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -370,8 +401,8 @@ _ENVIRONMENTDIFF = _descriptor.Descriptor(
       name='content', full_name='ai.verta.modeldb.versioning.EnvironmentDiff.content',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1033,
-  serialized_end=1420,
+  serialized_start=1157,
+  serialized_end=1490,
 )
 
 
@@ -422,8 +453,8 @@ _ENVIRONMENTVARIABLESDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1423,
-  serialized_end=1569,
+  serialized_start=1493,
+  serialized_end=1639,
 )
 
 
@@ -467,8 +498,53 @@ _PYTHONREQUIREMENTENVIRONMENTDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1572,
-  serialized_end=1826,
+  serialized_start=1642,
+  serialized_end=1896,
+)
+
+
+_VERSIONENVIRONMENTDIFF = _descriptor.Descriptor(
+  name='VersionEnvironmentDiff',
+  full_name='ai.verta.modeldb.versioning.VersionEnvironmentDiff',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='status', full_name='ai.verta.modeldb.versioning.VersionEnvironmentDiff.status', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='A', full_name='ai.verta.modeldb.versioning.VersionEnvironmentDiff.A', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='B', full_name='ai.verta.modeldb.versioning.VersionEnvironmentDiff.B', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1899,
+  serialized_end=2123,
 )
 
 
@@ -480,36 +556,22 @@ _PYTHONENVIRONMENTDIFF = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='version_status', full_name='ai.verta.modeldb.versioning.PythonEnvironmentDiff.version_status', index=0,
-      number=1, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='version_a', full_name='ai.verta.modeldb.versioning.PythonEnvironmentDiff.version_a', index=1,
-      number=2, type=11, cpp_type=10, label=1,
+      name='version', full_name='ai.verta.modeldb.versioning.PythonEnvironmentDiff.version', index=0,
+      number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='version_b', full_name='ai.verta.modeldb.versioning.PythonEnvironmentDiff.version_b', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='requirements', full_name='ai.verta.modeldb.versioning.PythonEnvironmentDiff.requirements', index=3,
-      number=4, type=11, cpp_type=10, label=3,
+      name='requirements', full_name='ai.verta.modeldb.versioning.PythonEnvironmentDiff.requirements', index=1,
+      number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='constraints', full_name='ai.verta.modeldb.versioning.PythonEnvironmentDiff.constraints', index=4,
-      number=5, type=11, cpp_type=10, label=3,
+      name='constraints', full_name='ai.verta.modeldb.versioning.PythonEnvironmentDiff.constraints', index=2,
+      number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -526,8 +588,8 @@ _PYTHONENVIRONMENTDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1829,
-  serialized_end=2245,
+  serialized_start=2126,
+  serialized_end=2388,
 )
 
 
@@ -571,8 +633,8 @@ _DOCKERENVIRONMENTDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2248,
-  serialized_end=2469,
+  serialized_start=2391,
+  serialized_end=2612,
 )
 
 _ENVIRONMENTBLOB.fields_by_name['python'].message_type = _PYTHONENVIRONMENTBLOB
@@ -588,10 +650,11 @@ _PYTHONREQUIREMENTENVIRONMENTBLOB.fields_by_name['version'].message_type = _VERS
 _PYTHONENVIRONMENTBLOB.fields_by_name['version'].message_type = _VERSIONENVIRONMENTBLOB
 _PYTHONENVIRONMENTBLOB.fields_by_name['requirements'].message_type = _PYTHONREQUIREMENTENVIRONMENTBLOB
 _PYTHONENVIRONMENTBLOB.fields_by_name['constraints'].message_type = _PYTHONREQUIREMENTENVIRONMENTBLOB
+_COMMANDLINEENVIRONMENTDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
 _ENVIRONMENTDIFF.fields_by_name['python'].message_type = _PYTHONENVIRONMENTDIFF
 _ENVIRONMENTDIFF.fields_by_name['docker'].message_type = _DOCKERENVIRONMENTDIFF
 _ENVIRONMENTDIFF.fields_by_name['environment_variables'].message_type = _ENVIRONMENTVARIABLESDIFF
-_ENVIRONMENTDIFF.fields_by_name['command_line_status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
+_ENVIRONMENTDIFF.fields_by_name['command_line'].message_type = _COMMANDLINEENVIRONMENTDIFF
 _ENVIRONMENTDIFF.oneofs_by_name['content'].fields.append(
   _ENVIRONMENTDIFF.fields_by_name['python'])
 _ENVIRONMENTDIFF.fields_by_name['python'].containing_oneof = _ENVIRONMENTDIFF.oneofs_by_name['content']
@@ -602,9 +665,10 @@ _ENVIRONMENTVARIABLESDIFF.fields_by_name['status'].enum_type = protos_dot_public
 _PYTHONREQUIREMENTENVIRONMENTDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
 _PYTHONREQUIREMENTENVIRONMENTDIFF.fields_by_name['A'].message_type = _PYTHONREQUIREMENTENVIRONMENTBLOB
 _PYTHONREQUIREMENTENVIRONMENTDIFF.fields_by_name['B'].message_type = _PYTHONREQUIREMENTENVIRONMENTBLOB
-_PYTHONENVIRONMENTDIFF.fields_by_name['version_status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
-_PYTHONENVIRONMENTDIFF.fields_by_name['version_a'].message_type = _VERSIONENVIRONMENTBLOB
-_PYTHONENVIRONMENTDIFF.fields_by_name['version_b'].message_type = _VERSIONENVIRONMENTBLOB
+_VERSIONENVIRONMENTDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
+_VERSIONENVIRONMENTDIFF.fields_by_name['A'].message_type = _VERSIONENVIRONMENTBLOB
+_VERSIONENVIRONMENTDIFF.fields_by_name['B'].message_type = _VERSIONENVIRONMENTBLOB
+_PYTHONENVIRONMENTDIFF.fields_by_name['version'].message_type = _VERSIONENVIRONMENTDIFF
 _PYTHONENVIRONMENTDIFF.fields_by_name['requirements'].message_type = _PYTHONREQUIREMENTENVIRONMENTDIFF
 _PYTHONENVIRONMENTDIFF.fields_by_name['constraints'].message_type = _PYTHONREQUIREMENTENVIRONMENTDIFF
 _DOCKERENVIRONMENTDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
@@ -616,9 +680,11 @@ DESCRIPTOR.message_types_by_name['VersionEnvironmentBlob'] = _VERSIONENVIRONMENT
 DESCRIPTOR.message_types_by_name['PythonRequirementEnvironmentBlob'] = _PYTHONREQUIREMENTENVIRONMENTBLOB
 DESCRIPTOR.message_types_by_name['PythonEnvironmentBlob'] = _PYTHONENVIRONMENTBLOB
 DESCRIPTOR.message_types_by_name['DockerEnvironmentBlob'] = _DOCKERENVIRONMENTBLOB
+DESCRIPTOR.message_types_by_name['CommandLineEnvironmentDiff'] = _COMMANDLINEENVIRONMENTDIFF
 DESCRIPTOR.message_types_by_name['EnvironmentDiff'] = _ENVIRONMENTDIFF
 DESCRIPTOR.message_types_by_name['EnvironmentVariablesDiff'] = _ENVIRONMENTVARIABLESDIFF
 DESCRIPTOR.message_types_by_name['PythonRequirementEnvironmentDiff'] = _PYTHONREQUIREMENTENVIRONMENTDIFF
+DESCRIPTOR.message_types_by_name['VersionEnvironmentDiff'] = _VERSIONENVIRONMENTDIFF
 DESCRIPTOR.message_types_by_name['PythonEnvironmentDiff'] = _PYTHONENVIRONMENTDIFF
 DESCRIPTOR.message_types_by_name['DockerEnvironmentDiff'] = _DOCKERENVIRONMENTDIFF
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -665,6 +731,13 @@ DockerEnvironmentBlob = _reflection.GeneratedProtocolMessageType('DockerEnvironm
   })
 _sym_db.RegisterMessage(DockerEnvironmentBlob)
 
+CommandLineEnvironmentDiff = _reflection.GeneratedProtocolMessageType('CommandLineEnvironmentDiff', (_message.Message,), {
+  'DESCRIPTOR' : _COMMANDLINEENVIRONMENTDIFF,
+  '__module__' : 'protos.public.modeldb.versioning.Environment_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.CommandLineEnvironmentDiff)
+  })
+_sym_db.RegisterMessage(CommandLineEnvironmentDiff)
+
 EnvironmentDiff = _reflection.GeneratedProtocolMessageType('EnvironmentDiff', (_message.Message,), {
   'DESCRIPTOR' : _ENVIRONMENTDIFF,
   '__module__' : 'protos.public.modeldb.versioning.Environment_pb2'
@@ -685,6 +758,13 @@ PythonRequirementEnvironmentDiff = _reflection.GeneratedProtocolMessageType('Pyt
   # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff)
   })
 _sym_db.RegisterMessage(PythonRequirementEnvironmentDiff)
+
+VersionEnvironmentDiff = _reflection.GeneratedProtocolMessageType('VersionEnvironmentDiff', (_message.Message,), {
+  'DESCRIPTOR' : _VERSIONENVIRONMENTDIFF,
+  '__module__' : 'protos.public.modeldb.versioning.Environment_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.VersionEnvironmentDiff)
+  })
+_sym_db.RegisterMessage(VersionEnvironmentDiff)
 
 PythonEnvironmentDiff = _reflection.GeneratedProtocolMessageType('PythonEnvironmentDiff', (_message.Message,), {
   'DESCRIPTOR' : _PYTHONENVIRONMENTDIFF,

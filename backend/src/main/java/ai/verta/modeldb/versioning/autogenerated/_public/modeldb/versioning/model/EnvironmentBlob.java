@@ -12,29 +12,29 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class EnvironmentBlob implements ProtoType {
-  public PythonEnvironmentBlob Python;
-  public DockerEnvironmentBlob Docker;
-  public List<EnvironmentVariablesBlob> EnvironmentVariables;
-  public List<String> CommandLine;
+  public Optional<PythonEnvironmentBlob> Python;
+  public Optional<DockerEnvironmentBlob> Docker;
+  public Optional<List<EnvironmentVariablesBlob>> EnvironmentVariables;
+  public Optional<List<String>> CommandLine;
 
   public EnvironmentBlob() {
-    this.Python = null;
-    this.Docker = null;
-    this.EnvironmentVariables = null;
-    this.CommandLine = null;
+    this.Python = Optional.empty();
+    this.Docker = Optional.empty();
+    this.EnvironmentVariables = Optional.empty();
+    this.CommandLine = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Python != null) {
+    if (this.Python.isPresent()) {
       return false;
     }
-    if (this.Docker != null) {
+    if (this.Docker.isPresent()) {
       return false;
     }
-    if (this.EnvironmentVariables != null) {
+    if (this.EnvironmentVariables.isPresent()) {
       return false;
     }
-    if (this.CommandLine != null) {
+    if (this.CommandLine.isPresent()) {
       return false;
     }
     return true;
@@ -50,18 +50,18 @@ public class EnvironmentBlob implements ProtoType {
 
     {
       Function3<PythonEnvironmentBlob, PythonEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Python != null || other.Python != null) {
-        if (this.Python == null && other.Python != null) return false;
-        if (this.Python != null && other.Python == null) return false;
-        if (!f.apply(this.Python, other.Python)) return false;
+      if (this.Python.isPresent() || other.Python.isPresent()) {
+        if (!this.Python.isPresent()) return false;
+        if (other.Python.isPresent()) return false;
+        if (!f.apply(this.Python.get(), other.Python.get())) return false;
       }
     }
     {
       Function3<DockerEnvironmentBlob, DockerEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Docker != null || other.Docker != null) {
-        if (this.Docker == null && other.Docker != null) return false;
-        if (this.Docker != null && other.Docker == null) return false;
-        if (!f.apply(this.Docker, other.Docker)) return false;
+      if (this.Docker.isPresent() || other.Docker.isPresent()) {
+        if (!this.Docker.isPresent()) return false;
+        if (other.Docker.isPresent()) return false;
+        if (!f.apply(this.Docker.get(), other.Docker.get())) return false;
       }
     }
     {
@@ -77,10 +77,11 @@ public class EnvironmentBlob implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.EnvironmentVariables != null || other.EnvironmentVariables != null) {
-        if (this.EnvironmentVariables == null && other.EnvironmentVariables != null) return false;
-        if (this.EnvironmentVariables != null && other.EnvironmentVariables == null) return false;
-        if (!f.apply(this.EnvironmentVariables, other.EnvironmentVariables)) return false;
+      if (this.EnvironmentVariables.isPresent() || other.EnvironmentVariables.isPresent()) {
+        if (!this.EnvironmentVariables.isPresent()) return false;
+        if (other.EnvironmentVariables.isPresent()) return false;
+        if (!f.apply(this.EnvironmentVariables.get(), other.EnvironmentVariables.get()))
+          return false;
       }
     }
     {
@@ -95,10 +96,10 @@ public class EnvironmentBlob implements ProtoType {
                   .filter(x -> x != null)
                   .collect(Collectors.toList())
                   .isEmpty();
-      if (this.CommandLine != null || other.CommandLine != null) {
-        if (this.CommandLine == null && other.CommandLine != null) return false;
-        if (this.CommandLine != null && other.CommandLine == null) return false;
-        if (!f.apply(this.CommandLine, other.CommandLine)) return false;
+      if (this.CommandLine.isPresent() || other.CommandLine.isPresent()) {
+        if (!this.CommandLine.isPresent()) return false;
+        if (other.CommandLine.isPresent()) return false;
+        if (!f.apply(this.CommandLine.get(), other.CommandLine.get())) return false;
       }
     }
     return true;
@@ -109,23 +110,47 @@ public class EnvironmentBlob implements ProtoType {
     return Objects.hash(this.Python, this.Docker, this.EnvironmentVariables, this.CommandLine);
   }
 
-  public EnvironmentBlob setPython(PythonEnvironmentBlob value) {
+  public EnvironmentBlob setPython(Optional<PythonEnvironmentBlob> value) {
     this.Python = value;
     return this;
   }
 
-  public EnvironmentBlob setDocker(DockerEnvironmentBlob value) {
+  public EnvironmentBlob setPython(PythonEnvironmentBlob value) {
+    if (value == null) this.Python = Optional.empty();
+    else this.Python = Optional.of(value);
+    return this;
+  }
+
+  public EnvironmentBlob setDocker(Optional<DockerEnvironmentBlob> value) {
     this.Docker = value;
     return this;
   }
 
-  public EnvironmentBlob setEnvironmentVariables(List<EnvironmentVariablesBlob> value) {
+  public EnvironmentBlob setDocker(DockerEnvironmentBlob value) {
+    if (value == null) this.Docker = Optional.empty();
+    else this.Docker = Optional.of(value);
+    return this;
+  }
+
+  public EnvironmentBlob setEnvironmentVariables(Optional<List<EnvironmentVariablesBlob>> value) {
     this.EnvironmentVariables = value;
     return this;
   }
 
-  public EnvironmentBlob setCommandLine(List<String> value) {
+  public EnvironmentBlob setEnvironmentVariables(List<EnvironmentVariablesBlob> value) {
+    if (value == null) this.EnvironmentVariables = Optional.empty();
+    else this.EnvironmentVariables = Optional.of(value);
+    return this;
+  }
+
+  public EnvironmentBlob setCommandLine(Optional<List<String>> value) {
     this.CommandLine = value;
+    return this;
+  }
+
+  public EnvironmentBlob setCommandLine(List<String> value) {
+    if (value == null) this.CommandLine = Optional.empty();
+    else this.CommandLine = Optional.of(value);
     return this;
   }
 
@@ -164,49 +189,13 @@ public class EnvironmentBlob implements ProtoType {
   public ai.verta.modeldb.versioning.EnvironmentBlob.Builder toProto() {
     ai.verta.modeldb.versioning.EnvironmentBlob.Builder builder =
         ai.verta.modeldb.versioning.EnvironmentBlob.newBuilder();
-    {
-      if (this.Python != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setPython(this.Python.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Docker != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.setDocker(this.Docker.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.EnvironmentVariables != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.addAllEnvironmentVariables(
-                  this.EnvironmentVariables.stream()
-                      .map(y -> y.toProto().build())
-                      .collect(Collectors.toList()));
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.CommandLine != null) {
-        Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder, Void> f =
-            x -> {
-              builder.addAllCommandLine(this.CommandLine);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Python.ifPresent(x -> builder.setPython(x.toProto()));
+    this.Docker.ifPresent(x -> builder.setDocker(x.toProto()));
+    this.EnvironmentVariables.ifPresent(
+        x ->
+            builder.addAllEnvironmentVariables(
+                x.stream().map(y -> y.toProto().build()).collect(Collectors.toList())));
+    this.CommandLine.ifPresent(x -> builder.addAllCommandLine(x));
     return builder;
   }
 
@@ -216,10 +205,11 @@ public class EnvironmentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepPythonEnvironmentBlob(this.Python);
-    visitor.preVisitDeepDockerEnvironmentBlob(this.Docker);
-    visitor.preVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariables);
-    visitor.preVisitDeepListOfString(this.CommandLine);
+    if (this.Python.isPresent()) visitor.preVisitDeepPythonEnvironmentBlob(this.Python.get());
+    if (this.Docker.isPresent()) visitor.preVisitDeepDockerEnvironmentBlob(this.Docker.get());
+    if (this.EnvironmentVariables.isPresent())
+      visitor.preVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariables.get());
+    if (this.CommandLine.isPresent()) visitor.preVisitDeepListOfString(this.CommandLine.get());
   }
 
   public EnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -227,11 +217,15 @@ public class EnvironmentBlob implements ProtoType {
   }
 
   public EnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Python = visitor.postVisitDeepPythonEnvironmentBlob(this.Python);
-    this.Docker = visitor.postVisitDeepDockerEnvironmentBlob(this.Docker);
-    this.EnvironmentVariables =
-        visitor.postVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariables);
-    this.CommandLine = visitor.postVisitDeepListOfString(this.CommandLine);
+    if (this.Python.isPresent())
+      this.setPython(visitor.postVisitDeepPythonEnvironmentBlob(this.Python.get()));
+    if (this.Docker.isPresent())
+      this.setDocker(visitor.postVisitDeepDockerEnvironmentBlob(this.Docker.get()));
+    if (this.EnvironmentVariables.isPresent())
+      this.setEnvironmentVariables(
+          visitor.postVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariables.get()));
+    if (this.CommandLine.isPresent())
+      this.setCommandLine(visitor.postVisitDeepListOfString(this.CommandLine.get()));
     return this.postVisitShallow(visitor);
   }
 }

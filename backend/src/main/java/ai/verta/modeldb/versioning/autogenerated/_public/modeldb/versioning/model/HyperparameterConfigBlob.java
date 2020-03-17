@@ -10,19 +10,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterConfigBlob implements ProtoType {
-  public String Name;
-  public HyperparameterValuesConfigBlob Value;
+  public Optional<String> Name;
+  public Optional<HyperparameterValuesConfigBlob> Value;
 
   public HyperparameterConfigBlob() {
-    this.Name = null;
-    this.Value = null;
+    this.Name = Optional.empty();
+    this.Value = Optional.empty();
   }
 
   public Boolean isEmpty() {
-    if (this.Name != null) {
+    if (this.Name.isPresent()) {
       return false;
     }
-    if (this.Value != null) {
+    if (this.Value.isPresent()) {
       return false;
     }
     return true;
@@ -38,19 +38,19 @@ public class HyperparameterConfigBlob implements ProtoType {
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Name != null || other.Name != null) {
-        if (this.Name == null && other.Name != null) return false;
-        if (this.Name != null && other.Name == null) return false;
-        if (!f.apply(this.Name, other.Name)) return false;
+      if (this.Name.isPresent() || other.Name.isPresent()) {
+        if (!this.Name.isPresent()) return false;
+        if (other.Name.isPresent()) return false;
+        if (!f.apply(this.Name.get(), other.Name.get())) return false;
       }
     }
     {
       Function3<HyperparameterValuesConfigBlob, HyperparameterValuesConfigBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Value != null || other.Value != null) {
-        if (this.Value == null && other.Value != null) return false;
-        if (this.Value != null && other.Value == null) return false;
-        if (!f.apply(this.Value, other.Value)) return false;
+      if (this.Value.isPresent() || other.Value.isPresent()) {
+        if (!this.Value.isPresent()) return false;
+        if (other.Value.isPresent()) return false;
+        if (!f.apply(this.Value.get(), other.Value.get())) return false;
       }
     }
     return true;
@@ -61,13 +61,25 @@ public class HyperparameterConfigBlob implements ProtoType {
     return Objects.hash(this.Name, this.Value);
   }
 
-  public HyperparameterConfigBlob setName(String value) {
+  public HyperparameterConfigBlob setName(Optional<String> value) {
     this.Name = value;
     return this;
   }
 
-  public HyperparameterConfigBlob setValue(HyperparameterValuesConfigBlob value) {
+  public HyperparameterConfigBlob setName(String value) {
+    if (value == null) this.Name = Optional.empty();
+    else this.Name = Optional.of(value);
+    return this;
+  }
+
+  public HyperparameterConfigBlob setValue(Optional<HyperparameterValuesConfigBlob> value) {
     this.Value = value;
+    return this;
+  }
+
+  public HyperparameterConfigBlob setValue(HyperparameterValuesConfigBlob value) {
+    if (value == null) this.Value = Optional.empty();
+    else this.Value = Optional.of(value);
     return this;
   }
 
@@ -94,26 +106,8 @@ public class HyperparameterConfigBlob implements ProtoType {
   public ai.verta.modeldb.versioning.HyperparameterConfigBlob.Builder toProto() {
     ai.verta.modeldb.versioning.HyperparameterConfigBlob.Builder builder =
         ai.verta.modeldb.versioning.HyperparameterConfigBlob.newBuilder();
-    {
-      if (this.Name != null) {
-        Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob.Builder, Void> f =
-            x -> {
-              builder.setName(this.Name);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Value != null) {
-        Function<ai.verta.modeldb.versioning.HyperparameterConfigBlob.Builder, Void> f =
-            x -> {
-              builder.setValue(this.Value.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
+    this.Name.ifPresent(x -> builder.setName(x));
+    this.Value.ifPresent(x -> builder.setValue(x.toProto()));
     return builder;
   }
 
@@ -123,8 +117,9 @@ public class HyperparameterConfigBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepString(this.Name);
-    visitor.preVisitDeepHyperparameterValuesConfigBlob(this.Value);
+    if (this.Name.isPresent()) visitor.preVisitDeepString(this.Name.get());
+    if (this.Value.isPresent())
+      visitor.preVisitDeepHyperparameterValuesConfigBlob(this.Value.get());
   }
 
   public HyperparameterConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -132,8 +127,9 @@ public class HyperparameterConfigBlob implements ProtoType {
   }
 
   public HyperparameterConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.Name = visitor.postVisitDeepString(this.Name);
-    this.Value = visitor.postVisitDeepHyperparameterValuesConfigBlob(this.Value);
+    if (this.Name.isPresent()) this.setName(visitor.postVisitDeepString(this.Name.get()));
+    if (this.Value.isPresent())
+      this.setValue(visitor.postVisitDeepHyperparameterValuesConfigBlob(this.Value.get()));
     return this.postVisitShallow(visitor);
   }
 }
