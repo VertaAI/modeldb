@@ -3,7 +3,7 @@ import * as React from 'react';
 import {
   IDockerEnvironmentBlob,
   makeDockerImage,
-} from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
 import {
   PageHeader,

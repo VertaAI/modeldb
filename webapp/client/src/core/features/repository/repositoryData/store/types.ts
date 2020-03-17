@@ -4,7 +4,7 @@ import {
   Branch,
   CommitPointer,
   ICommitWithData,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import { ICommunication } from 'core/shared/utils/redux/communication';
 
 export interface IRepositoryDataState {

@@ -1,10 +1,10 @@
 import { UnavailableEntityApiErrorType } from 'core/services/shared/UnavailableEntityApiError';
 import { AppError } from 'core/shared/models/Error';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   ICommit,
   IHydratedCommit,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import * as Actions from 'utils/redux/actions';
 
 export const loadCommit = Actions.makeThunkApiRequest(

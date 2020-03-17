@@ -3,7 +3,7 @@ import * as React from 'react';
 import {
   IVersionEnvironmentBlob,
   versionEnvironmentToString,
-} from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 
 interface ILocalProps {
   pythonVersion: IVersionEnvironmentBlob;

@@ -3,7 +3,7 @@ import {
   ICodeBlob,
   INotebookCodeBlob,
   makeGitCodeBlobRemoteRepoUrl,
-} from 'core/shared/models/Repository/Blob/CodeBlob';
+} from 'core/shared/models/Versioning/Blob/CodeBlob';
 
 import { convertPathDatasetBlob } from './DatasetBlob';
 

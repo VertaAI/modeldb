@@ -9,7 +9,7 @@ import cn from 'classnames';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { IPathDatasetComponentBlob } from 'core/shared/models/Repository/Blob/DatasetBlob';
+import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import {
   TableHeaderRow,

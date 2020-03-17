@@ -1,16 +1,16 @@
 import { createAction } from 'typesafe-actions';
 
 import { AppError } from 'core/shared/models/Error';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IDataRequest,
   ICommitWithData,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import {
   CommitTag,
   Branch,
   CommitPointer,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import * as Actions from 'utils/redux/actions';
 
 export const loadCommitWithData = Actions.makeThunkApiRequest(

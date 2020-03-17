@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { IPathDatasetBlobDiff } from 'core/shared/models/Repository/Blob/CodeBlob';
-import { IPathDatasetComponentBlob } from 'core/shared/models/Repository/Blob/DatasetBlob';
+import { IPathDatasetBlobDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
+import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { formatBytes } from 'core/shared/utils/mapperConverters';
 import matchBy from 'core/shared/utils/matchBy';
 

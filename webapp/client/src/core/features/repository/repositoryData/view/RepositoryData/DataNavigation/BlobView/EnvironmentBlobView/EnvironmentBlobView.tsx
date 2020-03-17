@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IEnvironmentBlob } from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+import { IEnvironmentBlob } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import matchBy from 'core/shared/utils/matchBy';
 import AnsiView from 'core/shared/view/elements/AnsiView/AnsiView';
 import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';

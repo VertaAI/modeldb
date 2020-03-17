@@ -9,7 +9,7 @@ import PresetFormik from 'core/shared/view/formComponents/presetComponents/Prese
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspace } from 'store/workspaces';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { actions } from '../../store';
 import { selectCommunications } from '../../store/selectors';
 import styles from './RepositoryCreationForm.module.css';

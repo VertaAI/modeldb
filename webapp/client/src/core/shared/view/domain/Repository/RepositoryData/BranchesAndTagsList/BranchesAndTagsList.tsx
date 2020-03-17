@@ -12,7 +12,7 @@ import {
   CommitTag,
   RepositoryBranches,
   CommitPointer,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import matchType from 'core/shared/utils/matchType';
 import ClickOutsideListener from 'core/shared/view/elements/ClickOutsideListener/ClickOutsideListener';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';

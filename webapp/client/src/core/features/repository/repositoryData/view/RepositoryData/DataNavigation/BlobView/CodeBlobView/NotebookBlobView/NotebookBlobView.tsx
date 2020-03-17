@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { INotebookCodeBlob } from 'core/shared/models/Repository/Blob/CodeBlob';
+import { INotebookCodeBlob } from 'core/shared/models/Versioning/Blob/CodeBlob';
 import { PageHeader } from 'core/shared/view/elements/PageComponents';
 
 import PathDatasetComponents from '../../shared/PathDatasetComponents/PathDatasetComponents';

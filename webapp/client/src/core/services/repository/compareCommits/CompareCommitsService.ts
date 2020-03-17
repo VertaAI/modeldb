@@ -1,8 +1,8 @@
 import { bind } from 'decko';
 
-import { Diff } from 'core/shared/models/Repository/Blob/Diff';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { SHA } from 'core/shared/models/Repository/RepositoryData';
+import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { SHA } from 'core/shared/models/Versioning/RepositoryData';
 
 import { BaseDataService } from '../../BaseDataService';
 import { convertServerDiffsToClient } from '../../serverModel/Versioning/CompareCommits/converters';

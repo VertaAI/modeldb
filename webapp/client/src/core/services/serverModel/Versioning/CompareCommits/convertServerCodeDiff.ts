@@ -2,8 +2,8 @@ import {
   IGitCodeDiff,
   ICodeBlobDiff,
   INotebookCodeDiff,
-} from 'core/shared/models/Repository/Blob/CodeBlob';
-import { Diff, DiffType } from 'core/shared/models/Repository/Blob/Diff';
+} from 'core/shared/models/Versioning/Blob/CodeBlob';
+import { Diff, DiffType } from 'core/shared/models/Versioning/Blob/Diff';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import {
   convertServerGitBlob,

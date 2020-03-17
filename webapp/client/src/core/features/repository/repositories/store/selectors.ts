@@ -1,4 +1,4 @@
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import { IApplicationState } from 'store/store';
 

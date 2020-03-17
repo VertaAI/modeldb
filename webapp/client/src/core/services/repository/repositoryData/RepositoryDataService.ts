@@ -7,8 +7,8 @@ import {
   DataWithPagination,
   IPaginationSettings,
 } from 'core/shared/models/Pagination';
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   ICommit,
   IHydratedCommit,
@@ -20,7 +20,7 @@ import {
   IRepositoryData,
   emptyFolder,
   ICommitWithData,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import { convertClientPaginationToNamespacedServerPagination } from 'core/services/serverModel/Pagination/converters';
 import UsersService from 'core/services/users/UsersService';

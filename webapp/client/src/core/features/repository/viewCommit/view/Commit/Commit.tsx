@@ -7,12 +7,12 @@ import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataCom
 import { CompareCommits } from 'core/features/repository/compareCommits';
 import { getRedirectPathToRepositoryDataPage } from 'core/features/repository/repositoryData';
 import ShortenedSHA from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   ICommit,
   CommitPointerHelpers,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import Button from 'core/shared/view/elements/Button/Button';
 import { IApplicationState } from 'store/store';

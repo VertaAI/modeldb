@@ -3,7 +3,7 @@ import { Paper } from '@material-ui/core';
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { IPathDatasetComponentBlob } from 'core/shared/models/Repository/Blob/DatasetBlob';
+import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import {
   TableHeaderRow,
   Table as TablePlugin,

@@ -1,7 +1,7 @@
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
 import * as R from 'ramda';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IFullDataLocationComponents,
   IFolderElement,
@@ -10,7 +10,7 @@ import {
   CommitPointerHelpers,
   Branch,
   defaultCommitPointer,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import routes, { GetRouteParams } from 'routes';
 
 export type Options = Omit<IFullDataLocationComponents, 'type'> & {

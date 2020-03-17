@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IFolderElement,
   IFullDataLocationComponents,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import matchType from 'core/shared/utils/matchType';
 
 import * as RouteHeplers from '../../../routeHelpers';

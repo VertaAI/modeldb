@@ -1,6 +1,6 @@
 import { AppError } from 'core/shared/models/Error';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { SHA } from 'core/shared/models/Repository/RepositoryData';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { SHA } from 'core/shared/models/Versioning/RepositoryData';
 import * as Actions from 'utils/redux/actions';
 
 export const loadCommitsDiff = Actions.makeThunkApiRequest(

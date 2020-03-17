@@ -3,7 +3,7 @@ import * as React from 'react';
 import {
   IPythonEnvironmentBlob,
   versionEnvironmentToString,
-} from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import PythonVersion from 'core/shared/view/domain/Repository/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
 import {
   PageHeader,

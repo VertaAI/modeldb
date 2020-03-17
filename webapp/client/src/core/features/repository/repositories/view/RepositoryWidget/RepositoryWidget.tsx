@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import routes from 'routes';
 
 import RepositoryLabelsManager from './RepositoryLabelsManager/RepositoryLabelsManager';

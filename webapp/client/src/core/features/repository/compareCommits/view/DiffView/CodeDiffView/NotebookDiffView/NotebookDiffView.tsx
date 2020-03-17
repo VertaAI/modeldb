@@ -4,7 +4,7 @@ import {
   INotebookCodeDiff,
   getPathDatasetBlobDiffFromNotebook,
   getGitCodeDiffFromNotebook,
-} from 'core/shared/models/Repository/Blob/CodeBlob';
+} from 'core/shared/models/Versioning/Blob/CodeBlob';
 
 import GitDiffView from '../GitDiffView/GitDiffView';
 import styles from './NotebookDiffView.module.css';

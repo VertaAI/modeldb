@@ -1,7 +1,7 @@
 import { UnavailableEntityApiErrorType } from 'core/services/shared/UnavailableEntityApiError';
 import { AppError } from 'core/shared/models/Error';
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import * as Actions from 'utils/redux/actions';
 
 import { ICommitPointersCommits, IComparedCommitPointersInfo } from './types';

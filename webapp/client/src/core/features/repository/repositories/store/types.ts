@@ -6,7 +6,7 @@ import {
 
 import { UnavailableEntityApiErrorType } from 'core/services/shared/UnavailableEntityApiError';
 import { IPagination } from 'core/shared/models/Pagination';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { EntityAlreadyExistsErrorType } from 'core/services/shared/EntityAlreadyExistError';
 
 export interface IRepositoriesState {

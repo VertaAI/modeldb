@@ -12,9 +12,9 @@ import {
 } from 'core/shared/models/HyperParameters';
 import { IMetric, Metric } from 'core/shared/models/Metrics';
 import { IObservation, Observation } from 'core/shared/models/Observation';
-import { DataLocation } from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { ICommit } from 'core/shared/models/Repository/RepositoryData';
+import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
 
 import { ShortExperiment } from './Experiment';
 

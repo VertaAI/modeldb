@@ -1,5 +1,5 @@
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { defaultBranch } from 'core/shared/models/Repository/RepositoryData';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { defaultBranch } from 'core/shared/models/Versioning/RepositoryData';
 import routes from 'routes';
 
 import { ICommitHistorySettings } from '../store/types';

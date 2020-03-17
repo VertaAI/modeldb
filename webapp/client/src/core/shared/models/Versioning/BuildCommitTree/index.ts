@@ -1,12 +1,12 @@
 import * as R from 'ramda';
 
-import { IBlob } from 'core/shared/models/Repository/Blob/Blob';
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
+import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
 import {
   IFolder,
   ISubFolderElement,
   IBlobFolderElement,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 
 type IOutputData = IOutputBlob<any> | IOutputFolder<any, any>;
 interface IOutputBlob<Name extends string> {

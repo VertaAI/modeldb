@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IHydratedCommit,
   IFullDataLocationComponents,
   IRepositoryData,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import matchBy from 'core/shared/utils/matchBy';
 
 import BlobView from './BlobView/BlobView';

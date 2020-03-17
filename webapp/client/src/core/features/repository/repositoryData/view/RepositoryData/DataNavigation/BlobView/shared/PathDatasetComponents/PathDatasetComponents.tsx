@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IPathDatasetComponentBlob } from 'core/shared/models/Repository/Blob/DatasetBlob';
+import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { formatBytes } from 'core/shared/utils/mapperConverters';
 
 import styles from './PathDatasetComponents.module.css';

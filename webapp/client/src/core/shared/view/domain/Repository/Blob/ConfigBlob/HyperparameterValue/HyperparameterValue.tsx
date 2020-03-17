@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IConfigHyperparameterValue } from 'core/shared/models/Repository/Blob/ConfigBlob';
+import { IConfigHyperparameterValue } from 'core/shared/models/Versioning/Blob/ConfigBlob';
 
 import styles from './HyperparameterValue.module.css';
 

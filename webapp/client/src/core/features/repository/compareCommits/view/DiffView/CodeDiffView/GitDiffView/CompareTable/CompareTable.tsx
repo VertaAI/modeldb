@@ -9,8 +9,8 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 import * as React from 'react';
 
-import { IGitCodeBlob } from 'core/shared/models/Repository/Blob/CodeBlob';
-import { ComparedCommitType } from 'core/shared/models/Repository/Blob/Diff';
+import { IGitCodeBlob } from 'core/shared/models/Versioning/Blob/CodeBlob';
+import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
 
 interface ILocalProps {
   diffInfo: Record<keyof IGitCodeBlob['data'], boolean>;

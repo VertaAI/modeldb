@@ -1,9 +1,9 @@
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
 import {
   IFolder,
   ISubFolderElement,
   IFolderElement,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import { S3DatasetBlob } from 'core/shared/utils/tests/mocks/Repository/blobMocks';
 
 import * as B from '../index';

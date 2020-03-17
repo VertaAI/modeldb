@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IGitCodeBlob } from 'core/shared/models/Repository/Blob/CodeBlob';
+import { IGitCodeBlob } from 'core/shared/models/Versioning/Blob/CodeBlob';
 import * as Github from 'core/shared/utils/github/github';
 import matchBy from 'core/shared/utils/matchBy';
 import ExternalLink from 'core/shared/view/elements/ExternalLink/ExternalLink';

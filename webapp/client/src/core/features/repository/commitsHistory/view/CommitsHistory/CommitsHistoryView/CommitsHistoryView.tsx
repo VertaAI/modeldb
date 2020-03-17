@@ -4,8 +4,8 @@ import { useHistory } from 'react-router';
 import groupCommitsByDatesInDescOrder from 'core/features/repository/commitsHistory/helpers/groupCommitsByDatesInDescOrder';
 import { ICommitHistorySettings } from 'core/features/repository/commitsHistory/store/types';
 import { DataWithPagination } from 'core/shared/models/Pagination';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { IHydratedCommit } from 'core/shared/models/Repository/RepositoryData';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
 
 import Breadcrumbs from './Breadcrumbs/Breadcrumbs';

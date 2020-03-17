@@ -1,6 +1,6 @@
 import { ActionType, createReducer } from 'typesafe-actions';
 
-import { defaultBranch } from 'core/shared/models/Repository/RepositoryData';
+import { defaultBranch } from 'core/shared/models/Versioning/RepositoryData';
 
 import * as actions from '../actions';
 import { IRepositoryDataState } from '../types';

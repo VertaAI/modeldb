@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IDatasetBlobDiff } from 'core/shared/models/Repository/Blob/DatasetBlob';
+import { IDatasetBlobDiff } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import matchBy from 'core/shared/utils/matchBy';
 
 import DatasetDiffTable from './DatasetDiffTable/DatasetDiffTable';

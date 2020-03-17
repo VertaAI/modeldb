@@ -7,11 +7,11 @@ import {
   selectors,
   actions,
 } from 'core/features/repository/repositoryData/store';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   CommitTag,
   Branch,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import { IApplicationState } from 'store/store';
 
 const mapStateToProps = (state: IApplicationState) => {

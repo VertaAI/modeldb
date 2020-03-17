@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import * as React from 'react';
 
-import { IConfigHyperparameter } from 'core/shared/models/Repository/Blob/ConfigBlob';
+import { IConfigHyperparameter } from 'core/shared/models/Versioning/Blob/ConfigBlob';
 
 import HyperparameterValue from '../HyperparameterValue/HyperparameterValue';
 import styles from './Hyperparameter.module.css';

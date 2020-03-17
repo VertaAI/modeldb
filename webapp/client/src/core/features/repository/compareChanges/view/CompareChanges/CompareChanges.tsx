@@ -7,13 +7,13 @@ import routes from 'routes';
 
 import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
 import { CompareCommits } from 'core/features/repository/compareCommits';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   CommitPointer,
   CommitTag,
   RepositoryBranches,
   CommitPointerHelpers,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import BranchesAndTagsList from 'core/shared/view/domain/Repository/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
 import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';

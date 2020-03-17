@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import { actions, selectors } from 'core/features/repository/repositories';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import DeleteFAI from 'core/shared/view/elements/DeleteFAI/DeleteFAI';
 import { toastCommunicationError } from 'core/shared/view/elements/Notification/Notification';

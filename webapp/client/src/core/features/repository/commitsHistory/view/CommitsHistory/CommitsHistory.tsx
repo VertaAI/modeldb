@@ -4,7 +4,7 @@ import { useLocation } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { IApplicationState } from 'store/store';
 
 import { paginationPageSize } from '../../constants';

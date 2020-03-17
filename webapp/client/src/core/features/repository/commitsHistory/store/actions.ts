@@ -3,12 +3,12 @@ import {
   DataWithPagination,
   IPaginationSettings,
 } from 'core/shared/models/Pagination';
-import { DataLocation } from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IHydratedCommit,
   Branch,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import * as Actions from 'utils/redux/actions';
 
 export const loadCommits = Actions.makeThunkApiRequest(

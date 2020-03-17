@@ -1,12 +1,12 @@
 import * as React from 'react';
 
 import { shortenSHA } from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
-import { IConfigBlobDiff } from 'core/shared/models/Repository/Blob/ConfigBlob';
+import { IConfigBlobDiff } from 'core/shared/models/Versioning/Blob/ConfigBlob';
 import {
   DiffType,
   ComparedCommitType,
   getDiffBlobsData,
-} from 'core/shared/models/Repository/Blob/Diff';
+} from 'core/shared/models/Versioning/Blob/Diff';
 import HyperparameterItem from 'core/shared/view/domain/Repository/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
 import HyperparameterSetItem from 'core/shared/view/domain/Repository/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
 

@@ -3,7 +3,7 @@ import React from 'react';
 import {
   IDatasetBlob,
   IPathDatasetComponentBlob,
-} from 'core/shared/models/Repository/Blob/DatasetBlob';
+} from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import matchType from 'core/shared/utils/matchType';
 

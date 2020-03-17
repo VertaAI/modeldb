@@ -1,7 +1,7 @@
 import { bind } from 'decko';
 import * as React from 'react';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import PagesTabs from 'core/shared/view/pages/PagesTabs/PagesTabs';
 import {
   AuthorizedLayout,

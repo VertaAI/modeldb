@@ -8,9 +8,9 @@ import {
   selectors,
 } from 'core/features/repository/compareCommits/store';
 import ShortenedSHA from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
-import * as DataLocationHelpers from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { SHA } from 'core/shared/models/Repository/RepositoryData';
+import * as DataLocationHelpers from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { SHA } from 'core/shared/models/Versioning/RepositoryData';
 import { PageCard } from 'core/shared/view/elements/PageComponents';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
 import { IApplicationState } from 'store/store';

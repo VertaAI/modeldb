@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { IFullDataLocationComponents } from 'core/shared/models/Repository/RepositoryData';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IFullDataLocationComponents } from 'core/shared/models/Versioning/RepositoryData';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
 import * as RouteHelpers from '../../routeHelpers';

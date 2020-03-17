@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Diff } from 'core/shared/models/Repository/Blob/Diff';
-import * as DataLocationHelpers from 'core/shared/models/Repository/DataLocation';
+import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
+import * as DataLocationHelpers from 'core/shared/models/Versioning/DataLocation';
 import matchBy from 'core/shared/utils/matchBy';
 
 import { IComparedCommitsInfo } from '../types';

@@ -3,7 +3,7 @@ import {
   IFolder,
   ISubFolderElement,
   ICommit,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 
 export const convertServerFolderToClient = (serverFolder: any): IFolder => {
   return {

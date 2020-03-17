@@ -7,9 +7,9 @@ import {
   selectors,
   actions,
 } from 'core/features/repository/repositoryData/store';
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { CommitPointer } from 'core/shared/models/Repository/RepositoryData';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { CommitPointer } from 'core/shared/models/Versioning/RepositoryData';
 import BranchesAndTagsList from 'core/shared/view/domain/Repository/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
 import { IApplicationState } from 'store/store';
 

@@ -3,7 +3,7 @@ import * as React from 'react';
 import {
   IPythonRequirementEnvironment,
   versionEnvironmentToString,
-} from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 
 interface ILocalProps {
   pythonRequirementEnvironment: IPythonRequirementEnvironment;

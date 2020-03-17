@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { IDatasetBlob } from 'core/shared/models/Repository/Blob/DatasetBlob';
-import { DiffType } from 'core/shared/models/Repository/Blob/Diff';
+import { IDatasetBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
+import { DiffType } from 'core/shared/models/Versioning/Blob/Diff';
 import { getObjsPropsDiff } from 'core/shared/utils/collection';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import matchType from 'core/shared/utils/matchType';

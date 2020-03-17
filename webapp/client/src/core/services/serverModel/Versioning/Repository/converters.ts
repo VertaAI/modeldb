@@ -1,4 +1,4 @@
-import { IRepository, Label } from 'core/shared/models/Repository/Repository';
+import { IRepository, Label } from 'core/shared/models/Versioning/Repository';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
 import { convertServerShortWorkspaceToClient } from 'services/serverModel/Workspace/converters';
 

@@ -4,9 +4,9 @@ import { Switch, Route } from 'react-router';
 import routes, { GetRouteParams } from 'routes';
 
 import RepositoryDataService from 'core/services/repository/repositoryData/RepositoryDataService';
-import * as B from 'core/shared/models/Repository/BuildCommitTree';
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import * as B from 'core/shared/models/Versioning/BuildCommitTree';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   CommitTag,
   IHydratedCommit,
@@ -17,7 +17,7 @@ import {
   defaultCommitPointer,
   defaultBranch,
   ICommitWithData,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import { flushAllPromisesFor } from 'core/shared/utils/tests/integrations/flushAllPromisesFor';
 import { makeMockedService } from 'core/shared/utils/tests/integrations/mockServiceMethod';
 import { findByText } from 'core/shared/utils/tests/react/helpers';

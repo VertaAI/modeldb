@@ -1,10 +1,10 @@
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IFullDataLocationComponents,
   CommitPointerHelpers,
   defaultCommitPointer,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import routes, { GetRouteParams } from 'routes';
 import { repositories } from 'utils/tests/mocks/models/repositoriesMocks';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';

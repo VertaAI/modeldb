@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { CommitPointer } from 'core/shared/models/Repository/RepositoryData';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { CommitPointer } from 'core/shared/models/Versioning/RepositoryData';
 import Button from 'core/shared/view/elements/Button/Button';
 import routes from 'routes';
 

@@ -2,7 +2,7 @@ import {
   IPathDatasetComponentBlob,
   IS3DatasetComponentBlob,
   IPathDatasetBlob,
-} from 'core/shared/models/Repository/Blob/DatasetBlob';
+} from 'core/shared/models/Versioning/Blob/DatasetBlob';
 
 export const convertServerDatasetPathComponent = (
   serverDatasetComponent: any

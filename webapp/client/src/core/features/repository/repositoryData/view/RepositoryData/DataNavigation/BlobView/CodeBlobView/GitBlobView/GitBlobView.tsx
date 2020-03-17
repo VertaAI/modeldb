@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as React from 'react';
 
-import { IGitCodeBlob } from 'core/shared/models/Repository/Blob/CodeBlob';
+import { IGitCodeBlob } from 'core/shared/models/Versioning/Blob/CodeBlob';
 import {
   RecordInfo,
   PageHeader,

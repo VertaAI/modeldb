@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 
 import { CompareChanges } from 'core/features/repository/compareChanges';
 import withLoadingRequiredData from 'core/features/repository/repositoryData/view/RepositoryData/WithLoadingRequiredData/WithLoadingRequiredData';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import routes, { GetRouteParams } from 'routes';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';

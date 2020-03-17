@@ -6,11 +6,11 @@ import { useLocation } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
 import { isHttpNotFoundError } from 'core/shared/models/Error';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   CommitTag,
   Branch,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';

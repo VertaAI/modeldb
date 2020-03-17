@@ -1,4 +1,4 @@
-import { IDatasetBlob } from 'core/shared/models/Repository/Blob/DatasetBlob';
+import { IDatasetBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 
 export const S3DatasetBlob: IDatasetBlob = {
   category: 'dataset',

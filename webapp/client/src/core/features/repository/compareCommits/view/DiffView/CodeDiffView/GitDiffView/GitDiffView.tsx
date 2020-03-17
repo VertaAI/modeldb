@@ -2,12 +2,12 @@ import * as R from 'ramda';
 import * as React from 'react';
 
 import { shortenSHA } from 'core/shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';
-import { IGitCodeDiff } from 'core/shared/models/Repository/Blob/CodeBlob';
+import { IGitCodeDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
 import {
   DiffType,
   ComparedCommitType,
   getDiffBlobsData,
-} from 'core/shared/models/Repository/Blob/Diff';
+} from 'core/shared/models/Versioning/Blob/Diff';
 import { getObjsPropsDiff } from 'core/shared/utils/collection';
 
 import { IComparedCommitsInfo } from '../../../types';

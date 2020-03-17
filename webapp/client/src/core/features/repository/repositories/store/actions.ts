@@ -7,7 +7,7 @@ import {
   IRepository,
   IRepositoryNamedIdentification,
   Label,
-} from 'core/shared/models/Repository/Repository';
+} from 'core/shared/models/Versioning/Repository';
 import { IWorkspace } from 'models/Workspace';
 import routes from 'routes';
 import { ActionResult } from 'store/store';

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { ICodeBlobDiff } from 'core/shared/models/Repository/Blob/CodeBlob';
+import { ICodeBlobDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
 import matchBy from 'core/shared/utils/matchBy';
 
 import { IComparedCommitsInfo } from '../../types';

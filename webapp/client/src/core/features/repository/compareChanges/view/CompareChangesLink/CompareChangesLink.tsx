@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   CommitPointer,
   defaultBranch,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import Button from 'core/shared/view/elements/Button/Button';
 import routes from 'routes';
 

@@ -2,14 +2,14 @@ import * as R from 'ramda';
 import React from 'react';
 
 import * as RouteHelpers from 'core/features/repository/repositoryData/view/RepositoryData/routeHelpers';
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IFolder,
   IFolderElement,
   IHydratedCommit,
   IFullDataLocationComponents,
   emptyFolder,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
 
 import DataBox from '../shared/DataBox/DataBox';

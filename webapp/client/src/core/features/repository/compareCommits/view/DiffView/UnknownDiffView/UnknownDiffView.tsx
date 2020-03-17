@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IUnknownBlobDiff } from 'core/shared/models/Repository/Blob/Diff';
+import { IUnknownBlobDiff } from 'core/shared/models/Versioning/Blob/Diff';
 import matchBy from 'core/shared/utils/matchBy';
 import { JsonView } from 'core/shared/view/elements/JsonView/JsonView';
 

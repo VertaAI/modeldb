@@ -9,8 +9,8 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 import * as React from 'react';
 
-import { IConfigBlobDataDiff } from 'core/shared/models/Repository/Blob/ConfigBlob';
-import { ComparedCommitType } from 'core/shared/models/Repository/Blob/Diff';
+import { IConfigBlobDataDiff } from 'core/shared/models/Versioning/Blob/ConfigBlob';
+import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
 
 interface ILocalProps {
   blobA?: IConfigBlobDataDiff['data'];

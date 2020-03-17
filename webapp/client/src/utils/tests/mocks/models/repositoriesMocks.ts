@@ -1,4 +1,4 @@
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 
 import { currentUser } from './users';
 import { userWorkspacesWithCurrentUser } from './workspace';

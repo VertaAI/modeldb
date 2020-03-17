@@ -2,11 +2,11 @@ import {
   datasetBlobTypes,
   IDatasetBlob,
   IDatasetBlobDiff,
-} from 'core/shared/models/Repository/Blob/DatasetBlob';
+} from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import {
   DiffType,
   IUnknownBlobDiff,
-} from 'core/shared/models/Repository/Blob/Diff';
+} from 'core/shared/models/Versioning/Blob/Diff';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 
 import {

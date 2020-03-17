@@ -9,7 +9,7 @@ import { IPagination, DataWithPagination } from 'core/shared/models/Pagination';
 import {
   IRepository,
   IRepositoryNamedIdentification,
-} from 'core/shared/models/Repository/Repository';
+} from 'core/shared/models/Versioning/Repository';
 import { IWorkspace } from 'models/Workspace';
 import { convertClientPaginationToNamespacedServerPagination } from 'core/services/serverModel/Pagination/converters';
 import { IAdditionalServerPaginationInRequest } from 'core/services/serverModel/Pagination/Pagination';

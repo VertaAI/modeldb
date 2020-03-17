@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IBlob } from 'core/shared/models/Repository/Blob/Blob';
+import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import { JsonView } from 'core/shared/view/elements/JsonView/JsonView';
 

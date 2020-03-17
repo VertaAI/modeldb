@@ -8,8 +8,8 @@ import Paper from '@material-ui/core/Paper';
 import cn from 'classnames';
 import React from 'react';
 
-import { IPathDatasetComponentBlob } from 'core/shared/models/Repository/Blob/DatasetBlob';
-import { DiffType } from 'core/shared/models/Repository/Blob/Diff';
+import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
+import { DiffType } from 'core/shared/models/Versioning/Blob/Diff';
 import { formatBytes } from 'core/shared/utils/mapperConverters';
 
 import styles from './Table.module.css';

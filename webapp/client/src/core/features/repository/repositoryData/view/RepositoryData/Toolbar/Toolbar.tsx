@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import { CommitsHistoryLink } from 'core/features/repository/commitsHistory';
 import { CompareChangesLink } from 'core/features/repository/compareChanges';
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { IFullDataLocationComponents } from 'core/shared/models/Repository/RepositoryData';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IFullDataLocationComponents } from 'core/shared/models/Versioning/RepositoryData';
 
 import BranchesAndTagsListContainer from './BranchesAndTagsListContainer/BranchesAndTagsListContainer';
 import RepositoryBreadcrumbs from './RepositoryBreadcrumbs/RepositoryBreadcrumbs';

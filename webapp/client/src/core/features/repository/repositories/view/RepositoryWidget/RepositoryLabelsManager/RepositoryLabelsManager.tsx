@@ -6,7 +6,7 @@ import {
   actions,
   selectors,
 } from 'core/features/repository/repositories/store';
-import { IRepository, Label } from 'core/shared/models/Repository/Repository';
+import { IRepository, Label } from 'core/shared/models/Versioning/Repository';
 import TagsManager from 'core/shared/view/domain/TagsManager/TagsManager';
 import { IApplicationState } from 'store/store';
 

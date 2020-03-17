@@ -3,8 +3,8 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import routes from 'routes';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
-import { IHydratedCommit } from 'core/shared/models/Repository/RepositoryData';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
+import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 
 import ShortenedSHA from '../../../../../../../../shared/view/domain/Repository/ShortenedSHA/ShortenedSHA';

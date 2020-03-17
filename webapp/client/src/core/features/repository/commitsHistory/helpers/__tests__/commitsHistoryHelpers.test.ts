@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-import { IHydratedCommit } from 'core/shared/models/Repository/RepositoryData';
+import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
 import { users } from 'utils/tests/mocks/models/users';
 
 import { IGroupedCommitsByDate } from '../../store/types';

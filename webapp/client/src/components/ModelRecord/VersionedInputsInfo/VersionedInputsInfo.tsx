@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import * as DataLocation from 'core/shared/models/Repository/DataLocation';
+import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
 import { IVersionedInputs } from 'models/ModelRecord';
 import routes from 'routes';
@@ -14,7 +14,7 @@ import { getRedirectPathToRepositoryDataPage } from 'core/features/repository/re
 import { ModelMeta } from '../shared/ModelMeta/ModelMeta';
 import Record from '../shared/Record/Record';
 import styles from './VersionedInputsInfo.module.css';
-import { CommitPointerHelpers } from 'core/shared/models/Repository/RepositoryData';
+import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
 
 const mapStateToProps = (state: IApplicationState) => ({
   currentWorkspaceName: selectCurrentWorkspaceName(state),

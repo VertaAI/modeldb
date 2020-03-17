@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 
-import { IHydratedCommit } from 'core/shared/models/Repository/RepositoryData';
+import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
 
 import { IGroupedCommitsByDate } from '../store/types';
 

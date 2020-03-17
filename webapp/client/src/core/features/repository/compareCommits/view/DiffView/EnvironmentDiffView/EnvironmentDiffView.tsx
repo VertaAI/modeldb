@@ -6,13 +6,13 @@ import {
   DiffType,
   ComparedCommitType,
   getDiffBlobs,
-} from 'core/shared/models/Repository/Blob/Diff';
+} from 'core/shared/models/Versioning/Blob/Diff';
 import {
   IEnvironmentBlobDiff,
   makeDockerImage,
   safeMapPythonBlobDataDiff,
   checkCommonEnvironmentDataIsChanged,
-} from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import PythonRequirementEnvironment from 'core/shared/view/domain/Repository/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
 import PythonVersion from 'core/shared/view/domain/Repository/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
 

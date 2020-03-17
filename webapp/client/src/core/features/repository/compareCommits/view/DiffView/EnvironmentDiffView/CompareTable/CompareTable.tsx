@@ -9,11 +9,11 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 import * as React from 'react';
 
-import { ComparedCommitType } from 'core/shared/models/Repository/Blob/Diff';
+import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
 import {
   IEnvironmentBlobDiff,
   IEnvironmentBlobDataDiff,
-} from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import { PageHeader } from 'core/shared/view/elements/PageComponents';
 
 interface ILocalProps {

@@ -1,6 +1,6 @@
 import { bind } from 'decko';
 
-import { IRepository, Label } from 'core/shared/models/Repository/Repository';
+import { IRepository, Label } from 'core/shared/models/Versioning/Repository';
 import { BaseDataService } from '../../BaseDataService';
 
 export default class MetaDataService extends BaseDataService {
