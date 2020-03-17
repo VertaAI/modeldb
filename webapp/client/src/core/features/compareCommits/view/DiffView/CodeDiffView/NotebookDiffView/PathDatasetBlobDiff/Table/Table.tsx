@@ -52,7 +52,7 @@ class Table extends React.PureComponent<ILocalProps> {
 
     return (
       <Paper>
-        <TableWrapper>
+        <TableWrapper isHeightByContent={true}>
           <Grid rows={data} columns={columns}>
             {providersElements}
             <TablePlugin columnExtensions={tableColumnExtensions} />

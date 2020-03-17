@@ -6,7 +6,7 @@
   background-color: white;
 }
 
-.root > div {
+.heightByContent > div {
   height: auto !important;
   max-height: 300px;
 }
