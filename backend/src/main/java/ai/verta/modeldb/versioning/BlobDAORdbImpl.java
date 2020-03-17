@@ -752,10 +752,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 convertComponentsListToMap(
                     pythonDiff.getB().getConstraintsList(),
                     PythonRequirementEnvironmentBlob::getLibrary));
-            final Builder builder = environmentDiff
-                .getPython()
-                .getB()
-                .toBuilder();
+            final Builder builder = environmentDiff.getPython().getB().toBuilder();
             if (builder.getVersion().equals(environmentDiff.getPython().getA().getVersion())) {
               builder.setVersion(environment.getPython().getVersion());
             }

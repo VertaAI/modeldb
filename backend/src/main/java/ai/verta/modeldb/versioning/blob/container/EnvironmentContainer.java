@@ -208,7 +208,8 @@ public class EnvironmentContainer extends BlobContainer {
   private String computeSHA(EnvironmentBlob blob) throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
     sb.append("env:");
-    for (EnvironmentVariablesBlob environmentVariablesBlob : blob.getEnvironmentVariablesList()) {
+    for (EnvironmentVariablesBlob environmentVariablesBlob :
+        new HashSet<>(blob.getEnvironmentVariablesList())) {
       sb.append(":name:")
           .append(environmentVariablesBlob.getName())
           .append("value:")
@@ -228,7 +229,7 @@ public class EnvironmentContainer extends BlobContainer {
     appendVersion(sb, version);
     sb.append(":requirements:");
     for (PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob :
-        blob.getRequirementsList()) {
+        new HashSet<>(blob.getRequirementsList())) {
       sb.append(":library:")
           .append(pythonRequirementEnvironmentBlob.getLibrary())
           .append(":constraint:")
@@ -237,7 +238,7 @@ public class EnvironmentContainer extends BlobContainer {
     }
     sb.append(":constraints:");
     for (PythonRequirementEnvironmentBlob pythonConstraintEnvironmentBlob :
-        blob.getConstraintsList()) {
+        new HashSet<>(blob.getConstraintsList())) {
       sb.append(":library:")
           .append(pythonConstraintEnvironmentBlob.getLibrary())
           .append(":constraint:")
