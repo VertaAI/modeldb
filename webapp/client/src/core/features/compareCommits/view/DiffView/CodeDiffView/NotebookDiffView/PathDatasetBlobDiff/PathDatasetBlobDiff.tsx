@@ -27,7 +27,7 @@ const PathDatasetBlobDiff = ({ diff }: ILocalProps) => {
             </div>
             <div className={styles.pathComponents}>
               <PathComponentsTable
-                components={updatedDiff.blobA.components}
+                components={updatedDiff.blobB.components}
                 isDeleted={false}
               />
             </div>
