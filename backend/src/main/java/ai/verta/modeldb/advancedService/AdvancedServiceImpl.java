@@ -518,6 +518,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
     List<HydratedExperimentRun> hydratedExperimentRuns = new LinkedList<>();
     LOGGER.trace("hydrating experiments");
+    String currentUserVertaID =
+        authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo());
     for (ExperimentRun experimentRun : experimentRuns) {
 
       HydratedExperimentRun.Builder hydratedExperimentRunBuilder =
@@ -550,9 +552,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         LOGGER.info(
             "roleService.isCurrentUser(experimentRun.getOwner() {}",
             authService.isCurrentUser(experimentRun.getOwner()));
-        if ((authService.isCurrentUser(experimentRun.getOwner())
-                && !actionList.contains(deleteAction))
-            || actionList.contains(updateAction)) {
+        if (currentUserVertaID.equalsIgnoreCase(experimentRun.getOwner())
+            && !actionList.contains(deleteAction)
+            && actionList.contains(updateAction)) {
           actionList.add(deleteAction);
         }
         LOGGER.info("actionList {}", actionList);
@@ -975,7 +977,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     // Fetch the experiment owners userInfo
     Map<String, UserInfo> userInfoMap =
         authService.getUserInfoFromAuthServer(vertaIdList, null, null);
-
+    String currentUserVertaID =
+        authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo());
     List<HydratedExperiment> hydratedExperiments = new LinkedList<>();
     for (Experiment experiment : experiments) {
       HydratedExperiment.Builder hydratedExperimentBuilder =
@@ -998,8 +1001,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                 .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        if ((authService.isCurrentUser(experiment.getOwner()) && !actionList.contains(deleteAction))
-            || actionList.contains(updateAction)) {
+        if (currentUserVertaID.equalsIgnoreCase(experiment.getOwner())
+            && !actionList.contains(deleteAction)
+            && actionList.contains(updateAction)) {
           actionList.add(deleteAction);
         }
         hydratedExperimentBuilder.addAllAllowedActions(actionList);
@@ -1377,9 +1381,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                 .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        if ((authService.isCurrentUser(datasetVersion.getOwner())
-                && !actionList.contains(deleteAction))
-            || actionList.contains(updateAction)) {
+        if (authService.isCurrentUser(datasetVersion.getOwner())
+            && !actionList.contains(deleteAction)
+            && actionList.contains(updateAction)) {
           actionList.add(deleteAction);
         }
       }
