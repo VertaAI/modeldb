@@ -22,7 +22,7 @@ import {
   ILoadModelRecordResult,
   ILazyLoadChartData,
 } from './types';
-import { RepositoriesDataService } from 'core/services/repository/repositories';
+import { RepositoriesDataService } from 'core/services/versioning/repositories';
 
 export const chartsPageSettings = {
   pageSize: 50,

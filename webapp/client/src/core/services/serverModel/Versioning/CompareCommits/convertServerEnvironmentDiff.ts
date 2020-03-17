@@ -1,5 +1,5 @@
-import { DiffType } from 'core/shared/models/Repository/Blob/Diff';
-import { IEnvironmentBlobDiff } from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+import { DiffType } from 'core/shared/models/Versioning/Blob/Diff';
+import { IEnvironmentBlobDiff } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import {
   convertServerDockerBlob,
   convertServerPythonBlob,

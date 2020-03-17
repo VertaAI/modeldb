@@ -1,12 +1,12 @@
 import { ArgumentTypes } from 'core/shared/utils/types';
 
-import { IRepository } from 'core/shared/models/Repository/Repository';
+import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IRepositoryData,
   SHA,
   CommitPointer,
   ICommit,
-} from 'core/shared/models/Repository/RepositoryData';
+} from 'core/shared/models/Versioning/RepositoryData';
 import makeRoute, { IRoute as _IRoute } from 'core/shared/routes/makeRoute';
 
 import {

@@ -1,5 +1,5 @@
-import { DataLocation } from 'core/shared/models/Repository/DataLocation';
-import { IDatasetBlobDiff } from 'core/shared/models/Repository/Blob/DatasetBlob';
+import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+import { IDatasetBlobDiff } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 
 export const mockedServerAddedDatasetDiff = {
   location: ['folder1', 'folder2', 'nadf'],

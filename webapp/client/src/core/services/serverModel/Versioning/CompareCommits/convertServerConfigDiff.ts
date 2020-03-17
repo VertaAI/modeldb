@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { IConfigBlobDiff } from 'core/shared/models/Repository/Blob/ConfigBlob';
-import { DiffType } from 'core/shared/models/Repository/Blob/Diff';
+import { IConfigBlobDiff } from 'core/shared/models/Versioning/Blob/ConfigBlob';
+import { DiffType } from 'core/shared/models/Versioning/Blob/Diff';
 import {
   convertServerHyperparameterSet,
   convertServerHyperparameters,

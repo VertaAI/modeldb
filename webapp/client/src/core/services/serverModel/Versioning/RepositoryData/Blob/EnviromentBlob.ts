@@ -2,7 +2,7 @@ import {
   IEnvironmentBlob,
   IDockerEnvironmentBlob,
   IPythonEnvironmentBlob,
-} from 'core/shared/models/Repository/Blob/EnvironmentBlob';
+} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 
 export const convertServerEnvironmentBlob = (
   serverEnvironment: any

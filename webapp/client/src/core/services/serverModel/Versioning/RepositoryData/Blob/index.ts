@@ -1,5 +1,5 @@
-import { IBlob } from 'core/shared/models/Repository/Blob/Blob';
-import { IDatasetBlob } from 'core/shared/models/Repository/Blob/DatasetBlob';
+import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
+import { IDatasetBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 
 import { convertServerCodeBlobToClient } from './CodeBlob';

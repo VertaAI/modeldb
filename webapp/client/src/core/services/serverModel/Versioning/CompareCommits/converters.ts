@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
-import { IBlob, blobCategories } from 'core/shared/models/Repository/Blob/Blob';
-import { Diff, DiffType } from 'core/shared/models/Repository/Blob/Diff';
+import { IBlob, blobCategories } from 'core/shared/models/Versioning/Blob/Blob';
+import { Diff, DiffType } from 'core/shared/models/Versioning/Blob/Diff';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import matchType from 'core/shared/utils/matchType';
 
