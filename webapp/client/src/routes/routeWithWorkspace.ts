@@ -20,6 +20,7 @@ export type IRouteWithWorkspace<T, B = undefined> = IRoute<
   getRedirectPathWithCurrentWorkspace: (
     params: Omit<T, 'workspaceName'>
   ) => string;
+  withWorkspace: true;
 };
 
 type IMakeRouteWithWorkspaceSettings<T, B = undefined> = Omit<
@@ -27,17 +28,18 @@ type IMakeRouteWithWorkspaceSettings<T, B = undefined> = Omit<
   'allowedUserType'
 >;
 
-export const makeRouteWithWorkspace = <T, B = undefined>(
-  settings: IMakeRouteWithWorkspaceSettings<T, B>
-): IRouteWithWorkspace<T, B> => {
-  const route = makeRoute<IRecordWithWorkspaceName & T, B>({
+export const makeRouteWithWorkspace = <Params, QueryParams = undefined>(
+  settings: IMakeRouteWithWorkspaceSettings<Params, QueryParams>
+): IRouteWithWorkspace<Params, QueryParams> => {
+  const route = makeRoute<IRecordWithWorkspaceName & Params, QueryParams>({
     getPath: () => `${workspacePath}${settings.getPath()}`,
   });
 
-  const resRoute: IRouteWithWorkspace<T, B> = {
+  const resRoute: IRouteWithWorkspace<Params, QueryParams> = {
     ...route,
+    withWorkspace: true,
     getRedirectPathWithCurrentWorkspace: (
-      paramsWithoutCurrentWorkspaceName: Omit<T, 'workspaceName'>
+      paramsWithoutCurrentWorkspaceName: Omit<Params, 'workspaceName'>
     ) => {
       const match = matchPath<IRecordWithWorkspaceName>(
         window.location.pathname,
@@ -49,11 +51,16 @@ export const makeRouteWithWorkspace = <T, B = undefined>(
       return route.getRedirectPath({
         ...paramsWithoutCurrentWorkspaceName,
         ...(match && match.params
-          ? ({ workspaceName: match.params.workspaceName || 'personal' } as any)
-          : { workspaceName: 'personal' }),
+          ? ({ workspaceName: match.params.workspaceName } as any)
+          : {}),
       });
     },
   };
 
   return resRoute;
+};
+
+export const isRouteWithWorkspace = (route: IRoute<any, any>) => {
+  const withWorkspaceKey: keyof IRouteWithWorkspace<any> = 'withWorkspace';
+  return withWorkspaceKey in route;
 };

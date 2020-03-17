@@ -42,7 +42,7 @@ import {
   selectDatasetVersionExperimentRuns,
 } from 'store/datasetVersions';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceNameOrDefault } from 'store/workspaces';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 import DatasetsPagesLayout from '../../shared/DatasetsPagesLayout/DatasetsPagesLayout';
 import { pathLocationLabels } from '../shared/constants';
@@ -77,7 +77,7 @@ const mapStateToProps = (state: IApplicationState, routeProps: RouteProps) => {
       ? selectDeletingDatasetVersion(state, datasetVersion.id)
       : initialCommunication,
 
-    workspaceName: selectCurrentWorkspaceNameOrDefault(state),
+    workspaceName: selectCurrentWorkspaceName(state),
   };
 };
 
