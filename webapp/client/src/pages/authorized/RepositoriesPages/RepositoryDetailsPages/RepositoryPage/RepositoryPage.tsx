@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { useLocation } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import { selectors } from 'core/features/repositories';
-import { RepositoryData } from 'core/features/repositoryData';
+import { selectors } from 'core/features/repository/repositories';
+import { RepositoryData } from 'core/features/repository/repositoryData';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import { PageCard } from 'core/shared/view/elements/PageComponents';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';

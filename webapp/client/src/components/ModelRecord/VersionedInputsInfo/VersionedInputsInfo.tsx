@@ -9,7 +9,7 @@ import { IVersionedInputs } from 'models/ModelRecord';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
-import { getRedirectPathToRepositoryDataPage } from 'core/features/repositoryData';
+import { getRedirectPathToRepositoryDataPage } from 'core/features/repository/repositoryData';
 
 import { ModelMeta } from '../shared/ModelMeta/ModelMeta';
 import Record from '../shared/Record/Record';

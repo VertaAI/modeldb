@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useParams } from 'react-router';
 
-import { CompareChanges } from 'core/features/compareChanges';
-import withLoadingRequiredData from 'core/features/repositoryData/view/RepositoryData/WithLoadingRequiredData/WithLoadingRequiredData';
+import { CompareChanges } from 'core/features/repository/compareChanges';
+import withLoadingRequiredData from 'core/features/repository/repositoryData/view/RepositoryData/WithLoadingRequiredData/WithLoadingRequiredData';
 import { IRepository } from 'core/shared/models/Repository/Repository';
 import routes, { GetRouteParams } from 'routes';
 
