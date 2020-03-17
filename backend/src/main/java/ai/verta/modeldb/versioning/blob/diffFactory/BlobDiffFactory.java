@@ -5,11 +5,14 @@ import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.BlobDiff.Builder;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
+import ai.verta.modeldb.versioning.EnvironmentBlob;
+import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +42,18 @@ public abstract class BlobDiffFactory {
       final Builder builder =
           BlobDiff.newBuilder().addAllLocation(Arrays.asList(location.split("#")));
       builder.setStatus(DiffStatus.MODIFIED);
+      //hack
+      if (blobExpanded.getBlob().getContentCase() == ContentCase.ENVIRONMENT
+          && blobExpanded.getBlob().getEnvironment().getContentCase() == EnvironmentBlob.ContentCase.PYTHON) {
+        PythonEnvironmentBlob pythonA = blobExpanded.getBlob().getEnvironment().getPython();
+        PythonEnvironmentBlob pythonB = blobDiffFactoryB
+            .getBlobExpanded().getBlob().getEnvironment().getPython();
+        if (pythonA.getVersion().equals(pythonB.getVersion())
+            && new HashSet<>(pythonA.getRequirementsList()).equals(new HashSet<>(pythonB.getRequirementsList()))
+            && new HashSet<>(pythonA.getConstraintsList()).equals(new HashSet<>(pythonB.getConstraintsList()))) {
+          return Collections.emptyList();
+        }
+      }
       delete(builder);
       blobDiffFactoryB.add(builder);
       return Collections.singletonList(builder.build());
