@@ -46,6 +46,7 @@ This can be done automatically with a pre-save hook:
    ```
 
 ## Package Publication
+
 1. Run the test suite and verify that it meets expectations.
 1. Update `__version__` in [`__about__.py`](https://github.com/VertaAI/modeldb/blob/master/client/verta/verta/__about__.py) with a new version number.
    - Increment the minor version for backwards-incompatible changes or a major set of new features.
