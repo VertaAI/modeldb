@@ -80,6 +80,7 @@ export const makeDockerImage = ({
 
 export interface IPythonEnvironmentBlob {
   type: 'python';
+
   data: {
     requirements?: IPythonRequirementEnvironment[];
     constraints?: IPythonRequirementEnvironment[];
