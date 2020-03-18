@@ -14,12 +14,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class BlobDiff implements ProtoType {
-  public CodeDiff Code;
-  public ConfigDiff Config;
-  public DatasetDiff Dataset;
-  public EnvironmentDiff Environment;
-  public List<String> Location;
-  public DiffStatusEnumDiffStatus Status;
+  private CodeDiff Code;
+  private ConfigDiff Config;
+  private DatasetDiff Dataset;
+  private EnvironmentDiff Environment;
+  private List<String> Location;
+  private DiffStatusEnumDiffStatus Status;
 
   public BlobDiff() {
     this.Code = null;
@@ -198,9 +198,17 @@ public class BlobDiff implements ProtoType {
     return this;
   }
 
+  public CodeDiff getCode() {
+    return this.Code;
+  }
+
   public BlobDiff setConfig(ConfigDiff value) {
     this.Config = Utils.removeEmpty(value);
     return this;
+  }
+
+  public ConfigDiff getConfig() {
+    return this.Config;
   }
 
   public BlobDiff setDataset(DatasetDiff value) {
@@ -208,19 +216,38 @@ public class BlobDiff implements ProtoType {
     return this;
   }
 
+  public DatasetDiff getDataset() {
+    return this.Dataset;
+  }
+
   public BlobDiff setEnvironment(EnvironmentDiff value) {
     this.Environment = Utils.removeEmpty(value);
     return this;
   }
 
+  public EnvironmentDiff getEnvironment() {
+    return this.Environment;
+  }
+
   public BlobDiff setLocation(List<String> value) {
     this.Location = Utils.removeEmpty(value);
+    if (this.Location != null) {
+      this.Location.sort(Comparator.comparingInt(String::hashCode));
+    }
     return this;
+  }
+
+  public List<String> getLocation() {
+    return this.Location;
   }
 
   public BlobDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static BlobDiff fromProto(ai.verta.modeldb.versioning.BlobDiff blob) {

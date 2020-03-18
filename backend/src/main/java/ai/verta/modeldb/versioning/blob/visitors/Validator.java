@@ -8,13 +8,13 @@ import io.grpc.Status;
 public class Validator extends Visitor {
   @Override
   public void preVisitPathDatasetBlob(PathDatasetBlob blob) throws ModelDBException {
-    if (blob.Components.isEmpty())
+    if (blob.getComponents().isEmpty())
       throw new ModelDBException("Blob should not be empty", Status.Code.INVALID_ARGUMENT);
   }
 
   @Override
   public void preVisitS3DatasetBlob(S3DatasetBlob blob) throws ModelDBException {
-    if (blob.Components.isEmpty())
+    if (blob.getComponents().isEmpty())
       throw new ModelDBException("Blob should not be empty", Status.Code.INVALID_ARGUMENT);
   }
 }

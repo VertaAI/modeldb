@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DatasetBlob implements ProtoType {
-  public PathDatasetBlob Path;
-  public S3DatasetBlob S3;
+  private PathDatasetBlob Path;
+  private S3DatasetBlob S3;
 
   public DatasetBlob() {
     this.Path = null;
@@ -100,9 +100,17 @@ public class DatasetBlob implements ProtoType {
     return this;
   }
 
+  public PathDatasetBlob getPath() {
+    return this.Path;
+  }
+
   public DatasetBlob setS3(S3DatasetBlob value) {
     this.S3 = Utils.removeEmpty(value);
     return this;
+  }
+
+  public S3DatasetBlob getS3() {
+    return this.S3;
   }
 
   public static DatasetBlob fromProto(ai.verta.modeldb.versioning.DatasetBlob blob) {

@@ -17,7 +17,7 @@ import com.pholser.junit.quickcheck.random.*;
 public class {{class_name}} implements ProtoType {
     {{#properties}}
     {{^required}}
-    public {{#type}}{{> type}}{{/type}} {{name}};
+    private {{#type}}{{> type}}{{/type}} {{name}};
     {{/required}}
     {{/properties}}
 
@@ -118,7 +118,19 @@ public class {{class_name}} implements ProtoType {
     {{^required}}
     public {{class_name}} set{{name}}({{#type}}{{> type}}{{/type}} value) {
         this.{{name}} = Utils.removeEmpty(value);
+        {{#type}}
+        {{#is_list}}
+        {{#list_type}}
+        if (this.{{name}} != null) {
+            this.{{name}}.sort(Comparator.comparingInt({{>type}}::hashCode));
+        }
+        {{/list_type}}
+        {{/is_list}}
+        {{/type}}
         return this;
+    }
+    public {{#type}}{{> type}}{{/type}} get{{name}}() {
+        return this.{{name}};
     }
     {{/required}}
     {{/properties}}

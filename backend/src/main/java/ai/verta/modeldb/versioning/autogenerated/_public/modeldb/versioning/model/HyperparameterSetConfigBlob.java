@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterSetConfigBlob implements ProtoType {
-  public ContinuousHyperparameterSetConfigBlob Continuous;
-  public DiscreteHyperparameterSetConfigBlob Discrete;
-  public String Name;
+  private ContinuousHyperparameterSetConfigBlob Continuous;
+  private DiscreteHyperparameterSetConfigBlob Discrete;
+  private String Name;
 
   public HyperparameterSetConfigBlob() {
     this.Continuous = null;
@@ -124,14 +124,26 @@ public class HyperparameterSetConfigBlob implements ProtoType {
     return this;
   }
 
+  public ContinuousHyperparameterSetConfigBlob getContinuous() {
+    return this.Continuous;
+  }
+
   public HyperparameterSetConfigBlob setDiscrete(DiscreteHyperparameterSetConfigBlob value) {
     this.Discrete = Utils.removeEmpty(value);
     return this;
   }
 
+  public DiscreteHyperparameterSetConfigBlob getDiscrete() {
+    return this.Discrete;
+  }
+
   public HyperparameterSetConfigBlob setName(String value) {
     this.Name = Utils.removeEmpty(value);
     return this;
+  }
+
+  public String getName() {
+    return this.Name;
   }
 
   public static HyperparameterSetConfigBlob fromProto(

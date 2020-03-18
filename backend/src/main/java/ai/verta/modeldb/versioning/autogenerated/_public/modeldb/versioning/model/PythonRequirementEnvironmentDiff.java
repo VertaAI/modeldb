@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PythonRequirementEnvironmentDiff implements ProtoType {
-  public PythonRequirementEnvironmentBlob A;
-  public PythonRequirementEnvironmentBlob B;
-  public DiffStatusEnumDiffStatus Status;
+  private PythonRequirementEnvironmentBlob A;
+  private PythonRequirementEnvironmentBlob B;
+  private DiffStatusEnumDiffStatus Status;
 
   public PythonRequirementEnvironmentDiff() {
     this.A = null;
@@ -124,14 +124,26 @@ public class PythonRequirementEnvironmentDiff implements ProtoType {
     return this;
   }
 
+  public PythonRequirementEnvironmentBlob getA() {
+    return this.A;
+  }
+
   public PythonRequirementEnvironmentDiff setB(PythonRequirementEnvironmentBlob value) {
     this.B = Utils.removeEmpty(value);
     return this;
   }
 
+  public PythonRequirementEnvironmentBlob getB() {
+    return this.B;
+  }
+
   public PythonRequirementEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static PythonRequirementEnvironmentDiff fromProto(

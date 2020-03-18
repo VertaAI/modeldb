@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
-  public HyperparameterValuesConfigBlob IntervalBegin;
-  public HyperparameterValuesConfigBlob IntervalEnd;
-  public HyperparameterValuesConfigBlob IntervalStep;
+  private HyperparameterValuesConfigBlob IntervalBegin;
+  private HyperparameterValuesConfigBlob IntervalEnd;
+  private HyperparameterValuesConfigBlob IntervalStep;
 
   public ContinuousHyperparameterSetConfigBlob() {
     this.IntervalBegin = null;
@@ -125,16 +125,28 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
     return this;
   }
 
+  public HyperparameterValuesConfigBlob getIntervalBegin() {
+    return this.IntervalBegin;
+  }
+
   public ContinuousHyperparameterSetConfigBlob setIntervalEnd(
       HyperparameterValuesConfigBlob value) {
     this.IntervalEnd = Utils.removeEmpty(value);
     return this;
   }
 
+  public HyperparameterValuesConfigBlob getIntervalEnd() {
+    return this.IntervalEnd;
+  }
+
   public ContinuousHyperparameterSetConfigBlob setIntervalStep(
       HyperparameterValuesConfigBlob value) {
     this.IntervalStep = Utils.removeEmpty(value);
     return this;
+  }
+
+  public HyperparameterValuesConfigBlob getIntervalStep() {
+    return this.IntervalStep;
   }
 
   public static ContinuousHyperparameterSetConfigBlob fromProto(

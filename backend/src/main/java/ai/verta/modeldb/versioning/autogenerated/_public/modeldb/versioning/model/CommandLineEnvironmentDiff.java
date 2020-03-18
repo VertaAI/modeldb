@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CommandLineEnvironmentDiff implements ProtoType {
-  public List<String> A;
-  public List<String> B;
-  public DiffStatusEnumDiffStatus Status;
+  private List<String> A;
+  private List<String> B;
+  private DiffStatusEnumDiffStatus Status;
 
   public CommandLineEnvironmentDiff() {
     this.A = null;
@@ -141,17 +141,35 @@ public class CommandLineEnvironmentDiff implements ProtoType {
 
   public CommandLineEnvironmentDiff setA(List<String> value) {
     this.A = Utils.removeEmpty(value);
+    if (this.A != null) {
+      this.A.sort(Comparator.comparingInt(String::hashCode));
+    }
     return this;
+  }
+
+  public List<String> getA() {
+    return this.A;
   }
 
   public CommandLineEnvironmentDiff setB(List<String> value) {
     this.B = Utils.removeEmpty(value);
+    if (this.B != null) {
+      this.B.sort(Comparator.comparingInt(String::hashCode));
+    }
     return this;
+  }
+
+  public List<String> getB() {
+    return this.B;
   }
 
   public CommandLineEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static CommandLineEnvironmentDiff fromProto(
