@@ -26,10 +26,10 @@ import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbComment (
-  id: Option[String] = None,
-  user_id: Option[String] = None,
   date_time: Option[] = None,
+  id: Option[String] = None,
   message: Option[String] = None,
+  user_id: Option[String] = None,
   user_info: Option[UacUserInfo] = None,
   verta_id: Option[String] = None
 ) extends BaseSwagger {
@@ -40,10 +40,10 @@ object ModeldbComment {
   def toJson(obj: ModeldbComment): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.id.map(x => JField("id", JString(x))),
-        obj.user_id.map(x => JField("user_id", JString(x))),
         obj.date_time.map(x => JField("date_time", (x))),
+        obj.id.map(x => JField("id", JString(x))),
         obj.message.map(x => JField("message", JString(x))),
+        obj.user_id.map(x => JField("user_id", JString(x))),
         obj.user_info.map(x => JField("user_info", ((x: UacUserInfo) => UacUserInfo.toJson(x))(x))),
         obj.verta_id.map(x => JField("verta_id", JString(x)))
       ).flatMap(x => x match {
@@ -59,10 +59,10 @@ object ModeldbComment {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbComment(
           // TODO: handle required
-          id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
-          user_id = fieldsMap.get("user_id").map(JsonConverter.fromJsonString),
           date_time = fieldsMap.get("date_time").map(),
+          id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           message = fieldsMap.get("message").map(JsonConverter.fromJsonString),
+          user_id = fieldsMap.get("user_id").map(JsonConverter.fromJsonString),
           user_info = fieldsMap.get("user_info").map(UacUserInfo.fromJson),
           verta_id = fieldsMap.get("verta_id").map(JsonConverter.fromJsonString)
         )

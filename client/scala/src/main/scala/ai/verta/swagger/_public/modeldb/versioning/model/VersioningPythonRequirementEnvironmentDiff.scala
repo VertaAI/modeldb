@@ -14,9 +14,9 @@ import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class VersioningPythonRequirementEnvironmentDiff (
-  status: Option[DiffStatusEnumDiffStatus] = None,
   A: Option[VersioningPythonRequirementEnvironmentBlob] = None,
-  B: Option[VersioningPythonRequirementEnvironmentBlob] = None
+  B: Option[VersioningPythonRequirementEnvironmentBlob] = None,
+  status: Option[DiffStatusEnumDiffStatus] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningPythonRequirementEnvironmentDiff.toJson(this)
 }
@@ -25,9 +25,9 @@ object VersioningPythonRequirementEnvironmentDiff {
   def toJson(obj: VersioningPythonRequirementEnvironmentDiff): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x))),
         obj.A.map(x => JField("A", ((x: VersioningPythonRequirementEnvironmentBlob) => VersioningPythonRequirementEnvironmentBlob.toJson(x))(x))),
-        obj.B.map(x => JField("B", ((x: VersioningPythonRequirementEnvironmentBlob) => VersioningPythonRequirementEnvironmentBlob.toJson(x))(x)))
+        obj.B.map(x => JField("B", ((x: VersioningPythonRequirementEnvironmentBlob) => VersioningPythonRequirementEnvironmentBlob.toJson(x))(x))),
+        obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -41,9 +41,9 @@ object VersioningPythonRequirementEnvironmentDiff {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningPythonRequirementEnvironmentDiff(
           // TODO: handle required
-          status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson),
           A = fieldsMap.get("A").map(VersioningPythonRequirementEnvironmentBlob.fromJson),
-          B = fieldsMap.get("B").map(VersioningPythonRequirementEnvironmentBlob.fromJson)
+          B = fieldsMap.get("B").map(VersioningPythonRequirementEnvironmentBlob.fromJson),
+          status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

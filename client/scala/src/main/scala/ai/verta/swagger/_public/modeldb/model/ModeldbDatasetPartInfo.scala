@@ -26,10 +26,10 @@ import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbDatasetPartInfo (
-  path: Option[String] = None,
-  size: Option[] = None,
   checksum: Option[String] = None,
-  last_modified_at_source: Option[] = None
+  last_modified_at_source: Option[] = None,
+  path: Option[String] = None,
+  size: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbDatasetPartInfo.toJson(this)
 }
@@ -38,10 +38,10 @@ object ModeldbDatasetPartInfo {
   def toJson(obj: ModeldbDatasetPartInfo): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.path.map(x => JField("path", JString(x))),
-        obj.size.map(x => JField("size", (x))),
         obj.checksum.map(x => JField("checksum", JString(x))),
-        obj.last_modified_at_source.map(x => JField("last_modified_at_source", (x)))
+        obj.last_modified_at_source.map(x => JField("last_modified_at_source", (x))),
+        obj.path.map(x => JField("path", JString(x))),
+        obj.size.map(x => JField("size", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -55,10 +55,10 @@ object ModeldbDatasetPartInfo {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbDatasetPartInfo(
           // TODO: handle required
-          path = fieldsMap.get("path").map(JsonConverter.fromJsonString),
-          size = fieldsMap.get("size").map(),
           checksum = fieldsMap.get("checksum").map(JsonConverter.fromJsonString),
-          last_modified_at_source = fieldsMap.get("last_modified_at_source").map()
+          last_modified_at_source = fieldsMap.get("last_modified_at_source").map(),
+          path = fieldsMap.get("path").map(JsonConverter.fromJsonString),
+          size = fieldsMap.get("size").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

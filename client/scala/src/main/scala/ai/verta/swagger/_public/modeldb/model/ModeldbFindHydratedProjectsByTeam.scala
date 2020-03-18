@@ -27,9 +27,9 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbFindHydratedProjectsByTeam (
   find_projects: Option[ModeldbFindProjects] = None,
-  org_id: Option[String] = None,
+  id: Option[String] = None,
   name: Option[String] = None,
-  id: Option[String] = None
+  org_id: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbFindHydratedProjectsByTeam.toJson(this)
 }
@@ -39,9 +39,9 @@ object ModeldbFindHydratedProjectsByTeam {
     new JObject(
       List[Option[JField]](
         obj.find_projects.map(x => JField("find_projects", ((x: ModeldbFindProjects) => ModeldbFindProjects.toJson(x))(x))),
-        obj.org_id.map(x => JField("org_id", JString(x))),
+        obj.id.map(x => JField("id", JString(x))),
         obj.name.map(x => JField("name", JString(x))),
-        obj.id.map(x => JField("id", JString(x)))
+        obj.org_id.map(x => JField("org_id", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -56,9 +56,9 @@ object ModeldbFindHydratedProjectsByTeam {
         ModeldbFindHydratedProjectsByTeam(
           // TODO: handle required
           find_projects = fieldsMap.get("find_projects").map(ModeldbFindProjects.fromJson),
-          org_id = fieldsMap.get("org_id").map(JsonConverter.fromJsonString),
+          id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
-          id = fieldsMap.get("id").map(JsonConverter.fromJsonString)
+          org_id = fieldsMap.get("org_id").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

@@ -26,11 +26,11 @@ import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbRawDatasetVersionInfo (
-  size: Option[] = None,
+  checksum: Option[String] = None,
   features: Option[List[String]] = None,
   num_records: Option[] = None,
   object_path: Option[String] = None,
-  checksum: Option[String] = None
+  size: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbRawDatasetVersionInfo.toJson(this)
 }
@@ -39,11 +39,11 @@ object ModeldbRawDatasetVersionInfo {
   def toJson(obj: ModeldbRawDatasetVersionInfo): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.size.map(x => JField("size", (x))),
+        obj.checksum.map(x => JField("checksum", JString(x))),
         obj.features.map(x => JField("features", ((x: List[String]) => JArray(x.map(JString)))(x))),
         obj.num_records.map(x => JField("num_records", (x))),
         obj.object_path.map(x => JField("object_path", JString(x))),
-        obj.checksum.map(x => JField("checksum", JString(x)))
+        obj.size.map(x => JField("size", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -57,11 +57,11 @@ object ModeldbRawDatasetVersionInfo {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbRawDatasetVersionInfo(
           // TODO: handle required
-          size = fieldsMap.get("size").map(),
+          checksum = fieldsMap.get("checksum").map(JsonConverter.fromJsonString),
           features = fieldsMap.get("features").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           num_records = fieldsMap.get("num_records").map(),
           object_path = fieldsMap.get("object_path").map(JsonConverter.fromJsonString),
-          checksum = fieldsMap.get("checksum").map(JsonConverter.fromJsonString)
+          size = fieldsMap.get("size").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

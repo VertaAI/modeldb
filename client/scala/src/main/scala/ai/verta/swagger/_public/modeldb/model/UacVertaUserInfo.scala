@@ -27,11 +27,11 @@ import ai.verta.swagger.client.objects._
 
 case class UacVertaUserInfo (
   individual_user: Option[Boolean] = None,
-  username: Option[String] = None,
-  refresh_timestamp: Option[] = None,
   last_login_timestamp: Option[] = None,
+  publicProfile: Option[UacFlagEnum] = None,
+  refresh_timestamp: Option[] = None,
   user_id: Option[String] = None,
-  publicProfile: Option[UacFlagEnum] = None
+  username: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = UacVertaUserInfo.toJson(this)
 }
@@ -41,11 +41,11 @@ object UacVertaUserInfo {
     new JObject(
       List[Option[JField]](
         obj.individual_user.map(x => JField("individual_user", JBool(x))),
-        obj.username.map(x => JField("username", JString(x))),
-        obj.refresh_timestamp.map(x => JField("refresh_timestamp", (x))),
         obj.last_login_timestamp.map(x => JField("last_login_timestamp", (x))),
+        obj.publicProfile.map(x => JField("publicProfile", ((x: UacFlagEnum) => UacFlagEnum.toJson(x))(x))),
+        obj.refresh_timestamp.map(x => JField("refresh_timestamp", (x))),
         obj.user_id.map(x => JField("user_id", JString(x))),
-        obj.publicProfile.map(x => JField("publicProfile", ((x: UacFlagEnum) => UacFlagEnum.toJson(x))(x)))
+        obj.username.map(x => JField("username", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -60,11 +60,11 @@ object UacVertaUserInfo {
         UacVertaUserInfo(
           // TODO: handle required
           individual_user = fieldsMap.get("individual_user").map(JsonConverter.fromJsonBoolean),
-          username = fieldsMap.get("username").map(JsonConverter.fromJsonString),
-          refresh_timestamp = fieldsMap.get("refresh_timestamp").map(),
           last_login_timestamp = fieldsMap.get("last_login_timestamp").map(),
+          publicProfile = fieldsMap.get("publicProfile").map(UacFlagEnum.fromJson),
+          refresh_timestamp = fieldsMap.get("refresh_timestamp").map(),
           user_id = fieldsMap.get("user_id").map(JsonConverter.fromJsonString),
-          publicProfile = fieldsMap.get("publicProfile").map(UacFlagEnum.fromJson)
+          username = fieldsMap.get("username").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

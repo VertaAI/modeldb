@@ -16,9 +16,9 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbGitSnapshot (
   filepaths: Option[List[String]] = None,
-  repo: Option[String] = None,
   hash: Option[String] = None,
-  is_dirty: Option[TernaryEnumTernary] = None
+  is_dirty: Option[TernaryEnumTernary] = None,
+  repo: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbGitSnapshot.toJson(this)
 }
@@ -28,9 +28,9 @@ object ModeldbGitSnapshot {
     new JObject(
       List[Option[JField]](
         obj.filepaths.map(x => JField("filepaths", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.repo.map(x => JField("repo", JString(x))),
         obj.hash.map(x => JField("hash", JString(x))),
-        obj.is_dirty.map(x => JField("is_dirty", ((x: TernaryEnumTernary) => TernaryEnumTernary.toJson(x))(x)))
+        obj.is_dirty.map(x => JField("is_dirty", ((x: TernaryEnumTernary) => TernaryEnumTernary.toJson(x))(x))),
+        obj.repo.map(x => JField("repo", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -45,9 +45,9 @@ object ModeldbGitSnapshot {
         ModeldbGitSnapshot(
           // TODO: handle required
           filepaths = fieldsMap.get("filepaths").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          repo = fieldsMap.get("repo").map(JsonConverter.fromJsonString),
           hash = fieldsMap.get("hash").map(JsonConverter.fromJsonString),
-          is_dirty = fieldsMap.get("is_dirty").map(TernaryEnumTernary.fromJson)
+          is_dirty = fieldsMap.get("is_dirty").map(TernaryEnumTernary.fromJson),
+          repo = fieldsMap.get("repo").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

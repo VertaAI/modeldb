@@ -14,9 +14,9 @@ import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class VersioningVersionEnvironmentDiff (
-  status: Option[DiffStatusEnumDiffStatus] = None,
   A: Option[VersioningVersionEnvironmentBlob] = None,
-  B: Option[VersioningVersionEnvironmentBlob] = None
+  B: Option[VersioningVersionEnvironmentBlob] = None,
+  status: Option[DiffStatusEnumDiffStatus] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningVersionEnvironmentDiff.toJson(this)
 }
@@ -25,9 +25,9 @@ object VersioningVersionEnvironmentDiff {
   def toJson(obj: VersioningVersionEnvironmentDiff): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x))),
         obj.A.map(x => JField("A", ((x: VersioningVersionEnvironmentBlob) => VersioningVersionEnvironmentBlob.toJson(x))(x))),
-        obj.B.map(x => JField("B", ((x: VersioningVersionEnvironmentBlob) => VersioningVersionEnvironmentBlob.toJson(x))(x)))
+        obj.B.map(x => JField("B", ((x: VersioningVersionEnvironmentBlob) => VersioningVersionEnvironmentBlob.toJson(x))(x))),
+        obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -41,9 +41,9 @@ object VersioningVersionEnvironmentDiff {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningVersionEnvironmentDiff(
           // TODO: handle required
-          status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson),
           A = fieldsMap.get("A").map(VersioningVersionEnvironmentBlob.fromJson),
-          B = fieldsMap.get("B").map(VersioningVersionEnvironmentBlob.fromJson)
+          B = fieldsMap.get("B").map(VersioningVersionEnvironmentBlob.fromJson),
+          status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

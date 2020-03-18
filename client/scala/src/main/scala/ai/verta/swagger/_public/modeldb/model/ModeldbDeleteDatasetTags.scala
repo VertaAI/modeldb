@@ -16,9 +16,9 @@ import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbDeleteDatasetTags (
+  delete_all: Option[Boolean] = None,
   id: Option[String] = None,
-  tags: Option[List[String]] = None,
-  delete_all: Option[Boolean] = None
+  tags: Option[List[String]] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbDeleteDatasetTags.toJson(this)
 }
@@ -27,9 +27,9 @@ object ModeldbDeleteDatasetTags {
   def toJson(obj: ModeldbDeleteDatasetTags): JObject = {
     new JObject(
       List[Option[JField]](
+        obj.delete_all.map(x => JField("delete_all", JBool(x))),
         obj.id.map(x => JField("id", JString(x))),
-        obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.delete_all.map(x => JField("delete_all", JBool(x)))
+        obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -43,9 +43,9 @@ object ModeldbDeleteDatasetTags {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbDeleteDatasetTags(
           // TODO: handle required
+          delete_all = fieldsMap.get("delete_all").map(JsonConverter.fromJsonBoolean),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
-          tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          delete_all = fieldsMap.get("delete_all").map(JsonConverter.fromJsonBoolean)
+          tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
