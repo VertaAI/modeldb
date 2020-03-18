@@ -11,7 +11,6 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
-import ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceImplBase;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import ai.verta.uac.UserInfo;
@@ -364,12 +363,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     }
   }
 
-  private Builder getPathInfo(PathDatasetComponentBlob path)
-      throws ModelDBException, NoSuchAlgorithmException {
-    // TODO: md5
-    return path.toBuilder().setSha256(generateAndValidateSha(path));
-  }
-
   String generateAndValidateSha(PathDatasetComponentBlob path)
       throws ModelDBException, NoSuchAlgorithmException {
     String sha = path.getSha256();
@@ -396,6 +389,28 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, ComputeRepositoryDiffRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void mergeRepositoryCommits(
+      MergeRepositoryCommitsRequest request,
+      StreamObserver<ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest.Response>
+          responseObserver) {
+    QPSCountResource.inc();
+    try {
+      try (RequestLatencyResource latencyResource =
+          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+        MergeRepositoryCommitsRequest.Response mergeResponse =
+            blobDAO.mergeCommit(
+                (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+                request);
+        responseObserver.onNext(mergeResponse);
+        responseObserver.onCompleted();
+      }
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, MergeRepositoryCommitsRequest.Response.getDefaultInstance());
     }
   }
 
