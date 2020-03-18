@@ -5,6 +5,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
@@ -290,10 +291,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       deleteBranchQuery.setParameterList("branches", listBranchesResponse.getBranchesList());
       deleteBranchQuery.executeUpdate();
 
-      List<CommitEntity> commitEntities =
+      CommitPaginationDTO commitPaginationDTO =
           commitDAO.fetchCommitEntityList(
               session, ListCommitsRequest.newBuilder().build(), repository.getId());
-      commitEntities.forEach(
+      commitPaginationDTO.getCommitEntities().forEach(
           commitEntity -> {
             if (commitEntity.getRepository().contains(repository)) {
               commitEntity.getRepository().remove(repository);

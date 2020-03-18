@@ -2,6 +2,7 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -55,7 +56,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   @Override
-  public List<CommitEntity> fetchCommitEntityList(
+  public CommitPaginationDTO fetchCommitEntityList(
       Session session, ListCommitsRequest request, Long repoId) throws ModelDBException {
     StringBuilder commitQueryBuilder =
         new StringBuilder(
@@ -95,7 +96,15 @@ public class CommitDAORdbImpl implements CommitDAO {
       commitEntityQuery.setFirstResult(startPosition);
       commitEntityQuery.setMaxResults(pageLimit);
     }
-    return commitEntityQuery.list();
+
+    Query countQuery = session.createQuery(commitQueryBuilder.toString());
+    countQuery.setParameter("repoId", repoId);
+    Long totalRecords = (Long) countQuery.getSingleResult();
+
+    CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+    commitPaginationDTO.setCommitEntities(commitEntityQuery.list());
+    commitPaginationDTO.setTotalRecords(totalRecords);
+    return commitPaginationDTO;
   }
 
   @Override
@@ -104,11 +113,14 @@ public class CommitDAORdbImpl implements CommitDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepository.apply(session);
 
-      List<CommitEntity> commitEntities =
+      CommitPaginationDTO commitPaginationDTO =
           fetchCommitEntityList(session, request, repository.getId());
       List<Commit> commits =
-          commitEntities.stream().map(CommitEntity::toCommitProto).collect(Collectors.toList());
-      return ListCommitsRequest.Response.newBuilder().addAllCommits(commits).build();
+          commitPaginationDTO.getCommitEntities().stream().map(CommitEntity::toCommitProto).collect(Collectors.toList());
+      return ListCommitsRequest.Response.newBuilder()
+              .addAllCommits(commits)
+              .setTotalRecords(commitPaginationDTO.getTotalRecords())
+              .build();
     }
   }
 

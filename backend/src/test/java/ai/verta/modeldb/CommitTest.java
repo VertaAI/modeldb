@@ -29,6 +29,7 @@ import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.ListCommitBlobsRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
+import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -269,8 +270,35 @@ public class CommitTest {
   }
 
   @Test
-  public void deleteCommitTest() throws ModelDBException {
-    LOGGER.info("Delete of commit test start................................");
+  public void initialCommitTest() {
+    LOGGER.info("initial commit test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+            VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+            GetBranchRequest.newBuilder()
+                    .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                    .setBranch(ModelDBConstants.MASTER_BRANCH)
+                    .build();
+    GetBranchRequest.Response getBranchResponse =
+            versioningServiceBlockingStub.getBranch(getBranchRequest);
+    assertEquals("Initial commit parameters not match with expected parameters", ModelDBConstants.INITIAL_COMMIT_MESSAGE, getBranchResponse.getCommit().getMessage());
+
+    DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                    .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+                    .build();
+    DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+    LOGGER.info("Initial commit test end................................");
+  }
+
+  @Test
+  public void createDeleteCommitTest() throws ModelDBException {
+    LOGGER.info("Create & Delete of commit test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
@@ -289,6 +317,10 @@ public class CommitTest {
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit expectedCommit = createCommitRequest.getCommit().toBuilder().setCommitSha(commitResponse.getCommit().getCommitSha()).build();
+    assertEquals("Commit not match with expected commit",
+            expectedCommit, commitResponse.getCommit());
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
@@ -318,7 +350,7 @@ public class CommitTest {
     DeleteRepositoryRequest.Response deleteResult =
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
-    LOGGER.info("Delete of commit test end................................");
+    LOGGER.info("Create & Delete of commit test end................................");
   }
 
   @Test
@@ -362,6 +394,7 @@ public class CommitTest {
     commitList.add(commit1);
     commitList.add(parentCommit);
 
+    //Fetch all commits of repository
     ListCommitsRequest listCommitsRequest =
         ListCommitsRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -379,6 +412,7 @@ public class CommitTest {
         commitList.get(1),
         listCommitsResponse.getCommits(1));
 
+    //fetch all commits from base commit
     listCommitsRequest =
         ListCommitsRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -396,6 +430,7 @@ public class CommitTest {
         commitList.get(1),
         listCommitsResponse.getCommits(1));
 
+    //fetch all commits from provided base commit to head commit
     listCommitsRequest =
         ListCommitsRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -413,6 +448,25 @@ public class CommitTest {
         "Commit list not match with expected commit list",
         commitList.get(1),
         listCommitsResponse.getCommits(0));
+
+    //Fetch commits by pagination
+    listCommitsRequest =
+            ListCommitsRequest.newBuilder()
+                    .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                    .setPagination(Pagination.newBuilder().setPageNumber(1).setPageLimit(2).build())
+                    .build();
+    listCommitsResponse =
+            versioningServiceBlockingStub.listCommits(listCommitsRequest);
+    Assert.assertEquals(
+            "Commit count not match with the expected count", 5, listCommitsResponse.getTotalRecords());
+    Assert.assertEquals(
+            "Commit list not match with expected commit list",
+            commitList,
+            listCommitsResponse.getCommitsList());
+    Assert.assertEquals(
+            "Commit list not match with expected commit list",
+            commitList.get(1),
+            listCommitsResponse.getCommits(1));
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
