@@ -17,8 +17,7 @@ import java.util.stream.Stream;
 public class DiffComputer {
   public static <B, F, R> R computeDiff(
       B a, B b, Function<B, F> getter, Function3<F, F, R> computer) {
-    return Utils.removeEmpty(
-        computer.apply(Utils.getOrNull(a, getter), Utils.getOrNull(b, getter)));
+    return computer.apply(Utils.getOrNull(a, getter), Utils.getOrNull(b, getter));
   }
 
   // This applies an algorithm similar to what I discussed with Ravi for merges: gather sets based
@@ -34,8 +33,8 @@ public class DiffComputer {
       Function<B, List<F>> getter,
       Function<F, String> hasher,
       Function3<F, F, R> computer) {
-    Map<String, HashSet<F>> mapA = toMap(getter.apply(a), hasher);
-    Map<String, HashSet<F>> mapB = toMap(getter.apply(b), hasher);
+    Map<String, HashSet<F>> mapA = a == null ? new HashMap<>() : toMap(getter.apply(a), hasher);
+    Map<String, HashSet<F>> mapB = b == null ? new HashMap<>() : toMap(getter.apply(b), hasher);
 
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
@@ -145,21 +144,22 @@ public class DiffComputer {
   }
 
   public static ConfigDiff computeConfigDiff(ConfigBlob a, ConfigBlob b) {
-    return Utils.removeEmpty(new ConfigDiff()
-        .setHyperparameters(
-            computeListDiff(
-                a,
-                b,
-                x -> x == null ? Collections.emptyList() : x.Hyperparameters,
-                x -> x.Name,
-                DiffComputer::computeHyperparameterConfigDiff))
-        .setHyperparameterSet(
-            computeListDiff(
-                a,
-                b,
-                x -> x == null ? Collections.emptyList() : x.HyperparameterSet,
-                x -> x.Name,
-                DiffComputer::computeHyperparameterSetConfigDiff)));
+    return Utils.removeEmpty(
+        new ConfigDiff()
+            .setHyperparameters(
+                computeListDiff(
+                    a,
+                    b,
+                    x -> x.Hyperparameters,
+                    x -> x.Name,
+                    DiffComputer::computeHyperparameterConfigDiff))
+            .setHyperparameterSet(
+                computeListDiff(
+                    a,
+                    b,
+                    x -> x.HyperparameterSet,
+                    x -> x.Name,
+                    DiffComputer::computeHyperparameterSetConfigDiff)));
   }
 
   public static HyperparameterConfigDiff computeHyperparameterConfigDiff(
@@ -204,7 +204,7 @@ public class DiffComputer {
                 computeListDiff(
                     a,
                     b,
-                    x -> x == null ? Collections.emptyList() : x.Components,
+                    x -> x.Components,
                     x -> x.Path,
                     DiffComputer::computePathDatasetComponentDiff)));
   }
@@ -224,7 +224,7 @@ public class DiffComputer {
                 computeListDiff(
                     a,
                     b,
-                    x -> x == null ? Collections.emptyList() : x.Components,
+                    x -> x.Components,
                     x -> x.Path.Path,
                     DiffComputer::computeS3DatasetComponentDiff)));
   }
@@ -251,7 +251,7 @@ public class DiffComputer {
                 computeListDiff(
                     a,
                     b,
-                    x -> x == null ? Collections.emptyList() : x.EnvironmentVariables,
+                    x -> x.EnvironmentVariables,
                     x -> x.Name,
                     DiffComputer::computeEnvironmentVariablesDiff)));
   }
@@ -282,14 +282,14 @@ public class DiffComputer {
                 computeListDiff(
                     a,
                     b,
-                    x -> x == null ? Collections.emptyList() : x.Constraints,
+                    x -> x.Constraints,
                     x -> x.Library,
                     DiffComputer::computePythonRequirementEnvironmentDiff))
             .setRequirements(
                 computeListDiff(
                     a,
                     b,
-                    x -> x == null ? Collections.emptyList() : x.Requirements,
+                    x -> x.Requirements,
                     x -> x.Library,
                     DiffComputer::computePythonRequirementEnvironmentDiff)));
   }
