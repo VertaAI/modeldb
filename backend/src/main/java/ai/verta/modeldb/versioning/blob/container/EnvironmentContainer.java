@@ -224,7 +224,7 @@ public class EnvironmentContainer extends BlobContainer {
     sb.append(":requirements:");
     sb.append(new HashSet<>(blob.getRequirementsList()).hashCode());
     sb.append(":constraints:");
-    sb.append(new HashSet<>(blob.getConstraintsList().hashCode()));
+    sb.append(new HashSet<>(blob.getConstraintsList()).hashCode());
     return FileHasher.getSha(sb.toString());
   }
 
