@@ -19,6 +19,18 @@ from . import diff as diff_module
 
 
 class Commit(object):
+    """
+    Commit within a ModelDB Repository.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Repository.get_commit() <verta._repository.Repository.get_commit>`.
+
+    Attributes
+    ----------
+    id : str or None
+        ID of the Commit, or ``None`` if the Commit has not yet been saved.
+
+    """
     def __init__(self, conn, repo, parent_ids=None, id_=None, date=None, branch_name=None):
         self._conn = conn
 
@@ -206,6 +218,19 @@ class Commit(object):
             )
 
     def update(self, path, blob):
+        """
+        Adds `blob` to this Commit at `path`.
+
+        If `path` is already in this Commit, it will be updated to the new `blob`.
+
+        Parameters
+        ----------
+        path : str
+            Location to add `blob` to.
+        blob : :class:`~verta._repository.blob.Blob`
+            ModelDB versioning blob.
+
+        """
         if not isinstance(blob, blob_module.Blob):
             raise TypeError("unsupported type {}".format(type(blob)))
 
@@ -217,6 +242,25 @@ class Commit(object):
         self._blobs[path] = blob
 
     def get(self, path):
+        """
+        Retrieves the blob at `path` from this Commit.
+
+        Parameters
+        ----------
+        path : str
+            Location of a blob.
+
+        Returns
+        -------
+        blob : :class:`~verta._repository.blob.Blob`
+            ModelDB versioning blob.
+
+        Raises
+        ------
+        LookupError
+            If `path` is not in this Commit.
+
+        """
         self._lazy_load_blobs()
 
         try:
@@ -225,6 +269,20 @@ class Commit(object):
             self._raise_lookup_error(path)
 
     def remove(self, path):
+        """
+        Deletes the blob at `path` from this Commit.
+
+        Parameters
+        ----------
+        path : str
+            Location of a blob.
+
+        Raises
+        ------
+        LookupError
+            If `path` is not in this Commit.
+
+        """
         self._lazy_load_blobs()
 
         if self.id is not None:
@@ -236,6 +294,15 @@ class Commit(object):
             self._raise_lookup_error(path)
 
     def save(self, message):
+        """
+        Saves this commit to ModelDB.
+
+        Parameters
+        ----------
+        message : str
+            Description of this Commit.
+
+        """
         msg = self._to_create_msg(commit_message=message)
         self._save(msg)
 
@@ -259,6 +326,20 @@ class Commit(object):
         self.__dict__ = new_commit.__dict__
 
     def tag(self, tag):
+        """
+        Assigns a tag to this Commit.
+
+        Parameters
+        ----------
+        tag : str
+            Tag.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit has not yet been saved.
+
+        """
         if self.id is None:
             raise RuntimeError("Commit must be saved before it can be tagged")
 
@@ -273,6 +354,20 @@ class Commit(object):
         _utils.raise_for_http_error(response)
 
     def branch(self, branch):
+        """
+        Assigns a branch to this Commit.
+
+        Parameters
+        ----------
+        branch : str
+            Branch name.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit has not yet been saved.
+
+        """
         if self.id is None:
             raise RuntimeError("Commit must be saved before it can be attached to a branch")
 
@@ -289,6 +384,26 @@ class Commit(object):
         self.branch_name = branch
 
     def diff_from(self, reference=None):
+        """
+        Returns the diff from `reference` to `self`.
+
+        Parameters
+        ----------
+        reference : :class:`Commit`, optional
+            Commit to be compared to.
+
+        Returns
+        -------
+        :class:`~verta._repository.diff.Diff`
+            Commit diff.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit or `reference` has not yet been saved, or if they do not belong to the
+            same Repository.
+
+        """
         # TODO: check that they belong to the same repo?
         # TODO: check that this commit has been saved
         if reference is None:
@@ -315,6 +430,25 @@ class Commit(object):
         return diff_module.Diff(response_msg.diffs)
 
     def apply_diff(self, diff, message):
+        """
+        Applies a diff to this Commit.
+
+        This method creates a new Commit in ModelDB, and assigns a new ID to this object.
+
+        Parameters
+        ----------
+        diff : :class:`~verta._repository.diff.Diff`
+            Commit diff.
+        message : str
+            Description of the diff.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit has not yet been saved.
+
+        """
+        # TODO: check that this commit has been saved
         msg = _VersioningService.CreateCommitRequest()
         msg.repository_id.repo_id = self._repo.id
         msg.commit.parent_shas.append(self.id)
@@ -328,6 +462,27 @@ class Commit(object):
         return self.parent.diff_from(self)
 
     def revert(self, other=None, message=None):
+        """
+        Reverts all the Commits beginning with `other` up through this Commit.
+
+        This method creates a new Commit in ModelDB, and assigns a new ID to this object.
+
+        Parameters
+        ----------
+        other : :class:`Commit`, optional
+            Base for the revert. If not provided, this Commit will be reverted.
+        message : str, optional
+            Description of the revert. If not provided, a default message will be used.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit or `other` has not yet been saved, or if they do not belong to the
+            same Repository.
+
+        """
+        # TODO: check that commits have been saved
+        # TODO: check same repo
         if other is None:
             other = self
         if message is None:
@@ -381,6 +536,27 @@ class Commit(object):
         return None
 
     def merge(self, other, message=None):
+        """
+        Merges a branch headed by `other` into this Commit.
+
+        This method creates a new Commit in ModelDB, and assigns a new ID to this object.
+
+        Parameters
+        ----------
+        other : :class:`Commit`
+            Commit to be merged.
+        message : str, optional
+            Description of the merge. If not provided, a default message will be used.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit or `other` has not yet been saved, or if they do not belong to the
+            same Repository.
+
+        """
+        # TODO: check that commits have been saved
+        # TODO: check same repo
         if message is None:
             message = "Merge {} into {}".format(
                 other.branch_name or other.id[:7],

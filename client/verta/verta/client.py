@@ -480,7 +480,7 @@ class Client(object):
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
         """
-        Gets or creates a Repository.
+        Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
 
         Parameters
         ----------
