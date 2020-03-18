@@ -494,7 +494,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`verta._repository.repository.Repository`
+        :class:`~verta._repository.Repository`
             Specified Repository.
 
         """
