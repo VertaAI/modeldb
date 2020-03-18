@@ -9,6 +9,20 @@ from . import commit
 
 
 class Repository(object):
+    """
+    ModelDB Repository.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Client.get_or_create_repository() <verta.client.Client.get_or_create_repository>`.
+
+    Attributes
+    ----------
+    id : str
+        ID of the Repository.
+    name : str
+        Name of the Repository.
+
+    """
     def __init__(self, conn, id_):
         self._conn = conn
 
@@ -97,10 +111,12 @@ class Repository(object):
         Parameters
         ----------
         parents : list of :class:`Commit`
+            Parents of the Commit to be created.
 
         Returns
         -------
         :class:`Commit`
+            New Commit.
 
         """
         parent_ids = []
@@ -124,12 +140,16 @@ class Repository(object):
         Parameters
         ----------
         branch : str, optional
+            Branch of the Commit.
         tag : str, optional
+            Tag of the Commit.
         id : str, optional
+            ID of the Commit.
 
         Returns
         -------
         :class:`Commit`
+            Specified Commit.
 
         """
         num_args = sum(map(lambda x: x is not None, [tag, id, branch]))
