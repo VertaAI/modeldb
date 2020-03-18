@@ -15,24 +15,14 @@ import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.generator.java.util.*;
 import com.pholser.junit.quickcheck.random.*;
 
-public class DatasetDiffGen extends Generator<DatasetDiff> {
-    public DatasetDiffGen() {
-        super(DatasetDiff.class);
+public class DiffStatusEnumDiffStatusGen extends Generator<DiffStatusEnumDiffStatus> {
+    public DiffStatusEnumDiffStatusGen() {
+        super(DiffStatusEnumDiffStatus.class);
     }
 
-    @Override public DatasetDiff generate(
+    @Override public DiffStatusEnumDiffStatus generate(
             SourceOfRandomness r,
             GenerationStatus status) {
-                // if (r.nextBoolean())
-                //     return null;
-
-                DatasetDiff obj = new DatasetDiff();
-                if (r.nextBoolean()) {
-                    obj.setS3(Utils.removeEmpty(gen().type(S3DatasetDiff.class).generate(r, status)));
-                }
-                if (r.nextBoolean()) {
-                    obj.setPath(Utils.removeEmpty(gen().type(PathDatasetDiff.class).generate(r, status)));
-                }
-                return obj;
+                return new DiffStatusEnumDiffStatus(r.choose(new DiffStatusEnum.DiffStatus[]{DiffStatusEnum.DiffStatus.ADDED, DiffStatusEnum.DiffStatus.DELETED, DiffStatusEnum.DiffStatus.MODIFIED}));
     }
 }

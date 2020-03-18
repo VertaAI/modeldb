@@ -114,6 +114,19 @@ public class Utils {
             if (blob.Continuous != null) return other.setContinuous(blob.Continuous);
             return super.postVisitHyperparameterSetConfigBlob(blob);
           }
+
+            @Override
+            public HyperparameterSetConfigDiff postVisitHyperparameterSetConfigDiff(
+                    HyperparameterSetConfigDiff blob) throws ModelDBException {
+                if (blob == null) return null;
+                HyperparameterSetConfigDiff other =
+                        new HyperparameterSetConfigDiff().setName(blob.Name).setStatus(blob.Status);
+                if (blob.DiscreteA != null) return other.setDiscreteA(blob.DiscreteA);
+                if (blob.DiscreteB != null) return other.setDiscreteA(blob.DiscreteB);
+                if (blob.ContinuousA != null) return other.setContinuousA(blob.ContinuousA);
+                if (blob.ContinuousB != null) return other.setContinuousB(blob.ContinuousB);
+                return super.postVisitHyperparameterSetConfigDiff(blob);
+            }
         };
 
     return v.genericPostVisitDeep(b);
