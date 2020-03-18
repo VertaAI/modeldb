@@ -208,13 +208,7 @@ public class EnvironmentContainer extends BlobContainer {
   private String computeSHA(EnvironmentBlob blob) throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
     sb.append("env:");
-    for (EnvironmentVariablesBlob environmentVariablesBlob :
-        new HashSet<>(blob.getEnvironmentVariablesList())) {
-      sb.append(":name:")
-          .append(environmentVariablesBlob.getName())
-          .append("value:")
-          .append(environmentVariablesBlob.getValue());
-    }
+    sb.append(new HashSet<>(blob.getEnvironmentVariablesList()).hashCode());
     sb.append(":command_line:");
     for (String commandLine : blob.getCommandLineList()) {
       sb.append(":command:").append(commandLine);
@@ -228,23 +222,9 @@ public class EnvironmentContainer extends BlobContainer {
     sb.append("python:");
     appendVersion(sb, version);
     sb.append(":requirements:");
-    for (PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob :
-        new HashSet<>(blob.getRequirementsList())) {
-      sb.append(":library:")
-          .append(pythonRequirementEnvironmentBlob.getLibrary())
-          .append(":constraint:")
-          .append(pythonRequirementEnvironmentBlob.getConstraint());
-      appendVersion(sb, pythonRequirementEnvironmentBlob.getVersion());
-    }
+    sb.append(new HashSet<>(blob.getRequirementsList()).hashCode());
     sb.append(":constraints:");
-    for (PythonRequirementEnvironmentBlob pythonConstraintEnvironmentBlob :
-        new HashSet<>(blob.getConstraintsList())) {
-      sb.append(":library:")
-          .append(pythonConstraintEnvironmentBlob.getLibrary())
-          .append(":constraint:")
-          .append(pythonConstraintEnvironmentBlob.getConstraint());
-      appendVersion(sb, pythonConstraintEnvironmentBlob.getVersion());
-    }
+    sb.append(new HashSet<>(blob.getConstraintsList().hashCode()));
     return FileHasher.getSha(sb.toString());
   }
 
