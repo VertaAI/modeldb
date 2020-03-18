@@ -378,9 +378,9 @@ message DeleteTagRequest {
 
 
 message MergeRepositoryCommits {
-    string repository_id = 1;
-    string commit_a = 2;
-    string commit_b = 3;
+    RepositoryIdentification repository_id = 1;
+    string commit_sha_a = 2;
+    string commit_sha_b = 3;
 
     CommitContent content = 4;
     //repeated BlobExpanded conflict_resolution_blobs = 5; // Set of blobs that must resolve any conflict encountered
@@ -582,8 +582,12 @@ service VersioningService {
 
     rpc MergeRepositoryCommits(MergeRepositoryCommits) returns (MergeRepositoryCommits.Response) {
         option (google.api.http) = {
-            post: "/v1/versioning/mergeRepositoryCommits"
+            post: "/v1/versioning//workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/mergeRepositoryCommits"
             body: "*"
+            additional_bindings {
+                put: "/v1/versioning/repositories/{repository_id.repo_id}/mergeRepositoryCommits"
+                body: "*"
+            }
         };
     };
 
