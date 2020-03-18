@@ -13,9 +13,11 @@ _sym_db = _symbol_database.Default()
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ....public.modeldb import CommonService_pb2 as protos_dot_public_dot_modeldb_dot_CommonService__pb2
+from ....public.modeldb import ExperimentRunService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2
 from ....public.modeldb.versioning import Code_pb2 as protos_dot_public_dot_modeldb_dot_versioning_dot_Code__pb2
 from ....public.modeldb.versioning import Config_pb2 as protos_dot_public_dot_modeldb_dot_versioning_dot_Config__pb2
 from ....public.modeldb.versioning import Dataset_pb2 as protos_dot_public_dot_modeldb_dot_versioning_dot_Dataset__pb2
+from ....public.modeldb.versioning import Enums_pb2 as protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2
 from ....public.modeldb.versioning import Environment_pb2 as protos_dot_public_dot_modeldb_dot_versioning_dot_Environment__pb2
 
 
@@ -24,41 +26,11 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.versioning',
   syntax='proto3',
   serialized_options=b'P\001ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning',
-  serialized_pb=b'\n8protos/public/modeldb/versioning/VersioningService.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a\x1cgoogle/api/annotations.proto\x1a)protos/public/modeldb/CommonService.proto\x1a+protos/public/modeldb/versioning/Code.proto\x1a-protos/public/modeldb/versioning/Config.proto\x1a.protos/public/modeldb/versioning/Dataset.proto\x1a\x32protos/public/modeldb/versioning/Environment.proto\"h\n\x06\x43ommit\x12\x13\n\x0bparent_shas\x18\x01 \x03(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x03 \x01(\x04\x12\x0e\n\x06\x61uthor\x18\x04 \x01(\t\x12\x12\n\ncommit_sha\x18\x05 \x01(\t\"B\n\x15InternalFolderElement\x12\x13\n\x0b\x65lement_sha\x18\x01 \x01(\t\x12\x14\n\x0c\x65lement_name\x18\x02 \x01(\t\"\x9c\x01\n\x0eInternalFolder\x12\x41\n\x05\x62lobs\x18\x01 \x03(\x0b\x32\x32.ai.verta.modeldb.versioning.InternalFolderElement\x12G\n\x0bsub_folders\x18\x02 \x03(\x0b\x32\x32.ai.verta.modeldb.versioning.InternalFolderElement\"@\n\rFolderElement\x12\x14\n\x0c\x65lement_name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_by_commit\x18\x03 \x01(\t\"\x84\x01\n\x06\x46older\x12\x39\n\x05\x62lobs\x18\x01 \x03(\x0b\x32*.ai.verta.modeldb.versioning.FolderElement\x12?\n\x0bsub_folders\x18\x02 \x03(\x0b\x32*.ai.verta.modeldb.versioning.FolderElement\"\x85\x02\n\x04\x42lob\x12;\n\x07\x64\x61taset\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.versioning.DatasetBlobH\x00\x12\x43\n\x0b\x65nvironment\x18\x03 \x01(\x0b\x32,.ai.verta.modeldb.versioning.EnvironmentBlobH\x00\x12\x35\n\x04\x63ode\x18\x04 \x01(\x0b\x32%.ai.verta.modeldb.versioning.CodeBlobH\x00\x12\x39\n\x06\x63onfig\x18\x05 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.ConfigBlobH\x00\x42\t\n\x07\x63ontent\"Q\n\x0c\x42lobExpanded\x12\x10\n\x08location\x18\x01 \x03(\t\x12/\n\x04\x62lob\x18\x02 \x01(\x0b\x32!.ai.verta.modeldb.versioning.Blob\"Q\n\x0e\x44iffStatusEnum\"?\n\nDiffStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x41\x44\x44\x45\x44\x10\x01\x12\x0b\n\x07\x44\x45LETED\x10\x02\x12\x0c\n\x08MODIFIED\x10\x03\"\xe3\x02\n\x08\x42lobDiff\x12\x10\n\x08location\x18\x01 \x03(\t\x12\x46\n\x06status\x18\x02 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12;\n\x07\x64\x61taset\x18\x03 \x01(\x0b\x32(.ai.verta.modeldb.versioning.DatasetDiffH\x00\x12\x43\n\x0b\x65nvironment\x18\x04 \x01(\x0b\x32,.ai.verta.modeldb.versioning.EnvironmentDiffH\x00\x12\x35\n\x04\x63ode\x18\x05 \x01(\x0b\x32%.ai.verta.modeldb.versioning.CodeDiffH\x00\x12\x39\n\x06\x63onfig\x18\x06 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.ConfigDiffH\x00\x42\t\n\x07\x63ontent\"\xc2\x01\n\nRepository\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x03 \x01(\x04\x12\x14\n\x0c\x64\x61te_updated\x18\x04 \x01(\x04\x12\x14\n\x0cworkspace_id\x18\x05 \x01(\t\x12I\n\x0eworkspace_type\x18\x06 \x01(\x0e\x32\x31.ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType\x12\r\n\x05owner\x18\n \x01(\t\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"E\n\x1dRepositoryNamedIdentification\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\"y\n\x18RepositoryIdentification\x12L\n\x08named_id\x18\x01 \x01(\x0b\x32:.ai.verta.modeldb.versioning.RepositoryNamedIdentification\x12\x0f\n\x07repo_id\x18\x02 \x01(\x04\"\xd0\x01\n\x17ListRepositoriesRequest\x12\x16\n\x0eworkspace_name\x18\x01 \x01(\t\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x1a`\n\x08Response\x12=\n\x0crepositories\x18\x01 \x03(\x0b\x32\'.ai.verta.modeldb.versioning.Repository\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa2\x01\n\x14GetRepositoryRequest\x12\x41\n\x02id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x1aG\n\x08Response\x12;\n\nrepository\x18\x01 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Repository\"\xd8\x01\n\rSetRepository\x12\x41\n\x02id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\nrepository\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Repository\x1aG\n\x08Response\x12;\n\nrepository\x18\x01 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Repository\"\x83\x01\n\x17\x44\x65leteRepositoryRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xa2\x02\n\x12ListCommitsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x12\x13\n\x0b\x63ommit_base\x18\x03 \x01(\t\x12\x13\n\x0b\x63ommit_head\x18\x04 \x01(\t\x1aW\n\x08Response\x12\x34\n\x07\x63ommits\x18\x01 \x03(\x0b\x32#.ai.verta.modeldb.versioning.Commit\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xb5\x01\n\x10GetCommitRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x12\n\ncommit_sha\x18\x02 \x01(\t\x1a?\n\x08Response\x12\x33\n\x06\x63ommit\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\"\xde\x02\n\x13\x43reateCommitRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x33\n\x06\x63ommit\x18\x02 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\x12\x38\n\x05\x62lobs\x18\x03 \x03(\x0b\x32).ai.verta.modeldb.versioning.BlobExpanded\x12\x13\n\x0b\x63ommit_base\x18\x04 \x01(\t\x12\x34\n\x05\x64iffs\x18\x05 \x03(\x0b\x32%.ai.verta.modeldb.versioning.BlobDiff\x1a?\n\x08Response\x12\x33\n\x06\x63ommit\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\"\x83\x01\n\x13\x44\x65leteCommitRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x12\n\ncommit_sha\x18\x02 \x01(\t\x1a\n\n\x08Response\"\xad\x02\n\x16ListCommitBlobsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x12\x17\n\x0flocation_prefix\x18\x04 \x03(\t\x1a[\n\x08Response\x12\x38\n\x05\x62lobs\x18\x01 \x03(\x0b\x32).ai.verta.modeldb.versioning.BlobExpanded\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x93\x02\n\x19GetCommitComponentRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x12\n\ncommit_sha\x18\x02 \x01(\t\x12\x10\n\x08location\x18\x03 \x03(\t\x1a\x81\x01\n\x08Response\x12\x35\n\x06\x66older\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.FolderH\x00\x12\x31\n\x04\x62lob\x18\x02 \x01(\x0b\x32!.ai.verta.modeldb.versioning.BlobH\x00\x42\x0b\n\tcomponent\"\xeb\x01\n\x1c\x43omputeRepositoryDiffRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x10\n\x08\x63ommit_a\x18\x02 \x01(\t\x12\x10\n\x08\x63ommit_b\x18\x03 \x01(\t\x12\x17\n\x0flocation_prefix\x18\x04 \x03(\t\x1a@\n\x08Response\x12\x34\n\x05\x64iffs\x18\x01 \x03(\x0b\x32%.ai.verta.modeldb.versioning.BlobDiff\"\x8e\x02\n\x18ListBranchCommitsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x12\x0e\n\x06\x62ranch\x18\x03 \x01(\t\x1aW\n\x08Response\x12\x34\n\x07\x63ommits\x18\x01 \x03(\x0b\x32#.ai.verta.modeldb.versioning.Commit\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x98\x01\n\x13ListBranchesRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x1a\x33\n\x08Response\x12\x10\n\x08\x62ranches\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xb1\x01\n\x10GetBranchRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0e\n\x06\x62ranch\x18\x02 \x01(\t\x1a?\n\x08Response\x12\x33\n\x06\x63ommit\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\"\x90\x01\n\x10SetBranchRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0e\n\x06\x62ranch\x18\x02 \x01(\t\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x1a\n\n\x08Response\"\x7f\n\x13\x44\x65leteBranchRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0e\n\x06\x62ranch\x18\x02 \x01(\t\x1a\n\n\x08Response\"\x90\x01\n\x0fListTagsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x1a/\n\x08Response\x12\x0c\n\x04tags\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xab\x01\n\rGetTagRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a?\n\x08Response\x12\x33\n\x06\x63ommit\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\"\x8a\x01\n\rSetTagRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0b\n\x03tag\x18\x02 \x01(\t\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x1a\n\n\x08Response\"y\n\x10\x44\x65leteTagRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\n\n\x08Response2\x8f\x34\n\x11VersioningService\x12\xe7\x01\n\x10ListRepositories\x12\x34.ai.verta.modeldb.versioning.ListRepositoriesRequest\x1a=.ai.verta.modeldb.versioning.ListRepositoriesRequest.Response\"^\x82\xd3\xe4\x93\x02X\x12\x37/v1/versioning/workspaces/{workspace_name}/repositoriesZ\x1d\x12\x1b/v1/versioning/repositories\x12\x8c\x02\n\rGetRepository\x12\x31.ai.verta.modeldb.versioning.GetRepositoryRequest\x1a:.ai.verta.modeldb.versioning.GetRepositoryRequest.Response\"\x8b\x01\x82\xd3\xe4\x93\x02\x84\x01\x12V/v1/versioning/workspaces/{id.named_id.workspace_name}/repositories/{id.named_id.name}Z*\x12(/v1/versioning/repositories/{id.repo_id}\x12\xcc\x01\n\x10\x43reateRepository\x12*.ai.verta.modeldb.versioning.SetRepository\x1a\x33.ai.verta.modeldb.versioning.SetRepository.Response\"W\x82\xd3\xe4\x93\x02Q\"C/v1/versioning/workspaces/{id.named_id.workspace_name}/repositories:\nrepository\x12\x99\x02\n\x10UpdateRepository\x12*.ai.verta.modeldb.versioning.SetRepository\x1a\x33.ai.verta.modeldb.versioning.SetRepository.Response\"\xa3\x01\x82\xd3\xe4\x93\x02\x9c\x01\x1aV/v1/versioning/workspaces/{id.named_id.workspace_name}/repositories/{id.named_id.name}:\nrepositoryZ6\x1a(/v1/versioning/repositories/{id.repo_id}:\nrepository\x12\xb6\x02\n\x10\x44\x65leteRepository\x12\x34.ai.verta.modeldb.versioning.DeleteRepositoryRequest\x1a=.ai.verta.modeldb.versioning.DeleteRepositoryRequest.Response\"\xac\x01\x82\xd3\xe4\x93\x02\xa5\x01*l/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}Z5*3/v1/versioning/repositories/{repository_id.repo_id}\x12\xb7\x02\n\x0bListCommits\x12/.ai.verta.modeldb.versioning.ListCommitsRequest\x1a\x38.ai.verta.modeldb.versioning.ListCommitsRequest.Response\"\xbc\x01\x82\xd3\xe4\x93\x02\xb5\x01\x12t/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commitsZ=\x12;/v1/versioning/repositories/{repository_id.repo_id}/commits\x12\xcc\x02\n\tGetCommit\x12-.ai.verta.modeldb.versioning.GetCommitRequest\x1a\x36.ai.verta.modeldb.versioning.GetCommitRequest.Response\"\xd7\x01\x82\xd3\xe4\x93\x02\xd0\x01\x12\x81\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}ZJ\x12H/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}\x12\xc0\x02\n\x0c\x43reateCommit\x12\x30.ai.verta.modeldb.versioning.CreateCommitRequest\x1a\x39.ai.verta.modeldb.versioning.CreateCommitRequest.Response\"\xc2\x01\x82\xd3\xe4\x93\x02\xbb\x01\"t/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits:\x01*Z@\";/v1/versioning/repositories/{repository_id.repo_id}/commits:\x01*\x12\xd5\x02\n\x0c\x44\x65leteCommit\x12\x30.ai.verta.modeldb.versioning.DeleteCommitRequest\x1a\x39.ai.verta.modeldb.versioning.DeleteCommitRequest.Response\"\xd7\x01\x82\xd3\xe4\x93\x02\xd0\x01*\x81\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}ZJ*H/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}\x12\xea\x02\n\x0fListCommitBlobs\x12\x33.ai.verta.modeldb.versioning.ListCommitBlobsRequest\x1a<.ai.verta.modeldb.versioning.ListCommitBlobsRequest.Response\"\xe3\x01\x82\xd3\xe4\x93\x02\xdc\x01\x12\x87\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blobsZP\x12N/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blobs\x12\xf1\x02\n\x12GetCommitComponent\x12\x36.ai.verta.modeldb.versioning.GetCommitComponentRequest\x1a?.ai.verta.modeldb.versioning.GetCommitComponentRequest.Response\"\xe1\x01\x82\xd3\xe4\x93\x02\xda\x01\x12\x86\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/pathZO\x12M/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path\x12\xcf\x02\n\x15\x43omputeRepositoryDiff\x12\x39.ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest\x1a\x42.ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest.Response\"\xb6\x01\x82\xd3\xe4\x93\x02\xaf\x01\x12q/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/diffZ:\x12\x38/v1/versioning/repositories/{repository_id.repo_id}/diff\x12\xbc\x02\n\x0cListBranches\x12\x30.ai.verta.modeldb.versioning.ListBranchesRequest\x1a\x39.ai.verta.modeldb.versioning.ListBranchesRequest.Response\"\xbe\x01\x82\xd3\xe4\x93\x02\xb7\x01\x12u/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branchesZ>\x12</v1/versioning/repositories/{repository_id.repo_id}/branches\x12\xc5\x02\n\tGetBranch\x12-.ai.verta.modeldb.versioning.GetBranchRequest\x1a\x36.ai.verta.modeldb.versioning.GetBranchRequest.Response\"\xd0\x01\x82\xd3\xe4\x93\x02\xc9\x01\x12~/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}ZG\x12\x45/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}\x12\xdd\x02\n\tSetBranch\x12-.ai.verta.modeldb.versioning.SetBranchRequest\x1a\x36.ai.verta.modeldb.versioning.SetBranchRequest.Response\"\xe8\x01\x82\xd3\xe4\x93\x02\xe1\x01\x1a~/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}:\ncommit_shaZS\x1a\x45/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}:\ncommit_sha\x12\xce\x02\n\x0c\x44\x65leteBranch\x12\x30.ai.verta.modeldb.versioning.DeleteBranchRequest\x1a\x39.ai.verta.modeldb.versioning.DeleteBranchRequest.Response\"\xd0\x01\x82\xd3\xe4\x93\x02\xc9\x01*~/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}ZG*E/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}\x12\xee\x02\n\x11ListBranchCommits\x12\x35.ai.verta.modeldb.versioning.ListBranchCommitsRequest\x1a>.ai.verta.modeldb.versioning.ListBranchCommitsRequest.Response\"\xe1\x01\x82\xd3\xe4\x93\x02\xda\x01\x12\x86\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/commitsZO\x12M/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}/commits\x12\xa8\x02\n\x08ListTags\x12,.ai.verta.modeldb.versioning.ListTagsRequest\x1a\x35.ai.verta.modeldb.versioning.ListTagsRequest.Response\"\xb6\x01\x82\xd3\xe4\x93\x02\xaf\x01\x12q/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tagsZ:\x12\x38/v1/versioning/repositories/{repository_id.repo_id}/tags\x12\xae\x02\n\x06GetTag\x12*.ai.verta.modeldb.versioning.GetTagRequest\x1a\x33.ai.verta.modeldb.versioning.GetTagRequest.Response\"\xc2\x01\x82\xd3\xe4\x93\x02\xbb\x01\x12w/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}Z@\x12>/v1/versioning/repositories/{repository_id.repo_id}/tags/{tag}\x12\xc6\x02\n\x06SetTag\x12*.ai.verta.modeldb.versioning.SetTagRequest\x1a\x33.ai.verta.modeldb.versioning.SetTagRequest.Response\"\xda\x01\x82\xd3\xe4\x93\x02\xd3\x01\x1aw/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}:\ncommit_shaZL\x1a>/v1/versioning/repositories/{repository_id.repo_id}/tags/{tag}:\ncommit_sha\x12\xb7\x02\n\tDeleteTag\x12-.ai.verta.modeldb.versioning.DeleteTagRequest\x1a\x36.ai.verta.modeldb.versioning.DeleteTagRequest.Response\"\xc2\x01\x82\xd3\xe4\x93\x02\xbb\x01*w/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}Z@*>/v1/versioning/repositories/{repository_id.repo_id}/tags/{tag}BMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
+  serialized_pb=b'\n8protos/public/modeldb/versioning/VersioningService.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a\x1cgoogle/api/annotations.proto\x1a)protos/public/modeldb/CommonService.proto\x1a\x30protos/public/modeldb/ExperimentRunService.proto\x1a+protos/public/modeldb/versioning/Code.proto\x1a-protos/public/modeldb/versioning/Config.proto\x1a.protos/public/modeldb/versioning/Dataset.proto\x1a,protos/public/modeldb/versioning/Enums.proto\x1a\x32protos/public/modeldb/versioning/Environment.proto\"h\n\x06\x43ommit\x12\x13\n\x0bparent_shas\x18\x01 \x03(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x03 \x01(\x04\x12\x0e\n\x06\x61uthor\x18\x04 \x01(\t\x12\x12\n\ncommit_sha\x18\x05 \x01(\t\"B\n\x15InternalFolderElement\x12\x13\n\x0b\x65lement_sha\x18\x01 \x01(\t\x12\x14\n\x0c\x65lement_name\x18\x02 \x01(\t\"\x9c\x01\n\x0eInternalFolder\x12\x41\n\x05\x62lobs\x18\x01 \x03(\x0b\x32\x32.ai.verta.modeldb.versioning.InternalFolderElement\x12G\n\x0bsub_folders\x18\x02 \x03(\x0b\x32\x32.ai.verta.modeldb.versioning.InternalFolderElement\"@\n\rFolderElement\x12\x14\n\x0c\x65lement_name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_by_commit\x18\x03 \x01(\t\"\x84\x01\n\x06\x46older\x12\x39\n\x05\x62lobs\x18\x01 \x03(\x0b\x32*.ai.verta.modeldb.versioning.FolderElement\x12?\n\x0bsub_folders\x18\x02 \x03(\x0b\x32*.ai.verta.modeldb.versioning.FolderElement\"\x85\x02\n\x04\x42lob\x12;\n\x07\x64\x61taset\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.versioning.DatasetBlobH\x00\x12\x43\n\x0b\x65nvironment\x18\x03 \x01(\x0b\x32,.ai.verta.modeldb.versioning.EnvironmentBlobH\x00\x12\x35\n\x04\x63ode\x18\x04 \x01(\x0b\x32%.ai.verta.modeldb.versioning.CodeBlobH\x00\x12\x39\n\x06\x63onfig\x18\x05 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.ConfigBlobH\x00\x42\t\n\x07\x63ontent\"Q\n\x0c\x42lobExpanded\x12\x10\n\x08location\x18\x01 \x03(\t\x12/\n\x04\x62lob\x18\x02 \x01(\x0b\x32!.ai.verta.modeldb.versioning.Blob\"\xe3\x02\n\x08\x42lobDiff\x12\x10\n\x08location\x18\x01 \x03(\t\x12\x46\n\x06status\x18\x02 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12;\n\x07\x64\x61taset\x18\x03 \x01(\x0b\x32(.ai.verta.modeldb.versioning.DatasetDiffH\x00\x12\x43\n\x0b\x65nvironment\x18\x04 \x01(\x0b\x32,.ai.verta.modeldb.versioning.EnvironmentDiffH\x00\x12\x35\n\x04\x63ode\x18\x05 \x01(\x0b\x32%.ai.verta.modeldb.versioning.CodeDiffH\x00\x12\x39\n\x06\x63onfig\x18\x06 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.ConfigDiffH\x00\x42\t\n\x07\x63ontent\"\xc2\x01\n\nRepository\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x03 \x01(\x04\x12\x14\n\x0c\x64\x61te_updated\x18\x04 \x01(\x04\x12\x14\n\x0cworkspace_id\x18\x05 \x01(\t\x12I\n\x0eworkspace_type\x18\x06 \x01(\x0e\x32\x31.ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType\x12\r\n\x05owner\x18\n \x01(\t\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"E\n\x1dRepositoryNamedIdentification\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\"y\n\x18RepositoryIdentification\x12L\n\x08named_id\x18\x01 \x01(\x0b\x32:.ai.verta.modeldb.versioning.RepositoryNamedIdentification\x12\x0f\n\x07repo_id\x18\x02 \x01(\x04\"\xd0\x01\n\x17ListRepositoriesRequest\x12\x16\n\x0eworkspace_name\x18\x01 \x01(\t\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x1a`\n\x08Response\x12=\n\x0crepositories\x18\x01 \x03(\x0b\x32\'.ai.verta.modeldb.versioning.Repository\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa2\x01\n\x14GetRepositoryRequest\x12\x41\n\x02id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x1aG\n\x08Response\x12;\n\nrepository\x18\x01 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Repository\"\xd8\x01\n\rSetRepository\x12\x41\n\x02id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\nrepository\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Repository\x1aG\n\x08Response\x12;\n\nrepository\x18\x01 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Repository\"\x83\x01\n\x17\x44\x65leteRepositoryRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xa2\x02\n\x12ListCommitsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x12\x13\n\x0b\x63ommit_base\x18\x03 \x01(\t\x12\x13\n\x0b\x63ommit_head\x18\x04 \x01(\t\x1aW\n\x08Response\x12\x34\n\x07\x63ommits\x18\x01 \x03(\x0b\x32#.ai.verta.modeldb.versioning.Commit\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xb5\x01\n\x10GetCommitRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x12\n\ncommit_sha\x18\x02 \x01(\t\x1a?\n\x08Response\x12\x33\n\x06\x63ommit\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\"\xde\x02\n\x13\x43reateCommitRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x33\n\x06\x63ommit\x18\x02 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\x12\x38\n\x05\x62lobs\x18\x03 \x03(\x0b\x32).ai.verta.modeldb.versioning.BlobExpanded\x12\x13\n\x0b\x63ommit_base\x18\x04 \x01(\t\x12\x34\n\x05\x64iffs\x18\x05 \x03(\x0b\x32%.ai.verta.modeldb.versioning.BlobDiff\x1a?\n\x08Response\x12\x33\n\x06\x63ommit\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\"\x83\x01\n\x13\x44\x65leteCommitRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x12\n\ncommit_sha\x18\x02 \x01(\t\x1a\n\n\x08Response\"\xad\x02\n\x16ListCommitBlobsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x12\x17\n\x0flocation_prefix\x18\x04 \x03(\t\x1a[\n\x08Response\x12\x38\n\x05\x62lobs\x18\x01 \x03(\x0b\x32).ai.verta.modeldb.versioning.BlobExpanded\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x92\x02\n\x1fListCommitExperimentRunsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x1aP\n\x08Response\x12-\n\x04runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa2\x02\n\x1dListBlobExperimentRunsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x12\x10\n\x08location\x18\x04 \x03(\t\x1aP\n\x08Response\x12-\n\x04runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x93\x02\n\x19GetCommitComponentRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x12\n\ncommit_sha\x18\x02 \x01(\t\x12\x10\n\x08location\x18\x03 \x03(\t\x1a\x81\x01\n\x08Response\x12\x35\n\x06\x66older\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.FolderH\x00\x12\x31\n\x04\x62lob\x18\x02 \x01(\x0b\x32!.ai.verta.modeldb.versioning.BlobH\x00\x42\x0b\n\tcomponent\"\xeb\x01\n\x1c\x43omputeRepositoryDiffRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x10\n\x08\x63ommit_a\x18\x02 \x01(\t\x12\x10\n\x08\x63ommit_b\x18\x03 \x01(\t\x12\x17\n\x0flocation_prefix\x18\x04 \x03(\t\x1a@\n\x08Response\x12\x34\n\x05\x64iffs\x18\x01 \x03(\x0b\x32%.ai.verta.modeldb.versioning.BlobDiff\"\x8e\x02\n\x18ListBranchCommitsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12;\n\npagination\x18\x02 \x01(\x0b\x32\'.ai.verta.modeldb.versioning.Pagination\x12\x0e\n\x06\x62ranch\x18\x03 \x01(\t\x1aW\n\x08Response\x12\x34\n\x07\x63ommits\x18\x01 \x03(\x0b\x32#.ai.verta.modeldb.versioning.Commit\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x98\x01\n\x13ListBranchesRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x1a\x33\n\x08Response\x12\x10\n\x08\x62ranches\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xb1\x01\n\x10GetBranchRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0e\n\x06\x62ranch\x18\x02 \x01(\t\x1a?\n\x08Response\x12\x33\n\x06\x63ommit\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\"\x90\x01\n\x10SetBranchRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0e\n\x06\x62ranch\x18\x02 \x01(\t\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x1a\n\n\x08Response\"\x7f\n\x13\x44\x65leteBranchRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0e\n\x06\x62ranch\x18\x02 \x01(\t\x1a\n\n\x08Response\"\x90\x01\n\x0fListTagsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x1a/\n\x08Response\x12\x0c\n\x04tags\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xab\x01\n\rGetTagRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a?\n\x08Response\x12\x33\n\x06\x63ommit\x18\x01 \x01(\x0b\x32#.ai.verta.modeldb.versioning.Commit\"\x8a\x01\n\rSetTagRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0b\n\x03tag\x18\x02 \x01(\t\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x1a\n\n\x08Response\"y\n\x10\x44\x65leteTagRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\n\n\x08Response2\x9f:\n\x11VersioningService\x12\xe7\x01\n\x10ListRepositories\x12\x34.ai.verta.modeldb.versioning.ListRepositoriesRequest\x1a=.ai.verta.modeldb.versioning.ListRepositoriesRequest.Response\"^\x82\xd3\xe4\x93\x02X\x12\x37/v1/versioning/workspaces/{workspace_name}/repositoriesZ\x1d\x12\x1b/v1/versioning/repositories\x12\x8c\x02\n\rGetRepository\x12\x31.ai.verta.modeldb.versioning.GetRepositoryRequest\x1a:.ai.verta.modeldb.versioning.GetRepositoryRequest.Response\"\x8b\x01\x82\xd3\xe4\x93\x02\x84\x01\x12V/v1/versioning/workspaces/{id.named_id.workspace_name}/repositories/{id.named_id.name}Z*\x12(/v1/versioning/repositories/{id.repo_id}\x12\xcc\x01\n\x10\x43reateRepository\x12*.ai.verta.modeldb.versioning.SetRepository\x1a\x33.ai.verta.modeldb.versioning.SetRepository.Response\"W\x82\xd3\xe4\x93\x02Q\"C/v1/versioning/workspaces/{id.named_id.workspace_name}/repositories:\nrepository\x12\x99\x02\n\x10UpdateRepository\x12*.ai.verta.modeldb.versioning.SetRepository\x1a\x33.ai.verta.modeldb.versioning.SetRepository.Response\"\xa3\x01\x82\xd3\xe4\x93\x02\x9c\x01\x1aV/v1/versioning/workspaces/{id.named_id.workspace_name}/repositories/{id.named_id.name}:\nrepositoryZ6\x1a(/v1/versioning/repositories/{id.repo_id}:\nrepository\x12\xb6\x02\n\x10\x44\x65leteRepository\x12\x34.ai.verta.modeldb.versioning.DeleteRepositoryRequest\x1a=.ai.verta.modeldb.versioning.DeleteRepositoryRequest.Response\"\xac\x01\x82\xd3\xe4\x93\x02\xa5\x01*l/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}Z5*3/v1/versioning/repositories/{repository_id.repo_id}\x12\xb7\x02\n\x0bListCommits\x12/.ai.verta.modeldb.versioning.ListCommitsRequest\x1a\x38.ai.verta.modeldb.versioning.ListCommitsRequest.Response\"\xbc\x01\x82\xd3\xe4\x93\x02\xb5\x01\x12t/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commitsZ=\x12;/v1/versioning/repositories/{repository_id.repo_id}/commits\x12\xcc\x02\n\tGetCommit\x12-.ai.verta.modeldb.versioning.GetCommitRequest\x1a\x36.ai.verta.modeldb.versioning.GetCommitRequest.Response\"\xd7\x01\x82\xd3\xe4\x93\x02\xd0\x01\x12\x81\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}ZJ\x12H/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}\x12\xc0\x02\n\x0c\x43reateCommit\x12\x30.ai.verta.modeldb.versioning.CreateCommitRequest\x1a\x39.ai.verta.modeldb.versioning.CreateCommitRequest.Response\"\xc2\x01\x82\xd3\xe4\x93\x02\xbb\x01\"t/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits:\x01*Z@\";/v1/versioning/repositories/{repository_id.repo_id}/commits:\x01*\x12\xd5\x02\n\x0c\x44\x65leteCommit\x12\x30.ai.verta.modeldb.versioning.DeleteCommitRequest\x1a\x39.ai.verta.modeldb.versioning.DeleteCommitRequest.Response\"\xd7\x01\x82\xd3\xe4\x93\x02\xd0\x01*\x81\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}ZJ*H/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}\x12\xea\x02\n\x0fListCommitBlobs\x12\x33.ai.verta.modeldb.versioning.ListCommitBlobsRequest\x1a<.ai.verta.modeldb.versioning.ListCommitBlobsRequest.Response\"\xe3\x01\x82\xd3\xe4\x93\x02\xdc\x01\x12\x87\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blobsZP\x12N/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blobs\x12\x83\x03\n\x18ListCommitExperimentRuns\x12<.ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest\x1a\x45.ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.Response\"\xe1\x01\x82\xd3\xe4\x93\x02\xda\x01\x12\x86\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runsZO\x12M/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs\x12\x87\x03\n\x16ListBlobExperimentRuns\x12:.ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest\x1a\x43.ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.Response\"\xeb\x01\x82\xd3\xe4\x93\x02\xe4\x01\x12\x8b\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runsZT\x12R/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs\x12\xf1\x02\n\x12GetCommitComponent\x12\x36.ai.verta.modeldb.versioning.GetCommitComponentRequest\x1a?.ai.verta.modeldb.versioning.GetCommitComponentRequest.Response\"\xe1\x01\x82\xd3\xe4\x93\x02\xda\x01\x12\x86\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/pathZO\x12M/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path\x12\xcf\x02\n\x15\x43omputeRepositoryDiff\x12\x39.ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest\x1a\x42.ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest.Response\"\xb6\x01\x82\xd3\xe4\x93\x02\xaf\x01\x12q/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/diffZ:\x12\x38/v1/versioning/repositories/{repository_id.repo_id}/diff\x12\xbc\x02\n\x0cListBranches\x12\x30.ai.verta.modeldb.versioning.ListBranchesRequest\x1a\x39.ai.verta.modeldb.versioning.ListBranchesRequest.Response\"\xbe\x01\x82\xd3\xe4\x93\x02\xb7\x01\x12u/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branchesZ>\x12</v1/versioning/repositories/{repository_id.repo_id}/branches\x12\xc5\x02\n\tGetBranch\x12-.ai.verta.modeldb.versioning.GetBranchRequest\x1a\x36.ai.verta.modeldb.versioning.GetBranchRequest.Response\"\xd0\x01\x82\xd3\xe4\x93\x02\xc9\x01\x12~/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}ZG\x12\x45/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}\x12\xdd\x02\n\tSetBranch\x12-.ai.verta.modeldb.versioning.SetBranchRequest\x1a\x36.ai.verta.modeldb.versioning.SetBranchRequest.Response\"\xe8\x01\x82\xd3\xe4\x93\x02\xe1\x01\x1a~/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}:\ncommit_shaZS\x1a\x45/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}:\ncommit_sha\x12\xce\x02\n\x0c\x44\x65leteBranch\x12\x30.ai.verta.modeldb.versioning.DeleteBranchRequest\x1a\x39.ai.verta.modeldb.versioning.DeleteBranchRequest.Response\"\xd0\x01\x82\xd3\xe4\x93\x02\xc9\x01*~/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}ZG*E/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}\x12\xee\x02\n\x11ListBranchCommits\x12\x35.ai.verta.modeldb.versioning.ListBranchCommitsRequest\x1a>.ai.verta.modeldb.versioning.ListBranchCommitsRequest.Response\"\xe1\x01\x82\xd3\xe4\x93\x02\xda\x01\x12\x86\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/commitsZO\x12M/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}/commits\x12\xa8\x02\n\x08ListTags\x12,.ai.verta.modeldb.versioning.ListTagsRequest\x1a\x35.ai.verta.modeldb.versioning.ListTagsRequest.Response\"\xb6\x01\x82\xd3\xe4\x93\x02\xaf\x01\x12q/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tagsZ:\x12\x38/v1/versioning/repositories/{repository_id.repo_id}/tags\x12\xae\x02\n\x06GetTag\x12*.ai.verta.modeldb.versioning.GetTagRequest\x1a\x33.ai.verta.modeldb.versioning.GetTagRequest.Response\"\xc2\x01\x82\xd3\xe4\x93\x02\xbb\x01\x12w/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}Z@\x12>/v1/versioning/repositories/{repository_id.repo_id}/tags/{tag}\x12\xc6\x02\n\x06SetTag\x12*.ai.verta.modeldb.versioning.SetTagRequest\x1a\x33.ai.verta.modeldb.versioning.SetTagRequest.Response\"\xda\x01\x82\xd3\xe4\x93\x02\xd3\x01\x1aw/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}:\ncommit_shaZL\x1a>/v1/versioning/repositories/{repository_id.repo_id}/tags/{tag}:\ncommit_sha\x12\xb7\x02\n\tDeleteTag\x12-.ai.verta.modeldb.versioning.DeleteTagRequest\x1a\x36.ai.verta.modeldb.versioning.DeleteTagRequest.Response\"\xc2\x01\x82\xd3\xe4\x93\x02\xbb\x01*w/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}Z@*>/v1/versioning/repositories/{repository_id.repo_id}/tags/{tag}BMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_CommonService__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Code__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Config__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Dataset__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Environment__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_CommonService__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Code__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Config__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Dataset__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Environment__pb2.DESCRIPTOR,])
 
 
-
-_DIFFSTATUSENUM_DIFFSTATUS = _descriptor.EnumDescriptor(
-  name='DiffStatus',
-  full_name='ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='UNKNOWN', index=0, number=0,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='ADDED', index=1, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='DELETED', index=2, number=2,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='MODIFIED', index=3, number=3,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=1253,
-  serialized_end=1316,
-)
-_sym_db.RegisterEnumDescriptor(_DIFFSTATUSENUM_DIFFSTATUS)
 
 
 _COMMIT = _descriptor.Descriptor(
@@ -115,8 +87,8 @@ _COMMIT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=354,
-  serialized_end=458,
+  serialized_start=450,
+  serialized_end=554,
 )
 
 
@@ -153,8 +125,8 @@ _INTERNALFOLDERELEMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=460,
-  serialized_end=526,
+  serialized_start=556,
+  serialized_end=622,
 )
 
 
@@ -191,8 +163,8 @@ _INTERNALFOLDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=529,
-  serialized_end=685,
+  serialized_start=625,
+  serialized_end=781,
 )
 
 
@@ -229,8 +201,8 @@ _FOLDERELEMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=687,
-  serialized_end=751,
+  serialized_start=783,
+  serialized_end=847,
 )
 
 
@@ -267,8 +239,8 @@ _FOLDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=754,
-  serialized_end=886,
+  serialized_start=850,
+  serialized_end=982,
 )
 
 
@@ -322,8 +294,8 @@ _BLOB = _descriptor.Descriptor(
       name='content', full_name='ai.verta.modeldb.versioning.Blob.content',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=889,
-  serialized_end=1150,
+  serialized_start=985,
+  serialized_end=1246,
 )
 
 
@@ -360,33 +332,8 @@ _BLOBEXPANDED = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1152,
-  serialized_end=1233,
-)
-
-
-_DIFFSTATUSENUM = _descriptor.Descriptor(
-  name='DiffStatusEnum',
-  full_name='ai.verta.modeldb.versioning.DiffStatusEnum',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-    _DIFFSTATUSENUM_DIFFSTATUS,
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1235,
-  serialized_end=1316,
+  serialized_start=1248,
+  serialized_end=1329,
 )
 
 
@@ -454,8 +401,8 @@ _BLOBDIFF = _descriptor.Descriptor(
       name='content', full_name='ai.verta.modeldb.versioning.BlobDiff.content',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1319,
-  serialized_end=1674,
+  serialized_start=1332,
+  serialized_end=1687,
 )
 
 
@@ -527,8 +474,8 @@ _REPOSITORY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1677,
-  serialized_end=1871,
+  serialized_start=1690,
+  serialized_end=1884,
 )
 
 
@@ -565,8 +512,8 @@ _PAGINATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1873,
-  serialized_end=1926,
+  serialized_start=1886,
+  serialized_end=1939,
 )
 
 
@@ -603,8 +550,8 @@ _REPOSITORYNAMEDIDENTIFICATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1928,
-  serialized_end=1997,
+  serialized_start=1941,
+  serialized_end=2010,
 )
 
 
@@ -641,8 +588,8 @@ _REPOSITORYIDENTIFICATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1999,
-  serialized_end=2120,
+  serialized_start=2012,
+  serialized_end=2133,
 )
 
 
@@ -679,8 +626,8 @@ _LISTREPOSITORIESREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2235,
-  serialized_end=2331,
+  serialized_start=2248,
+  serialized_end=2344,
 )
 
 _LISTREPOSITORIESREQUEST = _descriptor.Descriptor(
@@ -716,8 +663,8 @@ _LISTREPOSITORIESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2123,
-  serialized_end=2331,
+  serialized_start=2136,
+  serialized_end=2344,
 )
 
 
@@ -747,8 +694,8 @@ _GETREPOSITORYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2425,
-  serialized_end=2496,
+  serialized_start=2438,
+  serialized_end=2509,
 )
 
 _GETREPOSITORYREQUEST = _descriptor.Descriptor(
@@ -777,8 +724,8 @@ _GETREPOSITORYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2334,
-  serialized_end=2496,
+  serialized_start=2347,
+  serialized_end=2509,
 )
 
 
@@ -808,8 +755,8 @@ _SETREPOSITORY_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2425,
-  serialized_end=2496,
+  serialized_start=2438,
+  serialized_end=2509,
 )
 
 _SETREPOSITORY = _descriptor.Descriptor(
@@ -845,8 +792,8 @@ _SETREPOSITORY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2499,
-  serialized_end=2715,
+  serialized_start=2512,
+  serialized_end=2728,
 )
 
 
@@ -876,8 +823,8 @@ _DELETEREPOSITORYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2823,
-  serialized_end=2849,
+  serialized_start=2836,
+  serialized_end=2862,
 )
 
 _DELETEREPOSITORYREQUEST = _descriptor.Descriptor(
@@ -906,8 +853,8 @@ _DELETEREPOSITORYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2718,
-  serialized_end=2849,
+  serialized_start=2731,
+  serialized_end=2862,
 )
 
 
@@ -944,8 +891,8 @@ _LISTCOMMITSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3055,
-  serialized_end=3142,
+  serialized_start=3068,
+  serialized_end=3155,
 )
 
 _LISTCOMMITSREQUEST = _descriptor.Descriptor(
@@ -995,8 +942,8 @@ _LISTCOMMITSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2852,
-  serialized_end=3142,
+  serialized_start=2865,
+  serialized_end=3155,
 )
 
 
@@ -1026,8 +973,8 @@ _GETCOMMITREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3263,
-  serialized_end=3326,
+  serialized_start=3276,
+  serialized_end=3339,
 )
 
 _GETCOMMITREQUEST = _descriptor.Descriptor(
@@ -1063,8 +1010,8 @@ _GETCOMMITREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3145,
-  serialized_end=3326,
+  serialized_start=3158,
+  serialized_end=3339,
 )
 
 
@@ -1094,8 +1041,8 @@ _CREATECOMMITREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3263,
-  serialized_end=3326,
+  serialized_start=3276,
+  serialized_end=3339,
 )
 
 _CREATECOMMITREQUEST = _descriptor.Descriptor(
@@ -1152,8 +1099,8 @@ _CREATECOMMITREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3329,
-  serialized_end=3679,
+  serialized_start=3342,
+  serialized_end=3692,
 )
 
 
@@ -1176,8 +1123,8 @@ _DELETECOMMITREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2235,
-  serialized_end=2245,
+  serialized_start=2248,
+  serialized_end=2258,
 )
 
 _DELETECOMMITREQUEST = _descriptor.Descriptor(
@@ -1213,8 +1160,8 @@ _DELETECOMMITREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3682,
-  serialized_end=3813,
+  serialized_start=3695,
+  serialized_end=3826,
 )
 
 
@@ -1251,8 +1198,8 @@ _LISTCOMMITBLOBSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4026,
-  serialized_end=4117,
+  serialized_start=4039,
+  serialized_end=4130,
 )
 
 _LISTCOMMITBLOBSREQUEST = _descriptor.Descriptor(
@@ -1302,8 +1249,179 @@ _LISTCOMMITBLOBSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3816,
-  serialized_end=4117,
+  serialized_start=3829,
+  serialized_end=4130,
+)
+
+
+_LISTCOMMITEXPERIMENTRUNSREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='runs', full_name='ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.Response.runs', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=4327,
+  serialized_end=4407,
+)
+
+_LISTCOMMITEXPERIMENTRUNSREQUEST = _descriptor.Descriptor(
+  name='ListCommitExperimentRunsRequest',
+  full_name='ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='repository_id', full_name='ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.repository_id', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.pagination', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='commit_sha', full_name='ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.commit_sha', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_LISTCOMMITEXPERIMENTRUNSREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=4133,
+  serialized_end=4407,
+)
+
+
+_LISTBLOBEXPERIMENTRUNSREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='runs', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.Response.runs', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=4327,
+  serialized_end=4407,
+)
+
+_LISTBLOBEXPERIMENTRUNSREQUEST = _descriptor.Descriptor(
+  name='ListBlobExperimentRunsRequest',
+  full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='repository_id', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.repository_id', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.pagination', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='commit_sha', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.commit_sha', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='location', full_name='ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.location', index=3,
+      number=4, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_LISTBLOBEXPERIMENTRUNSREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=4410,
+  serialized_end=4700,
 )
 
 
@@ -1343,8 +1461,8 @@ _GETCOMMITCOMPONENTREQUEST_RESPONSE = _descriptor.Descriptor(
       name='component', full_name='ai.verta.modeldb.versioning.GetCommitComponentRequest.Response.component',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=4266,
-  serialized_end=4395,
+  serialized_start=4849,
+  serialized_end=4978,
 )
 
 _GETCOMMITCOMPONENTREQUEST = _descriptor.Descriptor(
@@ -1387,8 +1505,8 @@ _GETCOMMITCOMPONENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4120,
-  serialized_end=4395,
+  serialized_start=4703,
+  serialized_end=4978,
 )
 
 
@@ -1418,8 +1536,8 @@ _COMPUTEREPOSITORYDIFFREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4569,
-  serialized_end=4633,
+  serialized_start=5152,
+  serialized_end=5216,
 )
 
 _COMPUTEREPOSITORYDIFFREQUEST = _descriptor.Descriptor(
@@ -1469,8 +1587,8 @@ _COMPUTEREPOSITORYDIFFREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4398,
-  serialized_end=4633,
+  serialized_start=4981,
+  serialized_end=5216,
 )
 
 
@@ -1507,8 +1625,8 @@ _LISTBRANCHCOMMITSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3055,
-  serialized_end=3142,
+  serialized_start=3068,
+  serialized_end=3155,
 )
 
 _LISTBRANCHCOMMITSREQUEST = _descriptor.Descriptor(
@@ -1551,8 +1669,8 @@ _LISTBRANCHCOMMITSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4636,
-  serialized_end=4906,
+  serialized_start=5219,
+  serialized_end=5489,
 )
 
 
@@ -1589,8 +1707,8 @@ _LISTBRANCHESREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5010,
-  serialized_end=5061,
+  serialized_start=5593,
+  serialized_end=5644,
 )
 
 _LISTBRANCHESREQUEST = _descriptor.Descriptor(
@@ -1619,8 +1737,8 @@ _LISTBRANCHESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4909,
-  serialized_end=5061,
+  serialized_start=5492,
+  serialized_end=5644,
 )
 
 
@@ -1650,8 +1768,8 @@ _GETBRANCHREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3263,
-  serialized_end=3326,
+  serialized_start=3276,
+  serialized_end=3339,
 )
 
 _GETBRANCHREQUEST = _descriptor.Descriptor(
@@ -1687,8 +1805,8 @@ _GETBRANCHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5064,
-  serialized_end=5241,
+  serialized_start=5647,
+  serialized_end=5824,
 )
 
 
@@ -1711,8 +1829,8 @@ _SETBRANCHREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2235,
-  serialized_end=2245,
+  serialized_start=2248,
+  serialized_end=2258,
 )
 
 _SETBRANCHREQUEST = _descriptor.Descriptor(
@@ -1755,8 +1873,8 @@ _SETBRANCHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5244,
-  serialized_end=5388,
+  serialized_start=5827,
+  serialized_end=5971,
 )
 
 
@@ -1779,8 +1897,8 @@ _DELETEBRANCHREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2235,
-  serialized_end=2245,
+  serialized_start=2248,
+  serialized_end=2258,
 )
 
 _DELETEBRANCHREQUEST = _descriptor.Descriptor(
@@ -1816,8 +1934,8 @@ _DELETEBRANCHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5390,
-  serialized_end=5517,
+  serialized_start=5973,
+  serialized_end=6100,
 )
 
 
@@ -1854,8 +1972,8 @@ _LISTTAGSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5617,
-  serialized_end=5664,
+  serialized_start=6200,
+  serialized_end=6247,
 )
 
 _LISTTAGSREQUEST = _descriptor.Descriptor(
@@ -1884,8 +2002,8 @@ _LISTTAGSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5520,
-  serialized_end=5664,
+  serialized_start=6103,
+  serialized_end=6247,
 )
 
 
@@ -1915,8 +2033,8 @@ _GETTAGREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3263,
-  serialized_end=3326,
+  serialized_start=3276,
+  serialized_end=3339,
 )
 
 _GETTAGREQUEST = _descriptor.Descriptor(
@@ -1952,8 +2070,8 @@ _GETTAGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5667,
-  serialized_end=5838,
+  serialized_start=6250,
+  serialized_end=6421,
 )
 
 
@@ -1976,8 +2094,8 @@ _SETTAGREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2235,
-  serialized_end=2245,
+  serialized_start=2248,
+  serialized_end=2258,
 )
 
 _SETTAGREQUEST = _descriptor.Descriptor(
@@ -2020,8 +2138,8 @@ _SETTAGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5841,
-  serialized_end=5979,
+  serialized_start=6424,
+  serialized_end=6562,
 )
 
 
@@ -2044,8 +2162,8 @@ _DELETETAGREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2235,
-  serialized_end=2245,
+  serialized_start=2248,
+  serialized_end=2258,
 )
 
 _DELETETAGREQUEST = _descriptor.Descriptor(
@@ -2081,8 +2199,8 @@ _DELETETAGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5981,
-  serialized_end=6102,
+  serialized_start=6564,
+  serialized_end=6685,
 )
 
 _INTERNALFOLDER.fields_by_name['blobs'].message_type = _INTERNALFOLDERELEMENT
@@ -2106,8 +2224,7 @@ _BLOB.oneofs_by_name['content'].fields.append(
   _BLOB.fields_by_name['config'])
 _BLOB.fields_by_name['config'].containing_oneof = _BLOB.oneofs_by_name['content']
 _BLOBEXPANDED.fields_by_name['blob'].message_type = _BLOB
-_DIFFSTATUSENUM_DIFFSTATUS.containing_type = _DIFFSTATUSENUM
-_BLOBDIFF.fields_by_name['status'].enum_type = _DIFFSTATUSENUM_DIFFSTATUS
+_BLOBDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
 _BLOBDIFF.fields_by_name['dataset'].message_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Dataset__pb2._DATASETDIFF
 _BLOBDIFF.fields_by_name['environment'].message_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Environment__pb2._ENVIRONMENTDIFF
 _BLOBDIFF.fields_by_name['code'].message_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Code__pb2._CODEDIFF
@@ -2157,6 +2274,14 @@ _LISTCOMMITBLOBSREQUEST_RESPONSE.fields_by_name['blobs'].message_type = _BLOBEXP
 _LISTCOMMITBLOBSREQUEST_RESPONSE.containing_type = _LISTCOMMITBLOBSREQUEST
 _LISTCOMMITBLOBSREQUEST.fields_by_name['repository_id'].message_type = _REPOSITORYIDENTIFICATION
 _LISTCOMMITBLOBSREQUEST.fields_by_name['pagination'].message_type = _PAGINATION
+_LISTCOMMITEXPERIMENTRUNSREQUEST_RESPONSE.fields_by_name['runs'].message_type = protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2._EXPERIMENTRUN
+_LISTCOMMITEXPERIMENTRUNSREQUEST_RESPONSE.containing_type = _LISTCOMMITEXPERIMENTRUNSREQUEST
+_LISTCOMMITEXPERIMENTRUNSREQUEST.fields_by_name['repository_id'].message_type = _REPOSITORYIDENTIFICATION
+_LISTCOMMITEXPERIMENTRUNSREQUEST.fields_by_name['pagination'].message_type = _PAGINATION
+_LISTBLOBEXPERIMENTRUNSREQUEST_RESPONSE.fields_by_name['runs'].message_type = protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2._EXPERIMENTRUN
+_LISTBLOBEXPERIMENTRUNSREQUEST_RESPONSE.containing_type = _LISTBLOBEXPERIMENTRUNSREQUEST
+_LISTBLOBEXPERIMENTRUNSREQUEST.fields_by_name['repository_id'].message_type = _REPOSITORYIDENTIFICATION
+_LISTBLOBEXPERIMENTRUNSREQUEST.fields_by_name['pagination'].message_type = _PAGINATION
 _GETCOMMITCOMPONENTREQUEST_RESPONSE.fields_by_name['folder'].message_type = _FOLDER
 _GETCOMMITCOMPONENTREQUEST_RESPONSE.fields_by_name['blob'].message_type = _BLOB
 _GETCOMMITCOMPONENTREQUEST_RESPONSE.containing_type = _GETCOMMITCOMPONENTREQUEST
@@ -2199,7 +2324,6 @@ DESCRIPTOR.message_types_by_name['FolderElement'] = _FOLDERELEMENT
 DESCRIPTOR.message_types_by_name['Folder'] = _FOLDER
 DESCRIPTOR.message_types_by_name['Blob'] = _BLOB
 DESCRIPTOR.message_types_by_name['BlobExpanded'] = _BLOBEXPANDED
-DESCRIPTOR.message_types_by_name['DiffStatusEnum'] = _DIFFSTATUSENUM
 DESCRIPTOR.message_types_by_name['BlobDiff'] = _BLOBDIFF
 DESCRIPTOR.message_types_by_name['Repository'] = _REPOSITORY
 DESCRIPTOR.message_types_by_name['Pagination'] = _PAGINATION
@@ -2214,6 +2338,8 @@ DESCRIPTOR.message_types_by_name['GetCommitRequest'] = _GETCOMMITREQUEST
 DESCRIPTOR.message_types_by_name['CreateCommitRequest'] = _CREATECOMMITREQUEST
 DESCRIPTOR.message_types_by_name['DeleteCommitRequest'] = _DELETECOMMITREQUEST
 DESCRIPTOR.message_types_by_name['ListCommitBlobsRequest'] = _LISTCOMMITBLOBSREQUEST
+DESCRIPTOR.message_types_by_name['ListCommitExperimentRunsRequest'] = _LISTCOMMITEXPERIMENTRUNSREQUEST
+DESCRIPTOR.message_types_by_name['ListBlobExperimentRunsRequest'] = _LISTBLOBEXPERIMENTRUNSREQUEST
 DESCRIPTOR.message_types_by_name['GetCommitComponentRequest'] = _GETCOMMITCOMPONENTREQUEST
 DESCRIPTOR.message_types_by_name['ComputeRepositoryDiffRequest'] = _COMPUTEREPOSITORYDIFFREQUEST
 DESCRIPTOR.message_types_by_name['ListBranchCommitsRequest'] = _LISTBRANCHCOMMITSREQUEST
@@ -2275,13 +2401,6 @@ BlobExpanded = _reflection.GeneratedProtocolMessageType('BlobExpanded', (_messag
   # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.BlobExpanded)
   })
 _sym_db.RegisterMessage(BlobExpanded)
-
-DiffStatusEnum = _reflection.GeneratedProtocolMessageType('DiffStatusEnum', (_message.Message,), {
-  'DESCRIPTOR' : _DIFFSTATUSENUM,
-  '__module__' : 'protos.public.modeldb.versioning.VersioningService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.DiffStatusEnum)
-  })
-_sym_db.RegisterMessage(DiffStatusEnum)
 
 BlobDiff = _reflection.GeneratedProtocolMessageType('BlobDiff', (_message.Message,), {
   'DESCRIPTOR' : _BLOBDIFF,
@@ -2452,6 +2571,36 @@ ListCommitBlobsRequest = _reflection.GeneratedProtocolMessageType('ListCommitBlo
   })
 _sym_db.RegisterMessage(ListCommitBlobsRequest)
 _sym_db.RegisterMessage(ListCommitBlobsRequest.Response)
+
+ListCommitExperimentRunsRequest = _reflection.GeneratedProtocolMessageType('ListCommitExperimentRunsRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _LISTCOMMITEXPERIMENTRUNSREQUEST_RESPONSE,
+    '__module__' : 'protos.public.modeldb.versioning.VersioningService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _LISTCOMMITEXPERIMENTRUNSREQUEST,
+  '__module__' : 'protos.public.modeldb.versioning.VersioningService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest)
+  })
+_sym_db.RegisterMessage(ListCommitExperimentRunsRequest)
+_sym_db.RegisterMessage(ListCommitExperimentRunsRequest.Response)
+
+ListBlobExperimentRunsRequest = _reflection.GeneratedProtocolMessageType('ListBlobExperimentRunsRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _LISTBLOBEXPERIMENTRUNSREQUEST_RESPONSE,
+    '__module__' : 'protos.public.modeldb.versioning.VersioningService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _LISTBLOBEXPERIMENTRUNSREQUEST,
+  '__module__' : 'protos.public.modeldb.versioning.VersioningService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest)
+  })
+_sym_db.RegisterMessage(ListBlobExperimentRunsRequest)
+_sym_db.RegisterMessage(ListBlobExperimentRunsRequest.Response)
 
 GetCommitComponentRequest = _reflection.GeneratedProtocolMessageType('GetCommitComponentRequest', (_message.Message,), {
 
@@ -2627,8 +2776,8 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=6105,
-  serialized_end=12776,
+  serialized_start=6688,
+  serialized_end=14143,
   methods=[
   _descriptor.MethodDescriptor(
     name='ListRepositories',
@@ -2721,9 +2870,27 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
     serialized_options=b'\202\323\344\223\002\334\001\022\207\001/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blobsZP\022N/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blobs',
   ),
   _descriptor.MethodDescriptor(
+    name='ListCommitExperimentRuns',
+    full_name='ai.verta.modeldb.versioning.VersioningService.ListCommitExperimentRuns',
+    index=10,
+    containing_service=None,
+    input_type=_LISTCOMMITEXPERIMENTRUNSREQUEST,
+    output_type=_LISTCOMMITEXPERIMENTRUNSREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002\332\001\022\206\001/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runsZO\022M/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs',
+  ),
+  _descriptor.MethodDescriptor(
+    name='ListBlobExperimentRuns',
+    full_name='ai.verta.modeldb.versioning.VersioningService.ListBlobExperimentRuns',
+    index=11,
+    containing_service=None,
+    input_type=_LISTBLOBEXPERIMENTRUNSREQUEST,
+    output_type=_LISTBLOBEXPERIMENTRUNSREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002\344\001\022\213\001/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runsZT\022R/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs',
+  ),
+  _descriptor.MethodDescriptor(
     name='GetCommitComponent',
     full_name='ai.verta.modeldb.versioning.VersioningService.GetCommitComponent',
-    index=10,
+    index=12,
     containing_service=None,
     input_type=_GETCOMMITCOMPONENTREQUEST,
     output_type=_GETCOMMITCOMPONENTREQUEST_RESPONSE,
@@ -2732,7 +2899,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='ComputeRepositoryDiff',
     full_name='ai.verta.modeldb.versioning.VersioningService.ComputeRepositoryDiff',
-    index=11,
+    index=13,
     containing_service=None,
     input_type=_COMPUTEREPOSITORYDIFFREQUEST,
     output_type=_COMPUTEREPOSITORYDIFFREQUEST_RESPONSE,
@@ -2741,7 +2908,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='ListBranches',
     full_name='ai.verta.modeldb.versioning.VersioningService.ListBranches',
-    index=12,
+    index=14,
     containing_service=None,
     input_type=_LISTBRANCHESREQUEST,
     output_type=_LISTBRANCHESREQUEST_RESPONSE,
@@ -2750,7 +2917,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='GetBranch',
     full_name='ai.verta.modeldb.versioning.VersioningService.GetBranch',
-    index=13,
+    index=15,
     containing_service=None,
     input_type=_GETBRANCHREQUEST,
     output_type=_GETBRANCHREQUEST_RESPONSE,
@@ -2759,7 +2926,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='SetBranch',
     full_name='ai.verta.modeldb.versioning.VersioningService.SetBranch',
-    index=14,
+    index=16,
     containing_service=None,
     input_type=_SETBRANCHREQUEST,
     output_type=_SETBRANCHREQUEST_RESPONSE,
@@ -2768,7 +2935,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='DeleteBranch',
     full_name='ai.verta.modeldb.versioning.VersioningService.DeleteBranch',
-    index=15,
+    index=17,
     containing_service=None,
     input_type=_DELETEBRANCHREQUEST,
     output_type=_DELETEBRANCHREQUEST_RESPONSE,
@@ -2777,7 +2944,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='ListBranchCommits',
     full_name='ai.verta.modeldb.versioning.VersioningService.ListBranchCommits',
-    index=16,
+    index=18,
     containing_service=None,
     input_type=_LISTBRANCHCOMMITSREQUEST,
     output_type=_LISTBRANCHCOMMITSREQUEST_RESPONSE,
@@ -2786,7 +2953,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='ListTags',
     full_name='ai.verta.modeldb.versioning.VersioningService.ListTags',
-    index=17,
+    index=19,
     containing_service=None,
     input_type=_LISTTAGSREQUEST,
     output_type=_LISTTAGSREQUEST_RESPONSE,
@@ -2795,7 +2962,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='GetTag',
     full_name='ai.verta.modeldb.versioning.VersioningService.GetTag',
-    index=18,
+    index=20,
     containing_service=None,
     input_type=_GETTAGREQUEST,
     output_type=_GETTAGREQUEST_RESPONSE,
@@ -2804,7 +2971,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='SetTag',
     full_name='ai.verta.modeldb.versioning.VersioningService.SetTag',
-    index=19,
+    index=21,
     containing_service=None,
     input_type=_SETTAGREQUEST,
     output_type=_SETTAGREQUEST_RESPONSE,
@@ -2813,7 +2980,7 @@ _VERSIONINGSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='DeleteTag',
     full_name='ai.verta.modeldb.versioning.VersioningService.DeleteTag',
-    index=20,
+    index=22,
     containing_service=None,
     input_type=_DELETETAGREQUEST,
     output_type=_DELETETAGREQUEST_RESPONSE,

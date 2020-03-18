@@ -18,8 +18,8 @@ import ai.verta.swagger._public.uac.model.UacShareViaEnum._
 import ai.verta.swagger.client.objects._
 
 case class UacRemoveCollaboratorResponse (
-  status: Option[Boolean] = None,
-  self_allowed_actions: Option[List[UacAction]] = None
+  self_allowed_actions: Option[List[UacAction]] = None,
+  status: Option[Boolean] = None
 ) extends BaseSwagger {
   def toJson(): JValue = UacRemoveCollaboratorResponse.toJson(this)
 }
@@ -28,8 +28,8 @@ object UacRemoveCollaboratorResponse {
   def toJson(obj: UacRemoveCollaboratorResponse): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.status.map(x => JField("status", JBool(x))),
-        obj.self_allowed_actions.map(x => JField("self_allowed_actions", ((x: List[UacAction]) => JArray(x.map(((x: UacAction) => UacAction.toJson(x)))))(x)))
+        obj.self_allowed_actions.map(x => JField("self_allowed_actions", ((x: List[UacAction]) => JArray(x.map(((x: UacAction) => UacAction.toJson(x)))))(x))),
+        obj.status.map(x => JField("status", JBool(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -43,8 +43,8 @@ object UacRemoveCollaboratorResponse {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         UacRemoveCollaboratorResponse(
           // TODO: handle required
-          status = fieldsMap.get("status").map(JsonConverter.fromJsonBoolean),
-          self_allowed_actions = fieldsMap.get("self_allowed_actions").map((x: JValue) => x match {case JArray(elements) => elements.map(UacAction.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          self_allowed_actions = fieldsMap.get("self_allowed_actions").map((x: JValue) => x match {case JArray(elements) => elements.map(UacAction.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          status = fieldsMap.get("status").map(JsonConverter.fromJsonBoolean)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
