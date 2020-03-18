@@ -151,10 +151,10 @@ public class DiffMerger {
                     x -> x.Hyperparameters,
                     x -> x.Hyperparameters,
                     x -> x.Name,
-                    x -> x.Name,
+                    x -> Utils.either(x.A, x.B, y -> y.Name),
                     x -> x.Status,
-                    x -> new HyperparameterConfigBlob().setName(x.Name).setValue(x.A),
-                    x -> new HyperparameterConfigBlob().setName(x.Name).setValue(x.B),
+                    x -> x.A,
+                    x -> x.B,
                     null))
             .setHyperparameterSet(
                 mergeList(
@@ -163,18 +163,10 @@ public class DiffMerger {
                     x -> x.HyperparameterSet,
                     x -> x.HyperparameterSet,
                     x -> x.Name,
-                    x -> x.Name,
+                    x -> Utils.either(x.A, x.B, y -> y.Name),
                     x -> x.Status,
-                    x ->
-                        new HyperparameterSetConfigBlob()
-                            .setName(x.Name)
-                            .setContinuous(x.ContinuousA)
-                            .setDiscrete(x.DiscreteA),
-                    x ->
-                        new HyperparameterSetConfigBlob()
-                            .setName(x.Name)
-                            .setContinuous(x.ContinuousB)
-                            .setDiscrete(x.DiscreteB),
+                    x -> x.A,
+                    x -> x.B,
                     null)));
   }
 
@@ -265,10 +257,10 @@ public class DiffMerger {
                     x -> x.EnvironmentVariables,
                     x -> x.EnvironmentVariables,
                     x -> x.Name,
-                    x -> x.Name,
+                    x -> Utils.either(x.A, x.B, y -> y.Name),
                     x -> x.Status,
-                    x -> new EnvironmentVariablesBlob().setName(x.Name).setValue(x.ValueA),
-                    x -> new EnvironmentVariablesBlob().setName(x.Name).setValue(x.ValueB),
+                    x -> x.A,
+                    x -> x.B,
                     null))
             .setCommandLine(
                 merge(a, d, x -> x.CommandLine, x -> x.CommandLine, DiffMerger::mergeCommandLine)));

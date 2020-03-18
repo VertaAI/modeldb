@@ -166,28 +166,16 @@ public class DiffComputer {
       HyperparameterConfigBlob a, HyperparameterConfigBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
-    String name = b == null ? a.Name : b.Name;
     return Utils.removeEmpty(
-        new HyperparameterConfigDiff()
-            .setName(name)
-            .setA(Utils.getOrNull(a, x -> x.Value))
-            .setB(Utils.getOrNull(b, x -> x.Value))
-            .setStatus(getStatus(a, b)));
+        new HyperparameterConfigDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static HyperparameterSetConfigDiff computeHyperparameterSetConfigDiff(
       HyperparameterSetConfigBlob a, HyperparameterSetConfigBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
-    String name = b == null ? a.Name : b.Name;
     return Utils.removeEmpty(
-        new HyperparameterSetConfigDiff()
-            .setName(name)
-            .setContinuousA(Utils.getOrNull(a, x -> x.Continuous))
-            .setContinuousB(Utils.getOrNull(b, x -> x.Continuous))
-            .setDiscreteA(Utils.getOrNull(a, x -> x.Discrete))
-            .setDiscreteB(Utils.getOrNull(b, x -> x.Discrete))
-            .setStatus(getStatus(a, b)));
+        new HyperparameterSetConfigDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static DatasetDiff computeDatasetDiff(DatasetBlob a, DatasetBlob b) {
@@ -315,13 +303,7 @@ public class DiffComputer {
       EnvironmentVariablesBlob a, EnvironmentVariablesBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
-
-    String name = b == null ? a.Name : b.Name;
     return Utils.removeEmpty(
-        new EnvironmentVariablesDiff()
-            .setName(name)
-            .setValueA(Utils.getOrNull(a, x -> x.Value))
-            .setValueB(Utils.getOrNull(b, x -> x.Value))
-            .setStatus(getStatus(a, b)));
+        new EnvironmentVariablesDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 }

@@ -50,20 +50,12 @@ message ConfigDiff {
 
 message HyperparameterSetConfigDiff {
     DiffStatusEnum.DiffStatus status = 1;
-    string name = 2;
-    oneof A {
-        ContinuousHyperparameterSetConfigBlob continuous_a = 3;
-        DiscreteHyperparameterSetConfigBlob discrete_a = 4;
-    }
-    oneof B {
-        ContinuousHyperparameterSetConfigBlob continuous_b = 5;
-        DiscreteHyperparameterSetConfigBlob discrete_b = 6;
-    }
+    HyperparameterSetConfigBlob A = 2;
+    HyperparameterSetConfigBlob B = 3;
 }
 
 message HyperparameterConfigDiff {
     DiffStatusEnum.DiffStatus status = 1;
-    string name = 2;
-    HyperparameterValuesConfigBlob A = 3;
-    HyperparameterValuesConfigBlob B = 4;
+    HyperparameterConfigBlob A = 2;
+    HyperparameterConfigBlob B = 3;
 }

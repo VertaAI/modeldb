@@ -3031,14 +3031,11 @@
         "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "name": {
-          "type": "string"
+        "A": {
+          "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
         },
-        "value_a": {
-          "type": "string"
-        },
-        "value_b": {
-          "type": "string"
+        "B": {
+          "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
         }
       }
     },
@@ -3171,14 +3168,11 @@
         "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "name": {
-          "type": "string"
-        },
         "A": {
-          "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
+          "$ref": "#/definitions/versioningHyperparameterConfigBlob"
         },
         "B": {
-          "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
+          "$ref": "#/definitions/versioningHyperparameterConfigBlob"
         }
       }
     },
@@ -3202,20 +3196,11 @@
         "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "name": {
-          "type": "string"
+        "A": {
+          "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
         },
-        "continuous_a": {
-          "$ref": "#/definitions/versioningContinuousHyperparameterSetConfigBlob"
-        },
-        "discrete_a": {
-          "$ref": "#/definitions/versioningDiscreteHyperparameterSetConfigBlob"
-        },
-        "continuous_b": {
-          "$ref": "#/definitions/versioningContinuousHyperparameterSetConfigBlob"
-        },
-        "discrete_b": {
-          "$ref": "#/definitions/versioningDiscreteHyperparameterSetConfigBlob"
+        "B": {
+          "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
         }
       }
     },
