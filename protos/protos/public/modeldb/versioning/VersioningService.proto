@@ -582,10 +582,10 @@ service VersioningService {
 
     rpc MergeRepositoryCommits(MergeRepositoryCommits) returns (MergeRepositoryCommits.Response) {
         option (google.api.http) = {
-            post: "/v1/versioning//workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/mergeRepositoryCommits"
+            post: "/v1/versioning//workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge"
             body: "*"
             additional_bindings {
-                put: "/v1/versioning/repositories/{repository_id.repo_id}/mergeRepositoryCommits"
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/merge"
                 body: "*"
             }
         };
