@@ -65,9 +65,8 @@ message CommandLineEnvironmentDiff {
 
 message EnvironmentVariablesDiff {
     DiffStatusEnum.DiffStatus status = 1;
-    string name = 2;
-    string value_a = 3;
-    string value_b = 4;
+    EnvironmentVariablesBlob A = 2;
+    EnvironmentVariablesBlob B = 3;
 }
 
 message PythonRequirementEnvironmentDiff {

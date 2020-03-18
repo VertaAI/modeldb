@@ -12,36 +12,21 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterSetConfigDiff implements ProtoType {
-  public ContinuousHyperparameterSetConfigBlob ContinuousA;
-  public ContinuousHyperparameterSetConfigBlob ContinuousB;
-  public DiscreteHyperparameterSetConfigBlob DiscreteA;
-  public DiscreteHyperparameterSetConfigBlob DiscreteB;
-  public String Name;
+  public HyperparameterSetConfigBlob A;
+  public HyperparameterSetConfigBlob B;
   public DiffStatusEnumDiffStatus Status;
 
   public HyperparameterSetConfigDiff() {
-    this.ContinuousA = null;
-    this.ContinuousB = null;
-    this.DiscreteA = null;
-    this.DiscreteB = null;
-    this.Name = "";
+    this.A = null;
+    this.B = null;
     this.Status = null;
   }
 
   public Boolean isEmpty() {
-    if (this.ContinuousA != null && !this.ContinuousA.equals(null)) {
+    if (this.A != null && !this.A.equals(null)) {
       return false;
     }
-    if (this.ContinuousB != null && !this.ContinuousB.equals(null)) {
-      return false;
-    }
-    if (this.DiscreteA != null && !this.DiscreteA.equals(null)) {
-      return false;
-    }
-    if (this.DiscreteB != null && !this.DiscreteB.equals(null)) {
-      return false;
-    }
-    if (this.Name != null && !this.Name.equals("")) {
+    if (this.B != null && !this.B.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -55,29 +40,14 @@ public class HyperparameterSetConfigDiff implements ProtoType {
     StringBuilder sb = new StringBuilder();
     sb.append("{\"class\": \"HyperparameterSetConfigDiff\", \"fields\": {");
     boolean first = true;
-    if (this.ContinuousA != null && !this.ContinuousA.equals(null)) {
+    if (this.A != null && !this.A.equals(null)) {
       if (!first) sb.append(", ");
-      sb.append("\"ContinuousA\": " + ContinuousA);
+      sb.append("\"A\": " + A);
       first = false;
     }
-    if (this.ContinuousB != null && !this.ContinuousB.equals(null)) {
+    if (this.B != null && !this.B.equals(null)) {
       if (!first) sb.append(", ");
-      sb.append("\"ContinuousB\": " + ContinuousB);
-      first = false;
-    }
-    if (this.DiscreteA != null && !this.DiscreteA.equals(null)) {
-      if (!first) sb.append(", ");
-      sb.append("\"DiscreteA\": " + DiscreteA);
-      first = false;
-    }
-    if (this.DiscreteB != null && !this.DiscreteB.equals(null)) {
-      if (!first) sb.append(", ");
-      sb.append("\"DiscreteB\": " + DiscreteB);
-      first = false;
-    }
-    if (this.Name != null && !this.Name.equals("")) {
-      if (!first) sb.append(", ");
-      sb.append("\"Name\": " + "\"" + Name + "\"");
+      sb.append("\"B\": " + B);
       first = false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -93,20 +63,11 @@ public class HyperparameterSetConfigDiff implements ProtoType {
   public String getSHA() {
     StringBuilder sb = new StringBuilder();
     sb.append("HyperparameterSetConfigDiff");
-    if (this.ContinuousA != null && !this.ContinuousA.equals(null)) {
-      sb.append("::ContinuousA::").append(ContinuousA);
+    if (this.A != null && !this.A.equals(null)) {
+      sb.append("::A::").append(A);
     }
-    if (this.ContinuousB != null && !this.ContinuousB.equals(null)) {
-      sb.append("::ContinuousB::").append(ContinuousB);
-    }
-    if (this.DiscreteA != null && !this.DiscreteA.equals(null)) {
-      sb.append("::DiscreteA::").append(DiscreteA);
-    }
-    if (this.DiscreteB != null && !this.DiscreteB.equals(null)) {
-      sb.append("::DiscreteB::").append(DiscreteB);
-    }
-    if (this.Name != null && !this.Name.equals("")) {
-      sb.append("::Name::").append(Name);
+    if (this.B != null && !this.B.equals(null)) {
+      sb.append("::B::").append(B);
     }
     if (this.Status != null && !this.Status.equals(null)) {
       sb.append("::Status::").append(Status);
@@ -124,49 +85,21 @@ public class HyperparameterSetConfigDiff implements ProtoType {
     HyperparameterSetConfigDiff other = (HyperparameterSetConfigDiff) o;
 
     {
-      Function3<
-              ContinuousHyperparameterSetConfigBlob, ContinuousHyperparameterSetConfigBlob, Boolean>
-          f = (x, y) -> x.equals(y);
-      if (this.ContinuousA != null || other.ContinuousA != null) {
-        if (this.ContinuousA == null && other.ContinuousA != null) return false;
-        if (this.ContinuousA != null && other.ContinuousA == null) return false;
-        if (!f.apply(this.ContinuousA, other.ContinuousA)) return false;
+      Function3<HyperparameterSetConfigBlob, HyperparameterSetConfigBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.A != null || other.A != null) {
+        if (this.A == null && other.A != null) return false;
+        if (this.A != null && other.A == null) return false;
+        if (!f.apply(this.A, other.A)) return false;
       }
     }
     {
-      Function3<
-              ContinuousHyperparameterSetConfigBlob, ContinuousHyperparameterSetConfigBlob, Boolean>
-          f = (x, y) -> x.equals(y);
-      if (this.ContinuousB != null || other.ContinuousB != null) {
-        if (this.ContinuousB == null && other.ContinuousB != null) return false;
-        if (this.ContinuousB != null && other.ContinuousB == null) return false;
-        if (!f.apply(this.ContinuousB, other.ContinuousB)) return false;
-      }
-    }
-    {
-      Function3<DiscreteHyperparameterSetConfigBlob, DiscreteHyperparameterSetConfigBlob, Boolean>
-          f = (x, y) -> x.equals(y);
-      if (this.DiscreteA != null || other.DiscreteA != null) {
-        if (this.DiscreteA == null && other.DiscreteA != null) return false;
-        if (this.DiscreteA != null && other.DiscreteA == null) return false;
-        if (!f.apply(this.DiscreteA, other.DiscreteA)) return false;
-      }
-    }
-    {
-      Function3<DiscreteHyperparameterSetConfigBlob, DiscreteHyperparameterSetConfigBlob, Boolean>
-          f = (x, y) -> x.equals(y);
-      if (this.DiscreteB != null || other.DiscreteB != null) {
-        if (this.DiscreteB == null && other.DiscreteB != null) return false;
-        if (this.DiscreteB != null && other.DiscreteB == null) return false;
-        if (!f.apply(this.DiscreteB, other.DiscreteB)) return false;
-      }
-    }
-    {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Name != null || other.Name != null) {
-        if (this.Name == null && other.Name != null) return false;
-        if (this.Name != null && other.Name == null) return false;
-        if (!f.apply(this.Name, other.Name)) return false;
+      Function3<HyperparameterSetConfigBlob, HyperparameterSetConfigBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.B != null || other.B != null) {
+        if (this.B == null && other.B != null) return false;
+        if (this.B != null && other.B == null) return false;
+        if (!f.apply(this.B, other.B)) return false;
       }
     }
     {
@@ -183,32 +116,16 @@ public class HyperparameterSetConfigDiff implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        this.ContinuousA, this.ContinuousB, this.DiscreteA, this.DiscreteB, this.Name, this.Status);
+    return Objects.hash(this.A, this.B, this.Status);
   }
 
-  public HyperparameterSetConfigDiff setContinuousA(ContinuousHyperparameterSetConfigBlob value) {
-    this.ContinuousA = Utils.removeEmpty(value);
+  public HyperparameterSetConfigDiff setA(HyperparameterSetConfigBlob value) {
+    this.A = Utils.removeEmpty(value);
     return this;
   }
 
-  public HyperparameterSetConfigDiff setContinuousB(ContinuousHyperparameterSetConfigBlob value) {
-    this.ContinuousB = Utils.removeEmpty(value);
-    return this;
-  }
-
-  public HyperparameterSetConfigDiff setDiscreteA(DiscreteHyperparameterSetConfigBlob value) {
-    this.DiscreteA = Utils.removeEmpty(value);
-    return this;
-  }
-
-  public HyperparameterSetConfigDiff setDiscreteB(DiscreteHyperparameterSetConfigBlob value) {
-    this.DiscreteB = Utils.removeEmpty(value);
-    return this;
-  }
-
-  public HyperparameterSetConfigDiff setName(String value) {
-    this.Name = Utils.removeEmpty(value);
+  public HyperparameterSetConfigDiff setB(HyperparameterSetConfigBlob value) {
+    this.B = Utils.removeEmpty(value);
     return this;
   }
 
@@ -225,37 +142,14 @@ public class HyperparameterSetConfigDiff implements ProtoType {
 
     HyperparameterSetConfigDiff obj = new HyperparameterSetConfigDiff();
     {
-      Function<
-              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
-              ContinuousHyperparameterSetConfigBlob>
-          f = x -> ContinuousHyperparameterSetConfigBlob.fromProto(blob.getContinuousA());
-      obj.ContinuousA = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff, HyperparameterSetConfigBlob>
+          f = x -> HyperparameterSetConfigBlob.fromProto(blob.getA());
+      obj.A = Utils.removeEmpty(f.apply(blob));
     }
     {
-      Function<
-              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
-              ContinuousHyperparameterSetConfigBlob>
-          f = x -> ContinuousHyperparameterSetConfigBlob.fromProto(blob.getContinuousB());
-      obj.ContinuousB = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<
-              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
-              DiscreteHyperparameterSetConfigBlob>
-          f = x -> DiscreteHyperparameterSetConfigBlob.fromProto(blob.getDiscreteA());
-      obj.DiscreteA = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<
-              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
-              DiscreteHyperparameterSetConfigBlob>
-          f = x -> DiscreteHyperparameterSetConfigBlob.fromProto(blob.getDiscreteB());
-      obj.DiscreteB = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff, String> f =
-          x -> (blob.getName());
-      obj.Name = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff, HyperparameterSetConfigBlob>
+          f = x -> HyperparameterSetConfigBlob.fromProto(blob.getB());
+      obj.B = Utils.removeEmpty(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff, DiffStatusEnumDiffStatus>
@@ -269,50 +163,20 @@ public class HyperparameterSetConfigDiff implements ProtoType {
     ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.Builder builder =
         ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.newBuilder();
     {
-      if (this.ContinuousA != null && !this.ContinuousA.equals(null)) {
+      if (this.A != null && !this.A.equals(null)) {
         Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.Builder, Void> f =
             x -> {
-              builder.setContinuousA(this.ContinuousA.toProto());
+              builder.setA(this.A.toProto());
               return null;
             };
         f.apply(builder);
       }
     }
     {
-      if (this.ContinuousB != null && !this.ContinuousB.equals(null)) {
+      if (this.B != null && !this.B.equals(null)) {
         Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.Builder, Void> f =
             x -> {
-              builder.setContinuousB(this.ContinuousB.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.DiscreteA != null && !this.DiscreteA.equals(null)) {
-        Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.Builder, Void> f =
-            x -> {
-              builder.setDiscreteA(this.DiscreteA.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.DiscreteB != null && !this.DiscreteB.equals(null)) {
-        Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.Builder, Void> f =
-            x -> {
-              builder.setDiscreteB(this.DiscreteB.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Name != null && !this.Name.equals("")) {
-        Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.Builder, Void> f =
-            x -> {
-              builder.setName(this.Name);
+              builder.setB(this.B.toProto());
               return null;
             };
         f.apply(builder);
@@ -337,11 +201,8 @@ public class HyperparameterSetConfigDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepContinuousHyperparameterSetConfigBlob(this.ContinuousA);
-    visitor.preVisitDeepContinuousHyperparameterSetConfigBlob(this.ContinuousB);
-    visitor.preVisitDeepDiscreteHyperparameterSetConfigBlob(this.DiscreteA);
-    visitor.preVisitDeepDiscreteHyperparameterSetConfigBlob(this.DiscreteB);
-    visitor.preVisitDeepString(this.Name);
+    visitor.preVisitDeepHyperparameterSetConfigBlob(this.A);
+    visitor.preVisitDeepHyperparameterSetConfigBlob(this.B);
     visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -350,13 +211,8 @@ public class HyperparameterSetConfigDiff implements ProtoType {
   }
 
   public HyperparameterSetConfigDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setContinuousA(
-        visitor.postVisitDeepContinuousHyperparameterSetConfigBlob(this.ContinuousA));
-    this.setContinuousB(
-        visitor.postVisitDeepContinuousHyperparameterSetConfigBlob(this.ContinuousB));
-    this.setDiscreteA(visitor.postVisitDeepDiscreteHyperparameterSetConfigBlob(this.DiscreteA));
-    this.setDiscreteB(visitor.postVisitDeepDiscreteHyperparameterSetConfigBlob(this.DiscreteB));
-    this.setName(visitor.postVisitDeepString(this.Name));
+    this.setA(visitor.postVisitDeepHyperparameterSetConfigBlob(this.A));
+    this.setB(visitor.postVisitDeepHyperparameterSetConfigBlob(this.B));
     this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }
