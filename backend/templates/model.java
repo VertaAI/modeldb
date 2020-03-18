@@ -11,6 +11,8 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.diff.*;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
+import com.pholser.junit.quickcheck.generator.*;
+import com.pholser.junit.quickcheck.random.*;
 
 public class {{class_name}} implements ProtoType {
     {{#properties}}
@@ -30,12 +32,23 @@ public class {{class_name}} implements ProtoType {
     public Boolean isEmpty() {
         {{#properties}}
         {{^required}}
-        if (this.{{name}} != null) {
+        {{#type}}
+        if (this.{{name}} != null && !this.{{name}}.equals({{> default_value}}) {{#is_list}} && !this.{{name}}.isEmpty(){{/is_list}}) {
             return false;
         }
+        {{/type}}
         {{/required}}
         {{/properties}}
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "{\"class\": \"{{class_name}}\",\"fields\": {" +
+                {{#properties}}
+                "\"{{name}}\": " + {{name}} + {{^last}}", " +{{/last}}
+                {{/properties}}
+                "}}";
     }
 
     // TODO: not consider order on lists
@@ -76,7 +89,7 @@ public class {{class_name}} implements ProtoType {
     {{#properties}}
     {{^required}}
     public {{class_name}} set{{name}}({{#type}}{{> type}}{{/type}} value) {
-        this.{{name}} = value;
+        this.{{name}} = Utils.removeEmpty(value);
         return this;
     }
     {{/required}}
@@ -103,12 +116,14 @@ public class {{class_name}} implements ProtoType {
         ai.verta.modeldb.versioning.{{class_name}}.Builder builder = ai.verta.modeldb.versioning.{{class_name}}.newBuilder();
         {{#properties}}
         {{^required}}
+        {{#type}}
         {
-            if (this.{{name}} != null) {
+            if (this.{{name}} != null && !this.{{name}}.equals({{> default_value}}) {{#is_list}} && !this.{{name}}.isEmpty(){{/is_list}}) {
                 Function<ai.verta.modeldb.versioning.{{class_name}}.Builder,Void> f = x -> { {{#type}}{{#is_list}}builder.addAll{{name}}(this.{{name}}{{#list_type}}{{#is_custom}}.stream().map(y -> y.toProto().build()).collect(Collectors.toList()){{/is_custom}}{{/list_type}}){{/is_list}}{{^is_list}}builder.set{{name}}(this.{{name}}{{#is_custom}}.toProto(){{/is_custom}}){{/is_list}}{{/type}}; return null; };
                 f.apply(builder);
             }
         }
+        {{/type}}
         {{/required}}
         {{/properties}}
         return builder;
@@ -134,7 +149,7 @@ public class {{class_name}} implements ProtoType {
     public {{class_name}} postVisitDeep(Visitor visitor) throws ModelDBException {
         {{#properties}}
         {{^required}}
-        this.{{name}} = visitor.postVisitDeep{{#type}}{{> visittype}}{{/type}}(this.{{name}});
+        this.set{{name}}(visitor.postVisitDeep{{#type}}{{> visittype}}{{/type}}(this.{{name}}));
         {{/required}}
         {{/properties}}
         return this.postVisitShallow(visitor);

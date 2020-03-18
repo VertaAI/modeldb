@@ -16,7 +16,8 @@ FieldType = collections.namedtuple('FieldType', ['safe_name', 'name', 'type'])
 @click.option('--templates')
 @click.option('--file-suffix')
 @click.option('--case')
-def main(output_dir, input, templates, file_suffix, case):
+@click.option('--model')
+def main(output_dir, input, templates, file_suffix, case, model=None):
     with open(input) as f:
         content = json.load(f)
 
@@ -25,6 +26,9 @@ def main(output_dir, input, templates, file_suffix, case):
             return init
         return val[0]
 
+    if '.' not in file_suffix:
+        file_suffix = '.' + file_suffix
+
     protos_index = functools.reduce(basedirReducer, enumerate(input.split('/')), None)
     basedir = input.split('/')[protos_index+1:-1]
     api_name = input.split('/')[-1].split('.')[0]
@@ -32,7 +36,10 @@ def main(output_dir, input, templates, file_suffix, case):
     result_dir = os.path.join(output_dir, *basedir)
     result_package = '.'.join(basedir)
 
-    create_models(result_dir, result_package, content, templates, file_suffix, case)
+    if model is None:
+        model = "model" + file_suffix
+
+    create_models(result_dir, result_package, content, templates, file_suffix, case, model)
     create_api(result_dir, result_package, api_name, content, templates, file_suffix, case)
 
 def create_api(result_dir, result_package, api_name, content, templates, file_suffix, case):
@@ -116,7 +123,7 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
 
     os.makedirs(os.path.join(result_dir, 'api'), exist_ok=True)
 
-    with open(os.path.join(templates, 'api.'+file_suffix)) as f:
+    with open(os.path.join(templates, 'api'+file_suffix)) as f:
         template = f.read()
 
     info = {
@@ -126,7 +133,7 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
         'operations': operations_info,
     }
 
-    with open(os.path.join(result_dir, 'api', api_name+'Api.'+file_suffix), 'w') as f:
+    with open(os.path.join(result_dir, 'api', api_name+'Api'+file_suffix), 'w') as f:
         f.write(pystache.Renderer(partials=load_partials(templates)).render(template, info))
 
 
@@ -146,16 +153,16 @@ def keyword_safe(s):
     return s
 
 
-def create_models(result_dir, result_package, content, templates, file_suffix, case):
+def create_models(result_dir, result_package, content, templates, file_suffix, case, model):
     enums = []
     os.makedirs(os.path.join(result_dir, 'model'), exist_ok=True)
     for k, v in content['definitions'].items():
         if 'enum' in v:
             enums.append(capitalize_first(k))
     for k, v in content['definitions'].items():
-        create_model(result_dir, result_package, k, v, enums, templates, file_suffix, case)
+        create_model(result_dir, result_package, k, v, enums, templates, file_suffix, case, model)
     if len(content['definitions']) == 0:
-        filename = os.path.join(result_dir, 'model', 'dummy.'+file_suffix)
+        filename = os.path.join(result_dir, 'model', 'dummy'+file_suffix)
         with open(filename, 'w') as f:
             f.write('''
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT
@@ -163,11 +170,11 @@ package ai.verta.swagger.%s.model
 case class dummy()
 ''' % result_package)
 
-def create_model(result_dir, result_package, definition_name, definition, enums, templates, file_suffix, case):
+def create_model(result_dir, result_package, definition_name, definition, enums, templates, file_suffix, case, model):
     capitalized_definition_name = capitalize_first(definition_name)
-    filename = os.path.join(result_dir, 'model', capitalized_definition_name+'.'+file_suffix)
+    filename = os.path.join(result_dir, 'model', capitalized_definition_name+file_suffix)
 
-    with open(os.path.join(templates, 'model.'+file_suffix)) as f:
+    with open(os.path.join(templates, model)) as f:
         template = f.read()
 
     required = definition.get('required', list())
