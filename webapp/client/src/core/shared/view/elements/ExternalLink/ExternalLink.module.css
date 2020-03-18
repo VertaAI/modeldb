@@ -1,13 +1,3 @@
 .root {
   color: var(--main-color2);
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.text {
-  text-decoration: underline;
-}
-
-.icon {
 }

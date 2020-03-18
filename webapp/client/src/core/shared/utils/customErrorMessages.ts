@@ -16,11 +16,7 @@ export const defaultErrorMessages = {
   page_error: 'Page not found.',
 
   // api errors
-
   client_error_4xx: `Bad Request!`,
-  client_error_401: `Unauthorized!`,
-  client_error_403: 'Forbidden!',
-  client_error_404: `Not Found!`,
   server_error_5xx: `There was a problem serving your request!`,
   default_api_error: 'Please try again. Something went wrong!',
 
@@ -29,7 +25,7 @@ export const defaultErrorMessages = {
 };
 
 export const commonAPIErrorMessages = {
-  userNotFound: 'User not found.',
+  userNotFound: 'User not found for the given email.',
 
   // Entity error messages
   accessDeniedToEntity: 'Access denied to entity.',
@@ -39,9 +35,9 @@ export const commonAPIErrorMessages = {
 export const artifactErrorMessages = {
   // Custom component error message to give more context to the user
   // Artifacts
-  artifact_download: 'Error in downloading file',
-  artifact_deleting: 'Error in deleting file',
-  artifact_preview: 'Error in loading preview',
+  artifact_download: 'Error in downloading file.',
+  artifact_deleting: 'Error in deleting file.',
+  artifact_preview: 'Error in loading preview:',
 };
 
 export const UIValidationErrorMessage = {

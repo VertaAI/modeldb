@@ -1,6 +1,5 @@
 .pageCard {
   height: 100%;
-  width: 100%;
   background-color: var(--bg-color3);
   padding: 31px 30px 30px 30px;
 }
@@ -8,22 +7,21 @@
 .pageHeader {
   display: flex;
   align-items: center;
-  padding-bottom: 13px;
-  color: var(--main-text-color1);
-  border-bottom: 1px solid #888888;
-}
-.pageHeader_withoutSeparator {
-  border-bottom: none;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color1);
 }
 .pageHeader__title {
   font-weight: 500;
   margin: 0;
 }
+.pageHeader__title::first-letter {
+  text-transform: uppercase;
+}
 .pageHeader__title_size_medium {
-  font-size: 21px;
+  font-size: 24px;
 }
 .pageHeader__title_size_small {
-  font-size: 16px;
+  font-size: 21px;
 }
 .pageHeader__rightContent {
   margin-left: auto;
@@ -36,7 +34,7 @@
 
 .record {
   display: grid;
-  grid-template-columns: 155px auto;
+  grid-template-columns: 140px auto;
   grid-template-rows: 13px auto 12px;
   border-bottom: 1px solid var(--border-color1);
 }
@@ -46,14 +44,14 @@
 .record__label {
   grid-row: 2;
   color: var(--fr-color25);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 18px;
 }
 .record__value {
   grid-row: 2;
   color: var(--fr-color3);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 16px;
 }
 

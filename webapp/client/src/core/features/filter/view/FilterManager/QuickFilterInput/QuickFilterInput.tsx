@@ -16,10 +16,8 @@ import QuickFilterItem from './QuickFilterItem/QuickFilterItem';
 interface ILocalProps {
   isCollapsed: boolean;
   quickFilters: IQuickFilter[];
-  isShowQuickFilters: boolean;
   onExpandSidebar(): void;
   onCreateFilter(filter: IFilterData): void;
-  onHideFilters(): void;
 }
 
 interface ILocalState {
@@ -40,15 +38,17 @@ class QuickFilterInput extends React.PureComponent<ILocalProps, ILocalState> {
   public state = initialState;
   private inputRef: HTMLInputElement | null = null;
 
-  public componentDidMount() {
-    if (this.props.isShowQuickFilters) {
-      this.onShowQuickFilters();
-    }
-  }
-
   public componentDidUpdate(prevProps: ILocalProps) {
     if (!prevProps.isCollapsed && this.props.isCollapsed) {
       this.setState(initialState);
+    }
+
+    if (
+      this.state.isWasClickWhenCollapsed &&
+      prevProps.isCollapsed &&
+      !this.props.isCollapsed
+    ) {
+      this.onShowQuickFilters();
     }
   }
 
@@ -91,11 +91,6 @@ class QuickFilterInput extends React.PureComponent<ILocalProps, ILocalState> {
             onChange={this.onChangeInputValue}
             onClick={this.onTextInputFocus}
             onInputRef={ref => (this.inputRef = ref)}
-          />
-          <Icon
-            className={styles.hideFilters}
-            type="close"
-            onClick={this.props.onHideFilters}
           />
           {this.props.quickFilters.length > 0 && isShownQuickFilters && (
             <div className={styles.quickFilters} data-test="quick-filters">

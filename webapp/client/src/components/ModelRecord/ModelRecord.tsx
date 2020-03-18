@@ -32,9 +32,6 @@ import * as ProjectsStore from 'store/projects';
 import { IApplicationState } from 'store/store';
 
 import styles from './ModelRecord.module.css';
-import { ModelIdMeta, ModelMeta } from './shared/ModelMeta/ModelMeta';
-import Record from './shared/Record/Record';
-import VersionedInputsInfo from './VersionedInputsInfo/VersionedInputsInfo';
 
 interface ILocalProps {
   id: string;
@@ -126,7 +123,6 @@ class ModelRecordView extends React.PureComponent<AllProps> {
       return <PageCommunicationError error={loading.error} />;
     }
 
-    const versionedInputs = data.versionedInputs;
     return (
       <PageCard
         additionalClassname={cn({ [styles.deleting]: deleting.isRequesting })}
@@ -150,7 +146,7 @@ class ModelRecordView extends React.PureComponent<AllProps> {
               />
             </div>
             <div className={styles.header_records}>
-              <div className={styles.tags}>
+              <div className={styles.tags_block}>
                 <ProjectEntityTagsManager
                   id={data.id}
                   projectId={data.projectId}
@@ -162,7 +158,7 @@ class ModelRecordView extends React.PureComponent<AllProps> {
             </div>
           </div>
           <div className={styles.record_summary_meta}>
-            <ModelIdMeta
+            <this.RenderModelIdMeta
               label="Run ID"
               valueTitle={data.id}
               id={data.id}
@@ -170,29 +166,29 @@ class ModelRecordView extends React.PureComponent<AllProps> {
               runId={true}
             >
               <IdView value={data.id} additionalClassName={styles.run_id} />
-            </ModelIdMeta>
-            <ModelIdMeta
+            </this.RenderModelIdMeta>
+            <this.RenderModelIdMeta
               label="Experiment"
               valueTitle={data.shortExperiment.name}
               copy={true}
               id={data.experimentId}
             >
               {data.shortExperiment.name}
-            </ModelIdMeta>
-            <ModelIdMeta
+            </this.RenderModelIdMeta>
+            <this.RenderModelIdMeta
               label="Project"
               valueTitle={project ? project.name : ''}
               copy={true}
               id={data.projectId}
             >
               {project ? project.name : ''}
-            </ModelIdMeta>
-            <ModelIdMeta
+            </this.RenderModelIdMeta>
+            <this.RenderModelIdMeta
               label="Timestamp"
               valueTitle={getFormattedDateTime(data.dateCreated)}
             >
               {getFormattedDateTime(data.dateCreated)}
-            </ModelIdMeta>
+            </this.RenderModelIdMeta>
             <div
               className={styles.meta_id_container}
               style={{ marginTop: '5px' }}
@@ -215,10 +211,10 @@ class ModelRecordView extends React.PureComponent<AllProps> {
             </div>
           </div>
         </div>
-        {versionedInputs && (
-          <VersionedInputsInfo versionedInputs={versionedInputs} />
-        )}
-        <Record label="Hyperparameters">
+        <this.Record
+          label="Hyperparameters"
+          additionalContainerClassName={styles.record_hyperparameters}
+        >
           <div className={styles.parameter_pills_container}>
             {data.hyperparameters && data.hyperparameters.length > 0 && (
               <ScrollableContainer
@@ -236,12 +232,12 @@ class ModelRecordView extends React.PureComponent<AllProps> {
                             : hyperparameter.value;
                         return (
                           <div key={key}>
-                            <ModelMeta
+                            <this.RenderModelMeta
                               label={hyperparameter.key}
                               valueTitle={String(value)}
                             >
                               {value}
-                            </ModelMeta>
+                            </this.RenderModelMeta>
                           </div>
                         );
                       }
@@ -258,8 +254,11 @@ class ModelRecordView extends React.PureComponent<AllProps> {
               link={vertaDocLinks.log_hyperparameters}
             />
           )}
-        </Record>
-        <Record label="Metrics">
+        </this.Record>
+        <this.Record
+          label="Metrics"
+          additionalContainerClassName={styles.record_metrics}
+        >
           <div className={styles.parameter_pills_container}>
             {data.metrics && data.metrics.length > 0 && (
               <ScrollableContainer
@@ -276,12 +275,12 @@ class ModelRecordView extends React.PureComponent<AllProps> {
                           : metric.value;
                       return (
                         <div key={key}>
-                          <ModelMeta
+                          <this.RenderModelMeta
                             label={metric.key}
                             valueTitle={String(value)}
                           >
                             {value}
-                          </ModelMeta>
+                          </this.RenderModelMeta>
                         </div>
                       );
                     })}
@@ -297,15 +296,21 @@ class ModelRecordView extends React.PureComponent<AllProps> {
               link={vertaDocLinks.log_metric}
             />
           )}
-        </Record>
-        <Record label="Attributes">
+        </this.Record>
+        <this.Record
+          label="Attributes"
+          additionalContainerClassName={styles.record_attributes}
+        >
           <Attributes
             attributes={data.attributes}
             pillSize="medium"
             docLink={vertaDocLinks.log_attribute}
           />
-        </Record>
-        <Record label="Artifacts">
+        </this.Record>
+        <this.Record
+          label="Artifacts"
+          additionalContainerClassName={styles.record_artifacts}
+        >
           <Artifacts
             entityType="experimentRun"
             pillSize="medium"
@@ -320,8 +325,11 @@ class ModelRecordView extends React.PureComponent<AllProps> {
               isCurrentUserCanDeleteArtifact: true,
             }}
           />
-        </Record>
-        <Record label="Code Version">
+        </this.Record>
+        <this.Record
+          label="Code Version"
+          additionalContainerClassName={styles.record_artifacts}
+        >
           {data.codeVersion && (
             <CodeVersion
               entityId={data.id}
@@ -336,22 +344,117 @@ class ModelRecordView extends React.PureComponent<AllProps> {
               link={vertaDocLinks.log_code}
             />
           )}
-        </Record>
-        <Record label="Observations">
+        </this.Record>
+        <this.Record
+          label="Observations"
+          additionalContainerClassName={styles.record_observations}
+        >
           <ObservationsModelPage
             observations={data.observations}
             docLink={vertaDocLinks.log_observations}
           />
-        </Record>
-        <Record label="Datasets">
+        </this.Record>
+        <this.Record
+          label="Datasets"
+          additionalContainerClassName={styles.record_datasets}
+        >
           <Datasets
             modelId={data.id}
             datasets={data.datasets}
             docLink={vertaDocLinks.log_dataset}
             size="medium"
           />
-        </Record>
+        </this.Record>
       </PageCard>
+    );
+  }
+
+  private RenderModelMeta(props: {
+    label: string;
+    children: React.ReactNode;
+    valueTitle: string;
+    copy?: boolean;
+    id?: string;
+    runId?: boolean;
+  }) {
+    const { id, label, valueTitle, children } = props;
+    return (
+      <div className={styles.meta_container}>
+        <div className={styles.meta_label_container} title={label}>
+          {label}
+        </div>
+        <div className={styles.value_container}>
+          <div className={styles.meta_value} title={valueTitle}>
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  private RenderModelIdMeta(props: {
+    label: string;
+    children: React.ReactNode;
+    valueTitle: string;
+    copy?: boolean;
+    id?: string;
+    runId?: boolean;
+  }) {
+    const { id, label, valueTitle, children, copy, runId } = props;
+    return (
+      <div className={styles.meta_id_container}>
+        <div className={styles.meta_label_container} title={label}>
+          {label}
+        </div>
+        <div
+          className={styles[copy ? 'value_id_container' : 'value_container']}
+        >
+          <div className={styles.meta_value} title={valueTitle}>
+            {children}
+          </div>
+          {copy ? (
+            <div>
+              (
+              {id && !runId ? (
+                <span title={id}>
+                  <IdView value={id.slice(0, 7)} />,{' '}
+                </span>
+              ) : (
+                ''
+              )}
+              <CopyButton value={id || String(children)} />)
+            </div>
+          ) : (
+            ''
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  private Record(props: {
+    label: string;
+    children?: React.ReactNode;
+    additionalContainerClassName?: string;
+    additionalHeaderClassName?: string;
+    additionalValueClassName?: string;
+  }) {
+    const {
+      label,
+      children,
+      additionalContainerClassName = '',
+      additionalHeaderClassName = '',
+      additionalValueClassName = '',
+    } = props;
+    return (
+      <div className={cn(styles.record, additionalContainerClassName)}>
+        <div className={cn(styles.record_label, additionalHeaderClassName)}>
+          {label}
+        </div>
+        <div className={cn(styles.record_value, additionalValueClassName)}>
+          <span>{children}</span>
+        </div>
+      </div>
     );
   }
 

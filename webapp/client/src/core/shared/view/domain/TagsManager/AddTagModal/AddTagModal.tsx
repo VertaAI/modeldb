@@ -9,7 +9,6 @@ import styles from './AddTagModal.module.css';
 
 interface ILocalProps {
   isOpen: boolean;
-  tagWordReplacer?: string;
   onAdd(tag: string): void;
   onClose(): void;
 }
@@ -23,11 +22,11 @@ class AddTagModal extends React.PureComponent<ILocalProps, ILocalState> {
   public state: ILocalState = { tag: '', tagLimitReached: false };
 
   public render() {
-    const { isOpen, onClose, tagWordReplacer } = this.props;
+    const { isOpen, onClose } = this.props;
 
     return (
       <Popup
-        title={`Add ${tagWordReplacer || 'Tag'}`}
+        title={'Add Tag'}
         titleIcon="rounded-plus-filled"
         contentLabel="add-tag-action"
         isOpen={isOpen}
@@ -38,7 +37,7 @@ class AddTagModal extends React.PureComponent<ILocalProps, ILocalState> {
             <input
               type="text"
               name="tag-submitted"
-              placeholder={`your ${tagWordReplacer || 'tag'}`}
+              placeholder="your tag"
               id="tagInput"
               className={styles.input}
               onChange={this.updateInput}

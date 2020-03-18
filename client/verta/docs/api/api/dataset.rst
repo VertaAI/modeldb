@@ -1,13 +1,10 @@
 Data Versioning
 ===============
-.. note::
-
-    Verta's versioning system has been redesigned! Take a look at the new `versioning page
-    <versioning.html>`__ for the up-to-date API.
 
 
 Dataset Creation and Retrieval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automethod:: verta.client.Client.set_dataset
     :noindex:
 .. automethod:: verta.client.Client.find_datasets
@@ -16,6 +13,7 @@ Dataset Creation and Retrieval
 
 Dataset Version Creation
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automethod:: verta._dataset.LocalDataset.create_version
     :noindex:
 .. automethod:: verta._dataset.S3Dataset.create_version
@@ -28,6 +26,7 @@ Dataset Version Creation
 
 Dataset Version Logging and Retrieval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automethod:: verta.client.ExperimentRun.log_dataset_version
     :noindex:
 .. automethod:: verta.client.ExperimentRun.get_dataset_version

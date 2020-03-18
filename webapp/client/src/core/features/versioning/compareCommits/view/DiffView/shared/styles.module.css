@@ -1,7 +1,0 @@
-@value redDiff: #ffeef0;
-@value greenDiff: #e6ffed;
-
-:export {
-  redDiff: redDiff;
-  greenDiff: greenDiff;
-}

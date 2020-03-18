@@ -15,4 +15,4 @@ and access the API reference.
     Support & Community <support>
     Resources <learn>
     FAQs <faqs>
-    Release Notes <changelog>
+    Release Notes <change_log>

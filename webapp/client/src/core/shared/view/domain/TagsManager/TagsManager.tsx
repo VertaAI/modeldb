@@ -14,7 +14,6 @@ interface ILocalProps {
   isDraggableTags: boolean;
   isRemovableTags: boolean;
   isAvailableTagAdding: boolean;
-  tagWordReplacer?: string;
   onAddTag(tag: string): void;
   onRemoveTag(tag: string): void;
   onClick?(e: React.MouseEvent<Element, MouseEvent>, byEmptiess: boolean): void;
@@ -38,7 +37,6 @@ class TagManager extends React.Component<ILocalProps, ILocalState> {
       isAvailableTagAdding,
       isShowPlaceholder,
       onRemoveTag,
-      tagWordReplacer,
     } = this.props;
     const { isShowAddTagActionModal } = this.state;
 
@@ -50,9 +48,7 @@ class TagManager extends React.Component<ILocalProps, ILocalState> {
       >
         {isShowPlaceholder && (
           <div className={styles.tag_sub_heading_div}>
-            <p className={styles.tag_sub_heading}>
-              {tagWordReplacer || 'Tag'}s
-            </p>
+            <p className={styles.tag_sub_heading}>Tags</p>
           </div>
         )}
         {tags.map((tag: string, i: number) => (
@@ -62,7 +58,6 @@ class TagManager extends React.Component<ILocalProps, ILocalState> {
             isRemovable={isRemovableTags}
             isUpdating={isUpdating}
             onRemove={onRemoveTag}
-            tagWordReplacer={tagWordReplacer}
             key={i}
           />
         ))}
@@ -79,7 +74,6 @@ class TagManager extends React.Component<ILocalProps, ILocalState> {
                 isOpen={isShowAddTagActionModal}
                 onAdd={this.onAddTag}
                 onClose={this.closeAddTagModal}
-                tagWordReplacer={tagWordReplacer}
               />
             )}
           </div>

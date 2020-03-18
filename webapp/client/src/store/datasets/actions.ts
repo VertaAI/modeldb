@@ -10,7 +10,7 @@ import { IWorkspace } from 'models/Workspace';
 import routes from 'routes';
 import { handleDeleteEntities } from 'store/shared/deletion';
 import { ActionResult } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceNameOrDefault } from 'store/workspaces';
 import { makeThunkApiRequest } from 'utils/redux/actions';
 
 import { selectDatasetsPagination } from './selectors';
@@ -62,7 +62,7 @@ export const createDataset = makeThunkApiRequest(
       dependencies.history.push(
         routes.datasetSummary.getRedirectPath({
           datasetId: successPayload.dataset.id,
-          workspaceName: selectCurrentWorkspaceName(getState()),
+          workspaceName: selectCurrentWorkspaceNameOrDefault(getState()),
         })
       );
     },

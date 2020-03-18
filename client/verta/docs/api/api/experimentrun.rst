@@ -94,8 +94,6 @@ Images
 .. automethod:: ExperimentRun.log_image_path
 .. automethod:: ExperimentRun.get_image
 
-.. _experiment-run-versioning:
-
 Versioning
 ----------
 .. automethod:: ExperimentRun.log_commit

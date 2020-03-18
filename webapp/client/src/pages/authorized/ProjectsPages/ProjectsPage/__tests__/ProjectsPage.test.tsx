@@ -7,10 +7,11 @@ import { makeDefaultStringFilter } from 'core/features/filter/Model';
 import { initialCommunication } from 'core/shared/utils/redux/communication';
 import { makeRouterMockProps } from 'core/shared/utils/tests/react/routeComponentProps';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
+import NoEntitiesStub from 'core/shared/view/elements/NoEntitiesStub/NoEntitiesStub';
 import NoResultsStub from 'core/shared/view/elements/NoResultsStub/NoResultsStub';
 import Pagination from 'core/shared/view/elements/Pagination/Pagination';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import routes, { GetRouteParams } from 'routes';
+import { GetRouteParams } from 'routes';
 import { currentUserProjects } from 'utils/tests/mocks/models/projectsMocks';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
@@ -98,6 +99,13 @@ describe('pages', () => {
       });
 
       expect(component.find(NoResultsStub).length).toBe(1);
+    });
+
+    it('should render the "not entities" stub if a user has not projects', () => {
+      const component = makeShallowComponent({ projects: [] });
+
+      expect(component.find(`${styles.root}`).children.length).toEqual(1);
+      expect(component.find(NoEntitiesStub).length).toBe(1);
     });
   });
 });

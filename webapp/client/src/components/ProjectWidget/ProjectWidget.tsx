@@ -84,9 +84,7 @@ class ProjectWidget extends React.Component<AllProps> {
                 <div className={styles.actions}>
                   {togglerForDeletion && (
                     <div
-                      className={cn(styles.action, {
-                        [styles.action_delete]: true,
-                      })}
+                      className={styles.action}
                       onClick={this.preventRedirect}
                     >
                       {togglerForDeletion}

@@ -12,7 +12,7 @@ What parts of Verta are open-source?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All the Verta modules related to model versioning and metadata are free and open-source under ModelDB.
-Find code and getting started information for ModelDB `here <https://github.com/VertaAI/modeldb>`__.
+Find code and getting started information for ModelDB `here <https://github.com/VertaAI/modeldb>`_.
 
 In addition, we have open-source different deployment and packaging components that are available on the
 `Verta Git repository <https://github.com/VertaAI?q=&type=public>`_.
@@ -28,7 +28,7 @@ However, the differentiator for ModelDB 2.0 (latest version) is the full-fledged
 supported by ModelDB.
 ModelDB provides a Git-like versioning system for all model ingredients including code, data, config,
 and environment,  providing reproducibility  guarantees not provided by any other tools.
-Read more about versioning vs. metadata `here <overview/versioning.html>`__.
+Read more about versioning vs. metadata `here <overview/versioning.html>`_.
 
 In addition to versioning, of course, ModelDB 2.0 continues to provide the metadata and experiment
 management as before and is freely available as open-source.

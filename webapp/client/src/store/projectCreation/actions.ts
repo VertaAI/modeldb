@@ -4,7 +4,7 @@ import normalizeError from 'core/shared/utils/normalizeError';
 import { IProjectCreationSettings } from 'models/Project';
 import routes from 'routes';
 import { ActionResult } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceNameOrDefault } from 'store/workspaces';
 
 import {
   createProjectActionTypes,
@@ -33,7 +33,7 @@ export const createProject = (
       deps.history.push(
         routes.projectSummary.getRedirectPath({
           projectId: project.id,
-          workspaceName: selectCurrentWorkspaceName(getState()),
+          workspaceName: selectCurrentWorkspaceNameOrDefault(getState()),
         })
       );
     })

@@ -47,7 +47,6 @@ import { ReactComponent as Heart } from './imgs/heart.svg';
 import { ReactComponent as HelpOutline } from './imgs/help-outline.svg';
 import { ReactComponent as Image } from './imgs/image.svg';
 import { ReactComponent as Key } from './imgs/key.svg';
-import { ReactComponent as Leave } from './imgs/leave.svg';
 import { ReactComponent as Link } from './imgs/link.svg';
 import { ReactComponent as LinkedIn } from './imgs/linked-in-logo.svg';
 import { ReactComponent as List } from './imgs/list.svg';
@@ -55,9 +54,7 @@ import { ReactComponent as LockSolid } from './imgs/lock-solid.svg';
 import { ReactComponent as Login } from './imgs/login.svg';
 import { ReactComponent as Medium } from './imgs/medium-logo.svg';
 import { ReactComponent as MinusSolid } from './imgs/minus-solid.svg';
-import { ReactComponent as OrganizationWorkspace } from './imgs/organization-workspace.svg';
 import { ReactComponent as Pencil } from './imgs/pencil.svg';
-import { ReactComponent as PersonalWorkspace } from './imgs/personal-workspace.svg';
 import { ReactComponent as RoundedPlusFilled } from './imgs/plus-rounded-filled.svg';
 import { ReactComponent as RoundedPlus } from './imgs/plus-rounded.svg';
 import { ReactComponent as Plus } from './imgs/plus.svg';
@@ -82,8 +79,8 @@ import { ReactComponent as UpDownArrow } from './imgs/up-down-arrow.svg';
 import { ReactComponent as Upload } from './imgs/upload.svg';
 import { ReactComponent as User } from './imgs/user.svg';
 import { ReactComponent as Users } from './imgs/users.svg';
-import { ReactComponent as Repository } from './imgs/repository.svg';
-import { ReactComponent as File } from './imgs/file.svg';
+import { ReactComponent as Workspaces } from './imgs/workspaces.svg';
+import { ReactComponent as Leave } from './imgs/leave.svg';
 
 import styles from './Icon.module.css';
 
@@ -97,6 +94,7 @@ interface ILocalProps {
 
 export type IconType =
   | 'search'
+  | 'cannot-deploy'
   | 'caret-down'
   | 'caret-up'
   | 'medium'
@@ -170,13 +168,10 @@ export type IconType =
   | 'device-hub'
   | 'link'
   | 'help-outline'
+  | 'workspaces'
   | 'user'
   | 'users'
-  | 'leave'
-  | 'organization-workspace'
-  | 'personal-workspace'
-  | 'repository'
-  | 'file';
+  | 'leave';
 
 export class Icon extends React.PureComponent<ILocalProps> {
   public render() {
@@ -189,7 +184,7 @@ export class Icon extends React.PureComponent<ILocalProps> {
         onClick={onClick}
         data-id={dataId}
       >
-        <IconComponent />
+        {type === 'cannot-deploy' ? <CannotDeployIcon /> : <IconComponent />}
       </i>
     );
   }
@@ -265,19 +260,35 @@ export class Icon extends React.PureComponent<ILocalProps> {
       bitbucket: Bitbucket,
       email: Email,
       google: Google,
+      'cannot-deploy': CannotDeployIcon,
       folder: Folder,
       bookmarks: Bookmarks,
       'device-hub': DeviceHub,
       link: Link,
       'help-outline': HelpOutline,
-      'organization-workspace': OrganizationWorkspace,
+      workspaces: Workspaces,
       user: User,
       users: Users,
       leave: Leave,
-      'personal-workspace': PersonalWorkspace,
-      repository: Repository,
-      file: File,
     };
     return icons[this.props.type];
   }
 }
+
+const CannotDeployIcon = () => {
+  return (
+    <i
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+      }}
+    >
+      <Icon type="upload" />
+      <div style={{ position: 'absolute' }}>
+        <Ban />
+      </div>
+    </i>
+  );
+};
