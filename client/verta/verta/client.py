@@ -479,6 +479,25 @@ class Client(object):
         return expt_run
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
+        """
+        Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
+
+        Parameters
+        ----------
+        name : str
+            Name of the Repository. This parameter cannot be provided alongside `id`.
+        workspace : str, optional
+            Workspace under which the Repository with name `name` exists. If not provided, the
+            current user's personal workspace will be used.
+        id : str, optional
+            ID of the Repository, to be provided instead of `name`.
+
+        Returns
+        -------
+        :class:`~verta._repository.Repository`
+            Specified Repository.
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
