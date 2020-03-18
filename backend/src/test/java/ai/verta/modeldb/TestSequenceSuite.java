@@ -26,7 +26,8 @@ import org.junit.runners.Suite;
   RepositoryTest.class,
   CommitTest.class,
   MetadataTest.class,
-  DiffTest.class
+  DiffTest.class,
+  BranchTest.class
   //  ArtifactStoreTest.class
 })
 public class TestSequenceSuite {}

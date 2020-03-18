@@ -22,6 +22,7 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolStringList;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -29,9 +30,12 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -43,10 +47,11 @@ import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DiffTest {
 
@@ -107,6 +112,27 @@ public class DiffTest {
     }
   }
 
+  private final int blobType;
+  private final int commitType;
+
+  @Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] {{0, 0}});
+  }
+
+  /*@Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {
+            {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}
+        });
+  }*/
+
+  public DiffTest(int blobType, int commitType) {
+    this.blobType = blobType;
+    this.commitType = commitType;
+  }
+
   @AfterClass
   public static void removeServerAndService() {
     App.initiateShutdown(0);
@@ -159,6 +185,142 @@ public class DiffTest {
     GetBranchRequest.Response getBranchResponse =
         versioningServiceBlockingStub.getBranch(getBranchRequest);
 
+    BlobExpanded[] blobExpandedArray;
+    BlobDiff[] blobDiffsArray;
+    if (commitType == 0) {
+      blobExpandedArray = createBlobs(blobType);
+      blobDiffsArray = null;
+    } else {
+      blobExpandedArray = null;
+      blobDiffsArray = createDiffs(blobType);
+    }
+
+    CreateCommitRequest.Builder createCommitRequestBuilder =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(
+                Commit.newBuilder()
+                    .setAuthor(authClientInterceptor.getClient1Email())
+                    .setMessage("this is the test commit message")
+                    .setDateCreated(Calendar.getInstance().getTimeInMillis())
+                    .addParentShas(getBranchResponse.getCommit().getCommitSha())
+                    .build());
+    CreateCommitRequest createCommitRequest;
+    if (commitType == 0) {
+      createCommitRequest =
+          createCommitRequestBuilder
+              .addBlobs(blobExpandedArray[0])
+              .addBlobs(blobExpandedArray[1])
+              .addBlobs(blobExpandedArray[2])
+              .addBlobs(blobExpandedArray[3])
+              .build();
+    } else {
+      createCommitRequest =
+          createCommitRequestBuilder
+              .setCommitBase(getBranchResponse.getCommit().getCommitSha())
+              .addDiffs(blobDiffsArray[0])
+              .addDiffs(blobDiffsArray[1])
+              .addDiffs(blobDiffsArray[2])
+              .addDiffs(blobDiffsArray[3])
+              .build();
+    }
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    Commit commitA = commitResponse.getCommit();
+
+    createCommitRequestBuilder =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(
+                Commit.newBuilder()
+                    .setAuthor(authClientInterceptor.getClient1Email())
+                    .setMessage("this is the test commit message")
+                    .setDateCreated(Calendar.getInstance().getTimeInMillis())
+                    .addParentShas(commitA.getCommitSha())
+                    .build());
+    if (commitType == 0) {
+      blobExpandedArray[2] = modifiedBlobExpanded(commitType);
+    } else {
+      blobDiffsArray[2] = modifiedBlobDiff(commitType);
+    }
+    if (commitType == 0) {
+      createCommitRequest =
+          createCommitRequestBuilder
+              .addBlobs(blobExpandedArray[1])
+              .addBlobs(blobExpandedArray[2])
+              .addBlobs(blobExpandedArray[4])
+              .build();
+    } else {
+      createCommitRequest =
+          createCommitRequestBuilder
+              .setCommitBase(getBranchResponse.getCommit().getCommitSha())
+              .addDiffs(blobDiffsArray[1])
+              .addDiffs(blobDiffsArray[2])
+              .addDiffs(blobDiffsArray[4])
+              .build();
+    }
+
+    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
+    Commit commitB = commitResponse.getCommit();
+
+    ComputeRepositoryDiffRequest repositoryDiffRequest =
+        ComputeRepositoryDiffRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitA(commitA.getCommitSha())
+            .setCommitB(commitB.getCommitSha())
+            .build();
+    ComputeRepositoryDiffRequest.Response repositoryDiffResponse =
+        versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
+    LOGGER.info("Diff Response: {}", ModelDBUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.info("Diff Response: {}", repositoryDiffResponse);
+    List<BlobDiff> blobDiffs = repositoryDiffResponse.getDiffsList();
+    Assert.assertEquals("blob count not match with expected blob count", 4, blobDiffs.size());
+    Map<ProtocolStringList, BlobDiff> result = blobDiffs.stream()
+        .collect(Collectors.toMap(BlobDiff::getLocationList, blobDiff -> blobDiff));
+
+    for (Commit commit : new Commit[] {commitA, commitB}) {
+      DeleteCommitRequest deleteCommitRequest =
+          DeleteCommitRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setCommitSha(commit.getCommitSha())
+              .build();
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+    }
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("Compute repository diff test end................................");
+  }
+
+  private BlobExpanded modifiedBlobExpanded(int commitType) {
+    String path3 = "/protos/proto/public/test22.txt";
+    List<String> location3 = new ArrayList<>();
+    location3.add("modeldb");
+    location3.add("dataset");
+    location3.add("march");
+    location3.add("dataset.json");
+    BlobExpanded blobExpanded3 =
+        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path3)).addAllLocation(location3).build();
+
+    return blobExpanded3;
+  }
+
+  private BlobDiff modifiedBlobDiff(int commitType) {
+    return null;
+  }
+
+  private BlobDiff[] createDiffs(int blobType) {
+    return null;
+  }
+
+  private BlobExpanded[] createBlobs(int blobType) {
     String path1 = "/protos/proto/public/versioning/versioning.proto";
     List<String> location1 = new ArrayList<>();
     location1.add("modeldb");
@@ -191,84 +353,14 @@ public class DiffTest {
     BlobExpanded blobExpanded4 =
         BlobExpanded.newBuilder().setBlob(getBlobFromPath(path4)).addAllLocation(location4).build();
 
-    Commit.Builder commitBuilder =
-        Commit.newBuilder()
-            .setMessage("this is the test commit message")
-            .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
-    }
-
-    CreateCommitRequest createCommitRequest =
-        CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setCommit(commitBuilder.build())
-            .addBlobs(blobExpanded1)
-            .addBlobs(blobExpanded2)
-            .addBlobs(blobExpanded3)
-            .addBlobs(blobExpanded4)
-            .build();
-
-    CreateCommitRequest.Response commitResponse =
-        versioningServiceBlockingStub.createCommit(createCommitRequest);
-    Commit commitB = commitResponse.getCommit();
-
     String path5 = "/protos/proto/public/algebra.txt";
     List<String> location5 = new ArrayList<>();
     location5.add("maths/algebra");
     BlobExpanded blobExpanded5 =
         BlobExpanded.newBuilder().setBlob(getBlobFromPath(path5)).addAllLocation(location5).build();
 
-    commitBuilder =
-        Commit.newBuilder()
-            .setMessage("this is the test commit message")
-            .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(commitB.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
-    }
-
-    createCommitRequest =
-        CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setCommit(commitBuilder.build())
-            .addBlobs(blobExpanded2)
-            .addBlobs(blobExpanded3)
-            .addBlobs(blobExpanded5)
-            .build();
-
-    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    Commit commitA = commitResponse.getCommit();
-
-    ComputeRepositoryDiffRequest repositoryDiffRequest =
-        ComputeRepositoryDiffRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setCommitA(commitA.getCommitSha())
-            .setCommitB(commitB.getCommitSha())
-            .build();
-    ComputeRepositoryDiffRequest.Response repositoryDiffResponse =
-        versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", ModelDBUtils.getStringFromProtoObject(repositoryDiffResponse));
-    LOGGER.info("Diff Response: {}", repositoryDiffResponse);
-    List<BlobDiff> blobDiffs = repositoryDiffResponse.getDiffsList();
-    Assert.assertEquals("blob count not match with expected blob count", 3, blobDiffs.size());
-
-    DeleteCommitRequest deleteCommitRequest =
-        DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .build();
-    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    LOGGER.info("Compute repository diff test end................................");
+    return new BlobExpanded[] {
+      blobExpanded1, blobExpanded2, blobExpanded3, blobExpanded4, blobExpanded5
+    };
   }
 }
