@@ -29,10 +29,34 @@ public class DiffMerger {
       Function3<F, DF, F> merger) {
     HashMap<String, HashSet<F>> mapA = new HashMap<>();
     HashMap<String, HashSet<DF>> mapD = new HashMap<>();
-    List<F> fa = getterA.apply(a);
-    List<DF> fd = getterD.apply(d);
-    if (fa != null) fa.forEach(el -> mapA.getOrDefault(hasherA.apply(el), new HashSet<>()).add(el));
-    if (fd != null) fd.forEach(el -> mapD.getOrDefault(hasherD.apply(el), new HashSet<>()).add(el));
+    if (a != null) {
+      List<F> fa = getterA.apply(a);
+      if (fa != null)
+        fa.forEach(
+                el -> {
+                  if (el != null) {
+                    String key = hasherA.apply(el);
+                    if (key != null) {
+                      HashSet<F> set = mapA.getOrDefault(key, new HashSet<>());
+                      set.add(el);
+                      mapA.put(key, set);
+                    }
+                  }});
+    }
+    if (d != null) {
+      List<DF> fd = getterD.apply(d);
+      if (fd != null)
+        fd.forEach(
+                el -> {
+                  if (el != null) {
+                    String key = hasherD.apply(el);
+                    if (key != null) {
+                      HashSet<DF> set = mapD.getOrDefault(key, new HashSet<>());
+                      set.add(el);
+                      mapD.put(key, set);
+                    }
+                  }});
+    }
 
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
@@ -107,6 +131,9 @@ public class DiffMerger {
   }
 
   public static GitCodeBlob mergeGitCode(GitCodeBlob a, GitCodeDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(mergeLast(a, d, x -> d.B, x -> x.Status));
   }
 
@@ -142,17 +169,23 @@ public class DiffMerger {
 
   public static HyperparameterConfigBlob mergeHyperparameterConfig(
       HyperparameterConfigBlob a, HyperparameterConfigDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(
         new HyperparameterConfigBlob()
-            .setName(a != null ? a.Name : d.Name)
+            .setName(d == null ? a.Name : d.Name)
             .setValue(mergeLast(Utils.getOrNull(a, x -> x.Value), d, x -> x.B, x -> x.Status)));
   }
 
   public static HyperparameterSetConfigBlob mergeHyperparameterSetConfig(
       HyperparameterSetConfigBlob a, HyperparameterSetConfigDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(
         new HyperparameterSetConfigBlob()
-            .setName(a != null ? a.Name : d.Name)
+            .setName(d == null ? a.Name : d.Name)
             .setContinuous(
                 mergeLast(
                     Utils.getOrNull(a, x -> x.Continuous), d, x -> x.ContinuousB, x -> x.Status))
@@ -184,6 +217,9 @@ public class DiffMerger {
 
   public static PathDatasetComponentBlob mergePathDatasetComponent(
       PathDatasetComponentBlob a, PathDatasetComponentDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(mergeLast(a, d, x -> x.B, x -> x.Status));
   }
 
@@ -225,12 +261,13 @@ public class DiffMerger {
                     x -> x.Name,
                     DiffMerger::mergeEnvironmentVariables))
             .setCommandLine(
-                    merge(a, d, x-> x.CommandLine, x -> x.CommandLine, DiffMerger::mergeCommandLine))
-    );
+                merge(a, d, x -> x.CommandLine, x -> x.CommandLine, DiffMerger::mergeCommandLine)));
   }
 
-  public static List<String> mergeCommandLine(
-          List<String> a, CommandLineEnvironmentDiff d) {
+  public static List<String> mergeCommandLine(List<String> a, CommandLineEnvironmentDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(mergeLast(a, d, x -> x.B, x -> x.Status));
   }
 
@@ -238,7 +275,8 @@ public class DiffMerger {
       PythonEnvironmentBlob a, PythonEnvironmentDiff d) {
     return Utils.removeEmpty(
         new PythonEnvironmentBlob()
-            .setVersion(merge(a, d, x -> x.Version, x -> x.Version, DiffMerger::mergeVersionEnvironment))
+            .setVersion(
+                merge(a, d, x -> x.Version, x -> x.Version, DiffMerger::mergeVersionEnvironment))
             .setConstraints(
                 mergeList(
                     a,
@@ -261,24 +299,36 @@ public class DiffMerger {
 
   public static VersionEnvironmentBlob mergeVersionEnvironment(
       VersionEnvironmentBlob a, VersionEnvironmentDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(mergeLast(a, d, x -> x.B, x -> x.Status));
   }
 
   public static PythonRequirementEnvironmentBlob mergePythonRequirementEnvironment(
       PythonRequirementEnvironmentBlob a, PythonRequirementEnvironmentDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(mergeLast(a, d, x -> x.B, x -> x.Status));
   }
 
   public static DockerEnvironmentBlob mergeDockerEnvironment(
       DockerEnvironmentBlob a, DockerEnvironmentDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(mergeLast(a, d, x -> x.B, x -> x.Status));
   }
 
   public static EnvironmentVariablesBlob mergeEnvironmentVariables(
       EnvironmentVariablesBlob a, EnvironmentVariablesDiff d) {
+    if (a == null && d == null) return null;
+    if (d == null) return a;
+    if (d.Status.isDeleted()) return null;
     return Utils.removeEmpty(
         new EnvironmentVariablesBlob()
-            .setName(a != null ? a.Name : d.Name)
+            .setName(d == null ? a.Name : d.Name)
             .setValue(
                 mergeLast(Utils.getOrNull(a, x -> x.Value), d, x -> x.ValueB, x -> x.Status)));
   }

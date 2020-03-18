@@ -46,7 +46,7 @@ public class {{class_name}} implements ProtoType {
     public String toString() {
         return "{\"class\": \"{{class_name}}\",\"fields\": {" +
                 {{#properties}}
-                "\"{{name}}\": " + {{name}} + {{^last}}", " +{{/last}}
+                "\"{{name}}\": " + {{#type}}{{#string}}"\"" + {{/string}}{{/type}}{{name}}{{#type}}{{#string}} + "\""{{/string}}{{/type}} + {{^last}}", " +{{/last}}
                 {{/properties}}
                 "}}";
     }

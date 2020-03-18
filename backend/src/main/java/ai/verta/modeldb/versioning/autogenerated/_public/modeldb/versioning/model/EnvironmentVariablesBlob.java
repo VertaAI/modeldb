@@ -36,8 +36,8 @@ public class EnvironmentVariablesBlob implements ProtoType {
     @Override
     public String toString() {
         return "{\"class\": \"EnvironmentVariablesBlob\",\"fields\": {" +
-                "\"Name\": " + Name + ", " +
-                "\"Value\": " + Value + 
+                "\"Name\": " + "\"" + Name + "\"" + ", " +
+                "\"Value\": " + "\"" + Value + "\"" + 
                 "}}";
     }
 

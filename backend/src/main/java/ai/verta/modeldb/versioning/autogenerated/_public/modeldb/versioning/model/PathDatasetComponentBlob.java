@@ -51,11 +51,11 @@ public class PathDatasetComponentBlob implements ProtoType {
     @Override
     public String toString() {
         return "{\"class\": \"PathDatasetComponentBlob\",\"fields\": {" +
-                "\"Path\": " + Path + ", " +
+                "\"Path\": " + "\"" + Path + "\"" + ", " +
                 "\"Size\": " + Size + ", " +
                 "\"LastModifiedAtSource\": " + LastModifiedAtSource + ", " +
-                "\"Sha256\": " + Sha256 + ", " +
-                "\"Md5\": " + Md5 + 
+                "\"Sha256\": " + "\"" + Sha256 + "\"" + ", " +
+                "\"Md5\": " + "\"" + Md5 + "\"" + 
                 "}}";
     }
 

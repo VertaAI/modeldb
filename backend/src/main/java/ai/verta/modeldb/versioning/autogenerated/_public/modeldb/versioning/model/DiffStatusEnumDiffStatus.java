@@ -26,6 +26,10 @@ public class DiffStatusEnumDiffStatus implements ProtoType {
         return Status == DiffStatus.UNKNOWN;
     }
 
+    public Boolean isDeleted() {
+        return Status == DiffStatus.UNKNOWN || Status == DiffStatus.DELETED;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -47,6 +51,11 @@ public class DiffStatusEnumDiffStatus implements ProtoType {
 
     public ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus toProto() {
         return this.Status;
+    }
+
+    @Override
+    public String toString() {
+        return Status.toString();
     }
 
     public void preVisitShallow(Visitor visitor) throws ModelDBException {

@@ -36,7 +36,7 @@ public class HyperparameterConfigBlob implements ProtoType {
     @Override
     public String toString() {
         return "{\"class\": \"HyperparameterConfigBlob\",\"fields\": {" +
-                "\"Name\": " + Name + ", " +
+                "\"Name\": " + "\"" + Name + "\"" + ", " +
                 "\"Value\": " + Value + 
                 "}}";
     }

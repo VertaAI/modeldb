@@ -57,7 +57,7 @@ public class HyperparameterSetConfigDiff implements ProtoType {
     public String toString() {
         return "{\"class\": \"HyperparameterSetConfigDiff\",\"fields\": {" +
                 "\"Status\": " + Status + ", " +
-                "\"Name\": " + Name + ", " +
+                "\"Name\": " + "\"" + Name + "\"" + ", " +
                 "\"ContinuousA\": " + ContinuousA + ", " +
                 "\"DiscreteA\": " + DiscreteA + ", " +
                 "\"ContinuousB\": " + ContinuousB + ", " +

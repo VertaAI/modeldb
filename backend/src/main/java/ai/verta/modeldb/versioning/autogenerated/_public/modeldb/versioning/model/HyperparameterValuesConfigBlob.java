@@ -43,7 +43,7 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
         return "{\"class\": \"HyperparameterValuesConfigBlob\",\"fields\": {" +
                 "\"IntValue\": " + IntValue + ", " +
                 "\"FloatValue\": " + FloatValue + ", " +
-                "\"StringValue\": " + StringValue + 
+                "\"StringValue\": " + "\"" + StringValue + "\"" + 
                 "}}";
     }
 

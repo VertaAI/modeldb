@@ -51,10 +51,10 @@ public class GitCodeBlob implements ProtoType {
     @Override
     public String toString() {
         return "{\"class\": \"GitCodeBlob\",\"fields\": {" +
-                "\"Repo\": " + Repo + ", " +
-                "\"Hash\": " + Hash + ", " +
-                "\"Branch\": " + Branch + ", " +
-                "\"Tag\": " + Tag + ", " +
+                "\"Repo\": " + "\"" + Repo + "\"" + ", " +
+                "\"Hash\": " + "\"" + Hash + "\"" + ", " +
+                "\"Branch\": " + "\"" + Branch + "\"" + ", " +
+                "\"Tag\": " + "\"" + Tag + "\"" + ", " +
                 "\"IsDirty\": " + IsDirty + 
                 "}}";
     }

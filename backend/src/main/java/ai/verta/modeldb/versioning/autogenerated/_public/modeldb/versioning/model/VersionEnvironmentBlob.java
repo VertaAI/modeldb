@@ -49,7 +49,7 @@ public class VersionEnvironmentBlob implements ProtoType {
                 "\"Major\": " + Major + ", " +
                 "\"Minor\": " + Minor + ", " +
                 "\"Patch\": " + Patch + ", " +
-                "\"Suffix\": " + Suffix + 
+                "\"Suffix\": " + "\"" + Suffix + "\"" + 
                 "}}";
     }
 

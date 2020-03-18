@@ -47,9 +47,9 @@ public class EnvironmentVariablesDiff implements ProtoType {
     public String toString() {
         return "{\"class\": \"EnvironmentVariablesDiff\",\"fields\": {" +
                 "\"Status\": " + Status + ", " +
-                "\"Name\": " + Name + ", " +
-                "\"ValueA\": " + ValueA + ", " +
-                "\"ValueB\": " + ValueB + 
+                "\"Name\": " + "\"" + Name + "\"" + ", " +
+                "\"ValueA\": " + "\"" + ValueA + "\"" + ", " +
+                "\"ValueB\": " + "\"" + ValueB + "\"" + 
                 "}}";
     }
 

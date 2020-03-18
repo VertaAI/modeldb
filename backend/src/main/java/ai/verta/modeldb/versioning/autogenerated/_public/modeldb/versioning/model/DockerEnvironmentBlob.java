@@ -41,9 +41,9 @@ public class DockerEnvironmentBlob implements ProtoType {
     @Override
     public String toString() {
         return "{\"class\": \"DockerEnvironmentBlob\",\"fields\": {" +
-                "\"Repository\": " + Repository + ", " +
-                "\"Tag\": " + Tag + ", " +
-                "\"Sha\": " + Sha + 
+                "\"Repository\": " + "\"" + Repository + "\"" + ", " +
+                "\"Tag\": " + "\"" + Tag + "\"" + ", " +
+                "\"Sha\": " + "\"" + Sha + "\"" + 
                 "}}";
     }
 

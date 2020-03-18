@@ -41,8 +41,8 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
     @Override
     public String toString() {
         return "{\"class\": \"PythonRequirementEnvironmentBlob\",\"fields\": {" +
-                "\"Library\": " + Library + ", " +
-                "\"Constraint\": " + Constraint + ", " +
+                "\"Library\": " + "\"" + Library + "\"" + ", " +
+                "\"Constraint\": " + "\"" + Constraint + "\"" + ", " +
                 "\"Version\": " + Version + 
                 "}}";
     }
