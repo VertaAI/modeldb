@@ -28,25 +28,19 @@ export const PageHeader = React.memo(
     title,
     rightContent,
     size = 'medium',
-    withoutSeparator,
   }: {
     title: string;
     rightContent?: React.ReactNode;
     size?: 'medium' | 'small';
-    withoutSeparator?: boolean;
   }) => (
-    <div
-      className={cn(styles.pageHeader, {
-        [styles.pageHeader_withoutSeparator]: withoutSeparator,
-      })}
-    >
+    <div className={cn(styles.pageHeader)}>
       <div
         className={cn(styles.pageHeader__title, {
           [styles.pageHeader__title_size_medium]: size === 'medium',
           [styles.pageHeader__title_size_small]: size === 'small',
         })}
       >
-        {title}
+        {title.toLowerCase()}
       </div>
       {rightContent && (
         <div className={styles.pageHeader__rightContent}>{rightContent}</div>
@@ -70,23 +64,18 @@ export const RecordInfo = React.memo(
     label,
     children,
     additionalValueClassname,
-    additionalRootClassname,
     dataTests = { root: 'record', label: undefined, value: undefined },
   }: {
     label: string;
     children: React.ReactNode;
     additionalValueClassname?: string;
-    additionalRootClassname?: string;
     dataTests?: {
       root: string;
       label?: string;
       value?: string;
     };
   }) => (
-    <div
-      className={cn(styles.record, additionalRootClassname)}
-      data-test={dataTests.root}
-    >
+    <div className={styles.record} data-test={dataTests.root}>
       <span
         className={styles.record__label}
         data-test={dataTests.label || `${dataTests.root}-label`}

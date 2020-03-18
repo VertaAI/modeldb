@@ -19,7 +19,7 @@ import {
   selectProject,
 } from 'store/projects';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceNameOrDefault } from 'store/workspaces';
 
 import ChartsPage from './ChartsPage/ChartsPage';
 import CompareModelsPage from './CompareModelsPage/CompareModelsPage';
@@ -45,7 +45,7 @@ const mapStateToProps = (state: IApplicationState, localProps: RouteProps) => {
       localProps.match.params.projectId
     ),
     project: selectProject(state, localProps.match.params.projectId),
-    workspaceName: selectCurrentWorkspaceName(state),
+    workspaceName: selectCurrentWorkspaceNameOrDefault(state),
   };
 };
 

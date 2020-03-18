@@ -213,11 +213,11 @@ message DeleteCommitRequest {
 // Getting blobs and folders in a commit
 message ListCommitBlobsRequest {
     RepositoryIdentification repository_id = 1;
-    // Pagination pagination = 2;
+    Pagination pagination = 2;
     string commit_sha = 3;
     // List of folder names (with the last element potentially representing the blob name)
     // This will be used to limit the search to scope just this location, like `git log /my/path` would do
-    // repeated string location_prefix = 4;
+    repeated string location_prefix = 4;
 
     message Response {
         repeated BlobExpanded blobs = 1;
@@ -282,7 +282,7 @@ message ComputeRepositoryDiffRequest {
 
 message ListBranchCommitsRequest {
     RepositoryIdentification repository_id = 1;
-    // Pagination pagination = 2;
+    Pagination pagination = 2;
     string branch = 3;
     // List of folder names (with the last element potentially representing the blob name)
     // This will be used to limit the search to scope just this location, like `git log /my/path` would do

@@ -9,22 +9,19 @@ interface ILocalProps {
   url: string;
   text: string;
   additionalClassname?: string;
-  rootStyle?: object;
 }
 
 class ExternalLink extends React.PureComponent<ILocalProps> {
   public render() {
-    const { url, text, additionalClassname, rootStyle } = this.props;
+    const { url, text, additionalClassname } = this.props;
     return (
       <a
         className={cn(styles.root, additionalClassname)}
         href={url}
         target="blank"
-        style={rootStyle}
       >
-        <span className={styles.text}>{text}</span>
-        &nbsp;
-        <Icon className={styles.icon} type="external-link" />
+        {text} &nbsp;
+        <Icon type="external-link" />
       </a>
     );
   }

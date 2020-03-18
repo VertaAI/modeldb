@@ -80,6 +80,7 @@ class BulkDeletionManager extends React.PureComponent<AllProps, ILocalState> {
         <Confirm
           title="Warning!"
           isOpen={isShowConfirmation}
+          confirmButtonTheme="red"
           onCancel={this.closeConfirmation}
           onConfirm={this.deleteEntities}
         >

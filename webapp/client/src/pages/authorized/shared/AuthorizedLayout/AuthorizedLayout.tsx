@@ -10,7 +10,7 @@ import {
 } from 'core/features/Layout';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceNameOrDefault } from 'store/workspaces';
 
 type ILocalProps = Omit<
   React.ComponentProps<typeof Layout>,
@@ -19,7 +19,7 @@ type ILocalProps = Omit<
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
-    workspaceName: selectCurrentWorkspaceName(state),
+    workspaceName: selectCurrentWorkspaceNameOrDefault(state),
   };
 };
 
@@ -38,11 +38,6 @@ class AuthorizedLayout extends React.Component<AllProps> {
         to: routes.datasets.getRedirectPath({ workspaceName }),
         iconType: 'bookmarks',
         text: 'Datasets',
-      },
-      {
-        to: routes.repositories.getRedirectPath({ workspaceName }),
-        iconType: 'repository',
-        text: 'Repositories',
       },
     ];
 

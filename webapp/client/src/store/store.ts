@@ -5,17 +5,10 @@ import { ThunkAction } from 'redux-thunk';
 
 import ServiceFactory from 'services/ServiceFactory';
 
-import * as CommitsHistory from 'core/features/versioning/commitsHistory';
-import * as CompareChanges from 'core/features/versioning/compareChanges';
-import * as CompareCommits from 'core/features/versioning/compareCommits';
-import * as ViewCommit from 'core/features/versioning/viewCommit';
-import * as Repositories from 'core/features/versioning/repositories';
-import * as RepositoryData from 'core/features/versioning/repositoryData';
 import * as ExperimentRunsTableConfig from 'core/features/experimentRunsTableConfig';
 import * as Filter from 'core/features/filter';
 import * as Layout from 'core/features/Layout';
 import * as Comment from 'features/comments';
-import * as Workspaces from 'store/workspaces';
 
 import {
   IArtifactManagerState,
@@ -58,13 +51,6 @@ export interface IApplicationState
   artifactManager: IArtifactManagerState;
   datasets: IDatasetsState;
   datasetVersions: IDatasetVersionsState;
-  workspaces: Workspaces.IWorkspaces;
-  repositories: Repositories.types.IRepositoriesState;
-  repositoryData: RepositoryData.types.IRepositoryDataState;
-  commitsHistory: CommitsHistory.types.ICommitsHistoryState;
-  compareCommits: CompareCommits.types.ICompareCommitsState;
-  compareChanges: CompareChanges.types.ICompareChangesState;
-  viewCommit: ViewCommit.types.IViewCommitState;
 }
 
 // Additional props for connected React components. This prop is passed by default with `connect()`
@@ -91,13 +77,6 @@ export const createRootReducer = (history: History) =>
     artifactManager: artifactManagerReducer,
     datasets: datasetsReducer,
     datasetVersions: datasetVersionsReducer,
-    workspaces: Workspaces.workspacesReducer,
-    repositories: Repositories.reducer,
-    repositoryData: RepositoryData.reducer,
-    commitsHistory: CommitsHistory.reducer,
-    viewCommit: ViewCommit.reducer,
-    compareCommits: CompareCommits.reducer,
-    compareChanges: CompareChanges.reducer,
   });
 
 export interface IThunkActionDependencies

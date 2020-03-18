@@ -40,7 +40,7 @@ import {
   selectDatasetVersionExperimentRuns,
 } from 'store/datasetVersions';
 import { IApplicationState, IConnectedReduxProps } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+import { selectCurrentWorkspaceNameOrDefault } from 'store/workspaces';
 
 import ComparableAttributes from '../shared/ComparableAttributes/ComparableAttributes';
 import { getDiffValueBgClassname } from '../shared/DiffHighlight/DiffHighlight';
@@ -87,7 +87,7 @@ const mapStateToProps = (state: IApplicationState, localProps: ILocalProps) => {
       localProps.comparedDatasetVersionIds[1]!
     ),
 
-    workspaceName: selectCurrentWorkspaceName(state),
+    workspaceName: selectCurrentWorkspaceNameOrDefault(state),
   };
 };
 

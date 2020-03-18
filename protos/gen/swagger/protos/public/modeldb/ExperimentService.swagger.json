@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/experiment/addAttribute": {
+    "/v1/experiment/addAttribute": {
       "post": {
         "operationId": "addAttribute",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/experiment/addExperimentAttributes": {
+    "/v1/experiment/addExperimentAttributes": {
       "post": {
         "operationId": "addExperimentAttributes",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/experiment/addExperimentTag": {
+    "/v1/experiment/addExperimentTag": {
       "post": {
         "operationId": "addExperimentTag",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/experiment/addExperimentTags": {
+    "/v1/experiment/addExperimentTags": {
       "post": {
         "operationId": "addExperimentTags",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/experiment/createExperiment": {
+    "/v1/experiment/createExperiment": {
       "post": {
         "operationId": "createExperiment",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/experiment/deleteArtifact": {
+    "/v1/experiment/deleteArtifact": {
       "delete": {
         "operationId": "deleteArtifact",
         "responses": {
@@ -203,7 +203,7 @@
         ]
       }
     },
-    "/experiment/deleteExperiment": {
+    "/v1/experiment/deleteExperiment": {
       "delete": {
         "operationId": "deleteExperiment",
         "responses": {
@@ -235,7 +235,7 @@
         ]
       }
     },
-    "/experiment/deleteExperimentAttributes": {
+    "/v1/experiment/deleteExperimentAttributes": {
       "delete": {
         "operationId": "deleteExperimentAttributes",
         "responses": {
@@ -282,7 +282,7 @@
         ]
       }
     },
-    "/experiment/deleteExperimentTag": {
+    "/v1/experiment/deleteExperimentTag": {
       "delete": {
         "operationId": "deleteExperimentTag",
         "responses": {
@@ -314,7 +314,7 @@
         ]
       }
     },
-    "/experiment/deleteExperimentTags": {
+    "/v1/experiment/deleteExperimentTags": {
       "delete": {
         "operationId": "deleteExperimentTags",
         "responses": {
@@ -346,7 +346,7 @@
         ]
       }
     },
-    "/experiment/deleteExperiments": {
+    "/v1/experiment/deleteExperiments": {
       "delete": {
         "operationId": "deleteExperiments",
         "responses": {
@@ -378,7 +378,7 @@
         ]
       }
     },
-    "/experiment/findExperiments": {
+    "/v1/experiment/findExperiments": {
       "post": {
         "summary": "queries",
         "operationId": "findExperiments",
@@ -411,7 +411,7 @@
         ]
       }
     },
-    "/experiment/getArtifacts": {
+    "/v1/experiment/getArtifacts": {
       "get": {
         "operationId": "getArtifacts",
         "responses": {
@@ -447,7 +447,7 @@
         ]
       }
     },
-    "/experiment/getExperimentAttributes": {
+    "/v1/experiment/getExperimentAttributes": {
       "get": {
         "operationId": "getExperimentAttributes",
         "responses": {
@@ -494,7 +494,7 @@
         ]
       }
     },
-    "/experiment/getExperimentById": {
+    "/v1/experiment/getExperimentById": {
       "get": {
         "operationId": "getExperimentById",
         "responses": {
@@ -524,7 +524,7 @@
         ]
       }
     },
-    "/experiment/getExperimentByName": {
+    "/v1/experiment/getExperimentByName": {
       "get": {
         "operationId": "getExperimentByName",
         "responses": {
@@ -560,7 +560,7 @@
         ]
       }
     },
-    "/experiment/getExperimentCodeVersion": {
+    "/v1/experiment/getExperimentCodeVersion": {
       "get": {
         "operationId": "getExperimentCodeVersion",
         "responses": {
@@ -590,7 +590,7 @@
         ]
       }
     },
-    "/experiment/getExperimentTags": {
+    "/v1/experiment/getExperimentTags": {
       "get": {
         "operationId": "getExperimentTags",
         "responses": {
@@ -620,7 +620,7 @@
         ]
       }
     },
-    "/experiment/getExperimentsInProject": {
+    "/v1/experiment/getExperimentsInProject": {
       "get": {
         "operationId": "getExperimentsInProject",
         "responses": {
@@ -677,7 +677,7 @@
         ]
       }
     },
-    "/experiment/getUrlForArtifact": {
+    "/v1/experiment/getUrlForArtifact": {
       "post": {
         "summary": "artifacts",
         "operationId": "getUrlForArtifact",
@@ -710,7 +710,7 @@
         ]
       }
     },
-    "/experiment/logArtifacts": {
+    "/v1/experiment/logArtifacts": {
       "post": {
         "summary": "artifacts",
         "operationId": "logArtifacts",
@@ -743,7 +743,7 @@
         ]
       }
     },
-    "/experiment/logExperimentCodeVersion": {
+    "/v1/experiment/logExperimentCodeVersion": {
       "post": {
         "summary": "code version",
         "operationId": "logExperimentCodeVersion",
@@ -776,7 +776,7 @@
         ]
       }
     },
-    "/experiment/updateExperimentDescription": {
+    "/v1/experiment/updateExperimentDescription": {
       "post": {
         "operationId": "updateExperimentDescription",
         "responses": {
@@ -808,7 +808,7 @@
         ]
       }
     },
-    "/experiment/updateExperimentName": {
+    "/v1/experiment/updateExperimentName": {
       "post": {
         "operationId": "updateExperimentName",
         "responses": {
@@ -840,7 +840,7 @@
         ]
       }
     },
-    "/experiment/updateExperimentNameOrDescription": {
+    "/v1/experiment/updateExperimentNameOrDescription": {
       "post": {
         "operationId": "updateExperimentNameOrDescription",
         "responses": {
@@ -1605,6 +1605,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }

@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/lineage/addLineage": {
+    "/v1/lineage/addLineage": {
       "post": {
         "operationId": "addLineage",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/lineage/deleteLineage": {
+    "/v1/lineage/deleteLineage": {
       "post": {
         "operationId": "deleteLineage",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/lineage/findAllInputs": {
+    "/v1/lineage/findAllInputs": {
       "post": {
         "operationId": "findAllInputs",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/lineage/findAllInputsOutputs": {
+    "/v1/lineage/findAllInputsOutputs": {
       "post": {
         "operationId": "findAllInputsOutputs",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/lineage/findAllOutputs": {
+    "/v1/lineage/findAllOutputs": {
       "post": {
         "operationId": "findAllOutputs",
         "responses": {
@@ -368,6 +368,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }

@@ -1,7 +1,7 @@
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import * as Workspace from 'models/Workspace';
-import { IApplicationState } from 'store/store';
 import { successfullCommunication } from 'core/shared/utils/redux/communication';
+import * as Workspace from 'models/Workspace';
+import routes from 'routes';
+import { IApplicationState } from 'store/store';
 
 export const selectUserWorkspace = (
   state: IApplicationState
@@ -15,34 +15,36 @@ export const selectUserWorkspace = (
 export const selectWorkspaces = (
   state: IApplicationState
 ): Workspace.IUserWorkspaces => {
-  const userWorkspace = selectUserWorkspace(state)!;
+  const userWorkspace = selectUserWorkspace(state);
   return {
     user: userWorkspace,
   };
 };
 
-export const selectCurrentWorkspaceName = (state: IApplicationState) => {
-  return selectCurrentWorkspace(state).name;
+export const selectCurrentWorkspaceNameOrDefault = (
+  state: IApplicationState
+) => {
+  const params = routes.workspace.getMatch(window.location.pathname, false);
+  const defaultWorkspaceName = selectDefaultWorkspaceName(state);
+  return params && selectWorkspaceByName(state, params.workspaceName)
+    ? params.workspaceName
+    : defaultWorkspaceName;
 };
 
-export const selectCurrentWorkspace = (state: IApplicationState) => {
-  const shortWorkspace = state.workspaces.data.currentWorkspace;
-  const workspaces = selectWorkspaces(state);
+export const selectCurrentWorkspaceOrDefault = (state: IApplicationState) => {
+  const params = routes.workspace.getMatch(window.location.pathname, false);
+  const defaultWorkspace = selectDefaultWorkspace(state);
+  const currentWorkspace =
+    params && selectWorkspaceByName(state, params.workspaceName);
+  return currentWorkspace ? currentWorkspace : defaultWorkspace;
+};
 
-  if (!shortWorkspace) {
-    return workspaces.user;
-  }
+export const selectDefaultWorkspaceName = (state: IApplicationState) => {
+  return selectUserWorkspace(state).name;
+};
 
-  switch (shortWorkspace.type) {
-    case 'user': {
-      return workspaces.user;
-    }
-    case 'unknown': {
-      return shortWorkspace;
-    }
-    default:
-      return exhaustiveCheck(shortWorkspace, '');
-  }
+export const selectDefaultWorkspace = (state: IApplicationState) => {
+  return selectUserWorkspace(state);
 };
 
 export const selectWorkspaceByName = (
@@ -50,7 +52,7 @@ export const selectWorkspaceByName = (
   name: Workspace.IWorkspace['name']
 ) => {
   const workspaces = selectWorkspaces(state);
-  return Workspace.findWorkspaceByName(name, workspaces);
+  return [workspaces.user].find(workspace => workspace.name === name);
 };
 
 export const selectLoadingUserWorkspaces = (state: IApplicationState) =>

@@ -5,8 +5,3 @@
   font-size: 13px;
   background-color: white;
 }
-
-.heightByContent > div {
-  height: auto !important;
-  max-height: 300px;
-}

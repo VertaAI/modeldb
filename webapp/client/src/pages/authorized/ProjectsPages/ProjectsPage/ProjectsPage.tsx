@@ -98,9 +98,9 @@ class ProjectsPage extends React.PureComponent<AllProps, ILocalState> {
           <div className={styles.actions}>
             <div className={styles.action}>
               <Button
-                to={routes.projectCreation.getRedirectPath({
-                  workspaceName: match.params.workspaceName,
-                })}
+                to={routes.projectCreation.getRedirectPathWithCurrentWorkspace(
+                  {}
+                )}
               >
                 Create
               </Button>

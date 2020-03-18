@@ -14,7 +14,7 @@ import routes, { IRoute } from 'routes';
 import { IApplicationState } from 'store/store';
 import {
   selectWorkspaceByName,
-  selectCurrentWorkspaceName,
+  selectCurrentWorkspaceNameOrDefault,
 } from 'store/workspaces';
 
 import NotFoundPage from './NotFoundPage/NotFoundPage';
@@ -29,12 +29,9 @@ import { IRouteWithWorkspace } from 'routes/routeWithWorkspace';
 import DatasetCreationPage from './DatasetPages/DatasetCreationPage/DatasetCreationPage';
 import ProjectCreationPage from './ProjectsPages/ProjectCreationPage/ProjectCreationPage';
 import ExperimentCreationPage from './ProjectsPages/ProjectDetailsPages/ExperimentCreationPage/ExperimentCreationPage';
-import RepositoriesPage from './VersioningPages/RepositoriesPage/RepositoriesPage';
-import RepositoryCreationPage from './VersioningPages/RepositoryCreationPage/RepositoryCreationPage';
-import RepositoryDetailsPages from './VersioningPages/RepositoryDetailsPages/RepositoryDetailsPages';
 
 interface IRouteDescription<T extends IRoute<any, any>> {
-  route: T | T[];
+  route: T;
   Component: Exclude<RouteProps['component'], undefined>;
   isDisabled?: boolean;
 }
@@ -42,7 +39,7 @@ interface IRouteDescription<T extends IRoute<any, any>> {
 const mapStateToProps = (state: IApplicationState) => {
   const params = routes.workspace.getMatch(window.location.pathname, false);
   return {
-    currentWorkspaceName: selectCurrentWorkspaceName(state),
+    currentWorkspaceNameOrDefault: selectCurrentWorkspaceNameOrDefault(state),
     isCurrentWorkspaceExisted: params
       ? Boolean(selectWorkspaceByName(state, params.workspaceName))
       : false,
@@ -55,12 +52,12 @@ type AllProps = CurrentRouteProps & ReturnType<typeof mapStateToProps>;
 class Pages extends React.Component<AllProps> {
   public render() {
     const {
-      currentWorkspaceName,
+      currentWorkspaceNameOrDefault,
       isCurrentWorkspaceExisted,
       location,
     } = this.props;
     const defaultPagePathname = routes.projects.getRedirectPath({
-      workspaceName: currentWorkspaceName,
+      workspaceName: currentWorkspaceNameOrDefault,
     });
 
     if (
@@ -129,35 +126,6 @@ class Pages extends React.Component<AllProps> {
               route: routes.compareDatasetVersions,
               Component: DatasetDetailPages,
             },
-
-            {
-              route: routes.repositories,
-              Component: RepositoriesPage,
-            },
-            {
-              route: routes.createRepository,
-              Component: RepositoryCreationPage,
-            },
-            {
-              route: routes.repositoryCommit,
-              Component: RepositoryDetailsPages,
-            },
-            {
-              route: routes.repositoryCompareChanges,
-              Component: RepositoryDetailsPages,
-            },
-            {
-              route: routes.repositoryCommitsHistory,
-              Component: RepositoryDetailsPages,
-            },
-            {
-              route: [routes.repositoryData, routes.repositoryDataWithLocation],
-              Component: RepositoryDetailsPages,
-            },
-            {
-              route: routes.repositorySettings,
-              Component: RepositoryDetailsPages,
-            },
           ],
           isCurrentWorkspaceExisted
         )}
@@ -181,7 +149,9 @@ class Pages extends React.Component<AllProps> {
     routesDescription: Array<IRouteDescription<IRouteWithWorkspace<any, any>>>,
     isCurrentWorkspaceExisted: boolean
   ) {
-    return this.renderRoutes(routesDescription, component => component);
+    return this.renderRoutes(routesDescription, component =>
+      isCurrentWorkspaceExisted ? component : NotFoundPage
+    );
   }
 
   @bind
@@ -189,22 +159,14 @@ class Pages extends React.Component<AllProps> {
     routesDescription: Array<IRouteDescription<T>>,
     getComponent?: (component: any) => any
   ) {
-    return routesDescription
-      .filter(route => !route.isDisabled)
-      .map(({ route, Component: component }) => (
-        <Route
-          key={
-            Array.isArray(route)
-              ? route.map(r => r.getPath()).join('')
-              : route.getPath()
-          }
-          exact={true}
-          path={
-            Array.isArray(route) ? route.map(r => r.getPath()) : route.getPath()
-          }
-          component={getComponent ? getComponent(component) : component}
-        />
-      ));
+    return routesDescription.map(({ route, Component: component }) => (
+      <Route
+        key={route.getPath()}
+        exact={true}
+        path={route.getPath()}
+        component={getComponent ? getComponent(component) : component}
+      />
+    ));
   }
 }
 

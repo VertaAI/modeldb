@@ -14,7 +14,7 @@
 .breadcrumb_item {
   display: inline-block;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   text-decoration: none;
   color: #777777;
   outline: none;
@@ -23,6 +23,6 @@
   color: var(--main-text-color1);
 }
 .breadcrumb_item_active {
-  font-weight: 400;
+  font-weight: 500;
   color: var(--main-text-color1);
 }

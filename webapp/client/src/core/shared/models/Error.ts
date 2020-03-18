@@ -9,9 +9,7 @@ export function isAppError(error: any): error is AppError<undefined> {
 }
 
 export const createCodeErrorFromError = (error: Error): CodeError => {
-  const codeError = new CodeError({ message: error.message });
-  codeError.stack = error.stack;
-  return codeError;
+  return error as any;
 };
 
 export const createCodeError = (message: string): CodeError =>
@@ -31,7 +29,7 @@ export class CodeError extends Error {
 }
 
 export function isHttpError(error: any): error is HttpError<undefined> {
-  return Boolean(error && 'name' in error && error.name === 'apiError');
+  return Boolean('name' in error && error.name === 'apiError');
 }
 
 export class HttpError<
@@ -65,12 +63,6 @@ export class HttpError<
     this.isMessageUserFriendly = isMessageUserFriendly;
   }
 }
-
-export const isHttpNotFoundError = <T>(
-  error: any
-): error is HttpError<undefined> => {
-  return isHttpError(error) && error.status === 404;
-};
 
 export const makeHttpErrorWithUserFriendlyMessage = (opts: {
   status: number;

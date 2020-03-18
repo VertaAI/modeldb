@@ -22,7 +22,6 @@ import {
   ILoadModelRecordResult,
   ILazyLoadChartData,
 } from './types';
-import { RepositoriesDataService } from 'core/services/versioning/repositories';
 
 export const chartsPageSettings = {
   pageSize: 50,
@@ -147,21 +146,6 @@ export default class ExperimentRunsDataService extends BaseDataService {
     );
     modelRecord.dateCreated = dates.dateCreated;
     modelRecord.dateUpdated = dates.dateUpdated;
-
-    if (hydrated_experiment_run.experiment_run.versioned_inputs) {
-      const serverVersionedInputs =
-        hydrated_experiment_run.experiment_run.versioned_inputs;
-      const repositoriesService = new RepositoriesDataService();
-      const repository = await repositoriesService.loadRepositoryById(
-        serverVersionedInputs.repository_id
-      );
-      modelRecord.versionedInputs = {
-        commitSha: serverVersionedInputs.commit,
-        repositoryId: repository.id,
-        repositoryName: repository.name,
-        keyLocationMap: serverVersionedInputs.key_location_map,
-      };
-    }
 
     const result: ILoadModelRecordResult = {
       experimentRun: modelRecord,

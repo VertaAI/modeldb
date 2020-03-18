@@ -13,16 +13,7 @@ const normalizeApiErrorMessage = (
   }
   switch (apiError.category) {
     case 'clientError':
-      switch (apiError.status) {
-        case 401:
-          return defaultErrorMessages.client_error_401;
-        case 403:
-          return defaultErrorMessages.client_error_403;
-        case 404:
-          return defaultErrorMessages.client_error_404;
-        default:
-          return defaultErrorMessages.client_error_4xx;
-      }
+      return defaultErrorMessages.client_error_4xx;
     case 'serverError':
       return defaultErrorMessages.server_error_5xx;
     default:

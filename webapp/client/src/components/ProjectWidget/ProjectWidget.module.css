@@ -16,7 +16,7 @@
     'title_block . . .'
     'title_block . . dates'
     'tags . . dates'
-    'actions actions actions actions';
+    '. . actions actions';
 }
 .content:hover {
   border-color: var(--bg-color2);
@@ -84,9 +84,12 @@
   grid-area: actions;
   display: flex;
   align-items: center;
-  margin-top: 15px;
+  justify-content: flex-end;
 }
 
-.action_delete {
-  margin-right: auto;
+.action {
+  margin-right: 5px;
+}
+.action:last-child {
+  margin-right: 0;
 }

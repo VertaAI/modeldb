@@ -5,21 +5,15 @@ import styles from './TableWrapper.module.css';
 
 interface ILocalProps {
   dataTest?: string;
-  isHeightByContent?: boolean;
   children: React.ReactNode;
 }
 
 class TableWrapper extends React.PureComponent<ILocalProps> {
   public render() {
-    const { children, dataTest, isHeightByContent } = this.props;
+    const { children, dataTest } = this.props;
 
     return (
-      <div
-        className={cn(styles.root, {
-          [styles.heightByContent]: isHeightByContent,
-        })}
-        data-test={dataTest}
-      >
+      <div className={cn(styles.root)} data-test={dataTest}>
         {children}
       </div>
     );

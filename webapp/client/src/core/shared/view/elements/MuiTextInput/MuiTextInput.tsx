@@ -1,26 +1,22 @@
 import { TextField } from '@material-ui/core';
 import { TextFieldProps } from '@material-ui/core/TextField';
-import cn from 'classnames';
 import * as React from 'react';
+import { Omit } from 'react-redux';
 
 import styles from './MuiTextInput.module.css';
 
 class MuiTextInput extends React.PureComponent<
-  TextFieldProps & { dataTest?: string; size?: 'small'; isError?: boolean }
+  TextFieldProps & { dataTest?: string }
 > {
   public render() {
-    const { dataTest, size, isError, ...restProps } = this.props;
+    const { dataTest, ...restProps } = this.props;
     return (
       <TextField
         {...restProps}
         inputProps={{
           'data-test': dataTest,
         }}
-        error={this.props.error}
-        className={cn(styles.root, {
-          [styles.size_small]: size === 'small',
-          [styles.error]: isError,
-        })}
+        className={styles.root}
         margin="none"
         fullWidth={true}
         variant="outlined"

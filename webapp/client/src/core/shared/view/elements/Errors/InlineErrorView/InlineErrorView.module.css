@@ -6,6 +6,7 @@
   background-color: var(--grey-lightest-highlight);
   border-radius: 2px;
   color: var(--error-color1);
+  text-align: center;
   word-break: break-word;
   word-wrap: break-word;
   text-overflow: ellipsis;

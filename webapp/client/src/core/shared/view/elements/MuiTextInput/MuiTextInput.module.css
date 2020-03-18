@@ -1,31 +1,14 @@
-.root {
-  background-color: white;
-  --border-radius: 6px;
-  border-radius: var(--border-radius);
-}
-
-.root :global .MuiOutlinedInput-root {
-  border-radius: var(--border-radius) !important;
-}
-
 .root :global .MuiOutlinedInput-input {
   padding: 12.5px 14px;
 }
-.root.size_small :global .MuiOutlinedInput-input {
-  padding: 8.5px 14px;
-}
 .root :global .MuiInputLabel-outlined {
   transform: translate(14px, 100%);
-  z-index: 0;
-}
-.root.size_small :global .MuiInputLabel-outlined {
-  transform: translate(14px, 70%);
-}
-.root.size_small :global .MuiInputLabel-shrink {
-  transform: translate(14px, -4px) scale(0.75);
 }
 .root :global .MuiInputLabel-outlined::first-letter {
   text-transform: uppercase;
+}
+.root :global .MuiOutlinedInput-notchedOutline {
+  border-color: #555555 !important;
 }
 
 .root :global .MuiInputBase-root {
@@ -34,16 +17,6 @@
 :global .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
   border-color: var(--main-color2) !important;
   border-width: 1px !important;
-}
-
-.root.error
-  :global
-  .MuiOutlinedInput-root.Mui-focused
-  .MuiOutlinedInput-notchedOutline {
-  border-color: #bf2a2a !important;
-}
-.root.error :global .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
-  border-color: #bf2a2a !important;
 }
 
 .root :global .MuiOutlinedInput-multiline {

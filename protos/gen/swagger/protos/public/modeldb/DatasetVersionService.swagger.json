@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/dataset-version/addDatasetVersionAttributes": {
+    "/v1/dataset-version/addDatasetVersionAttributes": {
       "post": {
         "operationId": "addDatasetVersionAttributes",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/dataset-version/addDatasetVersionTags": {
+    "/v1/dataset-version/addDatasetVersionTags": {
       "post": {
         "operationId": "addDatasetVersionTags",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/dataset-version/createDatasetVersion": {
+    "/v1/dataset-version/createDatasetVersion": {
       "post": {
         "operationId": "createDatasetVersion",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/dataset-version/deleteDatasetVersion": {
+    "/v1/dataset-version/deleteDatasetVersion": {
       "delete": {
         "operationId": "deleteDatasetVersion",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/dataset-version/deleteDatasetVersionAttributes": {
+    "/v1/dataset-version/deleteDatasetVersionAttributes": {
       "delete": {
         "operationId": "deleteDatasetVersionAttributes",
         "responses": {
@@ -186,7 +186,7 @@
         ]
       }
     },
-    "/dataset-version/deleteDatasetVersionTags": {
+    "/v1/dataset-version/deleteDatasetVersionTags": {
       "delete": {
         "operationId": "deleteDatasetVersionTags",
         "responses": {
@@ -218,7 +218,7 @@
         ]
       }
     },
-    "/dataset-version/deleteDatasetVersions": {
+    "/v1/dataset-version/deleteDatasetVersions": {
       "delete": {
         "operationId": "deleteDatasetVersions",
         "responses": {
@@ -250,7 +250,7 @@
         ]
       }
     },
-    "/dataset-version/findDatasetVersions": {
+    "/v1/dataset-version/findDatasetVersions": {
       "post": {
         "summary": "queries",
         "operationId": "findDatasetVersions",
@@ -283,7 +283,7 @@
         ]
       }
     },
-    "/dataset-version/getAllDatasetVersionsByDatasetId": {
+    "/v1/dataset-version/getAllDatasetVersionsByDatasetId": {
       "get": {
         "operationId": "getAllDatasetVersionsByDatasetId",
         "responses": {
@@ -341,7 +341,7 @@
         ]
       }
     },
-    "/dataset-version/getDatasetVersionAttributes": {
+    "/v1/dataset-version/getDatasetVersionAttributes": {
       "get": {
         "operationId": "getDatasetVersionAttributes",
         "responses": {
@@ -388,7 +388,7 @@
         ]
       }
     },
-    "/dataset-version/getDatasetVersionById": {
+    "/v1/dataset-version/getDatasetVersionById": {
       "get": {
         "operationId": "getDatasetVersionById",
         "responses": {
@@ -418,7 +418,7 @@
         ]
       }
     },
-    "/dataset-version/getDatasetVersionTags": {
+    "/v1/dataset-version/getDatasetVersionTags": {
       "get": {
         "operationId": "getDatasetVersionTags",
         "responses": {
@@ -448,7 +448,7 @@
         ]
       }
     },
-    "/dataset-version/getLatestDatasetVersionByDatasetId": {
+    "/v1/dataset-version/getLatestDatasetVersionByDatasetId": {
       "get": {
         "operationId": "getLatestDatasetVersionByDatasetId",
         "responses": {
@@ -491,7 +491,7 @@
         ]
       }
     },
-    "/dataset-version/setDatasetVersionVisibility": {
+    "/v1/dataset-version/setDatasetVersionVisibility": {
       "post": {
         "operationId": "setDatasetVersionVisibility",
         "responses": {
@@ -523,7 +523,7 @@
         ]
       }
     },
-    "/dataset-version/updateDatasetVersionAttributes": {
+    "/v1/dataset-version/updateDatasetVersionAttributes": {
       "post": {
         "operationId": "updateDatasetVersionAttributes",
         "responses": {
@@ -555,7 +555,7 @@
         ]
       }
     },
-    "/dataset-version/updateDatasetVersionDescription": {
+    "/v1/dataset-version/updateDatasetVersionDescription": {
       "post": {
         "operationId": "updateDatasetVersionDescription",
         "responses": {
@@ -1218,6 +1218,5 @@
         }
       }
     }
-  },
-  "basePath": "/v1"
+  }
 }

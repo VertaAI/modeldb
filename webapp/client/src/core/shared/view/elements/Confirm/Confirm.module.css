@@ -1,0 +1,18 @@
+.root {
+}
+
+.message {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.action:first-child {
+  margin-right: 5px;
+}

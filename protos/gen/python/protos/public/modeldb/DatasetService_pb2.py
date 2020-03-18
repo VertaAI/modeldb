@@ -11,11 +11,11 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from ...public.common import CommonService_pb2 as protos_dot_public_dot_common_dot_CommonService__pb2
-from ...public.modeldb import CommonService_pb2 as protos_dot_public_dot_modeldb_dot_CommonService__pb2
+from protos.public.common import CommonService_pb2 as protos_dot_public_dot_common_dot_CommonService__pb2
+from protos.public.modeldb import CommonService_pb2 as protos_dot_public_dot_modeldb_dot_CommonService__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
-from ...public.modeldb import ExperimentService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentService__pb2
-from ...public.modeldb import ExperimentRunService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2
+from protos.public.modeldb import ExperimentService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentService__pb2
+from protos.public.modeldb import ExperimentRunService_pb2 as protos_dot_public_dot_modeldb_dot_ExperimentRunService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
