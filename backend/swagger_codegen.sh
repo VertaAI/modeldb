@@ -331,7 +331,6 @@ EOF
 
 TEST_FILE="src/test/java/ai/verta/modeldb/blobs/DiffAndMerge.java"
 cat > $TEST_FILE <<EOF
-/*
 package ai.verta.modeldb.blobs;
 
 import ai.verta.modeldb.ModelDBException;
@@ -354,44 +353,39 @@ import static org.junit.Assume.*;
 @RunWith(JUnitQuickcheck.class)
 public class DiffAndMerge {
     @Property public void diffAndMerge(Blob a, Blob b) throws ModelDBException {
-        Blob newA = enforceOneof(a);
-        Blob newB = enforceOneof(b);
+        Blob newA = Utils.sortLists(enforceOneof(a));
+        Blob newB = Utils.sortLists(enforceOneof(b));
         BlobDiff d = DiffComputer.computeBlobDiff(newA, newB);
-        Blob diffedB = DiffMerger.mergeBlob(newA, d);
+
+        // Applying the diff on top of the original A should get original B
+        Blob diffedB = Utils.sortLists(DiffMerger.mergeBlob(newA, d));
+        assertEquals(newB, diffedB);
+
+        // Reapplying the diff should not change the result
+        diffedB = Utils.sortLists(DiffMerger.mergeBlob(diffedB, d));
         assertEquals(newB, diffedB);
     }
 
 EOF
-for f in $(find $TARGET -type f | grep '\(Blob\).java$' | sed 's,Blob,,' | sort)
+for f in $(find $TARGET -type f | grep '\(Blob\).java$' | sed 's,Blob,,' | sort | grep -v "S3DatasetComponent\|HyperparameterSetConfig\|PythonRequirementEnvironment\|PathDatasetComponent\|EnvironmentVariables\|HyperparameterConfig\|HyperparameterValuesConfig\|DiscreteHyperparameterSetConfig\|ContinuousHyperparameterSetConfig" )
 do
     type=$(basename $f | sed 's,\.java$,,')
-    if [ "${type}" = "HyperparameterValuesConfig" ]
-    then
-        continue
-    fi
-    if [ "${type}" = "DiscreteHyperparameterSetConfig" ]
-    then
-        continue
-    fi
-    if [ "${type}" = "ContinuousHyperparameterSetConfig" ]
-    then
-        continue
-    fi
     if [ "${type}" = "" ]
     then
         continue
     fi
     cat >> $TEST_FILE <<EOF
     @Property public void diffAndMerge${type}(${type}Blob a, ${type}Blob b) throws ModelDBException {
-        System.out.println("");
         ${type}Blob newA = Utils.sortLists(enforceOneof(a));
         ${type}Blob newB = Utils.sortLists(enforceOneof(b));
-        System.out.println(newA);
-        System.out.println(newB);
         ${type}Diff d = DiffComputer.compute${type}Diff(newA, newB);
-        System.out.println(d);
+
+        // Applying the diff on top of the original A should get original B
         ${type}Blob diffedB = Utils.sortLists(DiffMerger.merge${type}(newA, d));
-        System.out.println(diffedB);
+        assertEquals(newB, diffedB);
+
+        // Reapplying the diff should not change the result
+        diffedB = Utils.sortLists(DiffMerger.merge${type}(diffedB, d));
         assertEquals(newB, diffedB);
     }
 
@@ -399,5 +393,4 @@ EOF
 done
 cat >> $TEST_FILE <<EOF
 }
-*/
 EOF

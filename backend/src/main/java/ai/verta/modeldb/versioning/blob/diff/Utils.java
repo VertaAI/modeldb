@@ -27,4 +27,10 @@ public class Utils {
     }
     return getter.apply(v);
   }
+
+  public static <T, T2> T2 either(T a, T b, Function<T, T2> getter) {
+    if (a != null) return getter.apply(a);
+    if (b != null) return getter.apply(b);
+    return null;
+  }
 }
