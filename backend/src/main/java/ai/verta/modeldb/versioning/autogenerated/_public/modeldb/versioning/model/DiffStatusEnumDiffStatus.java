@@ -6,7 +6,11 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
 import ai.verta.modeldb.versioning.blob.diff.ProtoType;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import org.apache.commons.codec.binary.Hex;
 
 public class DiffStatusEnumDiffStatus implements ProtoType {
   public DiffStatusEnum.DiffStatus Status;
@@ -54,6 +58,13 @@ public class DiffStatusEnumDiffStatus implements ProtoType {
   @Override
   public String toString() {
     return Status.toString();
+  }
+
+  @Override
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
   }
 
   public void preVisitShallow(Visitor visitor) throws ModelDBException {

@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class Blob implements ProtoType {
   public CodeBlob Code;
@@ -69,8 +73,8 @@ public class Blob implements ProtoType {
     return sb.toString();
   }
 
-  // TODO: actually hash
-  public String getSHA() {
+  @Override
+  public String getSHA() throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
     sb.append("Blob");
     if (this.Code != null && !this.Code.equals(null)) {
@@ -86,7 +90,9 @@ public class Blob implements ProtoType {
       sb.append("::Environment::").append(Environment);
     }
 
-    return sb.toString();
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
   }
 
   // TODO: not consider order on lists

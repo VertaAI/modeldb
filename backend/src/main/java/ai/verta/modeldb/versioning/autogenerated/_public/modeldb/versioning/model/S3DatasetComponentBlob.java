@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class S3DatasetComponentBlob implements ProtoType {
   public PathDatasetComponentBlob Path;
@@ -39,15 +43,17 @@ public class S3DatasetComponentBlob implements ProtoType {
     return sb.toString();
   }
 
-  // TODO: actually hash
-  public String getSHA() {
+  @Override
+  public String getSHA() throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
     sb.append("S3DatasetComponentBlob");
     if (this.Path != null && !this.Path.equals(null)) {
       sb.append("::Path::").append(Path);
     }
 
-    return sb.toString();
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
   }
 
   // TODO: not consider order on lists

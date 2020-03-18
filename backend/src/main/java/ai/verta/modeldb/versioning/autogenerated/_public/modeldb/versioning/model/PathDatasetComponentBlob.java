@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class PathDatasetComponentBlob implements ProtoType {
   public Long LastModifiedAtSource;
@@ -79,8 +83,8 @@ public class PathDatasetComponentBlob implements ProtoType {
     return sb.toString();
   }
 
-  // TODO: actually hash
-  public String getSHA() {
+  @Override
+  public String getSHA() throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
     sb.append("PathDatasetComponentBlob");
     if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
@@ -99,7 +103,9 @@ public class PathDatasetComponentBlob implements ProtoType {
       sb.append("::Size::").append(Size);
     }
 
-    return sb.toString();
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
   }
 
   // TODO: not consider order on lists
