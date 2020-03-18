@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -247,7 +248,7 @@ public class DiffComputer {
                 computeListDiff(
                     a,
                     b,
-                    x -> x.EnvironmentVariables,
+                    x -> x == null ? Collections.emptyList() : x.EnvironmentVariables,
                     x -> x.Name,
                     DiffComputer::computeEnvironmentVariablesDiff)));
   }
@@ -262,7 +263,7 @@ public class DiffComputer {
 
   public static PythonEnvironmentDiff computePythonEnvironmentDiff(
       PythonEnvironmentBlob a, PythonEnvironmentBlob b) {
-    if (a.equals(b)) return null;
+    if (Objects.equals(a, b)) return null;
     return Utils.removeEmpty(
         new PythonEnvironmentDiff()
             .setVersionA(Utils.getOrNull(a, x -> x.Version))
@@ -273,14 +274,14 @@ public class DiffComputer {
                 computeListDiff(
                     a,
                     b,
-                    x -> x.Constraints,
+                    x -> x == null ? Collections.emptyList() : x.Constraints,
                     x -> x.Library,
                     DiffComputer::computePythonRequirementEnvironmentDiff))
             .setRequirements(
                 computeListDiff(
                     a,
                     b,
-                    x -> x.Requirements,
+                    x -> x == null ? Collections.emptyList() : x.Requirements,
                     x -> x.Library,
                     DiffComputer::computePythonRequirementEnvironmentDiff)));
   }
