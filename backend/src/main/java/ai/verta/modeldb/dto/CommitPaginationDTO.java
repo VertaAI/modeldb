@@ -1,8 +1,6 @@
 package ai.verta.modeldb.dto;
 
 import ai.verta.modeldb.entities.versioning.CommitEntity;
-import ai.verta.modeldb.versioning.Commit;
-
 import java.util.List;
 
 public class CommitPaginationDTO {

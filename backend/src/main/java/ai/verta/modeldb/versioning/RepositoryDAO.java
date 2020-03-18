@@ -34,6 +34,8 @@ public interface RepositoryDAO {
 
   DeleteBranchRequest.Response deleteBranch(DeleteBranchRequest request) throws ModelDBException;
 
+  void deleteBranchByCommit(Long repoId, String commitHash);
+
   ListBranchesRequest.Response listBranches(ListBranchesRequest request) throws ModelDBException;
 
   ListBranchCommitsRequest.Response listBranchCommits(ListBranchCommitsRequest request)

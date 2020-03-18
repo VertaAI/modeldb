@@ -5,7 +5,6 @@ import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import org.hibernate.Session;
 
 public interface CommitDAO {
@@ -13,8 +12,8 @@ public interface CommitDAO {
       String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException;
 
-  CommitPaginationDTO fetchCommitEntityList(Session session, ListCommitsRequest request, Long repoId)
-      throws ModelDBException;
+  CommitPaginationDTO fetchCommitEntityList(
+      Session session, ListCommitsRequest request, Long repoId) throws ModelDBException;
 
   ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository) throws ModelDBException;
@@ -25,6 +24,6 @@ public interface CommitDAO {
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
       throws ModelDBException;
 
-  DeleteCommitRequest.Response deleteCommit(String commitHash, RepositoryFunction getRepository)
-      throws ModelDBException;
+  DeleteCommitRequest.Response deleteCommit(
+      DeleteCommitRequest request, RepositoryDAO repositoryDAO) throws ModelDBException;
 }
