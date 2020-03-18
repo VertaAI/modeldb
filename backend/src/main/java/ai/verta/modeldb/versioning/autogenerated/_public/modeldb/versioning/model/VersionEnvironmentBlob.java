@@ -42,21 +42,51 @@ public class VersionEnvironmentBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"VersionEnvironmentBlob\",\"fields\": {"
-        + "\"Major\": "
-        + Major
-        + ", "
-        + "\"Minor\": "
-        + Minor
-        + ", "
-        + "\"Patch\": "
-        + Patch
-        + ", "
-        + "\"Suffix\": "
-        + "\""
-        + Suffix
-        + "\""
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"VersionEnvironmentBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.Major != null && !this.Major.equals(0)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Major\": " + Major);
+      first = false;
+    }
+    if (this.Minor != null && !this.Minor.equals(0)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Minor\": " + Minor);
+      first = false;
+    }
+    if (this.Patch != null && !this.Patch.equals(0)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Patch\": " + Patch);
+      first = false;
+    }
+    if (this.Suffix != null && !this.Suffix.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Suffix\": " + "\"" + Suffix + "\"");
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("VersionEnvironmentBlob");
+    if (this.Major != null && !this.Major.equals(0)) {
+      sb.append("::Major::").append(Major);
+    }
+    if (this.Minor != null && !this.Minor.equals(0)) {
+      sb.append("::Minor::").append(Minor);
+    }
+    if (this.Patch != null && !this.Patch.equals(0)) {
+      sb.append("::Patch::").append(Patch);
+    }
+    if (this.Suffix != null && !this.Suffix.equals("")) {
+      sb.append("::Suffix::").append(Suffix);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists

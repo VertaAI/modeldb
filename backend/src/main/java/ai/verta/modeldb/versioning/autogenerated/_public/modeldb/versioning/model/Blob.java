@@ -12,29 +12,29 @@ import java.util.*;
 import java.util.function.Function;
 
 public class Blob implements ProtoType {
-  public DatasetBlob Dataset;
-  public EnvironmentBlob Environment;
   public CodeBlob Code;
   public ConfigBlob Config;
+  public DatasetBlob Dataset;
+  public EnvironmentBlob Environment;
 
   public Blob() {
-    this.Dataset = null;
-    this.Environment = null;
     this.Code = null;
     this.Config = null;
+    this.Dataset = null;
+    this.Environment = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Dataset != null && !this.Dataset.equals(null)) {
-      return false;
-    }
-    if (this.Environment != null && !this.Environment.equals(null)) {
-      return false;
-    }
     if (this.Code != null && !this.Code.equals(null)) {
       return false;
     }
     if (this.Config != null && !this.Config.equals(null)) {
+      return false;
+    }
+    if (this.Dataset != null && !this.Dataset.equals(null)) {
+      return false;
+    }
+    if (this.Environment != null && !this.Environment.equals(null)) {
       return false;
     }
     return true;
@@ -42,19 +42,51 @@ public class Blob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"Blob\",\"fields\": {"
-        + "\"Dataset\": "
-        + Dataset
-        + ", "
-        + "\"Environment\": "
-        + Environment
-        + ", "
-        + "\"Code\": "
-        + Code
-        + ", "
-        + "\"Config\": "
-        + Config
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"Blob\", \"fields\": {");
+    boolean first = true;
+    if (this.Code != null && !this.Code.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Code\": " + Code);
+      first = false;
+    }
+    if (this.Config != null && !this.Config.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Config\": " + Config);
+      first = false;
+    }
+    if (this.Dataset != null && !this.Dataset.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Dataset\": " + Dataset);
+      first = false;
+    }
+    if (this.Environment != null && !this.Environment.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Environment\": " + Environment);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Blob");
+    if (this.Code != null && !this.Code.equals(null)) {
+      sb.append("::Code::").append(Code);
+    }
+    if (this.Config != null && !this.Config.equals(null)) {
+      sb.append("::Config::").append(Config);
+    }
+    if (this.Dataset != null && !this.Dataset.equals(null)) {
+      sb.append("::Dataset::").append(Dataset);
+    }
+    if (this.Environment != null && !this.Environment.equals(null)) {
+      sb.append("::Environment::").append(Environment);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -65,22 +97,6 @@ public class Blob implements ProtoType {
     if (!(o instanceof Blob)) return false;
     Blob other = (Blob) o;
 
-    {
-      Function3<DatasetBlob, DatasetBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Dataset != null || other.Dataset != null) {
-        if (this.Dataset == null && other.Dataset != null) return false;
-        if (this.Dataset != null && other.Dataset == null) return false;
-        if (!f.apply(this.Dataset, other.Dataset)) return false;
-      }
-    }
-    {
-      Function3<EnvironmentBlob, EnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Environment != null || other.Environment != null) {
-        if (this.Environment == null && other.Environment != null) return false;
-        if (this.Environment != null && other.Environment == null) return false;
-        if (!f.apply(this.Environment, other.Environment)) return false;
-      }
-    }
     {
       Function3<CodeBlob, CodeBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.Code != null || other.Code != null) {
@@ -97,22 +113,28 @@ public class Blob implements ProtoType {
         if (!f.apply(this.Config, other.Config)) return false;
       }
     }
+    {
+      Function3<DatasetBlob, DatasetBlob, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Dataset != null || other.Dataset != null) {
+        if (this.Dataset == null && other.Dataset != null) return false;
+        if (this.Dataset != null && other.Dataset == null) return false;
+        if (!f.apply(this.Dataset, other.Dataset)) return false;
+      }
+    }
+    {
+      Function3<EnvironmentBlob, EnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Environment != null || other.Environment != null) {
+        if (this.Environment == null && other.Environment != null) return false;
+        if (this.Environment != null && other.Environment == null) return false;
+        if (!f.apply(this.Environment, other.Environment)) return false;
+      }
+    }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Dataset, this.Environment, this.Code, this.Config);
-  }
-
-  public Blob setDataset(DatasetBlob value) {
-    this.Dataset = Utils.removeEmpty(value);
-    return this;
-  }
-
-  public Blob setEnvironment(EnvironmentBlob value) {
-    this.Environment = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.Code, this.Config, this.Dataset, this.Environment);
   }
 
   public Blob setCode(CodeBlob value) {
@@ -125,22 +147,22 @@ public class Blob implements ProtoType {
     return this;
   }
 
+  public Blob setDataset(DatasetBlob value) {
+    this.Dataset = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public Blob setEnvironment(EnvironmentBlob value) {
+    this.Environment = Utils.removeEmpty(value);
+    return this;
+  }
+
   public static Blob fromProto(ai.verta.modeldb.versioning.Blob blob) {
     if (blob == null) {
       return null;
     }
 
     Blob obj = new Blob();
-    {
-      Function<ai.verta.modeldb.versioning.Blob, DatasetBlob> f =
-          x -> DatasetBlob.fromProto(blob.getDataset());
-      obj.Dataset = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<ai.verta.modeldb.versioning.Blob, EnvironmentBlob> f =
-          x -> EnvironmentBlob.fromProto(blob.getEnvironment());
-      obj.Environment = Utils.removeEmpty(f.apply(blob));
-    }
     {
       Function<ai.verta.modeldb.versioning.Blob, CodeBlob> f =
           x -> CodeBlob.fromProto(blob.getCode());
@@ -151,32 +173,22 @@ public class Blob implements ProtoType {
           x -> ConfigBlob.fromProto(blob.getConfig());
       obj.Config = Utils.removeEmpty(f.apply(blob));
     }
+    {
+      Function<ai.verta.modeldb.versioning.Blob, DatasetBlob> f =
+          x -> DatasetBlob.fromProto(blob.getDataset());
+      obj.Dataset = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.Blob, EnvironmentBlob> f =
+          x -> EnvironmentBlob.fromProto(blob.getEnvironment());
+      obj.Environment = Utils.removeEmpty(f.apply(blob));
+    }
     return obj;
   }
 
   public ai.verta.modeldb.versioning.Blob.Builder toProto() {
     ai.verta.modeldb.versioning.Blob.Builder builder =
         ai.verta.modeldb.versioning.Blob.newBuilder();
-    {
-      if (this.Dataset != null && !this.Dataset.equals(null)) {
-        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
-            x -> {
-              builder.setDataset(this.Dataset.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Environment != null && !this.Environment.equals(null)) {
-        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
-            x -> {
-              builder.setEnvironment(this.Environment.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
     {
       if (this.Code != null && !this.Code.equals(null)) {
         Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
@@ -197,6 +209,26 @@ public class Blob implements ProtoType {
         f.apply(builder);
       }
     }
+    {
+      if (this.Dataset != null && !this.Dataset.equals(null)) {
+        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
+            x -> {
+              builder.setDataset(this.Dataset.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Environment != null && !this.Environment.equals(null)) {
+        Function<ai.verta.modeldb.versioning.Blob.Builder, Void> f =
+            x -> {
+              builder.setEnvironment(this.Environment.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -206,10 +238,10 @@ public class Blob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepDatasetBlob(this.Dataset);
-    visitor.preVisitDeepEnvironmentBlob(this.Environment);
     visitor.preVisitDeepCodeBlob(this.Code);
     visitor.preVisitDeepConfigBlob(this.Config);
+    visitor.preVisitDeepDatasetBlob(this.Dataset);
+    visitor.preVisitDeepEnvironmentBlob(this.Environment);
   }
 
   public Blob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -217,10 +249,10 @@ public class Blob implements ProtoType {
   }
 
   public Blob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setDataset(visitor.postVisitDeepDatasetBlob(this.Dataset));
-    this.setEnvironment(visitor.postVisitDeepEnvironmentBlob(this.Environment));
     this.setCode(visitor.postVisitDeepCodeBlob(this.Code));
     this.setConfig(visitor.postVisitDeepConfigBlob(this.Config));
+    this.setDataset(visitor.postVisitDeepDatasetBlob(this.Dataset));
+    this.setEnvironment(visitor.postVisitDeepEnvironmentBlob(this.Environment));
     return this.postVisitShallow(visitor);
   }
 }

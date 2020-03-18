@@ -20,7 +20,12 @@ public class EnvironmentBlobGen extends Generator<EnvironmentBlob> {
 
     EnvironmentBlob obj = new EnvironmentBlob();
     if (r.nextBoolean()) {
-      obj.setPython(Utils.removeEmpty(gen().type(PythonEnvironmentBlob.class).generate(r, status)));
+      int size = r.nextInt(0, 10);
+      List<String> ret = new ArrayList(size);
+      for (int i = 0; i < size; i++) {
+        ret.add(new StringGenerator().generate(r, status));
+      }
+      obj.setCommandLine(Utils.removeEmpty(ret));
     }
     if (r.nextBoolean()) {
       obj.setDocker(Utils.removeEmpty(gen().type(DockerEnvironmentBlob.class).generate(r, status)));
@@ -34,12 +39,7 @@ public class EnvironmentBlobGen extends Generator<EnvironmentBlob> {
       obj.setEnvironmentVariables(Utils.removeEmpty(ret));
     }
     if (r.nextBoolean()) {
-      int size = r.nextInt(0, 10);
-      List<String> ret = new ArrayList(size);
-      for (int i = 0; i < size; i++) {
-        ret.add(new StringGenerator().generate(r, status));
-      }
-      obj.setCommandLine(Utils.removeEmpty(ret));
+      obj.setPython(Utils.removeEmpty(gen().type(PythonEnvironmentBlob.class).generate(r, status)));
     }
     return obj;
   }

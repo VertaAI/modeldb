@@ -20,10 +20,10 @@ public class HyperparameterValuesConfigBlobGen extends Generator<HyperparameterV
 
     HyperparameterValuesConfigBlob obj = new HyperparameterValuesConfigBlob();
     if (r.nextBoolean()) {
-      obj.setIntValue(Utils.removeEmpty(gen().type(Long.class).generate(r, status)));
+      obj.setFloatValue(Utils.removeEmpty(gen().type(Float.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setFloatValue(Utils.removeEmpty(gen().type(Float.class).generate(r, status)));
+      obj.setIntValue(Utils.removeEmpty(gen().type(Long.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setStringValue(Utils.removeEmpty(new StringGenerator().generate(r, status)));

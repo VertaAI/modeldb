@@ -20,19 +20,19 @@ public class HyperparameterConfigDiffGen extends Generator<HyperparameterConfigD
 
     HyperparameterConfigDiff obj = new HyperparameterConfigDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setA(
           Utils.removeEmpty(gen().type(HyperparameterValuesConfigBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setB(
           Utils.removeEmpty(gen().type(HyperparameterValuesConfigBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     return obj;
   }

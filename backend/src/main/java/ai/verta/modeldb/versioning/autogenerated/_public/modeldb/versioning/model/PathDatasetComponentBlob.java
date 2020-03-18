@@ -12,34 +12,34 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PathDatasetComponentBlob implements ProtoType {
-  public String Path;
-  public Long Size;
   public Long LastModifiedAtSource;
-  public String Sha256;
   public String Md5;
+  public String Path;
+  public String Sha256;
+  public Long Size;
 
   public PathDatasetComponentBlob() {
-    this.Path = "";
-    this.Size = 0l;
     this.LastModifiedAtSource = 0l;
-    this.Sha256 = "";
     this.Md5 = "";
+    this.Path = "";
+    this.Sha256 = "";
+    this.Size = 0l;
   }
 
   public Boolean isEmpty() {
-    if (this.Path != null && !this.Path.equals("")) {
-      return false;
-    }
-    if (this.Size != null && !this.Size.equals(0l)) {
-      return false;
-    }
     if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
+      return false;
+    }
+    if (this.Md5 != null && !this.Md5.equals("")) {
+      return false;
+    }
+    if (this.Path != null && !this.Path.equals("")) {
       return false;
     }
     if (this.Sha256 != null && !this.Sha256.equals("")) {
       return false;
     }
-    if (this.Md5 != null && !this.Md5.equals("")) {
+    if (this.Size != null && !this.Size.equals(0l)) {
       return false;
     }
     return true;
@@ -47,28 +47,59 @@ public class PathDatasetComponentBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"PathDatasetComponentBlob\",\"fields\": {"
-        + "\"Path\": "
-        + "\""
-        + Path
-        + "\""
-        + ", "
-        + "\"Size\": "
-        + Size
-        + ", "
-        + "\"LastModifiedAtSource\": "
-        + LastModifiedAtSource
-        + ", "
-        + "\"Sha256\": "
-        + "\""
-        + Sha256
-        + "\""
-        + ", "
-        + "\"Md5\": "
-        + "\""
-        + Md5
-        + "\""
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"PathDatasetComponentBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
+      if (!first) sb.append(", ");
+      sb.append("\"LastModifiedAtSource\": " + LastModifiedAtSource);
+      first = false;
+    }
+    if (this.Md5 != null && !this.Md5.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Md5\": " + "\"" + Md5 + "\"");
+      first = false;
+    }
+    if (this.Path != null && !this.Path.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Path\": " + "\"" + Path + "\"");
+      first = false;
+    }
+    if (this.Sha256 != null && !this.Sha256.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Sha256\": " + "\"" + Sha256 + "\"");
+      first = false;
+    }
+    if (this.Size != null && !this.Size.equals(0l)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Size\": " + Size);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("PathDatasetComponentBlob");
+    if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
+      sb.append("::LastModifiedAtSource::").append(LastModifiedAtSource);
+    }
+    if (this.Md5 != null && !this.Md5.equals("")) {
+      sb.append("::Md5::").append(Md5);
+    }
+    if (this.Path != null && !this.Path.equals("")) {
+      sb.append("::Path::").append(Path);
+    }
+    if (this.Sha256 != null && !this.Sha256.equals("")) {
+      sb.append("::Sha256::").append(Sha256);
+    }
+    if (this.Size != null && !this.Size.equals(0l)) {
+      sb.append("::Size::").append(Size);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -80,27 +111,27 @@ public class PathDatasetComponentBlob implements ProtoType {
     PathDatasetComponentBlob other = (PathDatasetComponentBlob) o;
 
     {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Path != null || other.Path != null) {
-        if (this.Path == null && other.Path != null) return false;
-        if (this.Path != null && other.Path == null) return false;
-        if (!f.apply(this.Path, other.Path)) return false;
-      }
-    }
-    {
-      Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Size != null || other.Size != null) {
-        if (this.Size == null && other.Size != null) return false;
-        if (this.Size != null && other.Size == null) return false;
-        if (!f.apply(this.Size, other.Size)) return false;
-      }
-    }
-    {
       Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
       if (this.LastModifiedAtSource != null || other.LastModifiedAtSource != null) {
         if (this.LastModifiedAtSource == null && other.LastModifiedAtSource != null) return false;
         if (this.LastModifiedAtSource != null && other.LastModifiedAtSource == null) return false;
         if (!f.apply(this.LastModifiedAtSource, other.LastModifiedAtSource)) return false;
+      }
+    }
+    {
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Md5 != null || other.Md5 != null) {
+        if (this.Md5 == null && other.Md5 != null) return false;
+        if (this.Md5 != null && other.Md5 == null) return false;
+        if (!f.apply(this.Md5, other.Md5)) return false;
+      }
+    }
+    {
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Path != null || other.Path != null) {
+        if (this.Path == null && other.Path != null) return false;
+        if (this.Path != null && other.Path == null) return false;
+        if (!f.apply(this.Path, other.Path)) return false;
       }
     }
     {
@@ -112,11 +143,11 @@ public class PathDatasetComponentBlob implements ProtoType {
       }
     }
     {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Md5 != null || other.Md5 != null) {
-        if (this.Md5 == null && other.Md5 != null) return false;
-        if (this.Md5 != null && other.Md5 == null) return false;
-        if (!f.apply(this.Md5, other.Md5)) return false;
+      Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Size != null || other.Size != null) {
+        if (this.Size == null && other.Size != null) return false;
+        if (this.Size != null && other.Size == null) return false;
+        if (!f.apply(this.Size, other.Size)) return false;
       }
     }
     return true;
@@ -124,21 +155,21 @@ public class PathDatasetComponentBlob implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Path, this.Size, this.LastModifiedAtSource, this.Sha256, this.Md5);
-  }
-
-  public PathDatasetComponentBlob setPath(String value) {
-    this.Path = Utils.removeEmpty(value);
-    return this;
-  }
-
-  public PathDatasetComponentBlob setSize(Long value) {
-    this.Size = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.LastModifiedAtSource, this.Md5, this.Path, this.Sha256, this.Size);
   }
 
   public PathDatasetComponentBlob setLastModifiedAtSource(Long value) {
     this.LastModifiedAtSource = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public PathDatasetComponentBlob setMd5(String value) {
+    this.Md5 = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public PathDatasetComponentBlob setPath(String value) {
+    this.Path = Utils.removeEmpty(value);
     return this;
   }
 
@@ -147,8 +178,8 @@ public class PathDatasetComponentBlob implements ProtoType {
     return this;
   }
 
-  public PathDatasetComponentBlob setMd5(String value) {
-    this.Md5 = Utils.removeEmpty(value);
+  public PathDatasetComponentBlob setSize(Long value) {
+    this.Size = Utils.removeEmpty(value);
     return this;
   }
 
@@ -160,19 +191,19 @@ public class PathDatasetComponentBlob implements ProtoType {
 
     PathDatasetComponentBlob obj = new PathDatasetComponentBlob();
     {
-      Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
-          x -> (blob.getPath());
-      obj.Path = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, Long> f =
-          x -> (blob.getSize());
-      obj.Size = Utils.removeEmpty(f.apply(blob));
-    }
-    {
       Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, Long> f =
           x -> (blob.getLastModifiedAtSource());
       obj.LastModifiedAtSource = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
+          x -> (blob.getMd5());
+      obj.Md5 = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
+          x -> (blob.getPath());
+      obj.Path = Utils.removeEmpty(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
@@ -180,9 +211,9 @@ public class PathDatasetComponentBlob implements ProtoType {
       obj.Sha256 = Utils.removeEmpty(f.apply(blob));
     }
     {
-      Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
-          x -> (blob.getMd5());
-      obj.Md5 = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, Long> f =
+          x -> (blob.getSize());
+      obj.Size = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -191,30 +222,30 @@ public class PathDatasetComponentBlob implements ProtoType {
     ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder builder =
         ai.verta.modeldb.versioning.PathDatasetComponentBlob.newBuilder();
     {
-      if (this.Path != null && !this.Path.equals("")) {
-        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
-            x -> {
-              builder.setPath(this.Path);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Size != null && !this.Size.equals(0l)) {
-        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
-            x -> {
-              builder.setSize(this.Size);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
       if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
         Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
             x -> {
               builder.setLastModifiedAtSource(this.LastModifiedAtSource);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Md5 != null && !this.Md5.equals("")) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setMd5(this.Md5);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Path != null && !this.Path.equals("")) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
+            x -> {
+              builder.setPath(this.Path);
               return null;
             };
         f.apply(builder);
@@ -231,10 +262,10 @@ public class PathDatasetComponentBlob implements ProtoType {
       }
     }
     {
-      if (this.Md5 != null && !this.Md5.equals("")) {
+      if (this.Size != null && !this.Size.equals(0l)) {
         Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder, Void> f =
             x -> {
-              builder.setMd5(this.Md5);
+              builder.setSize(this.Size);
               return null;
             };
         f.apply(builder);
@@ -249,11 +280,11 @@ public class PathDatasetComponentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepString(this.Path);
-    visitor.preVisitDeepLong(this.Size);
     visitor.preVisitDeepLong(this.LastModifiedAtSource);
-    visitor.preVisitDeepString(this.Sha256);
     visitor.preVisitDeepString(this.Md5);
+    visitor.preVisitDeepString(this.Path);
+    visitor.preVisitDeepString(this.Sha256);
+    visitor.preVisitDeepLong(this.Size);
   }
 
   public PathDatasetComponentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -261,11 +292,11 @@ public class PathDatasetComponentBlob implements ProtoType {
   }
 
   public PathDatasetComponentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setPath(visitor.postVisitDeepString(this.Path));
-    this.setSize(visitor.postVisitDeepLong(this.Size));
     this.setLastModifiedAtSource(visitor.postVisitDeepLong(this.LastModifiedAtSource));
-    this.setSha256(visitor.postVisitDeepString(this.Sha256));
     this.setMd5(visitor.postVisitDeepString(this.Md5));
+    this.setPath(visitor.postVisitDeepString(this.Path));
+    this.setSha256(visitor.postVisitDeepString(this.Sha256));
+    this.setSize(visitor.postVisitDeepLong(this.Size));
     return this.postVisitShallow(visitor);
   }
 }

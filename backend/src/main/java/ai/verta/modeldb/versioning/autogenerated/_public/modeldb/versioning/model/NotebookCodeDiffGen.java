@@ -20,11 +20,11 @@ public class NotebookCodeDiffGen extends Generator<NotebookCodeDiff> {
 
     NotebookCodeDiff obj = new NotebookCodeDiff();
     if (r.nextBoolean()) {
-      obj.setPath(
-          Utils.removeEmpty(gen().type(PathDatasetComponentDiff.class).generate(r, status)));
+      obj.setGitRepo(Utils.removeEmpty(gen().type(GitCodeDiff.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setGitRepo(Utils.removeEmpty(gen().type(GitCodeDiff.class).generate(r, status)));
+      obj.setPath(
+          Utils.removeEmpty(gen().type(PathDatasetComponentDiff.class).generate(r, status)));
     }
     return obj;
   }

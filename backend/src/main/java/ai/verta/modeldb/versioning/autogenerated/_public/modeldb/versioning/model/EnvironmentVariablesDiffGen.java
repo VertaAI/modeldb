@@ -20,11 +20,11 @@ public class EnvironmentVariablesDiffGen extends Generator<EnvironmentVariablesD
 
     EnvironmentVariablesDiff obj = new EnvironmentVariablesDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
+      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setValueA(Utils.removeEmpty(new StringGenerator().generate(r, status)));

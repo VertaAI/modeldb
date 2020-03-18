@@ -44,11 +44,39 @@ public class {{class_name}} implements ProtoType {
 
     @Override
     public String toString() {
-        return "{\"class\": \"{{class_name}}\",\"fields\": {" +
-                {{#properties}}
-                "\"{{name}}\": " + {{#type}}{{#string}}"\"" + {{/string}}{{/type}}{{name}}{{#type}}{{#string}} + "\""{{/string}}{{/type}} + {{^last}}", " +{{/last}}
-                {{/properties}}
-                "}}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"class\": \"{{class_name}}\", \"fields\": {");
+        boolean first = true;
+        {{#properties}}
+        {{^required}}
+        {{#type}}
+        if (this.{{name}} != null && !this.{{name}}.equals({{> default_value}}) {{#is_list}} && !this.{{name}}.isEmpty(){{/is_list}}) {
+            if (!first) sb.append(", ");
+            sb.append("\"{{name}}\": " + {{#type}}{{#string}}"\"" + {{/string}}{{/type}}{{name}}{{#type}}{{#string}} + "\""{{/string}}{{/type}});
+            first = false;
+        }
+        {{/type}}
+        {{/required}}
+        {{/properties}}
+        sb.append("}}");
+        return sb.toString();
+    }
+
+    // TODO: actually hash
+    public String getSHA() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{{class_name}}");
+        {{#properties}}
+        {{^required}}
+        {{#type}}
+        if (this.{{name}} != null && !this.{{name}}.equals({{> default_value}}) {{#is_list}} && !this.{{name}}.isEmpty(){{/is_list}}) {
+            sb.append("::{{name}}::").append({{name}});
+        }
+        {{/type}}
+        {{/required}}
+        {{/properties}}
+
+        return sb.toString();
     }
 
     // TODO: not consider order on lists

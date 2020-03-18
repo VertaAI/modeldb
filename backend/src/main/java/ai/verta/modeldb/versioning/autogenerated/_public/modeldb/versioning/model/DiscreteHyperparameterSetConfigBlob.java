@@ -29,10 +29,27 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"DiscreteHyperparameterSetConfigBlob\",\"fields\": {"
-        + "\"Values\": "
-        + Values
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"DiscreteHyperparameterSetConfigBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.Values != null && !this.Values.equals(null) && !this.Values.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"Values\": " + Values);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("DiscreteHyperparameterSetConfigBlob");
+    if (this.Values != null && !this.Values.equals(null) && !this.Values.isEmpty()) {
+      sb.append("::Values::").append(Values);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists

@@ -20,14 +20,14 @@ public class VersionEnvironmentDiffGen extends Generator<VersionEnvironmentDiff>
 
     VersionEnvironmentDiff obj = new VersionEnvironmentDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setA(Utils.removeEmpty(gen().type(VersionEnvironmentBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setB(Utils.removeEmpty(gen().type(VersionEnvironmentBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     return obj;
   }

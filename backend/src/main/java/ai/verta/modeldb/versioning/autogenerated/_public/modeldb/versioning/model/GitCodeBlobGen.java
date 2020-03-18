@@ -20,19 +20,19 @@ public class GitCodeBlobGen extends Generator<GitCodeBlob> {
 
     GitCodeBlob obj = new GitCodeBlob();
     if (r.nextBoolean()) {
-      obj.setRepo(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setBranch(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setHash(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setBranch(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setIsDirty(Utils.removeEmpty(gen().type(Boolean.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setRepo(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setTag(Utils.removeEmpty(new StringGenerator().generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setIsDirty(Utils.removeEmpty(gen().type(Boolean.class).generate(r, status)));
     }
     return obj;
   }

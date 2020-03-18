@@ -20,8 +20,12 @@ public class PythonEnvironmentDiffGen extends Generator<PythonEnvironmentDiff> {
 
     PythonEnvironmentDiff obj = new PythonEnvironmentDiff();
     if (r.nextBoolean()) {
-      obj.setVersion(
-          Utils.removeEmpty(gen().type(VersionEnvironmentDiff.class).generate(r, status)));
+      int size = r.nextInt(0, 10);
+      List<PythonRequirementEnvironmentDiff> ret = new ArrayList(size);
+      for (int i = 0; i < size; i++) {
+        ret.add(gen().type(PythonRequirementEnvironmentDiff.class).generate(r, status));
+      }
+      obj.setConstraints(Utils.removeEmpty(ret));
     }
     if (r.nextBoolean()) {
       int size = r.nextInt(0, 10);
@@ -32,12 +36,8 @@ public class PythonEnvironmentDiffGen extends Generator<PythonEnvironmentDiff> {
       obj.setRequirements(Utils.removeEmpty(ret));
     }
     if (r.nextBoolean()) {
-      int size = r.nextInt(0, 10);
-      List<PythonRequirementEnvironmentDiff> ret = new ArrayList(size);
-      for (int i = 0; i < size; i++) {
-        ret.add(gen().type(PythonRequirementEnvironmentDiff.class).generate(r, status));
-      }
-      obj.setConstraints(Utils.removeEmpty(ret));
+      obj.setVersion(
+          Utils.removeEmpty(gen().type(VersionEnvironmentDiff.class).generate(r, status)));
     }
     return obj;
   }

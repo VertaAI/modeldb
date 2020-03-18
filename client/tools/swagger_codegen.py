@@ -183,6 +183,7 @@ def create_model(result_dir, result_package, definition_name, definition, enums,
                    'required': k in required,
                    'type': dict(resolve_type(v), var_name=keyword_safe(to_language_case(k, case)))
                   } for k, v in properties.items()]
+    properties = sorted(properties, key=lambda x: x['name'])
     for i, p in enumerate(properties):
         p.update({'last': i == len(properties)-1})
 

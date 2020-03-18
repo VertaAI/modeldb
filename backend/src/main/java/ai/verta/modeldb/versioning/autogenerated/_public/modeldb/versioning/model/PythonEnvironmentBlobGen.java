@@ -20,8 +20,12 @@ public class PythonEnvironmentBlobGen extends Generator<PythonEnvironmentBlob> {
 
     PythonEnvironmentBlob obj = new PythonEnvironmentBlob();
     if (r.nextBoolean()) {
-      obj.setVersion(
-          Utils.removeEmpty(gen().type(VersionEnvironmentBlob.class).generate(r, status)));
+      int size = r.nextInt(0, 10);
+      List<PythonRequirementEnvironmentBlob> ret = new ArrayList(size);
+      for (int i = 0; i < size; i++) {
+        ret.add(gen().type(PythonRequirementEnvironmentBlob.class).generate(r, status));
+      }
+      obj.setConstraints(Utils.removeEmpty(ret));
     }
     if (r.nextBoolean()) {
       int size = r.nextInt(0, 10);
@@ -32,12 +36,8 @@ public class PythonEnvironmentBlobGen extends Generator<PythonEnvironmentBlob> {
       obj.setRequirements(Utils.removeEmpty(ret));
     }
     if (r.nextBoolean()) {
-      int size = r.nextInt(0, 10);
-      List<PythonRequirementEnvironmentBlob> ret = new ArrayList(size);
-      for (int i = 0; i < size; i++) {
-        ret.add(gen().type(PythonRequirementEnvironmentBlob.class).generate(r, status));
-      }
-      obj.setConstraints(Utils.removeEmpty(ret));
+      obj.setVersion(
+          Utils.removeEmpty(gen().type(VersionEnvironmentBlob.class).generate(r, status)));
     }
     return obj;
   }

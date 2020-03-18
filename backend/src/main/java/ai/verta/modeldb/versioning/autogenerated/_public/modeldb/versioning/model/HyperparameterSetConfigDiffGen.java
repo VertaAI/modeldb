@@ -20,14 +20,12 @@ public class HyperparameterSetConfigDiffGen extends Generator<HyperparameterSetC
 
     HyperparameterSetConfigDiff obj = new HyperparameterSetConfigDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setContinuousA(
+          Utils.removeEmpty(
+              gen().type(ContinuousHyperparameterSetConfigBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setContinuousB(
           Utils.removeEmpty(
               gen().type(ContinuousHyperparameterSetConfigBlob.class).generate(r, status)));
     }
@@ -37,14 +35,16 @@ public class HyperparameterSetConfigDiffGen extends Generator<HyperparameterSetC
               gen().type(DiscreteHyperparameterSetConfigBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setContinuousB(
-          Utils.removeEmpty(
-              gen().type(ContinuousHyperparameterSetConfigBlob.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setDiscreteB(
           Utils.removeEmpty(
               gen().type(DiscreteHyperparameterSetConfigBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     return obj;
   }

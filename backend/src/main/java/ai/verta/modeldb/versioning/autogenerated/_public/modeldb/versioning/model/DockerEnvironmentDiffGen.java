@@ -20,14 +20,14 @@ public class DockerEnvironmentDiffGen extends Generator<DockerEnvironmentDiff> {
 
     DockerEnvironmentDiff obj = new DockerEnvironmentDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setA(Utils.removeEmpty(gen().type(DockerEnvironmentBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setB(Utils.removeEmpty(gen().type(DockerEnvironmentBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     return obj;
   }

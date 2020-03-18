@@ -38,13 +38,43 @@ public class ConfigDiff implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"ConfigDiff\",\"fields\": {"
-        + "\"HyperparameterSet\": "
-        + HyperparameterSet
-        + ", "
-        + "\"Hyperparameters\": "
-        + Hyperparameters
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"ConfigDiff\", \"fields\": {");
+    boolean first = true;
+    if (this.HyperparameterSet != null
+        && !this.HyperparameterSet.equals(null)
+        && !this.HyperparameterSet.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"HyperparameterSet\": " + HyperparameterSet);
+      first = false;
+    }
+    if (this.Hyperparameters != null
+        && !this.Hyperparameters.equals(null)
+        && !this.Hyperparameters.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"Hyperparameters\": " + Hyperparameters);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("ConfigDiff");
+    if (this.HyperparameterSet != null
+        && !this.HyperparameterSet.equals(null)
+        && !this.HyperparameterSet.isEmpty()) {
+      sb.append("::HyperparameterSet::").append(HyperparameterSet);
+    }
+    if (this.Hyperparameters != null
+        && !this.Hyperparameters.equals(null)
+        && !this.Hyperparameters.isEmpty()) {
+      sb.append("::Hyperparameters::").append(Hyperparameters);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists

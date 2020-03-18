@@ -32,15 +32,35 @@ public class HyperparameterConfigBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"HyperparameterConfigBlob\",\"fields\": {"
-        + "\"Name\": "
-        + "\""
-        + Name
-        + "\""
-        + ", "
-        + "\"Value\": "
-        + Value
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"HyperparameterConfigBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.Name != null && !this.Name.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Name\": " + "\"" + Name + "\"");
+      first = false;
+    }
+    if (this.Value != null && !this.Value.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Value\": " + Value);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("HyperparameterConfigBlob");
+    if (this.Name != null && !this.Name.equals("")) {
+      sb.append("::Name::").append(Name);
+    }
+    if (this.Value != null && !this.Value.equals(null)) {
+      sb.append("::Value::").append(Value);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists

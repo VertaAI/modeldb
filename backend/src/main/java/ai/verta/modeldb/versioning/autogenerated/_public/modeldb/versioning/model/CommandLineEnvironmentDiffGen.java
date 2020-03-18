@@ -20,10 +20,6 @@ public class CommandLineEnvironmentDiffGen extends Generator<CommandLineEnvironm
 
     CommandLineEnvironmentDiff obj = new CommandLineEnvironmentDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       int size = r.nextInt(0, 10);
       List<String> ret = new ArrayList(size);
       for (int i = 0; i < size; i++) {
@@ -38,6 +34,10 @@ public class CommandLineEnvironmentDiffGen extends Generator<CommandLineEnvironm
         ret.add(new StringGenerator().generate(r, status));
       }
       obj.setB(Utils.removeEmpty(ret));
+    }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     return obj;
   }

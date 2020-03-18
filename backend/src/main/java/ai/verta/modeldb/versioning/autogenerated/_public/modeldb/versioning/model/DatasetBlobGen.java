@@ -20,10 +20,10 @@ public class DatasetBlobGen extends Generator<DatasetBlob> {
 
     DatasetBlob obj = new DatasetBlob();
     if (r.nextBoolean()) {
-      obj.setS3(Utils.removeEmpty(gen().type(S3DatasetBlob.class).generate(r, status)));
+      obj.setPath(Utils.removeEmpty(gen().type(PathDatasetBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setPath(Utils.removeEmpty(gen().type(PathDatasetBlob.class).generate(r, status)));
+      obj.setS3(Utils.removeEmpty(gen().type(S3DatasetBlob.class).generate(r, status)));
     }
     return obj;
   }

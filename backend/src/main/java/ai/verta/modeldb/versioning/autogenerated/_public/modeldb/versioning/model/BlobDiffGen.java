@@ -20,6 +20,18 @@ public class BlobDiffGen extends Generator<BlobDiff> {
 
     BlobDiff obj = new BlobDiff();
     if (r.nextBoolean()) {
+      obj.setCode(Utils.removeEmpty(gen().type(CodeDiff.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setConfig(Utils.removeEmpty(gen().type(ConfigDiff.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setDataset(Utils.removeEmpty(gen().type(DatasetDiff.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setEnvironment(Utils.removeEmpty(gen().type(EnvironmentDiff.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       int size = r.nextInt(0, 10);
       List<String> ret = new ArrayList(size);
       for (int i = 0; i < size; i++) {
@@ -30,18 +42,6 @@ public class BlobDiffGen extends Generator<BlobDiff> {
     if (r.nextBoolean()) {
       obj.setStatus(
           Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setDataset(Utils.removeEmpty(gen().type(DatasetDiff.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setEnvironment(Utils.removeEmpty(gen().type(EnvironmentDiff.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setCode(Utils.removeEmpty(gen().type(CodeDiff.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setConfig(Utils.removeEmpty(gen().type(ConfigDiff.class).generate(r, status)));
     }
     return obj;
   }

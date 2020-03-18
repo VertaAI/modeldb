@@ -12,19 +12,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class NotebookCodeBlob implements ProtoType {
-  public PathDatasetComponentBlob Path;
   public GitCodeBlob GitRepo;
+  public PathDatasetComponentBlob Path;
 
   public NotebookCodeBlob() {
-    this.Path = null;
     this.GitRepo = null;
+    this.Path = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Path != null && !this.Path.equals(null)) {
+    if (this.GitRepo != null && !this.GitRepo.equals(null)) {
       return false;
     }
-    if (this.GitRepo != null && !this.GitRepo.equals(null)) {
+    if (this.Path != null && !this.Path.equals(null)) {
       return false;
     }
     return true;
@@ -32,13 +32,35 @@ public class NotebookCodeBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"NotebookCodeBlob\",\"fields\": {"
-        + "\"Path\": "
-        + Path
-        + ", "
-        + "\"GitRepo\": "
-        + GitRepo
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"NotebookCodeBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.GitRepo != null && !this.GitRepo.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"GitRepo\": " + GitRepo);
+      first = false;
+    }
+    if (this.Path != null && !this.Path.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Path\": " + Path);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("NotebookCodeBlob");
+    if (this.GitRepo != null && !this.GitRepo.equals(null)) {
+      sb.append("::GitRepo::").append(GitRepo);
+    }
+    if (this.Path != null && !this.Path.equals(null)) {
+      sb.append("::Path::").append(Path);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -50,6 +72,14 @@ public class NotebookCodeBlob implements ProtoType {
     NotebookCodeBlob other = (NotebookCodeBlob) o;
 
     {
+      Function3<GitCodeBlob, GitCodeBlob, Boolean> f = (x, y) -> x.equals(y);
+      if (this.GitRepo != null || other.GitRepo != null) {
+        if (this.GitRepo == null && other.GitRepo != null) return false;
+        if (this.GitRepo != null && other.GitRepo == null) return false;
+        if (!f.apply(this.GitRepo, other.GitRepo)) return false;
+      }
+    }
+    {
       Function3<PathDatasetComponentBlob, PathDatasetComponentBlob, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Path != null || other.Path != null) {
@@ -58,29 +88,21 @@ public class NotebookCodeBlob implements ProtoType {
         if (!f.apply(this.Path, other.Path)) return false;
       }
     }
-    {
-      Function3<GitCodeBlob, GitCodeBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.GitRepo != null || other.GitRepo != null) {
-        if (this.GitRepo == null && other.GitRepo != null) return false;
-        if (this.GitRepo != null && other.GitRepo == null) return false;
-        if (!f.apply(this.GitRepo, other.GitRepo)) return false;
-      }
-    }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Path, this.GitRepo);
-  }
-
-  public NotebookCodeBlob setPath(PathDatasetComponentBlob value) {
-    this.Path = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.GitRepo, this.Path);
   }
 
   public NotebookCodeBlob setGitRepo(GitCodeBlob value) {
     this.GitRepo = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public NotebookCodeBlob setPath(PathDatasetComponentBlob value) {
+    this.Path = Utils.removeEmpty(value);
     return this;
   }
 
@@ -91,14 +113,14 @@ public class NotebookCodeBlob implements ProtoType {
 
     NotebookCodeBlob obj = new NotebookCodeBlob();
     {
-      Function<ai.verta.modeldb.versioning.NotebookCodeBlob, PathDatasetComponentBlob> f =
-          x -> PathDatasetComponentBlob.fromProto(blob.getPath());
-      obj.Path = Utils.removeEmpty(f.apply(blob));
-    }
-    {
       Function<ai.verta.modeldb.versioning.NotebookCodeBlob, GitCodeBlob> f =
           x -> GitCodeBlob.fromProto(blob.getGitRepo());
       obj.GitRepo = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.NotebookCodeBlob, PathDatasetComponentBlob> f =
+          x -> PathDatasetComponentBlob.fromProto(blob.getPath());
+      obj.Path = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -107,20 +129,20 @@ public class NotebookCodeBlob implements ProtoType {
     ai.verta.modeldb.versioning.NotebookCodeBlob.Builder builder =
         ai.verta.modeldb.versioning.NotebookCodeBlob.newBuilder();
     {
-      if (this.Path != null && !this.Path.equals(null)) {
+      if (this.GitRepo != null && !this.GitRepo.equals(null)) {
         Function<ai.verta.modeldb.versioning.NotebookCodeBlob.Builder, Void> f =
             x -> {
-              builder.setPath(this.Path.toProto());
+              builder.setGitRepo(this.GitRepo.toProto());
               return null;
             };
         f.apply(builder);
       }
     }
     {
-      if (this.GitRepo != null && !this.GitRepo.equals(null)) {
+      if (this.Path != null && !this.Path.equals(null)) {
         Function<ai.verta.modeldb.versioning.NotebookCodeBlob.Builder, Void> f =
             x -> {
-              builder.setGitRepo(this.GitRepo.toProto());
+              builder.setPath(this.Path.toProto());
               return null;
             };
         f.apply(builder);
@@ -135,8 +157,8 @@ public class NotebookCodeBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepPathDatasetComponentBlob(this.Path);
     visitor.preVisitDeepGitCodeBlob(this.GitRepo);
+    visitor.preVisitDeepPathDatasetComponentBlob(this.Path);
   }
 
   public NotebookCodeBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -144,8 +166,8 @@ public class NotebookCodeBlob implements ProtoType {
   }
 
   public NotebookCodeBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setPath(visitor.postVisitDeepPathDatasetComponentBlob(this.Path));
     this.setGitRepo(visitor.postVisitDeepGitCodeBlob(this.GitRepo));
+    this.setPath(visitor.postVisitDeepPathDatasetComponentBlob(this.Path));
     return this.postVisitShallow(visitor);
   }
 }

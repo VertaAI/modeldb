@@ -20,9 +20,6 @@ public class HyperparameterSetConfigBlobGen extends Generator<HyperparameterSetC
 
     HyperparameterSetConfigBlob obj = new HyperparameterSetConfigBlob();
     if (r.nextBoolean()) {
-      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setContinuous(
           Utils.removeEmpty(
               gen().type(ContinuousHyperparameterSetConfigBlob.class).generate(r, status)));
@@ -31,6 +28,9 @@ public class HyperparameterSetConfigBlobGen extends Generator<HyperparameterSetC
       obj.setDiscrete(
           Utils.removeEmpty(
               gen().type(DiscreteHyperparameterSetConfigBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     return obj;
   }

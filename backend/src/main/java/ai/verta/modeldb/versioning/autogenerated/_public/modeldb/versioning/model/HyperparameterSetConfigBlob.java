@@ -12,24 +12,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterSetConfigBlob implements ProtoType {
-  public String Name;
   public ContinuousHyperparameterSetConfigBlob Continuous;
   public DiscreteHyperparameterSetConfigBlob Discrete;
+  public String Name;
 
   public HyperparameterSetConfigBlob() {
-    this.Name = "";
     this.Continuous = null;
     this.Discrete = null;
+    this.Name = "";
   }
 
   public Boolean isEmpty() {
-    if (this.Name != null && !this.Name.equals("")) {
-      return false;
-    }
     if (this.Continuous != null && !this.Continuous.equals(null)) {
       return false;
     }
     if (this.Discrete != null && !this.Discrete.equals(null)) {
+      return false;
+    }
+    if (this.Name != null && !this.Name.equals("")) {
       return false;
     }
     return true;
@@ -37,18 +37,43 @@ public class HyperparameterSetConfigBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"HyperparameterSetConfigBlob\",\"fields\": {"
-        + "\"Name\": "
-        + "\""
-        + Name
-        + "\""
-        + ", "
-        + "\"Continuous\": "
-        + Continuous
-        + ", "
-        + "\"Discrete\": "
-        + Discrete
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"HyperparameterSetConfigBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.Continuous != null && !this.Continuous.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Continuous\": " + Continuous);
+      first = false;
+    }
+    if (this.Discrete != null && !this.Discrete.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Discrete\": " + Discrete);
+      first = false;
+    }
+    if (this.Name != null && !this.Name.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Name\": " + "\"" + Name + "\"");
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("HyperparameterSetConfigBlob");
+    if (this.Continuous != null && !this.Continuous.equals(null)) {
+      sb.append("::Continuous::").append(Continuous);
+    }
+    if (this.Discrete != null && !this.Discrete.equals(null)) {
+      sb.append("::Discrete::").append(Discrete);
+    }
+    if (this.Name != null && !this.Name.equals("")) {
+      sb.append("::Name::").append(Name);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -59,14 +84,6 @@ public class HyperparameterSetConfigBlob implements ProtoType {
     if (!(o instanceof HyperparameterSetConfigBlob)) return false;
     HyperparameterSetConfigBlob other = (HyperparameterSetConfigBlob) o;
 
-    {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Name != null || other.Name != null) {
-        if (this.Name == null && other.Name != null) return false;
-        if (this.Name != null && other.Name == null) return false;
-        if (!f.apply(this.Name, other.Name)) return false;
-      }
-    }
     {
       Function3<
               ContinuousHyperparameterSetConfigBlob, ContinuousHyperparameterSetConfigBlob, Boolean>
@@ -86,17 +103,20 @@ public class HyperparameterSetConfigBlob implements ProtoType {
         if (!f.apply(this.Discrete, other.Discrete)) return false;
       }
     }
+    {
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Name != null || other.Name != null) {
+        if (this.Name == null && other.Name != null) return false;
+        if (this.Name != null && other.Name == null) return false;
+        if (!f.apply(this.Name, other.Name)) return false;
+      }
+    }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Name, this.Continuous, this.Discrete);
-  }
-
-  public HyperparameterSetConfigBlob setName(String value) {
-    this.Name = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.Continuous, this.Discrete, this.Name);
   }
 
   public HyperparameterSetConfigBlob setContinuous(ContinuousHyperparameterSetConfigBlob value) {
@@ -109,6 +129,11 @@ public class HyperparameterSetConfigBlob implements ProtoType {
     return this;
   }
 
+  public HyperparameterSetConfigBlob setName(String value) {
+    this.Name = Utils.removeEmpty(value);
+    return this;
+  }
+
   public static HyperparameterSetConfigBlob fromProto(
       ai.verta.modeldb.versioning.HyperparameterSetConfigBlob blob) {
     if (blob == null) {
@@ -116,11 +141,6 @@ public class HyperparameterSetConfigBlob implements ProtoType {
     }
 
     HyperparameterSetConfigBlob obj = new HyperparameterSetConfigBlob();
-    {
-      Function<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob, String> f =
-          x -> (blob.getName());
-      obj.Name = Utils.removeEmpty(f.apply(blob));
-    }
     {
       Function<
               ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
@@ -135,22 +155,17 @@ public class HyperparameterSetConfigBlob implements ProtoType {
           f = x -> DiscreteHyperparameterSetConfigBlob.fromProto(blob.getDiscrete());
       obj.Discrete = Utils.removeEmpty(f.apply(blob));
     }
+    {
+      Function<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob, String> f =
+          x -> (blob.getName());
+      obj.Name = Utils.removeEmpty(f.apply(blob));
+    }
     return obj;
   }
 
   public ai.verta.modeldb.versioning.HyperparameterSetConfigBlob.Builder toProto() {
     ai.verta.modeldb.versioning.HyperparameterSetConfigBlob.Builder builder =
         ai.verta.modeldb.versioning.HyperparameterSetConfigBlob.newBuilder();
-    {
-      if (this.Name != null && !this.Name.equals("")) {
-        Function<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob.Builder, Void> f =
-            x -> {
-              builder.setName(this.Name);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
     {
       if (this.Continuous != null && !this.Continuous.equals(null)) {
         Function<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob.Builder, Void> f =
@@ -171,6 +186,16 @@ public class HyperparameterSetConfigBlob implements ProtoType {
         f.apply(builder);
       }
     }
+    {
+      if (this.Name != null && !this.Name.equals("")) {
+        Function<ai.verta.modeldb.versioning.HyperparameterSetConfigBlob.Builder, Void> f =
+            x -> {
+              builder.setName(this.Name);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -180,9 +205,9 @@ public class HyperparameterSetConfigBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepString(this.Name);
     visitor.preVisitDeepContinuousHyperparameterSetConfigBlob(this.Continuous);
     visitor.preVisitDeepDiscreteHyperparameterSetConfigBlob(this.Discrete);
+    visitor.preVisitDeepString(this.Name);
   }
 
   public HyperparameterSetConfigBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -190,9 +215,9 @@ public class HyperparameterSetConfigBlob implements ProtoType {
   }
 
   public HyperparameterSetConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setName(visitor.postVisitDeepString(this.Name));
     this.setContinuous(visitor.postVisitDeepContinuousHyperparameterSetConfigBlob(this.Continuous));
     this.setDiscrete(visitor.postVisitDeepDiscreteHyperparameterSetConfigBlob(this.Discrete));
+    this.setName(visitor.postVisitDeepString(this.Name));
     return this.postVisitShallow(visitor);
   }
 }

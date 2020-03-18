@@ -14,24 +14,24 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CommandLineEnvironmentDiff implements ProtoType {
-  public DiffStatusEnumDiffStatus Status;
   public List<String> A;
   public List<String> B;
+  public DiffStatusEnumDiffStatus Status;
 
   public CommandLineEnvironmentDiff() {
-    this.Status = null;
     this.A = null;
     this.B = null;
+    this.Status = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Status != null && !this.Status.equals(null)) {
-      return false;
-    }
     if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
       return false;
     }
     if (this.B != null && !this.B.equals(null) && !this.B.isEmpty()) {
+      return false;
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
       return false;
     }
     return true;
@@ -39,16 +39,43 @@ public class CommandLineEnvironmentDiff implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"CommandLineEnvironmentDiff\",\"fields\": {"
-        + "\"Status\": "
-        + Status
-        + ", "
-        + "\"A\": "
-        + A
-        + ", "
-        + "\"B\": "
-        + B
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"CommandLineEnvironmentDiff\", \"fields\": {");
+    boolean first = true;
+    if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"A\": " + A);
+      first = false;
+    }
+    if (this.B != null && !this.B.equals(null) && !this.B.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"B\": " + B);
+      first = false;
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Status\": " + Status);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("CommandLineEnvironmentDiff");
+    if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
+      sb.append("::A::").append(A);
+    }
+    if (this.B != null && !this.B.equals(null) && !this.B.isEmpty()) {
+      sb.append("::B::").append(B);
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
+      sb.append("::Status::").append(Status);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -59,15 +86,6 @@ public class CommandLineEnvironmentDiff implements ProtoType {
     if (!(o instanceof CommandLineEnvironmentDiff)) return false;
     CommandLineEnvironmentDiff other = (CommandLineEnvironmentDiff) o;
 
-    {
-      Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
-          (x, y) -> x.equals(y);
-      if (this.Status != null || other.Status != null) {
-        if (this.Status == null && other.Status != null) return false;
-        if (this.Status != null && other.Status == null) return false;
-        if (!f.apply(this.Status, other.Status)) return false;
-      }
-    }
     {
       Function3<List<String>, List<String>, Boolean> f =
           (x2, y2) ->
@@ -104,17 +122,21 @@ public class CommandLineEnvironmentDiff implements ProtoType {
         if (!f.apply(this.B, other.B)) return false;
       }
     }
+    {
+      Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.Status != null || other.Status != null) {
+        if (this.Status == null && other.Status != null) return false;
+        if (this.Status != null && other.Status == null) return false;
+        if (!f.apply(this.Status, other.Status)) return false;
+      }
+    }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Status, this.A, this.B);
-  }
-
-  public CommandLineEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
-    this.Status = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.A, this.B, this.Status);
   }
 
   public CommandLineEnvironmentDiff setA(List<String> value) {
@@ -127,6 +149,11 @@ public class CommandLineEnvironmentDiff implements ProtoType {
     return this;
   }
 
+  public CommandLineEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
+    this.Status = Utils.removeEmpty(value);
+    return this;
+  }
+
   public static CommandLineEnvironmentDiff fromProto(
       ai.verta.modeldb.versioning.CommandLineEnvironmentDiff blob) {
     if (blob == null) {
@@ -134,11 +161,6 @@ public class CommandLineEnvironmentDiff implements ProtoType {
     }
 
     CommandLineEnvironmentDiff obj = new CommandLineEnvironmentDiff();
-    {
-      Function<ai.verta.modeldb.versioning.CommandLineEnvironmentDiff, DiffStatusEnumDiffStatus> f =
-          x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
-      obj.Status = Utils.removeEmpty(f.apply(blob));
-    }
     {
       Function<ai.verta.modeldb.versioning.CommandLineEnvironmentDiff, List<String>> f =
           x -> blob.getAList();
@@ -149,22 +171,17 @@ public class CommandLineEnvironmentDiff implements ProtoType {
           x -> blob.getBList();
       obj.B = Utils.removeEmpty(f.apply(blob));
     }
+    {
+      Function<ai.verta.modeldb.versioning.CommandLineEnvironmentDiff, DiffStatusEnumDiffStatus> f =
+          x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
+      obj.Status = Utils.removeEmpty(f.apply(blob));
+    }
     return obj;
   }
 
   public ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.Builder toProto() {
     ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.Builder builder =
         ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.newBuilder();
-    {
-      if (this.Status != null && !this.Status.equals(null)) {
-        Function<ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.Builder, Void> f =
-            x -> {
-              builder.setStatus(this.Status.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
     {
       if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
         Function<ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.Builder, Void> f =
@@ -185,6 +202,16 @@ public class CommandLineEnvironmentDiff implements ProtoType {
         f.apply(builder);
       }
     }
+    {
+      if (this.Status != null && !this.Status.equals(null)) {
+        Function<ai.verta.modeldb.versioning.CommandLineEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setStatus(this.Status.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -194,9 +221,9 @@ public class CommandLineEnvironmentDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
     visitor.preVisitDeepListOfString(this.A);
     visitor.preVisitDeepListOfString(this.B);
+    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
   }
 
   public CommandLineEnvironmentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -204,9 +231,9 @@ public class CommandLineEnvironmentDiff implements ProtoType {
   }
 
   public CommandLineEnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status));
     this.setA(visitor.postVisitDeepListOfString(this.A));
     this.setB(visitor.postVisitDeepListOfString(this.B));
+    this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }
 }

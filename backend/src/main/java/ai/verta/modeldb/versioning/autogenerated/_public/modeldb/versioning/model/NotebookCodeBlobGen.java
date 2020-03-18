@@ -20,11 +20,11 @@ public class NotebookCodeBlobGen extends Generator<NotebookCodeBlob> {
 
     NotebookCodeBlob obj = new NotebookCodeBlob();
     if (r.nextBoolean()) {
-      obj.setPath(
-          Utils.removeEmpty(gen().type(PathDatasetComponentBlob.class).generate(r, status)));
+      obj.setGitRepo(Utils.removeEmpty(gen().type(GitCodeBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setGitRepo(Utils.removeEmpty(gen().type(GitCodeBlob.class).generate(r, status)));
+      obj.setPath(
+          Utils.removeEmpty(gen().type(PathDatasetComponentBlob.class).generate(r, status)));
     }
     return obj;
   }

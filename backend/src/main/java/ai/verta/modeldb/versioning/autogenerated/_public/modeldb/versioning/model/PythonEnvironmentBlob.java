@@ -14,18 +14,18 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PythonEnvironmentBlob implements ProtoType {
-  public VersionEnvironmentBlob Version;
-  public List<PythonRequirementEnvironmentBlob> Requirements;
   public List<PythonRequirementEnvironmentBlob> Constraints;
+  public List<PythonRequirementEnvironmentBlob> Requirements;
+  public VersionEnvironmentBlob Version;
 
   public PythonEnvironmentBlob() {
-    this.Version = null;
-    this.Requirements = null;
     this.Constraints = null;
+    this.Requirements = null;
+    this.Version = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Version != null && !this.Version.equals(null)) {
+    if (this.Constraints != null && !this.Constraints.equals(null) && !this.Constraints.isEmpty()) {
       return false;
     }
     if (this.Requirements != null
@@ -33,7 +33,7 @@ public class PythonEnvironmentBlob implements ProtoType {
         && !this.Requirements.isEmpty()) {
       return false;
     }
-    if (this.Constraints != null && !this.Constraints.equals(null) && !this.Constraints.isEmpty()) {
+    if (this.Version != null && !this.Version.equals(null)) {
       return false;
     }
     return true;
@@ -41,16 +41,47 @@ public class PythonEnvironmentBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"PythonEnvironmentBlob\",\"fields\": {"
-        + "\"Version\": "
-        + Version
-        + ", "
-        + "\"Requirements\": "
-        + Requirements
-        + ", "
-        + "\"Constraints\": "
-        + Constraints
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"PythonEnvironmentBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.Constraints != null && !this.Constraints.equals(null) && !this.Constraints.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"Constraints\": " + Constraints);
+      first = false;
+    }
+    if (this.Requirements != null
+        && !this.Requirements.equals(null)
+        && !this.Requirements.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"Requirements\": " + Requirements);
+      first = false;
+    }
+    if (this.Version != null && !this.Version.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Version\": " + Version);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("PythonEnvironmentBlob");
+    if (this.Constraints != null && !this.Constraints.equals(null) && !this.Constraints.isEmpty()) {
+      sb.append("::Constraints::").append(Constraints);
+    }
+    if (this.Requirements != null
+        && !this.Requirements.equals(null)
+        && !this.Requirements.isEmpty()) {
+      sb.append("::Requirements::").append(Requirements);
+    }
+    if (this.Version != null && !this.Version.equals(null)) {
+      sb.append("::Version::").append(Version);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -62,11 +93,29 @@ public class PythonEnvironmentBlob implements ProtoType {
     PythonEnvironmentBlob other = (PythonEnvironmentBlob) o;
 
     {
-      Function3<VersionEnvironmentBlob, VersionEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Version != null || other.Version != null) {
-        if (this.Version == null && other.Version != null) return false;
-        if (this.Version != null && other.Version == null) return false;
-        if (!f.apply(this.Version, other.Version)) return false;
+      Function3<
+              List<PythonRequirementEnvironmentBlob>,
+              List<PythonRequirementEnvironmentBlob>,
+              Boolean>
+          f =
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    PythonRequirementEnvironmentBlob,
+                                    PythonRequirementEnvironmentBlob,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
+      if (this.Constraints != null || other.Constraints != null) {
+        if (this.Constraints == null && other.Constraints != null) return false;
+        if (this.Constraints != null && other.Constraints == null) return false;
+        if (!f.apply(this.Constraints, other.Constraints)) return false;
       }
     }
     {
@@ -96,29 +145,11 @@ public class PythonEnvironmentBlob implements ProtoType {
       }
     }
     {
-      Function3<
-              List<PythonRequirementEnvironmentBlob>,
-              List<PythonRequirementEnvironmentBlob>,
-              Boolean>
-          f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    PythonRequirementEnvironmentBlob,
-                                    PythonRequirementEnvironmentBlob,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
-      if (this.Constraints != null || other.Constraints != null) {
-        if (this.Constraints == null && other.Constraints != null) return false;
-        if (this.Constraints != null && other.Constraints == null) return false;
-        if (!f.apply(this.Constraints, other.Constraints)) return false;
+      Function3<VersionEnvironmentBlob, VersionEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Version != null || other.Version != null) {
+        if (this.Version == null && other.Version != null) return false;
+        if (this.Version != null && other.Version == null) return false;
+        if (!f.apply(this.Version, other.Version)) return false;
       }
     }
     return true;
@@ -126,11 +157,11 @@ public class PythonEnvironmentBlob implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Version, this.Requirements, this.Constraints);
+    return Objects.hash(this.Constraints, this.Requirements, this.Version);
   }
 
-  public PythonEnvironmentBlob setVersion(VersionEnvironmentBlob value) {
-    this.Version = Utils.removeEmpty(value);
+  public PythonEnvironmentBlob setConstraints(List<PythonRequirementEnvironmentBlob> value) {
+    this.Constraints = Utils.removeEmpty(value);
     return this;
   }
 
@@ -139,8 +170,8 @@ public class PythonEnvironmentBlob implements ProtoType {
     return this;
   }
 
-  public PythonEnvironmentBlob setConstraints(List<PythonRequirementEnvironmentBlob> value) {
-    this.Constraints = Utils.removeEmpty(value);
+  public PythonEnvironmentBlob setVersion(VersionEnvironmentBlob value) {
+    this.Version = Utils.removeEmpty(value);
     return this;
   }
 
@@ -152,9 +183,15 @@ public class PythonEnvironmentBlob implements ProtoType {
 
     PythonEnvironmentBlob obj = new PythonEnvironmentBlob();
     {
-      Function<ai.verta.modeldb.versioning.PythonEnvironmentBlob, VersionEnvironmentBlob> f =
-          x -> VersionEnvironmentBlob.fromProto(blob.getVersion());
-      obj.Version = Utils.removeEmpty(f.apply(blob));
+      Function<
+              ai.verta.modeldb.versioning.PythonEnvironmentBlob,
+              List<PythonRequirementEnvironmentBlob>>
+          f =
+              x ->
+                  blob.getConstraintsList().stream()
+                      .map(PythonRequirementEnvironmentBlob::fromProto)
+                      .collect(Collectors.toList());
+      obj.Constraints = Utils.removeEmpty(f.apply(blob));
     }
     {
       Function<
@@ -168,15 +205,9 @@ public class PythonEnvironmentBlob implements ProtoType {
       obj.Requirements = Utils.removeEmpty(f.apply(blob));
     }
     {
-      Function<
-              ai.verta.modeldb.versioning.PythonEnvironmentBlob,
-              List<PythonRequirementEnvironmentBlob>>
-          f =
-              x ->
-                  blob.getConstraintsList().stream()
-                      .map(PythonRequirementEnvironmentBlob::fromProto)
-                      .collect(Collectors.toList());
-      obj.Constraints = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.PythonEnvironmentBlob, VersionEnvironmentBlob> f =
+          x -> VersionEnvironmentBlob.fromProto(blob.getVersion());
+      obj.Version = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -185,10 +216,15 @@ public class PythonEnvironmentBlob implements ProtoType {
     ai.verta.modeldb.versioning.PythonEnvironmentBlob.Builder builder =
         ai.verta.modeldb.versioning.PythonEnvironmentBlob.newBuilder();
     {
-      if (this.Version != null && !this.Version.equals(null)) {
+      if (this.Constraints != null
+          && !this.Constraints.equals(null)
+          && !this.Constraints.isEmpty()) {
         Function<ai.verta.modeldb.versioning.PythonEnvironmentBlob.Builder, Void> f =
             x -> {
-              builder.setVersion(this.Version.toProto());
+              builder.addAllConstraints(
+                  this.Constraints.stream()
+                      .map(y -> y.toProto().build())
+                      .collect(Collectors.toList()));
               return null;
             };
         f.apply(builder);
@@ -210,15 +246,10 @@ public class PythonEnvironmentBlob implements ProtoType {
       }
     }
     {
-      if (this.Constraints != null
-          && !this.Constraints.equals(null)
-          && !this.Constraints.isEmpty()) {
+      if (this.Version != null && !this.Version.equals(null)) {
         Function<ai.verta.modeldb.versioning.PythonEnvironmentBlob.Builder, Void> f =
             x -> {
-              builder.addAllConstraints(
-                  this.Constraints.stream()
-                      .map(y -> y.toProto().build())
-                      .collect(Collectors.toList()));
+              builder.setVersion(this.Version.toProto());
               return null;
             };
         f.apply(builder);
@@ -233,9 +264,9 @@ public class PythonEnvironmentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepVersionEnvironmentBlob(this.Version);
-    visitor.preVisitDeepListOfPythonRequirementEnvironmentBlob(this.Requirements);
     visitor.preVisitDeepListOfPythonRequirementEnvironmentBlob(this.Constraints);
+    visitor.preVisitDeepListOfPythonRequirementEnvironmentBlob(this.Requirements);
+    visitor.preVisitDeepVersionEnvironmentBlob(this.Version);
   }
 
   public PythonEnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -243,11 +274,11 @@ public class PythonEnvironmentBlob implements ProtoType {
   }
 
   public PythonEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setVersion(visitor.postVisitDeepVersionEnvironmentBlob(this.Version));
-    this.setRequirements(
-        visitor.postVisitDeepListOfPythonRequirementEnvironmentBlob(this.Requirements));
     this.setConstraints(
         visitor.postVisitDeepListOfPythonRequirementEnvironmentBlob(this.Constraints));
+    this.setRequirements(
+        visitor.postVisitDeepListOfPythonRequirementEnvironmentBlob(this.Requirements));
+    this.setVersion(visitor.postVisitDeepVersionEnvironmentBlob(this.Version));
     return this.postVisitShallow(visitor);
   }
 }

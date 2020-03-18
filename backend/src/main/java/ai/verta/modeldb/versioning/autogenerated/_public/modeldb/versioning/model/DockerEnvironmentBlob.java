@@ -13,23 +13,23 @@ import java.util.function.Function;
 
 public class DockerEnvironmentBlob implements ProtoType {
   public String Repository;
-  public String Tag;
   public String Sha;
+  public String Tag;
 
   public DockerEnvironmentBlob() {
     this.Repository = "";
-    this.Tag = "";
     this.Sha = "";
+    this.Tag = "";
   }
 
   public Boolean isEmpty() {
     if (this.Repository != null && !this.Repository.equals("")) {
       return false;
     }
-    if (this.Tag != null && !this.Tag.equals("")) {
+    if (this.Sha != null && !this.Sha.equals("")) {
       return false;
     }
-    if (this.Sha != null && !this.Sha.equals("")) {
+    if (this.Tag != null && !this.Tag.equals("")) {
       return false;
     }
     return true;
@@ -37,22 +37,43 @@ public class DockerEnvironmentBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"DockerEnvironmentBlob\",\"fields\": {"
-        + "\"Repository\": "
-        + "\""
-        + Repository
-        + "\""
-        + ", "
-        + "\"Tag\": "
-        + "\""
-        + Tag
-        + "\""
-        + ", "
-        + "\"Sha\": "
-        + "\""
-        + Sha
-        + "\""
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"DockerEnvironmentBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.Repository != null && !this.Repository.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Repository\": " + "\"" + Repository + "\"");
+      first = false;
+    }
+    if (this.Sha != null && !this.Sha.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Sha\": " + "\"" + Sha + "\"");
+      first = false;
+    }
+    if (this.Tag != null && !this.Tag.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Tag\": " + "\"" + Tag + "\"");
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("DockerEnvironmentBlob");
+    if (this.Repository != null && !this.Repository.equals("")) {
+      sb.append("::Repository::").append(Repository);
+    }
+    if (this.Sha != null && !this.Sha.equals("")) {
+      sb.append("::Sha::").append(Sha);
+    }
+    if (this.Tag != null && !this.Tag.equals("")) {
+      sb.append("::Tag::").append(Tag);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -73,18 +94,18 @@ public class DockerEnvironmentBlob implements ProtoType {
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Tag != null || other.Tag != null) {
-        if (this.Tag == null && other.Tag != null) return false;
-        if (this.Tag != null && other.Tag == null) return false;
-        if (!f.apply(this.Tag, other.Tag)) return false;
-      }
-    }
-    {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Sha != null || other.Sha != null) {
         if (this.Sha == null && other.Sha != null) return false;
         if (this.Sha != null && other.Sha == null) return false;
         if (!f.apply(this.Sha, other.Sha)) return false;
+      }
+    }
+    {
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Tag != null || other.Tag != null) {
+        if (this.Tag == null && other.Tag != null) return false;
+        if (this.Tag != null && other.Tag == null) return false;
+        if (!f.apply(this.Tag, other.Tag)) return false;
       }
     }
     return true;
@@ -92,7 +113,7 @@ public class DockerEnvironmentBlob implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Repository, this.Tag, this.Sha);
+    return Objects.hash(this.Repository, this.Sha, this.Tag);
   }
 
   public DockerEnvironmentBlob setRepository(String value) {
@@ -100,13 +121,13 @@ public class DockerEnvironmentBlob implements ProtoType {
     return this;
   }
 
-  public DockerEnvironmentBlob setTag(String value) {
-    this.Tag = Utils.removeEmpty(value);
+  public DockerEnvironmentBlob setSha(String value) {
+    this.Sha = Utils.removeEmpty(value);
     return this;
   }
 
-  public DockerEnvironmentBlob setSha(String value) {
-    this.Sha = Utils.removeEmpty(value);
+  public DockerEnvironmentBlob setTag(String value) {
+    this.Tag = Utils.removeEmpty(value);
     return this;
   }
 
@@ -123,12 +144,12 @@ public class DockerEnvironmentBlob implements ProtoType {
       obj.Repository = Utils.removeEmpty(f.apply(blob));
     }
     {
-      Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob, String> f = x -> (blob.getTag());
-      obj.Tag = Utils.removeEmpty(f.apply(blob));
-    }
-    {
       Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob, String> f = x -> (blob.getSha());
       obj.Sha = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob, String> f = x -> (blob.getTag());
+      obj.Tag = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -147,20 +168,20 @@ public class DockerEnvironmentBlob implements ProtoType {
       }
     }
     {
-      if (this.Tag != null && !this.Tag.equals("")) {
+      if (this.Sha != null && !this.Sha.equals("")) {
         Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder, Void> f =
             x -> {
-              builder.setTag(this.Tag);
+              builder.setSha(this.Sha);
               return null;
             };
         f.apply(builder);
       }
     }
     {
-      if (this.Sha != null && !this.Sha.equals("")) {
+      if (this.Tag != null && !this.Tag.equals("")) {
         Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob.Builder, Void> f =
             x -> {
-              builder.setSha(this.Sha);
+              builder.setTag(this.Tag);
               return null;
             };
         f.apply(builder);
@@ -176,8 +197,8 @@ public class DockerEnvironmentBlob implements ProtoType {
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepString(this.Repository);
-    visitor.preVisitDeepString(this.Tag);
     visitor.preVisitDeepString(this.Sha);
+    visitor.preVisitDeepString(this.Tag);
   }
 
   public DockerEnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -186,8 +207,8 @@ public class DockerEnvironmentBlob implements ProtoType {
 
   public DockerEnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setRepository(visitor.postVisitDeepString(this.Repository));
-    this.setTag(visitor.postVisitDeepString(this.Tag));
     this.setSha(visitor.postVisitDeepString(this.Sha));
+    this.setTag(visitor.postVisitDeepString(this.Tag));
     return this.postVisitShallow(visitor);
   }
 }

@@ -12,19 +12,19 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DatasetDiff implements ProtoType {
-  public S3DatasetDiff S3;
   public PathDatasetDiff Path;
+  public S3DatasetDiff S3;
 
   public DatasetDiff() {
-    this.S3 = null;
     this.Path = null;
+    this.S3 = null;
   }
 
   public Boolean isEmpty() {
-    if (this.S3 != null && !this.S3.equals(null)) {
+    if (this.Path != null && !this.Path.equals(null)) {
       return false;
     }
-    if (this.Path != null && !this.Path.equals(null)) {
+    if (this.S3 != null && !this.S3.equals(null)) {
       return false;
     }
     return true;
@@ -32,13 +32,35 @@ public class DatasetDiff implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"DatasetDiff\",\"fields\": {"
-        + "\"S3\": "
-        + S3
-        + ", "
-        + "\"Path\": "
-        + Path
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"DatasetDiff\", \"fields\": {");
+    boolean first = true;
+    if (this.Path != null && !this.Path.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Path\": " + Path);
+      first = false;
+    }
+    if (this.S3 != null && !this.S3.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"S3\": " + S3);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("DatasetDiff");
+    if (this.Path != null && !this.Path.equals(null)) {
+      sb.append("::Path::").append(Path);
+    }
+    if (this.S3 != null && !this.S3.equals(null)) {
+      sb.append("::S3::").append(S3);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -50,14 +72,6 @@ public class DatasetDiff implements ProtoType {
     DatasetDiff other = (DatasetDiff) o;
 
     {
-      Function3<S3DatasetDiff, S3DatasetDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.S3 != null || other.S3 != null) {
-        if (this.S3 == null && other.S3 != null) return false;
-        if (this.S3 != null && other.S3 == null) return false;
-        if (!f.apply(this.S3, other.S3)) return false;
-      }
-    }
-    {
       Function3<PathDatasetDiff, PathDatasetDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.Path != null || other.Path != null) {
         if (this.Path == null && other.Path != null) return false;
@@ -65,21 +79,29 @@ public class DatasetDiff implements ProtoType {
         if (!f.apply(this.Path, other.Path)) return false;
       }
     }
+    {
+      Function3<S3DatasetDiff, S3DatasetDiff, Boolean> f = (x, y) -> x.equals(y);
+      if (this.S3 != null || other.S3 != null) {
+        if (this.S3 == null && other.S3 != null) return false;
+        if (this.S3 != null && other.S3 == null) return false;
+        if (!f.apply(this.S3, other.S3)) return false;
+      }
+    }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.S3, this.Path);
-  }
-
-  public DatasetDiff setS3(S3DatasetDiff value) {
-    this.S3 = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.Path, this.S3);
   }
 
   public DatasetDiff setPath(PathDatasetDiff value) {
     this.Path = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public DatasetDiff setS3(S3DatasetDiff value) {
+    this.S3 = Utils.removeEmpty(value);
     return this;
   }
 
@@ -90,14 +112,14 @@ public class DatasetDiff implements ProtoType {
 
     DatasetDiff obj = new DatasetDiff();
     {
-      Function<ai.verta.modeldb.versioning.DatasetDiff, S3DatasetDiff> f =
-          x -> S3DatasetDiff.fromProto(blob.getS3());
-      obj.S3 = Utils.removeEmpty(f.apply(blob));
-    }
-    {
       Function<ai.verta.modeldb.versioning.DatasetDiff, PathDatasetDiff> f =
           x -> PathDatasetDiff.fromProto(blob.getPath());
       obj.Path = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.DatasetDiff, S3DatasetDiff> f =
+          x -> S3DatasetDiff.fromProto(blob.getS3());
+      obj.S3 = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -106,20 +128,20 @@ public class DatasetDiff implements ProtoType {
     ai.verta.modeldb.versioning.DatasetDiff.Builder builder =
         ai.verta.modeldb.versioning.DatasetDiff.newBuilder();
     {
-      if (this.S3 != null && !this.S3.equals(null)) {
+      if (this.Path != null && !this.Path.equals(null)) {
         Function<ai.verta.modeldb.versioning.DatasetDiff.Builder, Void> f =
             x -> {
-              builder.setS3(this.S3.toProto());
+              builder.setPath(this.Path.toProto());
               return null;
             };
         f.apply(builder);
       }
     }
     {
-      if (this.Path != null && !this.Path.equals(null)) {
+      if (this.S3 != null && !this.S3.equals(null)) {
         Function<ai.verta.modeldb.versioning.DatasetDiff.Builder, Void> f =
             x -> {
-              builder.setPath(this.Path.toProto());
+              builder.setS3(this.S3.toProto());
               return null;
             };
         f.apply(builder);
@@ -134,8 +156,8 @@ public class DatasetDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepS3DatasetDiff(this.S3);
     visitor.preVisitDeepPathDatasetDiff(this.Path);
+    visitor.preVisitDeepS3DatasetDiff(this.S3);
   }
 
   public DatasetDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -143,8 +165,8 @@ public class DatasetDiff implements ProtoType {
   }
 
   public DatasetDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setS3(visitor.postVisitDeepS3DatasetDiff(this.S3));
     this.setPath(visitor.postVisitDeepPathDatasetDiff(this.Path));
+    this.setS3(visitor.postVisitDeepS3DatasetDiff(this.S3));
     return this.postVisitShallow(visitor);
   }
 }

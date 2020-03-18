@@ -20,14 +20,14 @@ public class PathDatasetComponentDiffGen extends Generator<PathDatasetComponentD
 
     PathDatasetComponentDiff obj = new PathDatasetComponentDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setA(Utils.removeEmpty(gen().type(PathDatasetComponentBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setB(Utils.removeEmpty(gen().type(PathDatasetComponentBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     return obj;
   }

@@ -29,7 +29,27 @@ public class PathDatasetDiff implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"PathDatasetDiff\",\"fields\": {" + "\"Components\": " + Components + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"PathDatasetDiff\", \"fields\": {");
+    boolean first = true;
+    if (this.Components != null && !this.Components.equals(null) && !this.Components.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"Components\": " + Components);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("PathDatasetDiff");
+    if (this.Components != null && !this.Components.equals(null) && !this.Components.isEmpty()) {
+      sb.append("::Components::").append(Components);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists

@@ -12,29 +12,29 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterConfigDiff implements ProtoType {
-  public DiffStatusEnumDiffStatus Status;
-  public String Name;
   public HyperparameterValuesConfigBlob A;
   public HyperparameterValuesConfigBlob B;
+  public String Name;
+  public DiffStatusEnumDiffStatus Status;
 
   public HyperparameterConfigDiff() {
-    this.Status = null;
-    this.Name = "";
     this.A = null;
     this.B = null;
+    this.Name = "";
+    this.Status = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Status != null && !this.Status.equals(null)) {
+    if (this.A != null && !this.A.equals(null)) {
+      return false;
+    }
+    if (this.B != null && !this.B.equals(null)) {
       return false;
     }
     if (this.Name != null && !this.Name.equals("")) {
       return false;
     }
-    if (this.A != null && !this.A.equals(null)) {
-      return false;
-    }
-    if (this.B != null && !this.B.equals(null)) {
+    if (this.Status != null && !this.Status.equals(null)) {
       return false;
     }
     return true;
@@ -42,21 +42,51 @@ public class HyperparameterConfigDiff implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"HyperparameterConfigDiff\",\"fields\": {"
-        + "\"Status\": "
-        + Status
-        + ", "
-        + "\"Name\": "
-        + "\""
-        + Name
-        + "\""
-        + ", "
-        + "\"A\": "
-        + A
-        + ", "
-        + "\"B\": "
-        + B
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"HyperparameterConfigDiff\", \"fields\": {");
+    boolean first = true;
+    if (this.A != null && !this.A.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"A\": " + A);
+      first = false;
+    }
+    if (this.B != null && !this.B.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"B\": " + B);
+      first = false;
+    }
+    if (this.Name != null && !this.Name.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"Name\": " + "\"" + Name + "\"");
+      first = false;
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Status\": " + Status);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("HyperparameterConfigDiff");
+    if (this.A != null && !this.A.equals(null)) {
+      sb.append("::A::").append(A);
+    }
+    if (this.B != null && !this.B.equals(null)) {
+      sb.append("::B::").append(B);
+    }
+    if (this.Name != null && !this.Name.equals("")) {
+      sb.append("::Name::").append(Name);
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
+      sb.append("::Status::").append(Status);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -67,23 +97,6 @@ public class HyperparameterConfigDiff implements ProtoType {
     if (!(o instanceof HyperparameterConfigDiff)) return false;
     HyperparameterConfigDiff other = (HyperparameterConfigDiff) o;
 
-    {
-      Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
-          (x, y) -> x.equals(y);
-      if (this.Status != null || other.Status != null) {
-        if (this.Status == null && other.Status != null) return false;
-        if (this.Status != null && other.Status == null) return false;
-        if (!f.apply(this.Status, other.Status)) return false;
-      }
-    }
-    {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Name != null || other.Name != null) {
-        if (this.Name == null && other.Name != null) return false;
-        if (this.Name != null && other.Name == null) return false;
-        if (!f.apply(this.Name, other.Name)) return false;
-      }
-    }
     {
       Function3<HyperparameterValuesConfigBlob, HyperparameterValuesConfigBlob, Boolean> f =
           (x, y) -> x.equals(y);
@@ -102,22 +115,29 @@ public class HyperparameterConfigDiff implements ProtoType {
         if (!f.apply(this.B, other.B)) return false;
       }
     }
+    {
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Name != null || other.Name != null) {
+        if (this.Name == null && other.Name != null) return false;
+        if (this.Name != null && other.Name == null) return false;
+        if (!f.apply(this.Name, other.Name)) return false;
+      }
+    }
+    {
+      Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.Status != null || other.Status != null) {
+        if (this.Status == null && other.Status != null) return false;
+        if (this.Status != null && other.Status == null) return false;
+        if (!f.apply(this.Status, other.Status)) return false;
+      }
+    }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Status, this.Name, this.A, this.B);
-  }
-
-  public HyperparameterConfigDiff setStatus(DiffStatusEnumDiffStatus value) {
-    this.Status = Utils.removeEmpty(value);
-    return this;
-  }
-
-  public HyperparameterConfigDiff setName(String value) {
-    this.Name = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.A, this.B, this.Name, this.Status);
   }
 
   public HyperparameterConfigDiff setA(HyperparameterValuesConfigBlob value) {
@@ -130,6 +150,16 @@ public class HyperparameterConfigDiff implements ProtoType {
     return this;
   }
 
+  public HyperparameterConfigDiff setName(String value) {
+    this.Name = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public HyperparameterConfigDiff setStatus(DiffStatusEnumDiffStatus value) {
+    this.Status = Utils.removeEmpty(value);
+    return this;
+  }
+
   public static HyperparameterConfigDiff fromProto(
       ai.verta.modeldb.versioning.HyperparameterConfigDiff blob) {
     if (blob == null) {
@@ -137,16 +167,6 @@ public class HyperparameterConfigDiff implements ProtoType {
     }
 
     HyperparameterConfigDiff obj = new HyperparameterConfigDiff();
-    {
-      Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff, DiffStatusEnumDiffStatus> f =
-          x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
-      obj.Status = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff, String> f =
-          x -> (blob.getName());
-      obj.Name = Utils.removeEmpty(f.apply(blob));
-    }
     {
       Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff, HyperparameterValuesConfigBlob>
           f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getA());
@@ -157,32 +177,22 @@ public class HyperparameterConfigDiff implements ProtoType {
           f = x -> HyperparameterValuesConfigBlob.fromProto(blob.getB());
       obj.B = Utils.removeEmpty(f.apply(blob));
     }
+    {
+      Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff, String> f =
+          x -> (blob.getName());
+      obj.Name = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff, DiffStatusEnumDiffStatus> f =
+          x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
+      obj.Status = Utils.removeEmpty(f.apply(blob));
+    }
     return obj;
   }
 
   public ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder toProto() {
     ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder builder =
         ai.verta.modeldb.versioning.HyperparameterConfigDiff.newBuilder();
-    {
-      if (this.Status != null && !this.Status.equals(null)) {
-        Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder, Void> f =
-            x -> {
-              builder.setStatus(this.Status.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.Name != null && !this.Name.equals("")) {
-        Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder, Void> f =
-            x -> {
-              builder.setName(this.Name);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
     {
       if (this.A != null && !this.A.equals(null)) {
         Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder, Void> f =
@@ -203,6 +213,26 @@ public class HyperparameterConfigDiff implements ProtoType {
         f.apply(builder);
       }
     }
+    {
+      if (this.Name != null && !this.Name.equals("")) {
+        Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder, Void> f =
+            x -> {
+              builder.setName(this.Name);
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Status != null && !this.Status.equals(null)) {
+        Function<ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder, Void> f =
+            x -> {
+              builder.setStatus(this.Status.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -212,10 +242,10 @@ public class HyperparameterConfigDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
-    visitor.preVisitDeepString(this.Name);
     visitor.preVisitDeepHyperparameterValuesConfigBlob(this.A);
     visitor.preVisitDeepHyperparameterValuesConfigBlob(this.B);
+    visitor.preVisitDeepString(this.Name);
+    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
   }
 
   public HyperparameterConfigDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -223,10 +253,10 @@ public class HyperparameterConfigDiff implements ProtoType {
   }
 
   public HyperparameterConfigDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status));
-    this.setName(visitor.postVisitDeepString(this.Name));
     this.setA(visitor.postVisitDeepHyperparameterValuesConfigBlob(this.A));
     this.setB(visitor.postVisitDeepHyperparameterValuesConfigBlob(this.B));
+    this.setName(visitor.postVisitDeepString(this.Name));
+    this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }
 }

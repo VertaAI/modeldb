@@ -27,7 +27,27 @@ public class S3DatasetComponentBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"S3DatasetComponentBlob\",\"fields\": {" + "\"Path\": " + Path + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"S3DatasetComponentBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.Path != null && !this.Path.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Path\": " + Path);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("S3DatasetComponentBlob");
+    if (this.Path != null && !this.Path.equals(null)) {
+      sb.append("::Path::").append(Path);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists

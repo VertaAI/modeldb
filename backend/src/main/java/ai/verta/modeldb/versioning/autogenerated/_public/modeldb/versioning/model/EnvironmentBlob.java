@@ -14,20 +14,20 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class EnvironmentBlob implements ProtoType {
-  public PythonEnvironmentBlob Python;
+  public List<String> CommandLine;
   public DockerEnvironmentBlob Docker;
   public List<EnvironmentVariablesBlob> EnvironmentVariables;
-  public List<String> CommandLine;
+  public PythonEnvironmentBlob Python;
 
   public EnvironmentBlob() {
-    this.Python = null;
+    this.CommandLine = null;
     this.Docker = null;
     this.EnvironmentVariables = null;
-    this.CommandLine = null;
+    this.Python = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Python != null && !this.Python.equals(null)) {
+    if (this.CommandLine != null && !this.CommandLine.equals(null) && !this.CommandLine.isEmpty()) {
       return false;
     }
     if (this.Docker != null && !this.Docker.equals(null)) {
@@ -38,7 +38,7 @@ public class EnvironmentBlob implements ProtoType {
         && !this.EnvironmentVariables.isEmpty()) {
       return false;
     }
-    if (this.CommandLine != null && !this.CommandLine.equals(null) && !this.CommandLine.isEmpty()) {
+    if (this.Python != null && !this.Python.equals(null)) {
       return false;
     }
     return true;
@@ -46,19 +46,55 @@ public class EnvironmentBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"EnvironmentBlob\",\"fields\": {"
-        + "\"Python\": "
-        + Python
-        + ", "
-        + "\"Docker\": "
-        + Docker
-        + ", "
-        + "\"EnvironmentVariables\": "
-        + EnvironmentVariables
-        + ", "
-        + "\"CommandLine\": "
-        + CommandLine
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"EnvironmentBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.CommandLine != null && !this.CommandLine.equals(null) && !this.CommandLine.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"CommandLine\": " + CommandLine);
+      first = false;
+    }
+    if (this.Docker != null && !this.Docker.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Docker\": " + Docker);
+      first = false;
+    }
+    if (this.EnvironmentVariables != null
+        && !this.EnvironmentVariables.equals(null)
+        && !this.EnvironmentVariables.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"EnvironmentVariables\": " + EnvironmentVariables);
+      first = false;
+    }
+    if (this.Python != null && !this.Python.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Python\": " + Python);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("EnvironmentBlob");
+    if (this.CommandLine != null && !this.CommandLine.equals(null) && !this.CommandLine.isEmpty()) {
+      sb.append("::CommandLine::").append(CommandLine);
+    }
+    if (this.Docker != null && !this.Docker.equals(null)) {
+      sb.append("::Docker::").append(Docker);
+    }
+    if (this.EnvironmentVariables != null
+        && !this.EnvironmentVariables.equals(null)
+        && !this.EnvironmentVariables.isEmpty()) {
+      sb.append("::EnvironmentVariables::").append(EnvironmentVariables);
+    }
+    if (this.Python != null && !this.Python.equals(null)) {
+      sb.append("::Python::").append(Python);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -70,11 +106,21 @@ public class EnvironmentBlob implements ProtoType {
     EnvironmentBlob other = (EnvironmentBlob) o;
 
     {
-      Function3<PythonEnvironmentBlob, PythonEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Python != null || other.Python != null) {
-        if (this.Python == null && other.Python != null) return false;
-        if (this.Python != null && other.Python == null) return false;
-        if (!f.apply(this.Python, other.Python)) return false;
+      Function3<List<String>, List<String>, Boolean> f =
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<String, String, Boolean> f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
+      if (this.CommandLine != null || other.CommandLine != null) {
+        if (this.CommandLine == null && other.CommandLine != null) return false;
+        if (this.CommandLine != null && other.CommandLine == null) return false;
+        if (!f.apply(this.CommandLine, other.CommandLine)) return false;
       }
     }
     {
@@ -105,21 +151,11 @@ public class EnvironmentBlob implements ProtoType {
       }
     }
     {
-      Function3<List<String>, List<String>, Boolean> f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<String, String, Boolean> f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
-      if (this.CommandLine != null || other.CommandLine != null) {
-        if (this.CommandLine == null && other.CommandLine != null) return false;
-        if (this.CommandLine != null && other.CommandLine == null) return false;
-        if (!f.apply(this.CommandLine, other.CommandLine)) return false;
+      Function3<PythonEnvironmentBlob, PythonEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Python != null || other.Python != null) {
+        if (this.Python == null && other.Python != null) return false;
+        if (this.Python != null && other.Python == null) return false;
+        if (!f.apply(this.Python, other.Python)) return false;
       }
     }
     return true;
@@ -127,11 +163,11 @@ public class EnvironmentBlob implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Python, this.Docker, this.EnvironmentVariables, this.CommandLine);
+    return Objects.hash(this.CommandLine, this.Docker, this.EnvironmentVariables, this.Python);
   }
 
-  public EnvironmentBlob setPython(PythonEnvironmentBlob value) {
-    this.Python = Utils.removeEmpty(value);
+  public EnvironmentBlob setCommandLine(List<String> value) {
+    this.CommandLine = Utils.removeEmpty(value);
     return this;
   }
 
@@ -145,8 +181,8 @@ public class EnvironmentBlob implements ProtoType {
     return this;
   }
 
-  public EnvironmentBlob setCommandLine(List<String> value) {
-    this.CommandLine = Utils.removeEmpty(value);
+  public EnvironmentBlob setPython(PythonEnvironmentBlob value) {
+    this.Python = Utils.removeEmpty(value);
     return this;
   }
 
@@ -157,9 +193,9 @@ public class EnvironmentBlob implements ProtoType {
 
     EnvironmentBlob obj = new EnvironmentBlob();
     {
-      Function<ai.verta.modeldb.versioning.EnvironmentBlob, PythonEnvironmentBlob> f =
-          x -> PythonEnvironmentBlob.fromProto(blob.getPython());
-      obj.Python = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.EnvironmentBlob, List<String>> f =
+          x -> blob.getCommandLineList();
+      obj.CommandLine = Utils.removeEmpty(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentBlob, DockerEnvironmentBlob> f =
@@ -175,9 +211,9 @@ public class EnvironmentBlob implements ProtoType {
       obj.EnvironmentVariables = Utils.removeEmpty(f.apply(blob));
     }
     {
-      Function<ai.verta.modeldb.versioning.EnvironmentBlob, List<String>> f =
-          x -> blob.getCommandLineList();
-      obj.CommandLine = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.EnvironmentBlob, PythonEnvironmentBlob> f =
+          x -> PythonEnvironmentBlob.fromProto(blob.getPython());
+      obj.Python = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -186,10 +222,12 @@ public class EnvironmentBlob implements ProtoType {
     ai.verta.modeldb.versioning.EnvironmentBlob.Builder builder =
         ai.verta.modeldb.versioning.EnvironmentBlob.newBuilder();
     {
-      if (this.Python != null && !this.Python.equals(null)) {
+      if (this.CommandLine != null
+          && !this.CommandLine.equals(null)
+          && !this.CommandLine.isEmpty()) {
         Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder, Void> f =
             x -> {
-              builder.setPython(this.Python.toProto());
+              builder.addAllCommandLine(this.CommandLine);
               return null;
             };
         f.apply(builder);
@@ -221,12 +259,10 @@ public class EnvironmentBlob implements ProtoType {
       }
     }
     {
-      if (this.CommandLine != null
-          && !this.CommandLine.equals(null)
-          && !this.CommandLine.isEmpty()) {
+      if (this.Python != null && !this.Python.equals(null)) {
         Function<ai.verta.modeldb.versioning.EnvironmentBlob.Builder, Void> f =
             x -> {
-              builder.addAllCommandLine(this.CommandLine);
+              builder.setPython(this.Python.toProto());
               return null;
             };
         f.apply(builder);
@@ -241,10 +277,10 @@ public class EnvironmentBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepPythonEnvironmentBlob(this.Python);
+    visitor.preVisitDeepListOfString(this.CommandLine);
     visitor.preVisitDeepDockerEnvironmentBlob(this.Docker);
     visitor.preVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariables);
-    visitor.preVisitDeepListOfString(this.CommandLine);
+    visitor.preVisitDeepPythonEnvironmentBlob(this.Python);
   }
 
   public EnvironmentBlob postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -252,11 +288,11 @@ public class EnvironmentBlob implements ProtoType {
   }
 
   public EnvironmentBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setPython(visitor.postVisitDeepPythonEnvironmentBlob(this.Python));
+    this.setCommandLine(visitor.postVisitDeepListOfString(this.CommandLine));
     this.setDocker(visitor.postVisitDeepDockerEnvironmentBlob(this.Docker));
     this.setEnvironmentVariables(
         visitor.postVisitDeepListOfEnvironmentVariablesBlob(this.EnvironmentVariables));
-    this.setCommandLine(visitor.postVisitDeepListOfString(this.CommandLine));
+    this.setPython(visitor.postVisitDeepPythonEnvironmentBlob(this.Python));
     return this.postVisitShallow(visitor);
   }
 }

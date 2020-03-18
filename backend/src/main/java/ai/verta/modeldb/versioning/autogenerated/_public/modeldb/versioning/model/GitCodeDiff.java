@@ -12,24 +12,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class GitCodeDiff implements ProtoType {
-  public DiffStatusEnumDiffStatus Status;
   public GitCodeBlob A;
   public GitCodeBlob B;
+  public DiffStatusEnumDiffStatus Status;
 
   public GitCodeDiff() {
-    this.Status = null;
     this.A = null;
     this.B = null;
+    this.Status = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Status != null && !this.Status.equals(null)) {
-      return false;
-    }
     if (this.A != null && !this.A.equals(null)) {
       return false;
     }
     if (this.B != null && !this.B.equals(null)) {
+      return false;
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
       return false;
     }
     return true;
@@ -37,16 +37,43 @@ public class GitCodeDiff implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"GitCodeDiff\",\"fields\": {"
-        + "\"Status\": "
-        + Status
-        + ", "
-        + "\"A\": "
-        + A
-        + ", "
-        + "\"B\": "
-        + B
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"GitCodeDiff\", \"fields\": {");
+    boolean first = true;
+    if (this.A != null && !this.A.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"A\": " + A);
+      first = false;
+    }
+    if (this.B != null && !this.B.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"B\": " + B);
+      first = false;
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Status\": " + Status);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("GitCodeDiff");
+    if (this.A != null && !this.A.equals(null)) {
+      sb.append("::A::").append(A);
+    }
+    if (this.B != null && !this.B.equals(null)) {
+      sb.append("::B::").append(B);
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
+      sb.append("::Status::").append(Status);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -57,15 +84,6 @@ public class GitCodeDiff implements ProtoType {
     if (!(o instanceof GitCodeDiff)) return false;
     GitCodeDiff other = (GitCodeDiff) o;
 
-    {
-      Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
-          (x, y) -> x.equals(y);
-      if (this.Status != null || other.Status != null) {
-        if (this.Status == null && other.Status != null) return false;
-        if (this.Status != null && other.Status == null) return false;
-        if (!f.apply(this.Status, other.Status)) return false;
-      }
-    }
     {
       Function3<GitCodeBlob, GitCodeBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.A != null || other.A != null) {
@@ -82,17 +100,21 @@ public class GitCodeDiff implements ProtoType {
         if (!f.apply(this.B, other.B)) return false;
       }
     }
+    {
+      Function3<DiffStatusEnumDiffStatus, DiffStatusEnumDiffStatus, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.Status != null || other.Status != null) {
+        if (this.Status == null && other.Status != null) return false;
+        if (this.Status != null && other.Status == null) return false;
+        if (!f.apply(this.Status, other.Status)) return false;
+      }
+    }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Status, this.A, this.B);
-  }
-
-  public GitCodeDiff setStatus(DiffStatusEnumDiffStatus value) {
-    this.Status = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.A, this.B, this.Status);
   }
 
   public GitCodeDiff setA(GitCodeBlob value) {
@@ -105,17 +127,17 @@ public class GitCodeDiff implements ProtoType {
     return this;
   }
 
+  public GitCodeDiff setStatus(DiffStatusEnumDiffStatus value) {
+    this.Status = Utils.removeEmpty(value);
+    return this;
+  }
+
   public static GitCodeDiff fromProto(ai.verta.modeldb.versioning.GitCodeDiff blob) {
     if (blob == null) {
       return null;
     }
 
     GitCodeDiff obj = new GitCodeDiff();
-    {
-      Function<ai.verta.modeldb.versioning.GitCodeDiff, DiffStatusEnumDiffStatus> f =
-          x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
-      obj.Status = Utils.removeEmpty(f.apply(blob));
-    }
     {
       Function<ai.verta.modeldb.versioning.GitCodeDiff, GitCodeBlob> f =
           x -> GitCodeBlob.fromProto(blob.getA());
@@ -126,22 +148,17 @@ public class GitCodeDiff implements ProtoType {
           x -> GitCodeBlob.fromProto(blob.getB());
       obj.B = Utils.removeEmpty(f.apply(blob));
     }
+    {
+      Function<ai.verta.modeldb.versioning.GitCodeDiff, DiffStatusEnumDiffStatus> f =
+          x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
+      obj.Status = Utils.removeEmpty(f.apply(blob));
+    }
     return obj;
   }
 
   public ai.verta.modeldb.versioning.GitCodeDiff.Builder toProto() {
     ai.verta.modeldb.versioning.GitCodeDiff.Builder builder =
         ai.verta.modeldb.versioning.GitCodeDiff.newBuilder();
-    {
-      if (this.Status != null && !this.Status.equals(null)) {
-        Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder, Void> f =
-            x -> {
-              builder.setStatus(this.Status.toProto());
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
     {
       if (this.A != null && !this.A.equals(null)) {
         Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder, Void> f =
@@ -162,6 +179,16 @@ public class GitCodeDiff implements ProtoType {
         f.apply(builder);
       }
     }
+    {
+      if (this.Status != null && !this.Status.equals(null)) {
+        Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder, Void> f =
+            x -> {
+              builder.setStatus(this.Status.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -171,9 +198,9 @@ public class GitCodeDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
     visitor.preVisitDeepGitCodeBlob(this.A);
     visitor.preVisitDeepGitCodeBlob(this.B);
+    visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
   }
 
   public GitCodeDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -181,9 +208,9 @@ public class GitCodeDiff implements ProtoType {
   }
 
   public GitCodeDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status));
     this.setA(visitor.postVisitDeepGitCodeBlob(this.A));
     this.setB(visitor.postVisitDeepGitCodeBlob(this.B));
+    this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }
 }

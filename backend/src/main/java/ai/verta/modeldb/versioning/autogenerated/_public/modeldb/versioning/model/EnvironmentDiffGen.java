@@ -20,7 +20,8 @@ public class EnvironmentDiffGen extends Generator<EnvironmentDiff> {
 
     EnvironmentDiff obj = new EnvironmentDiff();
     if (r.nextBoolean()) {
-      obj.setPython(Utils.removeEmpty(gen().type(PythonEnvironmentDiff.class).generate(r, status)));
+      obj.setCommandLine(
+          Utils.removeEmpty(gen().type(CommandLineEnvironmentDiff.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setDocker(Utils.removeEmpty(gen().type(DockerEnvironmentDiff.class).generate(r, status)));
@@ -34,8 +35,7 @@ public class EnvironmentDiffGen extends Generator<EnvironmentDiff> {
       obj.setEnvironmentVariables(Utils.removeEmpty(ret));
     }
     if (r.nextBoolean()) {
-      obj.setCommandLine(
-          Utils.removeEmpty(gen().type(CommandLineEnvironmentDiff.class).generate(r, status)));
+      obj.setPython(Utils.removeEmpty(gen().type(PythonEnvironmentDiff.class).generate(r, status)));
     }
     return obj;
   }

@@ -12,21 +12,21 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterValuesConfigBlob implements ProtoType {
-  public Long IntValue;
   public Float FloatValue;
+  public Long IntValue;
   public String StringValue;
 
   public HyperparameterValuesConfigBlob() {
-    this.IntValue = 0l;
     this.FloatValue = 0.f;
+    this.IntValue = 0l;
     this.StringValue = "";
   }
 
   public Boolean isEmpty() {
-    if (this.IntValue != null && !this.IntValue.equals(0l)) {
+    if (this.FloatValue != null && !this.FloatValue.equals(0.f)) {
       return false;
     }
-    if (this.FloatValue != null && !this.FloatValue.equals(0.f)) {
+    if (this.IntValue != null && !this.IntValue.equals(0l)) {
       return false;
     }
     if (this.StringValue != null && !this.StringValue.equals("")) {
@@ -37,18 +37,43 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"HyperparameterValuesConfigBlob\",\"fields\": {"
-        + "\"IntValue\": "
-        + IntValue
-        + ", "
-        + "\"FloatValue\": "
-        + FloatValue
-        + ", "
-        + "\"StringValue\": "
-        + "\""
-        + StringValue
-        + "\""
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"HyperparameterValuesConfigBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.FloatValue != null && !this.FloatValue.equals(0.f)) {
+      if (!first) sb.append(", ");
+      sb.append("\"FloatValue\": " + FloatValue);
+      first = false;
+    }
+    if (this.IntValue != null && !this.IntValue.equals(0l)) {
+      if (!first) sb.append(", ");
+      sb.append("\"IntValue\": " + IntValue);
+      first = false;
+    }
+    if (this.StringValue != null && !this.StringValue.equals("")) {
+      if (!first) sb.append(", ");
+      sb.append("\"StringValue\": " + "\"" + StringValue + "\"");
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("HyperparameterValuesConfigBlob");
+    if (this.FloatValue != null && !this.FloatValue.equals(0.f)) {
+      sb.append("::FloatValue::").append(FloatValue);
+    }
+    if (this.IntValue != null && !this.IntValue.equals(0l)) {
+      sb.append("::IntValue::").append(IntValue);
+    }
+    if (this.StringValue != null && !this.StringValue.equals("")) {
+      sb.append("::StringValue::").append(StringValue);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -60,19 +85,19 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
     HyperparameterValuesConfigBlob other = (HyperparameterValuesConfigBlob) o;
 
     {
-      Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
-      if (this.IntValue != null || other.IntValue != null) {
-        if (this.IntValue == null && other.IntValue != null) return false;
-        if (this.IntValue != null && other.IntValue == null) return false;
-        if (!f.apply(this.IntValue, other.IntValue)) return false;
-      }
-    }
-    {
       Function3<Float, Float, Boolean> f = (x, y) -> x.equals(y);
       if (this.FloatValue != null || other.FloatValue != null) {
         if (this.FloatValue == null && other.FloatValue != null) return false;
         if (this.FloatValue != null && other.FloatValue == null) return false;
         if (!f.apply(this.FloatValue, other.FloatValue)) return false;
+      }
+    }
+    {
+      Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
+      if (this.IntValue != null || other.IntValue != null) {
+        if (this.IntValue == null && other.IntValue != null) return false;
+        if (this.IntValue != null && other.IntValue == null) return false;
+        if (!f.apply(this.IntValue, other.IntValue)) return false;
       }
     }
     {
@@ -88,16 +113,16 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.IntValue, this.FloatValue, this.StringValue);
-  }
-
-  public HyperparameterValuesConfigBlob setIntValue(Long value) {
-    this.IntValue = Utils.removeEmpty(value);
-    return this;
+    return Objects.hash(this.FloatValue, this.IntValue, this.StringValue);
   }
 
   public HyperparameterValuesConfigBlob setFloatValue(Float value) {
     this.FloatValue = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public HyperparameterValuesConfigBlob setIntValue(Long value) {
+    this.IntValue = Utils.removeEmpty(value);
     return this;
   }
 
@@ -114,14 +139,14 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
 
     HyperparameterValuesConfigBlob obj = new HyperparameterValuesConfigBlob();
     {
-      Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob, Long> f =
-          x -> (blob.getIntValue());
-      obj.IntValue = Utils.removeEmpty(f.apply(blob));
-    }
-    {
       Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob, Float> f =
           x -> (blob.getFloatValue());
       obj.FloatValue = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob, Long> f =
+          x -> (blob.getIntValue());
+      obj.IntValue = Utils.removeEmpty(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob, String> f =
@@ -135,20 +160,20 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
     ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder builder =
         ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.newBuilder();
     {
-      if (this.IntValue != null && !this.IntValue.equals(0l)) {
+      if (this.FloatValue != null && !this.FloatValue.equals(0.f)) {
         Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder, Void> f =
             x -> {
-              builder.setIntValue(this.IntValue);
+              builder.setFloatValue(this.FloatValue);
               return null;
             };
         f.apply(builder);
       }
     }
     {
-      if (this.FloatValue != null && !this.FloatValue.equals(0.f)) {
+      if (this.IntValue != null && !this.IntValue.equals(0l)) {
         Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.Builder, Void> f =
             x -> {
-              builder.setFloatValue(this.FloatValue);
+              builder.setIntValue(this.IntValue);
               return null;
             };
         f.apply(builder);
@@ -173,8 +198,8 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepLong(this.IntValue);
     visitor.preVisitDeepFloat(this.FloatValue);
+    visitor.preVisitDeepLong(this.IntValue);
     visitor.preVisitDeepString(this.StringValue);
   }
 
@@ -183,8 +208,8 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
   }
 
   public HyperparameterValuesConfigBlob postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setIntValue(visitor.postVisitDeepLong(this.IntValue));
     this.setFloatValue(visitor.postVisitDeepFloat(this.FloatValue));
+    this.setIntValue(visitor.postVisitDeepLong(this.IntValue));
     this.setStringValue(visitor.postVisitDeepString(this.StringValue));
     return this.postVisitShallow(visitor);
   }

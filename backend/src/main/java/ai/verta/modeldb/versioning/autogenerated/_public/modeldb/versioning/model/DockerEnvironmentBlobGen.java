@@ -23,10 +23,10 @@ public class DockerEnvironmentBlobGen extends Generator<DockerEnvironmentBlob> {
       obj.setRepository(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setTag(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setSha(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setSha(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setTag(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     return obj;
   }

@@ -14,20 +14,20 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class EnvironmentDiff implements ProtoType {
-  public PythonEnvironmentDiff Python;
+  public CommandLineEnvironmentDiff CommandLine;
   public DockerEnvironmentDiff Docker;
   public List<EnvironmentVariablesDiff> EnvironmentVariables;
-  public CommandLineEnvironmentDiff CommandLine;
+  public PythonEnvironmentDiff Python;
 
   public EnvironmentDiff() {
-    this.Python = null;
+    this.CommandLine = null;
     this.Docker = null;
     this.EnvironmentVariables = null;
-    this.CommandLine = null;
+    this.Python = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Python != null && !this.Python.equals(null)) {
+    if (this.CommandLine != null && !this.CommandLine.equals(null)) {
       return false;
     }
     if (this.Docker != null && !this.Docker.equals(null)) {
@@ -38,7 +38,7 @@ public class EnvironmentDiff implements ProtoType {
         && !this.EnvironmentVariables.isEmpty()) {
       return false;
     }
-    if (this.CommandLine != null && !this.CommandLine.equals(null)) {
+    if (this.Python != null && !this.Python.equals(null)) {
       return false;
     }
     return true;
@@ -46,19 +46,55 @@ public class EnvironmentDiff implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"EnvironmentDiff\",\"fields\": {"
-        + "\"Python\": "
-        + Python
-        + ", "
-        + "\"Docker\": "
-        + Docker
-        + ", "
-        + "\"EnvironmentVariables\": "
-        + EnvironmentVariables
-        + ", "
-        + "\"CommandLine\": "
-        + CommandLine
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"EnvironmentDiff\", \"fields\": {");
+    boolean first = true;
+    if (this.CommandLine != null && !this.CommandLine.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"CommandLine\": " + CommandLine);
+      first = false;
+    }
+    if (this.Docker != null && !this.Docker.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Docker\": " + Docker);
+      first = false;
+    }
+    if (this.EnvironmentVariables != null
+        && !this.EnvironmentVariables.equals(null)
+        && !this.EnvironmentVariables.isEmpty()) {
+      if (!first) sb.append(", ");
+      sb.append("\"EnvironmentVariables\": " + EnvironmentVariables);
+      first = false;
+    }
+    if (this.Python != null && !this.Python.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Python\": " + Python);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("EnvironmentDiff");
+    if (this.CommandLine != null && !this.CommandLine.equals(null)) {
+      sb.append("::CommandLine::").append(CommandLine);
+    }
+    if (this.Docker != null && !this.Docker.equals(null)) {
+      sb.append("::Docker::").append(Docker);
+    }
+    if (this.EnvironmentVariables != null
+        && !this.EnvironmentVariables.equals(null)
+        && !this.EnvironmentVariables.isEmpty()) {
+      sb.append("::EnvironmentVariables::").append(EnvironmentVariables);
+    }
+    if (this.Python != null && !this.Python.equals(null)) {
+      sb.append("::Python::").append(Python);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
@@ -70,11 +106,12 @@ public class EnvironmentDiff implements ProtoType {
     EnvironmentDiff other = (EnvironmentDiff) o;
 
     {
-      Function3<PythonEnvironmentDiff, PythonEnvironmentDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Python != null || other.Python != null) {
-        if (this.Python == null && other.Python != null) return false;
-        if (this.Python != null && other.Python == null) return false;
-        if (!f.apply(this.Python, other.Python)) return false;
+      Function3<CommandLineEnvironmentDiff, CommandLineEnvironmentDiff, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.CommandLine != null || other.CommandLine != null) {
+        if (this.CommandLine == null && other.CommandLine != null) return false;
+        if (this.CommandLine != null && other.CommandLine == null) return false;
+        if (!f.apply(this.CommandLine, other.CommandLine)) return false;
       }
     }
     {
@@ -105,12 +142,11 @@ public class EnvironmentDiff implements ProtoType {
       }
     }
     {
-      Function3<CommandLineEnvironmentDiff, CommandLineEnvironmentDiff, Boolean> f =
-          (x, y) -> x.equals(y);
-      if (this.CommandLine != null || other.CommandLine != null) {
-        if (this.CommandLine == null && other.CommandLine != null) return false;
-        if (this.CommandLine != null && other.CommandLine == null) return false;
-        if (!f.apply(this.CommandLine, other.CommandLine)) return false;
+      Function3<PythonEnvironmentDiff, PythonEnvironmentDiff, Boolean> f = (x, y) -> x.equals(y);
+      if (this.Python != null || other.Python != null) {
+        if (this.Python == null && other.Python != null) return false;
+        if (this.Python != null && other.Python == null) return false;
+        if (!f.apply(this.Python, other.Python)) return false;
       }
     }
     return true;
@@ -118,11 +154,11 @@ public class EnvironmentDiff implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Python, this.Docker, this.EnvironmentVariables, this.CommandLine);
+    return Objects.hash(this.CommandLine, this.Docker, this.EnvironmentVariables, this.Python);
   }
 
-  public EnvironmentDiff setPython(PythonEnvironmentDiff value) {
-    this.Python = Utils.removeEmpty(value);
+  public EnvironmentDiff setCommandLine(CommandLineEnvironmentDiff value) {
+    this.CommandLine = Utils.removeEmpty(value);
     return this;
   }
 
@@ -136,8 +172,8 @@ public class EnvironmentDiff implements ProtoType {
     return this;
   }
 
-  public EnvironmentDiff setCommandLine(CommandLineEnvironmentDiff value) {
-    this.CommandLine = Utils.removeEmpty(value);
+  public EnvironmentDiff setPython(PythonEnvironmentDiff value) {
+    this.Python = Utils.removeEmpty(value);
     return this;
   }
 
@@ -148,9 +184,9 @@ public class EnvironmentDiff implements ProtoType {
 
     EnvironmentDiff obj = new EnvironmentDiff();
     {
-      Function<ai.verta.modeldb.versioning.EnvironmentDiff, PythonEnvironmentDiff> f =
-          x -> PythonEnvironmentDiff.fromProto(blob.getPython());
-      obj.Python = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.EnvironmentDiff, CommandLineEnvironmentDiff> f =
+          x -> CommandLineEnvironmentDiff.fromProto(blob.getCommandLine());
+      obj.CommandLine = Utils.removeEmpty(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentDiff, DockerEnvironmentDiff> f =
@@ -166,9 +202,9 @@ public class EnvironmentDiff implements ProtoType {
       obj.EnvironmentVariables = Utils.removeEmpty(f.apply(blob));
     }
     {
-      Function<ai.verta.modeldb.versioning.EnvironmentDiff, CommandLineEnvironmentDiff> f =
-          x -> CommandLineEnvironmentDiff.fromProto(blob.getCommandLine());
-      obj.CommandLine = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.EnvironmentDiff, PythonEnvironmentDiff> f =
+          x -> PythonEnvironmentDiff.fromProto(blob.getPython());
+      obj.Python = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -177,10 +213,10 @@ public class EnvironmentDiff implements ProtoType {
     ai.verta.modeldb.versioning.EnvironmentDiff.Builder builder =
         ai.verta.modeldb.versioning.EnvironmentDiff.newBuilder();
     {
-      if (this.Python != null && !this.Python.equals(null)) {
+      if (this.CommandLine != null && !this.CommandLine.equals(null)) {
         Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder, Void> f =
             x -> {
-              builder.setPython(this.Python.toProto());
+              builder.setCommandLine(this.CommandLine.toProto());
               return null;
             };
         f.apply(builder);
@@ -212,10 +248,10 @@ public class EnvironmentDiff implements ProtoType {
       }
     }
     {
-      if (this.CommandLine != null && !this.CommandLine.equals(null)) {
+      if (this.Python != null && !this.Python.equals(null)) {
         Function<ai.verta.modeldb.versioning.EnvironmentDiff.Builder, Void> f =
             x -> {
-              builder.setCommandLine(this.CommandLine.toProto());
+              builder.setPython(this.Python.toProto());
               return null;
             };
         f.apply(builder);
@@ -230,10 +266,10 @@ public class EnvironmentDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepPythonEnvironmentDiff(this.Python);
+    visitor.preVisitDeepCommandLineEnvironmentDiff(this.CommandLine);
     visitor.preVisitDeepDockerEnvironmentDiff(this.Docker);
     visitor.preVisitDeepListOfEnvironmentVariablesDiff(this.EnvironmentVariables);
-    visitor.preVisitDeepCommandLineEnvironmentDiff(this.CommandLine);
+    visitor.preVisitDeepPythonEnvironmentDiff(this.Python);
   }
 
   public EnvironmentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -241,11 +277,11 @@ public class EnvironmentDiff implements ProtoType {
   }
 
   public EnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setPython(visitor.postVisitDeepPythonEnvironmentDiff(this.Python));
+    this.setCommandLine(visitor.postVisitDeepCommandLineEnvironmentDiff(this.CommandLine));
     this.setDocker(visitor.postVisitDeepDockerEnvironmentDiff(this.Docker));
     this.setEnvironmentVariables(
         visitor.postVisitDeepListOfEnvironmentVariablesDiff(this.EnvironmentVariables));
-    this.setCommandLine(visitor.postVisitDeepCommandLineEnvironmentDiff(this.CommandLine));
+    this.setPython(visitor.postVisitDeepPythonEnvironmentDiff(this.Python));
     return this.postVisitShallow(visitor);
   }
 }

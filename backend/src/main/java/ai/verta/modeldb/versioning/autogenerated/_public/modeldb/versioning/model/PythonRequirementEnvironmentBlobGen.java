@@ -21,10 +21,10 @@ public class PythonRequirementEnvironmentBlobGen
 
     PythonRequirementEnvironmentBlob obj = new PythonRequirementEnvironmentBlob();
     if (r.nextBoolean()) {
-      obj.setLibrary(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setConstraint(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setConstraint(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setLibrary(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setVersion(

@@ -20,19 +20,19 @@ public class PathDatasetComponentBlobGen extends Generator<PathDatasetComponentB
 
     PathDatasetComponentBlob obj = new PathDatasetComponentBlob();
     if (r.nextBoolean()) {
-      obj.setPath(Utils.removeEmpty(new StringGenerator().generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setSize(Utils.removeEmpty(gen().type(Long.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setLastModifiedAtSource(Utils.removeEmpty(gen().type(Long.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setMd5(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setPath(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setSha256(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setMd5(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setSize(Utils.removeEmpty(gen().type(Long.class).generate(r, status)));
     }
     return obj;
   }

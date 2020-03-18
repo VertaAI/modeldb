@@ -20,14 +20,14 @@ public class GitCodeDiffGen extends Generator<GitCodeDiff> {
 
     GitCodeDiff obj = new GitCodeDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setA(Utils.removeEmpty(gen().type(GitCodeBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setB(Utils.removeEmpty(gen().type(GitCodeBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     return obj;
   }

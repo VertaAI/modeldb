@@ -21,10 +21,6 @@ public class PythonRequirementEnvironmentDiffGen
 
     PythonRequirementEnvironmentDiff obj = new PythonRequirementEnvironmentDiff();
     if (r.nextBoolean()) {
-      obj.setStatus(
-          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
       obj.setA(
           Utils.removeEmpty(
               gen().type(PythonRequirementEnvironmentBlob.class).generate(r, status)));
@@ -33,6 +29,10 @@ public class PythonRequirementEnvironmentDiffGen
       obj.setB(
           Utils.removeEmpty(
               gen().type(PythonRequirementEnvironmentBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(DiffStatusEnumDiffStatus.class).generate(r, status)));
     }
     return obj;
   }

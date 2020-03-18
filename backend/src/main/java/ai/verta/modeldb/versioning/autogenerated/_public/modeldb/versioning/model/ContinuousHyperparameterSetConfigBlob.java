@@ -37,16 +37,43 @@ public class ContinuousHyperparameterSetConfigBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"ContinuousHyperparameterSetConfigBlob\",\"fields\": {"
-        + "\"IntervalBegin\": "
-        + IntervalBegin
-        + ", "
-        + "\"IntervalEnd\": "
-        + IntervalEnd
-        + ", "
-        + "\"IntervalStep\": "
-        + IntervalStep
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"ContinuousHyperparameterSetConfigBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.IntervalBegin != null && !this.IntervalBegin.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"IntervalBegin\": " + IntervalBegin);
+      first = false;
+    }
+    if (this.IntervalEnd != null && !this.IntervalEnd.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"IntervalEnd\": " + IntervalEnd);
+      first = false;
+    }
+    if (this.IntervalStep != null && !this.IntervalStep.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"IntervalStep\": " + IntervalStep);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("ContinuousHyperparameterSetConfigBlob");
+    if (this.IntervalBegin != null && !this.IntervalBegin.equals(null)) {
+      sb.append("::IntervalBegin::").append(IntervalBegin);
+    }
+    if (this.IntervalEnd != null && !this.IntervalEnd.equals(null)) {
+      sb.append("::IntervalEnd::").append(IntervalEnd);
+    }
+    if (this.IntervalStep != null && !this.IntervalStep.equals(null)) {
+      sb.append("::IntervalStep::").append(IntervalStep);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists

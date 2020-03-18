@@ -32,13 +32,35 @@ public class CodeBlob implements ProtoType {
 
   @Override
   public String toString() {
-    return "{\"class\": \"CodeBlob\",\"fields\": {"
-        + "\"Git\": "
-        + Git
-        + ", "
-        + "\"Notebook\": "
-        + Notebook
-        + "}}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"class\": \"CodeBlob\", \"fields\": {");
+    boolean first = true;
+    if (this.Git != null && !this.Git.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Git\": " + Git);
+      first = false;
+    }
+    if (this.Notebook != null && !this.Notebook.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Notebook\": " + Notebook);
+      first = false;
+    }
+    sb.append("}}");
+    return sb.toString();
+  }
+
+  // TODO: actually hash
+  public String getSHA() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("CodeBlob");
+    if (this.Git != null && !this.Git.equals(null)) {
+      sb.append("::Git::").append(Git);
+    }
+    if (this.Notebook != null && !this.Notebook.equals(null)) {
+      sb.append("::Notebook::").append(Notebook);
+    }
+
+    return sb.toString();
   }
 
   // TODO: not consider order on lists
