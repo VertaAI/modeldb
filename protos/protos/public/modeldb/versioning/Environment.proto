@@ -54,9 +54,13 @@ message EnvironmentDiff {
     // Should only contain environment variables unique to A/B (considering all fields)
     repeated EnvironmentVariablesDiff environment_variables = 3;
 
-    DiffStatusEnum.DiffStatus command_line_status = 4;
-    repeated string command_line_a = 5;
-    repeated string command_line_b = 6;
+    CommandLineEnvironmentDiff command_line = 4;
+}
+
+message CommandLineEnvironmentDiff {
+    DiffStatusEnum.DiffStatus status = 1;
+    repeated string A = 2;
+    repeated string B = 3;
 }
 
 message EnvironmentVariablesDiff {
@@ -72,13 +76,17 @@ message PythonRequirementEnvironmentDiff {
     PythonRequirementEnvironmentBlob B = 3;
 }
 
-message PythonEnvironmentDiff {
-    DiffStatusEnum.DiffStatus version_status = 1;
-    VersionEnvironmentBlob version_a = 2;
-    VersionEnvironmentBlob version_b = 3;
+message VersionEnvironmentDiff {
+    DiffStatusEnum.DiffStatus status = 1;
+    VersionEnvironmentBlob A = 2;
+    VersionEnvironmentBlob B = 3;
+}
 
-    repeated PythonRequirementEnvironmentDiff requirements = 4;
-    repeated PythonRequirementEnvironmentDiff constraints = 5;
+message PythonEnvironmentDiff {
+    VersionEnvironmentDiff version = 1;
+
+    repeated PythonRequirementEnvironmentDiff requirements = 2;
+    repeated PythonRequirementEnvironmentDiff constraints = 3;
 }
 
 message DockerEnvironmentDiff {

@@ -225,20 +225,20 @@ public class DiffMerger {
                     x -> x.Name,
                     DiffMerger::mergeEnvironmentVariables))
             .setCommandLine(
-                mergeLast(
-                    Utils.getOrNull(a, x -> x.CommandLine),
-                    d,
-                    x -> x.CommandLineB,
-                    x -> x.CommandLineStatus)));
+                    merge(a, d, x-> x.CommandLine, x -> x.CommandLine, DiffMerger::mergeCommandLine))
+    );
+  }
+
+  public static List<String> mergeCommandLine(
+          List<String> a, CommandLineEnvironmentDiff d) {
+    return Utils.removeEmpty(mergeLast(a, d, x -> x.B, x -> x.Status));
   }
 
   public static PythonEnvironmentBlob mergePythonEnvironment(
       PythonEnvironmentBlob a, PythonEnvironmentDiff d) {
     return Utils.removeEmpty(
         new PythonEnvironmentBlob()
-            .setVersion(
-                mergeLast(
-                    Utils.getOrNull(a, x -> x.Version), d, x -> x.VersionB, x -> x.VersionStatus))
+            .setVersion(merge(a, d, x -> x.Version, x -> x.Version, DiffMerger::mergeVersionEnvironment))
             .setConstraints(
                 mergeList(
                     a,
@@ -257,6 +257,11 @@ public class DiffMerger {
                     x -> x.Library,
                     x -> Utils.getOrNull(x.B, y -> y.Library),
                     DiffMerger::mergePythonRequirementEnvironment)));
+  }
+
+  public static VersionEnvironmentBlob mergeVersionEnvironment(
+      VersionEnvironmentBlob a, VersionEnvironmentDiff d) {
+    return Utils.removeEmpty(mergeLast(a, d, x -> x.B, x -> x.Status));
   }
 
   public static PythonRequirementEnvironmentBlob mergePythonRequirementEnvironment(

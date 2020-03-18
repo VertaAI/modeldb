@@ -229,11 +229,9 @@ public class DiffComputer {
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
         new EnvironmentDiff()
-            .setCommandLineA(Utils.getOrNull(a, x -> x.CommandLine))
-            .setCommandLineB(Utils.getOrNull(b, x -> x.CommandLine))
-            .setCommandLineStatus(
-                getStatus(
-                    Utils.getOrNull(a, x -> x.CommandLine), Utils.getOrNull(b, x -> x.CommandLine)))
+            .setCommandLine(
+                computeDiff(
+                    a, b, x -> x.CommandLine, DiffComputer::computeCommandLineEnvironmentDiff))
             .setDocker(computeDiff(a, b, x -> x.Docker, DiffComputer::computeDockerEnvironmentDiff))
             .setPython(computeDiff(a, b, x -> x.Python, DiffComputer::computePythonEnvironmentDiff))
             .setEnvironmentVariables(
@@ -243,6 +241,14 @@ public class DiffComputer {
                     x -> x.EnvironmentVariables,
                     x -> x.Name,
                     DiffComputer::computeEnvironmentVariablesDiff)));
+  }
+
+  public static CommandLineEnvironmentDiff computeCommandLineEnvironmentDiff(
+      List<String> a, List<String> b) {
+    if (a == null && b == null) return null;
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    return Utils.removeEmpty(
+        new CommandLineEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static DockerEnvironmentDiff computeDockerEnvironmentDiff(
@@ -258,10 +264,9 @@ public class DiffComputer {
     if (a.equals(b)) return null;
     return Utils.removeEmpty(
         new PythonEnvironmentDiff()
-            .setVersionA(Utils.getOrNull(a, x -> x.Version))
-            .setVersionB(Utils.getOrNull(b, x -> x.Version))
-            .setVersionStatus(
-                getStatus(Utils.getOrNull(a, x -> x.Version), Utils.getOrNull(b, x -> x.Version)))
+            .setVersion(
+                computeDiff(
+                    a, b, x -> x.Version, DiffComputer::computeVersionEnvironmentDiff))
             .setConstraints(
                 computeListDiff(
                     a,
@@ -276,6 +281,14 @@ public class DiffComputer {
                     x -> x.Requirements,
                     x -> x.Library,
                     DiffComputer::computePythonRequirementEnvironmentDiff)));
+  }
+
+  public static VersionEnvironmentDiff computeVersionEnvironmentDiff(
+      VersionEnvironmentBlob a, VersionEnvironmentBlob b) {
+    if (a == null && b == null) return null;
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    return Utils.removeEmpty(
+        new VersionEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static PythonRequirementEnvironmentDiff computePythonRequirementEnvironmentDiff(

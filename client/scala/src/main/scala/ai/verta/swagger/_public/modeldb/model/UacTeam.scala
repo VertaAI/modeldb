@@ -32,8 +32,8 @@ case class UacTeam (
   short_name: Option[String] = None,
   description: Option[String] = None,
   owner_id: Option[String] = None,
-  created_timestamp: Option[String] = None,
-  updated_timestamp: Option[String] = None
+  created_timestamp: Option[] = None,
+  updated_timestamp: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = UacTeam.toJson(this)
 }
@@ -48,8 +48,8 @@ object UacTeam {
         obj.short_name.map(x => JField("short_name", JString(x))),
         obj.description.map(x => JField("description", JString(x))),
         obj.owner_id.map(x => JField("owner_id", JString(x))),
-        obj.created_timestamp.map(x => JField("created_timestamp", JString(x))),
-        obj.updated_timestamp.map(x => JField("updated_timestamp", JString(x)))
+        obj.created_timestamp.map(x => JField("created_timestamp", (x))),
+        obj.updated_timestamp.map(x => JField("updated_timestamp", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -69,8 +69,8 @@ object UacTeam {
           short_name = fieldsMap.get("short_name").map(JsonConverter.fromJsonString),
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
           owner_id = fieldsMap.get("owner_id").map(JsonConverter.fromJsonString),
-          created_timestamp = fieldsMap.get("created_timestamp").map(JsonConverter.fromJsonString),
-          updated_timestamp = fieldsMap.get("updated_timestamp").map(JsonConverter.fromJsonString)
+          created_timestamp = fieldsMap.get("created_timestamp").map(),
+          updated_timestamp = fieldsMap.get("updated_timestamp").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

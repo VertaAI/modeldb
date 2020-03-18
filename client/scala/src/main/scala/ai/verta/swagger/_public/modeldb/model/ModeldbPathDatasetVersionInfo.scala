@@ -27,7 +27,7 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbPathDatasetVersionInfo (
   location_type: Option[PathLocationTypeEnumPathLocationType] = None,
-  size: Option[String] = None,
+  size: Option[] = None,
   dataset_part_infos: Option[List[ModeldbDatasetPartInfo]] = None,
   base_path: Option[String] = None
 ) extends BaseSwagger {
@@ -39,7 +39,7 @@ object ModeldbPathDatasetVersionInfo {
     new JObject(
       List[Option[JField]](
         obj.location_type.map(x => JField("location_type", ((x: PathLocationTypeEnumPathLocationType) => PathLocationTypeEnumPathLocationType.toJson(x))(x))),
-        obj.size.map(x => JField("size", JString(x))),
+        obj.size.map(x => JField("size", (x))),
         obj.dataset_part_infos.map(x => JField("dataset_part_infos", ((x: List[ModeldbDatasetPartInfo]) => JArray(x.map(((x: ModeldbDatasetPartInfo) => ModeldbDatasetPartInfo.toJson(x)))))(x))),
         obj.base_path.map(x => JField("base_path", JString(x)))
       ).flatMap(x => x match {
@@ -56,7 +56,7 @@ object ModeldbPathDatasetVersionInfo {
         ModeldbPathDatasetVersionInfo(
           // TODO: handle required
           location_type = fieldsMap.get("location_type").map(PathLocationTypeEnumPathLocationType.fromJson),
-          size = fieldsMap.get("size").map(JsonConverter.fromJsonString),
+          size = fieldsMap.get("size").map(),
           dataset_part_infos = fieldsMap.get("dataset_part_infos").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbDatasetPartInfo.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           base_path = fieldsMap.get("base_path").map(JsonConverter.fromJsonString)
         )

@@ -6,71 +6,116 @@ import ai.verta.modeldb.versioning.blob.diff.ProtoType;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 
 public class Utils {
-    static public <T extends ProtoType> T enforceOneof(T b) throws ModelDBException {
-        Visitor v = new Visitor(){
-            @Override
-            public Blob postVisitBlob(Blob blob) throws ModelDBException {
-                if (blob == null) return null;
-                Blob other = new Blob();
-                if (blob.Dataset != null)  return other.setDataset(blob.Dataset);
-                if (blob.Config != null)  return other.setConfig(blob.Config);
-                if (blob.Code != null)  return other.setCode(blob.Code);
-                if (blob.Environment != null)  return other.setEnvironment(blob.Environment);
-                return super.postVisitBlob(blob);
-            }
+  public static <T extends ProtoType> T enforceOneof(T b) throws ModelDBException {
+    Visitor v =
+        new Visitor() {
+          @Override
+          public Blob postVisitBlob(Blob blob) throws ModelDBException {
+            if (blob == null) return null;
+            Blob other = new Blob();
+            if (blob.Dataset != null) return other.setDataset(blob.Dataset);
+            if (blob.Config != null) return other.setConfig(blob.Config);
+            if (blob.Code != null) return other.setCode(blob.Code);
+            if (blob.Environment != null) return other.setEnvironment(blob.Environment);
+            return super.postVisitBlob(blob);
+          }
 
-            @Override
-            public DatasetBlob postVisitDatasetBlob(DatasetBlob blob) throws ModelDBException {
-                if (blob == null) return null;
-                DatasetBlob other = new DatasetBlob();
-                if (blob.Path != null)  return other.setPath(blob.Path);
-                if (blob.S3 != null)  return other.setS3(blob.S3);
-                return super.postVisitDatasetBlob(blob);
-            }
+          @Override
+          public BlobDiff postVisitBlobDiff(BlobDiff blob) throws ModelDBException {
+            if (blob == null) return null;
+            BlobDiff other = new BlobDiff();
+            if (blob.Dataset != null) return other.setDataset(blob.Dataset);
+            if (blob.Config != null) return other.setConfig(blob.Config);
+            if (blob.Code != null) return other.setCode(blob.Code);
+            if (blob.Environment != null) return other.setEnvironment(blob.Environment);
+            return super.postVisitBlobDiff(blob);
+          }
 
-            @Override
-            public ConfigBlob postVisitConfigBlob(ConfigBlob blob) throws ModelDBException {
-                return super.postVisitConfigBlob(blob);
-            }
+          @Override
+          public DatasetBlob postVisitDatasetBlob(DatasetBlob blob) throws ModelDBException {
+            if (blob == null) return null;
+            DatasetBlob other = new DatasetBlob();
+            if (blob.Path != null) return other.setPath(blob.Path);
+            if (blob.S3 != null) return other.setS3(blob.S3);
+            return super.postVisitDatasetBlob(blob);
+          }
 
-            @Override
-            public EnvironmentBlob postVisitEnvironmentBlob(EnvironmentBlob blob) throws ModelDBException {
-                if (blob == null) return null;
-                EnvironmentBlob other = new EnvironmentBlob().setCommandLine(blob.CommandLine).setEnvironmentVariables(blob.EnvironmentVariables);
-                if (blob.Python != null)  return other.setPython(blob.Python);
-                if (blob.Docker != null)  return other.setDocker(blob.Docker);
-                return super.postVisitEnvironmentBlob(blob);
-            }
+          @Override
+          public DatasetDiff postVisitDatasetDiff(DatasetDiff blob) throws ModelDBException {
+            if (blob == null) return null;
+            DatasetDiff other = new DatasetDiff();
+            if (blob.Path != null) return other.setPath(blob.Path);
+            if (blob.S3 != null) return other.setS3(blob.S3);
+            return super.postVisitDatasetDiff(blob);
+          }
 
-            @Override
-            public CodeBlob postVisitCodeBlob(CodeBlob blob) throws ModelDBException {
-                if (blob == null) return null;
-                CodeBlob other = new CodeBlob();
-                if (blob.Notebook != null)  return other.setNotebook(blob.Notebook);
-                if (blob.Git != null)  return other.setGit(blob.Git);
-                return super.postVisitCodeBlob(blob);
-            }
+          @Override
+          public EnvironmentBlob postVisitEnvironmentBlob(EnvironmentBlob blob)
+              throws ModelDBException {
+            if (blob == null) return null;
+            EnvironmentBlob other =
+                new EnvironmentBlob()
+                    .setCommandLine(blob.CommandLine)
+                    .setEnvironmentVariables(blob.EnvironmentVariables);
+            if (blob.Python != null) return other.setPython(blob.Python);
+            if (blob.Docker != null) return other.setDocker(blob.Docker);
+            return super.postVisitEnvironmentBlob(blob);
+          }
 
-            @Override
-            public HyperparameterValuesConfigBlob postVisitHyperparameterValuesConfigBlob(HyperparameterValuesConfigBlob blob) throws ModelDBException {
-                if (blob == null) return null;
-                HyperparameterValuesConfigBlob other = new HyperparameterValuesConfigBlob();
-                if (blob.FloatValue != null)  return other.setFloatValue(blob.FloatValue);
-                if (blob.IntValue != null)  return other.setIntValue(blob.IntValue);
-                if (blob.StringValue != null)  return other.setStringValue(blob.StringValue);
-                return super.postVisitHyperparameterValuesConfigBlob(blob);
-            }
+          @Override
+          public EnvironmentDiff postVisitEnvironmentDiff(EnvironmentDiff blob)
+              throws ModelDBException {
+            if (blob == null) return null;
+            EnvironmentDiff other =
+                new EnvironmentDiff()
+                    .setCommandLine(blob.CommandLine)
+                    .setEnvironmentVariables(blob.EnvironmentVariables);
+            if (blob.Python != null) return other.setPython(blob.Python);
+            if (blob.Docker != null) return other.setDocker(blob.Docker);
+            return super.postVisitEnvironmentDiff(blob);
+          }
 
-            @Override
-            public HyperparameterSetConfigBlob postVisitHyperparameterSetConfigBlob(HyperparameterSetConfigBlob blob) throws ModelDBException {
-                if (blob == null) return null;
-                HyperparameterSetConfigBlob other = new HyperparameterSetConfigBlob().setName(blob.Name);
-                if (blob.Discrete != null)  return other.setDiscrete(blob.Discrete);
-                if (blob.Continuous != null)  return other.setContinuous(blob.Continuous);
-                return super.postVisitHyperparameterSetConfigBlob(blob);
-            }
+          @Override
+          public CodeBlob postVisitCodeBlob(CodeBlob blob) throws ModelDBException {
+            if (blob == null) return null;
+            CodeBlob other = new CodeBlob();
+            if (blob.Notebook != null) return other.setNotebook(blob.Notebook);
+            if (blob.Git != null) return other.setGit(blob.Git);
+            return super.postVisitCodeBlob(blob);
+          }
+
+          @Override
+          public CodeDiff postVisitCodeDiff(CodeDiff blob) throws ModelDBException {
+            if (blob == null) return null;
+            CodeDiff other = new CodeDiff();
+            if (blob.Notebook != null) return other.setNotebook(blob.Notebook);
+            if (blob.Git != null) return other.setGit(blob.Git);
+            return super.postVisitCodeDiff(blob);
+          }
+
+          @Override
+          public HyperparameterValuesConfigBlob postVisitHyperparameterValuesConfigBlob(
+              HyperparameterValuesConfigBlob blob) throws ModelDBException {
+            if (blob == null) return null;
+            HyperparameterValuesConfigBlob other = new HyperparameterValuesConfigBlob();
+            if (blob.FloatValue != null) return other.setFloatValue(blob.FloatValue);
+            if (blob.IntValue != null) return other.setIntValue(blob.IntValue);
+            if (blob.StringValue != null) return other.setStringValue(blob.StringValue);
+            return super.postVisitHyperparameterValuesConfigBlob(blob);
+          }
+
+          @Override
+          public HyperparameterSetConfigBlob postVisitHyperparameterSetConfigBlob(
+              HyperparameterSetConfigBlob blob) throws ModelDBException {
+            if (blob == null) return null;
+            HyperparameterSetConfigBlob other =
+                new HyperparameterSetConfigBlob().setName(blob.Name);
+            if (blob.Discrete != null) return other.setDiscrete(blob.Discrete);
+            if (blob.Continuous != null) return other.setContinuous(blob.Continuous);
+            return super.postVisitHyperparameterSetConfigBlob(blob);
+          }
         };
 
-        return v.genericPostVisitDeep(b);
-    }
+    return v.genericPostVisitDeep(b);
+  }
 }

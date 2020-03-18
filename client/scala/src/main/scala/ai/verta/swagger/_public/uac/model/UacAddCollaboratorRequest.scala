@@ -22,8 +22,8 @@ case class UacAddCollaboratorRequest (
   share_with: Option[String] = None,
   collaborator_type: Option[CollaboratorTypeEnumCollaboratorType] = None,
   message: Option[String] = None,
-  date_created: Option[String] = None,
-  date_updated: Option[String] = None,
+  date_created: Option[] = None,
+  date_updated: Option[] = None,
   can_deploy: Option[TernaryEnumTernary] = None,
   authz_entity_type: Option[EntitiesEnumEntitiesTypes] = None
 ) extends BaseSwagger {
@@ -38,8 +38,8 @@ object UacAddCollaboratorRequest {
         obj.share_with.map(x => JField("share_with", JString(x))),
         obj.collaborator_type.map(x => JField("collaborator_type", ((x: CollaboratorTypeEnumCollaboratorType) => CollaboratorTypeEnumCollaboratorType.toJson(x))(x))),
         obj.message.map(x => JField("message", JString(x))),
-        obj.date_created.map(x => JField("date_created", JString(x))),
-        obj.date_updated.map(x => JField("date_updated", JString(x))),
+        obj.date_created.map(x => JField("date_created", (x))),
+        obj.date_updated.map(x => JField("date_updated", (x))),
         obj.can_deploy.map(x => JField("can_deploy", ((x: TernaryEnumTernary) => TernaryEnumTernary.toJson(x))(x))),
         obj.authz_entity_type.map(x => JField("authz_entity_type", ((x: EntitiesEnumEntitiesTypes) => EntitiesEnumEntitiesTypes.toJson(x))(x)))
       ).flatMap(x => x match {
@@ -59,8 +59,8 @@ object UacAddCollaboratorRequest {
           share_with = fieldsMap.get("share_with").map(JsonConverter.fromJsonString),
           collaborator_type = fieldsMap.get("collaborator_type").map(CollaboratorTypeEnumCollaboratorType.fromJson),
           message = fieldsMap.get("message").map(JsonConverter.fromJsonString),
-          date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonString),
-          date_updated = fieldsMap.get("date_updated").map(JsonConverter.fromJsonString),
+          date_created = fieldsMap.get("date_created").map(),
+          date_updated = fieldsMap.get("date_updated").map(),
           can_deploy = fieldsMap.get("can_deploy").map(TernaryEnumTernary.fromJson),
           authz_entity_type = fieldsMap.get("authz_entity_type").map(EntitiesEnumEntitiesTypes.fromJson)
         )

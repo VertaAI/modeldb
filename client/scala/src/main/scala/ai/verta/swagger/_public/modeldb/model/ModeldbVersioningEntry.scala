@@ -26,7 +26,7 @@ import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbVersioningEntry (
-  repository_id: Option[String] = None,
+  repository_id: Option[] = None,
   commit: Option[String] = None,
   key_location_map: Option[Map[String,VertamodeldbLocation]] = None
 ) extends BaseSwagger {
@@ -37,7 +37,7 @@ object ModeldbVersioningEntry {
   def toJson(obj: ModeldbVersioningEntry): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.repository_id.map(x => JField("repository_id", JString(x))),
+        obj.repository_id.map(x => JField("repository_id", (x))),
         obj.commit.map(x => JField("commit", JString(x))),
         obj.key_location_map.map(x => JField("key_location_map", ((x: Map[String,VertamodeldbLocation]) => JObject(x.toList.map(kv => JField(kv._1,((x: VertamodeldbLocation) => VertamodeldbLocation.toJson(x))(kv._2)))))(x)))
       ).flatMap(x => x match {
@@ -53,7 +53,7 @@ object ModeldbVersioningEntry {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbVersioningEntry(
           // TODO: handle required
-          repository_id = fieldsMap.get("repository_id").map(JsonConverter.fromJsonString),
+          repository_id = fieldsMap.get("repository_id").map(),
           commit = fieldsMap.get("commit").map(JsonConverter.fromJsonString),
           key_location_map = fieldsMap.get("key_location_map").map((x: JValue) => x match {case JObject(fields) => fields.map(kv => (kv.name, VertamodeldbLocation.fromJson(kv.value))).toMap; case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
