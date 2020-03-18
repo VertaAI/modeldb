@@ -531,6 +531,27 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def ListTags2(repository_id_repo_id: , repository_id_named_id_name: String, repository_id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Try[VersioningListTagsRequestResponse] = Await.result(ListTags2Async(repository_id_repo_id, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
 
+  def MergeRepositoryCommitsAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, body: VersioningMergeRepositoryCommitsRequest)(implicit ec: ExecutionContext): Future[Try[VersioningMergeRepositoryCommitsRequestResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
+    if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningMergeRepositoryCommitsRequest, VersioningMergeRepositoryCommitsRequestResponse]("POST", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/merge", __query, body, VersioningMergeRepositoryCommitsRequestResponse.fromJson)
+  }
+
+  def MergeRepositoryCommits(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, body: VersioningMergeRepositoryCommitsRequest)(implicit ec: ExecutionContext): Try[VersioningMergeRepositoryCommitsRequestResponse] = Await.result(MergeRepositoryCommitsAsync(repository_id_named_id_workspace_name, repository_id_named_id_name, body), Duration.Inf)
+
+  def MergeRepositoryCommits2Async(repository_id_repo_id: , body: VersioningMergeRepositoryCommitsRequest)(implicit ec: ExecutionContext): Future[Try[VersioningMergeRepositoryCommitsRequestResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningMergeRepositoryCommitsRequest, VersioningMergeRepositoryCommitsRequestResponse]("POST", basePath + s"/versioning/repositories/$repository_id_repo_id/merge", __query, body, VersioningMergeRepositoryCommitsRequestResponse.fromJson)
+  }
+
+  def MergeRepositoryCommits2(repository_id_repo_id: , body: VersioningMergeRepositoryCommitsRequest)(implicit ec: ExecutionContext): Try[VersioningMergeRepositoryCommitsRequestResponse] = Await.result(MergeRepositoryCommits2Async(repository_id_repo_id, body), Duration.Inf)
+
   def SetBranchAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, branch: String, body: String)(implicit ec: ExecutionContext): Future[Try[VersioningSetBranchRequestResponse]] = {
     val __query = Map[String,String](
     )
