@@ -520,7 +520,6 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitB =
           getCommitBlobMapWithHash(session, internalCommitB.getRootSha(), new ArrayList<>());
-      session.getTransaction().commit();
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapParentCommit =
           getCommitBlobMapWithHash(session, parentCommit.getRootSha(), new ArrayList<>());
