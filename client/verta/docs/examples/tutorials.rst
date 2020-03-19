@@ -1,11 +1,14 @@
 Tutorials
 =========
 
-Check out these tutorials for detailed step-by-step instructions on performing different MLOps 
+Check out these tutorials for detailed step-by-step instructions on performing different MLOps
 functions in Verta.
 
 ModelDB (Versioning and Metadata)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* `Versioning model ingredients <tutorials/ingredients.html>`_, which allows you to have Git-like
+  for the components of models.
 
 * `Versioning a Model <tutorials/versioning.html>`_
 * `Versioning Data <tutorials/dataset.html>`_
@@ -22,7 +25,7 @@ Real-time Model Monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note::
-    This functionality is only available in Verta Enterprise. 
+    This functionality is only available in Verta Enterprise.
     Please email `support@verta.ai <mailto:support@verta.ai>`_ for your enterprise login.
 
 Core Verta functionality
