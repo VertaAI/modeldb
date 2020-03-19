@@ -64,6 +64,16 @@ class VersioningServiceStub(object):
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitBlobsRequest.SerializeToString,
         response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitBlobsRequest.Response.FromString,
         )
+    self.ListCommitExperimentRuns = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/ListCommitExperimentRuns',
+        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitExperimentRunsRequest.SerializeToString,
+        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitExperimentRunsRequest.Response.FromString,
+        )
+    self.ListBlobExperimentRuns = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/ListBlobExperimentRuns',
+        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBlobExperimentRunsRequest.SerializeToString,
+        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBlobExperimentRunsRequest.Response.FromString,
+        )
     self.GetCommitComponent = channel.unary_unary(
         '/ai.verta.modeldb.versioning.VersioningService/GetCommitComponent',
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.GetCommitComponentRequest.SerializeToString,
@@ -73,6 +83,11 @@ class VersioningServiceStub(object):
         '/ai.verta.modeldb.versioning.VersioningService/ComputeRepositoryDiff',
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ComputeRepositoryDiffRequest.SerializeToString,
         response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ComputeRepositoryDiffRequest.Response.FromString,
+        )
+    self.MergeRepositoryCommits = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/MergeRepositoryCommits',
+        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.SerializeToString,
+        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.Response.FromString,
         )
     self.ListBranches = channel.unary_unary(
         '/ai.verta.modeldb.versioning.VersioningService/ListBranches',
@@ -195,6 +210,20 @@ class VersioningServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def ListCommitExperimentRuns(self, request, context):
+    """Getting ExperimentRuns linked to a commit
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def ListBlobExperimentRuns(self, request, context):
+    """Getting ExperimentRuns linked to a blob
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def GetCommitComponent(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -205,6 +234,13 @@ class VersioningServiceServicer(object):
   def ComputeRepositoryDiff(self, request, context):
     """Git-like operations
     """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def MergeRepositoryCommits(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -325,6 +361,16 @@ def add_VersioningServiceServicer_to_server(servicer, server):
           request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitBlobsRequest.FromString,
           response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitBlobsRequest.Response.SerializeToString,
       ),
+      'ListCommitExperimentRuns': grpc.unary_unary_rpc_method_handler(
+          servicer.ListCommitExperimentRuns,
+          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitExperimentRunsRequest.FromString,
+          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitExperimentRunsRequest.Response.SerializeToString,
+      ),
+      'ListBlobExperimentRuns': grpc.unary_unary_rpc_method_handler(
+          servicer.ListBlobExperimentRuns,
+          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBlobExperimentRunsRequest.FromString,
+          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBlobExperimentRunsRequest.Response.SerializeToString,
+      ),
       'GetCommitComponent': grpc.unary_unary_rpc_method_handler(
           servicer.GetCommitComponent,
           request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.GetCommitComponentRequest.FromString,
@@ -334,6 +380,11 @@ def add_VersioningServiceServicer_to_server(servicer, server):
           servicer.ComputeRepositoryDiff,
           request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ComputeRepositoryDiffRequest.FromString,
           response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ComputeRepositoryDiffRequest.Response.SerializeToString,
+      ),
+      'MergeRepositoryCommits': grpc.unary_unary_rpc_method_handler(
+          servicer.MergeRepositoryCommits,
+          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.FromString,
+          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.Response.SerializeToString,
       ),
       'ListBranches': grpc.unary_unary_rpc_method_handler(
           servicer.ListBranches,

@@ -11,6 +11,7 @@ import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.NotebookCodeBlob;
+import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +35,6 @@ public class CodeContainer extends BlobContainer {
       case NOTEBOOK:
         final NotebookCodeBlob notebook = code.getNotebook();
         validate(notebook.getGitRepo());
-        validate(notebook.getPath());
         break;
       default:
         throw new ModelDBException("Blob unknown type", Code.INVALID_ARGUMENT);
@@ -62,7 +62,11 @@ public class CodeContainer extends BlobContainer {
         blobType = NOTEBOOK_CODE_BLOB;
         NotebookCodeBlob notebook = code.getNotebook();
         GitCodeBlobEntity gitCodeBlobEntity = saveBlob(session, notebook.getGitRepo());
-        String pathBlobSha = DatasetContainer.saveBlob(session, notebook.getPath());
+        PathDatasetBlob.Builder pathDatasetBlobBuilder = PathDatasetBlob.newBuilder();
+        if (notebook.getPath() != null) {
+          pathDatasetBlobBuilder.addComponents(notebook.getPath());
+        }
+        String pathBlobSha = DatasetContainer.saveBlob(session, pathDatasetBlobBuilder.build());
         blobHash = FileHasher.getSha(gitCodeBlobEntity.getBlobHash() + ":" + pathBlobSha);
         session.saveOrUpdate(new NotebookCodeBlobEntity(blobHash, gitCodeBlobEntity, pathBlobSha));
         break;

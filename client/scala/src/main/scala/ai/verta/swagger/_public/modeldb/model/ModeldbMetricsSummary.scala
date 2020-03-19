@@ -16,8 +16,8 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbMetricsSummary (
   key: Option[String] = None,
-  min_value: Option[Double] = None,
-  max_value: Option[Double] = None
+  max_value: Option[Double] = None,
+  min_value: Option[Double] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbMetricsSummary.toJson(this)
 }
@@ -27,8 +27,8 @@ object ModeldbMetricsSummary {
     new JObject(
       List[Option[JField]](
         obj.key.map(x => JField("key", JString(x))),
-        obj.min_value.map(x => JField("min_value", JDouble(x))),
-        obj.max_value.map(x => JField("max_value", JDouble(x)))
+        obj.max_value.map(x => JField("max_value", JDouble(x))),
+        obj.min_value.map(x => JField("min_value", JDouble(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -43,8 +43,8 @@ object ModeldbMetricsSummary {
         ModeldbMetricsSummary(
           // TODO: handle required
           key = fieldsMap.get("key").map(JsonConverter.fromJsonString),
-          min_value = fieldsMap.get("min_value").map(JsonConverter.fromJsonDouble),
-          max_value = fieldsMap.get("max_value").map(JsonConverter.fromJsonDouble)
+          max_value = fieldsMap.get("max_value").map(JsonConverter.fromJsonDouble),
+          min_value = fieldsMap.get("min_value").map(JsonConverter.fromJsonDouble)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

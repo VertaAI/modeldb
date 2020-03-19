@@ -15,8 +15,8 @@ import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbGetUrlForArtifactResponse (
-  url: Option[String] = None,
-  fields: Option[Map[String,String]] = None
+  fields: Option[Map[String,String]] = None,
+  url: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbGetUrlForArtifactResponse.toJson(this)
 }
@@ -25,8 +25,8 @@ object ModeldbGetUrlForArtifactResponse {
   def toJson(obj: ModeldbGetUrlForArtifactResponse): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.url.map(x => JField("url", JString(x))),
-        obj.fields.map(x => JField("fields", ((x: Map[String,String]) => JObject(x.toList.map(kv => JField(kv._1,JString(kv._2)))))(x)))
+        obj.fields.map(x => JField("fields", ((x: Map[String,String]) => JObject(x.toList.map(kv => JField(kv._1,JString(kv._2)))))(x))),
+        obj.url.map(x => JField("url", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -40,8 +40,8 @@ object ModeldbGetUrlForArtifactResponse {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbGetUrlForArtifactResponse(
           // TODO: handle required
-          url = fieldsMap.get("url").map(JsonConverter.fromJsonString),
-          fields = fieldsMap.get("fields").map((x: JValue) => x match {case JObject(fields) => fields.map(kv => (kv.name, JsonConverter.fromJsonString(kv.value))).toMap; case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          fields = fieldsMap.get("fields").map((x: JValue) => x match {case JObject(fields) => fields.map(kv => (kv.name, JsonConverter.fromJsonString(kv.value))).toMap; case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          url = fieldsMap.get("url").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

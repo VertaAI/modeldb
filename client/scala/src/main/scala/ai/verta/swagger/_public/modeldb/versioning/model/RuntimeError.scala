@@ -5,15 +5,19 @@ import scala.util.Try
 
 import net.liftweb.json._
 
+import ai.verta.swagger._public.modeldb.versioning.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
+import ai.verta.swagger._public.modeldb.versioning.model.TernaryEnumTernary._
+import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
+import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class RuntimeError (
-  error: Option[String] = None,
   code: Option[BigInt] = None,
-  message: Option[String] = None,
-  details: Option[List[ProtobufAny]] = None
+  details: Option[List[ProtobufAny]] = None,
+  error: Option[String] = None,
+  message: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = RuntimeError.toJson(this)
 }
@@ -22,10 +26,10 @@ object RuntimeError {
   def toJson(obj: RuntimeError): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.error.map(x => JField("error", JString(x))),
         obj.code.map(x => JField("code", JInt(x))),
-        obj.message.map(x => JField("message", JString(x))),
-        obj.details.map(x => JField("details", ((x: List[ProtobufAny]) => JArray(x.map(((x: ProtobufAny) => ProtobufAny.toJson(x)))))(x)))
+        obj.details.map(x => JField("details", ((x: List[ProtobufAny]) => JArray(x.map(((x: ProtobufAny) => ProtobufAny.toJson(x)))))(x))),
+        obj.error.map(x => JField("error", JString(x))),
+        obj.message.map(x => JField("message", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -39,10 +43,10 @@ object RuntimeError {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         RuntimeError(
           // TODO: handle required
-          error = fieldsMap.get("error").map(JsonConverter.fromJsonString),
           code = fieldsMap.get("code").map(JsonConverter.fromJsonInteger),
-          message = fieldsMap.get("message").map(JsonConverter.fromJsonString),
-          details = fieldsMap.get("details").map((x: JValue) => x match {case JArray(elements) => elements.map(ProtobufAny.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          details = fieldsMap.get("details").map((x: JValue) => x match {case JArray(elements) => elements.map(ProtobufAny.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          error = fieldsMap.get("error").map(JsonConverter.fromJsonString),
+          message = fieldsMap.get("message").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

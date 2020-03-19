@@ -15,8 +15,8 @@ import ai.verta.swagger._public.uac.model.ServiceEnumService._
 import ai.verta.swagger.client.objects._
 
 case class UacResourceActionGroup (
-  resources: Option[List[UacResources]] = None,
-  actions: Option[List[UacAction]] = None
+  actions: Option[List[UacAction]] = None,
+  resources: Option[List[UacResources]] = None
 ) extends BaseSwagger {
   def toJson(): JValue = UacResourceActionGroup.toJson(this)
 }
@@ -25,8 +25,8 @@ object UacResourceActionGroup {
   def toJson(obj: UacResourceActionGroup): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.resources.map(x => JField("resources", ((x: List[UacResources]) => JArray(x.map(((x: UacResources) => UacResources.toJson(x)))))(x))),
-        obj.actions.map(x => JField("actions", ((x: List[UacAction]) => JArray(x.map(((x: UacAction) => UacAction.toJson(x)))))(x)))
+        obj.actions.map(x => JField("actions", ((x: List[UacAction]) => JArray(x.map(((x: UacAction) => UacAction.toJson(x)))))(x))),
+        obj.resources.map(x => JField("resources", ((x: List[UacResources]) => JArray(x.map(((x: UacResources) => UacResources.toJson(x)))))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -40,8 +40,8 @@ object UacResourceActionGroup {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         UacResourceActionGroup(
           // TODO: handle required
-          resources = fieldsMap.get("resources").map((x: JValue) => x match {case JArray(elements) => elements.map(UacResources.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          actions = fieldsMap.get("actions").map((x: JValue) => x match {case JArray(elements) => elements.map(UacAction.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          actions = fieldsMap.get("actions").map((x: JValue) => x match {case JArray(elements) => elements.map(UacAction.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          resources = fieldsMap.get("resources").map((x: JValue) => x match {case JArray(elements) => elements.map(UacResources.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
