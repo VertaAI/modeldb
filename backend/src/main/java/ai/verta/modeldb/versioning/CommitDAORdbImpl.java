@@ -99,7 +99,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
     Query countQuery = session.createQuery(commitQueryBuilder.toString());
     countQuery.setParameter("repoId", repoId);
-    //TODO: improve query into count query
+    // TODO: improve query into count query
     Long totalRecords = (long) countQuery.list().size();
 
     CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
