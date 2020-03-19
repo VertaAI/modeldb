@@ -13,19 +13,17 @@ import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorksp
 import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
-case class VersioningListBranchCommitsRequestResponse (
-  commits: Option[List[VersioningCommit]] = None,
-  total_records: Option[String] = None
+case class VersioningMergeRepositoryCommitsRequestResponse (
+  commit: Option[VersioningCommit] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningListBranchCommitsRequestResponse.toJson(this)
+  def toJson(): JValue = VersioningMergeRepositoryCommitsRequestResponse.toJson(this)
 }
 
-object VersioningListBranchCommitsRequestResponse {
-  def toJson(obj: VersioningListBranchCommitsRequestResponse): JObject = {
+object VersioningMergeRepositoryCommitsRequestResponse {
+  def toJson(obj: VersioningMergeRepositoryCommitsRequestResponse): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.commits.map(x => JField("commits", ((x: List[VersioningCommit]) => JArray(x.map(((x: VersioningCommit) => VersioningCommit.toJson(x)))))(x))),
-        obj.total_records.map(x => JField("total_records", JString(x)))
+        obj.commit.map(x => JField("commit", ((x: VersioningCommit) => VersioningCommit.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -33,14 +31,13 @@ object VersioningListBranchCommitsRequestResponse {
     )
   }
 
-  def fromJson(value: JValue): VersioningListBranchCommitsRequestResponse =
+  def fromJson(value: JValue): VersioningMergeRepositoryCommitsRequestResponse =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningListBranchCommitsRequestResponse(
+        VersioningMergeRepositoryCommitsRequestResponse(
           // TODO: handle required
-          commits = fieldsMap.get("commits").map((x: JValue) => x match {case JArray(elements) => elements.map(VersioningCommit.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          total_records = fieldsMap.get("total_records").map(JsonConverter.fromJsonString)
+          commit = fieldsMap.get("commit").map(VersioningCommit.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
