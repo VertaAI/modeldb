@@ -127,7 +127,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
             commitDAO.setCommit(
                 authService.getVertaIdFromUserInfo(userInfo),
                 Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build(),
-                () -> FileHasher.getSha(new String()),
+                (session) -> FileHasher.getSha(new String()),
                 (session) -> repositoryDAO.getRepositoryById(session, repositoryId));
 
         repositoryDAO.setBranch(
@@ -268,7 +268,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           commitDAO.setCommit(
               authService.getVertaIdFromUserInfo(currentLoginUserInfo),
               request.getCommit(),
-              () -> blobDAO.setBlobs(blobContainers, fileHasher),
+              (session) -> blobDAO.setBlobs(session, blobContainers, fileHasher),
               repositoryFunction);
 
       responseObserver.onNext(response);

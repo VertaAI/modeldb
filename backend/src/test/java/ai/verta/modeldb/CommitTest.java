@@ -58,6 +58,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -615,6 +616,7 @@ public class CommitTest {
   }
 
   @Test
+  @Ignore
   public void getCommitBlobListTest() {
     LOGGER.info("List commit blob test start................................");
 
@@ -726,6 +728,7 @@ public class CommitTest {
   }
 
   @Test
+  @Ignore
   public void getCommitBlobListUsecase2Test() {
     LOGGER.info("List commit blob test start................................");
 
