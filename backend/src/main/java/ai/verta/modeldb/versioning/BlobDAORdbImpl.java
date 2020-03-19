@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -423,19 +424,24 @@ public class BlobDAORdbImpl implements BlobDAO {
       LOGGER.debug("Deleted location for Diff : {}", deletedLocations);
 
       // modified new blob location from the CommitA
-      Set<String> modifiedLocations = new LinkedHashSet<>(locationBlobsMapCommitB.keySet());
-      modifiedLocations.removeAll(addedLocations);
-      Map<String, BlobExpanded> commonBlobs =
-          locationBlobsMapCommitA.values().stream().collect(toMap(Entry::getValue, Entry::getKey));
-      commonBlobs
-          .keySet()
-          .retainAll(
-              locationBlobsMapCommitB.values().stream()
-                  .map(Entry::getValue)
-                  .collect(Collectors.toSet()));
-      Map<String, BlobExpanded> locationBlobsCommon =
-          getLocationWiseBlobExpandedMapFromCollection(commonBlobs.values());
-      modifiedLocations.removeAll(locationBlobsCommon.keySet());
+      Map<String, Set<BlobExpanded>> blobsAdded =
+          locationBlobsMapCommitB.values().stream().collect(Collectors.toMap(
+              Entry::getValue, entry -> new HashSet<>(Collections.singletonList(entry.getKey())),
+              (m1, m2) -> {
+                HashSet<BlobExpanded> newHash = new HashSet<>(m1);
+                newHash.addAll(m2);
+                return newHash;
+              }));
+      Set<String> blobsRemoved = locationBlobsMapCommitA.values().stream()
+          .map(Entry::getValue)
+          .collect(Collectors.toSet());
+      for (String entry : blobsRemoved) {
+        blobsAdded.remove(entry);
+      }
+      Map<String, BlobExpanded> locationBlobsModified =
+          getLocationWiseBlobExpandedMapFromCollection(blobsAdded.values().stream().flatMap(
+              Collection::stream).collect(Collectors.toList()));
+      Set<String> modifiedLocations = locationBlobsModified.keySet();
       LOGGER.debug("Modified location for Diff : {}", modifiedLocations);
 
       List<ai.verta.modeldb.versioning.BlobDiff> addedBlobDiffList =
@@ -560,18 +566,21 @@ public class BlobDAORdbImpl implements BlobDAO {
         BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
         Blob blob =
             DiffMerger.mergeBlob(
-                Blob.fromProto(blobExpanded.getBlob()), BlobDiff.fromProto(blobDiff));
+                blobExpanded == null ? null : Blob.fromProto(blobExpanded.getBlob()),
+                BlobDiff.fromProto(blobDiff));
         locationBlobsMapNew.put(
-            getStringFromLocationList(blobExpanded.getLocationList()),
+            getStringFromLocationList(locationList), blob == null ? null :
             BlobExpanded.newBuilder()
-                .addAllLocation(blobExpanded.getLocationList())
+                .addAllLocation(locationList)
                 .setBlob(blob.toProto())
                 .build());
       }
       locationBlobsMap.putAll(locationBlobsMapNew);
       List<BlobContainer> blobContainerList = new LinkedList<>();
-      for (Map.Entry<String, BlobExpanded> blobExpandedEntry : locationBlobsMap.entrySet()) {
-        blobContainerList.add(BlobContainer.create(blobExpandedEntry.getValue()));
+      for (Map.Entry<String, BlobExpanded> blobExpandedEntry : locationBlobsMapNew.entrySet()) {
+        if (blobExpandedEntry.getValue() != null) {
+          blobContainerList.add(BlobContainer.create(blobExpandedEntry.getValue()));
+        }
       }
       return blobContainerList;
     }

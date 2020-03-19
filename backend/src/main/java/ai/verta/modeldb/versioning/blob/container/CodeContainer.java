@@ -15,6 +15,7 @@ import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 import org.hibernate.Session;
 
 public class CodeContainer extends BlobContainer {
@@ -41,9 +42,17 @@ public class CodeContainer extends BlobContainer {
     }
   }
 
-  private void validate(GitCodeBlob gitRepo) throws ModelDBException {
+  public static Optional<String> validateReturnMessage(GitCodeBlob gitRepo) {
     if (gitRepo.getRepo().isEmpty()) {
-      throw new ModelDBException("Code repository path should not be empty", Code.INVALID_ARGUMENT);
+      return Optional.of("Code repository path should not be empty");
+    }
+    return Optional.empty();
+  }
+
+  private void validate(GitCodeBlob gitRepo) throws ModelDBException {
+    Optional<String> validateMessage = validateReturnMessage(gitRepo);
+    if (validateMessage.isPresent()) {
+      throw new ModelDBException(validateMessage.get(), Code.INVALID_ARGUMENT);
     }
   }
 

@@ -5,11 +5,13 @@ import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
+import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
 import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import org.hibernate.Session;
 
 /** contains proto object and saves it to the database */
@@ -68,8 +70,30 @@ public abstract class BlobContainer {
   }
 
   protected void validate(PathDatasetComponentBlob path) throws ModelDBException {
-    if (path.getPath().isEmpty()) {
-      throw new ModelDBException("Dataset path is empty", Code.INVALID_ARGUMENT);
+    Optional<String> result = validateReturnMessage(path);
+    if (result.isPresent()) {
+      throw new ModelDBException(result.get(), Code.INVALID_ARGUMENT);
     }
+  }
+
+  protected void validate(S3DatasetComponentBlob component) throws ModelDBException {
+    Optional<String> result = validateReturnMessage(component);
+    if (result.isPresent()) {
+      throw new ModelDBException(result.get(), Code.INVALID_ARGUMENT);
+    }
+  }
+
+  public static Optional<String> validateReturnMessage(S3DatasetComponentBlob component) {
+    if (!component.hasPath()) {
+      return Optional.of("Blob path should not be empty");
+    }
+    return Optional.empty();
+  }
+
+  public static Optional<String> validateReturnMessage(PathDatasetComponentBlob path) {
+    if (path.getPath().isEmpty()) {
+      return Optional.of("Dataset path is empty");
+    }
+    return Optional.empty();
   }
 }
