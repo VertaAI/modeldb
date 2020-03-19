@@ -969,6 +969,45 @@
         ]
       }
     },
+    "/versioning/repositories/{repository_id.repo_id}/merge": {
+      "post": {
+        "operationId": "MergeRepositoryCommits2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
     "/versioning/repositories/{repository_id.repo_id}/tags": {
       "get": {
         "summary": "CRUD for tags",
@@ -2119,6 +2158,50 @@
         ]
       }
     },
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge": {
+      "post": {
+        "operationId": "MergeRepositoryCommits",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags": {
       "get": {
         "summary": "CRUD for tags",
@@ -3031,14 +3114,11 @@
         "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "name": {
-          "type": "string"
+        "A": {
+          "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
         },
-        "value_a": {
-          "type": "string"
-        },
-        "value_b": {
-          "type": "string"
+        "B": {
+          "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
         }
       }
     },
@@ -3171,14 +3251,11 @@
         "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "name": {
-          "type": "string"
-        },
         "A": {
-          "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
+          "$ref": "#/definitions/versioningHyperparameterConfigBlob"
         },
         "B": {
-          "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
+          "$ref": "#/definitions/versioningHyperparameterConfigBlob"
         }
       }
     },
@@ -3202,20 +3279,11 @@
         "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
-        "name": {
-          "type": "string"
+        "A": {
+          "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
         },
-        "continuous_a": {
-          "$ref": "#/definitions/versioningContinuousHyperparameterSetConfigBlob"
-        },
-        "discrete_a": {
-          "$ref": "#/definitions/versioningDiscreteHyperparameterSetConfigBlob"
-        },
-        "continuous_b": {
-          "$ref": "#/definitions/versioningContinuousHyperparameterSetConfigBlob"
-        },
-        "discrete_b": {
-          "$ref": "#/definitions/versioningDiscreteHyperparameterSetConfigBlob"
+        "B": {
+          "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
         }
       }
     },
@@ -3352,6 +3420,31 @@
         "total_records": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "versioningMergeRepositoryCommitsRequest": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "$ref": "#/definitions/versioningRepositoryIdentification"
+        },
+        "commit_sha_a": {
+          "type": "string"
+        },
+        "commit_sha_b": {
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/definitions/versioningCommit"
+        }
+      }
+    },
+    "versioningMergeRepositoryCommitsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "commit": {
+          "$ref": "#/definitions/versioningCommit"
         }
       }
     },

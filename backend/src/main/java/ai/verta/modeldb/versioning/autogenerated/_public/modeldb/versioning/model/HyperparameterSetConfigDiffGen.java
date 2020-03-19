@@ -20,27 +20,12 @@ public class HyperparameterSetConfigDiffGen extends Generator<HyperparameterSetC
 
     HyperparameterSetConfigDiff obj = new HyperparameterSetConfigDiff();
     if (r.nextBoolean()) {
-      obj.setContinuousA(
-          Utils.removeEmpty(
-              gen().type(ContinuousHyperparameterSetConfigBlob.class).generate(r, status)));
+      obj.setA(
+          Utils.removeEmpty(gen().type(HyperparameterSetConfigBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
-      obj.setContinuousB(
-          Utils.removeEmpty(
-              gen().type(ContinuousHyperparameterSetConfigBlob.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setDiscreteA(
-          Utils.removeEmpty(
-              gen().type(DiscreteHyperparameterSetConfigBlob.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setDiscreteB(
-          Utils.removeEmpty(
-              gen().type(DiscreteHyperparameterSetConfigBlob.class).generate(r, status)));
-    }
-    if (r.nextBoolean()) {
-      obj.setName(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+      obj.setB(
+          Utils.removeEmpty(gen().type(HyperparameterSetConfigBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setStatus(

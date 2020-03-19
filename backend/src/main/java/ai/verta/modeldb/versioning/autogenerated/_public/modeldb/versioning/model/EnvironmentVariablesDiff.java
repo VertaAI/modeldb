@@ -12,29 +12,24 @@ import java.util.*;
 import java.util.function.Function;
 
 public class EnvironmentVariablesDiff implements ProtoType {
-  public String Name;
+  public EnvironmentVariablesBlob A;
+  public EnvironmentVariablesBlob B;
   public DiffStatusEnumDiffStatus Status;
-  public String ValueA;
-  public String ValueB;
 
   public EnvironmentVariablesDiff() {
-    this.Name = "";
+    this.A = null;
+    this.B = null;
     this.Status = null;
-    this.ValueA = "";
-    this.ValueB = "";
   }
 
   public Boolean isEmpty() {
-    if (this.Name != null && !this.Name.equals("")) {
+    if (this.A != null && !this.A.equals(null)) {
+      return false;
+    }
+    if (this.B != null && !this.B.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
-      return false;
-    }
-    if (this.ValueA != null && !this.ValueA.equals("")) {
-      return false;
-    }
-    if (this.ValueB != null && !this.ValueB.equals("")) {
       return false;
     }
     return true;
@@ -45,24 +40,19 @@ public class EnvironmentVariablesDiff implements ProtoType {
     StringBuilder sb = new StringBuilder();
     sb.append("{\"class\": \"EnvironmentVariablesDiff\", \"fields\": {");
     boolean first = true;
-    if (this.Name != null && !this.Name.equals("")) {
+    if (this.A != null && !this.A.equals(null)) {
       if (!first) sb.append(", ");
-      sb.append("\"Name\": " + "\"" + Name + "\"");
+      sb.append("\"A\": " + A);
+      first = false;
+    }
+    if (this.B != null && !this.B.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"B\": " + B);
       first = false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Status\": " + Status);
-      first = false;
-    }
-    if (this.ValueA != null && !this.ValueA.equals("")) {
-      if (!first) sb.append(", ");
-      sb.append("\"ValueA\": " + "\"" + ValueA + "\"");
-      first = false;
-    }
-    if (this.ValueB != null && !this.ValueB.equals("")) {
-      if (!first) sb.append(", ");
-      sb.append("\"ValueB\": " + "\"" + ValueB + "\"");
       first = false;
     }
     sb.append("}}");
@@ -73,17 +63,14 @@ public class EnvironmentVariablesDiff implements ProtoType {
   public String getSHA() {
     StringBuilder sb = new StringBuilder();
     sb.append("EnvironmentVariablesDiff");
-    if (this.Name != null && !this.Name.equals("")) {
-      sb.append("::Name::").append(Name);
+    if (this.A != null && !this.A.equals(null)) {
+      sb.append("::A::").append(A);
+    }
+    if (this.B != null && !this.B.equals(null)) {
+      sb.append("::B::").append(B);
     }
     if (this.Status != null && !this.Status.equals(null)) {
       sb.append("::Status::").append(Status);
-    }
-    if (this.ValueA != null && !this.ValueA.equals("")) {
-      sb.append("::ValueA::").append(ValueA);
-    }
-    if (this.ValueB != null && !this.ValueB.equals("")) {
-      sb.append("::ValueB::").append(ValueB);
     }
 
     return sb.toString();
@@ -98,11 +85,21 @@ public class EnvironmentVariablesDiff implements ProtoType {
     EnvironmentVariablesDiff other = (EnvironmentVariablesDiff) o;
 
     {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.Name != null || other.Name != null) {
-        if (this.Name == null && other.Name != null) return false;
-        if (this.Name != null && other.Name == null) return false;
-        if (!f.apply(this.Name, other.Name)) return false;
+      Function3<EnvironmentVariablesBlob, EnvironmentVariablesBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.A != null || other.A != null) {
+        if (this.A == null && other.A != null) return false;
+        if (this.A != null && other.A == null) return false;
+        if (!f.apply(this.A, other.A)) return false;
+      }
+    }
+    {
+      Function3<EnvironmentVariablesBlob, EnvironmentVariablesBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.B != null || other.B != null) {
+        if (this.B == null && other.B != null) return false;
+        if (this.B != null && other.B == null) return false;
+        if (!f.apply(this.B, other.B)) return false;
       }
     }
     {
@@ -114,47 +111,26 @@ public class EnvironmentVariablesDiff implements ProtoType {
         if (!f.apply(this.Status, other.Status)) return false;
       }
     }
-    {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.ValueA != null || other.ValueA != null) {
-        if (this.ValueA == null && other.ValueA != null) return false;
-        if (this.ValueA != null && other.ValueA == null) return false;
-        if (!f.apply(this.ValueA, other.ValueA)) return false;
-      }
-    }
-    {
-      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
-      if (this.ValueB != null || other.ValueB != null) {
-        if (this.ValueB == null && other.ValueB != null) return false;
-        if (this.ValueB != null && other.ValueB == null) return false;
-        if (!f.apply(this.ValueB, other.ValueB)) return false;
-      }
-    }
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.Name, this.Status, this.ValueA, this.ValueB);
+    return Objects.hash(this.A, this.B, this.Status);
   }
 
-  public EnvironmentVariablesDiff setName(String value) {
-    this.Name = Utils.removeEmpty(value);
+  public EnvironmentVariablesDiff setA(EnvironmentVariablesBlob value) {
+    this.A = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public EnvironmentVariablesDiff setB(EnvironmentVariablesBlob value) {
+    this.B = Utils.removeEmpty(value);
     return this;
   }
 
   public EnvironmentVariablesDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
-    return this;
-  }
-
-  public EnvironmentVariablesDiff setValueA(String value) {
-    this.ValueA = Utils.removeEmpty(value);
-    return this;
-  }
-
-  public EnvironmentVariablesDiff setValueB(String value) {
-    this.ValueB = Utils.removeEmpty(value);
     return this;
   }
 
@@ -166,24 +142,19 @@ public class EnvironmentVariablesDiff implements ProtoType {
 
     EnvironmentVariablesDiff obj = new EnvironmentVariablesDiff();
     {
-      Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff, String> f =
-          x -> (blob.getName());
-      obj.Name = Utils.removeEmpty(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff, EnvironmentVariablesBlob> f =
+          x -> EnvironmentVariablesBlob.fromProto(blob.getA());
+      obj.A = Utils.removeEmpty(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff, EnvironmentVariablesBlob> f =
+          x -> EnvironmentVariablesBlob.fromProto(blob.getB());
+      obj.B = Utils.removeEmpty(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff, DiffStatusEnumDiffStatus> f =
           x -> DiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.Status = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff, String> f =
-          x -> (blob.getValueA());
-      obj.ValueA = Utils.removeEmpty(f.apply(blob));
-    }
-    {
-      Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff, String> f =
-          x -> (blob.getValueB());
-      obj.ValueB = Utils.removeEmpty(f.apply(blob));
     }
     return obj;
   }
@@ -192,10 +163,20 @@ public class EnvironmentVariablesDiff implements ProtoType {
     ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder builder =
         ai.verta.modeldb.versioning.EnvironmentVariablesDiff.newBuilder();
     {
-      if (this.Name != null && !this.Name.equals("")) {
+      if (this.A != null && !this.A.equals(null)) {
         Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
             x -> {
-              builder.setName(this.Name);
+              builder.setA(this.A.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.B != null && !this.B.equals(null)) {
+        Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
+            x -> {
+              builder.setB(this.B.toProto());
               return null;
             };
         f.apply(builder);
@@ -211,26 +192,6 @@ public class EnvironmentVariablesDiff implements ProtoType {
         f.apply(builder);
       }
     }
-    {
-      if (this.ValueA != null && !this.ValueA.equals("")) {
-        Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
-            x -> {
-              builder.setValueA(this.ValueA);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
-    {
-      if (this.ValueB != null && !this.ValueB.equals("")) {
-        Function<ai.verta.modeldb.versioning.EnvironmentVariablesDiff.Builder, Void> f =
-            x -> {
-              builder.setValueB(this.ValueB);
-              return null;
-            };
-        f.apply(builder);
-      }
-    }
     return builder;
   }
 
@@ -240,10 +201,9 @@ public class EnvironmentVariablesDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepString(this.Name);
+    visitor.preVisitDeepEnvironmentVariablesBlob(this.A);
+    visitor.preVisitDeepEnvironmentVariablesBlob(this.B);
     visitor.preVisitDeepDiffStatusEnumDiffStatus(this.Status);
-    visitor.preVisitDeepString(this.ValueA);
-    visitor.preVisitDeepString(this.ValueB);
   }
 
   public EnvironmentVariablesDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -251,10 +211,9 @@ public class EnvironmentVariablesDiff implements ProtoType {
   }
 
   public EnvironmentVariablesDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setName(visitor.postVisitDeepString(this.Name));
+    this.setA(visitor.postVisitDeepEnvironmentVariablesBlob(this.A));
+    this.setB(visitor.postVisitDeepEnvironmentVariablesBlob(this.B));
     this.setStatus(visitor.postVisitDeepDiffStatusEnumDiffStatus(this.Status));
-    this.setValueA(visitor.postVisitDeepString(this.ValueA));
-    this.setValueB(visitor.postVisitDeepString(this.ValueB));
     return this.postVisitShallow(visitor);
   }
 }
