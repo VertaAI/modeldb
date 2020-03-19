@@ -17,7 +17,7 @@
     'title_block . . dates'
     'tags . . dates'
     'code_version . . .'
-    'actions actions actions actions';
+    '. . . actions';
   cursor: pointer;
 }
 .content:hover {
@@ -72,10 +72,16 @@
 .actions {
   display: flex;
   align-items: center;
-  margin-top: 15px;
+  justify-content: flex-end;
   grid-area: actions;
 }
 
-.action_delete {
-  margin-right: auto;
+.actions {
+}
+
+.action {
+  margin-left: 10px;
+}
+.action:first-child {
+  margin-left: 0;
 }

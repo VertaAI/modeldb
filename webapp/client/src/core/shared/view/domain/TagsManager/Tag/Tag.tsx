@@ -39,6 +39,7 @@ class Tag extends React.Component<ILocalProps> {
       >
         <Confirm
           title={`Delete Tag: ${this.props.tag}`}
+          titleIcon="trash"
           isOpen={this.state.isShowDeleteTagModal}
           onCancel={this.handleCloseModal}
           onConfirm={this.handleCloseModalAndDelete}

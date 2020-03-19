@@ -2,16 +2,15 @@
   height: 100%;
   position: relative;
   overflow-y: auto;
+  padding-left: var(--layout-horizontal-padding);
+  padding-right: calc(var(--layout-horizontal-padding) - 6px);
+  margin-right: 5px;
 }
 
 .quick_filter_input {
-  padding-left: var(--layout-horizontal-padding);
-  padding-right: calc(var(--layout-horizontal-padding) - 6px);
 }
 
 .filters {
-  padding-left: var(--layout-horizontal-padding);
-  padding-right: calc(var(--layout-horizontal-padding) - 6px);
 }
 .collapsed .filters {
   display: none;

@@ -1,11 +1,8 @@
 .root {
-  display: flex;
   position: relative;
-  align-items: center;
 }
 
 .quickFilters {
-  top: 42px;
   position: absolute;
   width: 100%;
   border: solid 1px var(--fr-color5);
@@ -39,12 +36,4 @@
   font-size: 18px;
   color: #777777;
   cursor: pointer;
-}
-
-.hideFilters {
-  position: absolute;
-  cursor: pointer;
-  margin-left: 5px;
-  left: 99%;
-  filter: invert(0.5);
 }
