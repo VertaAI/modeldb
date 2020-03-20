@@ -1,4 +1,4 @@
-Versioning model ingredients
+Versioning Model Ingredients
 ============================
 
 A model is composed of four ingredients: code, config, dataset and environment. If you change any of
