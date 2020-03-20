@@ -1,6 +1,7 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
+import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
@@ -8885,7 +8886,7 @@ public class ExperimentRunTest {
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub);
+    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9002,7 +9003,7 @@ public class ExperimentRunTest {
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub);
+    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9137,7 +9138,7 @@ public class ExperimentRunTest {
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         !createExperimentRunRequest.hasVersionedInputs());
 
-    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub);
+    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())

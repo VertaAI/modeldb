@@ -5,6 +5,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
@@ -284,11 +285,43 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public DeleteRepositoryRequest.Response deleteRepository(DeleteRepositoryRequest request)
-      throws ModelDBException {
+  public DeleteRepositoryRequest.Response deleteRepository(
+      DeleteRepositoryRequest request, CommitDAO commitDAO) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
+
+      ListBranchesRequest.Response listBranchesResponse =
+          listBranches(
+              ListBranchesRequest.newBuilder().setRepositoryId(request.getRepositoryId()).build());
+      if (!listBranchesResponse.getBranchesList().isEmpty()) {
+        String deleteBranchesHQL =
+            "DELETE FROM "
+                + BranchEntity.class.getSimpleName()
+                + " br where br.id.repository_id = :repositoryId AND br.id.branch IN (:branches)";
+        Query deleteBranchQuery = session.createQuery(deleteBranchesHQL);
+        deleteBranchQuery.setParameter("repositoryId", repository.getId());
+        deleteBranchQuery.setParameterList("branches", listBranchesResponse.getBranchesList());
+        deleteBranchQuery.executeUpdate();
+      }
+
+      CommitPaginationDTO commitPaginationDTO =
+          commitDAO.fetchCommitEntityList(
+              session, ListCommitsRequest.newBuilder().build(), repository.getId());
+      commitPaginationDTO
+          .getCommitEntities()
+          .forEach(
+              commitEntity -> {
+                if (commitEntity.getRepository().contains(repository)) {
+                  commitEntity.getRepository().remove(repository);
+                  if (commitEntity.getRepository().isEmpty()) {
+                    session.delete(commitEntity);
+                  } else {
+                    session.update(commitEntity);
+                  }
+                }
+              });
+
       session.delete(repository);
       session.getTransaction().commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
@@ -517,6 +550,24 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.delete(branchEntity);
       session.getTransaction().commit();
       return DeleteBranchRequest.Response.newBuilder().build();
+    }
+  }
+
+  @Override
+  public void deleteBranchByCommit(Long repoId, String commitHash) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+
+      StringBuilder deleteBranchesHQLBuilder =
+          new StringBuilder("DELETE FROM ")
+              .append(BranchEntity.class.getSimpleName())
+              .append(" br where br.id.repository_id = :repositoryId ")
+              .append(" AND br.commit_hash = :commitHash ");
+      Query deleteBranchQuery = session.createQuery(deleteBranchesHQLBuilder.toString());
+      deleteBranchQuery.setParameter("repositoryId", repoId);
+      deleteBranchQuery.setParameter("commitHash", commitHash);
+      deleteBranchQuery.executeUpdate();
+      session.getTransaction().commit();
     }
   }
 
