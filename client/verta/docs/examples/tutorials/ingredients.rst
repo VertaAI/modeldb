@@ -34,7 +34,7 @@ This repository works similarly to a Git repo. You can access it by checking the
 Every repository starts with a base commit and a branch named `master`, which are automatically
 created for you. The `master` branch is also the default branch.
 
-Commit operations
+Commit Operations
 ^^^^^^^^^^^^^^^^^
 
 As a first example of versioning the ingredients, let's add some local files as a dataset:
