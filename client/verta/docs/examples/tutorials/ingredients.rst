@@ -51,7 +51,7 @@ As a first example of versioning the ingredients, let's add some local files as 
     #     Initial commit
     #
 
-    print(master.show())
+    print(master.describe())
     # unsaved Commit (was Branch: master)
     # Date: 2020-03-19 18:15:13
     #
@@ -122,7 +122,7 @@ branch are not saved to the old one. For example, let's register our current Pyt
     from verta.environment import Python
     env.update("environments/python", Python(requirements=["verta"], constraints=Python.read_pip_environment()))
     env.save("Adding local python environment")
-    print(env.show())
+    print(env.describe())
     # Commit 643d8873e74f7fc3a73ce4404e4a80b56df43ad24365a6e0819d17ffab57e620 (Branch: environment)
     # Date: 2020-03-19 18:15:15
     #

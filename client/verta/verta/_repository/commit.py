@@ -64,7 +64,7 @@ class Commit(object):
 
         self._loaded_from_remote = True
 
-    def show(self):
+    def describe(self):
         self._lazy_load_blobs()
 
         contents = '\n'.join((
