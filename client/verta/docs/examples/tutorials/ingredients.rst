@@ -97,8 +97,8 @@ We can also check the content of the repository and its history using the web in
 
 .. image:: /_static/gifs/tutorial-ingredients-1.gif
 
-Branch operations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Branch Operations
+^^^^^^^^^^^^^^^^^
 
 Next, let's version the environment that we want to use to train models. We'll use the previous commit
 as base and build on a branch:
