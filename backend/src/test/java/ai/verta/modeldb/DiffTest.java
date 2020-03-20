@@ -13,6 +13,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.BlobExpanded;
+import ai.verta.modeldb.versioning.CodeDiff;
 import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest;
 import ai.verta.modeldb.versioning.ConfigDiff;
@@ -24,12 +25,16 @@ import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.EnvironmentVariablesBlob;
 import ai.verta.modeldb.versioning.GetBranchRequest;
+import ai.verta.modeldb.versioning.GitCodeBlob;
+import ai.verta.modeldb.versioning.GitCodeDiff;
 import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterConfigDiff;
 import ai.verta.modeldb.versioning.HyperparameterConfigDiff.Builder;
 import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterSetConfigDiff;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
+import ai.verta.modeldb.versioning.NotebookCodeDiff;
+import ai.verta.modeldb.versioning.PathDatasetComponentDiff;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -136,7 +141,7 @@ public class DiffTest {
 
   @Parameters
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{0, 0}, {1, 1}, {2, 0}});
+    return Arrays.asList(new Object[][] {{0, 0}, {1, 1}, {2, 0}, {3, 1}});
   }
 
   /*@Parameters
@@ -260,8 +265,8 @@ public class DiffTest {
     if (commitType == 0) {
       blobExpandedArray[2] = modifiedBlobExpanded(blobType);
     } else {
-      blobDiffsArray[0] = deleteBlobDiff0(blobType);
-      blobDiffsArray[3] = deleteBlobDiff3(blobType);
+      blobDiffsArray[0] = deleteBlobDiff1(blobType);
+      blobDiffsArray[3] = deleteBlobDiff4(blobType);
       blobDiffsArray[2] = modifiedBlobDiff(blobType);
     }
     if (commitType == 0) {
@@ -350,27 +355,38 @@ public class DiffTest {
   private static List<String> LOCATION4 = Collections.singletonList("modeldb.json");
   private static List<String> LOCATION5 = Collections.singletonList("maths/algebra");
 
-  private BlobDiff deleteBlobDiff0(int blobType) {
-    Builder test =
-        HyperparameterConfigDiff.newBuilder()
-            .setStatus(DiffStatus.DELETED)
-            .setA(
-                HyperparameterConfigBlob.newBuilder()
-                    .setName("test")
-                    .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7).build())
-                    .build());
-    BlobDiff blobDiff1 =
-        BlobDiff.newBuilder()
-            .setStatus(DiffStatus.DELETED)
-            .setConfig(ConfigDiff.newBuilder().addHyperparameters(test))
-            .addAllLocation(LOCATION1)
-            .build();
-    return blobDiff1;
+  private BlobDiff deleteBlobDiff1(int blobType) {
+    switch (blobType) {
+      case 1:
+        Builder test =
+            HyperparameterConfigDiff.newBuilder()
+                .setStatus(DiffStatus.DELETED)
+                .setA(
+                    HyperparameterConfigBlob.newBuilder()
+                        .setName("test")
+                        .setValue(
+                            HyperparameterValuesConfigBlob.newBuilder().setIntValue(7).build())
+                        .build());
+        BlobDiff blobDiff1 =
+            BlobDiff.newBuilder()
+                .setStatus(DiffStatus.DELETED)
+                .setConfig(ConfigDiff.newBuilder().addHyperparameters(test))
+                .addAllLocation(LOCATION1)
+                .build();
+        return blobDiff1;
+      default:
+        CodeDiff.Builder builderForValue = CodeDiff.newBuilder().setGit(
+            GitCodeDiff.newBuilder().setStatus(DiffStatus.DELETED).setA(GitCodeBlob.newBuilder()
+                .setBranch("master").setRepo("git://github.com/VertaAI").build()));
+        return BlobDiff.newBuilder().setCode(builderForValue)
+            .setStatus(DiffStatus.DELETED).addAllLocation(LOCATION1).build();
+    }
   }
 
-  private BlobDiff deleteBlobDiff3(int blobType) {
-    BlobDiff blobDiff4 =
-        BlobDiff.newBuilder()
+  private BlobDiff deleteBlobDiff4(int blobType) {
+    switch (blobType) {
+      case 1:
+        return BlobDiff.newBuilder()
             .setStatus(DiffStatus.DELETED)
             .setConfig(
                 ConfigDiff.newBuilder()
@@ -393,7 +409,13 @@ public class DiffTest {
                                                     .setFloatValue(1))))))
             .addAllLocation(LOCATION4)
             .build();
-    return blobDiff4;
+      default:
+        CodeDiff.Builder builderForValue = CodeDiff.newBuilder().setGit(
+            GitCodeDiff.newBuilder().setStatus(DiffStatus.DELETED).setA(GitCodeBlob.newBuilder()
+                .setBranch("master").setRepo("git://github.com/VertaAI").build()));
+        return BlobDiff.newBuilder().setCode(builderForValue)
+            .setStatus(DiffStatus.DELETED).addAllLocation(LOCATION4).build();
+    }
   }
 
   private BlobExpanded modifiedBlobExpanded(int blobType) {
@@ -405,110 +427,142 @@ public class DiffTest {
   }
 
   private BlobDiff modifiedBlobDiff(int blobType) {
-    Builder test =
-        HyperparameterConfigDiff.newBuilder()
-            .setStatus(DiffStatus.MODIFIED)
-            .setA(
-                HyperparameterConfigBlob.newBuilder()
-                    .setName("test2")
-                    .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7)))
-            .setB(
-                HyperparameterConfigBlob.newBuilder()
-                    .setName("test2")
-                    .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(5).build())
-                    .build());
-    return BlobDiff.newBuilder()
-        .addAllLocation(LOCATION3)
-        .setStatus(DiffStatus.MODIFIED)
-        .setConfig(ConfigDiff.newBuilder().addHyperparameters(test))
-        .build();
+    switch (blobType) {
+      case 1:
+      Builder test =
+          HyperparameterConfigDiff.newBuilder()
+              .setStatus(DiffStatus.MODIFIED)
+              .setA(
+                  HyperparameterConfigBlob.newBuilder()
+                      .setName("test2")
+                      .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7)))
+              .setB(
+                  HyperparameterConfigBlob.newBuilder()
+                      .setName("test2")
+                      .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(5).build())
+                      .build());
+      return BlobDiff.newBuilder()
+          .addAllLocation(LOCATION3)
+          .setStatus(DiffStatus.MODIFIED)
+          .setConfig(ConfigDiff.newBuilder().addHyperparameters(test))
+          .build();
+      default:
+        CodeDiff.Builder builderForValue = CodeDiff.newBuilder().setNotebook(
+            NotebookCodeDiff.newBuilder().setGitRepo(
+                GitCodeDiff.newBuilder().setStatus(DiffStatus.ADDED).setB(GitCodeBlob.newBuilder()
+                    .setBranch("master").setRepo("git://github.com/VertaAI").build())).setPath(
+                PathDatasetComponentDiff.newBuilder().setStatus(DiffStatus.ADDED)
+                    .setB(getBlobFromPath("test").getDataset().getPath().getComponents(0))));
+        BlobDiff blobDiff = BlobDiff.newBuilder().setCode(builderForValue)
+            .setStatus(DiffStatus.ADDED).addAllLocation(LOCATION3).build();
+        return blobDiff;
+    }
   }
 
   private BlobDiff[] createDiffs(int blobType) {
-    Builder test =
-        HyperparameterConfigDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setB(
-                HyperparameterConfigBlob.newBuilder()
-                    .setName("test")
-                    .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7).build())
-                    .build());
-    BlobDiff blobDiff1 =
-        BlobDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setConfig(ConfigDiff.newBuilder().addHyperparameters(test))
-            .addAllLocation(LOCATION1)
-            .build();
+    final BlobDiff blobDiff1, blobDiff2, blobDiff3, blobDiff4, blobDiff5;
+    switch (blobType) {
+      case 1:
+      Builder test =
+          HyperparameterConfigDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setB(
+                  HyperparameterConfigBlob.newBuilder()
+                      .setName("test")
+                      .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7).build())
+                      .build());
+      blobDiff1 =
+          BlobDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setConfig(ConfigDiff.newBuilder().addHyperparameters(test))
+              .addAllLocation(LOCATION1)
+              .build();
 
-    Builder test2 =
-        HyperparameterConfigDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setB(
-                HyperparameterConfigBlob.newBuilder()
-                    .setName("test2")
-                    .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(5).build())
-                    .build());
-    BlobDiff blobDiff2 =
-        BlobDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setConfig(ConfigDiff.newBuilder().addHyperparameters(test2))
-            .addAllLocation(LOCATION2)
-            .build();
+      Builder test2 =
+          HyperparameterConfigDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setB(
+                  HyperparameterConfigBlob.newBuilder()
+                      .setName("test2")
+                      .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(5).build())
+                      .build());
+      blobDiff2 =
+          BlobDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setConfig(ConfigDiff.newBuilder().addHyperparameters(test2))
+              .addAllLocation(LOCATION2)
+              .build();
 
-    Builder test3 =
-        HyperparameterConfigDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setB(
-                HyperparameterConfigBlob.newBuilder()
-                    .setName("test2")
-                    .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7).build())
-                    .build());
-    BlobDiff blobDiff3 =
-        BlobDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setConfig(ConfigDiff.newBuilder().addHyperparameters(test3))
-            .addAllLocation(LOCATION3)
-            .build();
+      Builder test3 =
+          HyperparameterConfigDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setB(
+                  HyperparameterConfigBlob.newBuilder()
+                      .setName("test2")
+                      .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7).build())
+                      .build());
+      blobDiff3 =
+          BlobDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setConfig(ConfigDiff.newBuilder().addHyperparameters(test3))
+              .addAllLocation(LOCATION3)
+              .build();
 
-    BlobDiff blobDiff4 =
-        BlobDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setConfig(
-                ConfigDiff.newBuilder()
-                    .addHyperparameterSet(
-                        HyperparameterSetConfigDiff.newBuilder()
-                            .setStatus(DiffStatus.ADDED)
-                            .setB(
-                                HyperparameterSetConfigBlob.newBuilder()
-                                    .setName("name")
-                                    .setContinuous(
-                                        ContinuousHyperparameterSetConfigBlob.newBuilder()
-                                            .setIntervalBegin(
-                                                HyperparameterValuesConfigBlob.newBuilder()
-                                                    .setFloatValue(5))
-                                            .setIntervalEnd(
-                                                HyperparameterValuesConfigBlob.newBuilder()
-                                                    .setFloatValue(6))
-                                            .setIntervalStep(
-                                                HyperparameterValuesConfigBlob.newBuilder()
-                                                    .setFloatValue(1))))))
-            .addAllLocation(LOCATION4)
-            .build();
+      blobDiff4 =
+          BlobDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setConfig(
+                  ConfigDiff.newBuilder()
+                      .addHyperparameterSet(
+                          HyperparameterSetConfigDiff.newBuilder()
+                              .setStatus(DiffStatus.ADDED)
+                              .setB(
+                                  HyperparameterSetConfigBlob.newBuilder()
+                                      .setName("name")
+                                      .setContinuous(
+                                          ContinuousHyperparameterSetConfigBlob.newBuilder()
+                                              .setIntervalBegin(
+                                                  HyperparameterValuesConfigBlob.newBuilder()
+                                                      .setFloatValue(5))
+                                              .setIntervalEnd(
+                                                  HyperparameterValuesConfigBlob.newBuilder()
+                                                      .setFloatValue(6))
+                                              .setIntervalStep(
+                                                  HyperparameterValuesConfigBlob.newBuilder()
+                                                      .setFloatValue(1))))))
+              .addAllLocation(LOCATION4)
+              .build();
 
-    Builder test5 =
-        HyperparameterConfigDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setB(
-                HyperparameterConfigBlob.newBuilder()
-                    .setName("test")
-                    .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7).build())
-                    .build());
-    BlobDiff blobDiff5 =
-        BlobDiff.newBuilder()
-            .setStatus(DiffStatus.ADDED)
-            .setConfig(ConfigDiff.newBuilder().addHyperparameters(test5))
-            .addAllLocation(LOCATION5)
-            .build();
+      Builder test5 =
+          HyperparameterConfigDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setB(
+                  HyperparameterConfigBlob.newBuilder()
+                      .setName("test")
+                      .setValue(HyperparameterValuesConfigBlob.newBuilder().setIntValue(7).build())
+                      .build());
+      blobDiff5 =
+          BlobDiff.newBuilder()
+              .setStatus(DiffStatus.ADDED)
+              .setConfig(ConfigDiff.newBuilder().addHyperparameters(test5))
+              .addAllLocation(LOCATION5)
+              .build();
+      break;
+      default:
+        CodeDiff.Builder builderForValue = CodeDiff.newBuilder().setGit(
+            GitCodeDiff.newBuilder().setStatus(DiffStatus.ADDED).setB(GitCodeBlob.newBuilder()
+                .setBranch("master").setRepo("git://github.com/VertaAI").build()));
+        blobDiff1 = BlobDiff.newBuilder().setCode(builderForValue)
+            .setStatus(DiffStatus.ADDED).addAllLocation(LOCATION1).build();
+        blobDiff2 = BlobDiff.newBuilder().setCode(builderForValue)
+            .setStatus(DiffStatus.ADDED).addAllLocation(LOCATION2).build();
+        blobDiff3 = BlobDiff.newBuilder().setCode(builderForValue)
+            .setStatus(DiffStatus.ADDED).addAllLocation(LOCATION3).build();
+        blobDiff4 = BlobDiff.newBuilder().setCode(builderForValue)
+            .setStatus(DiffStatus.ADDED).addAllLocation(LOCATION4).build();
+        blobDiff5 = BlobDiff.newBuilder().setCode(builderForValue)
+            .setStatus(DiffStatus.ADDED).addAllLocation(LOCATION5).build();
+    }
 
     return new BlobDiff[] {blobDiff1, blobDiff2, blobDiff3, blobDiff4, blobDiff5};
   }
