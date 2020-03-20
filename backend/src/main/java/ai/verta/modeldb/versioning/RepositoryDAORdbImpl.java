@@ -566,10 +566,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         }
         referenceCommit = branchEntity.getCommit_hash();
       } else {
-        Query query = session.createQuery(CHECK_COMMIT_IN_REPOSITORY_HQL);
-        query.setParameter("repositoryId", repository.getId());
-        query.setParameter("commit", request.getCommitSha());
-        CommitEntity commit = (CommitEntity) query.uniqueResult();
+        CommitEntity commit = session.get(CommitEntity.class, request.getCommitSha());
         if (commit == null) {
           throw new ModelDBException(ModelDBConstants.COMMIT_NOT_FOUND, Code.NOT_FOUND);
         }
