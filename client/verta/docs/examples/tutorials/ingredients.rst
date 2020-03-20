@@ -115,7 +115,7 @@ as base and build on a branch:
     #
 
 Now we have the same commit but it's registered for the new branch. Any changes we do in the new
-branch are not saved to the old one. For example, let's register our current Python environment:
+branch are not saved to the old one. For example, let's add our current Python environment:
 
 .. code-block:: python
 
