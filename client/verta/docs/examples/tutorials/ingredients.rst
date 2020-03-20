@@ -93,7 +93,7 @@ commits up to the current:
     #     Initial commit
     #
 
-We can also check the content of the repository and its history using the web interface:
+We can also check the contents of the repository and its history using the web interface:
 
 .. image:: /_static/gifs/tutorial-ingredients-1.gif
 
