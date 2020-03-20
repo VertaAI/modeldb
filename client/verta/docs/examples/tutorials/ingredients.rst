@@ -159,7 +159,7 @@ For merge operations, a default commit message is added automatically.
 References
 ^^^^^^^^^^
 
-Now that you know the basic operations for versioning the components of the model, you can:
+Now that you know the basic operations for versioning the components of models, you can:
 
 - Check `the repository and commit APIs <../../api/api/versioning.html>`__ for more information, like
   manipulating diffs, reverting commits and tagging.
