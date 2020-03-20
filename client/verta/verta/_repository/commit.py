@@ -39,12 +39,14 @@ class Commit(object):
         self._repo = repo
         self._parent_ids = list(collections.OrderedDict.fromkeys(commit_msg.parent_shas or []))  # remove duplicates while maintaining order
 
-        self.id = commit_msg.commit_sha
-        self.date = commit_msg.date_created
         self.branch_name = branch_name  # TODO: find a way to clear if branch is moved
 
         self._blobs = dict()  # will be loaded when needed
         self._loaded_from_remote = False
+
+    @property
+    def id(self):
+        return self._commit_msg.commit_sha or None
 
     @property
     def parent(self):
@@ -95,7 +97,7 @@ class Commit(object):
 
         # TODO: add author
         # TODO: make data more similar to git
-        date = 'Date: ' + datetime.fromtimestamp(self.date/1000.).strftime('%Y-%m-%d %H:%M:%S')
+        date = 'Date: ' + datetime.fromtimestamp(self._commit_msg.date_created/1000.).strftime('%Y-%m-%d %H:%M:%S')
         message = '\n'.join('    ' + c for c in self._commit_msg.message.split('\n'))
         components = [header, date, '', message, '']
         return '\n'.join(components)
@@ -148,7 +150,7 @@ class Commit(object):
         """
         self._lazy_load_blobs()
         self._parent_ids = [self.id]
-        self.id = None
+        self._commit_msg.ClearField('commit_sha')
 
     def _to_create_msg(self, commit_message):
         self._lazy_load_blobs()
@@ -524,7 +526,7 @@ class Commit(object):
 
     def _to_heap_element(self):
         # Most recent has higher priority
-        return (-self.date, self.id, self)  # pylint: disable=invalid-unary-operand-type
+        return (-self._commit_msg.date_created, self.id, self)
 
     def get_common_parent(self, other):
         # TODO: check other is a Commit
