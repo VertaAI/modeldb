@@ -74,7 +74,7 @@ are, we can use:
     #     Adding demo dataset
     #
 
-The commit is now saved in the server and the branch has been updated. You can also check the line of
+The commit is now saved in the server and the branch has been updated. You can also check the lineage of
 commits up to the current:
 
 .. code-block:: python
