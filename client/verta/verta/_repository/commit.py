@@ -75,7 +75,7 @@ class Commit(object):
         if not contents:
             contents = "<no contents>"
 
-        components = [self.__repr__(), '', 'Contents:', contents]
+        components = [self.__repr__(), 'Contents:', contents]
         return '\n'.join(components)
 
     def __repr__(self):
@@ -84,16 +84,20 @@ class Commit(object):
             # TODO: put tag here
         ))
         if self.id is None:
-            header = "unsaved Commit (was {})".format(branch_and_tag)
+            header = "unsaved Commit"
+            if branch_and_tag:
+                header = header +  " (was {})".format(branch_and_tag)
         else:
             # TODO: fetch commit message
-            header = "Commit {} ({})".format(self.id, branch_and_tag)
+            header = "Commit {}".format(self.id)
+            if branch_and_tag:
+                header = header +  " ({})".format(branch_and_tag)
 
         # TODO: add author
         # TODO: make data more similar to git
         date = 'Date: ' + datetime.fromtimestamp(self.date/1000.).strftime('%Y-%m-%d %H:%M:%S')
         message = '\n'.join('    ' + c for c in self._commit_msg.message.split('\n'))
-        components = [header, date, '', message]
+        components = [header, date, '', message, '']
         return '\n'.join(components)
 
     @classmethod
@@ -363,6 +367,23 @@ class Commit(object):
         )
         response = _utils.make_request("PUT", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
+
+    def log(self):
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+            self.id,
+        )
+        response = _utils.make_request("GET", endpoint, self._conn)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(response.json(),
+                                            _VersioningService.ListCommitsLogRequest.Response)
+        commits = response_msg.commits
+
+        for c in commits:
+            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == self.id else None)
 
     def branch(self, branch):
         """

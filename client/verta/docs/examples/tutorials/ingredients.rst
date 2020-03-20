@@ -25,10 +25,11 @@ This repository works similarly to a Git repo. You can access it by checking the
 
     master = repo.get_commit()
     print(master)
-    # Commit ea568177a186436c77d1103df2b59b3d3499a90de21ac0175c5d80f273ed3dd1 (Branch: master)
-    # Date: 2020-03-19 12:24:47
+    # Commit b56524a708a45537d7c7a50c6b002eee75cc32a25ca5c88a957f6d1c3e9ffaa1 (Branch: master)
+    # Date: 2020-03-19 18:03:45
     #
     #     Initial commit
+    #
 
 Every repository starts with a base commit and a branch named `master`, which are automatically
 created for you. The `master` branch is also the default branch.
@@ -45,13 +46,14 @@ As a first example of versioning the ingredients, let's add some local files as 
 
     print(master)
     # unsaved Commit (was Branch: master)
-    # Date: 2020-03-19 12:24:47
+    # Date: 2020-03-19 18:15:13
     #
     #     Initial commit
+    #
 
     print(master.show())
     # unsaved Commit (was Branch: master)
-    # Date: 2020-03-19 12:24:47
+    # Date: 2020-03-19 18:15:13
     #
     #     Initial commit
     #
@@ -66,15 +68,34 @@ are, we can use:
 
     master.save("Adding demo dataset")
     print(master)
-    # Commit b1e02c26db8b4da656146ad0aeaebbb3d7df6edb4cb2e2761d2aae4784d1eb3b (Branch: master)
-    # Date: 2020-03-19 13:51:27
+    # Commit 643d8873e74f7fc3a73ce4404e4a80b56df43ad24365a6e0819d17ffab57e620 (Branch: master)
+    # Date: 2020-03-19 18:15:15
     #
     #     Adding demo dataset
+    #
 
-The commit is now saved in the server and the branch has been updated.
+The commit is now saved in the server and the branch has been updated. You can also check the line of
+commits up to the current:
 
-**TODO: add log**
-**TODO: add webapp**
+.. code-block:: python
+
+    for commit in master.log():
+        print(commit)
+
+    # Commit 643d8873e74f7fc3a73ce4404e4a80b56df43ad24365a6e0819d17ffab57e620 (Branch: master)
+    # Date: 2020-03-19 18:15:15
+    #
+    #     Adding demo dataset
+    #
+    # Commit b56524a708a45537d7c7a50c6b002eee75cc32a25ca5c88a957f6d1c3e9ffaa1
+    # Date: 2020-03-19 18:15:13
+    #
+    #     Initial commit
+    #
+
+We can also check the content of the repository and its history using the web interface:
+
+.. image:: /_static/gifs/tutorial-ingredients-1.gif
 
 Branch operations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -87,10 +108,11 @@ as base and build on a branch:
     env = repo.get_commit(branch="master")
     env.branch("environment")
     print(commit)
-    # Commit 7349a807b9b5de692938c03e5d3b63d8c8f6e359e8eb1075cc5bcdbabffbdc46 (Branch: environment)
-    # Date: 2020-03-19 14:07:50
+    # Commit 643d8873e74f7fc3a73ce4404e4a80b56df43ad24365a6e0819d17ffab57e620 (Branch: environment)
+    # Date: 2020-03-19 18:15:15
     #
     #     Adding demo dataset
+    #
 
 Now we have the same commit but it's registered for the new branch. Any changes we do in the new
 branch are not saved to the old one. For example, let's register our current Python environment:
@@ -101,8 +123,8 @@ branch are not saved to the old one. For example, let's register our current Pyt
     env.update("environments/python", Python(requirements=["verta"], constraints=Python.read_pip_environment()))
     env.save("Adding local python environment")
     print(env.show())
-    # Commit 0fa4095dbad060e1c7faf84fb4f944407171a4f2b12f1606b7d469e95907e59f (Branch: environment)
-    # Date: 2020-03-19 14:14:49
+    # Commit 643d8873e74f7fc3a73ce4404e4a80b56df43ad24365a6e0819d17ffab57e620 (Branch: environment)
+    # Date: 2020-03-19 18:15:15
     #
     #     Adding local python environment
     #
@@ -114,7 +136,10 @@ This new commit now has the information about the local Python setup. It lists `
 requirements and adds constraints for all the other libraries, so that we can recreate the environment
 with the correct versions.
 
-**TODO: add webapp**
+If we check the web interface, we can easily compare the two branches and see that the environment was
+added in the new branch.
+
+.. image:: /_static/gifs/tutorial-ingredients-2.gif
 
 Once we're done with the changes in our branch, we can merge it back into the `master` branch so that
 others can benefit from our changes:
@@ -123,10 +148,11 @@ others can benefit from our changes:
 
     master.merge(env)
     print(master)
-    # Commit e2862f3d71f8f4cc47902eb7b8f8545fd6de989a4299f0d8551f58a48283d32d (Branch: master)
-    # Date: 2020-03-19 14:22:35
+    # Commit 5cb2d7a7963408ce0d00fdc7a9316576888f648e0c829f0acdc3794607c1e18f (Branch: master)
+    # Date: 2020-03-19 18:15:30
     #
     #     Merge environment into master
+    #
 
 For merge operations, a default commit message is added automatically.
 
