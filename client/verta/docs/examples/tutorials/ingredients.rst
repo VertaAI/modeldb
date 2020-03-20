@@ -101,7 +101,7 @@ Branch Operations
 ^^^^^^^^^^^^^^^^^
 
 Next, let's version the environment that we want to use to train models. We'll use the previous commit
-as base and build on a branch:
+as the base for a new branch to build on:
 
 .. code-block:: python
 
