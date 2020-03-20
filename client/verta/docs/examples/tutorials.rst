@@ -16,7 +16,9 @@ Deployment and Release
 ^^^^^^^^^^^^^^^^^^^^^^
 
 * `Deploying Custom Models <tutorials/class.html>`_
-.. * `Deploying off-the-shelf Models <tutorials/off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
+
+.. commented out because page doesn't exist yet
+    * `Deploying off-the-shelf Models <tutorials/off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
 
 Real-time Model Monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
