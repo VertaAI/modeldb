@@ -10,18 +10,15 @@
             <dbms type="postgresql"/>
         </preConditions>
         <createIndex indexName="kv_kv_val"
-                     tableName="keyvalue"
-                     unique="true">
+                     tableName="keyvalue">
             <column name="kv_value"/>
         </createIndex>
         <createIndex indexName="kv_kv_key"
-                     tableName="keyvalue"
-                     unique="true">
+                     tableName="keyvalue">
             <column name="kv_key"/>
         </createIndex>
         <createIndex indexName="at_kv_key"
-                     tableName="attribute"
-                     unique="true">
+                     tableName="attribute">
             <column name="kv_key"/>
         </createIndex>
     </changeSet>
