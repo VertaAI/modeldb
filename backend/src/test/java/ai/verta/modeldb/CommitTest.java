@@ -616,6 +616,98 @@ public class CommitTest {
   }
 
   @Test
+  public void createCommitWith2SameBlobTest() {
+    LOGGER.info("List commit blob test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub);
+
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    String path1 = "/protos/proto/public/versioning/versioning.proto";
+    List<String> location1 = new ArrayList<>();
+    location1.add("modeldb");
+    location1.add("environment");
+    location1.add("train.json"); // file
+    BlobExpanded blobExpanded1 =
+        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path1)).addAllLocation(location1).build();
+
+    String path2 = "/protos/proto/public/test.txt";
+    List<String> location2 = new ArrayList<>();
+    location2.add("modeldb");
+    location2.add("environment.json");
+    BlobExpanded blobExpanded2 =
+        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path2)).addAllLocation(location2).build();
+
+    List<String> location3 = new ArrayList<>();
+    location3.add("modeldb.json");
+    BlobExpanded blobExpanded3 =
+        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path2)).addAllLocation(location3).build();
+
+    Commit.Builder commitBuilder =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(Calendar.getInstance().getTimeInMillis())
+            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
+    }
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(commitBuilder.build())
+            .addBlobs(blobExpanded1)
+            .addBlobs(blobExpanded2)
+            .addBlobs(blobExpanded3)
+            .build();
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    ListCommitBlobsRequest listCommitBlobsRequest =
+        ListCommitBlobsRequest.newBuilder()
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .build();
+
+    ListCommitBlobsRequest.Response listCommitBlobsResponse =
+        versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        3,
+        listCommitBlobsResponse.getBlobsCount());
+    Assert.assertEquals(
+        "blob data not match with expected blob data",
+        new HashSet<>(Arrays.asList(blobExpanded1, blobExpanded2, blobExpanded3)),
+        new HashSet<>(listCommitBlobsResponse.getBlobsList()));
+
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("List commit blob test end................................");
+  }
+
+  @Test
   @Ignore
   public void getCommitBlobListTest() {
     LOGGER.info("List commit blob test start................................");

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -54,9 +55,10 @@ public class BlobDAORdbImpl implements BlobDAO {
   public String setBlobs(Session session, List<BlobContainer> blobContainers, FileHasher fileHasher)
       throws NoSuchAlgorithmException, ModelDBException {
     TreeElem rootTree = new TreeElem();
+    Set<String> blobHashes = new HashSet<>();
     for (BlobContainer blobContainer : blobContainers) {
       // should save each blob during one session to avoid recurring entities ids
-      blobContainer.process(session, rootTree, fileHasher);
+      blobContainer.process(session, rootTree, fileHasher, blobHashes);
     }
     final InternalFolderElement internalFolderElement = rootTree.saveFolders(session, fileHasher);
     return internalFolderElement.getElementSha();
