@@ -99,15 +99,15 @@ commits up to the current:
     #     Initial commit
     #
 
+We can also check the contents of the repository and its history using the web interface:
+
+.. image:: /_static/gifs/tutorial-ingredients-1.gif
+
 Now that we added a commit, the repository looks like this:
 
 .. image:: /_static/images/tutorial-ingredients-2.png
     :width: 350px
     :align: center
-
-We can also check the contents of the repository and its history using the web interface:
-
-.. image:: /_static/gifs/tutorial-ingredients-1.gif
 
 Branch Operations
 ^^^^^^^^^^^^^^^^^
