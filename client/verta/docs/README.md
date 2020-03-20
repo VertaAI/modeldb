@@ -6,5 +6,5 @@
 
 ## Deployment Directions
 1. (optional) Go to https://readthedocs.org/projects/verta/versions/ to activate a branch to be deployed
-1. Go to https://readthedocs.org/projects/verta/builds/ to trigger a build
+1. Go to https://readthedocs.org/projects/verta/builds/ to trigger and deploy a new build
 1. (optional) When done testing, return to https://readthedocs.org/projects/verta/versions/ to deactivate the branch version
