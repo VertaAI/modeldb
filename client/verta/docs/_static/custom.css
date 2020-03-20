@@ -9,10 +9,7 @@
 html {
   font-size: 14px;
   font-family: "Roboto";
-  height: 100%;
-  height: -moz-available;
-  height: -webkit-fill-available;
-  height: fill-available;
+  min-height: 100%;
 }
 
 /*
@@ -74,9 +71,9 @@ html {
 body {
   display: flex;
   flex-direction: column;
-  height: 100%;
   margin: 0;
   background: #f5f7f9;
+  min-height: 100%;
 }
 
 .document {
