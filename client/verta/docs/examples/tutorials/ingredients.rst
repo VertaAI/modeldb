@@ -163,5 +163,4 @@ Now that you know the basic operations for versioning the components of models, 
 
 - Check `the repository and commit APIs <../../api/api/versioning.html>`__ for more information, like
   manipulating diffs, reverting commits and tagging.
-  and tagging.
 - Use the versioned components to version a model.
