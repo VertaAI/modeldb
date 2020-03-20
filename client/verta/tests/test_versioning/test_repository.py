@@ -123,20 +123,6 @@ class TestCommit:
         finally:
             utils.delete_commit(commit._repo.id, original_id, commit._conn)
 
-    def test_set_parent(self, repository):
-        blob1 = verta.environment.Python(["a==1"])
-        path1 = "path/to/bananas"
-
-        commit1 = repository.get_commit()
-        commit1.update(path1, blob1)
-        commit1.save(message="banana")
-        try:
-            commit2 = repository.new_commit(parents=[commit1])
-            assert commit1.id in commit2._parent_ids
-            assert commit2.get(path1)
-        finally:
-            utils.delete_commit(repository.id, commit1.id, repository._conn)
-
     def test_log_to_run(self, experiment_run, commit):
         blob1 = verta.dataset.Path(__file__)
         blob2 = verta.environment.Python()
