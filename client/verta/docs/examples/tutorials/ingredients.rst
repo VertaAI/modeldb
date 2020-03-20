@@ -5,7 +5,7 @@ A model is composed of four ingredients: code, config, dataset and environment. 
 them, you might end up with a different model. On the other hand, if you re-use all correctly, you
 have everything you need to reproduce the model. In this tutorial, we'll cover manipulation of
 repositories and all the different entities necessary to ensure your environment is reproducible.
-If you're already familiar with Git, a lot of these concepts will be known to you.
+If you're already familiar with Git, a lot of these concepts will be familiar to you.
 
 Repositories
 ^^^^^^^^^^^^
