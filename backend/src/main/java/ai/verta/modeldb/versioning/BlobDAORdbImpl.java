@@ -413,6 +413,11 @@ public class BlobDAORdbImpl implements BlobDAO {
             "No such commit found in the repository : " + internalCommitB.getCommit_hash(),
             Status.Code.NOT_FOUND);
       }
+
+      if (request.getReplaceAWithCommonAncestor()) {
+        internalCommitA =
+            getCommonParent(session, internalCommitA.getRootSha(), internalCommitB.getRootSha());
+      }
       // get list of blob expanded in both commit and group them in a map based on location
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
           getCommitBlobMapWithHash(session, internalCommitA.getRootSha(), new ArrayList<>());
