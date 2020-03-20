@@ -441,6 +441,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       Map<String, BlobExpanded> locationBlobsModified =
           getLocationWiseBlobExpandedMapFromCollection(blobsAdded.values().stream().flatMap(
               Collection::stream).collect(Collectors.toList()));
+      for (String entry : addedLocations) {
+        locationBlobsModified.remove(entry);
+      }
       Set<String> modifiedLocations = locationBlobsModified.keySet();
       LOGGER.debug("Modified location for Diff : {}", modifiedLocations);
 
