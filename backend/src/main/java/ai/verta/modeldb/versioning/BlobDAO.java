@@ -11,7 +11,7 @@ import org.hibernate.Session;
 
 public interface BlobDAO {
 
-  String setBlobs(List<BlobContainer> blobsList, FileHasher fileHasher)
+  String setBlobs(Session session, List<BlobContainer> blobsList, FileHasher fileHasher)
       throws NoSuchAlgorithmException, ModelDBException;
 
   GetCommitComponentRequest.Response getCommitComponent(

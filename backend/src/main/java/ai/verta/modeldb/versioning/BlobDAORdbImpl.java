@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -51,23 +52,16 @@ public class BlobDAORdbImpl implements BlobDAO {
    * @throws ModelDBException
    */
   @Override
-  public String setBlobs(List<BlobContainer> blobContainers, FileHasher fileHasher)
+  public String setBlobs(Session session, List<BlobContainer> blobContainers, FileHasher fileHasher)
       throws NoSuchAlgorithmException, ModelDBException {
     TreeElem rootTree = new TreeElem();
+    Set<String> blobHashes = new HashSet<>();
     for (BlobContainer blobContainer : blobContainers) {
       // should save each blob during one session to avoid recurring entities ids
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-        session.beginTransaction();
-        blobContainer.process(session, rootTree, fileHasher);
-        session.getTransaction().commit();
-      }
+      blobContainer.process(session, rootTree, fileHasher, blobHashes);
     }
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      final InternalFolderElement internalFolderElement = rootTree.saveFolders(session, fileHasher);
-      session.getTransaction().commit();
-      return internalFolderElement.getElementSha();
-    }
+    final InternalFolderElement internalFolderElement = rootTree.saveFolders(session, fileHasher);
+    return internalFolderElement.getElementSha();
   }
 
   private Blob getBlob(Session session, InternalFolderElementEntity folderElementEntity)

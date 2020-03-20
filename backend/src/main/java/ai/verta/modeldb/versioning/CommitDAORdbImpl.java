@@ -27,14 +27,15 @@ public class CommitDAORdbImpl implements CommitDAO {
   public Response setCommit(
       String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException {
-    final String rootSha = setBlobs.apply();
     long timeCreated = new Date().getTime();
     if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
     }
-    final String commitSha = generateCommitSHA(rootSha, commit, timeCreated);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
+      final String rootSha = setBlobs.apply(session);
+      final String commitSha = generateCommitSHA(rootSha, commit, timeCreated);
+
       Commit internalCommit =
           Commit.newBuilder()
               .setDateCreated(timeCreated)
