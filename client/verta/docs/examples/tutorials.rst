@@ -1,7 +1,7 @@
 Tutorials
 =========
 
-Check out these tutorials for detailed step-by-step instructions on performing different MLOps 
+Check out these tutorials for detailed step-by-step instructions on performing different MLOps
 functions in Verta.
 
 ModelDB (Versioning and Metadata)
@@ -16,13 +16,15 @@ Deployment and Release
 ^^^^^^^^^^^^^^^^^^^^^^
 
 * `Deploying Custom Models <tutorials/class.html>`_
-* `Deploying off-the-shelf Models <tutorials/off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
+
+.. commented out because page doesn't exist yet
+    * `Deploying off-the-shelf Models <tutorials/off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
 
 Real-time Model Monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note::
-    This functionality is only available in Verta Enterprise. 
+    This functionality is only available in Verta Enterprise.
     Please email `support@verta.ai <mailto:support@verta.ai>`_ for your enterprise login.
 
 Core Verta functionality
@@ -34,3 +36,11 @@ Core Verta functionality
 .. toctree::
     :hidden:
     :titlesonly:
+
+    Model Versioning <tutorials/versioning>
+    Data Versioning <tutorials/dataset>
+    Workflow Logging <tutorials/workflow>
+    Metadata Querying <tutorials/querying>
+    Class Models <tutorials/class>
+    Web App <tutorials/webapp>
+    Workspaces <tutorials/workspaces>
