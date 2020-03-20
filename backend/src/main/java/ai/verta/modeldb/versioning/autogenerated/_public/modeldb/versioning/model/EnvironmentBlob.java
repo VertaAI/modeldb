@@ -168,9 +168,6 @@ public class EnvironmentBlob implements ProtoType {
 
   public EnvironmentBlob setCommandLine(List<String> value) {
     this.CommandLine = Utils.removeEmpty(value);
-    if (this.CommandLine != null) {
-      this.CommandLine.sort(Comparator.comparingInt(String::hashCode));
-    }
     return this;
   }
 

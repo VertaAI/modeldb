@@ -141,9 +141,6 @@ public class CommandLineEnvironmentDiff implements ProtoType {
 
   public CommandLineEnvironmentDiff setA(List<String> value) {
     this.A = Utils.removeEmpty(value);
-    if (this.A != null) {
-      this.A.sort(Comparator.comparingInt(String::hashCode));
-    }
     return this;
   }
 
@@ -153,9 +150,6 @@ public class CommandLineEnvironmentDiff implements ProtoType {
 
   public CommandLineEnvironmentDiff setB(List<String> value) {
     this.B = Utils.removeEmpty(value);
-    if (this.B != null) {
-      this.B.sort(Comparator.comparingInt(String::hashCode));
-    }
     return this;
   }
 

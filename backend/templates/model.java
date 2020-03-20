@@ -121,9 +121,15 @@ public class {{class_name}} implements ProtoType {
         {{#type}}
         {{#is_list}}
         {{#list_type}}
+        {{#is_custom}}
+        {{! We only sort if it is a list of generated objects. Everything else stays the same }}
+        {{! Because lists can either be natural types (like string) or generated, }}
+        {{! this assumes that lists of generated types are actually sets and lists of natural types are }}
+        {{! lists (e.g. command line is List<String>) }}
         if (this.{{name}} != null) {
             this.{{name}}.sort(Comparator.comparingInt({{>type}}::hashCode));
         }
+        {{/is_custom}}
         {{/list_type}}
         {{/is_list}}
         {{/type}}

@@ -231,9 +231,6 @@ public class BlobDiff implements ProtoType {
 
   public BlobDiff setLocation(List<String> value) {
     this.Location = Utils.removeEmpty(value);
-    if (this.Location != null) {
-      this.Location.sort(Comparator.comparingInt(String::hashCode));
-    }
     return this;
   }
 
