@@ -340,7 +340,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public ListCommitBlobsRequest.Response getCommitBlobsList(
-      RepositoryFunction repositoryFunction, String commitHash, ArrayList<String> locationList)
+      RepositoryFunction repositoryFunction, String commitHash, List<String> locationList)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
