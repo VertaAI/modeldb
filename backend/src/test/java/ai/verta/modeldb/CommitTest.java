@@ -597,6 +597,8 @@ public class CommitTest {
     LOGGER.info("Get commit blob test end................................");
   }
 
+  static long time = Calendar.getInstance().getTimeInMillis();
+
   static Blob getBlobFromPath(String path) {
     return Blob.newBuilder()
         .setDataset(
@@ -607,7 +609,7 @@ public class CommitTest {
                             PathDatasetComponentBlob.newBuilder()
                                 .setPath(path)
                                 .setSize(2)
-                                .setLastModifiedAtSource(Calendar.getInstance().getTimeInMillis())
+                                .setLastModifiedAtSource(time)
                                 .build())
                         .build())
                 .build())
