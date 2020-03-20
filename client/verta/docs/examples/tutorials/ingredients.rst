@@ -34,6 +34,12 @@ This repository works similarly to a Git repo. You can access it by checking the
 Every repository starts with a base commit and a branch named `master`, which are automatically
 created for you. The `master` branch is also the default branch.
 
+At this stage, this is what the repository looks like:
+
+.. image:: /_static/images/tutorial-ingredients-1.png
+    :width: 350px
+    :align: center
+
 Commit Operations
 ^^^^^^^^^^^^^^^^^
 
@@ -92,6 +98,12 @@ commits up to the current:
     #
     #     Initial commit
     #
+
+Now that we added a commit, the repository looks like this:
+
+.. image:: /_static/images/tutorial-ingredients-2.png
+    :width: 350px
+    :align: center
 
 We can also check the contents of the repository and its history using the web interface:
 
@@ -154,7 +166,12 @@ others can benefit from our changes:
     #     Merge environment into master
     #
 
-For merge operations, a default commit message is added automatically.
+For merge operations, a default commit message is added automatically. After the merge, the repository
+looks like this:
+
+.. image:: /_static/images/tutorial-ingredients-3.png
+    :width: 450px
+    :align: center
 
 References
 ^^^^^^^^^^
