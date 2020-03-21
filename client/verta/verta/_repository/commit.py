@@ -463,7 +463,7 @@ class Commit(object):
                                             _VersioningService.ComputeRepositoryDiffRequest.Response)
         return diff_module.Diff(response_msg.diffs)
 
-    def apply_diff(self, diff, message):
+    def apply_diff(self, diff, message, other_parents=[]):
         """
         Applies a diff to this Commit.
 
@@ -486,6 +486,7 @@ class Commit(object):
         msg = _VersioningService.CreateCommitRequest()
         msg.repository_id.repo_id = self._repo.id
         msg.commit.parent_shas.append(self.id)
+        msg.commit.parent_shas.extend(other_parents)
         msg.commit.message = message
         msg.commit_base = self.id
         msg.diffs.extend(diff._diffs)
@@ -597,7 +598,7 @@ class Commit(object):
                 self.branch_name or self.id[:7],
             )
 
-        self.apply_diff(other.diff_from(self.get_common_parent(other)), message=message)
+        self.apply_diff(other.diff_from(self.get_common_parent(other)), message=message, other_parents=[other.id])
 
 
 def blob_msg_to_object(blob_msg):

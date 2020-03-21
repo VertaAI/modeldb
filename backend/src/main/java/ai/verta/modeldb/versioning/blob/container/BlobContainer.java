@@ -10,6 +10,7 @@ import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.hibernate.Session;
 
 /** contains proto object and saves it to the database */
@@ -58,7 +59,8 @@ public abstract class BlobContainer {
    * @param fileHasher get sha of the blob or string
    * @throws NoSuchAlgorithmException for no hashing algorithm
    */
-  public abstract void process(Session session, TreeElem rootTree, FileHasher fileHasher)
+  public abstract void process(
+      Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException;
 
   protected void validate(PathDatasetBlob path) throws ModelDBException {

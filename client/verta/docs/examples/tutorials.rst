@@ -17,7 +17,9 @@ Deployment and Release
 ^^^^^^^^^^^^^^^^^^^^^^
 
 * `Deploying Custom Models <tutorials/class.html>`_
-* `Deploying off-the-shelf Models <tutorials/off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
+
+.. commented out because page doesn't exist yet
+    * `Deploying off-the-shelf Models <tutorials/off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
 
 Real-time Model Monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -35,3 +37,11 @@ Core Verta functionality
 .. toctree::
     :hidden:
     :titlesonly:
+
+    Model Versioning <tutorials/versioning>
+    Data Versioning <tutorials/dataset>
+    Workflow Logging <tutorials/workflow>
+    Metadata Querying <tutorials/querying>
+    Class Models <tutorials/class>
+    Web App <tutorials/webapp>
+    Workspaces <tutorials/workspaces>

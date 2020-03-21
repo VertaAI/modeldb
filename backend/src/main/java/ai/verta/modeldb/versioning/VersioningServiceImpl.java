@@ -18,7 +18,6 @@ import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -127,7 +126,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
             commitDAO.setCommit(
                 authService.getVertaIdFromUserInfo(userInfo),
                 Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build(),
-                () -> FileHasher.getSha(new String()),
+                (session) -> FileHasher.getSha(new String()),
                 (session) -> repositoryDAO.getRepositoryById(session, repositoryId));
 
         repositoryDAO.setBranch(
@@ -173,7 +172,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        DeleteRepositoryRequest.Response response = repositoryDAO.deleteRepository(request);
+        DeleteRepositoryRequest.Response response =
+            repositoryDAO.deleteRepository(request, commitDAO);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -268,7 +268,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           commitDAO.setCommit(
               authService.getVertaIdFromUserInfo(currentLoginUserInfo),
               request.getCommit(),
-              () -> blobDAO.setBlobs(blobContainers, fileHasher),
+              (session) -> blobDAO.setBlobs(session, blobContainers, fileHasher),
               repositoryFunction);
 
       responseObserver.onNext(response);
@@ -304,10 +304,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        DeleteCommitRequest.Response response =
-            commitDAO.deleteCommit(
-                request.getCommitSha(),
-                (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()));
+        DeleteCommitRequest.Response response = commitDAO.deleteCommit(request, repositoryDAO);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -332,7 +329,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           blobDAO.getCommitBlobsList(
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               request.getCommitSha(),
-              new ArrayList<String>());
+              request.getLocationPrefixList());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

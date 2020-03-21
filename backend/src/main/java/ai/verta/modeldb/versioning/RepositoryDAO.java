@@ -14,8 +14,8 @@ public interface RepositoryDAO {
   SetRepository.Response setRepository(SetRepository request, boolean create)
       throws ModelDBException;
 
-  DeleteRepositoryRequest.Response deleteRepository(DeleteRepositoryRequest request)
-      throws ModelDBException;
+  DeleteRepositoryRequest.Response deleteRepository(
+      DeleteRepositoryRequest request, CommitDAO commitDAO) throws ModelDBException;
 
   ListRepositoriesRequest.Response listRepositories(ListRepositoriesRequest request)
       throws ModelDBException;
@@ -33,6 +33,8 @@ public interface RepositoryDAO {
   GetBranchRequest.Response getBranch(GetBranchRequest request) throws ModelDBException;
 
   DeleteBranchRequest.Response deleteBranch(DeleteBranchRequest request) throws ModelDBException;
+
+  void deleteBranchByCommit(Long repoId, String commitHash);
 
   ListBranchesRequest.Response listBranches(ListBranchesRequest request) throws ModelDBException;
 

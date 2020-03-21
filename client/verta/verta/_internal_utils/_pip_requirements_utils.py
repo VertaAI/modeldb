@@ -37,10 +37,12 @@ REQ_SPEC_PATTERN = (
     + VER_SPEC_PATTERN + r"\s*"
     + VER_NUM_PATTERN
 )
+SPACY_MODEL_PATTERN = r"[a-z]{2}(?:[_-][a-z]+){2}[_-](?:sm|md|lg)"  # https://spacy.io/models#conventions
 PKG_NAME_REGEX = re.compile(PKG_NAME_PATTERN, flags=re.IGNORECASE)
 VER_SPEC_REGEX = re.compile(VER_SPEC_PATTERN)
 VER_NUM_REGEX = re.compile(VER_NUM_PATTERN)
 REQ_SPEC_REGEX = re.compile(REQ_SPEC_PATTERN, flags=re.IGNORECASE)
+SPACY_MODEL_REGEX = re.compile(SPACY_MODEL_PATTERN)
 
 
 def get_pip_freeze():
@@ -50,6 +52,12 @@ def get_pip_freeze():
     req_specs = pip_freeze.splitlines()
 
     req_specs = clean_reqs_file_lines(req_specs)
+
+    # remove non-PyPI-installable SpaCy models:
+    req_specs = [
+        req_spec for req_spec in req_specs
+        if not SPACY_MODEL_REGEX.match(req_spec)
+    ]
 
     return req_specs
 
