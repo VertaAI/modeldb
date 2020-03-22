@@ -101,36 +101,6 @@ class Repository(object):
                                             _VersioningService.GetRepositoryRequest.Response)
         return cls(conn, response_msg.repository.id)
 
-    def new_commit(self, parents):
-        """
-        Prepares a new unsaved Commit with `parents`.
-
-        This method is mostly for lower-level Commit operations. It is recommended to use e.g.
-        :meth:`Repository.get_commit` for your first and future Commits.
-
-        Parameters
-        ----------
-        parents : list of :class:`Commit`
-            Parents of the Commit to be created.
-
-        Returns
-        -------
-        :class:`Commit`
-            New Commit.
-
-        """
-        parent_ids = []
-        for i, parent in enumerate(parents):
-            if not isinstance(parent, commit.Commit):
-                raise TypeError("`parents` must only contain Commits, not {}".format(type(parent)))
-            if parent.id is None:
-                raise ValueError("parent at index {} does not have an ID;"
-                                 " please save it first".format(i))
-
-            parent_ids.append(parent.id)
-
-        return commit.Commit(self._conn, self, parent_ids)
-
     def get_commit(self, branch=None, tag=None, id=None):
         """
         Returns the Commit with the specified `branch`, `tag`, or `id`.

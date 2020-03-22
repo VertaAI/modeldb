@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import collections
+from datetime import datetime
 import heapq
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
@@ -31,18 +32,21 @@ class Commit(object):
         ID of the Commit, or ``None`` if the Commit has not yet been saved.
 
     """
-    def __init__(self, conn, repo, parent_ids=None, id_=None, date=None, branch_name=None):
+    def __init__(self, conn, repo, commit_msg, branch_name=None):
         self._conn = conn
+        self._commit_msg = commit_msg
 
         self._repo = repo
-        self._parent_ids = list(collections.OrderedDict.fromkeys(parent_ids or []))  # remove duplicates while maintaining order
+        self._parent_ids = list(collections.OrderedDict.fromkeys(commit_msg.parent_shas or []))  # remove duplicates while maintaining order
 
-        self.id = id_
-        self.date = date
         self.branch_name = branch_name  # TODO: find a way to clear if branch is moved
 
         self._blobs = dict()  # will be loaded when needed
         self._loaded_from_remote = False
+
+    @property
+    def id(self):
+        return self._commit_msg.commit_sha or None
 
     @property
     def parent(self):
@@ -62,28 +66,41 @@ class Commit(object):
 
         self._loaded_from_remote = True
 
-    def __repr__(self):
+    def describe(self):
         self._lazy_load_blobs()
 
-        branch_and_tag = ' '.join((
-            "(Branch: {})".format(self.branch_name) if self.branch_name is not None else '',
-            # TODO: put tag here
-        ))
-        if self.id is None:
-            header = "unsaved Commit containing:"
-        else:
-            # TODO: fetch commit message
-            header = "Commit {} containing:".format(self.id)
         contents = '\n'.join((
-            "{} ({})".format(path, blob.__class__.__name__)
+            "{} ({}.{})".format(path, blob.__class__.__module__.split('.')[1], blob.__class__.__name__)
             for path, blob
             in sorted(six.viewitems(self._blobs))
         ))
         if not contents:
             contents = "<no contents>"
 
-        repr_components = filter(None, (branch_and_tag, header, contents))  # skip empty components
-        return '\n'.join(repr_components)
+        components = [self.__repr__(), 'Contents:', contents]
+        return '\n'.join(components)
+
+    def __repr__(self):
+        branch_and_tag = ' '.join((
+            "Branch: {}".format(self.branch_name) if self.branch_name is not None else '',
+            # TODO: put tag here
+        ))
+        if self.id is None:
+            header = "unsaved Commit"
+            if branch_and_tag:
+                header = header +  " (was {})".format(branch_and_tag)
+        else:
+            # TODO: fetch commit message
+            header = "Commit {}".format(self.id)
+            if branch_and_tag:
+                header = header +  " ({})".format(branch_and_tag)
+
+        # TODO: add author
+        # TODO: make data more similar to git
+        date = 'Date: ' + datetime.fromtimestamp(self._commit_msg.date_created/1000.).strftime('%Y-%m-%d %H:%M:%S')
+        message = '\n'.join('    ' + c for c in self._commit_msg.message.split('\n'))
+        components = [header, date, '', message, '']
+        return '\n'.join(components)
 
     @classmethod
     def _from_id(cls, conn, repo, id_, **kwargs):
@@ -99,7 +116,7 @@ class Commit(object):
         response_msg = _utils.json_to_proto(response.json(),
                                             _VersioningService.GetCommitRequest.Response)
         commit_msg = response_msg.commit
-        return cls(conn, repo, commit_msg.parent_shas, commit_msg.commit_sha, commit_msg.date_created, **kwargs)
+        return cls(conn, repo, commit_msg, **kwargs)
 
     @staticmethod
     def _raise_lookup_error(path):
@@ -133,7 +150,7 @@ class Commit(object):
         """
         self._lazy_load_blobs()
         self._parent_ids = [self.id]
-        self.id = None
+        self._commit_msg.ClearField('commit_sha')
 
     def _to_create_msg(self, commit_message):
         self._lazy_load_blobs()
@@ -353,6 +370,23 @@ class Commit(object):
         response = _utils.make_request("PUT", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
 
+    def log(self):
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+            self.id,
+        )
+        response = _utils.make_request("GET", endpoint, self._conn)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(response.json(),
+                                            _VersioningService.ListCommitsLogRequest.Response)
+        commits = response_msg.commits
+
+        for c in commits:
+            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == self.id else None)
+
     def branch(self, branch):
         """
         Assigns a branch to this Commit.
@@ -493,7 +527,7 @@ class Commit(object):
 
     def _to_heap_element(self):
         # Most recent has higher priority
-        return (-self.date, self.id, self)  # pylint: disable=invalid-unary-operand-type
+        return (-self._commit_msg.date_created, self.id, self)
 
     def get_common_parent(self, other):
         # TODO: check other is a Commit

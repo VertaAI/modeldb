@@ -7,10 +7,11 @@ functions in Verta.
 ModelDB (Versioning and Metadata)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* `Versioning a Model <tutorials/versioning.html>`_
+* `Versioning Model Ingredients <tutorials/ingredients.html>`_, which allows you to have Git-like
+  tracking for the components of models
+* `Versioning a Model and Logging Metadata <tutorials/workflow.html>`_
 * `Versioning Data <tutorials/dataset.html>`_
-* `Logging and Querying Metadata <tutorials/workflow.html>`_
-* `Querying Metadata <tutorials/querying.html>`_
+* `Querying Metadata Querying <tutorials/querying.html>`_
 
 Deployment and Release
 ^^^^^^^^^^^^^^^^^^^^^^
