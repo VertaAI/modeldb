@@ -24,7 +24,7 @@ monitoring, and maintenance.
 
 Verta is an open-core platform; i.e., the platform is based on core open-source technology
 developed by the Verta team that is freely available. Find more information about our
-open-source technology |gere| and in subsequent
+open-source technology |here| and in subsequent
 sections.
 
 Verta provides MLOps functionality in three key areas: **model versioning and metadata**,

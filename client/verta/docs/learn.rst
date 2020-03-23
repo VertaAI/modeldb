@@ -27,10 +27,10 @@ Verta and ModelDB Presentations
 ..
 
 
-.. |news| raw:: html
+.. |here| raw:: html
 
    <a href="https://verta.ai/news" target="_blank">here</a>
 
-.. |YouTube channel| raw:: html
+.. |Verta YouTube channel| raw:: html
 
    <a href="https://www.youtube.com/channel/UClJKA9nhsFNpxK5ACRKjzbA/about" target="_blank">Verta YouTube channel</a>
