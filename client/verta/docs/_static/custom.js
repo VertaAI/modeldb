@@ -16,6 +16,7 @@ function deleteArrows() {
   );
 }
 
+// open external links in new window
 $(document).ready(function() {
   $("a[href^='http']").attr('target','_blank');
 });
