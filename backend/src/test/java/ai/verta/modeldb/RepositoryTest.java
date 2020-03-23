@@ -11,6 +11,8 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.GetRepositoryRequest;
+import ai.verta.modeldb.versioning.ListRepositoriesRequest;
+import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
@@ -46,8 +48,8 @@ import org.junit.runners.MethodSorters;
 public class RepositoryTest {
 
   private static final Logger LOGGER = LogManager.getLogger(RepositoryTest.class);
-  private static final String NAME = "repository_name";
-  private static final String NAME_2 = "repository_name2";
+  public static final String NAME = "repository_name";
+  public static final String NAME_2 = "repository_name2";
   /**
    * This rule manages automatic graceful shutdown for the registered servers and channels at the
    * end of test.
@@ -140,27 +142,49 @@ public class RepositoryTest {
     }
   }
 
-  public static Long createRepository(VersioningServiceBlockingStub versioningServiceBlockingStub) {
+  public static Long createRepository(
+      VersioningServiceBlockingStub versioningServiceBlockingStub, String repoName) {
     SetRepository setRepository =
         SetRepository.newBuilder()
             .setId(
                 RepositoryIdentification.newBuilder()
-                    .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME).build())
+                    .setNamedId(
+                        RepositoryNamedIdentification.newBuilder().setName(repoName).build())
                     .build())
-            .setRepository(Repository.newBuilder().setName(NAME))
+            .setRepository(Repository.newBuilder().setName(repoName))
             .build();
     Response result = versioningServiceBlockingStub.createRepository(setRepository);
     return result.getRepository().getId();
   }
 
   @Test
-  public void repositoryTest() {
+  public void createDeleteRepositoryTest() {
     LOGGER.info("Create and delete repository test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("Create and delete repository test end................................");
+  }
+
+  @Test
+  public void createDeleteRepositoryNegativeTest() {
+    LOGGER.info("Create and delete repository negative test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     try {
       SetRepository setRepository =
           SetRepository.newBuilder()
@@ -182,14 +206,36 @@ public class RepositoryTest {
               || Code.ALREADY_EXISTS.equals(e.getStatus().getCode()));
     }
 
-    // check id
-    GetRepositoryRequest getRepositoryRequest =
-        GetRepositoryRequest.newBuilder()
-            .setId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
             .build();
-    GetRepositoryRequest.Response getByIdResult =
-        versioningServiceBlockingStub.getRepository(getRepositoryRequest);
-    Assert.assertTrue(getByIdResult.hasRepository());
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    try {
+      deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build();
+      versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.fail();
+    } catch (StatusRuntimeException e) {
+      Assert.assertEquals(Code.NOT_FOUND, e.getStatus().getCode());
+    }
+
+    LOGGER.info("Create and delete repository negative test end................................");
+  }
+
+  @Test
+  public void updateRepositoryByNameTest() {
+    LOGGER.info("Update repository by name test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, NAME);
 
     SetRepository setRepository =
         SetRepository.newBuilder()
@@ -203,21 +249,7 @@ public class RepositoryTest {
     Assert.assertTrue(result.hasRepository());
     Assert.assertEquals(NAME_2, result.getRepository().getName());
 
-    try {
-      // check name
-      getRepositoryRequest =
-          GetRepositoryRequest.newBuilder()
-              .setId(
-                  RepositoryIdentification.newBuilder()
-                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME)))
-              .build();
-      versioningServiceBlockingStub.getRepository(getRepositoryRequest);
-      Assert.fail();
-    } catch (StatusRuntimeException e) {
-      Assert.assertEquals(Code.NOT_FOUND, e.getStatus().getCode());
-    }
-
-    getRepositoryRequest =
+    GetRepositoryRequest getRepositoryRequest =
         GetRepositoryRequest.newBuilder()
             .setId(
                 RepositoryIdentification.newBuilder()
@@ -225,7 +257,14 @@ public class RepositoryTest {
             .build();
     GetRepositoryRequest.Response getByNameResult =
         versioningServiceBlockingStub.getRepository(getRepositoryRequest);
-    Assert.assertTrue(getByNameResult.hasRepository());
+    Assert.assertEquals(
+        "Repository Id not match with expected repository Id",
+        id,
+        getByNameResult.getRepository().getId());
+    Assert.assertEquals(
+        "Repository name not match with expected repository name",
+        NAME_2,
+        getByNameResult.getRepository().getName());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       Assert.assertEquals(RESOURCE_OWNER_ID, getByNameResult.getRepository().getOwner());
     }
@@ -238,6 +277,131 @@ public class RepositoryTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
 
-    LOGGER.info("Create and delete repository test end................................");
+    LOGGER.info("Update repository by name test end................................");
+  }
+
+  @Test
+  public void getRepositoryByIdTest() {
+    LOGGER.info("Get repository by Id test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, NAME);
+
+    // check id
+    GetRepositoryRequest getRepositoryRequest =
+        GetRepositoryRequest.newBuilder()
+            .setId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .build();
+    GetRepositoryRequest.Response getByIdResult =
+        versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+    Assert.assertEquals(
+        "Repository Id not match with expected repository Id",
+        id,
+        getByIdResult.getRepository().getId());
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("Get repository by Id test end................................");
+  }
+
+  @Test
+  public void getRepositoryByNameTest() {
+    LOGGER.info("Get repository by name test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, NAME);
+
+    GetRepositoryRequest getRepositoryRequest =
+        GetRepositoryRequest.newBuilder()
+            .setId(
+                RepositoryIdentification.newBuilder()
+                    .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME)))
+            .build();
+    GetRepositoryRequest.Response getByNameResult =
+        versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+    Assert.assertEquals(
+        "Repository name not match with expected repository name",
+        NAME,
+        getByNameResult.getRepository().getName());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      Assert.assertEquals(RESOURCE_OWNER_ID, getByNameResult.getRepository().getOwner());
+    }
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("Get repository by name test end................................");
+  }
+
+  @Test
+  public void listRepositoryTest() {
+    LOGGER.info("List repository test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
+    long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
+    Long[] repoIds = new Long[2];
+    repoIds[0] = repoId1;
+    repoIds[1] = repoId2;
+
+    ListRepositoriesRequest listRepositoriesRequest = ListRepositoriesRequest.newBuilder().build();
+    ListRepositoriesRequest.Response listRepositoriesResponse =
+        versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
+    Assert.assertEquals(
+        "Repository count not match with expected repository count",
+        2,
+        listRepositoriesResponse.getRepositoriesCount());
+    Assert.assertEquals(
+        "Repository name not match with expected repository name",
+        NAME_2,
+        listRepositoriesResponse.getRepositories(0).getName());
+    Assert.assertEquals(
+        "Repository name not match with expected repository name",
+        NAME,
+        listRepositoriesResponse.getRepositories(1).getName());
+
+    listRepositoriesRequest =
+        ListRepositoriesRequest.newBuilder()
+            .setPagination(Pagination.newBuilder().setPageLimit(1).setPageNumber(1).build())
+            .build();
+    listRepositoriesResponse =
+        versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
+    Assert.assertEquals(
+        "Repository count not match with expected repository count",
+        1,
+        listRepositoriesResponse.getRepositoriesCount());
+    Assert.assertEquals(
+        "Repository name not match with expected repository name",
+        NAME_2,
+        listRepositoriesResponse.getRepositories(0).getName());
+
+    for (long repoId : repoIds) {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
+
+    LOGGER.info("List repository test end................................");
   }
 }

@@ -1336,6 +1336,27 @@ public class RdbmsUtils {
             keyValuePredicates[index] =
                 getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
             break;
+          case ModelDBConstants.VERSIONED_INPUTS:
+            LOGGER.debug("switch case : versioned_inputs");
+            Root<VersioningModeldbEntityMapping> versioningEntityRoot =
+                subquery.from(VersioningModeldbEntityMapping.class);
+            versioningEntityRoot.alias(entityName + "_" + ModelDBConstants.VERSIONED_ALIAS + index);
+            Predicate keyValuePredicate =
+                RdbmsUtils.getValuePredicate(
+                    builder, names[1], versioningEntityRoot.get(names[1]), predicate);
+
+            List<Predicate> versioningValuePredicates = new ArrayList<>();
+            versioningValuePredicates.add(keyValuePredicate);
+
+            subquery.select(versioningEntityRoot.get(entityName).get(ModelDBConstants.ID));
+            Predicate[] versioningPredicatesOne = new Predicate[versioningValuePredicates.size()];
+            for (int indexJ = 0; indexJ < versioningValuePredicates.size(); indexJ++) {
+              versioningPredicatesOne[indexJ] = versioningValuePredicates.get(indexJ);
+            }
+            subquery.where(builder.and(versioningPredicatesOne));
+            keyValuePredicates[index] =
+                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+            break;
           default:
             predicate = predicate.toBuilder().setOperator(operator).build();
             expression = entityRootPath.get(predicate.getKey());

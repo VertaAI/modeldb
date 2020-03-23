@@ -5,8 +5,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
-import "protos/public/modeldb/versioning/Enums.proto";
-
 message ConfigBlob {
     repeated HyperparameterSetConfigBlob hyperparameter_set = 1;
     repeated HyperparameterConfigBlob hyperparameters = 2;
@@ -44,8 +42,8 @@ message DiscreteHyperparameterSetConfigBlob {
 }
 
 message ConfigDiff {
-    repeated HyperparameterSetConfigDiff hyperparameter_set = 1;
-    repeated HyperparameterConfigDiff hyperparameters = 2;
+    HyperparameterSetConfigDiff hyperparameter_set = 1;
+    HyperparameterConfigDiff hyperparameters = 2;
 }
 
 message HyperparameterSetConfigDiff {

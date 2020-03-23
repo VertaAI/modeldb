@@ -1,0 +1,8 @@
+.title {
+  padding: 8px 23px;
+  font-weight: bold;
+}
+
+.table {
+  border-top: 1px solid var(--border-color1);
+}

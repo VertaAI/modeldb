@@ -6,7 +6,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "protos/public/modeldb/versioning/Dataset.proto";
-import "protos/public/modeldb/versioning/Enums.proto";
 
 message CodeBlob {
     oneof content {
@@ -24,7 +23,7 @@ message GitCodeBlob {
 }
 
 message NotebookCodeBlob {
-    PathDatasetComponentBlob path = 1;
+    PathDatasetBlob path = 1;
     GitCodeBlob git_repo = 2;
 }
 
@@ -36,12 +35,11 @@ message CodeDiff {
 }
 
 message GitCodeDiff {
-    DiffStatusEnum.DiffStatus status = 1;
-    GitCodeBlob A = 2;
-    GitCodeBlob B = 3;
+    GitCodeBlob A = 1;
+    GitCodeBlob B = 2;
 }
 
 message NotebookCodeDiff {
-    PathDatasetComponentDiff path = 1;
-    GitCodeDiff git_repo = 2;
+    NotebookCodeBlob A = 1;
+    NotebookCodeBlob B = 2;
 }
