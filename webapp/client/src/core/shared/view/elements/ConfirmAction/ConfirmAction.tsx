@@ -5,7 +5,10 @@ import { bind } from 'decko';
 import Confirm from '../Confirm/Confirm';
 
 interface ILocalProps {
+  title?: string;
   confirmText: Exclude<React.ReactNode, null | undefined>;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
   children: (
     withConfirmAction: <T extends any[]>(
       f: (...args: T) => any
@@ -28,8 +31,9 @@ class ConfirmAction extends React.Component<ILocalProps, ILocalState> {
         {this.props.children(this.saveConfirmAction)}
         <Confirm
           isOpen={this.state.isShowConfirm}
-          title="Warning!"
-          confirmButtonTheme="red"
+          title={this.props.title || 'Warning!'}
+          cancelButtonText={this.props.cancelButtonText}
+          confirmButtonText={this.props.confirmButtonText}
           onCancel={this.closeConfirm}
           onConfirm={this.confirmAction}
         >
