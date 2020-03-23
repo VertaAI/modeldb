@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class EnvironmentVariablesBlob implements ProtoType {
-  public String Name;
-  public String Value;
+  private String Name;
+  private String Value;
 
   public EnvironmentVariablesBlob() {
     this.Name = "";
@@ -100,9 +100,17 @@ public class EnvironmentVariablesBlob implements ProtoType {
     return this;
   }
 
+  public String getName() {
+    return this.Name;
+  }
+
   public EnvironmentVariablesBlob setValue(String value) {
     this.Value = Utils.removeEmpty(value);
     return this;
+  }
+
+  public String getValue() {
+    return this.Value;
   }
 
   public static EnvironmentVariablesBlob fromProto(

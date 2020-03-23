@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DockerEnvironmentDiff implements ProtoType {
-  public DockerEnvironmentBlob A;
-  public DockerEnvironmentBlob B;
-  public DiffStatusEnumDiffStatus Status;
+  private DockerEnvironmentBlob A;
+  private DockerEnvironmentBlob B;
+  private DiffStatusEnumDiffStatus Status;
 
   public DockerEnvironmentDiff() {
     this.A = null;
@@ -122,14 +122,26 @@ public class DockerEnvironmentDiff implements ProtoType {
     return this;
   }
 
+  public DockerEnvironmentBlob getA() {
+    return this.A;
+  }
+
   public DockerEnvironmentDiff setB(DockerEnvironmentBlob value) {
     this.B = Utils.removeEmpty(value);
     return this;
   }
 
+  public DockerEnvironmentBlob getB() {
+    return this.B;
+  }
+
   public DockerEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static DockerEnvironmentDiff fromProto(

@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import collections
+from datetime import datetime
 import heapq
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
@@ -19,18 +20,33 @@ from . import diff as diff_module
 
 
 class Commit(object):
-    def __init__(self, conn, repo, parent_ids=None, id_=None, date=None, branch_name=None):
+    """
+    Commit within a ModelDB Repository.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Repository.get_commit() <verta._repository.Repository.get_commit>`.
+
+    Attributes
+    ----------
+    id : str or None
+        ID of the Commit, or ``None`` if the Commit has not yet been saved.
+
+    """
+    def __init__(self, conn, repo, commit_msg, branch_name=None):
         self._conn = conn
+        self._commit_msg = commit_msg
 
         self._repo = repo
-        self._parent_ids = list(collections.OrderedDict.fromkeys(parent_ids or []))  # remove duplicates while maintaining order
+        self._parent_ids = list(collections.OrderedDict.fromkeys(commit_msg.parent_shas or []))  # remove duplicates while maintaining order
 
-        self.id = id_
-        self.date = date
         self.branch_name = branch_name  # TODO: find a way to clear if branch is moved
 
         self._blobs = dict()  # will be loaded when needed
         self._loaded_from_remote = False
+
+    @property
+    def id(self):
+        return self._commit_msg.commit_sha or None
 
     @property
     def parent(self):
@@ -50,28 +66,41 @@ class Commit(object):
 
         self._loaded_from_remote = True
 
-    def __repr__(self):
+    def describe(self):
         self._lazy_load_blobs()
 
-        branch_and_tag = ' '.join((
-            "(Branch: {})".format(self.branch_name) if self.branch_name is not None else '',
-            # TODO: put tag here
-        ))
-        if self.id is None:
-            header = "unsaved Commit containing:"
-        else:
-            # TODO: fetch commit message
-            header = "Commit {} containing:".format(self.id)
         contents = '\n'.join((
-            "{} ({})".format(path, blob.__class__.__name__)
+            "{} ({}.{})".format(path, blob.__class__.__module__.split('.')[1], blob.__class__.__name__)
             for path, blob
             in sorted(six.viewitems(self._blobs))
         ))
         if not contents:
             contents = "<no contents>"
 
-        repr_components = filter(None, (branch_and_tag, header, contents))  # skip empty components
-        return '\n'.join(repr_components)
+        components = [self.__repr__(), 'Contents:', contents]
+        return '\n'.join(components)
+
+    def __repr__(self):
+        branch_and_tag = ' '.join((
+            "Branch: {}".format(self.branch_name) if self.branch_name is not None else '',
+            # TODO: put tag here
+        ))
+        if self.id is None:
+            header = "unsaved Commit"
+            if branch_and_tag:
+                header = header +  " (was {})".format(branch_and_tag)
+        else:
+            # TODO: fetch commit message
+            header = "Commit {}".format(self.id)
+            if branch_and_tag:
+                header = header +  " ({})".format(branch_and_tag)
+
+        # TODO: add author
+        # TODO: make data more similar to git
+        date = 'Date: ' + datetime.fromtimestamp(self._commit_msg.date_created/1000.).strftime('%Y-%m-%d %H:%M:%S')
+        message = '\n'.join('    ' + c for c in self._commit_msg.message.split('\n'))
+        components = [header, date, '', message, '']
+        return '\n'.join(components)
 
     @classmethod
     def _from_id(cls, conn, repo, id_, **kwargs):
@@ -87,7 +116,7 @@ class Commit(object):
         response_msg = _utils.json_to_proto(response.json(),
                                             _VersioningService.GetCommitRequest.Response)
         commit_msg = response_msg.commit
-        return cls(conn, repo, commit_msg.parent_shas, commit_msg.commit_sha, commit_msg.date_created, **kwargs)
+        return cls(conn, repo, commit_msg, **kwargs)
 
     @staticmethod
     def _raise_lookup_error(path):
@@ -121,7 +150,7 @@ class Commit(object):
         """
         self._lazy_load_blobs()
         self._parent_ids = [self.id]
-        self.id = None
+        self._commit_msg.ClearField('commit_sha')
 
     def _to_create_msg(self, commit_message):
         self._lazy_load_blobs()
@@ -206,6 +235,19 @@ class Commit(object):
             )
 
     def update(self, path, blob):
+        """
+        Adds `blob` to this Commit at `path`.
+
+        If `path` is already in this Commit, it will be updated to the new `blob`.
+
+        Parameters
+        ----------
+        path : str
+            Location to add `blob` to.
+        blob : :class:`~verta._repository.blob.Blob`
+            ModelDB versioning blob.
+
+        """
         if not isinstance(blob, blob_module.Blob):
             raise TypeError("unsupported type {}".format(type(blob)))
 
@@ -217,6 +259,25 @@ class Commit(object):
         self._blobs[path] = blob
 
     def get(self, path):
+        """
+        Retrieves the blob at `path` from this Commit.
+
+        Parameters
+        ----------
+        path : str
+            Location of a blob.
+
+        Returns
+        -------
+        blob : :class:`~verta._repository.blob.Blob`
+            ModelDB versioning blob.
+
+        Raises
+        ------
+        LookupError
+            If `path` is not in this Commit.
+
+        """
         self._lazy_load_blobs()
 
         try:
@@ -225,6 +286,20 @@ class Commit(object):
             self._raise_lookup_error(path)
 
     def remove(self, path):
+        """
+        Deletes the blob at `path` from this Commit.
+
+        Parameters
+        ----------
+        path : str
+            Location of a blob.
+
+        Raises
+        ------
+        LookupError
+            If `path` is not in this Commit.
+
+        """
         self._lazy_load_blobs()
 
         if self.id is not None:
@@ -236,6 +311,15 @@ class Commit(object):
             self._raise_lookup_error(path)
 
     def save(self, message):
+        """
+        Saves this commit to ModelDB.
+
+        Parameters
+        ----------
+        message : str
+            Description of this Commit.
+
+        """
         msg = self._to_create_msg(commit_message=message)
         self._save(msg)
 
@@ -259,6 +343,20 @@ class Commit(object):
         self.__dict__ = new_commit.__dict__
 
     def tag(self, tag):
+        """
+        Assigns a tag to this Commit.
+
+        Parameters
+        ----------
+        tag : str
+            Tag.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit has not yet been saved.
+
+        """
         if self.id is None:
             raise RuntimeError("Commit must be saved before it can be tagged")
 
@@ -272,7 +370,38 @@ class Commit(object):
         response = _utils.make_request("PUT", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
 
+    def log(self):
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+            self.id,
+        )
+        response = _utils.make_request("GET", endpoint, self._conn)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(response.json(),
+                                            _VersioningService.ListCommitsLogRequest.Response)
+        commits = response_msg.commits
+
+        for c in commits:
+            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == self.id else None)
+
     def branch(self, branch):
+        """
+        Assigns a branch to this Commit.
+
+        Parameters
+        ----------
+        branch : str
+            Branch name.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit has not yet been saved.
+
+        """
         if self.id is None:
             raise RuntimeError("Commit must be saved before it can be attached to a branch")
 
@@ -289,6 +418,26 @@ class Commit(object):
         self.branch_name = branch
 
     def diff_from(self, reference=None):
+        """
+        Returns the diff from `reference` to `self`.
+
+        Parameters
+        ----------
+        reference : :class:`Commit`, optional
+            Commit to be compared to.
+
+        Returns
+        -------
+        :class:`~verta._repository.diff.Diff`
+            Commit diff.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit or `reference` has not yet been saved, or if they do not belong to the
+            same Repository.
+
+        """
         # TODO: check that they belong to the same repo?
         # TODO: check that this commit has been saved
         if reference is None:
@@ -314,10 +463,30 @@ class Commit(object):
                                             _VersioningService.ComputeRepositoryDiffRequest.Response)
         return diff_module.Diff(response_msg.diffs)
 
-    def apply_diff(self, diff, message):
+    def apply_diff(self, diff, message, other_parents=[]):
+        """
+        Applies a diff to this Commit.
+
+        This method creates a new Commit in ModelDB, and assigns a new ID to this object.
+
+        Parameters
+        ----------
+        diff : :class:`~verta._repository.diff.Diff`
+            Commit diff.
+        message : str
+            Description of the diff.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit has not yet been saved.
+
+        """
+        # TODO: check that this commit has been saved
         msg = _VersioningService.CreateCommitRequest()
         msg.repository_id.repo_id = self._repo.id
         msg.commit.parent_shas.append(self.id)
+        msg.commit.parent_shas.extend(other_parents)
         msg.commit.message = message
         msg.commit_base = self.id
         msg.diffs.extend(diff._diffs)
@@ -327,15 +496,38 @@ class Commit(object):
     def get_revert_diff(self):
         return self.parent.diff_from(self)
 
-    def revert(self, message, other=None):
+    def revert(self, other=None, message=None):
+        """
+        Reverts all the Commits beginning with `other` up through this Commit.
+
+        This method creates a new Commit in ModelDB, and assigns a new ID to this object.
+
+        Parameters
+        ----------
+        other : :class:`Commit`, optional
+            Base for the revert. If not provided, this Commit will be reverted.
+        message : str, optional
+            Description of the revert. If not provided, a default message will be used.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit or `other` has not yet been saved, or if they do not belong to the
+            same Repository.
+
+        """
+        # TODO: check that commits have been saved
+        # TODO: check same repo
         if other is None:
             other = self
+        if message is None:
+            message = "Revert {}".format(other.id[:7])
 
         self.apply_diff(other.get_revert_diff(), message)
 
     def _to_heap_element(self):
         # Most recent has higher priority
-        return (-self.date, self.id, self)  # pylint: disable=invalid-unary-operand-type
+        return (-self._commit_msg.date_created, self.id, self)
 
     def get_common_parent(self, other):
         # TODO: check other is a Commit
@@ -379,10 +571,34 @@ class Commit(object):
         return None
 
     def merge(self, other, message=None):
-        if message is None:
-            message = "Merge {} into {}".format(other.id[:7], self.id[:7])
+        """
+        Merges a branch headed by `other` into this Commit.
 
-        self.apply_diff(other.diff_from(self.get_common_parent(other)), message=message)
+        This method creates a new Commit in ModelDB, and assigns a new ID to this object.
+
+        Parameters
+        ----------
+        other : :class:`Commit`
+            Commit to be merged.
+        message : str, optional
+            Description of the merge. If not provided, a default message will be used.
+
+        Raises
+        ------
+        RuntimeError
+            If this Commit or `other` has not yet been saved, or if they do not belong to the
+            same Repository.
+
+        """
+        # TODO: check that commits have been saved
+        # TODO: check same repo
+        if message is None:
+            message = "Merge {} into {}".format(
+                other.branch_name or other.id[:7],
+                self.branch_name or self.id[:7],
+            )
+
+        self.apply_diff(other.diff_from(self.get_common_parent(other)), message=message, other_parents=[other.id])
 
 
 def blob_msg_to_object(blob_msg):

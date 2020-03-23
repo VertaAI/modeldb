@@ -79,7 +79,6 @@ class TableBulkDeletionManager extends React.PureComponent<
             <Confirm
               title="Warning!"
               isOpen={isShowConfirmation}
-              confirmButtonTheme="red"
               onCancel={this.closeConfirmation}
               onConfirm={this.deleteEntities}
             >
