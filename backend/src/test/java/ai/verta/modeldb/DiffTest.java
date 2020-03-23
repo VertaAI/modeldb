@@ -325,7 +325,10 @@ public class DiffTest {
     location3.add("march");
     location3.add("blob.json");
     BlobExpanded blobExpanded3 =
-        BlobExpanded.newBuilder().setBlob(getDatasetBlobFromPath(path3)).addAllLocation(location3).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path3))
+            .addAllLocation(location3)
+            .build();
 
     return blobExpanded3;
   }
