@@ -261,13 +261,16 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       if (request.getBlobsCount() != 0) {
         blobContainers = validateBlobs(request);
       } else {
-        validateBlobDiffs(request);
+        //validateBlobDiffs(request);
         blobContainers =
             blobDAO.convertBlobDiffsToBlobs(
                 request,
                 repositoryFunction,
                 (session, repository) ->
                     commitDAO.getCommitEntity(session, request.getCommitBase(), repository));
+        for (BlobContainer blobContainer: blobContainers) {
+          blobContainer.validate();
+        }
       }
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
@@ -301,7 +304,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
             case NOTEBOOK:
               NotebookCodeDiff notebook = code.getNotebook();
               validate(notebook.getGitRepo());
-              validate(notebook.getPath());
+              if (notebook.hasPath()) {
+                validate(notebook.getPath());
+              }
               break;
             default:
               throw new ModelDBException("Unknown diff type", Code.INVALID_ARGUMENT);
@@ -340,7 +345,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           break;
         case ENVIRONMENT:
           EnvironmentDiff environmentDiff = blobDiff.getEnvironment();
-          validate(environmentDiff.getCommandLine());
+          if (environmentDiff.hasCommandLine()) {
+            validate(environmentDiff.getCommandLine());
+          }
           List<EnvironmentVariablesDiff> environmentVariablesList =
               environmentDiff.getEnvironmentVariablesList();
           List<EnvironmentVariablesBlob> environmentVariablesBlobList = new LinkedList<>();
