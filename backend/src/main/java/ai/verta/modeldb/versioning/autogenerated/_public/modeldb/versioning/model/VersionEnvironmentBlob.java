@@ -12,10 +12,10 @@ import java.util.*;
 import java.util.function.Function;
 
 public class VersionEnvironmentBlob implements ProtoType {
-  public Integer Major;
-  public Integer Minor;
-  public Integer Patch;
-  public String Suffix;
+  private Integer Major;
+  private Integer Minor;
+  private Integer Patch;
+  private String Suffix;
 
   public VersionEnvironmentBlob() {
     this.Major = 0;
@@ -142,9 +142,17 @@ public class VersionEnvironmentBlob implements ProtoType {
     return this;
   }
 
+  public Integer getMajor() {
+    return this.Major;
+  }
+
   public VersionEnvironmentBlob setMinor(Integer value) {
     this.Minor = Utils.removeEmpty(value);
     return this;
+  }
+
+  public Integer getMinor() {
+    return this.Minor;
   }
 
   public VersionEnvironmentBlob setPatch(Integer value) {
@@ -152,9 +160,17 @@ public class VersionEnvironmentBlob implements ProtoType {
     return this;
   }
 
+  public Integer getPatch() {
+    return this.Patch;
+  }
+
   public VersionEnvironmentBlob setSuffix(String value) {
     this.Suffix = Utils.removeEmpty(value);
     return this;
+  }
+
+  public String getSuffix() {
+    return this.Suffix;
   }
 
   public static VersionEnvironmentBlob fromProto(

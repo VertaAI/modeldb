@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PythonEnvironmentBlob implements ProtoType {
-  public List<PythonRequirementEnvironmentBlob> Constraints;
-  public List<PythonRequirementEnvironmentBlob> Requirements;
-  public VersionEnvironmentBlob Version;
+  private List<PythonRequirementEnvironmentBlob> Constraints;
+  private List<PythonRequirementEnvironmentBlob> Requirements;
+  private VersionEnvironmentBlob Version;
 
   public PythonEnvironmentBlob() {
     this.Constraints = null;
@@ -162,17 +162,35 @@ public class PythonEnvironmentBlob implements ProtoType {
 
   public PythonEnvironmentBlob setConstraints(List<PythonRequirementEnvironmentBlob> value) {
     this.Constraints = Utils.removeEmpty(value);
+    if (this.Constraints != null) {
+      this.Constraints.sort(Comparator.comparingInt(PythonRequirementEnvironmentBlob::hashCode));
+    }
     return this;
+  }
+
+  public List<PythonRequirementEnvironmentBlob> getConstraints() {
+    return this.Constraints;
   }
 
   public PythonEnvironmentBlob setRequirements(List<PythonRequirementEnvironmentBlob> value) {
     this.Requirements = Utils.removeEmpty(value);
+    if (this.Requirements != null) {
+      this.Requirements.sort(Comparator.comparingInt(PythonRequirementEnvironmentBlob::hashCode));
+    }
     return this;
+  }
+
+  public List<PythonRequirementEnvironmentBlob> getRequirements() {
+    return this.Requirements;
   }
 
   public PythonEnvironmentBlob setVersion(VersionEnvironmentBlob value) {
     this.Version = Utils.removeEmpty(value);
     return this;
+  }
+
+  public VersionEnvironmentBlob getVersion() {
+    return this.Version;
   }
 
   public static PythonEnvironmentBlob fromProto(

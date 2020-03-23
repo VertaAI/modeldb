@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class S3DatasetBlob implements ProtoType {
-  public List<S3DatasetComponentBlob> Components;
+  private List<S3DatasetComponentBlob> Components;
 
   public S3DatasetBlob() {
     this.Components = null;
@@ -89,7 +89,14 @@ public class S3DatasetBlob implements ProtoType {
 
   public S3DatasetBlob setComponents(List<S3DatasetComponentBlob> value) {
     this.Components = Utils.removeEmpty(value);
+    if (this.Components != null) {
+      this.Components.sort(Comparator.comparingInt(S3DatasetComponentBlob::hashCode));
+    }
     return this;
+  }
+
+  public List<S3DatasetComponentBlob> getComponents() {
+    return this.Components;
   }
 
   public static S3DatasetBlob fromProto(ai.verta.modeldb.versioning.S3DatasetBlob blob) {

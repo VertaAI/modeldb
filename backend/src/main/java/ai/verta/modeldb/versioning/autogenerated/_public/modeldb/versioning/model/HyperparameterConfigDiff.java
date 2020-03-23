@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterConfigDiff implements ProtoType {
-  public HyperparameterConfigBlob A;
-  public HyperparameterConfigBlob B;
-  public DiffStatusEnumDiffStatus Status;
+  private HyperparameterConfigBlob A;
+  private HyperparameterConfigBlob B;
+  private DiffStatusEnumDiffStatus Status;
 
   public HyperparameterConfigDiff() {
     this.A = null;
@@ -124,14 +124,26 @@ public class HyperparameterConfigDiff implements ProtoType {
     return this;
   }
 
+  public HyperparameterConfigBlob getA() {
+    return this.A;
+  }
+
   public HyperparameterConfigDiff setB(HyperparameterConfigBlob value) {
     this.B = Utils.removeEmpty(value);
     return this;
   }
 
+  public HyperparameterConfigBlob getB() {
+    return this.B;
+  }
+
   public HyperparameterConfigDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static HyperparameterConfigDiff fromProto(

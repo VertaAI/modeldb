@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class S3DatasetDiff implements ProtoType {
-  public List<S3DatasetComponentDiff> Components;
+  private List<S3DatasetComponentDiff> Components;
 
   public S3DatasetDiff() {
     this.Components = null;
@@ -89,7 +89,14 @@ public class S3DatasetDiff implements ProtoType {
 
   public S3DatasetDiff setComponents(List<S3DatasetComponentDiff> value) {
     this.Components = Utils.removeEmpty(value);
+    if (this.Components != null) {
+      this.Components.sort(Comparator.comparingInt(S3DatasetComponentDiff::hashCode));
+    }
     return this;
+  }
+
+  public List<S3DatasetComponentDiff> getComponents() {
+    return this.Components;
   }
 
   public static S3DatasetDiff fromProto(ai.verta.modeldb.versioning.S3DatasetDiff blob) {

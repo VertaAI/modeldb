@@ -12,11 +12,11 @@ import java.util.*;
 import java.util.function.Function;
 
 public class GitCodeBlob implements ProtoType {
-  public String Branch;
-  public String Hash;
-  public Boolean IsDirty;
-  public String Repo;
-  public String Tag;
+  private String Branch;
+  private String Hash;
+  private Boolean IsDirty;
+  private String Repo;
+  private String Tag;
 
   public GitCodeBlob() {
     this.Branch = "";
@@ -163,9 +163,17 @@ public class GitCodeBlob implements ProtoType {
     return this;
   }
 
+  public String getBranch() {
+    return this.Branch;
+  }
+
   public GitCodeBlob setHash(String value) {
     this.Hash = Utils.removeEmpty(value);
     return this;
+  }
+
+  public String getHash() {
+    return this.Hash;
   }
 
   public GitCodeBlob setIsDirty(Boolean value) {
@@ -173,14 +181,26 @@ public class GitCodeBlob implements ProtoType {
     return this;
   }
 
+  public Boolean getIsDirty() {
+    return this.IsDirty;
+  }
+
   public GitCodeBlob setRepo(String value) {
     this.Repo = Utils.removeEmpty(value);
     return this;
   }
 
+  public String getRepo() {
+    return this.Repo;
+  }
+
   public GitCodeBlob setTag(String value) {
     this.Tag = Utils.removeEmpty(value);
     return this;
+  }
+
+  public String getTag() {
+    return this.Tag;
   }
 
   public static GitCodeBlob fromProto(ai.verta.modeldb.versioning.GitCodeBlob blob) {

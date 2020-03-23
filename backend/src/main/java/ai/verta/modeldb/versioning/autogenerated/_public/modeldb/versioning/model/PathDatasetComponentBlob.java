@@ -12,11 +12,11 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PathDatasetComponentBlob implements ProtoType {
-  public Long LastModifiedAtSource;
-  public String Md5;
-  public String Path;
-  public String Sha256;
-  public Long Size;
+  private Long LastModifiedAtSource;
+  private String Md5;
+  private String Path;
+  private String Sha256;
+  private Long Size;
 
   public PathDatasetComponentBlob() {
     this.LastModifiedAtSource = 0l;
@@ -163,9 +163,17 @@ public class PathDatasetComponentBlob implements ProtoType {
     return this;
   }
 
+  public Long getLastModifiedAtSource() {
+    return this.LastModifiedAtSource;
+  }
+
   public PathDatasetComponentBlob setMd5(String value) {
     this.Md5 = Utils.removeEmpty(value);
     return this;
+  }
+
+  public String getMd5() {
+    return this.Md5;
   }
 
   public PathDatasetComponentBlob setPath(String value) {
@@ -173,14 +181,26 @@ public class PathDatasetComponentBlob implements ProtoType {
     return this;
   }
 
+  public String getPath() {
+    return this.Path;
+  }
+
   public PathDatasetComponentBlob setSha256(String value) {
     this.Sha256 = Utils.removeEmpty(value);
     return this;
   }
 
+  public String getSha256() {
+    return this.Sha256;
+  }
+
   public PathDatasetComponentBlob setSize(Long value) {
     this.Size = Utils.removeEmpty(value);
     return this;
+  }
+
+  public Long getSize() {
+    return this.Size;
   }
 
   public static PathDatasetComponentBlob fromProto(

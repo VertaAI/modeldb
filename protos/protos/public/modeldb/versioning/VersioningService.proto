@@ -275,6 +275,9 @@ message ComputeRepositoryDiffRequest {
     // This will be used to limit the search to scope just this location, like `git log /my/path` would do
     repeated string location_prefix = 4;
 
+    //Replace commit_a with the nearest common ancestor of commit_a and commit_b
+    bool replace_a_with_common_ancestor = 5;
+
     message Response {
         repeated BlobDiff diffs = 1;
     }

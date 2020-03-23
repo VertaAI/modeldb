@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterConfigBlob implements ProtoType {
-  public String Name;
-  public HyperparameterValuesConfigBlob Value;
+  private String Name;
+  private HyperparameterValuesConfigBlob Value;
 
   public HyperparameterConfigBlob() {
     this.Name = "";
@@ -101,9 +101,17 @@ public class HyperparameterConfigBlob implements ProtoType {
     return this;
   }
 
+  public String getName() {
+    return this.Name;
+  }
+
   public HyperparameterConfigBlob setValue(HyperparameterValuesConfigBlob value) {
     this.Value = Utils.removeEmpty(value);
     return this;
+  }
+
+  public HyperparameterValuesConfigBlob getValue() {
+    return this.Value;
   }
 
   public static HyperparameterConfigBlob fromProto(

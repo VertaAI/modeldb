@@ -15,187 +15,187 @@ import org.junit.runner.RunWith;
 public class DiffAndMerge {
   @Property
   public void diffAndMerge(Blob a, Blob b) throws ModelDBException {
-    Blob newA = Utils.sortLists(enforceOneof(a));
-    Blob newB = Utils.sortLists(enforceOneof(b));
+    Blob newA = enforceOneof(a);
+    Blob newB = enforceOneof(b);
     BlobDiff d = DiffComputer.computeBlobDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    Blob diffedB = Utils.sortLists(DiffMerger.mergeBlob(newA, d));
+    Blob diffedB = DiffMerger.mergeBlob(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeBlob(diffedB, d));
+    diffedB = DiffMerger.mergeBlob(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeCode(CodeBlob a, CodeBlob b) throws ModelDBException {
-    CodeBlob newA = Utils.sortLists(enforceOneof(a));
-    CodeBlob newB = Utils.sortLists(enforceOneof(b));
+    CodeBlob newA = enforceOneof(a);
+    CodeBlob newB = enforceOneof(b);
     CodeDiff d = DiffComputer.computeCodeDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    CodeBlob diffedB = Utils.sortLists(DiffMerger.mergeCode(newA, d));
+    CodeBlob diffedB = DiffMerger.mergeCode(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeCode(diffedB, d));
+    diffedB = DiffMerger.mergeCode(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeConfig(ConfigBlob a, ConfigBlob b) throws ModelDBException {
-    ConfigBlob newA = Utils.sortLists(enforceOneof(a));
-    ConfigBlob newB = Utils.sortLists(enforceOneof(b));
+    ConfigBlob newA = enforceOneof(a);
+    ConfigBlob newB = enforceOneof(b);
     ConfigDiff d = DiffComputer.computeConfigDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    ConfigBlob diffedB = Utils.sortLists(DiffMerger.mergeConfig(newA, d));
+    ConfigBlob diffedB = DiffMerger.mergeConfig(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeConfig(diffedB, d));
+    diffedB = DiffMerger.mergeConfig(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeDataset(DatasetBlob a, DatasetBlob b) throws ModelDBException {
-    DatasetBlob newA = Utils.sortLists(enforceOneof(a));
-    DatasetBlob newB = Utils.sortLists(enforceOneof(b));
+    DatasetBlob newA = enforceOneof(a);
+    DatasetBlob newB = enforceOneof(b);
     DatasetDiff d = DiffComputer.computeDatasetDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    DatasetBlob diffedB = Utils.sortLists(DiffMerger.mergeDataset(newA, d));
+    DatasetBlob diffedB = DiffMerger.mergeDataset(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeDataset(diffedB, d));
+    diffedB = DiffMerger.mergeDataset(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeDockerEnvironment(DockerEnvironmentBlob a, DockerEnvironmentBlob b)
       throws ModelDBException {
-    DockerEnvironmentBlob newA = Utils.sortLists(enforceOneof(a));
-    DockerEnvironmentBlob newB = Utils.sortLists(enforceOneof(b));
+    DockerEnvironmentBlob newA = enforceOneof(a);
+    DockerEnvironmentBlob newB = enforceOneof(b);
     DockerEnvironmentDiff d = DiffComputer.computeDockerEnvironmentDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    DockerEnvironmentBlob diffedB = Utils.sortLists(DiffMerger.mergeDockerEnvironment(newA, d));
+    DockerEnvironmentBlob diffedB = DiffMerger.mergeDockerEnvironment(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeDockerEnvironment(diffedB, d));
+    diffedB = DiffMerger.mergeDockerEnvironment(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeEnvironment(EnvironmentBlob a, EnvironmentBlob b)
       throws ModelDBException {
-    EnvironmentBlob newA = Utils.sortLists(enforceOneof(a));
-    EnvironmentBlob newB = Utils.sortLists(enforceOneof(b));
+    EnvironmentBlob newA = enforceOneof(a);
+    EnvironmentBlob newB = enforceOneof(b);
     EnvironmentDiff d = DiffComputer.computeEnvironmentDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    EnvironmentBlob diffedB = Utils.sortLists(DiffMerger.mergeEnvironment(newA, d));
+    EnvironmentBlob diffedB = DiffMerger.mergeEnvironment(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeEnvironment(diffedB, d));
+    diffedB = DiffMerger.mergeEnvironment(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeGitCode(GitCodeBlob a, GitCodeBlob b) throws ModelDBException {
-    GitCodeBlob newA = Utils.sortLists(enforceOneof(a));
-    GitCodeBlob newB = Utils.sortLists(enforceOneof(b));
+    GitCodeBlob newA = enforceOneof(a);
+    GitCodeBlob newB = enforceOneof(b);
     GitCodeDiff d = DiffComputer.computeGitCodeDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    GitCodeBlob diffedB = Utils.sortLists(DiffMerger.mergeGitCode(newA, d));
+    GitCodeBlob diffedB = DiffMerger.mergeGitCode(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeGitCode(diffedB, d));
+    diffedB = DiffMerger.mergeGitCode(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeNotebookCode(NotebookCodeBlob a, NotebookCodeBlob b)
       throws ModelDBException {
-    NotebookCodeBlob newA = Utils.sortLists(enforceOneof(a));
-    NotebookCodeBlob newB = Utils.sortLists(enforceOneof(b));
+    NotebookCodeBlob newA = enforceOneof(a);
+    NotebookCodeBlob newB = enforceOneof(b);
     NotebookCodeDiff d = DiffComputer.computeNotebookCodeDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    NotebookCodeBlob diffedB = Utils.sortLists(DiffMerger.mergeNotebookCode(newA, d));
+    NotebookCodeBlob diffedB = DiffMerger.mergeNotebookCode(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeNotebookCode(diffedB, d));
+    diffedB = DiffMerger.mergeNotebookCode(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergePathDataset(PathDatasetBlob a, PathDatasetBlob b)
       throws ModelDBException {
-    PathDatasetBlob newA = Utils.sortLists(enforceOneof(a));
-    PathDatasetBlob newB = Utils.sortLists(enforceOneof(b));
+    PathDatasetBlob newA = enforceOneof(a);
+    PathDatasetBlob newB = enforceOneof(b);
     PathDatasetDiff d = DiffComputer.computePathDatasetDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    PathDatasetBlob diffedB = Utils.sortLists(DiffMerger.mergePathDataset(newA, d));
+    PathDatasetBlob diffedB = DiffMerger.mergePathDataset(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergePathDataset(diffedB, d));
+    diffedB = DiffMerger.mergePathDataset(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergePythonEnvironment(PythonEnvironmentBlob a, PythonEnvironmentBlob b)
       throws ModelDBException {
-    PythonEnvironmentBlob newA = Utils.sortLists(enforceOneof(a));
-    PythonEnvironmentBlob newB = Utils.sortLists(enforceOneof(b));
+    PythonEnvironmentBlob newA = enforceOneof(a);
+    PythonEnvironmentBlob newB = enforceOneof(b);
     PythonEnvironmentDiff d = DiffComputer.computePythonEnvironmentDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    PythonEnvironmentBlob diffedB = Utils.sortLists(DiffMerger.mergePythonEnvironment(newA, d));
+    PythonEnvironmentBlob diffedB = DiffMerger.mergePythonEnvironment(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergePythonEnvironment(diffedB, d));
+    diffedB = DiffMerger.mergePythonEnvironment(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeS3Dataset(S3DatasetBlob a, S3DatasetBlob b) throws ModelDBException {
-    S3DatasetBlob newA = Utils.sortLists(enforceOneof(a));
-    S3DatasetBlob newB = Utils.sortLists(enforceOneof(b));
+    S3DatasetBlob newA = enforceOneof(a);
+    S3DatasetBlob newB = enforceOneof(b);
     S3DatasetDiff d = DiffComputer.computeS3DatasetDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    S3DatasetBlob diffedB = Utils.sortLists(DiffMerger.mergeS3Dataset(newA, d));
+    S3DatasetBlob diffedB = DiffMerger.mergeS3Dataset(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeS3Dataset(diffedB, d));
+    diffedB = DiffMerger.mergeS3Dataset(diffedB, d);
     assertEquals(newB, diffedB);
   }
 
   @Property
   public void diffAndMergeVersionEnvironment(VersionEnvironmentBlob a, VersionEnvironmentBlob b)
       throws ModelDBException {
-    VersionEnvironmentBlob newA = Utils.sortLists(enforceOneof(a));
-    VersionEnvironmentBlob newB = Utils.sortLists(enforceOneof(b));
+    VersionEnvironmentBlob newA = enforceOneof(a);
+    VersionEnvironmentBlob newB = enforceOneof(b);
     VersionEnvironmentDiff d = DiffComputer.computeVersionEnvironmentDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    VersionEnvironmentBlob diffedB = Utils.sortLists(DiffMerger.mergeVersionEnvironment(newA, d));
+    VersionEnvironmentBlob diffedB = DiffMerger.mergeVersionEnvironment(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
-    diffedB = Utils.sortLists(DiffMerger.mergeVersionEnvironment(diffedB, d));
+    diffedB = DiffMerger.mergeVersionEnvironment(diffedB, d);
     assertEquals(newB, diffedB);
   }
 }
