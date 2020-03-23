@@ -86,8 +86,10 @@ public class CodeContainer extends BlobContainer {
     if (!blobHashes.contains(sha)) {
       session.saveOrUpdate(gitCodeBlobEntity);
       blobHashes.add(sha);
+      return gitCodeBlobEntity;
+    } else {
+      return session.get(GitCodeBlobEntity.class, sha);
     }
-    return gitCodeBlobEntity;
   }
 
   private String computeSHA(GitCodeBlob gitCodeBlob) throws NoSuchAlgorithmException {
