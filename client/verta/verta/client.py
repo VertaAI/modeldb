@@ -47,6 +47,8 @@ from . import deployment
 from . import utils
 
 
+_OSS_DEFAULT_WORKSPACE = "personal"
+
 # for ExperimentRun._log_modules()
 _CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
 
@@ -227,9 +229,20 @@ class Client(object):
             "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
             self._conn, params={'email': self._conn.auth['Grpc-Metadata-email']},
         )
-        _utils.raise_for_http_error(response)
 
-        return response.json()['verta_info']['username']
+        if response.ok:
+            try:
+                response_json = response.json()
+            except ValueError:  # not JSON response
+                pass
+            else:
+                return response_json['verta_info']['username']
+        else:
+            if response.status_code == 404:  # UAC not found
+                pass
+            else:
+                _utils.raise_for_http_error(response)
+        return _OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
         config_file = self._find_config_in_all_dirs()
@@ -466,6 +479,25 @@ class Client(object):
         return expt_run
 
     def get_or_create_repository(self, name=None, workspace=None, id=None):
+        """
+        Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
+
+        Parameters
+        ----------
+        name : str
+            Name of the Repository. This parameter cannot be provided alongside `id`.
+        workspace : str, optional
+            Workspace under which the Repository with name `name` exists. If not provided, the
+            current user's personal workspace will be used.
+        id : str, optional
+            ID of the Repository, to be provided instead of `name`.
+
+        Returns
+        -------
+        :class:`~verta._repository.Repository`
+            Specified Repository.
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
@@ -1824,7 +1856,7 @@ class ExperimentRun(_ModelDBEntity):
         project_json = response.json()['project']
         if 'workspace_id' not in project_json:
             # workspace is OSS default
-            return "personal"
+            return _OSS_DEFAULT_WORKSPACE
         else:
             workspace_id = project_json['workspace_id']
         # try getting organization

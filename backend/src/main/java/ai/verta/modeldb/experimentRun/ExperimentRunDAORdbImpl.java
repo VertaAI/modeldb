@@ -1,6 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
@@ -30,12 +31,18 @@ import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.CommitFunction;
+import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
+import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -1596,7 +1603,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       VersioningEntry versioningEntry = request.getVersionedInputs();
       validateVersioningEntity(session, versioningEntry);
       ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
-      runEntity.setVersioningModeldbEntityMappings(
+      runEntity.setVersioned_inputs(
           RdbmsUtils.getVersioningMappingFromVersioningInput(versioningEntry, runEntity));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
@@ -1625,8 +1632,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.debug("ExperimentRun versioning fetch successfully");
         return GetVersionedInput.Response.newBuilder()
             .setVersionedInputs(
-                RdbmsUtils.getVersioningEntryFromList(
-                    experimentRunObj.getVersioningModeldbEntityMappings()))
+                RdbmsUtils.getVersioningEntryFromList(experimentRunObj.getVersioned_inputs()))
             .build();
       } else {
         String errorMessage = "ExperimentRun not found for given ID : " + request.getId();
@@ -1635,6 +1641,106 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+    }
+  }
+
+  @Override
+  public ListCommitExperimentRunsRequest.Response listCommitExperimentRuns(
+      ListCommitExperimentRunsRequest request,
+      RepositoryFunction repositoryFunction,
+      CommitFunction commitFunction)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
+      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+
+      KeyValueQuery repositoryIdPredicate =
+          KeyValueQuery.newBuilder()
+              .setKey(ModelDBConstants.VERSIONED_INPUTS + "." + ModelDBConstants.REPOSITORY_ID)
+              .setValue(Value.newBuilder().setNumberValue(repositoryEntity.getId()).build())
+              .setOperator(OperatorEnum.Operator.EQ)
+              .setValueType(ValueTypeEnum.ValueType.NUMBER)
+              .build();
+      KeyValueQuery commitHashPredicate =
+          KeyValueQuery.newBuilder()
+              .setKey(ModelDBConstants.VERSIONED_INPUTS + "." + ModelDBConstants.COMMIT)
+              .setValue(Value.newBuilder().setStringValue(commitEntity.getCommit_hash()).build())
+              .setOperator(OperatorEnum.Operator.EQ)
+              .setValueType(ValueTypeEnum.ValueType.STRING)
+              .build();
+
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setPageNumber(request.getPagination().getPageNumber())
+              .setPageLimit(request.getPagination().getPageLimit())
+              .setAscending(true)
+              .setSortKey(ModelDBConstants.DATE_UPDATED)
+              .addPredicates(repositoryIdPredicate)
+              .addPredicates(commitHashPredicate)
+              .build();
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          findExperimentRuns(findExperimentRuns);
+      return ListCommitExperimentRunsRequest.Response.newBuilder()
+          .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
+          .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
+          .build();
+    }
+  }
+
+  @Override
+  public ListBlobExperimentRunsRequest.Response listBlobExperimentRuns(
+      ListBlobExperimentRunsRequest request,
+      RepositoryFunction repositoryFunction,
+      CommitFunction commitFunction)
+      throws ModelDBException, InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
+      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+
+      KeyValueQuery repositoryIdPredicate =
+          KeyValueQuery.newBuilder()
+              .setKey(ModelDBConstants.VERSIONED_INPUTS + "." + ModelDBConstants.REPOSITORY_ID)
+              .setValue(Value.newBuilder().setNumberValue(repositoryEntity.getId()).build())
+              .setOperator(OperatorEnum.Operator.EQ)
+              .setValueType(ValueTypeEnum.ValueType.NUMBER)
+              .build();
+      KeyValueQuery commitHashPredicate =
+          KeyValueQuery.newBuilder()
+              .setKey(ModelDBConstants.VERSIONED_INPUTS + "." + ModelDBConstants.COMMIT)
+              .setValue(Value.newBuilder().setStringValue(commitEntity.getCommit_hash()).build())
+              .setOperator(OperatorEnum.Operator.EQ)
+              .setValueType(ValueTypeEnum.ValueType.STRING)
+              .build();
+
+      Location location = Location.newBuilder().addAllLocation(request.getLocationList()).build();
+      KeyValueQuery locationPredicate =
+          KeyValueQuery.newBuilder()
+              .setKey(
+                  ModelDBConstants.VERSIONED_INPUTS + "." + ModelDBConstants.VERSIONING_LOCATION)
+              .setValue(
+                  Value.newBuilder()
+                      .setStringValue(ModelDBUtils.getStringFromProtoObject(location)))
+              .setOperator(OperatorEnum.Operator.EQ)
+              .setValueType(ValueTypeEnum.ValueType.STRING)
+              .build();
+
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setPageNumber(request.getPagination().getPageNumber())
+              .setPageLimit(request.getPagination().getPageLimit())
+              .setAscending(true)
+              .setSortKey(ModelDBConstants.DATE_UPDATED)
+              .addPredicates(repositoryIdPredicate)
+              .addPredicates(commitHashPredicate)
+              .addPredicates(locationPredicate)
+              .build();
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          findExperimentRuns(findExperimentRuns);
+
+      return ListBlobExperimentRunsRequest.Response.newBuilder()
+          .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
+          .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
+          .build();
     }
   }
 }

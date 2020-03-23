@@ -13,17 +13,19 @@ import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorksp
 import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
-case class VersioningS3DatasetComponentDiff (
-  path: Option[VersioningPathDatasetComponentDiff] = None
+case class VersioningListCommitsLogRequestResponse (
+  commits: Option[List[VersioningCommit]] = None,
+  total_records: Option[] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningS3DatasetComponentDiff.toJson(this)
+  def toJson(): JValue = VersioningListCommitsLogRequestResponse.toJson(this)
 }
 
-object VersioningS3DatasetComponentDiff {
-  def toJson(obj: VersioningS3DatasetComponentDiff): JObject = {
+object VersioningListCommitsLogRequestResponse {
+  def toJson(obj: VersioningListCommitsLogRequestResponse): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.path.map(x => JField("path", ((x: VersioningPathDatasetComponentDiff) => VersioningPathDatasetComponentDiff.toJson(x))(x)))
+        obj.commits.map(x => JField("commits", ((x: List[VersioningCommit]) => JArray(x.map(((x: VersioningCommit) => VersioningCommit.toJson(x)))))(x))),
+        obj.total_records.map(x => JField("total_records", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -31,13 +33,14 @@ object VersioningS3DatasetComponentDiff {
     )
   }
 
-  def fromJson(value: JValue): VersioningS3DatasetComponentDiff =
+  def fromJson(value: JValue): VersioningListCommitsLogRequestResponse =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningS3DatasetComponentDiff(
+        VersioningListCommitsLogRequestResponse(
           // TODO: handle required
-          path = fieldsMap.get("path").map(VersioningPathDatasetComponentDiff.fromJson)
+          commits = fieldsMap.get("commits").map((x: JValue) => x match {case JArray(elements) => elements.map(VersioningCommit.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          total_records = fieldsMap.get("total_records").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

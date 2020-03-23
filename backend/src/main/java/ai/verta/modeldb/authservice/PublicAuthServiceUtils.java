@@ -47,4 +47,9 @@ public class PublicAuthServiceUtils implements AuthService {
   public String getUsernameFromUserInfo(UserInfo userInfo) {
     return "";
   }
+
+  @Override
+  public boolean isCurrentUser(String vertaID) {
+    return true;
+  }
 }
