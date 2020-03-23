@@ -29,6 +29,27 @@ public class DiffAndMerge {
   }
 
   @Property
+  public void diffAndMergeNullCheck(Blob a) throws ModelDBException {
+    Blob newA = enforceOneof(a);
+    BlobDiff d = DiffComputer.computeBlobDiff(newA, null);
+
+    // Applying the diff on top of the original A should get original B
+    Blob diffedB = DiffMerger.mergeBlob(newA, d);
+    assertNull(diffedB);
+
+    // Reapplying the diff should not change the result
+    diffedB = DiffMerger.mergeBlob(diffedB, d);
+    assertNull(diffedB);
+  }
+
+  @Property
+  public void diffAndMergeForSameBlob(Blob a) throws ModelDBException {
+    Blob newA = enforceOneof(a);
+    BlobDiff d = DiffComputer.computeBlobDiff(newA, newA);
+    assertNull(d);
+  }
+
+  @Property
   public void diffAndMergeCode(CodeBlob a, CodeBlob b) throws ModelDBException {
     CodeBlob newA = enforceOneof(a);
     CodeBlob newB = enforceOneof(b);
