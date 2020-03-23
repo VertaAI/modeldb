@@ -1,13 +1,13 @@
 Deployment & Release
 ====================
 
-The most challenging and yet crucial operation in operationalization of models is model 
+The most challenging and yet crucial operation in operationalization of models is model
 deployment and release.
-Due to the diversity of ML frameworks and libraries, and the lack of common systems 
+Due to the diversity of ML frameworks and libraries, and the lack of common systems
 for ML development vs. software delivery systems, it takes many months to release models
 into products.
 
-One of Verta's key innovations is our open-core model deployment and release system that 
+One of Verta's key innovations is our open-core model deployment and release system that
 works seamlessly with models built in over a dozen frameworks and languages, and integrates
 with state-of-the-art DevOps and software delivery systems.
 
@@ -59,7 +59,7 @@ of three steps:
         )
         run.log_requirements(["annoy", "tensorflow"])
 
-That's it, this model can now be packaged and deployed on the Verta platform. 
+That's it, this model can now be packaged and deployed on the Verta platform.
 Refer to the :doc:`../api/deployment` API reference for details about the Deployment APIs.
 
 ================
@@ -84,6 +84,9 @@ Model Release
 =============
 
 Verta also provides integrations into popular tools such as Jenkins to automate the package and release
-of models.
-Check out `this <https://github.com/VertaAI/modeldb/tree/master/demos/03-20-mdb-jenkins-prom>`_ Jenkins pipeline to automate the model release process. 
+of models. Check out |jenkins| Jenkins pipeline to automate the model release process.
 
+
+.. |jenkins| raw:: html
+
+   <a href="https://github.com/VertaAI/modeldb/tree/master/demos/03-20-mdb-jenkins-prom" target="_blank">this</a>

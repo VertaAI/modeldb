@@ -17,11 +17,11 @@ Use Cases
 1. Make your ML models reproducible
 ------------------------------------
 
-ML models currently have a major problem with reproducibility that causes weeks to be spent on audit 
+ML models currently have a major problem with reproducibility that causes weeks to be spent on audit
 inquiries in regulated industries and challenges fixing production issues with models.
 ModelDB provides the ability to version every change to a model and make a model fully reproducible.
 
-By versioning the *constituent elements* required for the creation of a model, ModelDB can enable 
+By versioning the *constituent elements* required for the creation of a model, ModelDB can enable
 reproducibility of all models and drastically reduce the time required to answer production incidents as
 well as regulatory inquiries.
 
@@ -41,7 +41,7 @@ reporting, and model analysis functionality.
 
 As more models are built across a team or organization, there are productivity benefits to be obtained by sharing
 ML know-how and models across team members.
-Towards this, a central model repository such as one providee\d by ModelDB can enable model sharing, 
+Towards this, a central model repository such as one providee\d by ModelDB can enable model sharing,
 collaboration, and reuse.
 
 4. Managing the  Model Lifecycle
@@ -94,14 +94,31 @@ Technical Features
 Repository
 ==========
 
-The ModelDB repository is located `here <https://github.com/VertaAI/modeldb>`_. Please clone, star, and contribute!
+The ModelDB repository is located |repo|. Please clone, star, and contribute!
 
 .. _modeldb-history:
 
 History
 =======
 
-ModelDB 1.0 started in 2016 as a research project in the `Database Group <http://dsg.csail.mit.edu>`_ at `MIT CSAIL <http://csail.mit.edu>`_.
+ModelDB 1.0 started in 2016 as a research project in the |DSG| at |CSAIL|.
 At the time, ModelDB was focused on model metadata management and pioneered the approach that is now used in many research and commercial systems.
 Since then, ModelDB evovled to be the first model versioning system to provide model reproducibility and along with metadata management.
-ModelDB 2.0 is maintained by `Verta.ai <https://verta.ai>`_.
+ModelDB 2.0 is maintained by |Verta|.
+
+
+.. |repo| raw:: html
+
+    <a href="https://github.com/VertaAI/modeldb" target="_blank">here</a>
+
+.. |DSG| raw:: html
+
+   <a href="http://dsg.csail.mit.edu" target="_blank">Database Group</a>
+
+.. |CSAIL| raw:: html
+
+   <a href="http://csail.mit.edu" target="_blank">hMIT CSAILere</a>
+
+.. |Verta| raw:: html
+
+   <a href="https://verta.ai" target="_blank">Verta.ai</a>

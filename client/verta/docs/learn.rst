@@ -8,13 +8,13 @@ Let us know on `Slack <support.html>`_  if you'd like to see a particular learni
 News
 ====
 
-Check out information on upcoming releases, talks, and events `here <https://verta.ai/news>`_.
+Check out information on upcoming releases, talks, and events |news|.
 
 ===============================
 Verta and ModelDB Presentations
 ===============================
 
-* Check out the `Verta YouTube channel <https://www.youtube.com/channel/UClJKA9nhsFNpxK5ACRKjzbA/about>`_ for Product videos and tutorials.
+* Check out the |YouTube channel| for Product videos and tutorials.
 
 ..
     =================
@@ -25,3 +25,12 @@ Verta and ModelDB Presentations
     MLOps
     =====
 ..
+
+
+.. |news| raw:: html
+
+   <a href="https://verta.ai/news" target="_blank">here</a>
+
+.. |YouTube channel| raw:: html
+
+   <a href="https://www.youtube.com/channel/UClJKA9nhsFNpxK5ACRKjzbA/about" target="_blank">Verta YouTube channel</a>

@@ -31,7 +31,7 @@ Setup
 
 This guide assumes a basic familiarity with Verta's client interface.
 
-Imagine we have some CSV files stored on `Amazon S3 <https://aws.amazon.com/s3/>`_ that we would
+Imagine we have some CSV files stored on |S3| that we would
 like to associate with our workflows. We'd like to keep track of which files we're accessing, and
 when they are accessed.
 
@@ -48,7 +48,7 @@ Don't worry—Verta doesn't download or store the actual S3 object; instead, we 
 information for you to later identify the snapshot of data that was used.
 
 After installation, make sure AWS credentials are set up in your local environment, following their
-`official instructions <https://pypi.org/project/boto3/>`_.
+|boto3|.
 
 
 Version Logging
@@ -102,3 +102,12 @@ Clicking on *training_data* will direct you to the DatasetVersion page:
 And there, you'll find information about your dataset version:
 
 .. image:: /_static/images/dataset-version-page.png
+
+
+.. |S3| raw:: html
+
+   <a href="https://aws.amazon.com/s3/" target="_blank">Amazon S3</a>
+
+.. |boto3| raw:: html
+
+   <a href="https://pypi.org/project/boto3/" target="_blank">official instructions</a>

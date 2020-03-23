@@ -9,7 +9,7 @@ Get started with Verta in 5 minutes.
 You have a few options here:
 
 * If you are on Verta Core or Verta Enterprise, you do not need to set up a Verta Server; please reach out to `Verta Support <mailto:support@verta.ai>`_ for instructions for your server information.
-* You are only looking to run open-source ModelDB, head over to the `ModelDB repo <https://github.com/VertaAI/modeldb>`_ for installation instructions.
+* You are only looking to run open-source ModelDB, head over to the |ModelDB repo| for installation instructions.
 
 
 2. Setup the Verta Client
@@ -31,7 +31,7 @@ The Verta client supports Python 2.7 & 3.5–3.7!
 3. Obtain your Verta Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* On Verta Core or Verta Enterprise, log into the Verta Web App (e.g., `https://app.verta.ai <https://app.verta.ai>`__) and visit the Profile page to find your developer key.
+* On Verta Core or Verta Enterprise, log into the Verta Web App (e.g., |web app|) and visit the Profile page to find your developer key.
 
     .. image:: /_static/images/web-app-profile.png
         :width: 50%
@@ -87,3 +87,12 @@ Now that you have versioned a few models, you can interact with them in a variet
 ..
     For more information, read the `workflow guide <workflow.html>`_ and the `API reference
     <../reference/api.html>`_.
+
+
+.. |ModelDB repo| raw:: html
+
+   <a href="https://github.com/VertaAI/modeldb" target="_blank">`ModelDB repo</a>
+
+.. |web app| raw:: html
+
+   <a href="https://app.verta.ai" target="_blank">https://app.verta.ai</a>
