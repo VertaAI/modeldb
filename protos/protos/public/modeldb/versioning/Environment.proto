@@ -5,6 +5,8 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
+import "protos/public/modeldb/versioning/Enums.proto";
+
 message EnvironmentBlob {
     oneof content {
         PythonEnvironmentBlob python = 1;
@@ -87,6 +89,7 @@ message PythonEnvironmentDiff {
 }
 
 message DockerEnvironmentDiff {
-    DockerEnvironmentBlob A = 1;
-    DockerEnvironmentBlob B = 2;
+    DiffStatusEnum.DiffStatus status = 1;
+    DockerEnvironmentBlob A = 2;
+    DockerEnvironmentBlob B = 3;
 }

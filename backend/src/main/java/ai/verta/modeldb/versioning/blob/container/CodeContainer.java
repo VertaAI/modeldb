@@ -68,7 +68,8 @@ public class CodeContainer extends BlobContainer {
         if (notebook.getPath() != null) {
           pathDatasetBlobBuilder.addComponents(notebook.getPath());
         }
-        String pathBlobSha = DatasetContainer.saveBlob(session, pathDatasetBlobBuilder.build(), blobHashes);
+        String pathBlobSha =
+            DatasetContainer.saveBlob(session, pathDatasetBlobBuilder.build(), blobHashes);
         blobHash = FileHasher.getSha(gitCodeBlobEntity.getBlobHash() + ":" + pathBlobSha);
         if (!blobHashes.contains(blobHash)) {
           session.saveOrUpdate(

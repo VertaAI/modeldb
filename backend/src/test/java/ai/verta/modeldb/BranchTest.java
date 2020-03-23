@@ -22,7 +22,6 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.DeleteTagRequest;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetTagRequest;
-import ai.verta.modeldb.versioning.ListBranchCommitsRequest;
 import ai.verta.modeldb.versioning.ListBranchesRequest;
 import ai.verta.modeldb.versioning.ListTagsRequest;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
@@ -672,7 +671,7 @@ public class BranchTest {
         commitShaList.get(3),
         branchRootCommit.getCommitSha());
 
-    ListBranchCommitsRequest listBranchCommitsRequest =
+    /*ListBranchCommitsRequest listBranchCommitsRequest =
         ListBranchCommitsRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setBranch(branchName)
@@ -682,7 +681,7 @@ public class BranchTest {
     Assert.assertEquals(
         "Commit count not match with expected commit count",
         5,
-        listBranchCommitsResponse.getCommitsCount());
+        listBranchCommitsResponse.getCommitsCount());*/
 
     commitShaList.forEach(
         commitSha -> {

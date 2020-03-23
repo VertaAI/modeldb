@@ -11,6 +11,7 @@ import "protos/public/modeldb/ExperimentRunService.proto";
 import "protos/public/modeldb/versioning/Code.proto";
 import "protos/public/modeldb/versioning/Config.proto";
 import "protos/public/modeldb/versioning/Dataset.proto";
+import "protos/public/modeldb/versioning/Enums.proto";
 import "protos/public/modeldb/versioning/Environment.proto";
 
 // Base commit for the versioning system
@@ -72,15 +73,6 @@ message BlobExpanded {
     // Each element goes one level deeper. So ["foo", "bar"] represents the same as /foo/bar
     repeated string location = 1;
     Blob blob = 2;
-}
-
-message DiffStatusEnum {
-    enum DiffStatus {
-        UNKNOWN = 0;
-        ADDED = 1;
-        DELETED = 2;
-        MODIFIED = 3;
-    }
 }
 
 message BlobDiff {
@@ -303,25 +295,6 @@ message ListCommitsLogRequest {
     message Response {
         repeated Commit commits = 1;
         int64 total_records = 2;
-    }
-}
-
-message MergeRepositoryCommitsRequest {
-    RepositoryIdentification repository_id = 1;
-    string commit_sha_a = 2;
-    string commit_sha_b = 3;
-
-    Commit content = 4;
-    //repeated BlobExpanded conflict_resolution_blobs = 5; // Set of blobs that must resolve any conflict encountered
-    //bool force_manual_conflict_resolution = 6;
-
-    message Response {
-        Commit commit = 1;
-
-        // In case of a conflict, stop at the first such conflict and return it
-        //Commit common_base = 2; // Common base shared between the two commits
-        //repeated BlobDiff diffs_a = 3; // Diff between the common base and commit A
-        //repeated BlobDiff diffs_b = 4; // Diff between the common base and commit B
     }
 }
 
@@ -553,17 +526,6 @@ service VersioningService {
             }
         };
     }
-
-    rpc MergeRepositoryCommits(MergeRepositoryCommitsRequest) returns (MergeRepositoryCommitsRequest.Response) {
-        option (google.api.http) = {
-            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge"
-            body: "*"
-            additional_bindings {
-                post: "/v1/versioning/repositories/{repository_id.repo_id}/merge"
-                body: "*"
-            }
-        };
-    };
 
     // CRUD for Branches
     rpc ListBranches(ListBranchesRequest) returns (ListBranchesRequest.Response) {
