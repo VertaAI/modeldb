@@ -581,7 +581,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     while (itrA < parentCommitA.size() && itrB < parentCommitB.size()) {
       CommitEntity candidateA = parentCommitA.get(itrA);
       CommitEntity candidateB = parentCommitB.get(itrB);
-      if (candidateA.equals(candidateB)) {
+      if (candidateA.getCommit_hash().equals(candidateB.getCommit_hash())) {
         return candidateA;
       } else if (candidateA.getDate_created() > candidateB.getDate_created()) {
         itrA++;
