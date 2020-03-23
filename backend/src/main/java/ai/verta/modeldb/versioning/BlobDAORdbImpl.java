@@ -424,10 +424,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       LOGGER.debug("Deleted location for Diff : {}", deletedLocations);
 
       // modified new blob location from the CommitA
-      Map<String, Set<BlobExpanded>> blobsB =
-          getCollectToMap(locationBlobsMapCommitB);
-      Map<String, Set<BlobExpanded>> blobsA =
-          getCollectToMap(locationBlobsMapCommitA);
+      Map<String, Set<BlobExpanded>> blobsB = getCollectToMap(locationBlobsMapCommitB);
+      Map<String, Set<BlobExpanded>> blobsA = getCollectToMap(locationBlobsMapCommitA);
       for (Map.Entry<String, Set<BlobExpanded>> entry : blobsA.entrySet()) {
         Set<BlobExpanded> ent = blobsB.get(entry.getKey());
         if (ent != null) {
