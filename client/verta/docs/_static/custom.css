@@ -73,7 +73,7 @@ body {
   flex-direction: column;
   margin: 0;
   background: #f5f7f9;
-  min-height: 100%;
+  min-height: 100vh;
 }
 
 .document {
