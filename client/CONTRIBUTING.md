@@ -51,7 +51,7 @@ This can be done automatically with a pre-save hook:
 1. Update `__version__` in [`__about__.py`](https://github.com/VertaAI/modeldb/blob/master/client/verta/verta/__about__.py) with a new version number.
    - Increment the minor version for backwards-incompatible changes or a major set of new features.
    - Increment the patch version for minor new features and bug fixes.
-1. Update [changelog.rst](https://github.com/VertaAI/modeldb/blob/master/client/verta/docs/reference/changelog.rst).
+1. Update [changelog.rst](https://github.com/VertaAI/modeldb/blob/master/client/verta/docs/changelog.rst).
 1. Commit the updated `__about__.py` and `changelog.rst` to a new branch and submit a pull request.
 1. Once the pull request is approved and merged, a Verta core team member shall tag the merge commit using e.g. `git tag -a client-v0.0.0 -m '' && git push --follow-tags`, with the appropriate version number.
 

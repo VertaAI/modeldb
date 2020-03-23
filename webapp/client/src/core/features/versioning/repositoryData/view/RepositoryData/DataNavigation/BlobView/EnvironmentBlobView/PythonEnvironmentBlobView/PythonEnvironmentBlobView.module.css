@@ -1,0 +1,8 @@
+.root {
+  margin-top: 10px;
+}
+.content {
+  border: 1px solid var(--border-color1);
+  border-radius: 3px;
+  padding: 0 5px;
+}

@@ -123,6 +123,9 @@ public class EnvironmentContainer extends BlobContainer {
     for (PythonRequirementEnvironmentBlob constraint : constraintsList) {
       if (constraint.getLibrary().isEmpty()) {
         Optional<String> message = validateReturnMessage(constraint, "Constraint");
+        if (message.isPresent()) {
+          throw new ModelDBException(message.get(), Code.INVALID_ARGUMENT);
+        }
       }
       pythonRequirementKeys.add(new PythonRequirementKey(constraint, false));
     }

@@ -15,6 +15,7 @@ interface ILocalProps {
   isUpdating: boolean;
   isRemovable?: boolean;
   isDraggable?: boolean;
+  tagWordReplacer?: string;
   onRemove?(tag: string): void;
 }
 
@@ -28,7 +29,13 @@ class Tag extends React.Component<ILocalProps> {
   };
 
   public render() {
-    const { tag, isRemovable, isUpdating, isDraggable = true } = this.props;
+    const {
+      tag,
+      isRemovable,
+      isUpdating,
+      isDraggable = true,
+      tagWordReplacer,
+    } = this.props;
     return (
       <div
         className={cn(
@@ -38,8 +45,7 @@ class Tag extends React.Component<ILocalProps> {
         )}
       >
         <Confirm
-          title={`Delete Tag: ${this.props.tag}`}
-          titleIcon="trash"
+          title={`Delete ${tagWordReplacer || 'Tag'}: ${this.props.tag}`}
           isOpen={this.state.isShowDeleteTagModal}
           onCancel={this.handleCloseModal}
           onConfirm={this.handleCloseModalAndDelete}

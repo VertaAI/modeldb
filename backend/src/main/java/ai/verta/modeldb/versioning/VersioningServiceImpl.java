@@ -22,11 +22,9 @@ import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -269,6 +267,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                 repositoryFunction,
                 (session, repository) ->
                     commitDAO.getCommitEntity(session, request.getCommitBase(), repository));
+        for (BlobContainer blobContainer : blobContainers) {
+          blobContainer.validate();
+        }
       }
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
@@ -302,7 +303,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
             case NOTEBOOK:
               NotebookCodeDiff notebook = code.getNotebook();
               validate(notebook.getGitRepo());
-              validate(notebook.getPath());
+              if (notebook.hasPath()) {
+                validate(notebook.getPath());
+              }
               break;
             default:
               throw new ModelDBException("Unknown diff type", Code.INVALID_ARGUMENT);
@@ -341,20 +344,13 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           break;
         case ENVIRONMENT:
           EnvironmentDiff environmentDiff = blobDiff.getEnvironment();
-          validate(environmentDiff.getCommandLine());
+          if (environmentDiff.hasCommandLine()) {
+            validate(environmentDiff.getCommandLine());
+          }
           List<EnvironmentVariablesDiff> environmentVariablesList =
               environmentDiff.getEnvironmentVariablesList();
-          List<EnvironmentVariablesBlob> environmentVariablesBlobList = new LinkedList<>();
-          Set<EnvironmentVariablesBlob> environmentVariablesBlobSet = new HashSet<>();
           for (EnvironmentVariablesDiff environmentVariablesDiff : environmentVariablesList) {
             validate(environmentVariablesDiff);
-            if (environmentVariablesDiff.hasB()) {
-              environmentVariablesBlobList.add(environmentVariablesDiff.getB());
-              environmentVariablesBlobSet.add(environmentVariablesDiff.getB());
-            }
-          }
-          if (environmentVariablesBlobList.size() != environmentVariablesBlobSet.size()) {
-            throw new ModelDBException("There are recurring variables", Code.INVALID_ARGUMENT);
           }
           switch (environmentDiff.getContentCase()) {
             case DOCKER:
@@ -365,29 +361,15 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               PythonEnvironmentDiff pythonEnvironmentDiff = environmentDiff.getPython();
               List<PythonRequirementEnvironmentDiff> pythonEnvironmentDiffRequirementsList =
                   pythonEnvironmentDiff.getRequirementsList();
-              List<PythonRequirementEnvironmentBlob> requirements = new LinkedList<>();
-              Set<PythonRequirementEnvironmentBlob> requirementsSet = new HashSet<>();
               for (PythonRequirementEnvironmentDiff pythonRequirementEnvironmentDiff :
                   pythonEnvironmentDiffRequirementsList) {
                 validate(pythonRequirementEnvironmentDiff, "requirement");
-                if (pythonRequirementEnvironmentDiff.hasB()) {
-                  requirements.add(pythonRequirementEnvironmentDiff.getB());
-                  requirementsSet.add(pythonRequirementEnvironmentDiff.getB());
-                }
               }
               List<PythonRequirementEnvironmentDiff> pythonEnvironmentDiffConstraintsList =
                   pythonEnvironmentDiff.getConstraintsList();
               for (PythonRequirementEnvironmentDiff pythonConstraintEnvironmentDiff :
                   pythonEnvironmentDiffConstraintsList) {
                 validate(pythonConstraintEnvironmentDiff, "constraint");
-                if (pythonConstraintEnvironmentDiff.hasB()) {
-                  requirements.add(pythonConstraintEnvironmentDiff.getB());
-                  requirementsSet.add(pythonConstraintEnvironmentDiff.getB());
-                }
-              }
-              if (requirementsSet.size() != requirements.size()) {
-                throw new ModelDBException(
-                    "There are recurring requirements or constraints", Code.INVALID_ARGUMENT);
               }
               break;
           }
