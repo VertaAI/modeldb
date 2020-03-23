@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class GitCodeDiff implements ProtoType {
-  public GitCodeBlob A;
-  public GitCodeBlob B;
-  public DiffStatusEnumDiffStatus Status;
+  private GitCodeBlob A;
+  private GitCodeBlob B;
+  private DiffStatusEnumDiffStatus Status;
 
   public GitCodeDiff() {
     this.A = null;
@@ -122,14 +122,26 @@ public class GitCodeDiff implements ProtoType {
     return this;
   }
 
+  public GitCodeBlob getA() {
+    return this.A;
+  }
+
   public GitCodeDiff setB(GitCodeBlob value) {
     this.B = Utils.removeEmpty(value);
     return this;
   }
 
+  public GitCodeBlob getB() {
+    return this.B;
+  }
+
   public GitCodeDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static GitCodeDiff fromProto(ai.verta.modeldb.versioning.GitCodeDiff blob) {

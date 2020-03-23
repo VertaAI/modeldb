@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class HyperparameterValuesConfigBlob implements ProtoType {
-  public Float FloatValue;
-  public Long IntValue;
-  public String StringValue;
+  private Float FloatValue;
+  private Long IntValue;
+  private String StringValue;
 
   public HyperparameterValuesConfigBlob() {
     this.FloatValue = 0.f;
@@ -121,14 +121,26 @@ public class HyperparameterValuesConfigBlob implements ProtoType {
     return this;
   }
 
+  public Float getFloatValue() {
+    return this.FloatValue;
+  }
+
   public HyperparameterValuesConfigBlob setIntValue(Long value) {
     this.IntValue = Utils.removeEmpty(value);
     return this;
   }
 
+  public Long getIntValue() {
+    return this.IntValue;
+  }
+
   public HyperparameterValuesConfigBlob setStringValue(String value) {
     this.StringValue = Utils.removeEmpty(value);
     return this;
+  }
+
+  public String getStringValue() {
+    return this.StringValue;
   }
 
   public static HyperparameterValuesConfigBlob fromProto(

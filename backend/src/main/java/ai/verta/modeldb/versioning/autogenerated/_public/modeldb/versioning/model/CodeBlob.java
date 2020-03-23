@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class CodeBlob implements ProtoType {
-  public GitCodeBlob Git;
-  public NotebookCodeBlob Notebook;
+  private GitCodeBlob Git;
+  private NotebookCodeBlob Notebook;
 
   public CodeBlob() {
     this.Git = null;
@@ -100,9 +100,17 @@ public class CodeBlob implements ProtoType {
     return this;
   }
 
+  public GitCodeBlob getGit() {
+    return this.Git;
+  }
+
   public CodeBlob setNotebook(NotebookCodeBlob value) {
     this.Notebook = Utils.removeEmpty(value);
     return this;
+  }
+
+  public NotebookCodeBlob getNotebook() {
+    return this.Notebook;
   }
 
   public static CodeBlob fromProto(ai.verta.modeldb.versioning.CodeBlob blob) {

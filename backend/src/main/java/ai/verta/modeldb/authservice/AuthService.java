@@ -19,4 +19,12 @@ public interface AuthService {
   String getVertaIdFromUserInfo(UserInfo userInfo);
 
   String getUsernameFromUserInfo(UserInfo userInfo);
+
+  /**
+   * returns if the vertaID passed matches the current user
+   *
+   * @param vertaID : user id
+   * @return {@link Boolean} : boolean status
+   */
+  boolean isCurrentUser(String vertaID);
 }

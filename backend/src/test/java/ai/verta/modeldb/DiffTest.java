@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CommitTest.getBlobFromPath;
+import static ai.verta.modeldb.CommitTest.getDatasetBlobFromPath;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 
 import ai.verta.modeldb.authservice.AuthService;
@@ -200,7 +200,7 @@ public class DiffTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub);
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -328,7 +328,7 @@ public class DiffTest {
       Assert.assertNotNull(blobDiff3);
     }
 
-    for (Commit commit : new Commit[] {commitA, commitB}) {
+    for (Commit commit : new Commit[] {commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -441,7 +441,10 @@ public class DiffTest {
   private BlobExpanded modifiedBlobExpanded(int blobType) {
     String path3 = "/protos/proto/public/test22.txt";
     BlobExpanded blobExpanded3 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path3)).addAllLocation(LOCATION3).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path3))
+            .addAllLocation(LOCATION3)
+            .build();
 
     return blobExpanded3;
   }
@@ -484,7 +487,7 @@ public class DiffTest {
                             PathDatasetComponentDiff.newBuilder()
                                 .setStatus(DiffStatus.ADDED)
                                 .setB(
-                                    getBlobFromPath("test")
+                                    getDatasetBlobFromPath("test")
                                         .getDataset()
                                         .getPath()
                                         .getComponents(0))));
@@ -644,33 +647,33 @@ public class DiffTest {
         String path1 = "/protos/proto/public/versioning/versioning.proto";
         blobExpanded1 =
             BlobExpanded.newBuilder()
-                .setBlob(getBlobFromPath(path1))
+                .setBlob(getDatasetBlobFromPath(path1))
                 .addAllLocation(LOCATION1)
                 .build();
 
         blobExpanded2 =
             BlobExpanded.newBuilder()
-                .setBlob(getBlobFromPath(path1))
+                .setBlob(getDatasetBlobFromPath(path1))
                 .addAllLocation(LOCATION2)
                 .build();
 
         blobExpanded3 =
             BlobExpanded.newBuilder()
-                .setBlob(getBlobFromPath(path1))
+                .setBlob(getDatasetBlobFromPath(path1))
                 .addAllLocation(LOCATION3)
                 .build();
 
         String path4 = "xyz.txt";
         blobExpanded4 =
             BlobExpanded.newBuilder()
-                .setBlob(getBlobFromPath(path4))
+                .setBlob(getDatasetBlobFromPath(path4))
                 .addAllLocation(LOCATION4)
                 .build();
 
         String path5 = "/protos/proto/public/algebra.txt";
         blobExpanded5 =
             BlobExpanded.newBuilder()
-                .setBlob(getBlobFromPath(path5))
+                .setBlob(getDatasetBlobFromPath(path5))
                 .addAllLocation(LOCATION5)
                 .build();
         break;

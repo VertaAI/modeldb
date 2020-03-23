@@ -207,4 +207,9 @@ public class AuthServiceUtils implements AuthService {
             .build();
     throw StatusProto.toStatusRuntimeException(status);
   }
+
+  @Override
+  public boolean isCurrentUser(String vertaID) {
+    return getVertaIdFromUserInfo(getCurrentLoginUserInfo()).equals(vertaID);
+  }
 }

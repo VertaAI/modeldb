@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class CodeDiff implements ProtoType {
-  public GitCodeDiff Git;
-  public NotebookCodeDiff Notebook;
+  private GitCodeDiff Git;
+  private NotebookCodeDiff Notebook;
 
   public CodeDiff() {
     this.Git = null;
@@ -100,9 +100,17 @@ public class CodeDiff implements ProtoType {
     return this;
   }
 
+  public GitCodeDiff getGit() {
+    return this.Git;
+  }
+
   public CodeDiff setNotebook(NotebookCodeDiff value) {
     this.Notebook = Utils.removeEmpty(value);
     return this;
+  }
+
+  public NotebookCodeDiff getNotebook() {
+    return this.Notebook;
   }
 
   public static CodeDiff fromProto(ai.verta.modeldb.versioning.CodeDiff blob) {

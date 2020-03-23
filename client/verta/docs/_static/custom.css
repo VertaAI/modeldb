@@ -111,6 +111,11 @@ p.logo {
   margin-bottom: 8px;
 }
 
+img.align-center {
+  display: block;
+  margin: 0 auto;
+}
+
 .footer {
   height: 3rem;
   flex-shrink: 0;
@@ -355,6 +360,7 @@ code {
 }
 
 dt > code {
+  font-size: 1.25rem;
   padding: 0;
 }
 
@@ -514,6 +520,10 @@ ul.simple li {
   padding: 10px 0;
 }
 
+ul.simple > li {
+  font-size: 1.2rem;
+}
+
 .sphinxsidebarwrapper > h3 {
   display: none;
 }
@@ -537,4 +547,22 @@ ul.simple {
 
 table.docutils {
   border: none;
+}
+
+.body input[type="text"] {
+  font-size: 1.2rem;
+  width: 50%;
+}
+
+.body input[type="submit"] {
+  display: inline-block;
+  height: initial;
+  margin-left: 1rem;
+  text-transform: capitalize;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.body form {
+  display: flex;
 }

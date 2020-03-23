@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class EnvironmentDiff implements ProtoType {
-  public CommandLineEnvironmentDiff CommandLine;
-  public DockerEnvironmentDiff Docker;
-  public List<EnvironmentVariablesDiff> EnvironmentVariables;
-  public PythonEnvironmentDiff Python;
+  private CommandLineEnvironmentDiff CommandLine;
+  private DockerEnvironmentDiff Docker;
+  private List<EnvironmentVariablesDiff> EnvironmentVariables;
+  private PythonEnvironmentDiff Python;
 
   public EnvironmentDiff() {
     this.CommandLine = null;
@@ -162,19 +162,38 @@ public class EnvironmentDiff implements ProtoType {
     return this;
   }
 
+  public CommandLineEnvironmentDiff getCommandLine() {
+    return this.CommandLine;
+  }
+
   public EnvironmentDiff setDocker(DockerEnvironmentDiff value) {
     this.Docker = Utils.removeEmpty(value);
     return this;
   }
 
+  public DockerEnvironmentDiff getDocker() {
+    return this.Docker;
+  }
+
   public EnvironmentDiff setEnvironmentVariables(List<EnvironmentVariablesDiff> value) {
     this.EnvironmentVariables = Utils.removeEmpty(value);
+    if (this.EnvironmentVariables != null) {
+      this.EnvironmentVariables.sort(Comparator.comparingInt(EnvironmentVariablesDiff::hashCode));
+    }
     return this;
+  }
+
+  public List<EnvironmentVariablesDiff> getEnvironmentVariables() {
+    return this.EnvironmentVariables;
   }
 
   public EnvironmentDiff setPython(PythonEnvironmentDiff value) {
     this.Python = Utils.removeEmpty(value);
     return this;
+  }
+
+  public PythonEnvironmentDiff getPython() {
+    return this.Python;
   }
 
   public static EnvironmentDiff fromProto(ai.verta.modeldb.versioning.EnvironmentDiff blob) {

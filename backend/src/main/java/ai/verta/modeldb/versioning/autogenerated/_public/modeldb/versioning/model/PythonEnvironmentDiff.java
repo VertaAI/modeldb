@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PythonEnvironmentDiff implements ProtoType {
-  public List<PythonRequirementEnvironmentDiff> Constraints;
-  public List<PythonRequirementEnvironmentDiff> Requirements;
-  public VersionEnvironmentDiff Version;
+  private List<PythonRequirementEnvironmentDiff> Constraints;
+  private List<PythonRequirementEnvironmentDiff> Requirements;
+  private VersionEnvironmentDiff Version;
 
   public PythonEnvironmentDiff() {
     this.Constraints = null;
@@ -162,17 +162,35 @@ public class PythonEnvironmentDiff implements ProtoType {
 
   public PythonEnvironmentDiff setConstraints(List<PythonRequirementEnvironmentDiff> value) {
     this.Constraints = Utils.removeEmpty(value);
+    if (this.Constraints != null) {
+      this.Constraints.sort(Comparator.comparingInt(PythonRequirementEnvironmentDiff::hashCode));
+    }
     return this;
+  }
+
+  public List<PythonRequirementEnvironmentDiff> getConstraints() {
+    return this.Constraints;
   }
 
   public PythonEnvironmentDiff setRequirements(List<PythonRequirementEnvironmentDiff> value) {
     this.Requirements = Utils.removeEmpty(value);
+    if (this.Requirements != null) {
+      this.Requirements.sort(Comparator.comparingInt(PythonRequirementEnvironmentDiff::hashCode));
+    }
     return this;
+  }
+
+  public List<PythonRequirementEnvironmentDiff> getRequirements() {
+    return this.Requirements;
   }
 
   public PythonEnvironmentDiff setVersion(VersionEnvironmentDiff value) {
     this.Version = Utils.removeEmpty(value);
     return this;
+  }
+
+  public VersionEnvironmentDiff getVersion() {
+    return this.Version;
   }
 
   public static PythonEnvironmentDiff fromProto(

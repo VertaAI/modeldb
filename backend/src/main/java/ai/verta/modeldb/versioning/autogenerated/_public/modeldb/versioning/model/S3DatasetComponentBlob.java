@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class S3DatasetComponentBlob implements ProtoType {
-  public PathDatasetComponentBlob Path;
+  private PathDatasetComponentBlob Path;
 
   public S3DatasetComponentBlob() {
     this.Path = null;
@@ -78,6 +78,10 @@ public class S3DatasetComponentBlob implements ProtoType {
   public S3DatasetComponentBlob setPath(PathDatasetComponentBlob value) {
     this.Path = Utils.removeEmpty(value);
     return this;
+  }
+
+  public PathDatasetComponentBlob getPath() {
+    return this.Path;
   }
 
   public static S3DatasetComponentBlob fromProto(
