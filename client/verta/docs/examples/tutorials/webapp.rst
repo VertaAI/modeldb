@@ -3,7 +3,7 @@ Verta Web App
 
 Projects Page
 ^^^^^^^^^^^^^
-Navigate to the |web app| to see all your projects.
+Navigate to the |Web App| to see all your projects.
 
 .. image:: /_static/images/web-app-projects.png
    :width: 75%
@@ -36,6 +36,6 @@ Clicking on an individual Experiment Run allows you to see specific details and 
    :width: 75%
 
 
-.. |web app| raw:: html
+.. |Web App| raw:: html
 
    <a href="https://app.verta.ai" target="_blank">Web App</a>

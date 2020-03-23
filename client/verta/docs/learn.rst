@@ -8,13 +8,13 @@ Let us know on `Slack <support.html>`_  if you'd like to see a particular learni
 News
 ====
 
-Check out information on upcoming releases, talks, and events |news|.
+Check out information on upcoming releases, talks, and events |here|.
 
 ===============================
 Verta and ModelDB Presentations
 ===============================
 
-* Check out the |YouTube channel| for Product videos and tutorials.
+* Check out the |Verta YouTube channel| for Product videos and tutorials.
 
 ..
     =================

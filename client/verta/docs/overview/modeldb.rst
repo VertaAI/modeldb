@@ -94,31 +94,31 @@ Technical Features
 Repository
 ==========
 
-The ModelDB repository is located |repo|. Please clone, star, and contribute!
+The ModelDB repository is located |here|. Please clone, star, and contribute!
 
 .. _modeldb-history:
 
 History
 =======
 
-ModelDB 1.0 started in 2016 as a research project in the |DSG| at |CSAIL|.
+ModelDB 1.0 started in 2016 as a research project in the |Database Group| at |MIT CSAIL|.
 At the time, ModelDB was focused on model metadata management and pioneered the approach that is now used in many research and commercial systems.
 Since then, ModelDB evovled to be the first model versioning system to provide model reproducibility and along with metadata management.
-ModelDB 2.0 is maintained by |Verta|.
+ModelDB 2.0 is maintained by |Verta.ai|.
 
 
-.. |repo| raw:: html
+.. |here| raw:: html
 
     <a href="https://github.com/VertaAI/modeldb" target="_blank">here</a>
 
-.. |DSG| raw:: html
+.. |Database Group| raw:: html
 
    <a href="http://dsg.csail.mit.edu" target="_blank">Database Group</a>
 
-.. |CSAIL| raw:: html
+.. |MIT CSAIL| raw:: html
 
    <a href="http://csail.mit.edu" target="_blank">hMIT CSAILere</a>
 
-.. |Verta| raw:: html
+.. |Verta.ai| raw:: html
 
    <a href="https://verta.ai" target="_blank">Verta.ai</a>

@@ -1,7 +1,7 @@
 Examples
 ========
 
-|GitHub repo| houses |Client workflows| for reference and exploration.
+|Verta's GitHub repository| houses |various example projects| for reference and exploration.
 
 Here are some of our most popular examples.
 
@@ -76,10 +76,10 @@ XGBoost
   <https://github.com/VertaAI/modeldb/blob/master/client/workflows/examples/xgboost-integration.ipynb>`__
 
 
-.. |GitHub repo| raw:: html
+.. |Verta's GitHub repository| raw:: html
 
   <a href="https://github.com/VertaAI/modeldb" target="_blank">Verta's GitHub repository</a>
 
-.. |Client workflows| raw:: html
+.. |various example projects| raw:: html
 
    <a href="https://github.com/VertaAI/modeldb/tree/master/client/workflows" target="_blank">various example projects</a>

@@ -24,7 +24,7 @@ monitoring, and maintenance.
 
 Verta is an open-core platform; i.e., the platform is based on core open-source technology
 developed by the Verta team that is freely available. Find more information about our
-open-source technology |open source| and in subsequent
+open-source technology |gere| and in subsequent
 sections.
 
 Verta provides MLOps functionality in three key areas: **model versioning and metadata**,
@@ -35,7 +35,7 @@ Model Versioning & Metadata
 ===========================
 
 The first step to enable operationalization of ML models is to make them reproducible and
-associate governance data with them. Verta's open-source |ModelDB repo|
+associate governance data with them. Verta's open-source |ModelDB|
 component is the only system to provide full model versioning and reproducibility along
 with a rich metadata system.
 
@@ -89,10 +89,10 @@ Ready to get started? We recommend the following:
     ModelDB <overview/modeldb>
 
 
-.. |open source| raw:: html
+.. |here| raw:: html
 
     <a href="https://verta.ai/open-source" target="_blank">here</a>
 
-.. |ModelDB repo| raw:: html
+.. |ModelDB| raw:: html
 
     <a href="https://github.com/VertaAI/modeldb" target="_blank">ModelDB</a>

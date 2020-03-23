@@ -84,9 +84,9 @@ Model Release
 =============
 
 Verta also provides integrations into popular tools such as Jenkins to automate the package and release
-of models. Check out |jenkins| Jenkins pipeline to automate the model release process.
+of models. Check out |this| Jenkins pipeline to automate the model release process.
 
 
-.. |jenkins| raw:: html
+.. |this| raw:: html
 
    <a href="https://github.com/VertaAI/modeldb/tree/master/demos/03-20-mdb-jenkins-prom" target="_blank">this</a>
