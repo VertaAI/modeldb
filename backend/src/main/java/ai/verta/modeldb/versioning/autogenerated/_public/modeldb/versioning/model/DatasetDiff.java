@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DatasetDiff implements ProtoType {
-  public PathDatasetDiff Path;
-  public S3DatasetDiff S3;
+  private PathDatasetDiff Path;
+  private S3DatasetDiff S3;
 
   public DatasetDiff() {
     this.Path = null;
@@ -100,9 +100,17 @@ public class DatasetDiff implements ProtoType {
     return this;
   }
 
+  public PathDatasetDiff getPath() {
+    return this.Path;
+  }
+
   public DatasetDiff setS3(S3DatasetDiff value) {
     this.S3 = Utils.removeEmpty(value);
     return this;
+  }
+
+  public S3DatasetDiff getS3() {
+    return this.S3;
   }
 
   public static DatasetDiff fromProto(ai.verta.modeldb.versioning.DatasetDiff blob) {

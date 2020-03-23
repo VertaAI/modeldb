@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PathDatasetDiff implements ProtoType {
-  public List<PathDatasetComponentDiff> Components;
+  private List<PathDatasetComponentDiff> Components;
 
   public PathDatasetDiff() {
     this.Components = null;
@@ -89,7 +89,14 @@ public class PathDatasetDiff implements ProtoType {
 
   public PathDatasetDiff setComponents(List<PathDatasetComponentDiff> value) {
     this.Components = Utils.removeEmpty(value);
+    if (this.Components != null) {
+      this.Components.sort(Comparator.comparingInt(PathDatasetComponentDiff::hashCode));
+    }
     return this;
+  }
+
+  public List<PathDatasetComponentDiff> getComponents() {
+    return this.Components;
   }
 
   public static PathDatasetDiff fromProto(ai.verta.modeldb.versioning.PathDatasetDiff blob) {

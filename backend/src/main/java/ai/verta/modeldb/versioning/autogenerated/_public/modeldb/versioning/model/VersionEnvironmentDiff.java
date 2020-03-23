@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class VersionEnvironmentDiff implements ProtoType {
-  public VersionEnvironmentBlob A;
-  public VersionEnvironmentBlob B;
-  public DiffStatusEnumDiffStatus Status;
+  private VersionEnvironmentBlob A;
+  private VersionEnvironmentBlob B;
+  private DiffStatusEnumDiffStatus Status;
 
   public VersionEnvironmentDiff() {
     this.A = null;
@@ -122,14 +122,26 @@ public class VersionEnvironmentDiff implements ProtoType {
     return this;
   }
 
+  public VersionEnvironmentBlob getA() {
+    return this.A;
+  }
+
   public VersionEnvironmentDiff setB(VersionEnvironmentBlob value) {
     this.B = Utils.removeEmpty(value);
     return this;
   }
 
+  public VersionEnvironmentBlob getB() {
+    return this.B;
+  }
+
   public VersionEnvironmentDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static VersionEnvironmentDiff fromProto(

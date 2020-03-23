@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
-  public List<HyperparameterValuesConfigBlob> Values;
+  private List<HyperparameterValuesConfigBlob> Values;
 
   public DiscreteHyperparameterSetConfigBlob() {
     this.Values = null;
@@ -93,7 +93,14 @@ public class DiscreteHyperparameterSetConfigBlob implements ProtoType {
 
   public DiscreteHyperparameterSetConfigBlob setValues(List<HyperparameterValuesConfigBlob> value) {
     this.Values = Utils.removeEmpty(value);
+    if (this.Values != null) {
+      this.Values.sort(Comparator.comparingInt(HyperparameterValuesConfigBlob::hashCode));
+    }
     return this;
+  }
+
+  public List<HyperparameterValuesConfigBlob> getValues() {
+    return this.Values;
   }
 
   public static DiscreteHyperparameterSetConfigBlob fromProto(

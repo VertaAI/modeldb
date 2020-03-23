@@ -353,16 +353,16 @@ import static org.junit.Assume.*;
 @RunWith(JUnitQuickcheck.class)
 public class DiffAndMerge {
     @Property public void diffAndMerge(Blob a, Blob b) throws ModelDBException {
-        Blob newA = Utils.sortLists(enforceOneof(a));
-        Blob newB = Utils.sortLists(enforceOneof(b));
+        Blob newA = enforceOneof(a);
+        Blob newB = enforceOneof(b);
         BlobDiff d = DiffComputer.computeBlobDiff(newA, newB);
 
         // Applying the diff on top of the original A should get original B
-        Blob diffedB = Utils.sortLists(DiffMerger.mergeBlob(newA, d));
+        Blob diffedB = DiffMerger.mergeBlob(newA, d);
         assertEquals(newB, diffedB);
 
         // Reapplying the diff should not change the result
-        diffedB = Utils.sortLists(DiffMerger.mergeBlob(diffedB, d));
+        diffedB = DiffMerger.mergeBlob(diffedB, d);
         assertEquals(newB, diffedB);
     }
 
@@ -376,16 +376,16 @@ do
     fi
     cat >> $TEST_FILE <<EOF
     @Property public void diffAndMerge${type}(${type}Blob a, ${type}Blob b) throws ModelDBException {
-        ${type}Blob newA = Utils.sortLists(enforceOneof(a));
-        ${type}Blob newB = Utils.sortLists(enforceOneof(b));
+        ${type}Blob newA = enforceOneof(a);
+        ${type}Blob newB = enforceOneof(b);
         ${type}Diff d = DiffComputer.compute${type}Diff(newA, newB);
 
         // Applying the diff on top of the original A should get original B
-        ${type}Blob diffedB = Utils.sortLists(DiffMerger.merge${type}(newA, d));
+        ${type}Blob diffedB = DiffMerger.merge${type}(newA, d);
         assertEquals(newB, diffedB);
 
         // Reapplying the diff should not change the result
-        diffedB = Utils.sortLists(DiffMerger.merge${type}(diffedB, d));
+        diffedB = DiffMerger.merge${type}(diffedB, d);
         assertEquals(newB, diffedB);
     }
 

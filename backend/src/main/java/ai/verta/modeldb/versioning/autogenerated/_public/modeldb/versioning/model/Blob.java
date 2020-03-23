@@ -12,10 +12,10 @@ import java.util.*;
 import java.util.function.Function;
 
 public class Blob implements ProtoType {
-  public CodeBlob Code;
-  public ConfigBlob Config;
-  public DatasetBlob Dataset;
-  public EnvironmentBlob Environment;
+  private CodeBlob Code;
+  private ConfigBlob Config;
+  private DatasetBlob Dataset;
+  private EnvironmentBlob Environment;
 
   public Blob() {
     this.Code = null;
@@ -142,9 +142,17 @@ public class Blob implements ProtoType {
     return this;
   }
 
+  public CodeBlob getCode() {
+    return this.Code;
+  }
+
   public Blob setConfig(ConfigBlob value) {
     this.Config = Utils.removeEmpty(value);
     return this;
+  }
+
+  public ConfigBlob getConfig() {
+    return this.Config;
   }
 
   public Blob setDataset(DatasetBlob value) {
@@ -152,9 +160,17 @@ public class Blob implements ProtoType {
     return this;
   }
 
+  public DatasetBlob getDataset() {
+    return this.Dataset;
+  }
+
   public Blob setEnvironment(EnvironmentBlob value) {
     this.Environment = Utils.removeEmpty(value);
     return this;
+  }
+
+  public EnvironmentBlob getEnvironment() {
+    return this.Environment;
   }
 
   public static Blob fromProto(ai.verta.modeldb.versioning.Blob blob) {

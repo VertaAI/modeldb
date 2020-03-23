@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ConfigDiff implements ProtoType {
-  public List<HyperparameterSetConfigDiff> HyperparameterSet;
-  public List<HyperparameterConfigDiff> Hyperparameters;
+  private List<HyperparameterSetConfigDiff> HyperparameterSet;
+  private List<HyperparameterConfigDiff> Hyperparameters;
 
   public ConfigDiff() {
     this.HyperparameterSet = null;
@@ -133,12 +133,26 @@ public class ConfigDiff implements ProtoType {
 
   public ConfigDiff setHyperparameterSet(List<HyperparameterSetConfigDiff> value) {
     this.HyperparameterSet = Utils.removeEmpty(value);
+    if (this.HyperparameterSet != null) {
+      this.HyperparameterSet.sort(Comparator.comparingInt(HyperparameterSetConfigDiff::hashCode));
+    }
     return this;
+  }
+
+  public List<HyperparameterSetConfigDiff> getHyperparameterSet() {
+    return this.HyperparameterSet;
   }
 
   public ConfigDiff setHyperparameters(List<HyperparameterConfigDiff> value) {
     this.Hyperparameters = Utils.removeEmpty(value);
+    if (this.Hyperparameters != null) {
+      this.Hyperparameters.sort(Comparator.comparingInt(HyperparameterConfigDiff::hashCode));
+    }
     return this;
+  }
+
+  public List<HyperparameterConfigDiff> getHyperparameters() {
+    return this.Hyperparameters;
   }
 
   public static ConfigDiff fromProto(ai.verta.modeldb.versioning.ConfigDiff blob) {

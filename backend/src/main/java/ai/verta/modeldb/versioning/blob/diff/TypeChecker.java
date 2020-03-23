@@ -7,32 +7,32 @@ public class TypeChecker {
     if (b == null) {
       return null;
     } else {
-      if (b.Dataset != null) {
-        if (b.Dataset.Path != null) {
+      if (b.getDataset() != null) {
+        if (b.getDataset().getPath() != null) {
           return "DatasetPath";
         }
-        if (b.Dataset.S3 != null) {
+        if (b.getDataset().getS3() != null) {
           return "DatasetS3";
         }
         return "DatasetUnknown";
       }
-      if (b.Config != null) {
+      if (b.getConfig() != null) {
         return "Config";
       }
-      if (b.Environment != null) {
-        if (b.Environment.Docker != null) {
+      if (b.getEnvironment() != null) {
+        if (b.getEnvironment().getDocker() != null) {
           return "EnvironmentDocker";
         }
-        if (b.Environment.Python != null) {
+        if (b.getEnvironment().getPython() != null) {
           return "EnvironmentPython";
         }
         return "EnvironmentUnknown";
       }
-      if (b.Code != null) {
-        if (b.Code.Git != null) {
+      if (b.getCode() != null) {
+        if (b.getCode().getGit() != null) {
           return "CodeGit";
         }
-        if (b.Code.Notebook != null) {
+        if (b.getCode().getNotebook() != null) {
           return "CodeNotebook";
         }
         return "CodeUnknown";
