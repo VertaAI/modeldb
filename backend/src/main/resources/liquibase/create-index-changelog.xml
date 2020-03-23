@@ -33,4 +33,14 @@
             CREATE INDEX at_kv_key on attribute (kv_key(255));
         </sql>
     </changeSet>
+
+    <changeSet author="anandJ" id="create_er_experiment_id_index">
+        <preConditions onFail="MARK_RAN">
+            <indexExists indexName="er_experiment_id" />
+        </preConditions>
+        <createIndex indexName="er_experiment_id"
+                     tableName="experiment_run">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
