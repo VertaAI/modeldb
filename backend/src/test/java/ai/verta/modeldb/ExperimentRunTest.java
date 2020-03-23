@@ -9219,7 +9219,7 @@ public class ExperimentRunTest {
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub);
+    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub, "test_repo");
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9400,7 +9400,7 @@ public class ExperimentRunTest {
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub);
+    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub, "test_repo");
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())

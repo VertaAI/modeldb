@@ -789,7 +789,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub);
+    long id = createRepository(versioningServiceBlockingStub, "test_repo");
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -805,19 +805,28 @@ public class CommitTest {
     location1.add("environment");
     location1.add("train.json"); // file
     BlobExpanded blobExpanded1 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path1)).addAllLocation(location1).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path1))
+            .addAllLocation(location1)
+            .build();
 
     String path2 = "/protos/proto/public/test.txt";
     List<String> location2 = new ArrayList<>();
     location2.add("modeldb");
     location2.add("environment.json");
     BlobExpanded blobExpanded2 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path2)).addAllLocation(location2).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path2))
+            .addAllLocation(location2)
+            .build();
 
     List<String> location3 = new ArrayList<>();
     location3.add("modeldb.json");
     BlobExpanded blobExpanded3 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path2)).addAllLocation(location3).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path2))
+            .addAllLocation(location3)
+            .build();
 
     Commit.Builder commitBuilder =
         Commit.newBuilder()
