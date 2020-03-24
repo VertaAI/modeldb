@@ -9,6 +9,7 @@ import heapq
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from ..external import six
+from ..external.six.moves import urllib  # pylint: disable=import-error
 
 from .._internal_utils import _utils
 from .. import code
@@ -421,7 +422,7 @@ class Commit(object):
             self._conn.scheme,
             self._conn.socket,
             self._repo.id,
-            branch,
+            urllib.parse.quote(branch, safe=''),  # URL-encode slashes, etc.
         )
         response = _utils.make_request("PUT", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
