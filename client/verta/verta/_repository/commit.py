@@ -90,7 +90,6 @@ class Commit(object):
             if branch_and_tag:
                 header = header +  " (was {})".format(branch_and_tag)
         else:
-            # TODO: fetch commit message
             header = "Commit {}".format(self.id)
             if branch_and_tag:
                 header = header +  " ({})".format(branch_and_tag)
@@ -449,14 +448,15 @@ class Commit(object):
             same Repository.
 
         """
-        # TODO: check that they belong to the same repo?
-        # TODO: check that this commit has been saved
+        if self.id is None:
+            raise RuntimeError("Commit must be saved before a diff can be calculated")
+
         if reference is None:
             reference_id = self._parent_ids[0]
-        elif not isinstance(reference, Commit):
-            raise ValueError("reference isn't a Commit")
-        elif reference.id is None:
-            raise ValueError("reference must be a saved Commit")
+        elif not isinstance(reference, Commit) or reference.id is None:
+            raise TypeError("`reference` must be a saved Commit")
+        elif self._repo.id != reference._repo.id:
+            raise ValueError("Commit and `reference` must belong to the same Repository")
         else:
             reference_id = reference.id
 
@@ -493,7 +493,9 @@ class Commit(object):
             If this Commit has not yet been saved.
 
         """
-        # TODO: check that this commit has been saved
+        if self.id is None:
+            raise RuntimeError("Commit must be saved before a diff can be applied")
+
         msg = _VersioningService.CreateCommitRequest()
         msg.repository_id.repo_id = self._repo.id
         msg.commit.parent_shas.append(self.id)
@@ -527,10 +529,16 @@ class Commit(object):
             same Repository.
 
         """
-        # TODO: check that commits have been saved
-        # TODO: check same repo
+        if self.id is None:
+            raise RuntimeError("Commit must be saved before a revert can be performed")
+
         if other is None:
             other = self
+        elif not isinstance(other, Commit) or other.id is None:
+            raise TypeError("`other` must be a saved Commit")
+        elif self._repo.id != other._repo.id:
+            raise ValueError("Commit and `other` must belong to the same Repository")
+
         if message is None:
             message = "Revert {}".format(other.id[:7])
 
@@ -541,8 +549,13 @@ class Commit(object):
         return (-self._commit_msg.date_created, self.id, self)
 
     def get_common_parent(self, other):
-        # TODO: check other is a Commit
-        # TODO: check same repo
+        if self.id is None:
+            raise RuntimeError("Commit must be saved before a common parent can be calculated")
+
+        if not isinstance(other, Commit) or other.id is None:
+            raise TypeError("`other` must be a saved Commit")
+        elif self._repo.id != other._repo.id:
+            raise ValueError("Commit and `other` must belong to the same Repository")
 
         # Keep a set of all parents we see for each side. This doesn't have to be *all* but facilitates implementation
         left_ids = set([self.id])
@@ -601,8 +614,14 @@ class Commit(object):
             same Repository.
 
         """
-        # TODO: check that commits have been saved
-        # TODO: check same repo
+        if self.id is None:
+            raise RuntimeError("Commit must be saved before a merge can be performed")
+
+        if not isinstance(other, Commit) or other.id is None:
+            raise TypeError("`other` must be a saved Commit")
+        elif self._repo.id != other._repo.id:
+            raise ValueError("Commit and `other` must belong to the same Repository")
+
         if message is None:
             message = "Merge {} into {}".format(
                 other.branch_name or other.id[:7],
