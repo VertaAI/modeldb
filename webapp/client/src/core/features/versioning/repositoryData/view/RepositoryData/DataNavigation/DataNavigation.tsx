@@ -8,30 +8,37 @@ import {
 } from 'core/shared/models/Versioning/RepositoryData';
 import matchBy from 'core/shared/utils/matchBy';
 
-import BlobView from './BlobView/BlobView';
 import styles from './DataNavigation.module.css';
 import FolderView from './FolderView/FolderView';
+import BlobDetailsView from './BlobDetailsView/BlobDetailsView';
 
 interface ILocalProps {
-  repositoryName: IRepository['name'];
+  repository: IRepository;
   fullDataLocationComponents: IFullDataLocationComponents;
   commit: IHydratedCommit;
   data: IRepositoryData;
 }
 
 const DataNavigation = (props: ILocalProps) => {
-  const { repositoryName, commit, fullDataLocationComponents, data } = props;
+  const { repository, commit, fullDataLocationComponents, data } = props;
 
   return (
     <div className={styles.root}>
       {matchBy(data, 'type')({
-        blob: blob => <BlobView blobData={blob.data} />,
+        blob: blob => (
+          <BlobDetailsView
+            repository={repository}
+            commit={commit}
+            location={fullDataLocationComponents.location}
+            blobData={blob.data}
+          />
+        ),
         folder: folder => (
           <FolderView
             data={folder}
             fullDataLocationComponents={fullDataLocationComponents}
             commit={commit}
-            repositoryName={repositoryName}
+            repositoryName={repository.name}
           />
         ),
       })}
