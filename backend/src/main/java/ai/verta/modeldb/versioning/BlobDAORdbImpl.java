@@ -460,12 +460,12 @@ public class BlobDAORdbImpl implements BlobDAO {
         .collect(
             Collectors.toMap(
                 Entry::getValue,
-                entry -> new HashSet<>(Collections.singletonList(entry.getKey())),
+                entry -> new LinkedHashSet<>(Collections.singletonList(entry.getKey())),
                 (m1, m2) -> {
-                  HashSet<BlobExpanded> newHash = new HashSet<>(m1);
+                  LinkedHashSet<BlobExpanded> newHash = new LinkedHashSet<>(m1);
                   newHash.addAll(m2);
                   return newHash;
-                }));
+                }, LinkedHashMap::new));
   }
 
   List<ai.verta.modeldb.versioning.BlobDiff> getAddedBlobDiff(
