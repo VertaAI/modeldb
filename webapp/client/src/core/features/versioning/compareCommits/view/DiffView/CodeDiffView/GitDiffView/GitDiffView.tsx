@@ -6,35 +6,35 @@ import { IGitCodeDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
 import {
   DiffType,
   ComparedCommitType,
-  getDiffBlobsData,
+  getABData,
 } from 'core/shared/models/Versioning/Blob/Diff';
 import { getObjsPropsDiff } from 'core/shared/utils/collection';
-
-import { IComparedCommitsInfo } from '../../../types';
-import { diffColors } from '../../shared/styles';
-import CompareTable from './CompareTable/CompareTable';
-import styles from './GitDiffView.module.css';
 import HashProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/HashProp/HashProp';
 import BranchProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/BranchProp/BranchProp';
 import TagProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/TagProp/TagProp';
 import RepoProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
 
+import { IComparedCommitsInfo } from '../../../types';
+import { diffColors } from '../../shared/styles';
+import CompareTable from './CompareTable/CompareTable';
+import styles from './GitDiffView.module.css';
+
 interface ILocalProps {
-  diff: IGitCodeDiff;
+  diff: IGitCodeDiff['data'];
   comparedCommitsInfo: IComparedCommitsInfo;
 }
 
 const GitDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
-  const { blobAData: blobA, blobBData: blobB } = getDiffBlobsData(diff);
+  const { A, B } = getABData(diff);
 
   return (
     <div className={styles.root}>
       <CompareTable
-        blobA={blobA || undefined}
-        blobB={blobB}
+        A={A}
+        B={B}
         diffInfo={getObjsPropsDiff(
-          blobA ? blobA.data : ({} as any),
-          blobB ? blobB.data : ({} as any)
+          A ? A.data : ({} as any),
+          B ? B.data : ({} as any)
         )}
         columns={{
           property: {
@@ -74,6 +74,7 @@ const GitDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
           render={({ blobData, diffBlobProperties, type }) => {
             return blobData && !R.isNil(blobData.isDirty) ? (
               <span
+                data-test="git-dirty"
                 style={
                   diffBlobProperties.isDirty
                     ? { backgroundColor: getDiffStyles(diff.diffType, type) }
