@@ -38,9 +38,9 @@ Core Verta functionality
     :hidden:
     :titlesonly:
 
-    Model Versioning <tutorials/versioning>
+    Model Ingredient Versioning <tutorials/ingredients>
+    Model Versioning <tutorials/workflow>
     Data Versioning <tutorials/dataset>
-    Workflow Logging <tutorials/workflow>
     Metadata Querying <tutorials/querying>
     Class Models <tutorials/class>
     Web App <tutorials/webapp>

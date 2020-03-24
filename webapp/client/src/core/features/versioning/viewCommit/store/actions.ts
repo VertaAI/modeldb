@@ -6,6 +6,8 @@ import {
   IHydratedCommit,
 } from 'core/shared/models/Versioning/RepositoryData';
 import * as Actions from 'utils/redux/actions';
+import { IExperimentRunInfo } from 'models/ModelRecord';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 export const loadCommit = Actions.makeThunkApiRequest(
   '@@viewCommit/LOAD_COMMIT_REQUEST',
@@ -18,4 +20,22 @@ export const loadCommit = Actions.makeThunkApiRequest(
   AppError<UnavailableEntityApiErrorType>
 >(async ({ payload, dependencies: { ServiceFactory }, getState }) => {
   return await ServiceFactory.getRepositoryDataService().loadCommit(payload);
+});
+
+export const loadCommitExperimentRuns = Actions.makeThunkApiRequest(
+  '@@viewCommit/LOAD_COMMIT_EXPERIMENT_RUNS_REQUEST',
+  '@@viewCommit/LOAD_COMMIT_EXPERIMENT_RUNS_SUCCESS',
+  '@@viewCommit/LOAD_COMMIT_EXPERIMENT_RUNS_FAILURE',
+  '@@viewCommit/LOAD_COMMIT_EXPERIMENT_RUNS_RESET'
+)<
+  { repositoryId: IRepository['id']; commitSha: ICommit['sha'] },
+  IExperimentRunInfo[],
+  AppError
+>(async ({ payload, dependencies: { ServiceFactory }, getState }) => {
+  return await ServiceFactory.getRepositoryDataService().loadCommitExperimentRuns(
+    {
+      ...payload,
+      workspaceName: selectCurrentWorkspaceName(getState()),
+    }
+  );
 });
