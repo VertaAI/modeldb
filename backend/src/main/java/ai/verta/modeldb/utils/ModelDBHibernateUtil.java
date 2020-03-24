@@ -579,36 +579,48 @@ public class ModelDBHibernateUtil {
     return query;
   }
 
+  /**
+   * Don't change anything this function because based on the function backend READY status will
+   * define. If you want to define new migration then new if condition after boolean status check.
+   */
   @SuppressWarnings("unchecked")
   private static void runMigration() {
     App app = App.getInstance();
-    List<String> migrationTypeList =
-        (List<String>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
-    if (migrationTypeList != null && migrationTypeList.size() > 0) {
+    Map<String, Boolean> migrationTypeMap =
+        (Map<String, Boolean>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
+    if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
       new Thread(
               () -> {
                 isMigrationUtilsCall = true;
+                int index = 0;
                 try {
                   CompletableFuture<Boolean>[] completableFutures =
-                      new CompletableFuture[migrationTypeList.size()];
-                  for (int index = 0; index < migrationTypeList.size(); index++) {
-                    String migration = migrationTypeList.get(index);
-                    if (migration.equals(ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION)) {
-                      // Manually migration for populate RoleBinding of experiment, experimentRun &
-                      // datasetVersion owner
-                      CompletableFuture<Boolean> futureTask =
-                          CompletableFuture.supplyAsync(
-                              () -> {
-                                OwnerRoleBindingUtils.execute();
-                                return true;
-                              });
-                      completableFutures[index] = futureTask;
+                      new CompletableFuture[migrationTypeMap.size()];
+                  for (String migrationName : migrationTypeMap.keySet()) {
+                    Boolean migration = migrationTypeMap.get(migrationName);
+                    if (migration) {
+                      if (migrationName.equals(
+                          ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION)) {
+                        // Manually migration for populate RoleBinding of experiment, experimentRun
+                        // &
+                        // datasetVersion owner
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  OwnerRoleBindingUtils.execute();
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      }
                     }
                   }
-                  CompletableFuture<Void> combinedFuture =
-                      CompletableFuture.allOf(completableFutures);
-
-                  combinedFuture.get();
+                  if (index > 0) {
+                    CompletableFuture<Void> combinedFuture =
+                        CompletableFuture.allOf(completableFutures);
+                    combinedFuture.get();
+                    LOGGER.warn("Finished all the future tasks");
+                  }
                 } catch (InterruptedException | ExecutionException e) {
                   LOGGER.warn(
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
