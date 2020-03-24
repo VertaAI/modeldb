@@ -1,5 +1,5 @@
-Deploying Custom  Models
-=========================
+Deploying Custom Models
+=======================
 
 If you are deploying a model that is not purely a scikit-learn, xgboost, Tensorflow or PyTorch model,
 Verta provides a simple means to package any model for deployment.
@@ -47,7 +47,7 @@ As you may have noticed, the values in this dictionary don't matter too much whe
 model. ``__init__()`` only needs to care about indexing the dictionary items by the keys of the
 artifacts; Verta will take care of the values when the model is deployed.
 
-``predict()`` takes one argument, which is the model input data and returns the model output. 
+``predict()`` takes one argument, which is the model input data and returns the model output.
 The model input can be of arbitrary type as defined in :meth:`DeployedModel.predict()
 <verta.deployment.DeployedModel.predict>`.
 
@@ -106,5 +106,5 @@ and Python 2.7 for text embedding and nearest neighbor search.
 Model*\ s.
 
 
-.. _this Client example notebook: https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/Embedding-and-Lookup-TF-Hub.ipynb
+.. _this example: https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/Embedding-and-Lookup-TF-Hub.ipynb
 .. _This annotated example notebook: https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/Embedding-and-Lookup-TF-Hub.ipynb

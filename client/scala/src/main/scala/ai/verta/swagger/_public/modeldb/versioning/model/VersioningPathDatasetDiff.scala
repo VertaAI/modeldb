@@ -14,7 +14,8 @@ import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class VersioningPathDatasetDiff (
-  components: Option[List[VersioningPathDatasetComponentDiff]] = None
+  A: Option[List[VersioningPathDatasetComponentBlob]] = None,
+  B: Option[List[VersioningPathDatasetComponentBlob]] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningPathDatasetDiff.toJson(this)
 }
@@ -23,7 +24,8 @@ object VersioningPathDatasetDiff {
   def toJson(obj: VersioningPathDatasetDiff): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.components.map(x => JField("components", ((x: List[VersioningPathDatasetComponentDiff]) => JArray(x.map(((x: VersioningPathDatasetComponentDiff) => VersioningPathDatasetComponentDiff.toJson(x)))))(x)))
+        obj.A.map(x => JField("A", ((x: List[VersioningPathDatasetComponentBlob]) => JArray(x.map(((x: VersioningPathDatasetComponentBlob) => VersioningPathDatasetComponentBlob.toJson(x)))))(x))),
+        obj.B.map(x => JField("B", ((x: List[VersioningPathDatasetComponentBlob]) => JArray(x.map(((x: VersioningPathDatasetComponentBlob) => VersioningPathDatasetComponentBlob.toJson(x)))))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -37,7 +39,8 @@ object VersioningPathDatasetDiff {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningPathDatasetDiff(
           // TODO: handle required
-          components = fieldsMap.get("components").map((x: JValue) => x match {case JArray(elements) => elements.map(VersioningPathDatasetComponentDiff.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          A = fieldsMap.get("A").map((x: JValue) => x match {case JArray(elements) => elements.map(VersioningPathDatasetComponentBlob.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          B = fieldsMap.get("B").map((x: JValue) => x match {case JArray(elements) => elements.map(VersioningPathDatasetComponentBlob.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

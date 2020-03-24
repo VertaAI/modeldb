@@ -25,7 +25,7 @@ The Verta client supports Python 2.7 & 3.5–3.7!
     # via conda
     conda install verta -c conda-forge
 
-  *Following Python best practices, we recommended creating a virtual environment in pip or conda.*
+  *Following Python best practices, we recommended creating a virtual environment using venv or conda.*
 
 
 3. Obtain your Verta Credentials
@@ -51,7 +51,7 @@ The Verta client supports Python 2.7 & 3.5–3.7!
         client = Client(HOST, VERTA_EMAIL, VERTA_DEV_KEY)
 
     *If using open-source ModelDB, leave `VERTA_EMAIL` and `VERTA_DEV_KEY` blank.*
-  
+
   b. Version your models
 
     .. code-block:: python

@@ -1,5 +1,5 @@
-Logging and Querying a Model Metadata
-=====================================
+Logging and Querying Model Metadata
+===================================
 
 Setup
 -----

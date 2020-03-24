@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.hibernate.Session;
 
 public class DatasetContainer extends BlobContainer {
@@ -57,7 +58,8 @@ public class DatasetContainer extends BlobContainer {
   }
 
   @Override
-  public void process(Session session, TreeElem rootTree, FileHasher fileHasher)
+  public void process(
+      Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException {
     final List<String> locationList = getLocationList();
     String blobType = getBlobType();
@@ -75,16 +77,19 @@ public class DatasetContainer extends BlobContainer {
           componentHashes.get(componentHash).add(componentBlob);
         }
         blobHash = computeSHAS3Dataset(componentHashes);
-        for (Map.Entry<String, List<S3DatasetComponentBlob>> component :
-            componentHashes.entrySet()) {
-          S3DatasetComponentBlobEntity s3DatasetComponentBlobEntity =
-              new S3DatasetComponentBlobEntity(
-                  component.getKey(), blobHash, component.getValue().get(0));
-          session.saveOrUpdate(s3DatasetComponentBlobEntity);
+        if (!blobHashes.contains(blobHash)) {
+          blobHashes.add(blobHash);
+          for (Map.Entry<String, List<S3DatasetComponentBlob>> component :
+              componentHashes.entrySet()) {
+            S3DatasetComponentBlobEntity s3DatasetComponentBlobEntity =
+                new S3DatasetComponentBlobEntity(
+                    component.getKey(), blobHash, component.getValue().get(0));
+            session.saveOrUpdate(s3DatasetComponentBlobEntity);
+          }
         }
         break;
       case PATH:
-        blobHash = saveBlob(session, dataset.getPath());
+        blobHash = saveBlob(session, dataset.getPath(), blobHashes);
         break;
       default:
         throw new ModelDBException("Unknown blob type", Code.INTERNAL);
@@ -92,7 +97,8 @@ public class DatasetContainer extends BlobContainer {
     rootTree.push(locationList, blobHash, blobType);
   }
 
-  static String saveBlob(Session session, PathDatasetBlob path) throws NoSuchAlgorithmException {
+  static String saveBlob(Session session, PathDatasetBlob path, Set<String> blobHashes)
+      throws NoSuchAlgorithmException {
     // sorted
     Map<String, List<PathDatasetComponentBlob>> componentHashes = new LinkedHashMap<>();
     for (PathDatasetComponentBlob componentBlob : path.getComponentsList()) {
@@ -101,11 +107,15 @@ public class DatasetContainer extends BlobContainer {
       componentHashes.get(componentHash).add(componentBlob);
     }
     String blobHash = computeSHAPathDataset(componentHashes);
-    for (Map.Entry<String, List<PathDatasetComponentBlob>> component : componentHashes.entrySet()) {
-      PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
-          new PathDatasetComponentBlobEntity(
-              component.getKey(), blobHash, component.getValue().get(0));
-      session.saveOrUpdate(pathDatasetComponentBlobEntity);
+    if (!blobHashes.contains(blobHash)) {
+      blobHashes.add(blobHash);
+      for (Map.Entry<String, List<PathDatasetComponentBlob>> component :
+          componentHashes.entrySet()) {
+        PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
+            new PathDatasetComponentBlobEntity(
+                component.getKey(), blobHash, component.getValue().get(0));
+        session.saveOrUpdate(pathDatasetComponentBlobEntity);
+      }
     }
     return blobHash;
   }

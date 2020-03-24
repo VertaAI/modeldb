@@ -81,6 +81,20 @@ export default class ExperimentsDataService extends BaseDataService {
     return res;
   }
 
+  public async loadExperimentsByIds(
+    projectId: string,
+    experimentIds: string[]
+  ): Promise<Experiment.default[]> {
+    const response = await this.post({
+      url: '/v1/modeldb/hydratedData/findHydratedExperiments',
+      data: {
+        project_id: projectId,
+        experiment_ids: experimentIds,
+      },
+    });
+    return this.convertServerExperiments(response.data);
+  }
+
   public async deleteExperiment(id: string): Promise<void> {
     await this.delete({
       url: '/v1/modeldb/experiment/deleteExperiment',

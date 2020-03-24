@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class S3DatasetComponentDiff implements ProtoType {
-  public PathDatasetComponentDiff Path;
+  private PathDatasetComponentDiff Path;
 
   public S3DatasetComponentDiff() {
     this.Path = null;
@@ -78,6 +78,10 @@ public class S3DatasetComponentDiff implements ProtoType {
   public S3DatasetComponentDiff setPath(PathDatasetComponentDiff value) {
     this.Path = Utils.removeEmpty(value);
     return this;
+  }
+
+  public PathDatasetComponentDiff getPath() {
+    return this.Path;
   }
 
   public static S3DatasetComponentDiff fromProto(
