@@ -123,6 +123,31 @@ class TestCommit:
         finally:
             utils.delete_commit(commit._repo.id, original_id, commit._conn)
 
+    def test_log(self, repository):
+        master = repository.get_commit(branch="master")
+
+        commit_ids = [master.id]
+        try:
+            branch = repository.get_commit(branch="master")
+            branch.branch("branch")
+
+            master.update("a", verta.environment.Python(["a==1"]))
+            master.save("a")
+            commit_ids.append(master.id)
+
+            branch.update("b", verta.environment.Python(["b==2"]))
+            branch.save("b")
+            commit_ids.append(branch.id)
+
+            master.merge(branch)
+            commit_ids.append(master.id)
+
+            for commit in master.log():
+                assert commit.id == commit_ids.pop()
+        finally:
+            for commit_id in commit_ids:
+                utils.delete_commit(master._repo.id, commit_id, master._conn)
+
     def test_log_to_run(self, experiment_run, commit):
         blob1 = verta.dataset.Path(__file__)
         blob2 = verta.environment.Python()
