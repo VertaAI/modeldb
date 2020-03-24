@@ -1,3 +1,4 @@
+import { JsonConvert } from 'json2typescript';
 import * as R from 'ramda';
 
 import { IArtifact } from 'core/shared/models/Artifact';
@@ -86,6 +87,31 @@ export default class ProjectDataService extends BaseDataService {
       data: projects,
       totalCount: Number(response.data.total_records),
     };
+  }
+
+  public async loadShortProjectsByIds(
+    workspaceName: IWorkspace['name'],
+    ids: string[]
+  ) {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const response = await this.post({
+      url: '/v1/modeldb/project/findProjects',
+      data: {
+        project_ids: ids,
+        workspace_name: workspaceName,
+      },
+    });
+
+    const jsonConvert = new JsonConvert();
+    const res = jsonConvert.deserializeArray(
+      response.data.projects || [],
+      Project
+    );
+
+    return res;
   }
 
   public async deleteProject(id: string): Promise<void> {

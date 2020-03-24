@@ -6,8 +6,8 @@ import {
 } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 import matchType from 'core/shared/utils/matchType';
+import { PageHeader } from 'core/shared/view/elements/PageComponents';
 
-import DataBox from '../../shared/DataBox/DataBox';
 import PathDatasetComponents from '../shared/PathDatasetComponents/PathDatasetComponents';
 import styles from './DatasetBlobView.module.css';
 
@@ -36,14 +36,14 @@ const DatasetBlobView: React.FC<ILocalProps> = ({ blob }) => {
   );
 
   return (
-    <DataBox>
-      <div className={styles.root}>
-        <div className={styles.title}>{title}</div>
-        <div className={styles.table}>
-          <PathDatasetComponents data={pathDatasetComponents} />
-        </div>
+    <div className={styles.root}>
+      <div className={styles.title}>
+        <PageHeader title={title} size="small" withoutSeparator={true} />
       </div>
-    </DataBox>
+      <div className={styles.table}>
+        <PathDatasetComponents data={pathDatasetComponents} />
+      </div>
+    </div>
   );
 };
 

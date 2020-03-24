@@ -1,0 +1,13 @@
+.link {
+  display: block;
+  color: var(--main-color2);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.experimentRunIdContainer {
+  display: flex;
+  align-items: center;
+}

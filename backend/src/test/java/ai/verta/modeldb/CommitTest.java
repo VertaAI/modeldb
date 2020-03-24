@@ -1,10 +1,7 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -790,7 +787,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, NAME);
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()

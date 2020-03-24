@@ -9,10 +9,10 @@ import {
   PageHeader,
   PageContent,
 } from 'core/shared/view/elements/PageComponents';
+import KeyValuePairs from 'core/shared/view/elements/KeyValuePairs/KeyValuePairs';
 
 import DockerEnvironmentBlobView from './DockerEnvironmentBlobView/DockerEnvironmentBlobView';
 import styles from './EnvironmentBlobView.module.css';
-import KeyValuePairs from '../../../../../../../../shared/view/elements/KeyValuePairs/KeyValuePairs';
 import PythonEnvironmentBlobView from './PythonEnvironmentBlobView/PythonEnvironmentBlobView';
 
 interface ILocalProps {
