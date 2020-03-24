@@ -9,6 +9,9 @@ export default combineReducers<IRepositoryDataState['communications']>({
   loadingCommitWithData: makeCommunicationReducerFromResetableAsyncAction(
     actions.loadCommitWithData
   ),
+  loadingCurrentBlobExperimentRuns: makeCommunicationReducerFromResetableAsyncAction(
+    actions.loadCurrentBlobExperimentRuns
+  ),
 
   loadingTags: makeCommunicationReducerFromResetableAsyncAction(
     actions.loadTags

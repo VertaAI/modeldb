@@ -9,4 +9,7 @@ export default combineReducers<IViewCommitState['communications']>({
   loadingCommit: makeCommunicationReducerFromResetableAsyncAction(
     actions.loadCommit
   ),
+  loadingCommitExperimentRuns: makeCommunicationReducerFromResetableAsyncAction(
+    actions.loadCommitExperimentRuns
+  ),
 });

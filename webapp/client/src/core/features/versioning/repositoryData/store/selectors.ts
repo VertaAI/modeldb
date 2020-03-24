@@ -16,3 +16,6 @@ export const selectCommitPointer = (state: IApplicationState) =>
 
 export const selectBranches = (state: IApplicationState) =>
   selectFeatureState(state).data.branches;
+
+export const selectCurrentBlobExperimentRuns = (state: IApplicationState) =>
+  selectFeatureState(state).data.currentBlobExperimentRuns;

@@ -524,7 +524,7 @@ public class BranchTest {
     LOGGER.info("Branch test end................................");
   }
 
-  @Test
+  /*@Test
   public void branchTest() {
     LOGGER.info("branch test start................................");
 
@@ -702,5 +702,5 @@ public class BranchTest {
     Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Branch test end................................");
-  }
+  }*/
 }
