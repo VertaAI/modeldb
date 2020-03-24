@@ -371,6 +371,17 @@ class Commit(object):
         _utils.raise_for_http_error(response)
 
     def log(self):
+        """
+        Yields ancestors, starting from this Commit until the root of the Repository.
+
+        Analogous to ``git log``.
+
+        Yields
+        ------
+        commit : :class:`Commit`
+            Ancestor commit.
+
+        """
         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
             self._conn.scheme,
             self._conn.socket,
