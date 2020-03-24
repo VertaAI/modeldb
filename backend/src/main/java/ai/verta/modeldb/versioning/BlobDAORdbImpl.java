@@ -416,18 +416,22 @@ public class BlobDAORdbImpl implements BlobDAO {
       deletedLocations.removeAll(locationBlobsMapCommitB.keySet());
       LOGGER.debug("Deleted location for Diff : {}", deletedLocations);
 
-      // modified new blob location from the CommitA
+      // get B sha -> blobs
       Map<String, Set<BlobExpanded>> blobsB = getCollectToMap(locationBlobsMapCommitB);
+      // get A sha -> blobs
       Map<String, Set<BlobExpanded>> blobsA = getCollectToMap(locationBlobsMapCommitA);
+      // delete blobs same with A
       for (Map.Entry<String, Set<BlobExpanded>> entry : blobsA.entrySet()) {
         Set<BlobExpanded> ent = blobsB.get(entry.getKey());
         if (ent != null) {
           ent.removeAll(entry.getValue());
         }
       }
+      // get modified location -> blob
       Map<String, BlobExpanded> locationBlobsModified =
           getLocationWiseBlobExpandedMapFromCollection(
               blobsB.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+      // remove added from modified
       locationBlobsModified.keySet().removeAll(addedLocations);
       Set<String> modifiedLocations = locationBlobsModified.keySet();
       LOGGER.debug("Modified location for Diff : {}", modifiedLocations);
