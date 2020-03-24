@@ -1,0 +1,14 @@
+.title {
+  padding: 16px 23px;
+  font-weight: bold;
+}
+
+.table {
+}
+
+.elem {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

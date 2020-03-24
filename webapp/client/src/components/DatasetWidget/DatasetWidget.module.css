@@ -20,7 +20,7 @@
     'title_block . . .'
     'title_block . . type'
     'tags . . dates'
-    '. . . actions';
+    'actions actions actions actions';
   cursor: pointer;
 }
 .content:hover {
@@ -66,14 +66,12 @@
 }
 
 .actions {
+  grid-area: actions;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  grid-area: actions;
+  margin-top: 15px;
 }
-.action {
-  margin-right: 5px;
-}
-.action:last-child {
-  margin-right: 0;
+
+.action_delete {
+  margin-right: auto;
 }

@@ -633,7 +633,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       while (!childCommitSHAs.isEmpty()) {
         String childCommit = childCommitSHAs.remove(0);
         commitSHAs.add(childCommit);
-        Query sqlQuery = session.createSQLQuery(getParentCommitsQuery + childCommit + "\"");
+        Query sqlQuery = session.createSQLQuery(getParentCommitsQuery + childCommit + "\'");
         List<String> parentCommitSHAs = sqlQuery.list();
         childCommitSHAs.addAll(parentCommitSHAs);
       }

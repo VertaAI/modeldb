@@ -10,6 +10,7 @@ and PyTorch, and other helpful utilities.
     :titlesonly:
 
     ExperimentRun <api/experimentrun>
+    Versioning <api/versioning>
     Data Versioning <api/dataset>
     Framework Integration <api/integrations>
     Utilities <api/utilities>

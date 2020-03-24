@@ -1,4 +1,3 @@
-import { bind } from 'decko';
 import * as React from 'react';
 
 import ConfirmAction from '../ConfirmAction/ConfirmAction';
@@ -6,6 +5,7 @@ import Fai, { IFaiLocalProps } from '../Fai/Fai';
 import { Icon } from '../Icon/Icon';
 
 interface ILocalProps {
+  title?: string;
   confirmText: Exclude<React.ReactNode, null | undefined>;
   faiDataTest?: string;
   isDisabled?: boolean;
@@ -14,9 +14,20 @@ interface ILocalProps {
 
 class DeleteFAI extends React.PureComponent<ILocalProps> {
   public render() {
-    const { faiDataTest, confirmText, isDisabled, onDelete } = this.props;
+    const {
+      faiDataTest,
+      confirmText,
+      isDisabled,
+      title,
+      onDelete,
+    } = this.props;
     return (
-      <ConfirmAction confirmText={confirmText}>
+      <ConfirmAction
+        title={title}
+        confirmText={confirmText || 'Are you sure?'}
+        cancelButtonText="Cancel"
+        confirmButtonText="Delete"
+      >
         {withConfirmAction => (
           <Fai
             theme="tertiary"
