@@ -416,7 +416,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (request.getReplaceAWithCommonAncestor()) {
         internalCommitA =
-            getCommonParent(session, internalCommitA.getRootSha(), internalCommitB.getRootSha());
+            getCommonParent(session, internalCommitA.getCommit_hash(), internalCommitB.getCommit_hash());
       }
       // get list of blob expanded in both commit and group them in a map based on location
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
