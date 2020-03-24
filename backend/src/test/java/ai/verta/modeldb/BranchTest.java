@@ -671,7 +671,7 @@ public class BranchTest {
         commitShaList.get(3),
         branchRootCommit.getCommitSha());
 
-    /*ListBranchCommitsRequest listBranchCommitsRequest =
+    ListBranchCommitsRequest listBranchCommitsRequest =
         ListBranchCommitsRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setBranch(branchName)
@@ -681,7 +681,7 @@ public class BranchTest {
     Assert.assertEquals(
         "Commit count not match with expected commit count",
         5,
-        listBranchCommitsResponse.getCommitsCount());*/
+        listBranchCommitsResponse.getCommitsCount());
 
     commitShaList.forEach(
         commitSha -> {
