@@ -33,7 +33,7 @@ Core Verta functionality
 
 * `Using the Verta Web App <tutorials/webapp.html>`_
 * `Workspaces in Verta <tutorials/workspaces.html>`_
-* `Using a Client Config File <tutorials/config.html>`__
+* `Using a Client Config File <tutorials/config.html>`_
 
 .. toctree::
     :hidden:
