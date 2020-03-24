@@ -297,6 +297,19 @@
 				tableName="versioning_modeldb_entity_mapping"/>
 	</changeSet>
 	<changeSet id="changeKeysOfFolderElement" author="lezhevg">
+		<createTable tableName="folder_element_temp">
+			<column name="folder_hash" type="varchar(64)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="element_sha" type="varchar(64)"/>
+			<column name="element_name" type="varchar(200)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="element_type" type="varchar(50)"/>
+		</createTable>
+		<sql>
+			INSERT INTO folder_element_temp SELECT * FROM folder_element;
+		</sql>
 		<dropTable tableName="folder_element"/>
 		<createTable tableName="folder_element">
 			<column name="folder_hash" type="varchar(64)">
@@ -308,5 +321,9 @@
 			</column>
 			<column name="element_type" type="varchar(50)"/>
 		</createTable>
+		<sql>
+			INSERT INTO folder_element SELECT * FROM folder_element_temp;
+		</sql>
+		<dropTable tableName="folder_element_temp"/>
 	</changeSet>
 </databaseChangeLog>
