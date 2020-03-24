@@ -124,6 +124,16 @@ class TestCommit:
             utils.delete_commit(commit._repo.id, original_id, commit._conn)
 
     def test_log(self, repository):
+        r"""
+        Tests the log for this commit tree:
+
+             (master)
+              /     \
+        (master~) (branch)
+              \     /
+              (root)
+
+        """
         master = repository.get_commit(branch="master")
 
         commit_ids = [master.id]
