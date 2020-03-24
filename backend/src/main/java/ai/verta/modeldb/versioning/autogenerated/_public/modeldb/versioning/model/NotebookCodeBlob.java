@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class NotebookCodeBlob implements ProtoType {
-  public GitCodeBlob GitRepo;
-  public PathDatasetComponentBlob Path;
+  private GitCodeBlob GitRepo;
+  private PathDatasetComponentBlob Path;
 
   public NotebookCodeBlob() {
     this.GitRepo = null;
@@ -101,9 +101,17 @@ public class NotebookCodeBlob implements ProtoType {
     return this;
   }
 
+  public GitCodeBlob getGitRepo() {
+    return this.GitRepo;
+  }
+
   public NotebookCodeBlob setPath(PathDatasetComponentBlob value) {
     this.Path = Utils.removeEmpty(value);
     return this;
+  }
+
+  public PathDatasetComponentBlob getPath() {
+    return this.Path;
   }
 
   public static NotebookCodeBlob fromProto(ai.verta.modeldb.versioning.NotebookCodeBlob blob) {

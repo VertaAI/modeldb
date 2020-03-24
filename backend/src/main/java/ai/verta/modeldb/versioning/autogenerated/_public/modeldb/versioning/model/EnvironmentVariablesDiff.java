@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class EnvironmentVariablesDiff implements ProtoType {
-  public EnvironmentVariablesBlob A;
-  public EnvironmentVariablesBlob B;
-  public DiffStatusEnumDiffStatus Status;
+  private EnvironmentVariablesBlob A;
+  private EnvironmentVariablesBlob B;
+  private DiffStatusEnumDiffStatus Status;
 
   public EnvironmentVariablesDiff() {
     this.A = null;
@@ -124,14 +124,26 @@ public class EnvironmentVariablesDiff implements ProtoType {
     return this;
   }
 
+  public EnvironmentVariablesBlob getA() {
+    return this.A;
+  }
+
   public EnvironmentVariablesDiff setB(EnvironmentVariablesBlob value) {
     this.B = Utils.removeEmpty(value);
     return this;
   }
 
+  public EnvironmentVariablesBlob getB() {
+    return this.B;
+  }
+
   public EnvironmentVariablesDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static EnvironmentVariablesDiff fromProto(

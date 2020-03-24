@@ -43,7 +43,7 @@
 <h3 align="center">
   <a href="#up-and-running-in-5-minutes">Quickstart</a>
   <span> · </span>
-  <a href="https://docs.verta.ai/en/master/guides/workflow.html">Workflow</a>
+  <a href="https://docs.verta.ai/en/master/examples/tutorials/workflow.html">Workflow</a>
   <span> · </span>
   <a href="https://docs.verta.ai/en/master/guides/examples.html">Examples</a>
   <span> · </span>

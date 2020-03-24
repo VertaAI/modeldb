@@ -14,6 +14,10 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
+import ai.verta.modeldb.versioning.CommitFunction;
+import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
+import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
+import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
@@ -471,4 +475,16 @@ public interface ExperimentRunDAO {
 
   GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException;
+
+  ListCommitExperimentRunsRequest.Response listCommitExperimentRuns(
+      ListCommitExperimentRunsRequest request,
+      RepositoryFunction repositoryFunction,
+      CommitFunction commitFunction)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  ListBlobExperimentRunsRequest.Response listBlobExperimentRuns(
+      ListBlobExperimentRunsRequest request,
+      RepositoryFunction repositoryFunction,
+      CommitFunction commitFunction)
+      throws ModelDBException, InvalidProtocolBufferException;
 }

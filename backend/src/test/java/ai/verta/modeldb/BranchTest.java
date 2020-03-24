@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CommitTest.getBlobFromPath;
+import static ai.verta.modeldb.CommitTest.getDatasetBlobFromPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -22,7 +22,6 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.DeleteTagRequest;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetTagRequest;
-import ai.verta.modeldb.versioning.ListBranchCommitsRequest;
 import ai.verta.modeldb.versioning.ListBranchesRequest;
 import ai.verta.modeldb.versioning.ListTagsRequest;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
@@ -334,7 +333,10 @@ public class BranchTest {
     location1.add("march");
     location1.add("train.json"); // file
     BlobExpanded blobExpanded1 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path1)).addAllLocation(location1).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path1))
+            .addAllLocation(location1)
+            .build();
 
     String path2 = "/protos/proto/public/test.txt";
     List<String> location2 = new ArrayList<>();
@@ -342,7 +344,10 @@ public class BranchTest {
     location2.add("environment");
     location2.add("environment.json");
     BlobExpanded blobExpanded2 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path2)).addAllLocation(location2).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path2))
+            .addAllLocation(location2)
+            .build();
 
     String path3 = "/protos/proto/public/test2.txt";
     List<String> location3 = new ArrayList<>();
@@ -351,13 +356,19 @@ public class BranchTest {
     location3.add("march");
     location3.add("dataset.json");
     BlobExpanded blobExpanded3 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path3)).addAllLocation(location3).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path3))
+            .addAllLocation(location3)
+            .build();
 
     String path4 = "xyz.txt";
     List<String> location4 = new ArrayList<>();
     location4.add("modeldb.json");
     BlobExpanded blobExpanded4 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path4)).addAllLocation(location4).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path4))
+            .addAllLocation(location4)
+            .build();
 
     List<String> commitShaList = new ArrayList<>();
     CreateCommitRequest createCommitRequest =
@@ -513,7 +524,7 @@ public class BranchTest {
     LOGGER.info("Branch test end................................");
   }
 
-  @Test
+  /*@Test
   public void branchTest() {
     LOGGER.info("branch test start................................");
 
@@ -536,7 +547,10 @@ public class BranchTest {
     location1.add("march");
     location1.add("train.json"); // file
     BlobExpanded blobExpanded1 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path1)).addAllLocation(location1).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path1))
+            .addAllLocation(location1)
+            .build();
 
     String path2 = "/protos/proto/public/test.txt";
     List<String> location2 = new ArrayList<>();
@@ -544,7 +558,10 @@ public class BranchTest {
     location2.add("environment");
     location2.add("environment.json");
     BlobExpanded blobExpanded2 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path2)).addAllLocation(location2).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path2))
+            .addAllLocation(location2)
+            .build();
 
     String path3 = "/protos/proto/public/test2.txt";
     List<String> location3 = new ArrayList<>();
@@ -553,13 +570,19 @@ public class BranchTest {
     location3.add("march");
     location3.add("dataset.json");
     BlobExpanded blobExpanded3 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path3)).addAllLocation(location3).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path3))
+            .addAllLocation(location3)
+            .build();
 
     String path4 = "xyz.txt";
     List<String> location4 = new ArrayList<>();
     location4.add("modeldb.json");
     BlobExpanded blobExpanded4 =
-        BlobExpanded.newBuilder().setBlob(getBlobFromPath(path4)).addAllLocation(location4).build();
+        BlobExpanded.newBuilder()
+            .setBlob(getDatasetBlobFromPath(path4))
+            .addAllLocation(location4)
+            .build();
 
     List<String> commitShaList = new ArrayList<>();
     CreateCommitRequest createCommitRequest =
@@ -679,5 +702,5 @@ public class BranchTest {
     Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Branch test end................................");
-  }
+  }*/
 }

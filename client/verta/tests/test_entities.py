@@ -10,6 +10,7 @@ import pytest
 from . import utils
 
 import verta
+import verta._internal_utils._utils
 import json
 
 
@@ -90,9 +91,9 @@ class TestClient:
 
     @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
     def test_config_file(self):
-        PROJECT_NAME = "test_project"
-        DATASET_NAME = "test_dataset"
-        EXPERIMENT_NAME = "test_experiment"
+        PROJECT_NAME = verta._internal_utils._utils.generate_default_name()
+        DATASET_NAME = verta._internal_utils._utils.generate_default_name()
+        EXPERIMENT_NAME = verta._internal_utils._utils.generate_default_name()
         CONFIG_FILENAME = "verta_config.json"
 
         HOST = "app.verta.ai"

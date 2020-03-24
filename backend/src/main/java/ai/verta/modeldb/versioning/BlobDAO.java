@@ -10,7 +10,7 @@ import org.hibernate.Session;
 
 public interface BlobDAO {
 
-  String setBlobs(List<BlobContainer> blobsList, FileHasher fileHasher)
+  String setBlobs(Session session, List<BlobContainer> blobsList, FileHasher fileHasher)
       throws NoSuchAlgorithmException, ModelDBException;
 
   GetCommitComponentRequest.Response getCommitComponent(
@@ -18,7 +18,7 @@ public interface BlobDAO {
       throws NoSuchAlgorithmException, ModelDBException;
 
   ListCommitBlobsRequest.Response getCommitBlobsList(
-      RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
+      RepositoryFunction repositoryFunction, String commitHash, List<String> locationList)
       throws NoSuchAlgorithmException, ModelDBException;
 
   Map<String, BlobExpanded> getCommitBlobMap(

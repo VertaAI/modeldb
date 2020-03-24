@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class NotebookCodeDiff implements ProtoType {
-  public GitCodeDiff GitRepo;
-  public PathDatasetComponentDiff Path;
+  private GitCodeDiff GitRepo;
+  private PathDatasetComponentDiff Path;
 
   public NotebookCodeDiff() {
     this.GitRepo = null;
@@ -101,9 +101,17 @@ public class NotebookCodeDiff implements ProtoType {
     return this;
   }
 
+  public GitCodeDiff getGitRepo() {
+    return this.GitRepo;
+  }
+
   public NotebookCodeDiff setPath(PathDatasetComponentDiff value) {
     this.Path = Utils.removeEmpty(value);
     return this;
+  }
+
+  public PathDatasetComponentDiff getPath() {
+    return this.Path;
   }
 
   public static NotebookCodeDiff fromProto(ai.verta.modeldb.versioning.NotebookCodeDiff blob) {

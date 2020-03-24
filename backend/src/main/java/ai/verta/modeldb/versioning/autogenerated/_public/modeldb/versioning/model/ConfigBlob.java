@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ConfigBlob implements ProtoType {
-  public List<HyperparameterSetConfigBlob> HyperparameterSet;
-  public List<HyperparameterConfigBlob> Hyperparameters;
+  private List<HyperparameterSetConfigBlob> HyperparameterSet;
+  private List<HyperparameterConfigBlob> Hyperparameters;
 
   public ConfigBlob() {
     this.HyperparameterSet = null;
@@ -133,12 +133,26 @@ public class ConfigBlob implements ProtoType {
 
   public ConfigBlob setHyperparameterSet(List<HyperparameterSetConfigBlob> value) {
     this.HyperparameterSet = Utils.removeEmpty(value);
+    if (this.HyperparameterSet != null) {
+      this.HyperparameterSet.sort(Comparator.comparingInt(HyperparameterSetConfigBlob::hashCode));
+    }
     return this;
+  }
+
+  public List<HyperparameterSetConfigBlob> getHyperparameterSet() {
+    return this.HyperparameterSet;
   }
 
   public ConfigBlob setHyperparameters(List<HyperparameterConfigBlob> value) {
     this.Hyperparameters = Utils.removeEmpty(value);
+    if (this.Hyperparameters != null) {
+      this.Hyperparameters.sort(Comparator.comparingInt(HyperparameterConfigBlob::hashCode));
+    }
     return this;
+  }
+
+  public List<HyperparameterConfigBlob> getHyperparameters() {
+    return this.Hyperparameters;
   }
 
   public static ConfigBlob fromProto(ai.verta.modeldb.versioning.ConfigBlob blob) {

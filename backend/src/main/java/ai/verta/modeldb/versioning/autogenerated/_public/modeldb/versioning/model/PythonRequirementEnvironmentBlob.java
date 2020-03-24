@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PythonRequirementEnvironmentBlob implements ProtoType {
-  public String Constraint;
-  public String Library;
-  public VersionEnvironmentBlob Version;
+  private String Constraint;
+  private String Library;
+  private VersionEnvironmentBlob Version;
 
   public PythonRequirementEnvironmentBlob() {
     this.Constraint = "";
@@ -121,14 +121,26 @@ public class PythonRequirementEnvironmentBlob implements ProtoType {
     return this;
   }
 
+  public String getConstraint() {
+    return this.Constraint;
+  }
+
   public PythonRequirementEnvironmentBlob setLibrary(String value) {
     this.Library = Utils.removeEmpty(value);
     return this;
   }
 
+  public String getLibrary() {
+    return this.Library;
+  }
+
   public PythonRequirementEnvironmentBlob setVersion(VersionEnvironmentBlob value) {
     this.Version = Utils.removeEmpty(value);
     return this;
+  }
+
+  public VersionEnvironmentBlob getVersion() {
+    return this.Version;
   }
 
   public static PythonRequirementEnvironmentBlob fromProto(

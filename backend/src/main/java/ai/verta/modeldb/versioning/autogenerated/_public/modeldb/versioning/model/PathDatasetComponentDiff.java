@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PathDatasetComponentDiff implements ProtoType {
-  public PathDatasetComponentBlob A;
-  public PathDatasetComponentBlob B;
-  public DiffStatusEnumDiffStatus Status;
+  private PathDatasetComponentBlob A;
+  private PathDatasetComponentBlob B;
+  private DiffStatusEnumDiffStatus Status;
 
   public PathDatasetComponentDiff() {
     this.A = null;
@@ -124,14 +124,26 @@ public class PathDatasetComponentDiff implements ProtoType {
     return this;
   }
 
+  public PathDatasetComponentBlob getA() {
+    return this.A;
+  }
+
   public PathDatasetComponentDiff setB(PathDatasetComponentBlob value) {
     this.B = Utils.removeEmpty(value);
     return this;
   }
 
+  public PathDatasetComponentBlob getB() {
+    return this.B;
+  }
+
   public PathDatasetComponentDiff setStatus(DiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
+  }
+
+  public DiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
   }
 
   public static PathDatasetComponentDiff fromProto(

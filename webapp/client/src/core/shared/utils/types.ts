@@ -1,4 +1,6 @@
 export type URL = string;
+export type SHHUrl = string;
+export type HTTPSUrl = string;
 export type Milliseconds = number;
 export type Timestamp = Milliseconds;
 export type Markdown = string;

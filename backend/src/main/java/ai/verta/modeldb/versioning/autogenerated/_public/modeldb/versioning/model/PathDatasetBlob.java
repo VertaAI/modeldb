@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PathDatasetBlob implements ProtoType {
-  public List<PathDatasetComponentBlob> Components;
+  private List<PathDatasetComponentBlob> Components;
 
   public PathDatasetBlob() {
     this.Components = null;
@@ -89,7 +89,14 @@ public class PathDatasetBlob implements ProtoType {
 
   public PathDatasetBlob setComponents(List<PathDatasetComponentBlob> value) {
     this.Components = Utils.removeEmpty(value);
+    if (this.Components != null) {
+      this.Components.sort(Comparator.comparingInt(PathDatasetComponentBlob::hashCode));
+    }
     return this;
+  }
+
+  public List<PathDatasetComponentBlob> getComponents() {
+    return this.Components;
   }
 
   public static PathDatasetBlob fromProto(ai.verta.modeldb.versioning.PathDatasetBlob blob) {

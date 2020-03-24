@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class EnvironmentBlob implements ProtoType {
-  public List<String> CommandLine;
-  public DockerEnvironmentBlob Docker;
-  public List<EnvironmentVariablesBlob> EnvironmentVariables;
-  public PythonEnvironmentBlob Python;
+  private List<String> CommandLine;
+  private DockerEnvironmentBlob Docker;
+  private List<EnvironmentVariablesBlob> EnvironmentVariables;
+  private PythonEnvironmentBlob Python;
 
   public EnvironmentBlob() {
     this.CommandLine = null;
@@ -171,19 +171,38 @@ public class EnvironmentBlob implements ProtoType {
     return this;
   }
 
+  public List<String> getCommandLine() {
+    return this.CommandLine;
+  }
+
   public EnvironmentBlob setDocker(DockerEnvironmentBlob value) {
     this.Docker = Utils.removeEmpty(value);
     return this;
   }
 
+  public DockerEnvironmentBlob getDocker() {
+    return this.Docker;
+  }
+
   public EnvironmentBlob setEnvironmentVariables(List<EnvironmentVariablesBlob> value) {
     this.EnvironmentVariables = Utils.removeEmpty(value);
+    if (this.EnvironmentVariables != null) {
+      this.EnvironmentVariables.sort(Comparator.comparingInt(EnvironmentVariablesBlob::hashCode));
+    }
     return this;
+  }
+
+  public List<EnvironmentVariablesBlob> getEnvironmentVariables() {
+    return this.EnvironmentVariables;
   }
 
   public EnvironmentBlob setPython(PythonEnvironmentBlob value) {
     this.Python = Utils.removeEmpty(value);
     return this;
+  }
+
+  public PythonEnvironmentBlob getPython() {
+    return this.Python;
   }
 
   public static EnvironmentBlob fromProto(ai.verta.modeldb.versioning.EnvironmentBlob blob) {

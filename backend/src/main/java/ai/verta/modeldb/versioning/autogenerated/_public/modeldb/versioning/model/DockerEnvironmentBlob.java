@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class DockerEnvironmentBlob implements ProtoType {
-  public String Repository;
-  public String Sha;
-  public String Tag;
+  private String Repository;
+  private String Sha;
+  private String Tag;
 
   public DockerEnvironmentBlob() {
     this.Repository = "";
@@ -121,14 +121,26 @@ public class DockerEnvironmentBlob implements ProtoType {
     return this;
   }
 
+  public String getRepository() {
+    return this.Repository;
+  }
+
   public DockerEnvironmentBlob setSha(String value) {
     this.Sha = Utils.removeEmpty(value);
     return this;
   }
 
+  public String getSha() {
+    return this.Sha;
+  }
+
   public DockerEnvironmentBlob setTag(String value) {
     this.Tag = Utils.removeEmpty(value);
     return this;
+  }
+
+  public String getTag() {
+    return this.Tag;
   }
 
   public static DockerEnvironmentBlob fromProto(

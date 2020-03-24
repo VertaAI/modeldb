@@ -119,14 +119,15 @@ public class EnvironmentContainer extends BlobContainer {
   }
 
   @Override
-  public void process(Session session, TreeElem rootTree, FileHasher fileHasher)
+  public void process(
+      Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException {
     EnvironmentBlobEntity environmentBlobEntity = new EnvironmentBlobEntity();
     String blobHash = computeSHA(environment);
 
     String blobType;
     List<Object> entities = new LinkedList<>();
-    entities.add(environmentBlobEntity);
+
     switch (environment.getContentCase()) {
       case PYTHON:
         blobType = PYTHON_ENVIRONMENT_BLOB;
@@ -141,20 +142,24 @@ public class EnvironmentContainer extends BlobContainer {
         pythonEnvironmentBlobEntity.setMajor(version.getMajor());
         pythonEnvironmentBlobEntity.setMinor(version.getMinor());
         pythonEnvironmentBlobEntity.setPatch(version.getPatch());
-        entities.add(pythonEnvironmentBlobEntity);
-        for (PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob :
-            python.getRequirementsList()) {
-          PythonEnvironmentRequirementBlobEntity pythonEnvironmentRequirementBlobEntity =
-              new PythonEnvironmentRequirementBlobEntity(
-                  pythonRequirementEnvironmentBlob, pythonEnvironmentBlobEntity, true);
-          entities.add(pythonEnvironmentRequirementBlobEntity);
-        }
-        for (PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob :
-            python.getConstraintsList()) {
-          PythonEnvironmentRequirementBlobEntity pythonEnvironmentRequirementBlobEntity =
-              new PythonEnvironmentRequirementBlobEntity(
-                  pythonRequirementEnvironmentBlob, pythonEnvironmentBlobEntity, false);
-          entities.add(pythonEnvironmentRequirementBlobEntity);
+        if (!blobHashes.contains(pythonEnvironmentBlobEntity.getBlob_hash())) {
+          entities.add(pythonEnvironmentBlobEntity);
+          blobHashes.add(pythonEnvironmentBlobEntity.getBlob_hash());
+
+          for (PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob :
+              python.getRequirementsList()) {
+            PythonEnvironmentRequirementBlobEntity pythonEnvironmentRequirementBlobEntity =
+                new PythonEnvironmentRequirementBlobEntity(
+                    pythonRequirementEnvironmentBlob, pythonEnvironmentBlobEntity, true);
+            entities.add(pythonEnvironmentRequirementBlobEntity);
+          }
+          for (PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob :
+              python.getConstraintsList()) {
+            PythonEnvironmentRequirementBlobEntity pythonEnvironmentRequirementBlobEntity =
+                new PythonEnvironmentRequirementBlobEntity(
+                    pythonRequirementEnvironmentBlob, pythonEnvironmentBlobEntity, false);
+            entities.add(pythonEnvironmentRequirementBlobEntity);
+          }
         }
         break;
       case DOCKER:
@@ -166,24 +171,32 @@ public class EnvironmentContainer extends BlobContainer {
         DockerEnvironmentBlobEntity dockerEnvironmentBlobEntity =
             new DockerEnvironmentBlobEntity(dockerBlobHash, environment.getDocker());
         environmentBlobEntity.setDockerEnvironmentBlobEntity(dockerEnvironmentBlobEntity);
-        entities.add(dockerEnvironmentBlobEntity);
+        if (!blobHashes.contains(environmentBlobEntity.getBlob_hash())) {
+          entities.add(dockerEnvironmentBlobEntity);
+          blobHashes.add(environmentBlobEntity.getBlob_hash());
+        }
         break;
       default:
         throw new ModelDBException("Blob unknown type", Code.INTERNAL);
     }
-    for (EnvironmentVariablesBlob environmentVariablesBlob :
-        environment.getEnvironmentVariablesList()) {
-      EnvironmentVariablesEntity environmentVariablesBlobEntity =
-          new EnvironmentVariablesEntity(environmentVariablesBlob);
-      environmentVariablesBlobEntity.setEnvironmentBlobEntity(environmentBlobEntity);
-      entities.add(environmentVariablesBlobEntity);
-    }
-    int count = 0;
-    for (String command : environment.getCommandLineList()) {
-      EnvironmentCommandLineEntity environmentCommandLineEntity =
-          new EnvironmentCommandLineEntity(count++, command);
-      environmentCommandLineEntity.setEnvironmentBlobEntity(environmentBlobEntity);
-      entities.add(environmentCommandLineEntity);
+    if (!blobHashes.contains(environmentBlobEntity.getBlob_hash())) {
+      entities.add(environmentBlobEntity);
+      blobHashes.add(environmentBlobEntity.getBlob_hash());
+
+      for (EnvironmentVariablesBlob environmentVariablesBlob :
+          environment.getEnvironmentVariablesList()) {
+        EnvironmentVariablesEntity environmentVariablesBlobEntity =
+            new EnvironmentVariablesEntity(environmentVariablesBlob);
+        environmentVariablesBlobEntity.setEnvironmentBlobEntity(environmentBlobEntity);
+        entities.add(environmentVariablesBlobEntity);
+      }
+      int count = 0;
+      for (String command : environment.getCommandLineList()) {
+        EnvironmentCommandLineEntity environmentCommandLineEntity =
+            new EnvironmentCommandLineEntity(count++, command);
+        environmentCommandLineEntity.setEnvironmentBlobEntity(environmentBlobEntity);
+        entities.add(environmentCommandLineEntity);
+      }
     }
     for (Object entity : entities) {
       session.saveOrUpdate(entity);

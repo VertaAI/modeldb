@@ -109,10 +109,15 @@ class VersioningServiceStub(object):
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.DeleteBranchRequest.SerializeToString,
         response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.DeleteBranchRequest.Response.FromString,
         )
-    self.ListBranchCommits = channel.unary_unary(
-        '/ai.verta.modeldb.versioning.VersioningService/ListBranchCommits',
-        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBranchCommitsRequest.SerializeToString,
-        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBranchCommitsRequest.Response.FromString,
+    self.ListCommitsLog = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/ListCommitsLog',
+        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitsLogRequest.SerializeToString,
+        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitsLogRequest.Response.FromString,
+        )
+    self.MergeRepositoryCommits = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/MergeRepositoryCommits',
+        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.SerializeToString,
+        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.Response.FromString,
         )
     self.ListTags = channel.unary_unary(
         '/ai.verta.modeldb.versioning.VersioningService/ListTags',
@@ -273,7 +278,14 @@ class VersioningServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def ListBranchCommits(self, request, context):
+  def ListCommitsLog(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def MergeRepositoryCommits(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -406,10 +418,15 @@ def add_VersioningServiceServicer_to_server(servicer, server):
           request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.DeleteBranchRequest.FromString,
           response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.DeleteBranchRequest.Response.SerializeToString,
       ),
-      'ListBranchCommits': grpc.unary_unary_rpc_method_handler(
-          servicer.ListBranchCommits,
-          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBranchCommitsRequest.FromString,
-          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBranchCommitsRequest.Response.SerializeToString,
+      'ListCommitsLog': grpc.unary_unary_rpc_method_handler(
+          servicer.ListCommitsLog,
+          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitsLogRequest.FromString,
+          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListCommitsLogRequest.Response.SerializeToString,
+      ),
+      'MergeRepositoryCommits': grpc.unary_unary_rpc_method_handler(
+          servicer.MergeRepositoryCommits,
+          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.FromString,
+          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.Response.SerializeToString,
       ),
       'ListTags': grpc.unary_unary_rpc_method_handler(
           servicer.ListTags,
