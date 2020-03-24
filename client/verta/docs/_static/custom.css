@@ -515,11 +515,11 @@ ul.simple ol.simple p {
   font-size: 14px;
 }
 
-ul.simple li {
+ol.simple li, ul.simple li {
   padding: 10px 0;
 }
 
-ul.simple > li {
+ol.simple > li, ul.simple > li {
   font-size: 1.1rem;
 }
 
