@@ -10,15 +10,18 @@
             <dbms type="postgresql"/>
         </preConditions>
         <createIndex indexName="kv_kv_val"
-                     tableName="keyvalue">
+                     tableName="keyvalue"
+                     unique="true">
             <column name="kv_value"/>
         </createIndex>
         <createIndex indexName="kv_kv_key"
-                     tableName="keyvalue">
+                     tableName="keyvalue"
+                     unique="true">
             <column name="kv_key"/>
         </createIndex>
         <createIndex indexName="at_kv_key"
-                     tableName="attribute">
+                     tableName="attribute"
+                     unique="true">
             <column name="kv_key"/>
         </createIndex>
     </changeSet>
@@ -32,6 +35,26 @@
             CREATE INDEX kv_kv_key ON keyvalue (kv_key(255));
             CREATE INDEX at_kv_key on attribute (kv_key(255));
         </sql>
+    </changeSet>
+        <changeSet author="raviS" id="recreate-text-indexes-postgres">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <dropIndex tableName="keyvalue" indexName="kv_kv_val"/>
+        <dropIndex tableName="keyvalue" indexName="kv_kv_key"/>
+        <dropIndex tableName="attribute" indexName="at_kv_key"/>
+        <createIndex indexName="kv_kv_val"
+                     tableName="keyvalue">
+            <column name="kv_value"/>
+        </createIndex>
+        <createIndex indexName="kv_kv_key"
+                     tableName="keyvalue">
+            <column name="kv_key"/>
+        </createIndex>
+        <createIndex indexName="at_kv_key"
+                     tableName="attribute">
+            <column name="kv_key"/>
+        </createIndex>
     </changeSet>
 
     <changeSet author="anandJ" id="create_er_experiment_id_index">

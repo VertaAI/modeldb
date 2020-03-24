@@ -17,6 +17,7 @@ import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import Button from 'core/shared/view/elements/Button/Button';
 import { IApplicationState } from 'store/store';
 
+import ExperimentRuns from './ExperimentRuns/ExperimentRuns';
 import { selectors, actions } from '../../store';
 import styles from './Commit.module.css';
 
@@ -27,7 +28,7 @@ interface ILocalProps {
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
-    commit: selectors.selectCommit(state).commit,
+    commit: selectors.selectCommit(state),
     loadingCommit: selectors.selectCommunications(state).loadingCommit,
   };
 };
@@ -117,6 +118,12 @@ const Commit = ({
                     : loadedCommit.parentShas[0]
                 }
                 commitBSha={loadedCommit.sha}
+              />
+            </div>
+            <div className={styles.experimentRuns}>
+              <ExperimentRuns
+                commitSha={loadedCommit.sha}
+                repositoryId={repository.id}
               />
             </div>
           </div>

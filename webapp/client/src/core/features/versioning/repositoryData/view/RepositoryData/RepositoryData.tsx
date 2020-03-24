@@ -145,7 +145,7 @@ const RepositoryData = (props: AllProps) => {
             {!loadingCommitWithData.error ? (
               <div className={styles.navigation}>
                 <DataNavigation
-                  repositoryName={repository.name}
+                  repository={repository}
                   fullDataLocationComponents={fullDataLocationComponents}
                   commit={commitWithData.commit}
                   data={commitWithData.data}
