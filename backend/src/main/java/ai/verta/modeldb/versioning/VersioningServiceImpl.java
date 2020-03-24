@@ -10,22 +10,16 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceImplBase;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
-import ai.verta.modeldb.versioning.blob.container.CodeContainer;
-import ai.verta.modeldb.versioning.blob.container.ConfigContainer;
-import ai.verta.modeldb.versioning.blob.container.EnvironmentContainer;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -267,9 +261,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                 repositoryFunction,
                 (session, repository) ->
                     commitDAO.getCommitEntity(session, request.getCommitBase(), repository));
-        for (BlobContainer blobContainer : blobContainers) {
-          blobContainer.validate();
-        }
       }
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
@@ -288,211 +279,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     }
   }
 
-  private void validateBlobDiffs(CreateCommitRequest request) throws ModelDBException {
-    for (BlobDiff blobDiff : request.getDiffsList()) {
-      if (blobDiff.getLocationList().isEmpty()) {
-        throw new ModelDBException("Blob diff location is empty", Code.INVALID_ARGUMENT);
-      }
-      switch (blobDiff.getContentCase()) {
-        case CODE:
-          CodeDiff code = blobDiff.getCode();
-          switch (code.getContentCase()) {
-            case GIT:
-              validate(code.getGit());
-              break;
-            case NOTEBOOK:
-              NotebookCodeDiff notebook = code.getNotebook();
-              validate(notebook.getGitRepo());
-              if (notebook.hasPath()) {
-                validate(notebook.getPath());
-              }
-              break;
-            default:
-              throw new ModelDBException("Unknown diff type", Code.INVALID_ARGUMENT);
-          }
-          break;
-        case CONFIG:
-          ConfigDiff configDIff = blobDiff.getConfig();
-          List<HyperparameterConfigDiff> hyperparametersList = configDIff.getHyperparametersList();
-          for (HyperparameterConfigDiff hyperparameterConfigDiff : hyperparametersList) {
-            validate(hyperparameterConfigDiff);
-          }
-          List<HyperparameterSetConfigDiff> hyperparameterSetList =
-              configDIff.getHyperparameterSetList();
-          for (HyperparameterSetConfigDiff hyperparameterSetConfigDiff : hyperparameterSetList) {
-            validate(hyperparameterSetConfigDiff);
-          }
-          break;
-        case DATASET:
-          DatasetDiff datasetDiff = blobDiff.getDataset();
-          switch (datasetDiff.getContentCase()) {
-            case PATH:
-              for (PathDatasetComponentDiff pathDatasetComponentDiff :
-                  datasetDiff.getPath().getComponentsList()) {
-                validate(pathDatasetComponentDiff);
-              }
-              break;
-            case S3:
-              for (S3DatasetComponentDiff s3DatasetComponentDiff :
-                  datasetDiff.getS3().getComponentsList()) {
-                validate(s3DatasetComponentDiff.getPath());
-              }
-              break;
-            default:
-              throw new ModelDBException("Unknown diff type", Code.INVALID_ARGUMENT);
-          }
-          break;
-        case ENVIRONMENT:
-          EnvironmentDiff environmentDiff = blobDiff.getEnvironment();
-          if (environmentDiff.hasCommandLine()) {
-            validate(environmentDiff.getCommandLine());
-          }
-          List<EnvironmentVariablesDiff> environmentVariablesList =
-              environmentDiff.getEnvironmentVariablesList();
-          for (EnvironmentVariablesDiff environmentVariablesDiff : environmentVariablesList) {
-            validate(environmentVariablesDiff);
-          }
-          switch (environmentDiff.getContentCase()) {
-            case DOCKER:
-              DockerEnvironmentDiff docker = environmentDiff.getDocker();
-              validate(docker);
-              break;
-            case PYTHON:
-              PythonEnvironmentDiff pythonEnvironmentDiff = environmentDiff.getPython();
-              List<PythonRequirementEnvironmentDiff> pythonEnvironmentDiffRequirementsList =
-                  pythonEnvironmentDiff.getRequirementsList();
-              for (PythonRequirementEnvironmentDiff pythonRequirementEnvironmentDiff :
-                  pythonEnvironmentDiffRequirementsList) {
-                validate(pythonRequirementEnvironmentDiff, "requirement");
-              }
-              List<PythonRequirementEnvironmentDiff> pythonEnvironmentDiffConstraintsList =
-                  pythonEnvironmentDiff.getConstraintsList();
-              for (PythonRequirementEnvironmentDiff pythonConstraintEnvironmentDiff :
-                  pythonEnvironmentDiffConstraintsList) {
-                validate(pythonConstraintEnvironmentDiff, "constraint");
-              }
-              break;
-          }
-          break;
-        default:
-          throw new ModelDBException("Unknown diff type", Code.INVALID_ARGUMENT);
-      }
-      checkStatus(blobDiff.getStatus());
-    }
-  }
-
-  private void validate(
-      PythonRequirementEnvironmentDiff pythonRequirementEnvironmentDiff, String name)
-      throws ModelDBException {
-    Supplier<Optional<String>> supplierA =
-        () ->
-            EnvironmentContainer.validateReturnMessage(
-                pythonRequirementEnvironmentDiff.getA(), name);
-    Supplier<Optional<String>> supplierB =
-        () ->
-            EnvironmentContainer.validateReturnMessage(
-                pythonRequirementEnvironmentDiff.getB(), name);
-    Supplier<Optional<String>> supplierAB = () -> getSupplierAB(supplierA, supplierB);
-    checkStatus(pythonRequirementEnvironmentDiff.getStatus(), supplierA, supplierB, supplierAB);
-  }
-
-  private void validate(DockerEnvironmentDiff dockerEnvironmentDiff) throws ModelDBException {
-    Supplier<Optional<String>> supplierA =
-        () -> EnvironmentContainer.validateReturnMessage(dockerEnvironmentDiff.getA());
-    Supplier<Optional<String>> supplierB =
-        () -> EnvironmentContainer.validateReturnMessage(dockerEnvironmentDiff.getB());
-    Supplier<Optional<String>> supplierAB = () -> getSupplierAB(supplierA, supplierB);
-    checkStatus(dockerEnvironmentDiff.getStatus(), supplierA, supplierB, supplierAB);
-  }
-
-  private void validate(EnvironmentVariablesDiff environmentVariablesDiff) throws ModelDBException {
-    Supplier<Optional<String>> supplierA =
-        () -> EnvironmentContainer.validateReturnMessage(environmentVariablesDiff.getA());
-    Supplier<Optional<String>> supplierB =
-        () -> EnvironmentContainer.validateReturnMessage(environmentVariablesDiff.getB());
-    Supplier<Optional<String>> supplierAB = () -> getSupplierAB(supplierA, supplierB);
-    checkStatus(environmentVariablesDiff.getStatus(), supplierA, supplierB, supplierAB);
-  }
-
-  private void validate(CommandLineEnvironmentDiff commandLine) throws ModelDBException {
-    Supplier<Optional<String>> supplierA =
-        () -> EnvironmentContainer.validateReturnMessage(commandLine.getAList());
-    Supplier<Optional<String>> supplierB =
-        () -> EnvironmentContainer.validateReturnMessage(commandLine.getBList());
-    Supplier<Optional<String>> supplierAB = () -> getSupplierAB(supplierA, supplierB);
-    checkStatus(commandLine.getStatus(), supplierA, supplierB, supplierAB);
-  }
-
-  private void validate(PathDatasetComponentDiff path) throws ModelDBException {
-    Supplier<Optional<String>> supplierA = () -> BlobContainer.validateReturnMessage(path.getA());
-    Supplier<Optional<String>> supplierB = () -> BlobContainer.validateReturnMessage(path.getB());
-    Supplier<Optional<String>> supplierAB = () -> getSupplierAB(supplierA, supplierB);
-    checkStatus(path.getStatus(), supplierA, supplierB, supplierAB);
-  }
-
-  private Optional<String> getSupplierAB(
-      Supplier<Optional<String>> supplierA, Supplier<Optional<String>> supplierB) {
-    Optional<String> result = supplierA.get();
-    if (result.isPresent()) {
-      return result;
-    }
-    return supplierB.get();
-  }
-
-  private void validate(HyperparameterConfigDiff hyperparameterConfigDiff) throws ModelDBException {
-    Supplier<Optional<String>> supplierA =
-        () -> ConfigContainer.validateReturnMessage(hyperparameterConfigDiff.getA());
-    Supplier<Optional<String>> supplierB =
-        () -> ConfigContainer.validateReturnMessage(hyperparameterConfigDiff.getB());
-    Supplier<Optional<String>> supplierAB = () -> getSupplierAB(supplierA, supplierB);
-    checkStatus(hyperparameterConfigDiff.getStatus(), supplierA, supplierB, supplierAB);
-  }
-
-  private void validate(HyperparameterSetConfigDiff hyperparameterSetConfigDiff)
-      throws ModelDBException {
-    Supplier<Optional<String>> supplierA =
-        () -> ConfigContainer.validateReturnMessage(hyperparameterSetConfigDiff.getA());
-    Supplier<Optional<String>> supplierB =
-        () -> ConfigContainer.validateReturnMessage(hyperparameterSetConfigDiff.getB());
-    Supplier<Optional<String>> supplierAB = () -> getSupplierAB(supplierA, supplierB);
-    checkStatus(hyperparameterSetConfigDiff.getStatus(), supplierA, supplierB, supplierAB);
-  }
-
-  private void checkStatus(DiffStatus status) throws ModelDBException {
-    checkStatus(status, Optional::empty, Optional::empty, Optional::empty);
-  }
-
-  private void validate(GitCodeDiff git) throws ModelDBException {
-    Supplier<Optional<String>> supplierA = () -> CodeContainer.validateReturnMessage(git.getA());
-    Supplier<Optional<String>> supplierB = () -> CodeContainer.validateReturnMessage(git.getB());
-    Supplier<Optional<String>> supplierAB = () -> getSupplierAB(supplierA, supplierB);
-    checkStatus(git.getStatus(), supplierA, supplierB, supplierAB);
-  }
-
-  private void checkStatus(
-      DiffStatus diffStatus,
-      Supplier<Optional<String>> deleted,
-      Supplier<Optional<String>> added,
-      Supplier<Optional<String>> modified)
-      throws ModelDBException {
-    final Optional<String> message;
-    switch (diffStatus) {
-      case DELETED:
-        message = deleted.get();
-        break;
-      case ADDED:
-        message = added.get();
-        break;
-      case MODIFIED:
-        message = modified.get();
-        break;
-      default:
-        message = Optional.of("Unknown diff status specified");
-    }
-    if (message.isPresent()) {
-      throw new ModelDBException(message.get(), Code.INVALID_ARGUMENT);
-    }
-  }
+  // TODO: add validation VR-3587
+  private void validateBlobDiffs(CreateCommitRequest request) throws ModelDBException {}
 
   private List<BlobContainer> validateBlobs(CreateCommitRequest request) throws ModelDBException {
     List<BlobContainer> blobContainers = new LinkedList<>();
@@ -501,8 +289,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         throw new ModelDBException("Blob path should not be empty", Code.INVALID_ARGUMENT);
       }
       final BlobContainer blobContainer = BlobContainer.create(blobExpanded);
-      blobContainer.validate();
-      blobContainers.add(blobContainer);
+      if (blobContainer != null) {
+        blobContainer.validate();
+        blobContainers.add(blobContainer);
+      }
     }
     return blobContainers;
   }

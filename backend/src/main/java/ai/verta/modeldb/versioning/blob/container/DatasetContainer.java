@@ -40,7 +40,10 @@ public class DatasetContainer extends BlobContainer {
           throw new ModelDBException("Blob should not be empty", Code.INVALID_ARGUMENT);
         }
         for (S3DatasetComponentBlob component : dataset.getS3().getComponentsList()) {
-          validate(component);
+          if (!component.hasPath()) {
+            throw new ModelDBException("Blob path should not be empty", Code.INVALID_ARGUMENT);
+          }
+          validate(component.getPath());
         }
         break;
       case PATH:
@@ -96,6 +99,7 @@ public class DatasetContainer extends BlobContainer {
 
   static String saveBlob(Session session, PathDatasetBlob path, Set<String> blobHashes)
       throws NoSuchAlgorithmException {
+    // sorted
     Map<String, List<PathDatasetComponentBlob>> componentHashes = new LinkedHashMap<>();
     for (PathDatasetComponentBlob componentBlob : path.getComponentsList()) {
       final String componentHash = computeSHA(componentBlob);

@@ -19,14 +19,12 @@ import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.TreeElem;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.hibernate.Session;
@@ -40,10 +38,6 @@ public class EnvironmentContainer extends BlobContainer {
   public EnvironmentContainer(BlobExpanded blobExpanded) {
     super(blobExpanded);
     environment = blobExpanded.getBlob().getEnvironment();
-  }
-
-  public static Optional<String> validateReturnMessage(ProtocolStringList aList) {
-    return Optional.empty();
   }
 
   class PythonRequirementKey {
@@ -89,65 +83,39 @@ public class EnvironmentContainer extends BlobContainer {
     }
     switch (environment.getContentCase()) {
       case DOCKER:
-        Optional<String> result = validateReturnMessage(environment.getDocker());
-        if (result.isPresent()) {
-          throw new ModelDBException("Blob unknown type", Code.INVALID_ARGUMENT);
+        if (environment.getDocker().getRepository().isEmpty()) {
+          throw new ModelDBException(
+              "Environment repository path should not be empty", Code.INVALID_ARGUMENT);
         }
         break;
       case PYTHON:
         final PythonEnvironmentBlob python = environment.getPython();
-        List<PythonRequirementEnvironmentBlob> requirementsList = python.getRequirementsList();
-        List<PythonRequirementEnvironmentBlob> constraintsList = python.getConstraintsList();
-        validate(requirementsList, constraintsList);
+        Set<PythonRequirementKey> pythonRequirementKeys = new HashSet<>();
+        for (PythonRequirementEnvironmentBlob requirement : python.getRequirementsList()) {
+          if (requirement.getLibrary().isEmpty()) {
+            throw new ModelDBException(
+                "Requirement library name should not be empty", Code.INVALID_ARGUMENT);
+          }
+          pythonRequirementKeys.add(new PythonRequirementKey(requirement, true));
+        }
+        if (pythonRequirementKeys.size() != python.getRequirementsCount()) {
+          throw new ModelDBException("There are recurring requirements", Code.INVALID_ARGUMENT);
+        }
+        for (PythonRequirementEnvironmentBlob constraint : python.getConstraintsList()) {
+          if (constraint.getLibrary().isEmpty()) {
+            throw new ModelDBException(
+                "Constraint library name should not be empty", Code.INVALID_ARGUMENT);
+          }
+          pythonRequirementKeys.add(new PythonRequirementKey(constraint, false));
+        }
+        if (pythonRequirementKeys.size()
+            != python.getRequirementsCount() + python.getConstraintsCount()) {
+          throw new ModelDBException("There are recurring constraints", Code.INVALID_ARGUMENT);
+        }
         break;
       default:
         throw new ModelDBException("Blob unknown type", Code.INVALID_ARGUMENT);
     }
-  }
-
-  private void validate(
-      List<PythonRequirementEnvironmentBlob> requirementsList,
-      List<PythonRequirementEnvironmentBlob> constraintsList)
-      throws ModelDBException {
-    Set<PythonRequirementKey> pythonRequirementKeys = new HashSet<>();
-    for (PythonRequirementEnvironmentBlob requirement : requirementsList) {
-      Optional<String> message = validateReturnMessage(requirement, "Requirement");
-      if (message.isPresent()) {
-        throw new ModelDBException(message.get(), Code.INVALID_ARGUMENT);
-      }
-      pythonRequirementKeys.add(new PythonRequirementKey(requirement, true));
-    }
-    if (pythonRequirementKeys.size() != requirementsList.size()) {
-      throw new ModelDBException("There are recurring requirements", Code.INVALID_ARGUMENT);
-    }
-    for (PythonRequirementEnvironmentBlob constraint : constraintsList) {
-      if (constraint.getLibrary().isEmpty()) {
-        Optional<String> message = validateReturnMessage(constraint, "Constraint");
-        if (message.isPresent()) {
-          throw new ModelDBException(message.get(), Code.INVALID_ARGUMENT);
-        }
-      }
-      pythonRequirementKeys.add(new PythonRequirementKey(constraint, false));
-    }
-    if (pythonRequirementKeys.size() != requirementsList.size() + constraintsList.size()) {
-      throw new ModelDBException("There are recurring constraints", Code.INVALID_ARGUMENT);
-    }
-  }
-
-  public static Optional<String> validateReturnMessage(
-      DockerEnvironmentBlob dockerEnvironmentBlob) {
-    if (dockerEnvironmentBlob.getRepository().isEmpty()) {
-      return Optional.of("Environment repository path should not be empty");
-    }
-    return Optional.empty();
-  }
-
-  public static Optional<String> validateReturnMessage(
-      PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob, String name) {
-    if (pythonRequirementEnvironmentBlob.getLibrary().isEmpty()) {
-      return Optional.of("Requirement library name should not be empty");
-    }
-    return Optional.empty();
   }
 
   @Override
@@ -241,25 +209,13 @@ public class EnvironmentContainer extends BlobContainer {
   private static final String PATTERN = "[a-zA-Z0-9_-]+";
 
   private void validateEnvironmentVariableName(String name) throws ModelDBException {
-    Optional<String> result = validateEnvironmentVariableNameReturnMessage(name);
-    if (result.isPresent()) {
-      throw new ModelDBException(result.get());
-    }
-  }
-
-  public static Optional<String> validateReturnMessage(
-      EnvironmentVariablesBlob environmentVariablesBlob) {
-    return validateEnvironmentVariableNameReturnMessage(environmentVariablesBlob.getName());
-  }
-
-  public static Optional<String> validateEnvironmentVariableNameReturnMessage(String name) {
     if (!Pattern.compile(PATTERN).matcher(name).matches()) {
-      return Optional.of(
+      throw new ModelDBException(
           "Environment variable name: "
               + name
-              + " should be not empty, should contain only alphanumeric or underscore");
+              + " should be not empty, should contain only alphanumeric or underscore",
+          Code.INVALID_ARGUMENT);
     }
-    return Optional.empty();
   }
 
   private String computeSHA(EnvironmentBlob blob) throws NoSuchAlgorithmException {
