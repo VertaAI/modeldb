@@ -144,14 +144,6 @@ public class DiffTest {
     return Arrays.asList(new Object[][] {{0, 0}, {1, 1}, {2, 0}, {3, 1}});
   }
 
-  /*@Parameters
-  public static Collection<Object[]> data() {
-    return Arrays.asList(
-        new Object[][] {
-            {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}
-        });
-  }*/
-
   public DiffTest(int blobType, int commitType) {
     this.blobType = blobType;
     this.commitType = commitType;
