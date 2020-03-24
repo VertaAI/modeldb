@@ -56,4 +56,16 @@
             <column name="kv_key"/>
         </createIndex>
     </changeSet>
+
+    <changeSet author="anandJ" id="create_er_experiment_id_index">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="er_experiment_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="er_experiment_id"
+                     tableName="experiment_run">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

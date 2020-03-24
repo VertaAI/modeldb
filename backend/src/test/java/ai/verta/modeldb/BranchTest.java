@@ -22,7 +22,6 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.DeleteTagRequest;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetTagRequest;
-import ai.verta.modeldb.versioning.ListBranchCommitsRequest;
 import ai.verta.modeldb.versioning.ListBranchesRequest;
 import ai.verta.modeldb.versioning.ListTagsRequest;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
@@ -525,7 +524,7 @@ public class BranchTest {
     LOGGER.info("Branch test end................................");
   }
 
-  @Test
+  /*@Test
   public void branchTest() {
     LOGGER.info("branch test start................................");
 
@@ -703,5 +702,5 @@ public class BranchTest {
     Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Branch test end................................");
-  }
+  }*/
 }
