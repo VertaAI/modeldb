@@ -191,6 +191,24 @@ class TestBranch:
         finally:
             utils.delete_commit(repository.id, commit.id, repository._conn)
 
+    def test_slash(self, repository):
+        branch = "banana/coconut"
+
+        blob = verta.environment.Python(["a==1"])
+        path = "a"
+
+        commit = repository.get_commit()
+        commit.update(path, blob)
+        commit.save(message="a")
+        try:
+            commit.branch(branch)
+
+            retrieved_commit = repository.get_commit(branch=branch)
+            assert retrieved_commit.id == commit.id
+            assert retrieved_commit.branch_name == branch
+        finally:
+            utils.delete_commit(repository.id, commit.id, repository._conn)
+
     def test_change(self, repository):
         branch = "banana"
 
