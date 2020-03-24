@@ -171,9 +171,9 @@ public class EnvironmentContainer extends BlobContainer {
         DockerEnvironmentBlobEntity dockerEnvironmentBlobEntity =
             new DockerEnvironmentBlobEntity(dockerBlobHash, environment.getDocker());
         environmentBlobEntity.setDockerEnvironmentBlobEntity(dockerEnvironmentBlobEntity);
-        if (!blobHashes.contains(environmentBlobEntity.getBlob_hash())) {
+        if (!blobHashes.contains(dockerBlobHash)) {
           entities.add(dockerEnvironmentBlobEntity);
-          blobHashes.add(environmentBlobEntity.getBlob_hash());
+          blobHashes.add(dockerBlobHash);
         }
         break;
       default:

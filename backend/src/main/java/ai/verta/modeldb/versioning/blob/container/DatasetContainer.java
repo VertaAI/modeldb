@@ -81,10 +81,13 @@ public class DatasetContainer extends BlobContainer {
           blobHashes.add(blobHash);
           for (Map.Entry<String, List<S3DatasetComponentBlob>> component :
               componentHashes.entrySet()) {
-            S3DatasetComponentBlobEntity s3DatasetComponentBlobEntity =
-                new S3DatasetComponentBlobEntity(
-                    component.getKey(), blobHash, component.getValue().get(0));
-            session.saveOrUpdate(s3DatasetComponentBlobEntity);
+            if (!blobHashes.contains(component.getKey())) {
+              blobHashes.add(component.getKey());
+              S3DatasetComponentBlobEntity s3DatasetComponentBlobEntity =
+                      new S3DatasetComponentBlobEntity(
+                              component.getKey(), blobHash, component.getValue().get(0));
+              session.saveOrUpdate(s3DatasetComponentBlobEntity);
+            }
           }
         }
         break;
@@ -111,10 +114,13 @@ public class DatasetContainer extends BlobContainer {
       blobHashes.add(blobHash);
       for (Map.Entry<String, List<PathDatasetComponentBlob>> component :
           componentHashes.entrySet()) {
-        PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
-            new PathDatasetComponentBlobEntity(
-                component.getKey(), blobHash, component.getValue().get(0));
-        session.saveOrUpdate(pathDatasetComponentBlobEntity);
+        if (!blobHashes.contains(component.getKey())) {
+          blobHashes.add(component.getKey());
+          PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
+                  new PathDatasetComponentBlobEntity(
+                          component.getKey(), blobHash, component.getValue().get(0));
+          session.saveOrUpdate(pathDatasetComponentBlobEntity);
+        }
       }
     }
     return blobHash;
