@@ -99,6 +99,8 @@ public class CommitTest {
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
 
+  private static long time = Calendar.getInstance().getTimeInMillis();
+
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void setServerAndService() throws Exception {
@@ -713,8 +715,6 @@ public class CommitTest {
 
     LOGGER.info("Get commit blob test end................................");
   }
-
-  private static long time = Calendar.getInstance().getTimeInMillis();
 
   static Blob getDatasetBlobFromPath(String path) {
     return Blob.newBuilder()
