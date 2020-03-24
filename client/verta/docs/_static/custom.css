@@ -9,7 +9,7 @@
 html {
   font-size: 14px;
   font-family: "Roboto";
-  height: 100%;
+  min-height: 100%;
 }
 
 /*
@@ -71,9 +71,9 @@ html {
 body {
   display: flex;
   flex-direction: column;
-  height: 100%;
   margin: 0;
   background: #f5f7f9;
+  min-height: 100vh;
 }
 
 .document {
@@ -238,7 +238,6 @@ h3#searchlabel {
 }
 
 .documentwrapper {
-  height: 100%;
   max-width: 1100px;
   padding: 0 4rem;
   border-right: 2px solid #e6ecf1;
@@ -521,7 +520,7 @@ ul.simple li {
 }
 
 ul.simple > li {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .sphinxsidebarwrapper > h3 {

@@ -789,7 +789,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, "test_repo");
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
