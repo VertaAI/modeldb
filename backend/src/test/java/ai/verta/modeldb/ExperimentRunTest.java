@@ -9401,7 +9401,6 @@ public class ExperimentRunTest {
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-
     long repoId =
         RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     GetBranchRequest getBranchRequest =
