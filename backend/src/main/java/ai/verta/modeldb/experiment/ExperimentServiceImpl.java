@@ -173,7 +173,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experiment.getProjectId(),
           ModelDBServiceActions.UPDATE);
 
-      experiment = experimentDAO.insertExperiment(experiment);
+      experiment = experimentDAO.insertExperiment(experiment, userInfo);
       responseObserver.onNext(
           CreateExperiment.Response.newBuilder().setExperiment(experiment).build());
       responseObserver.onCompleted();

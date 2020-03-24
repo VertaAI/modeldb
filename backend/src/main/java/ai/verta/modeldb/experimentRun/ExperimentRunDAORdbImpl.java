@@ -21,6 +21,8 @@ import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -44,6 +46,9 @@ import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -77,6 +82,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
   private final AuthService authService;
+  private final RoleService roleService;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
@@ -174,8 +180,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .toString();
 
   public ExperimentRunDAORdbImpl(
-      AuthService authService, RepositoryDAO repositoryDAO, CommitDAO commitDAO, BlobDAO blobDAO) {
+      AuthService authService,
+      RoleService roleService,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      BlobDAO blobDAO) {
     this.authService = authService;
+    this.roleService = roleService;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
@@ -274,7 +285,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun insertExperimentRun(ExperimentRun experimentRun)
+  public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
@@ -284,6 +295,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       session.saveOrUpdate(experimentRunObj);
+
+      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
+      roleService.createRoleBinding(
+          ownerRole,
+          new CollaboratorUser(authService, userInfo),
+          experimentRun.getId(),
+          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
+
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
           session,
@@ -347,6 +366,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         projectIds.add(experimentRunEntity.getProject_id());
         experimentIds.add(experimentRunEntity.getExperiment_id());
         session.delete(experimentRunEntity);
+
+        String ownerRoleBindingName =
+            roleService.buildRoleBindingName(
+                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
+                experimentRunEntity.getId(),
+                experimentRunEntity.getOwner(),
+                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
+        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
+        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+          roleService.deleteRoleBinding(roleBinding.getId());
+        }
       }
 
       // Update parent entity timestamp

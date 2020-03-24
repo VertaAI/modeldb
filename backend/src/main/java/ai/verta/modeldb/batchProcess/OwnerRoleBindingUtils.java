@@ -1,0 +1,306 @@
+package ai.verta.modeldb.batchProcess;
+
+import ai.verta.modeldb.App;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.entities.DatasetVersionEntity;
+import ai.verta.modeldb.entities.ExperimentEntity;
+import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.Role;
+import ai.verta.uac.UserInfo;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+public class OwnerRoleBindingUtils {
+  private OwnerRoleBindingUtils() {}
+
+  private static final Logger LOGGER = LogManager.getLogger(OwnerRoleBindingUtils.class);
+  private static AuthService authService;
+  private static RoleService roleService;
+
+  public static void execute() {
+    App app = App.getInstance();
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      app.setAuthServerHost(app.getAuthServerHost());
+      app.setAuthServerPort(app.getAuthServerPort());
+
+      authService = new AuthServiceUtils();
+      roleService = new RoleServiceUtils(authService);
+    } else {
+      LOGGER.debug("AuthService Host & Port not found");
+      return;
+    }
+
+    LOGGER.info("Migration start");
+    migrateExperiments();
+    LOGGER.info("Experiments done migration");
+    migrateExperimentRuns();
+    LOGGER.info("ExperimentRuns done migration");
+    migrateDatasetVersions();
+    LOGGER.info("DatasetVersions done migration");
+
+    LOGGER.info("Migration End");
+  }
+
+  private static void migrateExperiments() {
+    LOGGER.debug("Experiments migration started");
+    Long count = getEntityCount(ExperimentEntity.class);
+
+    int lowerBound = 0;
+    final int pagesize = 200;
+    LOGGER.debug("Total experiments {}", count);
+
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
+    while (lowerBound < count) {
+
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        Transaction transaction = session.beginTransaction();
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        CriteriaQuery<ExperimentEntity> criteriaQuery =
+            criteriaBuilder.createQuery(ExperimentEntity.class);
+        Root<ExperimentEntity> root = criteriaQuery.from(ExperimentEntity.class);
+
+        CriteriaQuery<ExperimentEntity> selectQuery =
+            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+
+        TypedQuery<ExperimentEntity> typedQuery = session.createQuery(selectQuery);
+
+        typedQuery.setFirstResult(lowerBound);
+        typedQuery.setMaxResults(pagesize);
+        List<ExperimentEntity> experimentEntities = typedQuery.getResultList();
+
+        if (experimentEntities.size() > 0) {
+          Set<String> userIds = new HashSet<>();
+          for (ExperimentEntity experiment : experimentEntities) {
+            userIds.add(experiment.getOwner());
+          }
+          LOGGER.debug("Experiments userId list : " + userIds);
+          if (userIds.size() == 0) {
+            LOGGER.warn("userIds not found for Experiments on page lower boundary {}", lowerBound);
+            lowerBound += pagesize;
+            continue;
+          }
+
+          // Fetch the experiment owners userInfo
+          Map<String, UserInfo> userInfoMap =
+              authService.getUserInfoFromAuthServer(userIds, null, null);
+          for (ExperimentEntity experimentEntity : experimentEntities) {
+            UserInfo userInfoValue = userInfoMap.get(experimentEntity.getOwner());
+            if (userInfoValue != null) {
+              try {
+                roleService.createRoleBinding(
+                    ownerRole,
+                    new CollaboratorUser(authService, userInfoValue),
+                    experimentEntity.getId(),
+                    ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
+              } catch (Exception e) {
+                e.printStackTrace();
+                LOGGER.error(e.getMessage());
+              }
+            } else {
+              LOGGER.error(
+                  "Experiment owner not found from UAC response list : experimentId - {} & userId - {}",
+                  experimentEntity.getId(),
+                  experimentEntity.getOwner());
+              new ModelDBException(
+                      "Experiment owner not found from UAC response list : experimentId - "
+                          + experimentEntity.getId()
+                          + " & userId - "
+                          + experimentEntity.getOwner())
+                  .printStackTrace();
+            }
+          }
+        } else {
+          LOGGER.debug("Experiments total count 0");
+        }
+        transaction.commit();
+        lowerBound += pagesize;
+      }
+    }
+
+    LOGGER.debug("Experiments migration finished");
+  }
+
+  private static void migrateExperimentRuns() {
+    LOGGER.debug("ExperimentRuns migration started");
+    Long count = getEntityCount(ExperimentRunEntity.class);
+
+    int lowerBound = 0;
+    final int pagesize = 200;
+    LOGGER.debug("Total experimentruns {}", count);
+
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
+    while (lowerBound < count) {
+
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        Transaction transaction = session.beginTransaction();
+
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        CriteriaQuery<ExperimentRunEntity> criteriaQuery =
+            criteriaBuilder.createQuery(ExperimentRunEntity.class);
+        Root<ExperimentRunEntity> root = criteriaQuery.from(ExperimentRunEntity.class);
+
+        CriteriaQuery<ExperimentRunEntity> selectQuery =
+            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+
+        TypedQuery<ExperimentRunEntity> typedQuery = session.createQuery(selectQuery);
+
+        typedQuery.setFirstResult(lowerBound);
+        typedQuery.setMaxResults(pagesize);
+        Set<String> userIds = new HashSet<>();
+        List<ExperimentRunEntity> experimentRunEntities = typedQuery.getResultList();
+        for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+          userIds.add(experimentRunEntity.getOwner());
+        }
+
+        LOGGER.debug("ExperimentRuns userId list : " + userIds);
+        if (userIds.size() == 0) {
+          LOGGER.warn("userIds not found for ExperimentRuns on page lower boundary {}", lowerBound);
+          lowerBound += pagesize;
+          continue;
+        }
+        Map<String, UserInfo> userInfoMap =
+            authService.getUserInfoFromAuthServer(userIds, null, null);
+        for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+          UserInfo userInfoValue = userInfoMap.get(experimentRunEntity.getOwner());
+          if (userInfoValue != null) {
+            try {
+              roleService.createRoleBinding(
+                  ownerRole,
+                  new CollaboratorUser(authService, userInfoValue),
+                  experimentRunEntity.getId(),
+                  ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
+            } catch (Exception e) {
+              e.printStackTrace();
+              LOGGER.error(e.getMessage());
+            }
+          } else {
+            LOGGER.error(
+                "ExperimentRun owner not found from UAC response list : ExperimentRunId - {} & userId - {}",
+                experimentRunEntity.getId(),
+                experimentRunEntity.getOwner());
+            new ModelDBException(
+                    "ExperimentRun owner not found from UAC response list : ExperimentRunId - "
+                        + experimentRunEntity.getId()
+                        + " & userId - "
+                        + experimentRunEntity.getOwner())
+                .printStackTrace();
+          }
+        }
+        LOGGER.debug("finished processing page lower boundary {}", lowerBound);
+        transaction.commit();
+        lowerBound += pagesize;
+      }
+    }
+    LOGGER.debug("ExperimentRuns migration finished");
+  }
+
+  private static void migrateDatasetVersions() {
+    LOGGER.debug("DatasetVersions migration started");
+    Long count = getEntityCount(DatasetVersionEntity.class);
+
+    int lowerBound = 0;
+    final int pagesize = 200;
+    LOGGER.debug("Total datasetVersions {}", count);
+
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
+    while (lowerBound < count) {
+
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        Transaction transaction = session.beginTransaction();
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        CriteriaQuery<DatasetVersionEntity> criteriaQuery =
+            criteriaBuilder.createQuery(DatasetVersionEntity.class);
+        Root<DatasetVersionEntity> root = criteriaQuery.from(DatasetVersionEntity.class);
+
+        CriteriaQuery<DatasetVersionEntity> selectQuery =
+            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+
+        TypedQuery<DatasetVersionEntity> typedQuery = session.createQuery(selectQuery);
+
+        typedQuery.setFirstResult(lowerBound);
+        typedQuery.setMaxResults(pagesize);
+        List<DatasetVersionEntity> datasetVersionEntities = typedQuery.getResultList();
+
+        if (datasetVersionEntities.size() > 0) {
+          Set<String> userIds = new HashSet<>();
+          for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
+            userIds.add(datasetVersionEntity.getOwner());
+          }
+          LOGGER.debug("DatasetVersions userId list : " + userIds);
+          if (userIds.size() == 0) {
+            LOGGER.warn(
+                "userIds not found for DatasetVersions on page lower boundary {}", lowerBound);
+            lowerBound += pagesize;
+            continue;
+          }
+          // Fetch the DatasetVersion owners userInfo
+          Map<String, UserInfo> userInfoMap =
+              authService.getUserInfoFromAuthServer(userIds, null, null);
+          for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
+            UserInfo userInfoValue = userInfoMap.get(datasetVersionEntity.getOwner());
+            if (userInfoValue != null) {
+              try {
+                roleService.createRoleBinding(
+                    ownerRole,
+                    new CollaboratorUser(authService, userInfoValue),
+                    datasetVersionEntity.getId(),
+                    ModelResourceEnum.ModelDBServiceResourceTypes.DATASET_VERSION);
+              } catch (Exception e) {
+                e.printStackTrace();
+                LOGGER.error(e.getMessage());
+              }
+            } else {
+              LOGGER.error(
+                  "DatasetVersion owner not found from UAC response list : DatasetVersionId - {} & userId - {}",
+                  datasetVersionEntity.getId(),
+                  datasetVersionEntity.getOwner());
+              new ModelDBException(
+                      "DatasetVersion owner not found from UAC response list : DatasetVersionId - "
+                          + datasetVersionEntity.getId()
+                          + " & userId - "
+                          + datasetVersionEntity.getOwner())
+                  .printStackTrace();
+            }
+          }
+        } else {
+          LOGGER.debug("DatasetVersions total count 0");
+        }
+
+        transaction.commit();
+        lowerBound += pagesize;
+      }
+    }
+
+    LOGGER.debug("DatasetVersions migration finished");
+  }
+
+  private static Long getEntityCount(Class<?> klass) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+      countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
+      return session.createQuery(countQuery).getSingleResult();
+    }
+  }
+}

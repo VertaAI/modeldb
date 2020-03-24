@@ -5961,7 +5961,7 @@ public class HydratedServiceTest {
     for (HydratedExperimentRun hydratedExperimentRun :
         advancedQueryExperimentRunsResponse.getHydratedExperimentRunsList()) {
       if (hydratedExperimentRun.getExperimentRun().equals(experimentRun21)
-          && hydratedExperimentRun.getExperimentRun().equals(experimentRun22)) {
+          || hydratedExperimentRun.getExperimentRun().equals(experimentRun22)) {
         assertTrue(
             "Experiment actions not match with expected action list",
             hydratedExperimentRun.getAllowedActionsList().contains(deleteAction));

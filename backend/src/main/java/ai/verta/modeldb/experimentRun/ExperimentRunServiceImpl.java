@@ -236,7 +236,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceActions.UPDATE);
       validateExperimentEntity(request.getExperimentId());
 
-      experimentRun = experimentRunDAO.insertExperimentRun(experimentRun);
+      experimentRun = experimentRunDAO.insertExperimentRun(experimentRun, userInfo);
       responseObserver.onNext(
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build());
       responseObserver.onCompleted();
@@ -2960,9 +2960,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     }
   }
 
-  private boolean deleteExperimentRuns(List<String> experimentIds) {
+  private boolean deleteExperimentRuns(List<String> experimentRunIds) {
     List<String> accessibleExperimentRunIds =
-        getAccessibleExperimentRunIDs(experimentIds, ModelDBServiceActions.UPDATE);
+        getAccessibleExperimentRunIDs(experimentRunIds, ModelDBServiceActions.UPDATE);
     if (accessibleExperimentRunIds.isEmpty()) {
       Status statusMessage =
           Status.newBuilder()
