@@ -7,6 +7,8 @@ import { IRepositoryDataState } from '../types';
 
 const initial: IRepositoryDataState['data'] = {
   commitWithData: null,
+  currentBlobExperimentRuns: null,
+
   tags: null,
   commitPointer: { type: 'branch', value: defaultBranch },
   branches: [],
@@ -19,6 +21,10 @@ export default createReducer<
   .handleAction(actions.loadCommitWithData.success, (state, action) => ({
     ...state,
     commitWithData: action.payload,
+  }))
+  .handleAction(actions.loadCurrentBlobExperimentRuns.success, (state, action) => ({
+    ...state,
+    currentBlobExperimentRuns: action.payload,
   }))
   .handleAction(actions.loadCommitWithData.failure, (state, action) => ({
     ...state,
