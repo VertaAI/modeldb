@@ -90,7 +90,6 @@ class Commit(object):
             if branch_and_tag:
                 header = header +  " (was {})".format(branch_and_tag)
         else:
-            # TODO: fetch commit message
             header = "Commit {}".format(self.id)
             if branch_and_tag:
                 header = header +  " ({})".format(branch_and_tag)
