@@ -284,7 +284,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
   Validator validator = new Validator();
 
-  private List<AutogenBlobDiff> validateBlobDiffs(CreateCommitRequest request) throws ModelDBException {
+  private List<AutogenBlobDiff> validateBlobDiffs(CreateCommitRequest request)
+      throws ModelDBException {
     List<AutogenBlobDiff> diffs = new LinkedList<>();
     for (BlobDiff blobDiff : request.getDiffsList()) {
       AutogenBlobDiff autogenBlobDiff = AutogenBlobDiff.fromProto(blobDiff);

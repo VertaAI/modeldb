@@ -3,8 +3,6 @@ package ai.verta.modeldb.versioning.blob.container;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.FileHasher;
-import ai.verta.modeldb.versioning.PathDatasetBlob;
-import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
