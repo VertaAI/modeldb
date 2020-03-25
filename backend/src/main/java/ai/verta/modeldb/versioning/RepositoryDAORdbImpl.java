@@ -607,7 +607,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       String referenceCommit;
 
-      if (request.getBranch() != "") {
+      if (!request.getBranch().isEmpty()) {
         Query query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
         query.setParameter("repositoryId", repository.getId());
         query.setParameter("branch", request.getBranch());
@@ -624,9 +624,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         referenceCommit = commit.getCommit_hash();
       }
       // list of commits to be used in the in clause in the final query
-      Set<String> commitSHAs = new HashSet<String>();
+      Set<String> commitSHAs = new HashSet<>();
       // List of commits to be traversed
-      List<String> childCommitSHAs = new LinkedList<String>();
+      List<String> childCommitSHAs = new LinkedList<>();
       childCommitSHAs.add(referenceCommit);
       String getParentCommitsQuery = "SELECT parent_hash FROM commit_parent WHERE child_hash = \'";
 

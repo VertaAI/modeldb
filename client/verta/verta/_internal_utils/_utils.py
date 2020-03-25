@@ -373,7 +373,7 @@ def proto_to_json(msg):
                                                 use_integers_for_enums=True))
 
 
-def json_to_proto(response_json, response_cls):
+def json_to_proto(response_json, response_cls, ignore_unknown_fields=True):
     """
     Converts a JSON-compliant dictionary into a `protobuf` `Message` object.
 
@@ -383,6 +383,10 @@ def json_to_proto(response_json, response_cls):
         JSON object representing a Protocol Buffer message.
     response_cls : type
         `protobuf` `Message` subclass, e.g. ``CreateProject.Response``.
+    ignore_unknown_fields : bool, default True
+        Whether to allow (and ignore) fields in `response_json` that are not defined in
+        `response_cls`. This is for forward compatibility with the back end; if the Client protos
+        are outdated and we get a response with new fields, ``True`` prevents an error.
 
     Returns
     -------
@@ -392,7 +396,7 @@ def json_to_proto(response_json, response_cls):
     """
     return json_format.Parse(json.dumps(response_json),
                              response_cls(),
-                             ignore_unknown_fields=True)
+                             ignore_unknown_fields=ignore_unknown_fields)
 
 
 def to_builtin(obj):

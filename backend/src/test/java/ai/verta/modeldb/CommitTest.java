@@ -1,9 +1,7 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.RepositoryTest.createRepository;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;

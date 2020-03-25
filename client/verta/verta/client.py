@@ -30,6 +30,7 @@ from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 from ._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 from ._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
+from ._protos.public.client import Config_pb2 as _ConfigProtos
 
 from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
@@ -248,11 +249,13 @@ class Client(object):
         config_file = self._find_config_in_all_dirs()
         if config_file is not None:
             stream = open(config_file, 'r')
-            self._config = yaml.load(stream, Loader=yaml.FullLoader)
+            self._config = _utils.json_to_proto(
+                yaml.load(stream, Loader=yaml.FullLoader),
+                _ConfigProtos.Config,
+                ignore_unknown_fields=False,
+            )
         else:
-            self._config = None
-        if self._config is None:
-            self._config = {}
+            self._config = _ConfigProtos.Config()
 
     def _find_config_in_all_dirs(self):
         res = self._find_config('./', True)
@@ -273,10 +276,11 @@ class Client(object):
         return None
 
     def _set_from_config_if_none(self, var, resource_name):
-        if var is None and resource_name in self._config:
-            print("setting {} from config file".format(resource_name))
-            return self._config[resource_name]
-        return var
+        if var is None:
+            var = getattr(self._config, resource_name, None)
+            if var:
+                print("setting {} from config file".format(resource_name))
+        return var or None
 
     def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
         """
