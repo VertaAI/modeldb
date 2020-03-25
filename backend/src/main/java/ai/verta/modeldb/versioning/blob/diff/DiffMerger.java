@@ -25,7 +25,7 @@ public class DiffMerger {
       Function<D, List<DF>> getterD,
       Function<F, String> hasherA,
       Function<DF, String> hasherD,
-      Function<DF, DiffStatusEnumDiffStatus> status,
+      Function<DF, AutogenDiffStatusEnumDiffStatus> status,
       Function<DF, F> getA,
       Function<DF, F> getB,
       Function3<Set<F>, DF, F> merger) {
@@ -45,7 +45,7 @@ public class DiffMerger {
 
                   if (elD != null) {
                     for (DF el : elD) {
-                      DiffStatusEnumDiffStatus elStatus = status.apply(el);
+                      AutogenDiffStatusEnumDiffStatus elStatus = status.apply(el);
                       F diffA = getA.apply(el);
                       F diffB = getB.apply(el);
                       if (elStatus == null
@@ -89,12 +89,12 @@ public class DiffMerger {
   }
 
   public static <T, T2> T mergeLast(
-      T a, T2 d, Function<T2, T> getB, Function<T2, DiffStatusEnumDiffStatus> getStatus) {
+      T a, T2 d, Function<T2, T> getB, Function<T2, AutogenDiffStatusEnumDiffStatus> getStatus) {
     if (d == null) {
       return a;
     }
 
-    DiffStatusEnumDiffStatus status = getStatus.apply(d);
+    AutogenDiffStatusEnumDiffStatus status = getStatus.apply(d);
     if (status.Status == DiffStatusEnum.DiffStatus.ADDED
         || status.Status == DiffStatusEnum.DiffStatus.MODIFIED) {
       return getB.apply(d);
@@ -105,87 +105,108 @@ public class DiffMerger {
     return a;
   }
 
-  public static Blob mergeBlob(Blob a, BlobDiff d) {
+  public static AutogenBlob mergeBlob(AutogenBlob a, AutogenBlobDiff d) {
     return Utils.removeEmpty(
-        new Blob()
-            .setCode(merge(a, d, Blob::getCode, BlobDiff::getCode, DiffMerger::mergeCode))
-            .setConfig(merge(a, d, Blob::getConfig, BlobDiff::getConfig, DiffMerger::mergeConfig))
+        new AutogenBlob()
+            .setCode(
+                merge(a, d, AutogenBlob::getCode, AutogenBlobDiff::getCode, DiffMerger::mergeCode))
+            .setConfig(
+                merge(
+                    a,
+                    d,
+                    AutogenBlob::getConfig,
+                    AutogenBlobDiff::getConfig,
+                    DiffMerger::mergeConfig))
             .setDataset(
-                merge(a, d, Blob::getDataset, BlobDiff::getDataset, DiffMerger::mergeDataset))
+                merge(
+                    a,
+                    d,
+                    AutogenBlob::getDataset,
+                    AutogenBlobDiff::getDataset,
+                    DiffMerger::mergeDataset))
             .setEnvironment(
                 merge(
                     a,
                     d,
-                    Blob::getEnvironment,
-                    BlobDiff::getEnvironment,
+                    AutogenBlob::getEnvironment,
+                    AutogenBlobDiff::getEnvironment,
                     DiffMerger::mergeEnvironment)));
   }
 
-  public static CodeBlob mergeCode(CodeBlob a, CodeDiff d) {
+  public static AutogenCodeBlob mergeCode(AutogenCodeBlob a, AutogenCodeDiff d) {
     return Utils.removeEmpty(
-        new CodeBlob()
-            .setGit(merge(a, d, CodeBlob::getGit, CodeDiff::getGit, DiffMerger::mergeGitCode))
+        new AutogenCodeBlob()
+            .setGit(
+                merge(
+                    a,
+                    d,
+                    AutogenCodeBlob::getGit,
+                    AutogenCodeDiff::getGit,
+                    DiffMerger::mergeGitCode))
             .setNotebook(
                 merge(
                     a,
                     d,
-                    CodeBlob::getNotebook,
-                    CodeDiff::getNotebook,
+                    AutogenCodeBlob::getNotebook,
+                    AutogenCodeDiff::getNotebook,
                     DiffMerger::mergeNotebookCode)));
   }
 
-  public static GitCodeBlob mergeGitCode(GitCodeBlob a, GitCodeDiff d) {
+  public static AutogenGitCodeBlob mergeGitCode(AutogenGitCodeBlob a, AutogenGitCodeDiff d) {
     if (a == null && d == null) return null;
     if (d == null) return a;
     if (d.getStatus().isDeleted()) return null;
-    return Utils.removeEmpty(mergeLast(a, d, x -> d.getB(), GitCodeDiff::getStatus));
+    return Utils.removeEmpty(mergeLast(a, d, x -> d.getB(), AutogenGitCodeDiff::getStatus));
   }
 
-  public static NotebookCodeBlob mergeNotebookCode(NotebookCodeBlob a, NotebookCodeDiff d) {
+  public static AutogenNotebookCodeBlob mergeNotebookCode(
+      AutogenNotebookCodeBlob a, AutogenNotebookCodeDiff d) {
     return Utils.removeEmpty(
-        new NotebookCodeBlob()
+        new AutogenNotebookCodeBlob()
             .setGitRepo(
                 merge(
                     a,
                     d,
-                    NotebookCodeBlob::getGitRepo,
-                    NotebookCodeDiff::getGitRepo,
+                    AutogenNotebookCodeBlob::getGitRepo,
+                    AutogenNotebookCodeDiff::getGitRepo,
                     DiffMerger::mergeGitCode))
             .setPath(
                 merge(
                     a,
                     d,
-                    NotebookCodeBlob::getPath,
-                    NotebookCodeDiff::getPath,
+                    AutogenNotebookCodeBlob::getPath,
+                    AutogenNotebookCodeDiff::getPath,
                     DiffMerger::mergePathDatasetComponent)));
   }
 
-  public static ConfigBlob mergeConfig(ConfigBlob a, ConfigDiff d) {
+  public static AutogenConfigBlob mergeConfig(AutogenConfigBlob a, AutogenConfigDiff d) {
     return Utils.removeEmpty(
-        new ConfigBlob()
+        new AutogenConfigBlob()
             .setHyperparameters(
                 mergeList(
                     a,
                     d,
-                    ConfigBlob::getHyperparameters,
-                    ConfigDiff::getHyperparameters,
-                    HyperparameterConfigBlob::getName,
-                    x -> Utils.either(x.getA(), x.getB(), HyperparameterConfigBlob::getName),
-                    HyperparameterConfigDiff::getStatus,
-                    HyperparameterConfigDiff::getA,
-                    HyperparameterConfigDiff::getB,
+                    AutogenConfigBlob::getHyperparameters,
+                    AutogenConfigDiff::getHyperparameters,
+                    AutogenHyperparameterConfigBlob::getName,
+                    x -> Utils.either(x.getA(), x.getB(), AutogenHyperparameterConfigBlob::getName),
+                    AutogenHyperparameterConfigDiff::getStatus,
+                    AutogenHyperparameterConfigDiff::getA,
+                    AutogenHyperparameterConfigDiff::getB,
                     null))
             .setHyperparameterSet(
                 mergeList(
                     a,
                     d,
-                    ConfigBlob::getHyperparameterSet,
-                    ConfigDiff::getHyperparameterSet,
-                    HyperparameterSetConfigBlob::getName,
-                    x -> Utils.either(x.getA(), x.getB(), HyperparameterSetConfigBlob::getName),
-                    HyperparameterSetConfigDiff::getStatus,
-                    HyperparameterSetConfigDiff::getA,
-                    HyperparameterSetConfigDiff::getB,
+                    AutogenConfigBlob::getHyperparameterSet,
+                    AutogenConfigDiff::getHyperparameterSet,
+                    AutogenHyperparameterSetConfigBlob::getName,
+                    x ->
+                        Utils.either(
+                            x.getA(), x.getB(), AutogenHyperparameterSetConfigBlob::getName),
+                    AutogenHyperparameterSetConfigDiff::getStatus,
+                    AutogenHyperparameterSetConfigDiff::getA,
+                    AutogenHyperparameterSetConfigDiff::getB,
                     null)));
   }
 
@@ -201,76 +222,87 @@ public class DiffMerger {
   }
    */
 
-  public static DatasetBlob mergeDataset(DatasetBlob a, DatasetDiff d) {
+  public static AutogenDatasetBlob mergeDataset(AutogenDatasetBlob a, AutogenDatasetDiff d) {
     return Utils.removeEmpty(
-        new DatasetBlob()
+        new AutogenDatasetBlob()
             .setPath(
                 merge(
-                    a, d, DatasetBlob::getPath, DatasetDiff::getPath, DiffMerger::mergePathDataset))
+                    a,
+                    d,
+                    AutogenDatasetBlob::getPath,
+                    AutogenDatasetDiff::getPath,
+                    DiffMerger::mergePathDataset))
             .setS3(
-                merge(a, d, DatasetBlob::getS3, DatasetDiff::getS3, DiffMerger::mergeS3Dataset)));
+                merge(
+                    a,
+                    d,
+                    AutogenDatasetBlob::getS3,
+                    AutogenDatasetDiff::getS3,
+                    DiffMerger::mergeS3Dataset)));
   }
 
-  public static PathDatasetBlob mergePathDataset(PathDatasetBlob a, PathDatasetDiff d) {
+  public static AutogenPathDatasetBlob mergePathDataset(
+      AutogenPathDatasetBlob a, AutogenPathDatasetDiff d) {
     return Utils.removeEmpty(
-        new PathDatasetBlob()
+        new AutogenPathDatasetBlob()
             .setComponents(
                 mergeList(
                     a,
                     d,
-                    PathDatasetBlob::getComponents,
-                    PathDatasetDiff::getComponents,
-                    PathDatasetComponentBlob::getPath,
-                    x -> Utils.either(x.getA(), x.getB(), PathDatasetComponentBlob::getPath),
-                    PathDatasetComponentDiff::getStatus,
-                    PathDatasetComponentDiff::getA,
-                    PathDatasetComponentDiff::getB,
+                    AutogenPathDatasetBlob::getComponents,
+                    AutogenPathDatasetDiff::getComponents,
+                    AutogenPathDatasetComponentBlob::getPath,
+                    x -> Utils.either(x.getA(), x.getB(), AutogenPathDatasetComponentBlob::getPath),
+                    AutogenPathDatasetComponentDiff::getStatus,
+                    AutogenPathDatasetComponentDiff::getA,
+                    AutogenPathDatasetComponentDiff::getB,
                     null)));
   }
 
-  public static PathDatasetComponentBlob mergePathDatasetComponent(
-      PathDatasetComponentBlob a, PathDatasetComponentDiff d) {
+  public static AutogenPathDatasetComponentBlob mergePathDatasetComponent(
+      AutogenPathDatasetComponentBlob a, AutogenPathDatasetComponentDiff d) {
     return d.getB();
   }
 
-  public static S3DatasetBlob mergeS3Dataset(S3DatasetBlob a, S3DatasetDiff d) {
+  public static AutogenS3DatasetBlob mergeS3Dataset(
+      AutogenS3DatasetBlob a, AutogenS3DatasetDiff d) {
     return Utils.removeEmpty(
-        new S3DatasetBlob()
+        new AutogenS3DatasetBlob()
             .setComponents(
                 mergeList(
                     a,
                     d,
-                    S3DatasetBlob::getComponents,
-                    S3DatasetDiff::getComponents,
+                    AutogenS3DatasetBlob::getComponents,
+                    AutogenS3DatasetDiff::getComponents,
                     x ->
                         Utils.getOrNull(
-                            Utils.getOrNull(x, S3DatasetComponentBlob::getPath),
-                            PathDatasetComponentBlob::getPath),
+                            Utils.getOrNull(x, AutogenS3DatasetComponentBlob::getPath),
+                            AutogenPathDatasetComponentBlob::getPath),
                     x ->
                         Utils.either(
                             Utils.getOrNull(
-                                Utils.getOrNull(x, S3DatasetComponentDiff::getPath),
-                                PathDatasetComponentDiff::getA),
+                                Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+                                AutogenPathDatasetComponentDiff::getA),
                             Utils.getOrNull(
-                                Utils.getOrNull(x, S3DatasetComponentDiff::getPath),
-                                PathDatasetComponentDiff::getB),
-                            PathDatasetComponentBlob::getPath),
+                                Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+                                AutogenPathDatasetComponentDiff::getB),
+                            AutogenPathDatasetComponentBlob::getPath),
                     x ->
                         Utils.getOrNull(
-                            Utils.getOrNull(x, S3DatasetComponentDiff::getPath),
-                            PathDatasetComponentDiff::getStatus),
+                            Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+                            AutogenPathDatasetComponentDiff::getStatus),
                     x ->
-                        new S3DatasetComponentBlob()
+                        new AutogenS3DatasetComponentBlob()
                             .setPath(
                                 Utils.getOrNull(
-                                    Utils.getOrNull(x, S3DatasetComponentDiff::getPath),
-                                    PathDatasetComponentDiff::getA)),
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+                                    AutogenPathDatasetComponentDiff::getA)),
                     x ->
-                        new S3DatasetComponentBlob()
+                        new AutogenS3DatasetComponentBlob()
                             .setPath(
                                 Utils.getOrNull(
-                                    Utils.getOrNull(x, S3DatasetComponentDiff::getPath),
-                                    PathDatasetComponentDiff::getB)),
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+                                    AutogenPathDatasetComponentDiff::getB)),
                     null)));
   }
 
@@ -281,100 +313,110 @@ public class DiffMerger {
   }
    */
 
-  public static EnvironmentBlob mergeEnvironment(EnvironmentBlob a, EnvironmentDiff d) {
+  public static AutogenEnvironmentBlob mergeEnvironment(
+      AutogenEnvironmentBlob a, AutogenEnvironmentDiff d) {
     return Utils.removeEmpty(
-        new EnvironmentBlob()
+        new AutogenEnvironmentBlob()
             .setPython(
                 merge(
                     a,
                     d,
-                    EnvironmentBlob::getPython,
-                    EnvironmentDiff::getPython,
+                    AutogenEnvironmentBlob::getPython,
+                    AutogenEnvironmentDiff::getPython,
                     DiffMerger::mergePythonEnvironment))
             .setDocker(
                 merge(
                     a,
                     d,
-                    EnvironmentBlob::getDocker,
-                    EnvironmentDiff::getDocker,
+                    AutogenEnvironmentBlob::getDocker,
+                    AutogenEnvironmentDiff::getDocker,
                     DiffMerger::mergeDockerEnvironment))
             .setEnvironmentVariables(
                 mergeList(
                     a,
                     d,
-                    EnvironmentBlob::getEnvironmentVariables,
-                    EnvironmentDiff::getEnvironmentVariables,
-                    EnvironmentVariablesBlob::getName,
-                    x -> Utils.either(x.getA(), x.getB(), EnvironmentVariablesBlob::getName),
-                    EnvironmentVariablesDiff::getStatus,
-                    EnvironmentVariablesDiff::getA,
-                    EnvironmentVariablesDiff::getB,
+                    AutogenEnvironmentBlob::getEnvironmentVariables,
+                    AutogenEnvironmentDiff::getEnvironmentVariables,
+                    AutogenEnvironmentVariablesBlob::getName,
+                    x -> Utils.either(x.getA(), x.getB(), AutogenEnvironmentVariablesBlob::getName),
+                    AutogenEnvironmentVariablesDiff::getStatus,
+                    AutogenEnvironmentVariablesDiff::getA,
+                    AutogenEnvironmentVariablesDiff::getB,
                     null))
             .setCommandLine(
                 merge(
                     a,
                     d,
-                    EnvironmentBlob::getCommandLine,
-                    EnvironmentDiff::getCommandLine,
+                    AutogenEnvironmentBlob::getCommandLine,
+                    AutogenEnvironmentDiff::getCommandLine,
                     DiffMerger::mergeCommandLine)));
   }
 
-  public static List<String> mergeCommandLine(List<String> a, CommandLineEnvironmentDiff d) {
+  public static List<String> mergeCommandLine(List<String> a, AutogenCommandLineEnvironmentDiff d) {
     if (a == null && d == null) return null;
     if (d == null) return a;
     if (d.getStatus().isDeleted()) return null;
     return Utils.removeEmpty(
-        mergeLast(a, d, CommandLineEnvironmentDiff::getB, CommandLineEnvironmentDiff::getStatus));
+        mergeLast(
+            a,
+            d,
+            AutogenCommandLineEnvironmentDiff::getB,
+            AutogenCommandLineEnvironmentDiff::getStatus));
   }
 
-  public static PythonEnvironmentBlob mergePythonEnvironment(
-      PythonEnvironmentBlob a, PythonEnvironmentDiff d) {
+  public static AutogenPythonEnvironmentBlob mergePythonEnvironment(
+      AutogenPythonEnvironmentBlob a, AutogenPythonEnvironmentDiff d) {
     return Utils.removeEmpty(
-        new PythonEnvironmentBlob()
+        new AutogenPythonEnvironmentBlob()
             .setVersion(
                 merge(
                     a,
                     d,
-                    PythonEnvironmentBlob::getVersion,
-                    PythonEnvironmentDiff::getVersion,
+                    AutogenPythonEnvironmentBlob::getVersion,
+                    AutogenPythonEnvironmentDiff::getVersion,
                     DiffMerger::mergeVersionEnvironment))
             .setConstraints(
                 mergeList(
                     a,
                     d,
-                    PythonEnvironmentBlob::getConstraints,
-                    PythonEnvironmentDiff::getConstraints,
-                    PythonRequirementEnvironmentBlob::getLibrary,
+                    AutogenPythonEnvironmentBlob::getConstraints,
+                    AutogenPythonEnvironmentDiff::getConstraints,
+                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
                     x ->
                         Utils.either(
-                            x.getA(), x.getB(), PythonRequirementEnvironmentBlob::getLibrary),
-                    PythonRequirementEnvironmentDiff::getStatus,
-                    PythonRequirementEnvironmentDiff::getA,
-                    PythonRequirementEnvironmentDiff::getB,
+                            x.getA(),
+                            x.getB(),
+                            AutogenPythonRequirementEnvironmentBlob::getLibrary),
+                    AutogenPythonRequirementEnvironmentDiff::getStatus,
+                    AutogenPythonRequirementEnvironmentDiff::getA,
+                    AutogenPythonRequirementEnvironmentDiff::getB,
                     null))
             .setRequirements(
                 mergeList(
                     a,
                     d,
-                    PythonEnvironmentBlob::getRequirements,
-                    PythonEnvironmentDiff::getRequirements,
-                    PythonRequirementEnvironmentBlob::getLibrary,
+                    AutogenPythonEnvironmentBlob::getRequirements,
+                    AutogenPythonEnvironmentDiff::getRequirements,
+                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
                     x ->
                         Utils.either(
-                            x.getA(), x.getB(), PythonRequirementEnvironmentBlob::getLibrary),
-                    PythonRequirementEnvironmentDiff::getStatus,
-                    PythonRequirementEnvironmentDiff::getA,
-                    PythonRequirementEnvironmentDiff::getB,
+                            x.getA(),
+                            x.getB(),
+                            AutogenPythonRequirementEnvironmentBlob::getLibrary),
+                    AutogenPythonRequirementEnvironmentDiff::getStatus,
+                    AutogenPythonRequirementEnvironmentDiff::getA,
+                    AutogenPythonRequirementEnvironmentDiff::getB,
                     null)));
   }
 
-  public static VersionEnvironmentBlob mergeVersionEnvironment(
-      VersionEnvironmentBlob a, VersionEnvironmentDiff d) {
+  public static AutogenVersionEnvironmentBlob mergeVersionEnvironment(
+      AutogenVersionEnvironmentBlob a, AutogenVersionEnvironmentDiff d) {
     if (a == null && d == null) return null;
     if (d == null) return a;
     if (d.getStatus().isDeleted()) return null;
     return Utils.removeEmpty(
-        mergeLast(a, d, VersionEnvironmentDiff::getB, VersionEnvironmentDiff::getStatus));
+        mergeLast(
+            a, d, AutogenVersionEnvironmentDiff::getB, AutogenVersionEnvironmentDiff::getStatus));
   }
 
   /*
@@ -384,13 +426,14 @@ public class DiffMerger {
   }
    */
 
-  public static DockerEnvironmentBlob mergeDockerEnvironment(
-      DockerEnvironmentBlob a, DockerEnvironmentDiff d) {
+  public static AutogenDockerEnvironmentBlob mergeDockerEnvironment(
+      AutogenDockerEnvironmentBlob a, AutogenDockerEnvironmentDiff d) {
     if (a == null && d == null) return null;
     if (d == null) return a;
     if (d.getStatus().isDeleted()) return null;
     return Utils.removeEmpty(
-        mergeLast(a, d, DockerEnvironmentDiff::getB, DockerEnvironmentDiff::getStatus));
+        mergeLast(
+            a, d, AutogenDockerEnvironmentDiff::getB, AutogenDockerEnvironmentDiff::getStatus));
   }
 
   /*

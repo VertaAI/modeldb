@@ -17,6 +17,7 @@ import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
 
 import { ShortExperiment } from './Experiment';
+import { Project } from './Project';
 
 @JsonObject('modelRecord')
 export default class ModelRecord implements Common.IEntityWithLogging {
@@ -70,3 +71,8 @@ export interface IVersionedInputs {
 }
 
 export type LoadExperimentRunErrorType = Common.EntityErrorType;
+
+export interface IExperimentRunInfo {
+  experimentRun: ModelRecord;
+  project: Project;
+}

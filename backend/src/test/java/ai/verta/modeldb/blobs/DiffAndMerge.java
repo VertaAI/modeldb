@@ -14,13 +14,13 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitQuickcheck.class)
 public class DiffAndMerge {
   @Property
-  public void diffAndMerge(Blob a, Blob b) throws ModelDBException {
-    Blob newA = enforceOneof(a);
-    Blob newB = enforceOneof(b);
-    BlobDiff d = DiffComputer.computeBlobDiff(newA, newB);
+  public void diffAndMerge(AutogenBlob a, AutogenBlob b) throws ModelDBException {
+    AutogenBlob newA = enforceOneof(a);
+    AutogenBlob newB = enforceOneof(b);
+    AutogenBlobDiff d = DiffComputer.computeBlobDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    Blob diffedB = DiffMerger.mergeBlob(newA, d);
+    AutogenBlob diffedB = DiffMerger.mergeBlob(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -29,13 +29,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeCode(CodeBlob a, CodeBlob b) throws ModelDBException {
-    CodeBlob newA = enforceOneof(a);
-    CodeBlob newB = enforceOneof(b);
-    CodeDiff d = DiffComputer.computeCodeDiff(newA, newB);
+  public void diffAndMergeAutogenCode(AutogenCodeBlob a, AutogenCodeBlob b)
+      throws ModelDBException {
+    AutogenCodeBlob newA = enforceOneof(a);
+    AutogenCodeBlob newB = enforceOneof(b);
+    AutogenCodeDiff d = DiffComputer.computeCodeDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    CodeBlob diffedB = DiffMerger.mergeCode(newA, d);
+    AutogenCodeBlob diffedB = DiffMerger.mergeCode(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -44,13 +45,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeConfig(ConfigBlob a, ConfigBlob b) throws ModelDBException {
-    ConfigBlob newA = enforceOneof(a);
-    ConfigBlob newB = enforceOneof(b);
-    ConfigDiff d = DiffComputer.computeConfigDiff(newA, newB);
+  public void diffAndMergeAutogenConfig(AutogenConfigBlob a, AutogenConfigBlob b)
+      throws ModelDBException {
+    AutogenConfigBlob newA = enforceOneof(a);
+    AutogenConfigBlob newB = enforceOneof(b);
+    AutogenConfigDiff d = DiffComputer.computeConfigDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    ConfigBlob diffedB = DiffMerger.mergeConfig(newA, d);
+    AutogenConfigBlob diffedB = DiffMerger.mergeConfig(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -59,13 +61,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeDataset(DatasetBlob a, DatasetBlob b) throws ModelDBException {
-    DatasetBlob newA = enforceOneof(a);
-    DatasetBlob newB = enforceOneof(b);
-    DatasetDiff d = DiffComputer.computeDatasetDiff(newA, newB);
+  public void diffAndMergeAutogenDataset(AutogenDatasetBlob a, AutogenDatasetBlob b)
+      throws ModelDBException {
+    AutogenDatasetBlob newA = enforceOneof(a);
+    AutogenDatasetBlob newB = enforceOneof(b);
+    AutogenDatasetDiff d = DiffComputer.computeDatasetDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    DatasetBlob diffedB = DiffMerger.mergeDataset(newA, d);
+    AutogenDatasetBlob diffedB = DiffMerger.mergeDataset(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -74,14 +77,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeDockerEnvironment(DockerEnvironmentBlob a, DockerEnvironmentBlob b)
-      throws ModelDBException {
-    DockerEnvironmentBlob newA = enforceOneof(a);
-    DockerEnvironmentBlob newB = enforceOneof(b);
-    DockerEnvironmentDiff d = DiffComputer.computeDockerEnvironmentDiff(newA, newB);
+  public void diffAndMergeAutogenDockerEnvironment(
+      AutogenDockerEnvironmentBlob a, AutogenDockerEnvironmentBlob b) throws ModelDBException {
+    AutogenDockerEnvironmentBlob newA = enforceOneof(a);
+    AutogenDockerEnvironmentBlob newB = enforceOneof(b);
+    AutogenDockerEnvironmentDiff d = DiffComputer.computeDockerEnvironmentDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    DockerEnvironmentBlob diffedB = DiffMerger.mergeDockerEnvironment(newA, d);
+    AutogenDockerEnvironmentBlob diffedB = DiffMerger.mergeDockerEnvironment(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -90,14 +93,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeEnvironment(EnvironmentBlob a, EnvironmentBlob b)
+  public void diffAndMergeAutogenEnvironment(AutogenEnvironmentBlob a, AutogenEnvironmentBlob b)
       throws ModelDBException {
-    EnvironmentBlob newA = enforceOneof(a);
-    EnvironmentBlob newB = enforceOneof(b);
-    EnvironmentDiff d = DiffComputer.computeEnvironmentDiff(newA, newB);
+    AutogenEnvironmentBlob newA = enforceOneof(a);
+    AutogenEnvironmentBlob newB = enforceOneof(b);
+    AutogenEnvironmentDiff d = DiffComputer.computeEnvironmentDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    EnvironmentBlob diffedB = DiffMerger.mergeEnvironment(newA, d);
+    AutogenEnvironmentBlob diffedB = DiffMerger.mergeEnvironment(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -106,13 +109,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeGitCode(GitCodeBlob a, GitCodeBlob b) throws ModelDBException {
-    GitCodeBlob newA = enforceOneof(a);
-    GitCodeBlob newB = enforceOneof(b);
-    GitCodeDiff d = DiffComputer.computeGitCodeDiff(newA, newB);
+  public void diffAndMergeAutogenGitCode(AutogenGitCodeBlob a, AutogenGitCodeBlob b)
+      throws ModelDBException {
+    AutogenGitCodeBlob newA = enforceOneof(a);
+    AutogenGitCodeBlob newB = enforceOneof(b);
+    AutogenGitCodeDiff d = DiffComputer.computeGitCodeDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    GitCodeBlob diffedB = DiffMerger.mergeGitCode(newA, d);
+    AutogenGitCodeBlob diffedB = DiffMerger.mergeGitCode(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -121,14 +125,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeNotebookCode(NotebookCodeBlob a, NotebookCodeBlob b)
+  public void diffAndMergeAutogenNotebookCode(AutogenNotebookCodeBlob a, AutogenNotebookCodeBlob b)
       throws ModelDBException {
-    NotebookCodeBlob newA = enforceOneof(a);
-    NotebookCodeBlob newB = enforceOneof(b);
-    NotebookCodeDiff d = DiffComputer.computeNotebookCodeDiff(newA, newB);
+    AutogenNotebookCodeBlob newA = enforceOneof(a);
+    AutogenNotebookCodeBlob newB = enforceOneof(b);
+    AutogenNotebookCodeDiff d = DiffComputer.computeNotebookCodeDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    NotebookCodeBlob diffedB = DiffMerger.mergeNotebookCode(newA, d);
+    AutogenNotebookCodeBlob diffedB = DiffMerger.mergeNotebookCode(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -137,14 +141,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergePathDataset(PathDatasetBlob a, PathDatasetBlob b)
+  public void diffAndMergeAutogenPathDataset(AutogenPathDatasetBlob a, AutogenPathDatasetBlob b)
       throws ModelDBException {
-    PathDatasetBlob newA = enforceOneof(a);
-    PathDatasetBlob newB = enforceOneof(b);
-    PathDatasetDiff d = DiffComputer.computePathDatasetDiff(newA, newB);
+    AutogenPathDatasetBlob newA = enforceOneof(a);
+    AutogenPathDatasetBlob newB = enforceOneof(b);
+    AutogenPathDatasetDiff d = DiffComputer.computePathDatasetDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    PathDatasetBlob diffedB = DiffMerger.mergePathDataset(newA, d);
+    AutogenPathDatasetBlob diffedB = DiffMerger.mergePathDataset(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -153,14 +157,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergePythonEnvironment(PythonEnvironmentBlob a, PythonEnvironmentBlob b)
-      throws ModelDBException {
-    PythonEnvironmentBlob newA = enforceOneof(a);
-    PythonEnvironmentBlob newB = enforceOneof(b);
-    PythonEnvironmentDiff d = DiffComputer.computePythonEnvironmentDiff(newA, newB);
+  public void diffAndMergeAutogenPythonEnvironment(
+      AutogenPythonEnvironmentBlob a, AutogenPythonEnvironmentBlob b) throws ModelDBException {
+    AutogenPythonEnvironmentBlob newA = enforceOneof(a);
+    AutogenPythonEnvironmentBlob newB = enforceOneof(b);
+    AutogenPythonEnvironmentDiff d = DiffComputer.computePythonEnvironmentDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    PythonEnvironmentBlob diffedB = DiffMerger.mergePythonEnvironment(newA, d);
+    AutogenPythonEnvironmentBlob diffedB = DiffMerger.mergePythonEnvironment(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -169,13 +173,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeS3Dataset(S3DatasetBlob a, S3DatasetBlob b) throws ModelDBException {
-    S3DatasetBlob newA = enforceOneof(a);
-    S3DatasetBlob newB = enforceOneof(b);
-    S3DatasetDiff d = DiffComputer.computeS3DatasetDiff(newA, newB);
+  public void diffAndMergeAutogenS3Dataset(AutogenS3DatasetBlob a, AutogenS3DatasetBlob b)
+      throws ModelDBException {
+    AutogenS3DatasetBlob newA = enforceOneof(a);
+    AutogenS3DatasetBlob newB = enforceOneof(b);
+    AutogenS3DatasetDiff d = DiffComputer.computeS3DatasetDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    S3DatasetBlob diffedB = DiffMerger.mergeS3Dataset(newA, d);
+    AutogenS3DatasetBlob diffedB = DiffMerger.mergeS3Dataset(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result
@@ -184,14 +189,14 @@ public class DiffAndMerge {
   }
 
   @Property
-  public void diffAndMergeVersionEnvironment(VersionEnvironmentBlob a, VersionEnvironmentBlob b)
-      throws ModelDBException {
-    VersionEnvironmentBlob newA = enforceOneof(a);
-    VersionEnvironmentBlob newB = enforceOneof(b);
-    VersionEnvironmentDiff d = DiffComputer.computeVersionEnvironmentDiff(newA, newB);
+  public void diffAndMergeAutogenVersionEnvironment(
+      AutogenVersionEnvironmentBlob a, AutogenVersionEnvironmentBlob b) throws ModelDBException {
+    AutogenVersionEnvironmentBlob newA = enforceOneof(a);
+    AutogenVersionEnvironmentBlob newB = enforceOneof(b);
+    AutogenVersionEnvironmentDiff d = DiffComputer.computeVersionEnvironmentDiff(newA, newB);
 
     // Applying the diff on top of the original A should get original B
-    VersionEnvironmentBlob diffedB = DiffMerger.mergeVersionEnvironment(newA, d);
+    AutogenVersionEnvironmentBlob diffedB = DiffMerger.mergeVersionEnvironment(newA, d);
     assertEquals(newB, diffedB);
 
     // Reapplying the diff should not change the result

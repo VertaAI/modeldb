@@ -697,11 +697,11 @@ var fileDescriptor_1bd9edf9e1f4e045 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConnInterface
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion4
 
 // LineageServiceClient is the client API for LineageService service.
 //
@@ -715,10 +715,10 @@ type LineageServiceClient interface {
 }
 
 type lineageServiceClient struct {
-	cc grpc.ClientConnInterface
+	cc *grpc.ClientConn
 }
 
-func NewLineageServiceClient(cc grpc.ClientConnInterface) LineageServiceClient {
+func NewLineageServiceClient(cc *grpc.ClientConn) LineageServiceClient {
 	return &lineageServiceClient{cc}
 }
 
