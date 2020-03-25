@@ -94,53 +94,36 @@ public class Validator extends Visitor {
         autogenContinuousHyperparameterSetConfigBlob.getIntervalEnd();
     AutogenHyperparameterValuesConfigBlob stepSetConfigBlob =
         autogenContinuousHyperparameterSetConfigBlob.getIntervalStep();
-    if (autogenContinuousHyperparameterSetConfigBlob.getIntervalBegin() == null) {
+    /*if (beginSetConfigBlob == null) {
       throw new ModelDBException(
           "Hyperparameter set doesn't have interval begin", Code.INVALID_ARGUMENT);
     }
-    if (autogenContinuousHyperparameterSetConfigBlob.getIntervalEnd() == null) {
+    if (endSetConfigBlob == null) {
       throw new ModelDBException(
           "Hyperparameter set doesn't have interval end", Code.INVALID_ARGUMENT);
     }
-    if (autogenContinuousHyperparameterSetConfigBlob.getIntervalStep() == null) {
+    if (stepSetConfigBlob == null) {
       throw new ModelDBException(
           "Hyperparameter set doesn't have interval step", Code.INVALID_ARGUMENT);
-    }
+    }*/
 
-    if (isNull(beginSetConfigBlob) || isNull(endSetConfigBlob) || isNull(stepSetConfigBlob)) {
-      throw new ModelDBException(
-          "Hyperparameter continuous set doesn't have one of the INT_VALUE, FLOAT_VALUE, STRING_VALUE",
-          Code.INVALID_ARGUMENT);
-    }
+    checkStringIsDouble(beginSetConfigBlob, "beginSetConfigBlob ");
+    checkStringIsDouble(endSetConfigBlob, "endSetConfigBlob ");
+    checkStringIsDouble(stepSetConfigBlob, "stepSetConfigBlob ");
+    autogenContinuousHyperparameterSetConfigBlob.preVisitDeep(this);
+  }
 
-    if (beginSetConfigBlob.getStringValue() != null) {
+  private void checkStringIsDouble(AutogenHyperparameterValuesConfigBlob beginSetConfigBlob,
+      String description) throws ModelDBException {
+    if (beginSetConfigBlob != null && !beginSetConfigBlob.getStringValue().isEmpty()) {
       try {
         Double.parseDouble(beginSetConfigBlob.getStringValue());
       } catch (Exception ex) {
         throw new ModelDBException(
-            "beginSetConfigBlob " + HAS_A_STRING_VALUE_WHICH_IS_NOT_IN_A_VALID_NUMERIC_NOTATION,
+            description + HAS_A_STRING_VALUE_WHICH_IS_NOT_IN_A_VALID_NUMERIC_NOTATION,
             Code.INVALID_ARGUMENT);
       }
     }
-    if (endSetConfigBlob.getStringValue() != null) {
-      try {
-        Double.parseDouble(endSetConfigBlob.getStringValue());
-      } catch (Exception ex) {
-        throw new ModelDBException(
-            "endSetConfigBlob " + HAS_A_STRING_VALUE_WHICH_IS_NOT_IN_A_VALID_NUMERIC_NOTATION,
-            Code.INVALID_ARGUMENT);
-      }
-    }
-    if (stepSetConfigBlob.getStringValue() != null) {
-      try {
-        Double.parseDouble(stepSetConfigBlob.getStringValue());
-      } catch (Exception ex) {
-        throw new ModelDBException(
-            "stepSetConfigBlob " + HAS_A_STRING_VALUE_WHICH_IS_NOT_IN_A_VALID_NUMERIC_NOTATION,
-            Code.INVALID_ARGUMENT);
-      }
-    }
-    autogenContinuousHyperparameterSetConfigBlob.preVisitDeep(this);
   }
 
   @Override
@@ -195,6 +178,9 @@ public class Validator extends Visitor {
   @Override
   public void preVisitDeepListOfAutogenEnvironmentVariablesBlob(
       List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return;
+    }
     Set<String> variableNames = new HashSet<>();
     for (AutogenEnvironmentVariablesBlob blob : lst) {
       blob.preVisitDeep(this);
@@ -257,20 +243,20 @@ public class Validator extends Visitor {
     preVisitDeep(blob);
   }
 
-  private static boolean isNull(AutogenHyperparameterValuesConfigBlob beginSetConfigBlob) {
+  /*private static boolean isNull(AutogenHyperparameterValuesConfigBlob beginSetConfigBlob) {
     return beginSetConfigBlob == null
         || beginSetConfigBlob.getFloatValue() == null
             && beginSetConfigBlob.getIntValue() == null
             && beginSetConfigBlob.getStringValue() == null;
-  }
+  }*/
 
   @Override
   public void preVisitDeepAutogenHyperparameterValuesConfigBlob(
       AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
-    if (isNull(blob)) {
+    /*if (isNull(blob)) {
       throw new ModelDBException("Hyperparameter value has unknown type");
-    }
-    blob.preVisitDeep(this);
+    }*/
+    preVisitDeep(blob);
   }
 
   @Override
@@ -309,15 +295,19 @@ public class Validator extends Visitor {
   public void preVisitDeepAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob blob)
       throws ModelDBException {
     preVisitDeep(blob);
-    Set<AutogenPythonRequirementEnvironmentBlob> pythonRequirementHash =
-        new HashSet<>(blob.getRequirements());
-    if (pythonRequirementHash.size() != blob.getRequirements().size()) {
-      throw new ModelDBException("There are recurring requirements", Code.INVALID_ARGUMENT);
+    if (blob.getRequirements() != null) {
+      Set<AutogenPythonRequirementEnvironmentBlob> pythonRequirementHash =
+          new HashSet<>(blob.getRequirements());
+      if (pythonRequirementHash.size() != blob.getRequirements().size()) {
+        throw new ModelDBException("There are recurring requirements", Code.INVALID_ARGUMENT);
+      }
     }
-    Set<AutogenPythonRequirementEnvironmentBlob> pythonConstraintHash =
-        new HashSet<>(blob.getConstraints());
-    if (pythonConstraintHash.size() != blob.getConstraints().size()) {
-      throw new ModelDBException("There are recurring constraints", Code.INVALID_ARGUMENT);
+    if (blob.getConstraints() != null) {
+      Set<AutogenPythonRequirementEnvironmentBlob> pythonConstraintHash =
+          new HashSet<>(blob.getConstraints());
+      if (pythonConstraintHash.size() != blob.getConstraints().size()) {
+        throw new ModelDBException("There are recurring constraints", Code.INVALID_ARGUMENT);
+      }
     }
   }
 
