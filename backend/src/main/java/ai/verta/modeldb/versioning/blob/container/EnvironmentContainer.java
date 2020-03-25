@@ -21,10 +21,8 @@ import ai.verta.modeldb.versioning.TreeElem;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.hibernate.Session;
@@ -38,84 +36,6 @@ public class EnvironmentContainer extends BlobContainer {
   public EnvironmentContainer(BlobExpanded blobExpanded) {
     super(blobExpanded);
     environment = blobExpanded.getBlob().getEnvironment();
-  }
-
-  class PythonRequirementKey {
-
-    private final PythonRequirementEnvironmentBlob requirement;
-    private final boolean isRequirement;
-
-    public PythonRequirementKey(
-        PythonRequirementEnvironmentBlob requirement, boolean isRequirement) {
-      this.requirement = requirement;
-      this.isRequirement = isRequirement;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      PythonRequirementKey that = (PythonRequirementKey) o;
-      return Objects.equals(requirement.getLibrary(), that.requirement.getLibrary())
-          && Objects.equals(requirement.getConstraint(), that.requirement.getConstraint())
-          && Objects.equals(isRequirement, that.isRequirement);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(requirement.getLibrary(), requirement.getConstraint(), isRequirement);
-    }
-  }
-
-  @Override
-  public void validate() throws ModelDBException {
-    Set<String> variableNames = new HashSet<>();
-    for (EnvironmentVariablesBlob blob : environment.getEnvironmentVariablesList()) {
-      validateEnvironmentVariableName(blob.getName());
-      variableNames.add(blob.getName());
-    }
-    if (variableNames.size() != environment.getEnvironmentVariablesCount()) {
-      throw new ModelDBException("There are recurring variables", Code.INVALID_ARGUMENT);
-    }
-    switch (environment.getContentCase()) {
-      case DOCKER:
-        if (environment.getDocker().getRepository().isEmpty()) {
-          throw new ModelDBException(
-              "Environment repository path should not be empty", Code.INVALID_ARGUMENT);
-        }
-        break;
-      case PYTHON:
-        final PythonEnvironmentBlob python = environment.getPython();
-        Set<PythonRequirementKey> pythonRequirementKeys = new HashSet<>();
-        for (PythonRequirementEnvironmentBlob requirement : python.getRequirementsList()) {
-          if (requirement.getLibrary().isEmpty()) {
-            throw new ModelDBException(
-                "Requirement library name should not be empty", Code.INVALID_ARGUMENT);
-          }
-          pythonRequirementKeys.add(new PythonRequirementKey(requirement, true));
-        }
-        if (pythonRequirementKeys.size() != python.getRequirementsCount()) {
-          throw new ModelDBException("There are recurring requirements", Code.INVALID_ARGUMENT);
-        }
-        for (PythonRequirementEnvironmentBlob constraint : python.getConstraintsList()) {
-          if (constraint.getLibrary().isEmpty()) {
-            throw new ModelDBException(
-                "Constraint library name should not be empty", Code.INVALID_ARGUMENT);
-          }
-          pythonRequirementKeys.add(new PythonRequirementKey(constraint, false));
-        }
-        if (pythonRequirementKeys.size()
-            != python.getRequirementsCount() + python.getConstraintsCount()) {
-          throw new ModelDBException("There are recurring constraints", Code.INVALID_ARGUMENT);
-        }
-        break;
-      default:
-        throw new ModelDBException("Blob unknown type", Code.INVALID_ARGUMENT);
-    }
   }
 
   @Override

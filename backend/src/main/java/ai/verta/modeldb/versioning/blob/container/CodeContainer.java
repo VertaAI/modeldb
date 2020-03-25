@@ -28,27 +28,6 @@ public class CodeContainer extends BlobContainer {
   }
 
   @Override
-  public void validate() throws ModelDBException {
-    switch (code.getContentCase()) {
-      case GIT:
-        validate(code.getGit());
-        break;
-      case NOTEBOOK:
-        final NotebookCodeBlob notebook = code.getNotebook();
-        validate(notebook.getGitRepo());
-        break;
-      default:
-        throw new ModelDBException("Blob unknown type", Code.INVALID_ARGUMENT);
-    }
-  }
-
-  private void validate(GitCodeBlob gitRepo) throws ModelDBException {
-    if (gitRepo.getRepo().isEmpty()) {
-      throw new ModelDBException("Code repository path should not be empty", Code.INVALID_ARGUMENT);
-    }
-  }
-
-  @Override
   public void process(
       Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException {

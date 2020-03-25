@@ -38,8 +38,6 @@ public abstract class BlobContainer {
     }
   }
 
-  public abstract void validate() throws ModelDBException;
-
   /**
    * get location list used in in tree representation
    *
@@ -62,16 +60,4 @@ public abstract class BlobContainer {
   public abstract void process(
       Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException;
-
-  protected void validate(PathDatasetBlob path) throws ModelDBException {
-    for (PathDatasetComponentBlob component : path.getComponentsList()) {
-      validate(component);
-    }
-  }
-
-  protected void validate(PathDatasetComponentBlob path) throws ModelDBException {
-    if (path.getPath().isEmpty()) {
-      throw new ModelDBException("Dataset path is empty", Code.INVALID_ARGUMENT);
-    }
-  }
 }

@@ -537,7 +537,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public List<BlobContainer> convertBlobDiffsToBlobs(
-      CreateCommitRequest request,
+      List<AutogenBlobDiff> diffs,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException {
@@ -547,16 +547,16 @@ public class BlobDAORdbImpl implements BlobDAO {
       Map<String, BlobExpanded> locationBlobsMap =
           getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
       Map<String, BlobExpanded> locationBlobsMapNew = new LinkedHashMap<>();
-      for (ai.verta.modeldb.versioning.BlobDiff blobDiff : request.getDiffsList()) {
-        final ProtocolStringList locationList = blobDiff.getLocationList();
+      for (AutogenBlobDiff blobDiff : diffs) {
+        List<String> locationList = blobDiff.getLocation();
         if (locationList == null || locationList.isEmpty()) {
           throw new ModelDBException(
-              "Location in BlobDiff should not be empty", Status.Code.INVALID_ARGUMENT);
+              "Location in BlobDiff should not be empty", Status.Code.INTERNAL);
         }
         BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
         AutogenBlob blob =
             DiffMerger.mergeBlob(
-                AutogenBlob.fromProto(blobExpanded.getBlob()), AutogenBlobDiff.fromProto(blobDiff));
+                AutogenBlob.fromProto(blobExpanded.getBlob()), blobDiff);
         locationBlobsMapNew.put(
             getStringFromLocationList(blobExpanded.getLocationList()),
             BlobExpanded.newBuilder()

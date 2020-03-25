@@ -21,7 +21,8 @@ public class Utils {
           }
 
           @Override
-          public AutogenBlobDiff postVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
+          public AutogenBlobDiff postVisitAutogenBlobDiff(AutogenBlobDiff blob)
+              throws ModelDBException {
             if (blob == null) return null;
             AutogenBlobDiff other = new AutogenBlobDiff();
             if (blob.getDataset() != null) return other.setDataset(blob.getDataset());
@@ -32,7 +33,8 @@ public class Utils {
           }
 
           @Override
-          public AutogenDatasetBlob postVisitAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {
+          public AutogenDatasetBlob postVisitAutogenDatasetBlob(AutogenDatasetBlob blob)
+              throws ModelDBException {
             if (blob == null) return null;
             AutogenDatasetBlob other = new AutogenDatasetBlob();
             if (blob.getPath() != null) return other.setPath(blob.getPath());
@@ -41,7 +43,8 @@ public class Utils {
           }
 
           @Override
-          public AutogenDatasetDiff postVisitAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {
+          public AutogenDatasetDiff postVisitAutogenDatasetDiff(AutogenDatasetDiff blob)
+              throws ModelDBException {
             if (blob == null) return null;
             AutogenDatasetDiff other = new AutogenDatasetDiff();
             if (blob.getPath() != null) return other.setPath(blob.getPath());
@@ -76,7 +79,8 @@ public class Utils {
           }
 
           @Override
-          public AutogenCodeBlob postVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
+          public AutogenCodeBlob postVisitAutogenCodeBlob(AutogenCodeBlob blob)
+              throws ModelDBException {
             if (blob == null) return null;
             AutogenCodeBlob other = new AutogenCodeBlob();
             if (blob.getNotebook() != null) return other.setNotebook(blob.getNotebook());
@@ -85,7 +89,8 @@ public class Utils {
           }
 
           @Override
-          public AutogenCodeDiff postVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
+          public AutogenCodeDiff postVisitAutogenCodeDiff(AutogenCodeDiff blob)
+              throws ModelDBException {
             if (blob == null) return null;
             AutogenCodeDiff other = new AutogenCodeDiff();
             if (blob.getNotebook() != null) return other.setNotebook(blob.getNotebook());
@@ -94,10 +99,12 @@ public class Utils {
           }
 
           @Override
-          public AutogenHyperparameterValuesConfigBlob postVisitAutogenHyperparameterValuesConfigBlob(
-              AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
+          public AutogenHyperparameterValuesConfigBlob
+              postVisitAutogenHyperparameterValuesConfigBlob(
+                  AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
             if (blob == null) return null;
-            AutogenHyperparameterValuesConfigBlob other = new AutogenHyperparameterValuesConfigBlob();
+            AutogenHyperparameterValuesConfigBlob other =
+                new AutogenHyperparameterValuesConfigBlob();
             if (blob.getFloatValue() != null) return other.setFloatValue(blob.getFloatValue());
             if (blob.getIntValue() != null) return other.setIntValue(blob.getIntValue());
             if (blob.getStringValue() != null) return other.setStringValue(blob.getStringValue());
