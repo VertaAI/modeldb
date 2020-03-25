@@ -422,11 +422,11 @@ var fileDescriptor_e15ee9116cd619b2 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConnInterface
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion4
 
 // ArtifactStoreClient is the client API for ArtifactStore service.
 //
@@ -439,10 +439,10 @@ type ArtifactStoreClient interface {
 }
 
 type artifactStoreClient struct {
-	cc grpc.ClientConnInterface
+	cc *grpc.ClientConn
 }
 
-func NewArtifactStoreClient(cc grpc.ClientConnInterface) ArtifactStoreClient {
+func NewArtifactStoreClient(cc *grpc.ClientConn) ArtifactStoreClient {
 	return &artifactStoreClient{cc}
 }
 

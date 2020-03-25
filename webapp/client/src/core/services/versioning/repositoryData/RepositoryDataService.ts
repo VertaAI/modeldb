@@ -31,6 +31,12 @@ import {
   convertServerCommitToClient,
 } from '../../serverModel/Versioning/RepositoryData/converters';
 import { unknownUser } from 'models/User';
+import ModelRecord, { IExperimentRunInfo } from 'models/ModelRecord';
+import { ExperimentsDataService } from 'services/experiments';
+import { ProjectDataService } from 'services/projects';
+import { IWorkspace } from 'models/Workspace';
+import { mapObj } from 'core/shared/utils/collection';
+import { JsonConvert } from 'json2typescript';
 
 export default class RepositoryDataService extends BaseDataService {
   constructor() {
@@ -222,6 +228,55 @@ export default class RepositoryDataService extends BaseDataService {
   }
 
   @bind
+  public async loadCommitExperimentRuns({
+    repositoryId,
+    commitSha,
+    workspaceName,
+  }: {
+    repositoryId: IRepository['id'];
+    commitSha: ICommit['sha'];
+    workspaceName: IWorkspace['name'];
+  }): Promise<IExperimentRunInfo[]> {
+    const response = await this.get({
+      url: `/v1/modeldb/versioning/repositories/${repositoryId}/commits/${commitSha}/runs`,
+    });
+    if (!response.data || !response.data.runs) {
+      return [];
+    }
+    return await this.loadProjectsAndExperimentsForExperimentRuns(
+      workspaceName,
+      response.data.runs
+    );
+  }
+
+  @bind
+  public async loadBlobExperimentRuns({
+    repositoryId,
+    commitSha,
+    location,
+    workspaceName,
+  }: {
+    repositoryId: IRepository['id'];
+    commitSha: ICommit['sha'];
+    location: DataLocation.DataLocation;
+    workspaceName: IWorkspace['name'];
+  }): Promise<IExperimentRunInfo[]> {
+    const response = await this.get({
+      url: DataLocation.addAsLocationQueryParams(
+        location,
+        `/v1/modeldb/versioning/repositories/${repositoryId}/commits/${commitSha}/path/runs`
+      ),
+    });
+    if (!response.data || !response.data.runs) {
+      return [];
+    }
+    return await this.loadProjectsAndExperimentsForExperimentRuns(
+      workspaceName,
+      response.data.runs
+    );
+  }
+
+  @bind
   private async loadLastBranchCommit(
     repositoryId: IRepository['id'],
     branch: Branch
@@ -244,5 +299,73 @@ export default class RepositoryDataService extends BaseDataService {
     }
 
     throw new HttpError({ status: 500 });
+  }
+
+  @bind
+  private async loadProjectsAndExperimentsForExperimentRuns(
+    workspaceName: IWorkspace['name'],
+    serverExperimentRuns: any[]
+  ): Promise<IExperimentRunInfo[]> {
+    if (serverExperimentRuns.length === 0) {
+      return [];
+    }
+    const experimentRuns = (() => {
+      const jsonConvert = new JsonConvert();
+      const res = jsonConvert.deserializeArray(
+        serverExperimentRuns,
+        ModelRecord
+      );
+      return res;
+    })();
+
+    const projectsPromise = new ProjectDataService().loadShortProjectsByIds(
+      workspaceName,
+      R.uniq(experimentRuns.map(({ projectId }) => projectId))
+    );
+
+    const experimentsPromise = (() => {
+      const experimentIdssByProjectId = R.pipe(
+        R.map<ModelRecord, { projectId: string; experimentId: string }>(
+          ({ projectId, experimentId }) => ({ projectId, experimentId })
+        ),
+        R.groupBy(({ projectId }) => projectId),
+        x =>
+          mapObj(
+            items => R.uniq(items.map(({ experimentId }) => experimentId)),
+            x
+          )
+      )(experimentRuns);
+
+      return Promise.all(
+        R.toPairs(experimentIdssByProjectId).map(([projectId, experimentIds]) =>
+          new ExperimentsDataService().loadExperimentsByIds(
+            projectId,
+            experimentIds
+          )
+        )
+      ).then(experiments => experiments.flatMap(x => x));
+    })();
+    const [projects, experiments] = await Promise.all([
+      projectsPromise,
+      experimentsPromise,
+    ]);
+
+    return experimentRuns
+      .map(experimentRun => {
+        const project = projects.find(p => p.id === experimentRun.projectId);
+        const experiment = experiments.find(
+          e => e.id === experimentRun.experimentId
+        );
+        return project && experiment
+          ? {
+              experimentRun: {
+                ...experimentRun,
+                shortExperiment: experiment,
+              },
+              project,
+            }
+          : undefined;
+      })
+      .filter(Boolean) as IExperimentRunInfo[];
   }
 }

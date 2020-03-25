@@ -5,6 +5,7 @@ import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IDataRequest,
   ICommitWithData,
+  ICommit,
 } from 'core/shared/models/Versioning/RepositoryData';
 import {
   CommitTag,
@@ -12,6 +13,9 @@ import {
   CommitPointer,
 } from 'core/shared/models/Versioning/RepositoryData';
 import * as Actions from 'utils/redux/actions';
+import { IExperimentRunInfo } from 'models/ModelRecord';
+import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 export const loadCommitWithData = Actions.makeThunkApiRequest(
   '@@repositoryData/LOAD_COMMIT_WITH_DATA_REQUEST',
@@ -22,6 +26,27 @@ export const loadCommitWithData = Actions.makeThunkApiRequest(
   async ({ payload, dependencies: { ServiceFactory } }) => {
     return await ServiceFactory.getRepositoryDataService().loadCommitWithData(
       payload
+    );
+  }
+);
+
+export const loadCurrentBlobExperimentRuns = Actions.makeThunkApiRequest(
+  '@@repositoryData/LOAD_BLOB_EXPERIMENT_RUNS_REQUEST',
+  '@@repositoryData/LOAD_BLOB_EXPERIMENT_RUNS_SUCCESS',
+  '@@repositoryData/LOAD_BLOB_EXPERIMENT_RUNS_FAILURE',
+  '@@repositoryData/LOAD_BLOB_EXPERIMENT_RUNS_RESET'
+)<
+  { repositoryId: IRepository['id']; commitSha: ICommit['sha']; location: DataLocation },
+  IExperimentRunInfo[],
+  AppError,
+  undefined
+>(
+  async ({ payload, dependencies: { ServiceFactory }, getState }) => {
+    return await ServiceFactory.getRepositoryDataService().loadBlobExperimentRuns(
+      {
+        ...payload,
+        workspaceName: selectCurrentWorkspaceName(getState()),
+      }
     );
   }
 );

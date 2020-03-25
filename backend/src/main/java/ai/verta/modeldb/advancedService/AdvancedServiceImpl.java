@@ -1397,7 +1397,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     }
     if (selfAllowedActions != null && selfAllowedActions.size() > 0) {
       List<Action> actionList =
-          selfAllowedActions.get(datasetVersion.getDatasetId()).getActionsList();
+          new ArrayList<Action>(
+              selfAllowedActions.get(datasetVersion.getDatasetId()).getActionsList());
       if (ownerUserInfo != null) {
         Action deleteAction =
             Action.newBuilder()

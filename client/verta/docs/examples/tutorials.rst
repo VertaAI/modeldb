@@ -33,15 +33,17 @@ Core Verta functionality
 
 * `Using the Verta Web App <tutorials/webapp.html>`_
 * `Workspaces in Verta <tutorials/workspaces.html>`_
+* `Using a Client Config File <tutorials/config.html>`_
 
 .. toctree::
     :hidden:
     :titlesonly:
 
-    Model Versioning <tutorials/versioning>
+    Model Ingredient Versioning <tutorials/ingredients>
+    Model Versioning <tutorials/workflow>
     Data Versioning <tutorials/dataset>
-    Workflow Logging <tutorials/workflow>
     Metadata Querying <tutorials/querying>
     Class Models <tutorials/class>
     Web App <tutorials/webapp>
     Workspaces <tutorials/workspaces>
+    Client Config File <tutorials/config>
