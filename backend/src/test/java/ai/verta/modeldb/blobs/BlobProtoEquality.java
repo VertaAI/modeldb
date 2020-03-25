@@ -13,308 +13,329 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitQuickcheck.class)
 public class BlobProtoEquality {
   @Property
-  public void protoEquality(Blob b) throws ModelDBException {
-    Blob newb = enforceOneof(b);
-    Blob other = newb == null ? null : Blob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenBlob b) throws ModelDBException {
+    AutogenBlob newb = enforceOneof(b);
+    AutogenBlob other = newb == null ? null : AutogenBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(BlobDiff b) throws ModelDBException {
-    BlobDiff newb = enforceOneof(b);
-    BlobDiff other = newb == null ? null : BlobDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenBlobDiff b) throws ModelDBException {
+    AutogenBlobDiff newb = enforceOneof(b);
+    AutogenBlobDiff other = newb == null ? null : AutogenBlobDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(CodeBlob b) throws ModelDBException {
-    CodeBlob newb = enforceOneof(b);
-    CodeBlob other = newb == null ? null : CodeBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenCodeBlob b) throws ModelDBException {
+    AutogenCodeBlob newb = enforceOneof(b);
+    AutogenCodeBlob other = newb == null ? null : AutogenCodeBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(CodeDiff b) throws ModelDBException {
-    CodeDiff newb = enforceOneof(b);
-    CodeDiff other = newb == null ? null : CodeDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenCodeDiff b) throws ModelDBException {
+    AutogenCodeDiff newb = enforceOneof(b);
+    AutogenCodeDiff other = newb == null ? null : AutogenCodeDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(CommandLineEnvironmentDiff b) throws ModelDBException {
-    CommandLineEnvironmentDiff newb = enforceOneof(b);
-    CommandLineEnvironmentDiff other =
-        newb == null ? null : CommandLineEnvironmentDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenCommandLineEnvironmentDiff b) throws ModelDBException {
+    AutogenCommandLineEnvironmentDiff newb = enforceOneof(b);
+    AutogenCommandLineEnvironmentDiff other =
+        newb == null ? null : AutogenCommandLineEnvironmentDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(ConfigBlob b) throws ModelDBException {
-    ConfigBlob newb = enforceOneof(b);
-    ConfigBlob other = newb == null ? null : ConfigBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenConfigBlob b) throws ModelDBException {
+    AutogenConfigBlob newb = enforceOneof(b);
+    AutogenConfigBlob other =
+        newb == null ? null : AutogenConfigBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(ConfigDiff b) throws ModelDBException {
-    ConfigDiff newb = enforceOneof(b);
-    ConfigDiff other = newb == null ? null : ConfigDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenConfigDiff b) throws ModelDBException {
+    AutogenConfigDiff newb = enforceOneof(b);
+    AutogenConfigDiff other =
+        newb == null ? null : AutogenConfigDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(ContinuousHyperparameterSetConfigBlob b) throws ModelDBException {
-    ContinuousHyperparameterSetConfigBlob newb = enforceOneof(b);
-    ContinuousHyperparameterSetConfigBlob other =
+  public void protoEquality(AutogenContinuousHyperparameterSetConfigBlob b)
+      throws ModelDBException {
+    AutogenContinuousHyperparameterSetConfigBlob newb = enforceOneof(b);
+    AutogenContinuousHyperparameterSetConfigBlob other =
         newb == null
             ? null
-            : ContinuousHyperparameterSetConfigBlob.fromProto(newb.toProto().build());
+            : AutogenContinuousHyperparameterSetConfigBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(DatasetBlob b) throws ModelDBException {
-    DatasetBlob newb = enforceOneof(b);
-    DatasetBlob other = newb == null ? null : DatasetBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenDatasetBlob b) throws ModelDBException {
+    AutogenDatasetBlob newb = enforceOneof(b);
+    AutogenDatasetBlob other =
+        newb == null ? null : AutogenDatasetBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(DatasetDiff b) throws ModelDBException {
-    DatasetDiff newb = enforceOneof(b);
-    DatasetDiff other = newb == null ? null : DatasetDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenDatasetDiff b) throws ModelDBException {
+    AutogenDatasetDiff newb = enforceOneof(b);
+    AutogenDatasetDiff other =
+        newb == null ? null : AutogenDatasetDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(DiscreteHyperparameterSetConfigBlob b) throws ModelDBException {
-    DiscreteHyperparameterSetConfigBlob newb = enforceOneof(b);
-    DiscreteHyperparameterSetConfigBlob other =
-        newb == null ? null : DiscreteHyperparameterSetConfigBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenDiscreteHyperparameterSetConfigBlob b) throws ModelDBException {
+    AutogenDiscreteHyperparameterSetConfigBlob newb = enforceOneof(b);
+    AutogenDiscreteHyperparameterSetConfigBlob other =
+        newb == null
+            ? null
+            : AutogenDiscreteHyperparameterSetConfigBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(DockerEnvironmentBlob b) throws ModelDBException {
-    DockerEnvironmentBlob newb = enforceOneof(b);
-    DockerEnvironmentBlob other =
-        newb == null ? null : DockerEnvironmentBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenDockerEnvironmentBlob b) throws ModelDBException {
+    AutogenDockerEnvironmentBlob newb = enforceOneof(b);
+    AutogenDockerEnvironmentBlob other =
+        newb == null ? null : AutogenDockerEnvironmentBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(DockerEnvironmentDiff b) throws ModelDBException {
-    DockerEnvironmentDiff newb = enforceOneof(b);
-    DockerEnvironmentDiff other =
-        newb == null ? null : DockerEnvironmentDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenDockerEnvironmentDiff b) throws ModelDBException {
+    AutogenDockerEnvironmentDiff newb = enforceOneof(b);
+    AutogenDockerEnvironmentDiff other =
+        newb == null ? null : AutogenDockerEnvironmentDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(EnvironmentBlob b) throws ModelDBException {
-    EnvironmentBlob newb = enforceOneof(b);
-    EnvironmentBlob other = newb == null ? null : EnvironmentBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenEnvironmentBlob b) throws ModelDBException {
+    AutogenEnvironmentBlob newb = enforceOneof(b);
+    AutogenEnvironmentBlob other =
+        newb == null ? null : AutogenEnvironmentBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(EnvironmentDiff b) throws ModelDBException {
-    EnvironmentDiff newb = enforceOneof(b);
-    EnvironmentDiff other = newb == null ? null : EnvironmentDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenEnvironmentDiff b) throws ModelDBException {
+    AutogenEnvironmentDiff newb = enforceOneof(b);
+    AutogenEnvironmentDiff other =
+        newb == null ? null : AutogenEnvironmentDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(EnvironmentVariablesBlob b) throws ModelDBException {
-    EnvironmentVariablesBlob newb = enforceOneof(b);
-    EnvironmentVariablesBlob other =
-        newb == null ? null : EnvironmentVariablesBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenEnvironmentVariablesBlob b) throws ModelDBException {
+    AutogenEnvironmentVariablesBlob newb = enforceOneof(b);
+    AutogenEnvironmentVariablesBlob other =
+        newb == null ? null : AutogenEnvironmentVariablesBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(EnvironmentVariablesDiff b) throws ModelDBException {
-    EnvironmentVariablesDiff newb = enforceOneof(b);
-    EnvironmentVariablesDiff other =
-        newb == null ? null : EnvironmentVariablesDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenEnvironmentVariablesDiff b) throws ModelDBException {
+    AutogenEnvironmentVariablesDiff newb = enforceOneof(b);
+    AutogenEnvironmentVariablesDiff other =
+        newb == null ? null : AutogenEnvironmentVariablesDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(GitCodeBlob b) throws ModelDBException {
-    GitCodeBlob newb = enforceOneof(b);
-    GitCodeBlob other = newb == null ? null : GitCodeBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenGitCodeBlob b) throws ModelDBException {
+    AutogenGitCodeBlob newb = enforceOneof(b);
+    AutogenGitCodeBlob other =
+        newb == null ? null : AutogenGitCodeBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(GitCodeDiff b) throws ModelDBException {
-    GitCodeDiff newb = enforceOneof(b);
-    GitCodeDiff other = newb == null ? null : GitCodeDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenGitCodeDiff b) throws ModelDBException {
+    AutogenGitCodeDiff newb = enforceOneof(b);
+    AutogenGitCodeDiff other =
+        newb == null ? null : AutogenGitCodeDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(HyperparameterConfigBlob b) throws ModelDBException {
-    HyperparameterConfigBlob newb = enforceOneof(b);
-    HyperparameterConfigBlob other =
-        newb == null ? null : HyperparameterConfigBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenHyperparameterConfigBlob b) throws ModelDBException {
+    AutogenHyperparameterConfigBlob newb = enforceOneof(b);
+    AutogenHyperparameterConfigBlob other =
+        newb == null ? null : AutogenHyperparameterConfigBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(HyperparameterConfigDiff b) throws ModelDBException {
-    HyperparameterConfigDiff newb = enforceOneof(b);
-    HyperparameterConfigDiff other =
-        newb == null ? null : HyperparameterConfigDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenHyperparameterConfigDiff b) throws ModelDBException {
+    AutogenHyperparameterConfigDiff newb = enforceOneof(b);
+    AutogenHyperparameterConfigDiff other =
+        newb == null ? null : AutogenHyperparameterConfigDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(HyperparameterSetConfigBlob b) throws ModelDBException {
-    HyperparameterSetConfigBlob newb = enforceOneof(b);
-    HyperparameterSetConfigBlob other =
-        newb == null ? null : HyperparameterSetConfigBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenHyperparameterSetConfigBlob b) throws ModelDBException {
+    AutogenHyperparameterSetConfigBlob newb = enforceOneof(b);
+    AutogenHyperparameterSetConfigBlob other =
+        newb == null ? null : AutogenHyperparameterSetConfigBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(HyperparameterSetConfigDiff b) throws ModelDBException {
-    HyperparameterSetConfigDiff newb = enforceOneof(b);
-    HyperparameterSetConfigDiff other =
-        newb == null ? null : HyperparameterSetConfigDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenHyperparameterSetConfigDiff b) throws ModelDBException {
+    AutogenHyperparameterSetConfigDiff newb = enforceOneof(b);
+    AutogenHyperparameterSetConfigDiff other =
+        newb == null ? null : AutogenHyperparameterSetConfigDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(HyperparameterValuesConfigBlob b) throws ModelDBException {
-    HyperparameterValuesConfigBlob newb = enforceOneof(b);
-    HyperparameterValuesConfigBlob other =
-        newb == null ? null : HyperparameterValuesConfigBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenHyperparameterValuesConfigBlob b) throws ModelDBException {
+    AutogenHyperparameterValuesConfigBlob newb = enforceOneof(b);
+    AutogenHyperparameterValuesConfigBlob other =
+        newb == null
+            ? null
+            : AutogenHyperparameterValuesConfigBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(NotebookCodeBlob b) throws ModelDBException {
-    NotebookCodeBlob newb = enforceOneof(b);
-    NotebookCodeBlob other =
-        newb == null ? null : NotebookCodeBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenNotebookCodeBlob b) throws ModelDBException {
+    AutogenNotebookCodeBlob newb = enforceOneof(b);
+    AutogenNotebookCodeBlob other =
+        newb == null ? null : AutogenNotebookCodeBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(NotebookCodeDiff b) throws ModelDBException {
-    NotebookCodeDiff newb = enforceOneof(b);
-    NotebookCodeDiff other =
-        newb == null ? null : NotebookCodeDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenNotebookCodeDiff b) throws ModelDBException {
+    AutogenNotebookCodeDiff newb = enforceOneof(b);
+    AutogenNotebookCodeDiff other =
+        newb == null ? null : AutogenNotebookCodeDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(PathDatasetBlob b) throws ModelDBException {
-    PathDatasetBlob newb = enforceOneof(b);
-    PathDatasetBlob other = newb == null ? null : PathDatasetBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenPathDatasetBlob b) throws ModelDBException {
+    AutogenPathDatasetBlob newb = enforceOneof(b);
+    AutogenPathDatasetBlob other =
+        newb == null ? null : AutogenPathDatasetBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(PathDatasetComponentBlob b) throws ModelDBException {
-    PathDatasetComponentBlob newb = enforceOneof(b);
-    PathDatasetComponentBlob other =
-        newb == null ? null : PathDatasetComponentBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenPathDatasetComponentBlob b) throws ModelDBException {
+    AutogenPathDatasetComponentBlob newb = enforceOneof(b);
+    AutogenPathDatasetComponentBlob other =
+        newb == null ? null : AutogenPathDatasetComponentBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(PathDatasetComponentDiff b) throws ModelDBException {
-    PathDatasetComponentDiff newb = enforceOneof(b);
-    PathDatasetComponentDiff other =
-        newb == null ? null : PathDatasetComponentDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenPathDatasetComponentDiff b) throws ModelDBException {
+    AutogenPathDatasetComponentDiff newb = enforceOneof(b);
+    AutogenPathDatasetComponentDiff other =
+        newb == null ? null : AutogenPathDatasetComponentDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(PathDatasetDiff b) throws ModelDBException {
-    PathDatasetDiff newb = enforceOneof(b);
-    PathDatasetDiff other = newb == null ? null : PathDatasetDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenPathDatasetDiff b) throws ModelDBException {
+    AutogenPathDatasetDiff newb = enforceOneof(b);
+    AutogenPathDatasetDiff other =
+        newb == null ? null : AutogenPathDatasetDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(PythonEnvironmentBlob b) throws ModelDBException {
-    PythonEnvironmentBlob newb = enforceOneof(b);
-    PythonEnvironmentBlob other =
-        newb == null ? null : PythonEnvironmentBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenPythonEnvironmentBlob b) throws ModelDBException {
+    AutogenPythonEnvironmentBlob newb = enforceOneof(b);
+    AutogenPythonEnvironmentBlob other =
+        newb == null ? null : AutogenPythonEnvironmentBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(PythonEnvironmentDiff b) throws ModelDBException {
-    PythonEnvironmentDiff newb = enforceOneof(b);
-    PythonEnvironmentDiff other =
-        newb == null ? null : PythonEnvironmentDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenPythonEnvironmentDiff b) throws ModelDBException {
+    AutogenPythonEnvironmentDiff newb = enforceOneof(b);
+    AutogenPythonEnvironmentDiff other =
+        newb == null ? null : AutogenPythonEnvironmentDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(PythonRequirementEnvironmentBlob b) throws ModelDBException {
-    PythonRequirementEnvironmentBlob newb = enforceOneof(b);
-    PythonRequirementEnvironmentBlob other =
-        newb == null ? null : PythonRequirementEnvironmentBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenPythonRequirementEnvironmentBlob b) throws ModelDBException {
+    AutogenPythonRequirementEnvironmentBlob newb = enforceOneof(b);
+    AutogenPythonRequirementEnvironmentBlob other =
+        newb == null
+            ? null
+            : AutogenPythonRequirementEnvironmentBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(PythonRequirementEnvironmentDiff b) throws ModelDBException {
-    PythonRequirementEnvironmentDiff newb = enforceOneof(b);
-    PythonRequirementEnvironmentDiff other =
-        newb == null ? null : PythonRequirementEnvironmentDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenPythonRequirementEnvironmentDiff b) throws ModelDBException {
+    AutogenPythonRequirementEnvironmentDiff newb = enforceOneof(b);
+    AutogenPythonRequirementEnvironmentDiff other =
+        newb == null
+            ? null
+            : AutogenPythonRequirementEnvironmentDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(S3DatasetBlob b) throws ModelDBException {
-    S3DatasetBlob newb = enforceOneof(b);
-    S3DatasetBlob other = newb == null ? null : S3DatasetBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenS3DatasetBlob b) throws ModelDBException {
+    AutogenS3DatasetBlob newb = enforceOneof(b);
+    AutogenS3DatasetBlob other =
+        newb == null ? null : AutogenS3DatasetBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(S3DatasetComponentBlob b) throws ModelDBException {
-    S3DatasetComponentBlob newb = enforceOneof(b);
-    S3DatasetComponentBlob other =
-        newb == null ? null : S3DatasetComponentBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenS3DatasetComponentBlob b) throws ModelDBException {
+    AutogenS3DatasetComponentBlob newb = enforceOneof(b);
+    AutogenS3DatasetComponentBlob other =
+        newb == null ? null : AutogenS3DatasetComponentBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(S3DatasetComponentDiff b) throws ModelDBException {
-    S3DatasetComponentDiff newb = enforceOneof(b);
-    S3DatasetComponentDiff other =
-        newb == null ? null : S3DatasetComponentDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenS3DatasetComponentDiff b) throws ModelDBException {
+    AutogenS3DatasetComponentDiff newb = enforceOneof(b);
+    AutogenS3DatasetComponentDiff other =
+        newb == null ? null : AutogenS3DatasetComponentDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(S3DatasetDiff b) throws ModelDBException {
-    S3DatasetDiff newb = enforceOneof(b);
-    S3DatasetDiff other = newb == null ? null : S3DatasetDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenS3DatasetDiff b) throws ModelDBException {
+    AutogenS3DatasetDiff newb = enforceOneof(b);
+    AutogenS3DatasetDiff other =
+        newb == null ? null : AutogenS3DatasetDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(VersionEnvironmentBlob b) throws ModelDBException {
-    VersionEnvironmentBlob newb = enforceOneof(b);
-    VersionEnvironmentBlob other =
-        newb == null ? null : VersionEnvironmentBlob.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenVersionEnvironmentBlob b) throws ModelDBException {
+    AutogenVersionEnvironmentBlob newb = enforceOneof(b);
+    AutogenVersionEnvironmentBlob other =
+        newb == null ? null : AutogenVersionEnvironmentBlob.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 
   @Property
-  public void protoEquality(VersionEnvironmentDiff b) throws ModelDBException {
-    VersionEnvironmentDiff newb = enforceOneof(b);
-    VersionEnvironmentDiff other =
-        newb == null ? null : VersionEnvironmentDiff.fromProto(newb.toProto().build());
+  public void protoEquality(AutogenVersionEnvironmentDiff b) throws ModelDBException {
+    AutogenVersionEnvironmentDiff newb = enforceOneof(b);
+    AutogenVersionEnvironmentDiff other =
+        newb == null ? null : AutogenVersionEnvironmentDiff.fromProto(newb.toProto().build());
     assertEquals(newb, other);
   }
 }
