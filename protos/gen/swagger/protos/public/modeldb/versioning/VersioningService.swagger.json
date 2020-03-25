@@ -363,14 +363,14 @@
         ]
       }
     },
-    "/versioning/repositories/{repository_id.repo_id}/branches/{branch}/commits": {
+    "/versioning/repositories/{repository_id.repo_id}/branches/{branch}/log": {
       "get": {
-        "operationId": "ListBranchCommits2",
+        "operationId": "ListCommitsLog2",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/versioningListBranchCommitsRequestResponse"
+              "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
             }
           },
           "default": {
@@ -403,6 +403,12 @@
           },
           {
             "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "commit_sha",
             "in": "query",
             "required": false,
             "type": "string"
@@ -678,6 +684,62 @@
         ]
       }
     },
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/log": {
+      "get": {
+        "operationId": "ListCommitsLog4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "branch",
+            "description": "Pagination pagination = 2;.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path": {
       "get": {
         "operationId": "GetCommitComponent2",
@@ -944,6 +1006,45 @@
             "required": false,
             "type": "boolean",
             "format": "boolean"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/repositories/{repository_id.repo_id}/merge": {
+      "post": {
+        "operationId": "MergeRepositoryCommits2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequest"
+            }
           }
         ],
         "tags": [
@@ -1490,14 +1591,14 @@
         ]
       }
     },
-    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/commits": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/log": {
       "get": {
-        "operationId": "ListBranchCommits",
+        "operationId": "ListCommitsLog",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/versioningListBranchCommitsRequestResponse"
+              "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
             }
           },
           "default": {
@@ -1533,6 +1634,12 @@
             "required": false,
             "type": "string",
             "format": "uint64"
+          },
+          {
+            "name": "commit_sha",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1810,6 +1917,62 @@
         ]
       }
     },
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/log": {
+      "get": {
+        "operationId": "ListCommitsLog3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "branch",
+            "description": "Pagination pagination = 2;.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path": {
       "get": {
         "operationId": "GetCommitComponent",
@@ -2076,6 +2239,50 @@
             "required": false,
             "type": "boolean",
             "format": "boolean"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge": {
+      "post": {
+        "operationId": "MergeRepositoryCommits",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequest"
+            }
           }
         ],
         "tags": [
@@ -3199,21 +3406,6 @@
         }
       }
     },
-    "versioningListBranchCommitsRequestResponse": {
-      "type": "object",
-      "properties": {
-        "commits": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningCommit"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "versioningListBranchesRequestResponse": {
       "type": "object",
       "properties": {
@@ -3251,6 +3443,21 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/modeldbExperimentRun"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "versioningListCommitsLogRequestResponse": {
+      "type": "object",
+      "properties": {
+        "commits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningCommit"
           }
         },
         "total_records": {
@@ -3301,6 +3508,31 @@
         "total_records": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "versioningMergeRepositoryCommitsRequest": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "$ref": "#/definitions/versioningRepositoryIdentification"
+        },
+        "commit_sha_a": {
+          "type": "string"
+        },
+        "commit_sha_b": {
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/definitions/versioningCommit"
+        }
+      }
+    },
+    "versioningMergeRepositoryCommitsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "commit": {
+          "$ref": "#/definitions/versioningCommit"
         }
       }
     },

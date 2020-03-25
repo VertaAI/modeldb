@@ -537,20 +537,20 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   }
 
   @Override
-  public void listBranchCommits(
-      ListBranchCommitsRequest request,
-      StreamObserver<ListBranchCommitsRequest.Response> responseObserver) {
+  public void listCommitsLog(
+      ListCommitsLogRequest request,
+      StreamObserver<ListCommitsLogRequest.Response> responseObserver) {
     QPSCountResource.inc();
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        ListBranchCommitsRequest.Response response = repositoryDAO.listBranchCommits(request);
+        ListCommitsLogRequest.Response response = repositoryDAO.listCommitsLog(request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
     } catch (Exception e) {
       ModelDBUtils.observeError(
-          responseObserver, e, ListBranchCommitsRequest.Response.getDefaultInstance());
+          responseObserver, e, ListCommitsLogRequest.Response.getDefaultInstance());
     }
   }
 
