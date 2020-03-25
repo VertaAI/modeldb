@@ -282,11 +282,10 @@ message ComputeRepositoryDiffRequest {
     }
 }
 
-message ListCommitsLogRequest {
+message ListBranchCommitsRequest {
     RepositoryIdentification repository_id = 1;
     // Pagination pagination = 2;
     string branch = 3;
-    string commit_sha = 4;
     // List of folder names (with the last element potentially representing the blob name)
     // This will be used to limit the search to scope just this location, like `git log /my/path` would do
     // repeated string location_prefix = 4;
@@ -566,24 +565,18 @@ service VersioningService {
         };
     }
 
-    rpc ListCommitsLog(ListCommitsLogRequest) returns (ListCommitsLogRequest.Response) {
+    rpc ListBranchCommits(ListBranchCommitsRequest) returns (ListBranchCommitsRequest.Response) {
         option (google.api.http) = {
-            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/log"
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/commits"
             additional_bindings {
-                get: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}/log"
-            }
-            additional_bindings {
-                get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/log"
-            }
-            additional_bindings {
-                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/log"
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}/commits"
             }
         };
     };
 
     rpc MergeRepositoryCommits(MergeRepositoryCommitsRequest) returns (MergeRepositoryCommitsRequest.Response) {
         option (google.api.http) = {
-            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge"
+            post: "/v1/versioning//workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge"
             body: "*"
             additional_bindings {
                 post: "/v1/versioning/repositories/{repository_id.repo_id}/merge"

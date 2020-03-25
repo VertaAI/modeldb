@@ -38,6 +38,6 @@ public interface RepositoryDAO {
 
   ListBranchesRequest.Response listBranches(ListBranchesRequest request) throws ModelDBException;
 
-  ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
+  ListBranchCommitsRequest.Response listBranchCommits(ListBranchCommitsRequest request)
       throws ModelDBException;
 }

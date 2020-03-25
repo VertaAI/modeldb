@@ -13,17 +13,19 @@ import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorksp
 import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
-case class VersioningMergeRepositoryCommitsRequestResponse (
-  commit: Option[VersioningCommit] = None
+case class VersioningListBranchCommitsRequestResponse (
+  commits: Option[List[VersioningCommit]] = None,
+  total_records: Option[] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningMergeRepositoryCommitsRequestResponse.toJson(this)
+  def toJson(): JValue = VersioningListBranchCommitsRequestResponse.toJson(this)
 }
 
-object VersioningMergeRepositoryCommitsRequestResponse {
-  def toJson(obj: VersioningMergeRepositoryCommitsRequestResponse): JObject = {
+object VersioningListBranchCommitsRequestResponse {
+  def toJson(obj: VersioningListBranchCommitsRequestResponse): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.commit.map(x => JField("commit", ((x: VersioningCommit) => VersioningCommit.toJson(x))(x)))
+        obj.commits.map(x => JField("commits", ((x: List[VersioningCommit]) => JArray(x.map(((x: VersioningCommit) => VersioningCommit.toJson(x)))))(x))),
+        obj.total_records.map(x => JField("total_records", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -31,13 +33,14 @@ object VersioningMergeRepositoryCommitsRequestResponse {
     )
   }
 
-  def fromJson(value: JValue): VersioningMergeRepositoryCommitsRequestResponse =
+  def fromJson(value: JValue): VersioningListBranchCommitsRequestResponse =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningMergeRepositoryCommitsRequestResponse(
+        VersioningListBranchCommitsRequestResponse(
           // TODO: handle required
-          commit = fieldsMap.get("commit").map(VersioningCommit.fromJson)
+          commits = fieldsMap.get("commits").map((x: JValue) => x match {case JArray(elements) => elements.map(VersioningCommit.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          total_records = fieldsMap.get("total_records").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
