@@ -410,7 +410,8 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (request.getReplaceAWithCommonAncestor()) {
         internalCommitA =
-            getCommonParent(session, internalCommitA.getCommit_hash(), internalCommitB.getCommit_hash());
+            getCommonParent(
+                session, internalCommitA.getCommit_hash(), internalCommitB.getCommit_hash());
       }
       // get list of blob expanded in both commit and group them in a map based on location
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
@@ -479,60 +480,70 @@ public class BlobDAORdbImpl implements BlobDAO {
   public MergeRepositoryCommitsRequest.Response mergeCommit(
       RepositoryFunction repositoryFunction, MergeRepositoryCommitsRequest request)
       throws ModelDBException, NoSuchAlgorithmException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
+    Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitB =
+        new HashMap<String, Map.Entry<BlobExpanded, String>>();
+    Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapParentCommit =
+        new HashMap<String, Map.Entry<BlobExpanded, String>>();
+    Map<String, BlobExpanded> locationBlobsMapCommitASimple = new HashMap<String, BlobExpanded>();
+    CommitEntity internalCommitA;
+    CommitEntity internalCommitB;
+    try (Session readSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repositoryEntity = repositoryFunction.apply(readSession);
 
-      CommitEntity internalCommitA = session.get(CommitEntity.class, request.getCommitShaA());
+      internalCommitA = readSession.get(CommitEntity.class, request.getCommitShaA());
       if (internalCommitA == null) {
         throw new ModelDBException(
             "No such commit found : " + request.getCommitShaA(), Status.Code.NOT_FOUND);
       }
 
-      CommitEntity internalCommitB = session.get(CommitEntity.class, request.getCommitShaB());
+      internalCommitB = readSession.get(CommitEntity.class, request.getCommitShaB());
       if (internalCommitB == null) {
         throw new ModelDBException(
             "No such commit found : " + request.getCommitShaB(), Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
-          session, internalCommitA.getCommit_hash(), repositoryEntity.getId())) {
+          readSession, internalCommitA.getCommit_hash(), repositoryEntity.getId())) {
         throw new ModelDBException(
             "No such commit found in the repository : " + internalCommitA.getCommit_hash(),
             Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
-          session, internalCommitB.getCommit_hash(), repositoryEntity.getId())) {
+          readSession, internalCommitB.getCommit_hash(), repositoryEntity.getId())) {
         throw new ModelDBException(
             "No such commit found in the repository : " + internalCommitB.getCommit_hash(),
             Status.Code.NOT_FOUND);
       }
 
       CommitEntity parentCommit =
-          getCommonParent(session, request.getCommitShaA(), request.getCommitShaB());
+          getCommonParent(readSession, request.getCommitShaA(), request.getCommitShaB());
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
-          getCommitBlobMapWithHash(session, internalCommitA.getRootSha(), new ArrayList<>());
-      Map<String, BlobExpanded> locationBlobsMapCommitASimple = new HashMap<String, BlobExpanded>();
+          getCommitBlobMapWithHash(readSession, internalCommitA.getRootSha(), new ArrayList<>());
+
       for (Entry<String, Entry<BlobExpanded, String>> locationBlobsEntry :
           locationBlobsMapCommitA.entrySet()) {
         locationBlobsMapCommitASimple.put(
             locationBlobsEntry.getKey(), locationBlobsEntry.getValue().getKey());
       }
 
-      Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitB =
-          getCommitBlobMapWithHash(session, internalCommitB.getRootSha(), new ArrayList<>());
+      locationBlobsMapCommitB =
+          getCommitBlobMapWithHash(readSession, internalCommitB.getRootSha(), new ArrayList<>());
 
-      Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapParentCommit =
-          getCommitBlobMapWithHash(session, parentCommit.getRootSha(), new ArrayList<>());
+      locationBlobsMapParentCommit =
+          getCommitBlobMapWithHash(readSession, parentCommit.getRootSha(), new ArrayList<>());
+    }
+    try (Session writeSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      writeSession.beginTransaction();
       List<ai.verta.modeldb.versioning.BlobDiff> diffB =
           computeDiffFromCommitMaps(locationBlobsMapParentCommit, locationBlobsMapCommitB)
               .getDiffsList();
       List<BlobContainer> blobContainerList =
           getBlobContainers(diffB, locationBlobsMapCommitASimple);
 
-      final String rootSha = setBlobs(session, blobContainerList, new FileHasher());
+      final String rootSha =
+          setBlobs(writeSession, blobContainerList, new FileHasher());
       long timeCreated = new Date().getTime();
       List<String> parentSHAs = Arrays.asList(request.getCommitShaA(), request.getCommitShaB());
       List<CommitEntity> parentCommits = Arrays.asList(internalCommitA, internalCommitB);
@@ -558,9 +569,9 @@ public class BlobDAORdbImpl implements BlobDAO {
               .build();
       CommitEntity commitEntity =
           new CommitEntity(
-              repositoryFunction.apply(session), parentCommits, internalCommit, rootSha);
-      session.saveOrUpdate(commitEntity);
-      session.getTransaction().commit();
+              repositoryFunction.apply(writeSession), parentCommits, internalCommit, rootSha);
+      writeSession.saveOrUpdate(commitEntity);
+      writeSession.getTransaction().commit();
       return MergeRepositoryCommitsRequest.Response.newBuilder()
           .setCommit(commitEntity.toCommitProto())
           .build();
@@ -602,7 +613,8 @@ public class BlobDAORdbImpl implements BlobDAO {
                   LinkedHashSet<BlobExpanded> newHash = new LinkedHashSet<>(m1);
                   newHash.addAll(m2);
                   return newHash;
-                }, LinkedHashMap::new));
+                },
+                LinkedHashMap::new));
   }
 
   List<ai.verta.modeldb.versioning.BlobDiff> getAddedBlobDiff(
@@ -716,26 +728,25 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
       BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
       Blob blob =
-            DiffMerger.mergeBlob(
-                blobExpanded == null ? null : Blob.fromProto(blobExpanded.getBlob()),
-                BlobDiff.fromProto(blobDiff));
-        locationBlobsMapNew.put(
-            getStringFromLocationList(locationList),
-            blob == null
-                ? null
-                : BlobExpanded.newBuilder()
-                    .addAllLocation(locationList)
-                    .setBlob(blob.toProto())
-                    .build());
+          DiffMerger.mergeBlob(
+              blobExpanded == null ? null : Blob.fromProto(blobExpanded.getBlob()),
+              BlobDiff.fromProto(blobDiff));
+      locationBlobsMapNew.put(
+          getStringFromLocationList(locationList),
+          blob == null
+              ? null
+              : BlobExpanded.newBuilder()
+                  .addAllLocation(locationList)
+                  .setBlob(blob.toProto())
+                  .build());
+    }
+    locationBlobsMap.putAll(locationBlobsMapNew);
+    List<BlobContainer> blobContainerList = new LinkedList<>();
+    for (Map.Entry<String, BlobExpanded> blobExpandedEntry : locationBlobsMap.entrySet()) {
+      if (blobExpandedEntry.getValue() != null) {
+        blobContainerList.add(BlobContainer.create(blobExpandedEntry.getValue()));
       }
-      locationBlobsMap.putAll(locationBlobsMapNew);
-      List<BlobContainer> blobContainerList = new LinkedList<>();
-      for (Map.Entry<String, BlobExpanded> blobExpandedEntry : locationBlobsMap.entrySet()) {
-        if (blobExpandedEntry.getValue() != null) {
-          blobContainerList.add(BlobContainer.create(blobExpandedEntry.getValue()));
-        }
-       }
+    }
     return blobContainerList;
-      
   }
 }
