@@ -285,7 +285,10 @@ def commit(repository):
     yield commit
 
     if commit.id is not None:
-        utils.delete_commit(repository.id, commit.id, repository._conn)
+        try:
+            utils.delete_commit(repository.id, commit.id, repository._conn)
+        except:
+            pass  # may have already been deleted in test
 
 
 @pytest.fixture
