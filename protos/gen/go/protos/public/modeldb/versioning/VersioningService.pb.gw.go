@@ -6682,21 +6682,21 @@ var (
 
 	pattern_VersioningService_ListBranches_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_GetBranch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_GetBranch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 3, 0, 4, 1, 5, 7}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_GetBranch_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_GetBranch_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 3, 0, 4, 1, 5, 5}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_SetBranch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_SetBranch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 3, 0, 4, 1, 5, 7}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_SetBranch_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_SetBranch_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 3, 0, 4, 1, 5, 5}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_DeleteBranch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_DeleteBranch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 3, 0, 4, 1, 5, 7}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_DeleteBranch_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_DeleteBranch_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 3, 0, 4, 1, 5, 5}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches", "branch"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_ListCommitsLog_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "branches", "branch", "log"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_ListCommitsLog_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 3, 0, 4, 1, 5, 7, 2, 8}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "branches", "branch", "log"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_VersioningService_ListCommitsLog_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches", "branch", "log"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_VersioningService_ListCommitsLog_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 3, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "branches", "branch", "log"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_VersioningService_ListCommitsLog_2 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "commits", "commit_sha", "log"}, "", runtime.AssumeColonVerbOpt(true)))
 

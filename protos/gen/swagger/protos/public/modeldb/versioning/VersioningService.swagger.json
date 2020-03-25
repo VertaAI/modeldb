@@ -666,6 +666,17 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "location_prefix",
+            "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -1888,6 +1899,17 @@
             "required": false,
             "type": "string",
             "format": "uint64"
+          },
+          {
+            "name": "location_prefix",
+            "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
