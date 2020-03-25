@@ -361,9 +361,10 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def ListBranches2(repository_id_repo_id: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Try[VersioningListBranchesRequestResponse] = Await.result(ListBranches2Async(repository_id_repo_id, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
 
-  def ListCommitBlobsAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, commit_sha: String, repository_id_repo_id: String)(implicit ec: ExecutionContext): Future[Try[VersioningListCommitBlobsRequestResponse]] = {
+  def ListCommitBlobsAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, commit_sha: String, repository_id_repo_id: String, location_prefix: List[String])(implicit ec: ExecutionContext): Future[Try[VersioningListCommitBlobsRequestResponse]] = {
     val __query = Map[String,String](
-      "repository_id.repo_id" -> client.toQuery(repository_id_repo_id)
+      "repository_id.repo_id" -> client.toQuery(repository_id_repo_id),
+      "location_prefix" -> client.toQuery(location_prefix)
     )
     if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
     if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
@@ -372,12 +373,13 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
     return client.request[String, VersioningListCommitBlobsRequestResponse]("GET", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/commits/$commit_sha/blobs", __query, body, VersioningListCommitBlobsRequestResponse.fromJson)
   }
 
-  def ListCommitBlobs(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, commit_sha: String, repository_id_repo_id: String)(implicit ec: ExecutionContext): Try[VersioningListCommitBlobsRequestResponse] = Await.result(ListCommitBlobsAsync(repository_id_named_id_workspace_name, repository_id_named_id_name, commit_sha, repository_id_repo_id), Duration.Inf)
+  def ListCommitBlobs(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, commit_sha: String, repository_id_repo_id: String, location_prefix: List[String])(implicit ec: ExecutionContext): Try[VersioningListCommitBlobsRequestResponse] = Await.result(ListCommitBlobsAsync(repository_id_named_id_workspace_name, repository_id_named_id_name, commit_sha, repository_id_repo_id, location_prefix), Duration.Inf)
 
-  def ListCommitBlobs2Async(repository_id_repo_id: String, commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Future[Try[VersioningListCommitBlobsRequestResponse]] = {
+  def ListCommitBlobs2Async(repository_id_repo_id: String, commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, location_prefix: List[String])(implicit ec: ExecutionContext): Future[Try[VersioningListCommitBlobsRequestResponse]] = {
     val __query = Map[String,String](
       "repository_id.named_id.name" -> client.toQuery(repository_id_named_id_name),
-      "repository_id.named_id.workspace_name" -> client.toQuery(repository_id_named_id_workspace_name)
+      "repository_id.named_id.workspace_name" -> client.toQuery(repository_id_named_id_workspace_name),
+      "location_prefix" -> client.toQuery(location_prefix)
     )
     if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
     if (commit_sha == null) throw new Exception("Missing required parameter \"commit_sha\"")
@@ -385,7 +387,7 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
     return client.request[String, VersioningListCommitBlobsRequestResponse]("GET", basePath + s"/versioning/repositories/$repository_id_repo_id/commits/$commit_sha/blobs", __query, body, VersioningListCommitBlobsRequestResponse.fromJson)
   }
 
-  def ListCommitBlobs2(repository_id_repo_id: String, commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Try[VersioningListCommitBlobsRequestResponse] = Await.result(ListCommitBlobs2Async(repository_id_repo_id, commit_sha, repository_id_named_id_name, repository_id_named_id_workspace_name), Duration.Inf)
+  def ListCommitBlobs2(repository_id_repo_id: String, commit_sha: String, repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, location_prefix: List[String])(implicit ec: ExecutionContext): Try[VersioningListCommitBlobsRequestResponse] = Await.result(ListCommitBlobs2Async(repository_id_repo_id, commit_sha, repository_id_named_id_name, repository_id_named_id_workspace_name, location_prefix), Duration.Inf)
 
   def ListCommitExperimentRunsAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, commit_sha: String, repository_id_repo_id: String, pagination_page_number: BigInt, pagination_page_limit: BigInt)(implicit ec: ExecutionContext): Future[Try[VersioningListCommitExperimentRunsRequestResponse]] = {
     val __query = Map[String,String](

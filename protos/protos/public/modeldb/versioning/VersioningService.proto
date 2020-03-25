@@ -547,9 +547,9 @@ service VersioningService {
 
     rpc GetBranch(GetBranchRequest) returns (GetBranchRequest.Response) {
         option (google.api.http) = {
-            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}"
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch=**}"
             additional_bindings {
-                get: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}"
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch=**}"
             }
         };
     };
@@ -557,10 +557,10 @@ service VersioningService {
     // Unlike tags, branches can be updated. The API must verify that the new commit is a child of the current branch.
     rpc SetBranch(SetBranchRequest) returns (SetBranchRequest.Response) {
         option (google.api.http) = {
-            put: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}"
+            put: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch=**}"
             body: "commit_sha"
             additional_bindings {
-                put: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}"
+                put: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch=**}"
                 body: "commit_sha"
             }
         };
@@ -568,18 +568,18 @@ service VersioningService {
 
     rpc DeleteBranch(DeleteBranchRequest) returns (DeleteBranchRequest.Response) {
         option (google.api.http) = {
-            delete: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}"
+            delete: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch=**}"
             additional_bindings {
-                delete: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}"
+                delete: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch=**}"
             }
         };
     }
 
     rpc ListCommitsLog(ListCommitsLogRequest) returns (ListCommitsLogRequest.Response) {
         option (google.api.http) = {
-            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/log"
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch=**}/log"
             additional_bindings {
-                get: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}/log"
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch=**}/log"
             }
             additional_bindings {
                 get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/log"
