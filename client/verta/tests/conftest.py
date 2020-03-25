@@ -7,6 +7,8 @@ import random
 import shutil
 import string
 
+import requests
+
 import verta
 from verta import Client
 from verta._internal_utils import _utils
@@ -267,14 +269,9 @@ def experiment_run(client):
 def repository(client):
     name = _utils.generate_default_name()
     repo = client.get_or_create_repository(name)
-    root_id = repo.get_commit()
 
     yield repo
 
-    try:
-        utils.delete_commit(repository.id, root_id, repository._conn)
-    except:
-        pass  # may have already been deleted in test
     utils.delete_repository(repo.id, client._conn)
 
 
@@ -287,8 +284,12 @@ def commit(repository):
     if commit.id is not None:
         try:
             utils.delete_commit(repository.id, commit.id, repository._conn)
-        except:
-            pass  # may have already been deleted in test
+        except requests.HTTPError as e:
+            try:
+                if e.response.status_code == 404 and e.response.json()['code'] == 5:
+                    pass  # already deleted in test
+            except:
+                six.raise_from(e, None)
 
 
 @pytest.fixture
