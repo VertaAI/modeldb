@@ -34,7 +34,7 @@ class Commit(object):
     """
     def __init__(self, conn, repo, commit_msg, branch_name=None):
         self._conn = conn
-        self._commit_msg = commit_msg
+        self._commit_json = _utils.proto_to_json(commit_msg)  # dict representation of Commit protobuf
 
         self._repo = repo
         self._parent_ids = list(collections.OrderedDict.fromkeys(commit_msg.parent_shas or []))  # remove duplicates while maintaining order
@@ -46,7 +46,7 @@ class Commit(object):
 
     @property
     def id(self):
-        return self._commit_msg.commit_sha or None
+        return self._commit_json['commit_sha'] or None
 
     @property
     def parent(self):
@@ -96,8 +96,9 @@ class Commit(object):
 
         # TODO: add author
         # TODO: make data more similar to git
-        date = 'Date: ' + datetime.fromtimestamp(self._commit_msg.date_created/1000.).strftime('%Y-%m-%d %H:%M:%S')
-        message = '\n'.join('    ' + c for c in self._commit_msg.message.split('\n'))
+        date_created = int(self._commit_json['date_created'])  # protobuf uint64 is str, so cast to int
+        date = 'Date: ' + datetime.fromtimestamp(date_created/1000.).strftime('%Y-%m-%d %H:%M:%S')
+        message = '\n'.join('    ' + c for c in self._commit_json['message'].split('\n'))
         components = [header, date, '', message, '']
         return '\n'.join(components)
 
@@ -149,7 +150,7 @@ class Commit(object):
         """
         self._lazy_load_blobs()
         self._parent_ids = [self.id]
-        self._commit_msg.ClearField('commit_sha')
+        self._commit_json['commit_sha'] = ""
 
     def _to_create_msg(self, commit_message):
         self._lazy_load_blobs()
@@ -545,8 +546,9 @@ class Commit(object):
         self.apply_diff(other.get_revert_diff(), message)
 
     def _to_heap_element(self):
+        date_created = int(self._commit_json['date_created'])  # protobuf uint64 is str, so cast to int
         # Most recent has higher priority
-        return (-self._commit_msg.date_created, self.id, self)
+        return (-date_created, self.id, self)
 
     def get_common_parent(self, other):
         if self.id is None:
