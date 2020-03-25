@@ -1,0 +1,12 @@
+.title {
+}
+
+.table {
+}
+
+.elem {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

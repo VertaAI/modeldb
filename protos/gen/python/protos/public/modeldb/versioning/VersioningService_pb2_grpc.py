@@ -84,11 +84,6 @@ class VersioningServiceStub(object):
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ComputeRepositoryDiffRequest.SerializeToString,
         response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ComputeRepositoryDiffRequest.Response.FromString,
         )
-    self.MergeRepositoryCommits = channel.unary_unary(
-        '/ai.verta.modeldb.versioning.VersioningService/MergeRepositoryCommits',
-        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.SerializeToString,
-        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.Response.FromString,
-        )
     self.ListBranches = channel.unary_unary(
         '/ai.verta.modeldb.versioning.VersioningService/ListBranches',
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListBranchesRequest.SerializeToString,
@@ -243,13 +238,6 @@ class VersioningServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def MergeRepositoryCommits(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def ListBranches(self, request, context):
     """CRUD for Branches
     """
@@ -392,11 +380,6 @@ def add_VersioningServiceServicer_to_server(servicer, server):
           servicer.ComputeRepositoryDiff,
           request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ComputeRepositoryDiffRequest.FromString,
           response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ComputeRepositoryDiffRequest.Response.SerializeToString,
-      ),
-      'MergeRepositoryCommits': grpc.unary_unary_rpc_method_handler(
-          servicer.MergeRepositoryCommits,
-          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.FromString,
-          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.Response.SerializeToString,
       ),
       'ListBranches': grpc.unary_unary_rpc_method_handler(
           servicer.ListBranches,

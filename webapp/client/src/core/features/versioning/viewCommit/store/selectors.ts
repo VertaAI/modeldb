@@ -6,4 +6,7 @@ export const selectCommunications = (state: IApplicationState) =>
   selectState(state).communications;
 
 export const selectCommit = (state: IApplicationState) =>
-  selectState(state).data;
+  selectState(state).data.commit;
+
+export const selectCommitExperimentRunsInfo = (state: IApplicationState) =>
+  selectState(state).data.experimentRunsInfo;
