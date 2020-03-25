@@ -573,7 +573,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         }
         BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
         AutogenBlob blob =
-            DiffMerger.mergeBlob
+            DiffMerger.mergeBlob(
                 blobExpanded == null ? null : AutogenBlob.fromProto(blobExpanded.getBlob()),
                 AutogenBlobDiff.fromProto(blobDiff));
         locationBlobsMapNew.put(
