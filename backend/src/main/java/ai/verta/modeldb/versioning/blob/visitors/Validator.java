@@ -53,6 +53,9 @@ public class Validator extends Visitor {
     if (isNull(autogenBlobDiff)) {
       return;
     }
+    if (autogenBlobDiff.getCode() == null && autogenBlobDiff.getDataset() == null && autogenBlobDiff.getEnvironment() == null && autogenBlobDiff.getConfig() == null) {
+      throw new ModelDBException("Unknown blob type specified", Status.Code.INVALID_ARGUMENT);
+    }
     if (autogenBlobDiff.getLocation().isEmpty()) {
       throw new ModelDBException("Blob diff location is empty", Status.Code.INVALID_ARGUMENT);
     }
@@ -61,6 +64,9 @@ public class Validator extends Visitor {
 
   public void validate(AutogenBlob autogenBlob) throws ModelDBException {
     preVisitDeep(autogenBlob);
+    if (autogenBlob.getCode() == null && autogenBlob.getDataset() == null && autogenBlob.getEnvironment() == null && autogenBlob.getConfig() == null) {
+      throw new ModelDBException("Unknown blob type specified", Status.Code.INVALID_ARGUMENT);
+    }
   }
 
   private void preVisitDeep(ProtoType proto) throws ModelDBException {

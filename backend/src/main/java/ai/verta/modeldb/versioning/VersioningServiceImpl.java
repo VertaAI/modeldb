@@ -38,6 +38,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final ExperimentRunDAO experimentRunDAO;
   private final ModelDBAuthInterceptor modelDBAuthInterceptor;
   private final FileHasher fileHasher;
+  private final Validator validator = new Validator();
 
   public VersioningServiceImpl(
       AuthService authService,
@@ -281,8 +282,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           responseObserver, e, CreateCommitRequest.Response.getDefaultInstance());
     }
   }
-
-  Validator validator = new Validator();
 
   private List<AutogenBlobDiff> validateBlobDiffs(CreateCommitRequest request)
       throws ModelDBException {
