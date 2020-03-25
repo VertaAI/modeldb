@@ -363,14 +363,14 @@
         ]
       }
     },
-    "/versioning/repositories/{repository_id.repo_id}/branches/{branch}/commits": {
+    "/versioning/repositories/{repository_id.repo_id}/branches/{branch}/log": {
       "get": {
-        "operationId": "ListBranchCommits2",
+        "operationId": "ListCommitsLog2",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/versioningListBranchCommitsRequestResponse"
+              "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
             }
           },
           "default": {
@@ -390,6 +390,7 @@
           },
           {
             "name": "branch",
+            "description": "Pagination pagination = 2;",
             "in": "path",
             "required": true,
             "type": "string"
@@ -407,18 +408,10 @@
             "type": "string"
           },
           {
-            "name": "pagination.page_number",
+            "name": "commit_sha",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "string"
           }
         ],
         "tags": [
@@ -657,6 +650,7 @@
           },
           {
             "name": "commit_sha",
+            "description": "Pagination pagination = 2;",
             "in": "path",
             "required": true,
             "type": "string"
@@ -674,20 +668,6 @@
             "type": "string"
           },
           {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
             "name": "location_prefix",
             "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
             "in": "query",
@@ -697,6 +677,62 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/log": {
+      "get": {
+        "operationId": "ListCommitsLog4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "branch",
+            "description": "Pagination pagination = 2;.",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1555,14 +1591,14 @@
         ]
       }
     },
-    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/commits": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/log": {
       "get": {
-        "operationId": "ListBranchCommits",
+        "operationId": "ListCommitsLog",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/versioningListBranchCommitsRequestResponse"
+              "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
             }
           },
           "default": {
@@ -1587,6 +1623,7 @@
           },
           {
             "name": "branch",
+            "description": "Pagination pagination = 2;",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1599,18 +1636,10 @@
             "format": "uint64"
           },
           {
-            "name": "pagination.page_number",
+            "name": "commit_sha",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "string"
           }
         ],
         "tags": [
@@ -1859,6 +1888,7 @@
           },
           {
             "name": "commit_sha",
+            "description": "Pagination pagination = 2;",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1871,20 +1901,6 @@
             "format": "uint64"
           },
           {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
             "name": "location_prefix",
             "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
             "in": "query",
@@ -1894,6 +1910,62 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/log": {
+      "get": {
+        "operationId": "ListCommitsLog3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "branch",
+            "description": "Pagination pagination = 2;.",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -3334,21 +3406,6 @@
         }
       }
     },
-    "versioningListBranchCommitsRequestResponse": {
-      "type": "object",
-      "properties": {
-        "commits": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningCommit"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "versioningListBranchesRequestResponse": {
       "type": "object",
       "properties": {
@@ -3386,6 +3443,21 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/modeldbExperimentRun"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "versioningListCommitsLogRequestResponse": {
+      "type": "object",
+      "properties": {
+        "commits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningCommit"
           }
         },
         "total_records": {
