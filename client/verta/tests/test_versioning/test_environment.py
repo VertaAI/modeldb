@@ -115,5 +115,8 @@ class TestPython:
     def test_no_autocapture(self):
         env_ver = verta.environment.Python(_autocapture=False)
 
-        # empty protobuf message
-        assert not json_format.MessageToDict(env_ver._msg)
+        # protobuf message is empty
+        assert not json_format.MessageToDict(
+            env_ver._msg,
+            including_default_value_fields=False,
+        )
