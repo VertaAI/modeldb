@@ -48,7 +48,8 @@ class Python(_environment._Environment):
 
         if _autocapture:
             self._capture_python_version()
-        self._capture_requirements(requirements, _autocapture)
+        if requirements is not None or _autocapture:
+            self._capture_requirements(requirements)
         self._capture_constraints(constraints)
 
     @staticmethod
@@ -84,10 +85,8 @@ class Python(_environment._Environment):
         self._msg.python.version.minor = sys.version_info.minor
         self._msg.python.version.patch = sys.version_info.micro
 
-    def _capture_requirements(self, requirements, autocapture):
+    def _capture_requirements(self, requirements):
         if requirements is None:
-            if not autocapture:
-                return
             # TODO: support conda
             req_specs = self.read_pip_environment()
         elif (isinstance(requirements, list)
