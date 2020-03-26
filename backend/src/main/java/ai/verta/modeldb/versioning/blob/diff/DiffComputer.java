@@ -90,8 +90,8 @@ public class DiffComputer {
                 }));
   }
 
-  public static <T> DiffStatusEnumDiffStatus getStatus(T a, T b) {
-    return DiffStatusEnumDiffStatus.fromProto(status(a, b));
+  public static <T> AutogenDiffStatusEnumDiffStatus getStatus(T a, T b) {
+    return AutogenDiffStatusEnumDiffStatus.fromProto(status(a, b));
   }
 
   private static <T> DiffStatus status(T a, T b) {
@@ -107,220 +107,237 @@ public class DiffComputer {
     return DiffStatus.MODIFIED;
   }
 
-  public static BlobDiff computeBlobDiff(Blob a, Blob b) {
+  public static AutogenBlobDiff computeBlobDiff(AutogenBlob a, AutogenBlob b) {
     return Utils.removeEmpty(
-        new BlobDiff()
-            .setCode(computeDiff(a, b, Blob::getCode, DiffComputer::computeCodeDiff))
-            .setConfig(computeDiff(a, b, Blob::getConfig, DiffComputer::computeConfigDiff))
-            .setDataset(computeDiff(a, b, Blob::getDataset, DiffComputer::computeDatasetDiff))
+        new AutogenBlobDiff()
+            .setCode(computeDiff(a, b, AutogenBlob::getCode, DiffComputer::computeCodeDiff))
+            .setConfig(computeDiff(a, b, AutogenBlob::getConfig, DiffComputer::computeConfigDiff))
+            .setDataset(
+                computeDiff(a, b, AutogenBlob::getDataset, DiffComputer::computeDatasetDiff))
             .setEnvironment(
-                computeDiff(a, b, Blob::getEnvironment, DiffComputer::computeEnvironmentDiff)));
+                computeDiff(
+                    a, b, AutogenBlob::getEnvironment, DiffComputer::computeEnvironmentDiff)));
   }
 
-  public static CodeDiff computeCodeDiff(CodeBlob a, CodeBlob b) {
+  public static AutogenCodeDiff computeCodeDiff(AutogenCodeBlob a, AutogenCodeBlob b) {
     return Utils.removeEmpty(
-        new CodeDiff()
-            .setGit(computeDiff(a, b, CodeBlob::getGit, DiffComputer::computeGitCodeDiff))
+        new AutogenCodeDiff()
+            .setGit(computeDiff(a, b, AutogenCodeBlob::getGit, DiffComputer::computeGitCodeDiff))
             .setNotebook(
-                computeDiff(a, b, CodeBlob::getNotebook, DiffComputer::computeNotebookCodeDiff)));
+                computeDiff(
+                    a, b, AutogenCodeBlob::getNotebook, DiffComputer::computeNotebookCodeDiff)));
   }
 
-  public static GitCodeDiff computeGitCodeDiff(GitCodeBlob a, GitCodeBlob b) {
+  public static AutogenGitCodeDiff computeGitCodeDiff(AutogenGitCodeBlob a, AutogenGitCodeBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
 
-    return Utils.removeEmpty(new GitCodeDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+    return Utils.removeEmpty(new AutogenGitCodeDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
-  public static NotebookCodeDiff computeNotebookCodeDiff(NotebookCodeBlob a, NotebookCodeBlob b) {
+  public static AutogenNotebookCodeDiff computeNotebookCodeDiff(
+      AutogenNotebookCodeBlob a, AutogenNotebookCodeBlob b) {
     return Utils.removeEmpty(
-        new NotebookCodeDiff()
+        new AutogenNotebookCodeDiff()
             .setGitRepo(
-                computeDiff(a, b, NotebookCodeBlob::getGitRepo, DiffComputer::computeGitCodeDiff))
+                computeDiff(
+                    a, b, AutogenNotebookCodeBlob::getGitRepo, DiffComputer::computeGitCodeDiff))
             .setPath(
                 computeDiff(
                     a,
                     b,
-                    NotebookCodeBlob::getPath,
+                    AutogenNotebookCodeBlob::getPath,
                     DiffComputer::computePathDatasetComponentDiff)));
   }
 
-  public static ConfigDiff computeConfigDiff(ConfigBlob a, ConfigBlob b) {
+  public static AutogenConfigDiff computeConfigDiff(AutogenConfigBlob a, AutogenConfigBlob b) {
     return Utils.removeEmpty(
-        new ConfigDiff()
+        new AutogenConfigDiff()
             .setHyperparameters(
                 computeListDiff(
                     a,
                     b,
-                    ConfigBlob::getHyperparameters,
-                    HyperparameterConfigBlob::getName,
+                    AutogenConfigBlob::getHyperparameters,
+                    AutogenHyperparameterConfigBlob::getName,
                     DiffComputer::computeHyperparameterConfigDiff))
             .setHyperparameterSet(
                 computeListDiff(
                     a,
                     b,
-                    ConfigBlob::getHyperparameterSet,
-                    HyperparameterSetConfigBlob::getName,
+                    AutogenConfigBlob::getHyperparameterSet,
+                    AutogenHyperparameterSetConfigBlob::getName,
                     DiffComputer::computeHyperparameterSetConfigDiff)));
   }
 
-  public static HyperparameterConfigDiff computeHyperparameterConfigDiff(
-      HyperparameterConfigBlob a, HyperparameterConfigBlob b) {
+  public static AutogenHyperparameterConfigDiff computeHyperparameterConfigDiff(
+      AutogenHyperparameterConfigBlob a, AutogenHyperparameterConfigBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new HyperparameterConfigDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenHyperparameterConfigDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
-  public static HyperparameterSetConfigDiff computeHyperparameterSetConfigDiff(
-      HyperparameterSetConfigBlob a, HyperparameterSetConfigBlob b) {
+  public static AutogenHyperparameterSetConfigDiff computeHyperparameterSetConfigDiff(
+      AutogenHyperparameterSetConfigBlob a, AutogenHyperparameterSetConfigBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new HyperparameterSetConfigDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenHyperparameterSetConfigDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
-  public static DatasetDiff computeDatasetDiff(DatasetBlob a, DatasetBlob b) {
+  public static AutogenDatasetDiff computeDatasetDiff(AutogenDatasetBlob a, AutogenDatasetBlob b) {
     return Utils.removeEmpty(
-        new DatasetDiff()
-            .setPath(computeDiff(a, b, DatasetBlob::getPath, DiffComputer::computePathDatasetDiff))
-            .setS3(computeDiff(a, b, DatasetBlob::getS3, DiffComputer::computeS3DatasetDiff)));
+        new AutogenDatasetDiff()
+            .setPath(
+                computeDiff(
+                    a, b, AutogenDatasetBlob::getPath, DiffComputer::computePathDatasetDiff))
+            .setS3(
+                computeDiff(a, b, AutogenDatasetBlob::getS3, DiffComputer::computeS3DatasetDiff)));
   }
 
-  public static PathDatasetDiff computePathDatasetDiff(PathDatasetBlob a, PathDatasetBlob b) {
+  public static AutogenPathDatasetDiff computePathDatasetDiff(
+      AutogenPathDatasetBlob a, AutogenPathDatasetBlob b) {
     return Utils.removeEmpty(
-        new PathDatasetDiff()
+        new AutogenPathDatasetDiff()
             .setComponents(
                 computeListDiff(
                     a,
                     b,
-                    PathDatasetBlob::getComponents,
-                    PathDatasetComponentBlob::getPath,
+                    AutogenPathDatasetBlob::getComponents,
+                    AutogenPathDatasetComponentBlob::getPath,
                     DiffComputer::computePathDatasetComponentDiff)));
   }
 
-  public static PathDatasetComponentDiff computePathDatasetComponentDiff(
-      PathDatasetComponentBlob a, PathDatasetComponentBlob b) {
+  public static AutogenPathDatasetComponentDiff computePathDatasetComponentDiff(
+      AutogenPathDatasetComponentBlob a, AutogenPathDatasetComponentBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new PathDatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenPathDatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
-  public static S3DatasetDiff computeS3DatasetDiff(S3DatasetBlob a, S3DatasetBlob b) {
+  public static AutogenS3DatasetDiff computeS3DatasetDiff(
+      AutogenS3DatasetBlob a, AutogenS3DatasetBlob b) {
     return Utils.removeEmpty(
-        new S3DatasetDiff()
+        new AutogenS3DatasetDiff()
             .setComponents(
                 computeListDiff(
                     a,
                     b,
-                    S3DatasetBlob::getComponents,
+                    AutogenS3DatasetBlob::getComponents,
                     x -> x.getPath().getPath(),
                     DiffComputer::computeS3DatasetComponentDiff)));
   }
 
-  public static S3DatasetComponentDiff computeS3DatasetComponentDiff(
-      S3DatasetComponentBlob a, S3DatasetComponentBlob b) {
+  public static AutogenS3DatasetComponentDiff computeS3DatasetComponentDiff(
+      AutogenS3DatasetComponentBlob a, AutogenS3DatasetComponentBlob b) {
     return Utils.removeEmpty(
-        new S3DatasetComponentDiff()
+        new AutogenS3DatasetComponentDiff()
             .setPath(
                 computeDiff(
                     a,
                     b,
-                    S3DatasetComponentBlob::getPath,
+                    AutogenS3DatasetComponentBlob::getPath,
                     DiffComputer::computePathDatasetComponentDiff)));
   }
 
-  public static EnvironmentDiff computeEnvironmentDiff(EnvironmentBlob a, EnvironmentBlob b) {
+  public static AutogenEnvironmentDiff computeEnvironmentDiff(
+      AutogenEnvironmentBlob a, AutogenEnvironmentBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new EnvironmentDiff()
+        new AutogenEnvironmentDiff()
             .setCommandLine(
                 computeDiff(
                     a,
                     b,
-                    EnvironmentBlob::getCommandLine,
+                    AutogenEnvironmentBlob::getCommandLine,
                     DiffComputer::computeCommandLineEnvironmentDiff))
             .setDocker(
                 computeDiff(
-                    a, b, EnvironmentBlob::getDocker, DiffComputer::computeDockerEnvironmentDiff))
+                    a,
+                    b,
+                    AutogenEnvironmentBlob::getDocker,
+                    DiffComputer::computeDockerEnvironmentDiff))
             .setPython(
                 computeDiff(
-                    a, b, EnvironmentBlob::getPython, DiffComputer::computePythonEnvironmentDiff))
+                    a,
+                    b,
+                    AutogenEnvironmentBlob::getPython,
+                    DiffComputer::computePythonEnvironmentDiff))
             .setEnvironmentVariables(
                 computeListDiff(
                     a,
                     b,
-                    EnvironmentBlob::getEnvironmentVariables,
-                    EnvironmentVariablesBlob::getName,
+                    AutogenEnvironmentBlob::getEnvironmentVariables,
+                    AutogenEnvironmentVariablesBlob::getName,
                     DiffComputer::computeEnvironmentVariablesDiff)));
   }
 
-  public static CommandLineEnvironmentDiff computeCommandLineEnvironmentDiff(
+  public static AutogenCommandLineEnvironmentDiff computeCommandLineEnvironmentDiff(
       List<String> a, List<String> b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new CommandLineEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenCommandLineEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
-  public static DockerEnvironmentDiff computeDockerEnvironmentDiff(
-      DockerEnvironmentBlob a, DockerEnvironmentBlob b) {
+  public static AutogenDockerEnvironmentDiff computeDockerEnvironmentDiff(
+      AutogenDockerEnvironmentBlob a, AutogenDockerEnvironmentBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new DockerEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenDockerEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
-  public static PythonEnvironmentDiff computePythonEnvironmentDiff(
-      PythonEnvironmentBlob a, PythonEnvironmentBlob b) {
+  public static AutogenPythonEnvironmentDiff computePythonEnvironmentDiff(
+      AutogenPythonEnvironmentBlob a, AutogenPythonEnvironmentBlob b) {
     return Utils.removeEmpty(
-        new PythonEnvironmentDiff()
+        new AutogenPythonEnvironmentDiff()
             .setVersion(
                 computeDiff(
                     a,
                     b,
-                    PythonEnvironmentBlob::getVersion,
+                    AutogenPythonEnvironmentBlob::getVersion,
                     DiffComputer::computeVersionEnvironmentDiff))
             .setConstraints(
                 computeListDiff(
                     a,
                     b,
-                    PythonEnvironmentBlob::getConstraints,
-                    PythonRequirementEnvironmentBlob::getLibrary,
+                    AutogenPythonEnvironmentBlob::getConstraints,
+                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
                     DiffComputer::computePythonRequirementEnvironmentDiff))
             .setRequirements(
                 computeListDiff(
                     a,
                     b,
-                    PythonEnvironmentBlob::getRequirements,
-                    PythonRequirementEnvironmentBlob::getLibrary,
+                    AutogenPythonEnvironmentBlob::getRequirements,
+                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
                     DiffComputer::computePythonRequirementEnvironmentDiff)));
   }
 
-  public static VersionEnvironmentDiff computeVersionEnvironmentDiff(
-      VersionEnvironmentBlob a, VersionEnvironmentBlob b) {
+  public static AutogenVersionEnvironmentDiff computeVersionEnvironmentDiff(
+      AutogenVersionEnvironmentBlob a, AutogenVersionEnvironmentBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new VersionEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenVersionEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
-  public static PythonRequirementEnvironmentDiff computePythonRequirementEnvironmentDiff(
-      PythonRequirementEnvironmentBlob a, PythonRequirementEnvironmentBlob b) {
+  public static AutogenPythonRequirementEnvironmentDiff computePythonRequirementEnvironmentDiff(
+      AutogenPythonRequirementEnvironmentBlob a, AutogenPythonRequirementEnvironmentBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
 
     return Utils.removeEmpty(
-        new PythonRequirementEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenPythonRequirementEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
-  public static EnvironmentVariablesDiff computeEnvironmentVariablesDiff(
-      EnvironmentVariablesBlob a, EnvironmentVariablesBlob b) {
+  public static AutogenEnvironmentVariablesDiff computeEnvironmentVariablesDiff(
+      AutogenEnvironmentVariablesBlob a, AutogenEnvironmentVariablesBlob b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new EnvironmentVariablesDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenEnvironmentVariablesDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 }

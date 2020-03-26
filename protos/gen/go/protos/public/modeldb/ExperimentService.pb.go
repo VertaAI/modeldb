@@ -2162,11 +2162,11 @@ var fileDescriptor_26f3c14a27ce9d1a = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConnInterface
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion4
 
 // ExperimentServiceClient is the client API for ExperimentService service.
 //
@@ -2204,10 +2204,10 @@ type ExperimentServiceClient interface {
 }
 
 type experimentServiceClient struct {
-	cc grpc.ClientConnInterface
+	cc *grpc.ClientConn
 }
 
-func NewExperimentServiceClient(cc grpc.ClientConnInterface) ExperimentServiceClient {
+func NewExperimentServiceClient(cc *grpc.ClientConn) ExperimentServiceClient {
 	return &experimentServiceClient{cc}
 }
 

@@ -15,18 +15,18 @@ import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.generator.java.util.*;
 import com.pholser.junit.quickcheck.random.*;
 
-public class {{class_name}}Gen extends Generator<{{class_name}}> {
-    public {{class_name}}Gen() {
-        super({{class_name}}.class);
+public class Autogen{{class_name}}Gen extends Generator<Autogen{{class_name}}> {
+    public Autogen{{class_name}}Gen() {
+        super(Autogen{{class_name}}.class);
     }
 
-    @Override public {{class_name}} generate(
+    @Override public Autogen{{class_name}} generate(
             SourceOfRandomness r,
             GenerationStatus status) {
                 // if (r.nextBoolean())
                 //     return null;
 
-                {{class_name}} obj = new {{class_name}}();
+                Autogen{{class_name}} obj = new Autogen{{class_name}}();
                 {{#properties}}
                 {{^required}}
                 {{#type}}
