@@ -24,6 +24,8 @@ class Notebook(_code._Code):
     ----------
     notebook_path : str, optional
         Filepath of the Jupyter Notebook. If not provided, it will automatically be determined.
+    _autocapture : bool, default True
+        Whether to enable the automatic capturing behavior of parameters above.
 
     Raises
     ------
@@ -39,8 +41,8 @@ class Notebook(_code._Code):
         code2 = Notebook("Spam-Detection.ipynb")
 
     """
-    def __init__(self, notebook_path=None):
-        if notebook_path is None:
+    def __init__(self, notebook_path=None, _autocapture=True):
+        if notebook_path is None and _autocapture:
             notebook_path = _utils.get_notebook_filepath()
             try:
                 _utils.save_notebook(notebook_path)
@@ -50,14 +52,15 @@ class Notebook(_code._Code):
 
         super(Notebook, self).__init__()
 
-        self._msg.notebook.path.CopyFrom(_path.Path(notebook_path)._msg.path)
-        try:
-            self._msg.notebook.git_repo.CopyFrom(_git.Git()._msg.git)
-            repo_root = _git_utils.get_git_repo_root_dir()
-        except OSError:
-            # TODO: impl and catch a more specific exception for git calls
-            print("unable to capture git environment; skipping")
-        else:
-            # amend notebook path to be relative to repo root
-            file_msg = self._msg.notebook.path.components[0]
-            file_msg.path = os.path.relpath(file_msg.path, repo_root)
+        if notebook_path is not None:
+            self._msg.notebook.path.CopyFrom(_path.Path(notebook_path)._msg.path)
+            try:
+                self._msg.notebook.git_repo.CopyFrom(_git.Git()._msg.git)
+                repo_root = _git_utils.get_git_repo_root_dir()
+            except OSError:
+                # TODO: impl and catch a more specific exception for git calls
+                print("unable to capture git environment; skipping")
+            else:
+                # amend notebook path to be relative to repo root
+                file_msg = self._msg.notebook.path.components[0]
+                file_msg.path = os.path.relpath(file_msg.path, repo_root)

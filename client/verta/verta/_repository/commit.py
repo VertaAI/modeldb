@@ -641,9 +641,9 @@ def blob_msg_to_object(blob_msg):
     if content_type == 'code':
         content_subtype = blob_msg.code.WhichOneof('content')
         if content_subtype == 'git':
-            obj = code.Git()  # TODO: skip obj init, because it requires git
+            obj = code.Git(_autocapture=False)
         elif content_subtype == 'notebook':
-            obj = code.Notebook()  # TODO: skip obj init, because it requires Jupyter
+            obj = code.Notebook(_autocapture=False)
     elif content_type == 'config':
         obj = configuration.Hyperparameters()
     elif content_type == 'dataset':
@@ -655,7 +655,7 @@ def blob_msg_to_object(blob_msg):
     elif content_type == 'environment':
         content_subtype = blob_msg.environment.WhichOneof('content')
         if content_subtype == 'python':
-            obj = environment.Python()
+            obj = environment.Python(_autocapture=False)
         elif content_subtype == 'docker':
             raise NotImplementedError
 
