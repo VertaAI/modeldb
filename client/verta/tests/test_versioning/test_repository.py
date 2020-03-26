@@ -119,7 +119,10 @@ class TestCommit:
             assert commit.get(path1)
 
             commit.save(message="banana")
-            assert commit.id != original_id
+            try:
+                assert commit.id != original_id
+            finally:
+                utils.delete_commit(commit._repo.id, commit.id, commit._conn)
         finally:
             utils.delete_commit(commit._repo.id, original_id, commit._conn)
 
