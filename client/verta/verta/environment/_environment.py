@@ -19,12 +19,14 @@ class _Environment(blob.Blob):
     Handles environment variables and command line arguments.
 
     """
-    def __init__(self, env_vars):
+    def __init__(self, env_vars, autocapture):
         super(_Environment, self).__init__()
 
         self._msg = _EnvironmentService.EnvironmentBlob()
+
         self._capture_env_vars(env_vars)
-        self._capture_cmd_line_args()
+        if autocapture:
+            self._capture_cmd_line_args()
 
     def _capture_env_vars(self, env_vars):
         if env_vars is None:
