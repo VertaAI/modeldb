@@ -24,7 +24,8 @@ class _Environment(blob.Blob):
 
         self._msg = _EnvironmentService.EnvironmentBlob()
 
-        self._capture_env_vars(env_vars)
+        if env_vars is not None:
+            self._capture_env_vars(env_vars)
         if autocapture:
             self._capture_cmd_line_args()
 

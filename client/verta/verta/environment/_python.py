@@ -50,7 +50,8 @@ class Python(_environment._Environment):
             self._capture_python_version()
         if requirements is not None or _autocapture:
             self._capture_requirements(requirements)
-        self._capture_constraints(constraints)
+        if constraints is not None:
+            self._capture_constraints(constraints)
 
     @staticmethod
     def _req_spec_to_msg(req_spec):
