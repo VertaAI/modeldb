@@ -3,6 +3,7 @@ package ai.verta.modeldb.versioning;
 import static java.util.stream.Collectors.toMap;
 
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -16,15 +17,19 @@ import ai.verta.modeldb.versioning.blob.diff.DiffComputer;
 import ai.verta.modeldb.versioning.blob.diff.DiffMerger;
 import ai.verta.modeldb.versioning.blob.diff.TypeChecker;
 import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -46,6 +51,11 @@ public class BlobDAORdbImpl implements BlobDAO {
   private static final Logger LOGGER = LogManager.getLogger(BlobDAORdbImpl.class);
 
   public static final String TREE = "TREE";
+  private final AuthService authService;
+
+  public BlobDAORdbImpl(AuthService authService) {
+    this.authService = authService;
+  }
 
   /**
    * Goes through each BlobExpanded creating TREE/BLOB node top down and computing SHA bottom up
@@ -397,6 +407,12 @@ public class BlobDAORdbImpl implements BlobDAO {
             "No such commit found in the repository : " + internalCommitB.getCommit_hash(),
             Status.Code.NOT_FOUND);
       }
+
+      if (request.getReplaceAWithCommonAncestor()) {
+        internalCommitA =
+            getCommonParent(
+                session, internalCommitA.getCommit_hash(), internalCommitB.getCommit_hash());
+      }
       // get list of blob expanded in both commit and group them in a map based on location
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
           getCommitBlobMapWithHash(session, internalCommitA.getRootSha(), new ArrayList<>());
@@ -405,53 +421,184 @@ public class BlobDAORdbImpl implements BlobDAO {
           getCommitBlobMapWithHash(session, internalCommitB.getRootSha(), new ArrayList<>());
 
       session.getTransaction().commit();
+      return computeDiffFromCommitMaps(locationBlobsMapCommitA, locationBlobsMapCommitB);
+    }
+  }
 
-      // Added new blob location in the CommitB, locations in
-      Set<String> addedLocations = new LinkedHashSet<>(locationBlobsMapCommitB.keySet());
-      addedLocations.removeAll(locationBlobsMapCommitA.keySet());
-      LOGGER.debug("Added location for Diff : {}", addedLocations);
+  private ComputeRepositoryDiffRequest.Response computeDiffFromCommitMaps(
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA,
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitB) {
+    // Added new blob location in the CommitB, locations in
+    Set<String> addedLocations = new LinkedHashSet<>(locationBlobsMapCommitB.keySet());
+    addedLocations.removeAll(locationBlobsMapCommitA.keySet());
+    LOGGER.debug("Added location for Diff : {}", addedLocations);
 
-      // deleted new blob location from the CommitA
-      Set<String> deletedLocations = new LinkedHashSet<>(locationBlobsMapCommitA.keySet());
-      deletedLocations.removeAll(locationBlobsMapCommitB.keySet());
-      LOGGER.debug("Deleted location for Diff : {}", deletedLocations);
+    // deleted new blob location from the CommitA
+    Set<String> deletedLocations = new LinkedHashSet<>(locationBlobsMapCommitA.keySet());
+    deletedLocations.removeAll(locationBlobsMapCommitB.keySet());
+    LOGGER.debug("Deleted location for Diff : {}", deletedLocations);
 
-      // get B sha -> blobs
-      Map<String, Set<BlobExpanded>> blobsB = getCollectToMap(locationBlobsMapCommitB);
-      // get A sha -> blobs
-      Map<String, Set<BlobExpanded>> blobsA = getCollectToMap(locationBlobsMapCommitA);
-      // delete blobs same with A
-      for (Map.Entry<String, Set<BlobExpanded>> entry : blobsA.entrySet()) {
-        Set<BlobExpanded> ent = blobsB.get(entry.getKey());
-        if (ent != null) {
-          ent.removeAll(entry.getValue());
-        }
+    // get B sha -> blobs
+    Map<String, Set<BlobExpanded>> blobsB = getCollectToMap(locationBlobsMapCommitB);
+    // get A sha -> blobs
+    Map<String, Set<BlobExpanded>> blobsA = getCollectToMap(locationBlobsMapCommitA);
+    // delete blobs same with A
+    for (Map.Entry<String, Set<BlobExpanded>> entry : blobsA.entrySet()) {
+      Set<BlobExpanded> ent = blobsB.get(entry.getKey());
+      if (ent != null) {
+        ent.removeAll(entry.getValue());
       }
-      // get modified location -> blob
-      Map<String, BlobExpanded> locationBlobsModified =
-          getLocationWiseBlobExpandedMapFromCollection(
-              blobsB.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
-      // remove added from modified
-      locationBlobsModified.keySet().removeAll(addedLocations);
-      Set<String> modifiedLocations = locationBlobsModified.keySet();
-      LOGGER.debug("Modified location for Diff : {}", modifiedLocations);
+    }
+    // get modified location -> blob
+    Map<String, BlobExpanded> locationBlobsModified =
+        getLocationWiseBlobExpandedMapFromCollection(
+            blobsB.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+    // remove added from modified
+    locationBlobsModified.keySet().removeAll(addedLocations);
+    Set<String> modifiedLocations = locationBlobsModified.keySet();
+    LOGGER.debug("Modified location for Diff : {}", modifiedLocations);
 
-      List<ai.verta.modeldb.versioning.BlobDiff> addedBlobDiffList =
-          getAddedBlobDiff(addedLocations, convertToLocationBlobMap(locationBlobsMapCommitB));
-      List<ai.verta.modeldb.versioning.BlobDiff> deletedBlobDiffList =
-          getDeletedBlobDiff(deletedLocations, convertToLocationBlobMap(locationBlobsMapCommitA));
-      List<ai.verta.modeldb.versioning.BlobDiff> modifiedBlobDiffList =
-          getModifiedBlobDiff(
-              modifiedLocations,
-              convertToLocationBlobMap(locationBlobsMapCommitA),
-              convertToLocationBlobMap(locationBlobsMapCommitB));
+    List<ai.verta.modeldb.versioning.BlobDiff> addedBlobDiffList =
+        getAddedBlobDiff(addedLocations, convertToLocationBlobMap(locationBlobsMapCommitB));
+    List<ai.verta.modeldb.versioning.BlobDiff> deletedBlobDiffList =
+        getDeletedBlobDiff(deletedLocations, convertToLocationBlobMap(locationBlobsMapCommitA));
+    List<ai.verta.modeldb.versioning.BlobDiff> modifiedBlobDiffList =
+        getModifiedBlobDiff(
+            modifiedLocations,
+            convertToLocationBlobMap(locationBlobsMapCommitA),
+            convertToLocationBlobMap(locationBlobsMapCommitB));
 
-      return ComputeRepositoryDiffRequest.Response.newBuilder()
-          .addAllDiffs(addedBlobDiffList)
-          .addAllDiffs(deletedBlobDiffList)
-          .addAllDiffs(modifiedBlobDiffList)
+    return ComputeRepositoryDiffRequest.Response.newBuilder()
+        .addAllDiffs(addedBlobDiffList)
+        .addAllDiffs(deletedBlobDiffList)
+        .addAllDiffs(modifiedBlobDiffList)
+        .build();
+  }
+
+  @Override
+  public MergeRepositoryCommitsRequest.Response mergeCommit(
+      RepositoryFunction repositoryFunction, MergeRepositoryCommitsRequest request)
+      throws ModelDBException, NoSuchAlgorithmException {
+    Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitB =
+        new HashMap<String, Map.Entry<BlobExpanded, String>>();
+    Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapParentCommit =
+        new HashMap<String, Map.Entry<BlobExpanded, String>>();
+    Map<String, BlobExpanded> locationBlobsMapCommitASimple = new HashMap<String, BlobExpanded>();
+    CommitEntity internalCommitA;
+    CommitEntity internalCommitB;
+    try (Session readSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      RepositoryEntity repositoryEntity = repositoryFunction.apply(readSession);
+
+      internalCommitA = readSession.get(CommitEntity.class, request.getCommitShaA());
+      if (internalCommitA == null) {
+        throw new ModelDBException(
+            "No such commit found : " + request.getCommitShaA(), Status.Code.NOT_FOUND);
+      }
+
+      internalCommitB = readSession.get(CommitEntity.class, request.getCommitShaB());
+      if (internalCommitB == null) {
+        throw new ModelDBException(
+            "No such commit found : " + request.getCommitShaB(), Status.Code.NOT_FOUND);
+      }
+
+      if (!VersioningUtils.commitRepositoryMappingExists(
+          readSession, internalCommitA.getCommit_hash(), repositoryEntity.getId())) {
+        throw new ModelDBException(
+            "No such commit found in the repository : " + internalCommitA.getCommit_hash(),
+            Status.Code.NOT_FOUND);
+      }
+
+      if (!VersioningUtils.commitRepositoryMappingExists(
+          readSession, internalCommitB.getCommit_hash(), repositoryEntity.getId())) {
+        throw new ModelDBException(
+            "No such commit found in the repository : " + internalCommitB.getCommit_hash(),
+            Status.Code.NOT_FOUND);
+      }
+
+      CommitEntity parentCommit =
+          getCommonParent(readSession, request.getCommitShaA(), request.getCommitShaB());
+
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
+          getCommitBlobMapWithHash(readSession, internalCommitA.getRootSha(), new ArrayList<>());
+
+      for (Entry<String, Entry<BlobExpanded, String>> locationBlobsEntry :
+          locationBlobsMapCommitA.entrySet()) {
+        locationBlobsMapCommitASimple.put(
+            locationBlobsEntry.getKey(), locationBlobsEntry.getValue().getKey());
+      }
+
+      locationBlobsMapCommitB =
+          getCommitBlobMapWithHash(readSession, internalCommitB.getRootSha(), new ArrayList<>());
+
+      locationBlobsMapParentCommit =
+          getCommitBlobMapWithHash(readSession, parentCommit.getRootSha(), new ArrayList<>());
+    }
+    try (Session writeSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      writeSession.beginTransaction();
+      List<ai.verta.modeldb.versioning.BlobDiff> diffB =
+          computeDiffFromCommitMaps(locationBlobsMapParentCommit, locationBlobsMapCommitB)
+              .getDiffsList();
+      List<BlobContainer> blobContainerList =
+          getBlobContainers(diffB, locationBlobsMapCommitASimple);
+
+      final String rootSha =
+          setBlobs(writeSession, blobContainerList, new FileHasher());
+      long timeCreated = new Date().getTime();
+      List<String> parentSHAs = Arrays.asList(request.getCommitShaA(), request.getCommitShaB());
+      List<CommitEntity> parentCommits = Arrays.asList(internalCommitA, internalCommitB);
+      String mergeMessage = request.getContent().getMessage();
+      if (mergeMessage.isEmpty()) {
+        mergeMessage =
+            "Merge "
+                + request.getCommitShaA().substring(0, 7)
+                + " into "
+                + request.getCommitShaB().substring(0, 7);
+      }
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      String author = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
+      final String commitSha =
+          VersioningUtils.generateCommitSHA(parentSHAs, mergeMessage, timeCreated, author, rootSha);
+
+      Commit internalCommit =
+          Commit.newBuilder()
+              .setDateCreated(timeCreated)
+              .setAuthor(author)
+              .setMessage(mergeMessage)
+              .setCommitSha(commitSha)
+              .build();
+      CommitEntity commitEntity =
+          new CommitEntity(
+              repositoryFunction.apply(writeSession), parentCommits, internalCommit, rootSha);
+      writeSession.saveOrUpdate(commitEntity);
+      writeSession.getTransaction().commit();
+      return MergeRepositoryCommitsRequest.Response.newBuilder()
+          .setCommit(commitEntity.toCommitProto())
           .build();
     }
+  }
+
+  private CommitEntity getCommonParent(Session session, String commitA, String commitB)
+      throws ModelDBException {
+    List<CommitEntity> parentCommitA = VersioningUtils.getParentCommits(session, commitA);
+    List<CommitEntity> parentCommitB = VersioningUtils.getParentCommits(session, commitB);
+
+    CommitEntity commonParent = null;
+    int itrA = 0;
+    int itrB = 0;
+    // TODO : this algorithm does not require all the commits to be available before starting.
+    while (itrA < parentCommitA.size() && itrB < parentCommitB.size()) {
+      CommitEntity candidateA = parentCommitA.get(itrA);
+      CommitEntity candidateB = parentCommitB.get(itrB);
+      if (candidateA.getCommit_hash().equals(candidateB.getCommit_hash())) {
+        return candidateA;
+      } else if (candidateA.getDate_created() > candidateB.getDate_created()) {
+        itrA++;
+      } else {
+        itrB++;
+      }
+    }
+    // Should never happen, since we have the initial commit
+    throw new ModelDBException("Could not find base commit for merge", Status.Code.INTERNAL);
   }
 
   private Map<String, Set<BlobExpanded>> getCollectToMap(
@@ -564,35 +711,42 @@ public class BlobDAORdbImpl implements BlobDAO {
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
       Map<String, BlobExpanded> locationBlobsMap =
           getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
-      Map<String, BlobExpanded> locationBlobsMapNew = new LinkedHashMap<>();
-      for (ai.verta.modeldb.versioning.BlobDiff blobDiff : request.getDiffsList()) {
-        final ProtocolStringList locationList = blobDiff.getLocationList();
-        if (locationList == null || locationList.isEmpty()) {
-          throw new ModelDBException(
-              "Location in BlobDiff should not be empty", Status.Code.INVALID_ARGUMENT);
-        }
-        BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
-        AutogenBlob blob =
-            DiffMerger.mergeBlob(
-                blobExpanded == null ? null : AutogenBlob.fromProto(blobExpanded.getBlob()),
-                AutogenBlobDiff.fromProto(blobDiff));
-        locationBlobsMapNew.put(
-            getStringFromLocationList(locationList),
-            blob == null
-                ? null
-                : BlobExpanded.newBuilder()
-                    .addAllLocation(locationList)
-                    .setBlob(blob.toProto())
-                    .build());
-      }
-      locationBlobsMap.putAll(locationBlobsMapNew);
-      List<BlobContainer> blobContainerList = new LinkedList<>();
-      for (Map.Entry<String, BlobExpanded> blobExpandedEntry : locationBlobsMap.entrySet()) {
-        if (blobExpandedEntry.getValue() != null) {
-          blobContainerList.add(BlobContainer.create(blobExpandedEntry.getValue()));
-        }
-      }
-      return blobContainerList;
+      return getBlobContainers(request.getDiffsList(), locationBlobsMap);
     }
+  }
+
+  private List<BlobContainer> getBlobContainers(
+      List<ai.verta.modeldb.versioning.BlobDiff> blobDiffList,
+      Map<String, BlobExpanded> locationBlobsMap)
+      throws ModelDBException {
+    Map<String, BlobExpanded> locationBlobsMapNew = new LinkedHashMap<>();
+    for (ai.verta.modeldb.versioning.BlobDiff blobDiff : blobDiffList) {
+      final ProtocolStringList locationList = blobDiff.getLocationList();
+      if (locationList == null || locationList.isEmpty()) {
+        throw new ModelDBException(
+            "Location in BlobDiff should not be empty", Status.Code.INVALID_ARGUMENT);
+      }
+      BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
+      Blob blob =
+          DiffMerger.mergeBlob(
+              blobExpanded == null ? null : Blob.fromProto(blobExpanded.getBlob()),
+              BlobDiff.fromProto(blobDiff));
+      locationBlobsMapNew.put(
+          getStringFromLocationList(locationList),
+          blob == null
+              ? null
+              : BlobExpanded.newBuilder()
+                  .addAllLocation(locationList)
+                  .setBlob(blob.toProto())
+                  .build());
+    }
+    locationBlobsMap.putAll(locationBlobsMapNew);
+    List<BlobContainer> blobContainerList = new LinkedList<>();
+    for (Map.Entry<String, BlobExpanded> blobExpandedEntry : locationBlobsMap.entrySet()) {
+      if (blobExpandedEntry.getValue() != null) {
+        blobContainerList.add(BlobContainer.create(blobExpandedEntry.getValue()));
+      }
+    }
+    return blobContainerList;
   }
 }
