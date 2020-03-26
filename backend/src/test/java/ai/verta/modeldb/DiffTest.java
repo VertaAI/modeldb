@@ -71,6 +71,10 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+/**
+ * Tests diffs after commit creation with diff or blob description and checks resulting diff.
+ * Tests 2 modified cases: same type and different type.
+ */
 @RunWith(Parameterized.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DiffTest {
@@ -139,6 +143,8 @@ public class DiffTest {
   private final int blobType;
   private final int commitType;
 
+  //1. blob type: 0 -- dataset path, 1 -- config, 2 -- python environment, 3 -- Git Notebook Code
+  //2. commit type -- 0 -- blob, 1 -- diff
   @Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {{0, 0}, {1, 1}, {2, 0}, {3, 1}});
