@@ -541,8 +541,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<BlobContainer> blobContainerList =
           getBlobContainers(diffB, locationBlobsMapCommitASimple);
 
-      final String rootSha =
-          setBlobs(writeSession, blobContainerList, new FileHasher());
+      final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
       long timeCreated = new Date().getTime();
       List<String> parentSHAs = Arrays.asList(request.getCommitShaA(), request.getCommitShaB());
       List<CommitEntity> parentCommits = Arrays.asList(internalCommitA, internalCommitB);
@@ -612,7 +611,8 @@ public class BlobDAORdbImpl implements BlobDAO {
                   LinkedHashSet<BlobExpanded> newHash = new LinkedHashSet<>(m1);
                   newHash.addAll(m2);
                   return newHash;
-                }, LinkedHashMap::new));
+                },
+                LinkedHashMap::new));
   }
 
   List<ai.verta.modeldb.versioning.BlobDiff> getAddedBlobDiff(
@@ -727,10 +727,10 @@ public class BlobDAORdbImpl implements BlobDAO {
             "Location in BlobDiff should not be empty", Status.Code.INVALID_ARGUMENT);
       }
       BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
-      Blob blob =
+      AutogenBlob blob =
           DiffMerger.mergeBlob(
-              blobExpanded == null ? null : Blob.fromProto(blobExpanded.getBlob()),
-              BlobDiff.fromProto(blobDiff));
+              blobExpanded == null ? null : AutogenBlob.fromProto(blobExpanded.getBlob()),
+              AutogenBlobDiff.fromProto(blobDiff));
       locationBlobsMapNew.put(
           getStringFromLocationList(locationList),
           blob == null
