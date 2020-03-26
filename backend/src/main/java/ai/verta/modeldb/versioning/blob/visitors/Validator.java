@@ -56,7 +56,10 @@ public class Validator extends Visitor {
     if (isNull(autogenBlobDiff)) {
       return;
     }
-    if (autogenBlobDiff.getCode() == null && autogenBlobDiff.getDataset() == null && autogenBlobDiff.getEnvironment() == null && autogenBlobDiff.getConfig() == null) {
+    if (autogenBlobDiff.getCode() == null
+        && autogenBlobDiff.getDataset() == null
+        && autogenBlobDiff.getEnvironment() == null
+        && autogenBlobDiff.getConfig() == null) {
       throw new ModelDBException("Unknown blob type specified", Status.Code.INVALID_ARGUMENT);
     }
     if (autogenBlobDiff.getLocation() == null || autogenBlobDiff.getLocation().isEmpty()) {
@@ -75,7 +78,10 @@ public class Validator extends Visitor {
 
   public void validate(AutogenBlob autogenBlob) throws ModelDBException {
     preVisitDeep(autogenBlob);
-    if (autogenBlob.getCode() == null && autogenBlob.getDataset() == null && autogenBlob.getEnvironment() == null && autogenBlob.getConfig() == null) {
+    if (autogenBlob.getCode() == null
+        && autogenBlob.getDataset() == null
+        && autogenBlob.getEnvironment() == null
+        && autogenBlob.getConfig() == null) {
       throw new ModelDBException("Unknown blob type specified", Status.Code.INVALID_ARGUMENT);
     }
   }
@@ -130,8 +136,9 @@ public class Validator extends Visitor {
     autogenContinuousHyperparameterSetConfigBlob.preVisitDeep(this);
   }
 
-  private void checkStringIsDouble(AutogenHyperparameterValuesConfigBlob beginSetConfigBlob,
-      String description) throws ModelDBException {
+  private void checkStringIsDouble(
+      AutogenHyperparameterValuesConfigBlob beginSetConfigBlob, String description)
+      throws ModelDBException {
     if (beginSetConfigBlob != null && !beginSetConfigBlob.getStringValue().isEmpty()) {
       try {
         Double.parseDouble(beginSetConfigBlob.getStringValue());
@@ -381,5 +388,4 @@ public class Validator extends Visitor {
       throws ModelDBException {
     preVisitDeep(blob);
   }
-
 }

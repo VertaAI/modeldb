@@ -539,7 +539,9 @@ public class BlobDAORdbImpl implements BlobDAO {
           computeDiffFromCommitMaps(locationBlobsMapParentCommit, locationBlobsMapCommitB)
               .getDiffsList();
       List<BlobContainer> blobContainerList =
-          getBlobContainers(diffB.stream().map(AutogenBlobDiff::fromProto).collect(Collectors.toList()), locationBlobsMapCommitASimple);
+          getBlobContainers(
+              diffB.stream().map(AutogenBlobDiff::fromProto).collect(Collectors.toList()),
+              locationBlobsMapCommitASimple);
 
       final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
       long timeCreated = new Date().getTime();
@@ -716,8 +718,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   private List<BlobContainer> getBlobContainers(
-      List<AutogenBlobDiff> diffs,
-      Map<String, BlobExpanded> locationBlobsMap)
+      List<AutogenBlobDiff> diffs, Map<String, BlobExpanded> locationBlobsMap)
       throws ModelDBException {
     Map<String, BlobExpanded> locationBlobsMapNew = new LinkedHashMap<>();
     for (AutogenBlobDiff blobDiff : diffs) {
