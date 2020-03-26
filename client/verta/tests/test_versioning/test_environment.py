@@ -7,6 +7,8 @@ import tempfile
 
 import six
 
+from google.protobuf import json_format
+
 import verta.environment
 from verta._internal_utils import _pip_requirements_utils
 
@@ -109,3 +111,9 @@ class TestPython:
         reqs = verta.environment.Python.read_pip_file(requirements_file_without_versions.name)
         with pytest.raises(ValueError):
             verta.environment.Python(constraints=reqs)
+
+    def test_no_autocapture(self):
+        env_ver = verta.environment.Python(_autocapture=False)
+
+        # empty protobuf message
+        assert not json_format.MessageToDict(env_ver._msg)
