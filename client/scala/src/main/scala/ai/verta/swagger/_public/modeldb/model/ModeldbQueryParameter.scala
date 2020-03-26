@@ -28,7 +28,7 @@ import ai.verta.swagger.client.objects._
 case class ModeldbQueryParameter (
   parameter_name: Option[String] = None,
   parameter_type: Option[ValueTypeEnumValueType] = None,
-  value: Option[GenericObject] = None
+  value: Option[ProtobufValue] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbQueryParameter.toJson(this)
 }
@@ -39,7 +39,7 @@ object ModeldbQueryParameter {
       List[Option[JField]](
         obj.parameter_name.map(x => JField("parameter_name", JString(x))),
         obj.parameter_type.map(x => JField("parameter_type", ((x: ValueTypeEnumValueType) => ValueTypeEnumValueType.toJson(x))(x))),
-        obj.value.map(x => JField("value", ((x: GenericObject) => x.toJson())(x)))
+        obj.value.map(x => JField("value", ((x: ProtobufValue) => ProtobufValue.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -55,7 +55,7 @@ object ModeldbQueryParameter {
           // TODO: handle required
           parameter_name = fieldsMap.get("parameter_name").map(JsonConverter.fromJsonString),
           parameter_type = fieldsMap.get("parameter_type").map(ValueTypeEnumValueType.fromJson),
-          value = fieldsMap.get("value").map(GenericObject.fromJson)
+          value = fieldsMap.get("value").map(ProtobufValue.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

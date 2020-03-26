@@ -4,6 +4,10 @@
     "title": "protos/public/uac/Team.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -20,12 +24,6 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacAddTeamUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -54,12 +52,6 @@
             "schema": {
               "$ref": "#/definitions/uacDeleteTeamResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -87,12 +79,6 @@
             "schema": {
               "$ref": "#/definitions/uacGetTeamByIdResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -117,12 +103,6 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacGetTeamByNameResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -155,12 +135,6 @@
             "schema": {
               "$ref": "#/definitions/uacGetTeamByShortNameResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -192,12 +166,6 @@
             "schema": {
               "$ref": "#/definitions/uacListMyTeamsResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "tags": [
@@ -214,12 +182,6 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacListTeamUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -245,12 +207,6 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacRemoveTeamUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -279,12 +235,6 @@
             "schema": {
               "$ref": "#/definitions/uacSetTeamResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -304,39 +254,6 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "type_url": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "runtimeError": {
-      "type": "object",
-      "properties": {
-        "error": {
-          "type": "string"
-        },
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
-    },
     "uacAddTeamUser": {
       "type": "object",
       "properties": {
