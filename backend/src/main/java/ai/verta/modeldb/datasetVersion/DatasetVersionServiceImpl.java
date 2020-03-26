@@ -107,7 +107,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     Set<String> datasetIdSet = new HashSet<>(datasetIdDatasetVersionIdMap.values());
 
     List<String> accessibleDatasetVersionIds = new ArrayList<>();
-    List<String> allowedDatasetIds;
+    List<String> allowedDatasetVersionIds;
     // Validate if current user has access to the entity or not
     if (datasetIdSet.size() == 1) {
       roleService.isSelfAllowed(
@@ -116,14 +116,37 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           new ArrayList<>(datasetIdSet).get(0));
       accessibleDatasetVersionIds.addAll(requestedDatasetVersionIds);
     } else {
-      allowedDatasetIds =
+      allowedDatasetVersionIds =
           roleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
       // Validate if current user has access to the entity or not
-      allowedDatasetIds.retainAll(requestedDatasetVersionIds);
-      accessibleDatasetVersionIds.addAll(allowedDatasetIds);
+      allowedDatasetVersionIds.retainAll(datasetIdSet);
+      for (Map.Entry<String, String> entry : datasetIdDatasetVersionIdMap.entrySet()) {
+        if (allowedDatasetVersionIds.contains(entry.getValue())) {
+          accessibleDatasetVersionIds.add(entry.getKey());
+        }
+      }
     }
     return accessibleDatasetVersionIds;
+  }
+
+  public List<String> getAccessibleDatasetVersionIDsByAction(
+      List<String> requestedDatasetVersionIds, ModelDBServiceActions modelDBServiceActions) {
+    // Validate if current user has access to the entity or not
+    if (requestedDatasetVersionIds.size() == 1) {
+      roleService.isSelfAllowed(
+          ModelDBServiceResourceTypes.DATASET_VERSION,
+          modelDBServiceActions,
+          requestedDatasetVersionIds.get(0));
+      return requestedDatasetVersionIds;
+    } else {
+      List<String> allowedDatasetVersionIds =
+          roleService.getSelfAllowedResources(
+              ModelDBServiceResourceTypes.DATASET_VERSION, modelDBServiceActions);
+      // Validate if current user has access to the entity or not
+      allowedDatasetVersionIds.retainAll(requestedDatasetVersionIds);
+      return allowedDatasetVersionIds;
+    }
   }
 
   /**
@@ -1067,9 +1090,25 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
   private boolean deleteDatasetVersions(List<String> datasetVersionIds)
       throws InvalidProtocolBufferException {
-    List<String> accessibleDatasetVersionIds =
-        getAccessibleDatasetVersionIDs(datasetVersionIds, ModelDBServiceActions.UPDATE);
-    if (accessibleDatasetVersionIds.isEmpty()) {
+    Set<String> finalAccessibleDatasetVersionSet = new HashSet<>();
+    try {
+      List<String> accessibleDatasetVersionIdsByDataset =
+          getAccessibleDatasetVersionIDs(datasetVersionIds, ModelDBServiceActions.DELETE);
+      finalAccessibleDatasetVersionSet.addAll(accessibleDatasetVersionIdsByDataset);
+    } catch (StatusRuntimeException ex) {
+      LOGGER.warn(ex.getMessage(), ex);
+      if (ex.getStatus().getCode().value() != Code.PERMISSION_DENIED_VALUE) {
+        throw ex;
+      }
+    }
+
+    if (!finalAccessibleDatasetVersionSet.containsAll(datasetVersionIds)) {
+      List<String> accessibleDatasetVersionIdsByAction =
+          getAccessibleDatasetVersionIDsByAction(datasetVersionIds, ModelDBServiceActions.DELETE);
+      finalAccessibleDatasetVersionSet.addAll(accessibleDatasetVersionIdsByAction);
+    }
+
+    if (finalAccessibleDatasetVersionSet.isEmpty()) {
       Status statusMessage =
           Status.newBuilder()
               .setCode(Code.PERMISSION_DENIED_VALUE)
