@@ -465,7 +465,8 @@ public class BlobDAORdbImpl implements BlobDAO {
                   LinkedHashSet<BlobExpanded> newHash = new LinkedHashSet<>(m1);
                   newHash.addAll(m2);
                   return newHash;
-                }, LinkedHashMap::new));
+                },
+                LinkedHashMap::new));
   }
 
   List<ai.verta.modeldb.versioning.BlobDiff> getAddedBlobDiff(
@@ -573,7 +574,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         }
         BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
         AutogenBlob blob =
-            DiffMerger.mergeBlob
+            DiffMerger.mergeBlob(
                 blobExpanded == null ? null : AutogenBlob.fromProto(blobExpanded.getBlob()),
                 AutogenBlobDiff.fromProto(blobDiff));
         locationBlobsMapNew.put(
