@@ -7,2008 +7,2098 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Visitor {
-  public void preVisitListOfBlob(List<Blob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenBlob(List<AutogenBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (Blob val : lst) {
-      preVisitBlob(val);
+    for (AutogenBlob val : lst) {
+      preVisitAutogenBlob(val);
     }
   }
 
-  public void preVisitDeepListOfBlob(List<Blob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenBlob(List<AutogenBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (Blob val : lst) {
-      preVisitDeepBlob(val);
+    for (AutogenBlob val : lst) {
+      preVisitDeepAutogenBlob(val);
     }
   }
 
-  public List<Blob> postVisitListOfBlob(List<Blob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<Blob> collect = new ArrayList<>(lst.size());
-    for (Blob val : lst) {
-      collect.add(postVisitBlob(val));
-    }
-    return collect;
-  }
-
-  public List<Blob> postVisitDeepListOfBlob(List<Blob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<Blob> collect = new ArrayList<>(lst.size());
-    for (Blob val : lst) {
-      collect.add(postVisitDeepBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitBlob(Blob blob) throws ModelDBException {}
-
-  public void preVisitDeepBlob(Blob blob) throws ModelDBException {}
-
-  public Blob postVisitBlob(Blob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public Blob postVisitDeepBlob(Blob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfBlobDiff(List<BlobDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (BlobDiff val : lst) {
-      preVisitBlobDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfBlobDiff(List<BlobDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (BlobDiff val : lst) {
-      preVisitDeepBlobDiff(val);
-    }
-  }
-
-  public List<BlobDiff> postVisitListOfBlobDiff(List<BlobDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<BlobDiff> collect = new ArrayList<>(lst.size());
-    for (BlobDiff val : lst) {
-      collect.add(postVisitBlobDiff(val));
-    }
-    return collect;
-  }
-
-  public List<BlobDiff> postVisitDeepListOfBlobDiff(List<BlobDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<BlobDiff> collect = new ArrayList<>(lst.size());
-    for (BlobDiff val : lst) {
-      collect.add(postVisitDeepBlobDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitBlobDiff(BlobDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepBlobDiff(BlobDiff blob) throws ModelDBException {}
-
-  public BlobDiff postVisitBlobDiff(BlobDiff blob) throws ModelDBException {
-    return blob;
-  }
-
-  public BlobDiff postVisitDeepBlobDiff(BlobDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfCodeBlob(List<CodeBlob> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (CodeBlob val : lst) {
-      preVisitCodeBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfCodeBlob(List<CodeBlob> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (CodeBlob val : lst) {
-      preVisitDeepCodeBlob(val);
-    }
-  }
-
-  public List<CodeBlob> postVisitListOfCodeBlob(List<CodeBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<CodeBlob> collect = new ArrayList<>(lst.size());
-    for (CodeBlob val : lst) {
-      collect.add(postVisitCodeBlob(val));
-    }
-    return collect;
-  }
-
-  public List<CodeBlob> postVisitDeepListOfCodeBlob(List<CodeBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<CodeBlob> collect = new ArrayList<>(lst.size());
-    for (CodeBlob val : lst) {
-      collect.add(postVisitDeepCodeBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitCodeBlob(CodeBlob blob) throws ModelDBException {}
-
-  public void preVisitDeepCodeBlob(CodeBlob blob) throws ModelDBException {}
-
-  public CodeBlob postVisitCodeBlob(CodeBlob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public CodeBlob postVisitDeepCodeBlob(CodeBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfCodeDiff(List<CodeDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (CodeDiff val : lst) {
-      preVisitCodeDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfCodeDiff(List<CodeDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (CodeDiff val : lst) {
-      preVisitDeepCodeDiff(val);
-    }
-  }
-
-  public List<CodeDiff> postVisitListOfCodeDiff(List<CodeDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<CodeDiff> collect = new ArrayList<>(lst.size());
-    for (CodeDiff val : lst) {
-      collect.add(postVisitCodeDiff(val));
-    }
-    return collect;
-  }
-
-  public List<CodeDiff> postVisitDeepListOfCodeDiff(List<CodeDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<CodeDiff> collect = new ArrayList<>(lst.size());
-    for (CodeDiff val : lst) {
-      collect.add(postVisitDeepCodeDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitCodeDiff(CodeDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepCodeDiff(CodeDiff blob) throws ModelDBException {}
-
-  public CodeDiff postVisitCodeDiff(CodeDiff blob) throws ModelDBException {
-    return blob;
-  }
-
-  public CodeDiff postVisitDeepCodeDiff(CodeDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfCommandLineEnvironmentDiff(List<CommandLineEnvironmentDiff> lst)
+  public List<AutogenBlob> postVisitListOfAutogenBlob(List<AutogenBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
-    for (CommandLineEnvironmentDiff val : lst) {
-      preVisitCommandLineEnvironmentDiff(val);
+    if (lst == null) return null;
+    final List<AutogenBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenBlob val : lst) {
+      collect.add(postVisitAutogenBlob(val));
     }
+    return collect;
   }
 
-  public void preVisitDeepListOfCommandLineEnvironmentDiff(List<CommandLineEnvironmentDiff> lst)
+  public List<AutogenBlob> postVisitDeepListOfAutogenBlob(List<AutogenBlob> lst)
       throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenBlob val : lst) {
+      collect.add(postVisitDeepAutogenBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {}
+
+  public AutogenBlob postVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenBlob postVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenBlobDiff(List<AutogenBlobDiff> lst) throws ModelDBException {
     if (lst == null) return;
-    for (CommandLineEnvironmentDiff val : lst) {
-      preVisitDeepCommandLineEnvironmentDiff(val);
+    for (AutogenBlobDiff val : lst) {
+      preVisitAutogenBlobDiff(val);
     }
   }
 
-  public List<CommandLineEnvironmentDiff> postVisitListOfCommandLineEnvironmentDiff(
-      List<CommandLineEnvironmentDiff> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenBlobDiff(List<AutogenBlobDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenBlobDiff val : lst) {
+      preVisitDeepAutogenBlobDiff(val);
+    }
+  }
+
+  public List<AutogenBlobDiff> postVisitListOfAutogenBlobDiff(List<AutogenBlobDiff> lst)
+      throws ModelDBException {
     if (lst == null) return null;
-    final List<CommandLineEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (CommandLineEnvironmentDiff val : lst) {
-      collect.add(postVisitCommandLineEnvironmentDiff(val));
+    final List<AutogenBlobDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenBlobDiff val : lst) {
+      collect.add(postVisitAutogenBlobDiff(val));
     }
     return collect;
   }
 
-  public List<CommandLineEnvironmentDiff> postVisitDeepListOfCommandLineEnvironmentDiff(
-      List<CommandLineEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenBlobDiff> postVisitDeepListOfAutogenBlobDiff(List<AutogenBlobDiff> lst)
+      throws ModelDBException {
     if (lst == null) return null;
-    final List<CommandLineEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (CommandLineEnvironmentDiff val : lst) {
-      collect.add(postVisitDeepCommandLineEnvironmentDiff(val));
+    final List<AutogenBlobDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenBlobDiff val : lst) {
+      collect.add(postVisitDeepAutogenBlobDiff(val));
     }
     return collect;
   }
 
-  public void preVisitCommandLineEnvironmentDiff(CommandLineEnvironmentDiff blob)
+  public void preVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {}
+
+  public AutogenBlobDiff postVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenBlobDiff postVisitDeepAutogenBlobDiff(AutogenBlobDiff blob)
+      throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenCodeBlob(List<AutogenCodeBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenCodeBlob val : lst) {
+      preVisitAutogenCodeBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenCodeBlob(List<AutogenCodeBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenCodeBlob val : lst) {
+      preVisitDeepAutogenCodeBlob(val);
+    }
+  }
+
+  public List<AutogenCodeBlob> postVisitListOfAutogenCodeBlob(List<AutogenCodeBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenCodeBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenCodeBlob val : lst) {
+      collect.add(postVisitAutogenCodeBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenCodeBlob> postVisitDeepListOfAutogenCodeBlob(List<AutogenCodeBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenCodeBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenCodeBlob val : lst) {
+      collect.add(postVisitDeepAutogenCodeBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {}
+
+  public AutogenCodeBlob postVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenCodeBlob postVisitDeepAutogenCodeBlob(AutogenCodeBlob blob)
+      throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenCodeDiff(List<AutogenCodeDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenCodeDiff val : lst) {
+      preVisitAutogenCodeDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenCodeDiff(List<AutogenCodeDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenCodeDiff val : lst) {
+      preVisitDeepAutogenCodeDiff(val);
+    }
+  }
+
+  public List<AutogenCodeDiff> postVisitListOfAutogenCodeDiff(List<AutogenCodeDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenCodeDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenCodeDiff val : lst) {
+      collect.add(postVisitAutogenCodeDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenCodeDiff> postVisitDeepListOfAutogenCodeDiff(List<AutogenCodeDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenCodeDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenCodeDiff val : lst) {
+      collect.add(postVisitDeepAutogenCodeDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {}
+
+  public AutogenCodeDiff postVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenCodeDiff postVisitDeepAutogenCodeDiff(AutogenCodeDiff blob)
+      throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenCommandLineEnvironmentDiff(
+      List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenCommandLineEnvironmentDiff val : lst) {
+      preVisitAutogenCommandLineEnvironmentDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenCommandLineEnvironmentDiff(
+      List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenCommandLineEnvironmentDiff val : lst) {
+      preVisitDeepAutogenCommandLineEnvironmentDiff(val);
+    }
+  }
+
+  public List<AutogenCommandLineEnvironmentDiff> postVisitListOfAutogenCommandLineEnvironmentDiff(
+      List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenCommandLineEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenCommandLineEnvironmentDiff val : lst) {
+      collect.add(postVisitAutogenCommandLineEnvironmentDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenCommandLineEnvironmentDiff>
+      postVisitDeepListOfAutogenCommandLineEnvironmentDiff(
+          List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenCommandLineEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenCommandLineEnvironmentDiff val : lst) {
+      collect.add(postVisitDeepAutogenCommandLineEnvironmentDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenCommandLineEnvironmentDiff(AutogenCommandLineEnvironmentDiff blob)
       throws ModelDBException {}
 
-  public void preVisitDeepCommandLineEnvironmentDiff(CommandLineEnvironmentDiff blob)
+  public void preVisitDeepAutogenCommandLineEnvironmentDiff(AutogenCommandLineEnvironmentDiff blob)
       throws ModelDBException {}
 
-  public CommandLineEnvironmentDiff postVisitCommandLineEnvironmentDiff(
-      CommandLineEnvironmentDiff blob) throws ModelDBException {
+  public AutogenCommandLineEnvironmentDiff postVisitAutogenCommandLineEnvironmentDiff(
+      AutogenCommandLineEnvironmentDiff blob) throws ModelDBException {
     return blob;
   }
 
-  public CommandLineEnvironmentDiff postVisitDeepCommandLineEnvironmentDiff(
-      CommandLineEnvironmentDiff blob) throws ModelDBException {
+  public AutogenCommandLineEnvironmentDiff postVisitDeepAutogenCommandLineEnvironmentDiff(
+      AutogenCommandLineEnvironmentDiff blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfConfigBlob(List<ConfigBlob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenConfigBlob(List<AutogenConfigBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (ConfigBlob val : lst) {
-      preVisitConfigBlob(val);
+    for (AutogenConfigBlob val : lst) {
+      preVisitAutogenConfigBlob(val);
     }
   }
 
-  public void preVisitDeepListOfConfigBlob(List<ConfigBlob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenConfigBlob(List<AutogenConfigBlob> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (ConfigBlob val : lst) {
-      preVisitDeepConfigBlob(val);
+    for (AutogenConfigBlob val : lst) {
+      preVisitDeepAutogenConfigBlob(val);
     }
   }
 
-  public List<ConfigBlob> postVisitListOfConfigBlob(List<ConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<ConfigBlob> collect = new ArrayList<>(lst.size());
-    for (ConfigBlob val : lst) {
-      collect.add(postVisitConfigBlob(val));
-    }
-    return collect;
-  }
-
-  public List<ConfigBlob> postVisitDeepListOfConfigBlob(List<ConfigBlob> lst)
+  public List<AutogenConfigBlob> postVisitListOfAutogenConfigBlob(List<AutogenConfigBlob> lst)
       throws ModelDBException {
     if (lst == null) return null;
-    final List<ConfigBlob> collect = new ArrayList<>(lst.size());
-    for (ConfigBlob val : lst) {
-      collect.add(postVisitDeepConfigBlob(val));
+    final List<AutogenConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenConfigBlob val : lst) {
+      collect.add(postVisitAutogenConfigBlob(val));
     }
     return collect;
   }
 
-  public void preVisitConfigBlob(ConfigBlob blob) throws ModelDBException {}
+  public List<AutogenConfigBlob> postVisitDeepListOfAutogenConfigBlob(List<AutogenConfigBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenConfigBlob val : lst) {
+      collect.add(postVisitDeepAutogenConfigBlob(val));
+    }
+    return collect;
+  }
 
-  public void preVisitDeepConfigBlob(ConfigBlob blob) throws ModelDBException {}
+  public void preVisitAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {}
 
-  public ConfigBlob postVisitConfigBlob(ConfigBlob blob) throws ModelDBException {
+  public void preVisitDeepAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {}
+
+  public AutogenConfigBlob postVisitAutogenConfigBlob(AutogenConfigBlob blob)
+      throws ModelDBException {
     return blob;
   }
 
-  public ConfigBlob postVisitDeepConfigBlob(ConfigBlob blob) throws ModelDBException {
+  public AutogenConfigBlob postVisitDeepAutogenConfigBlob(AutogenConfigBlob blob)
+      throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfConfigDiff(List<ConfigDiff> lst) throws ModelDBException {
+  public void preVisitListOfAutogenConfigDiff(List<AutogenConfigDiff> lst) throws ModelDBException {
     if (lst == null) return;
-    for (ConfigDiff val : lst) {
-      preVisitConfigDiff(val);
+    for (AutogenConfigDiff val : lst) {
+      preVisitAutogenConfigDiff(val);
     }
   }
 
-  public void preVisitDeepListOfConfigDiff(List<ConfigDiff> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenConfigDiff(List<AutogenConfigDiff> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (ConfigDiff val : lst) {
-      preVisitDeepConfigDiff(val);
+    for (AutogenConfigDiff val : lst) {
+      preVisitDeepAutogenConfigDiff(val);
     }
   }
 
-  public List<ConfigDiff> postVisitListOfConfigDiff(List<ConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<ConfigDiff> collect = new ArrayList<>(lst.size());
-    for (ConfigDiff val : lst) {
-      collect.add(postVisitConfigDiff(val));
-    }
-    return collect;
-  }
-
-  public List<ConfigDiff> postVisitDeepListOfConfigDiff(List<ConfigDiff> lst)
+  public List<AutogenConfigDiff> postVisitListOfAutogenConfigDiff(List<AutogenConfigDiff> lst)
       throws ModelDBException {
     if (lst == null) return null;
-    final List<ConfigDiff> collect = new ArrayList<>(lst.size());
-    for (ConfigDiff val : lst) {
-      collect.add(postVisitDeepConfigDiff(val));
+    final List<AutogenConfigDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenConfigDiff val : lst) {
+      collect.add(postVisitAutogenConfigDiff(val));
     }
     return collect;
   }
 
-  public void preVisitConfigDiff(ConfigDiff blob) throws ModelDBException {}
+  public List<AutogenConfigDiff> postVisitDeepListOfAutogenConfigDiff(List<AutogenConfigDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenConfigDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenConfigDiff val : lst) {
+      collect.add(postVisitDeepAutogenConfigDiff(val));
+    }
+    return collect;
+  }
 
-  public void preVisitDeepConfigDiff(ConfigDiff blob) throws ModelDBException {}
+  public void preVisitAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {}
 
-  public ConfigDiff postVisitConfigDiff(ConfigDiff blob) throws ModelDBException {
+  public void preVisitDeepAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {}
+
+  public AutogenConfigDiff postVisitAutogenConfigDiff(AutogenConfigDiff blob)
+      throws ModelDBException {
     return blob;
   }
 
-  public ConfigDiff postVisitDeepConfigDiff(ConfigDiff blob) throws ModelDBException {
+  public AutogenConfigDiff postVisitDeepAutogenConfigDiff(AutogenConfigDiff blob)
+      throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfContinuousHyperparameterSetConfigBlob(
-      List<ContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenContinuousHyperparameterSetConfigBlob(
+      List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (ContinuousHyperparameterSetConfigBlob val : lst) {
-      preVisitContinuousHyperparameterSetConfigBlob(val);
+    for (AutogenContinuousHyperparameterSetConfigBlob val : lst) {
+      preVisitAutogenContinuousHyperparameterSetConfigBlob(val);
     }
   }
 
-  public void preVisitDeepListOfContinuousHyperparameterSetConfigBlob(
-      List<ContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenContinuousHyperparameterSetConfigBlob(
+      List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (ContinuousHyperparameterSetConfigBlob val : lst) {
-      preVisitDeepContinuousHyperparameterSetConfigBlob(val);
+    for (AutogenContinuousHyperparameterSetConfigBlob val : lst) {
+      preVisitDeepAutogenContinuousHyperparameterSetConfigBlob(val);
     }
   }
 
-  public List<ContinuousHyperparameterSetConfigBlob>
-      postVisitListOfContinuousHyperparameterSetConfigBlob(
-          List<ContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
+  public List<AutogenContinuousHyperparameterSetConfigBlob>
+      postVisitListOfAutogenContinuousHyperparameterSetConfigBlob(
+          List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<ContinuousHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
-    for (ContinuousHyperparameterSetConfigBlob val : lst) {
-      collect.add(postVisitContinuousHyperparameterSetConfigBlob(val));
+    final List<AutogenContinuousHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenContinuousHyperparameterSetConfigBlob val : lst) {
+      collect.add(postVisitAutogenContinuousHyperparameterSetConfigBlob(val));
     }
     return collect;
   }
 
-  public List<ContinuousHyperparameterSetConfigBlob>
-      postVisitDeepListOfContinuousHyperparameterSetConfigBlob(
-          List<ContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
+  public List<AutogenContinuousHyperparameterSetConfigBlob>
+      postVisitDeepListOfAutogenContinuousHyperparameterSetConfigBlob(
+          List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<ContinuousHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
-    for (ContinuousHyperparameterSetConfigBlob val : lst) {
-      collect.add(postVisitDeepContinuousHyperparameterSetConfigBlob(val));
+    final List<AutogenContinuousHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenContinuousHyperparameterSetConfigBlob val : lst) {
+      collect.add(postVisitDeepAutogenContinuousHyperparameterSetConfigBlob(val));
     }
     return collect;
   }
 
-  public void preVisitContinuousHyperparameterSetConfigBlob(
-      ContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {}
+  public void preVisitAutogenContinuousHyperparameterSetConfigBlob(
+      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepContinuousHyperparameterSetConfigBlob(
-      ContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
+      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {}
 
-  public ContinuousHyperparameterSetConfigBlob postVisitContinuousHyperparameterSetConfigBlob(
-      ContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
+  public AutogenContinuousHyperparameterSetConfigBlob
+      postVisitAutogenContinuousHyperparameterSetConfigBlob(
+          AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
     return blob;
   }
 
-  public ContinuousHyperparameterSetConfigBlob postVisitDeepContinuousHyperparameterSetConfigBlob(
-      ContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
+  public AutogenContinuousHyperparameterSetConfigBlob
+      postVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
+          AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfDatasetBlob(List<DatasetBlob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenDatasetBlob(List<AutogenDatasetBlob> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (DatasetBlob val : lst) {
-      preVisitDatasetBlob(val);
+    for (AutogenDatasetBlob val : lst) {
+      preVisitAutogenDatasetBlob(val);
     }
   }
 
-  public void preVisitDeepListOfDatasetBlob(List<DatasetBlob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenDatasetBlob(List<AutogenDatasetBlob> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (DatasetBlob val : lst) {
-      preVisitDeepDatasetBlob(val);
+    for (AutogenDatasetBlob val : lst) {
+      preVisitDeepAutogenDatasetBlob(val);
     }
   }
 
-  public List<DatasetBlob> postVisitListOfDatasetBlob(List<DatasetBlob> lst)
+  public List<AutogenDatasetBlob> postVisitListOfAutogenDatasetBlob(List<AutogenDatasetBlob> lst)
       throws ModelDBException {
     if (lst == null) return null;
-    final List<DatasetBlob> collect = new ArrayList<>(lst.size());
-    for (DatasetBlob val : lst) {
-      collect.add(postVisitDatasetBlob(val));
+    final List<AutogenDatasetBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenDatasetBlob val : lst) {
+      collect.add(postVisitAutogenDatasetBlob(val));
     }
     return collect;
   }
 
-  public List<DatasetBlob> postVisitDeepListOfDatasetBlob(List<DatasetBlob> lst)
-      throws ModelDBException {
+  public List<AutogenDatasetBlob> postVisitDeepListOfAutogenDatasetBlob(
+      List<AutogenDatasetBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<DatasetBlob> collect = new ArrayList<>(lst.size());
-    for (DatasetBlob val : lst) {
-      collect.add(postVisitDeepDatasetBlob(val));
+    final List<AutogenDatasetBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenDatasetBlob val : lst) {
+      collect.add(postVisitDeepAutogenDatasetBlob(val));
     }
     return collect;
   }
 
-  public void preVisitDatasetBlob(DatasetBlob blob) throws ModelDBException {}
+  public void preVisitAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepDatasetBlob(DatasetBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {}
 
-  public DatasetBlob postVisitDatasetBlob(DatasetBlob blob) throws ModelDBException {
+  public AutogenDatasetBlob postVisitAutogenDatasetBlob(AutogenDatasetBlob blob)
+      throws ModelDBException {
     return blob;
   }
 
-  public DatasetBlob postVisitDeepDatasetBlob(DatasetBlob blob) throws ModelDBException {
+  public AutogenDatasetBlob postVisitDeepAutogenDatasetBlob(AutogenDatasetBlob blob)
+      throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfDatasetDiff(List<DatasetDiff> lst) throws ModelDBException {
+  public void preVisitListOfAutogenDatasetDiff(List<AutogenDatasetDiff> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (DatasetDiff val : lst) {
-      preVisitDatasetDiff(val);
+    for (AutogenDatasetDiff val : lst) {
+      preVisitAutogenDatasetDiff(val);
     }
   }
 
-  public void preVisitDeepListOfDatasetDiff(List<DatasetDiff> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenDatasetDiff(List<AutogenDatasetDiff> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (DatasetDiff val : lst) {
-      preVisitDeepDatasetDiff(val);
+    for (AutogenDatasetDiff val : lst) {
+      preVisitDeepAutogenDatasetDiff(val);
     }
   }
 
-  public List<DatasetDiff> postVisitListOfDatasetDiff(List<DatasetDiff> lst)
+  public List<AutogenDatasetDiff> postVisitListOfAutogenDatasetDiff(List<AutogenDatasetDiff> lst)
       throws ModelDBException {
     if (lst == null) return null;
-    final List<DatasetDiff> collect = new ArrayList<>(lst.size());
-    for (DatasetDiff val : lst) {
-      collect.add(postVisitDatasetDiff(val));
+    final List<AutogenDatasetDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenDatasetDiff val : lst) {
+      collect.add(postVisitAutogenDatasetDiff(val));
     }
     return collect;
   }
 
-  public List<DatasetDiff> postVisitDeepListOfDatasetDiff(List<DatasetDiff> lst)
-      throws ModelDBException {
+  public List<AutogenDatasetDiff> postVisitDeepListOfAutogenDatasetDiff(
+      List<AutogenDatasetDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<DatasetDiff> collect = new ArrayList<>(lst.size());
-    for (DatasetDiff val : lst) {
-      collect.add(postVisitDeepDatasetDiff(val));
+    final List<AutogenDatasetDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenDatasetDiff val : lst) {
+      collect.add(postVisitDeepAutogenDatasetDiff(val));
     }
     return collect;
   }
 
-  public void preVisitDatasetDiff(DatasetDiff blob) throws ModelDBException {}
+  public void preVisitAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepDatasetDiff(DatasetDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {}
 
-  public DatasetDiff postVisitDatasetDiff(DatasetDiff blob) throws ModelDBException {
+  public AutogenDatasetDiff postVisitAutogenDatasetDiff(AutogenDatasetDiff blob)
+      throws ModelDBException {
     return blob;
   }
 
-  public DatasetDiff postVisitDeepDatasetDiff(DatasetDiff blob) throws ModelDBException {
+  public AutogenDatasetDiff postVisitDeepAutogenDatasetDiff(AutogenDatasetDiff blob)
+      throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfDiscreteHyperparameterSetConfigBlob(
-      List<DiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenDiscreteHyperparameterSetConfigBlob(
+      List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (DiscreteHyperparameterSetConfigBlob val : lst) {
-      preVisitDiscreteHyperparameterSetConfigBlob(val);
+    for (AutogenDiscreteHyperparameterSetConfigBlob val : lst) {
+      preVisitAutogenDiscreteHyperparameterSetConfigBlob(val);
     }
   }
 
-  public void preVisitDeepListOfDiscreteHyperparameterSetConfigBlob(
-      List<DiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenDiscreteHyperparameterSetConfigBlob(
+      List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (DiscreteHyperparameterSetConfigBlob val : lst) {
-      preVisitDeepDiscreteHyperparameterSetConfigBlob(val);
+    for (AutogenDiscreteHyperparameterSetConfigBlob val : lst) {
+      preVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(val);
     }
   }
 
-  public List<DiscreteHyperparameterSetConfigBlob>
-      postVisitListOfDiscreteHyperparameterSetConfigBlob(
-          List<DiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
+  public List<AutogenDiscreteHyperparameterSetConfigBlob>
+      postVisitListOfAutogenDiscreteHyperparameterSetConfigBlob(
+          List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<DiscreteHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
-    for (DiscreteHyperparameterSetConfigBlob val : lst) {
-      collect.add(postVisitDiscreteHyperparameterSetConfigBlob(val));
+    final List<AutogenDiscreteHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenDiscreteHyperparameterSetConfigBlob val : lst) {
+      collect.add(postVisitAutogenDiscreteHyperparameterSetConfigBlob(val));
     }
     return collect;
   }
 
-  public List<DiscreteHyperparameterSetConfigBlob>
-      postVisitDeepListOfDiscreteHyperparameterSetConfigBlob(
-          List<DiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
+  public List<AutogenDiscreteHyperparameterSetConfigBlob>
+      postVisitDeepListOfAutogenDiscreteHyperparameterSetConfigBlob(
+          List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<DiscreteHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
-    for (DiscreteHyperparameterSetConfigBlob val : lst) {
-      collect.add(postVisitDeepDiscreteHyperparameterSetConfigBlob(val));
+    final List<AutogenDiscreteHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenDiscreteHyperparameterSetConfigBlob val : lst) {
+      collect.add(postVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(val));
     }
     return collect;
   }
 
-  public void preVisitDiscreteHyperparameterSetConfigBlob(DiscreteHyperparameterSetConfigBlob blob)
+  public void preVisitAutogenDiscreteHyperparameterSetConfigBlob(
+      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
+      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {}
+
+  public AutogenDiscreteHyperparameterSetConfigBlob
+      postVisitAutogenDiscreteHyperparameterSetConfigBlob(
+          AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenDiscreteHyperparameterSetConfigBlob
+      postVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
+          AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenDockerEnvironmentBlob(List<AutogenDockerEnvironmentBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenDockerEnvironmentBlob val : lst) {
+      preVisitAutogenDockerEnvironmentBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenDockerEnvironmentBlob(List<AutogenDockerEnvironmentBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenDockerEnvironmentBlob val : lst) {
+      preVisitDeepAutogenDockerEnvironmentBlob(val);
+    }
+  }
+
+  public List<AutogenDockerEnvironmentBlob> postVisitListOfAutogenDockerEnvironmentBlob(
+      List<AutogenDockerEnvironmentBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenDockerEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenDockerEnvironmentBlob val : lst) {
+      collect.add(postVisitAutogenDockerEnvironmentBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenDockerEnvironmentBlob> postVisitDeepListOfAutogenDockerEnvironmentBlob(
+      List<AutogenDockerEnvironmentBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenDockerEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenDockerEnvironmentBlob val : lst) {
+      collect.add(postVisitDeepAutogenDockerEnvironmentBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenDockerEnvironmentBlob(AutogenDockerEnvironmentBlob blob)
       throws ModelDBException {}
 
-  public void preVisitDeepDiscreteHyperparameterSetConfigBlob(
-      DiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {}
-
-  public DiscreteHyperparameterSetConfigBlob postVisitDiscreteHyperparameterSetConfigBlob(
-      DiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public DiscreteHyperparameterSetConfigBlob postVisitDeepDiscreteHyperparameterSetConfigBlob(
-      DiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfDockerEnvironmentBlob(List<DockerEnvironmentBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (DockerEnvironmentBlob val : lst) {
-      preVisitDockerEnvironmentBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfDockerEnvironmentBlob(List<DockerEnvironmentBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (DockerEnvironmentBlob val : lst) {
-      preVisitDeepDockerEnvironmentBlob(val);
-    }
-  }
-
-  public List<DockerEnvironmentBlob> postVisitListOfDockerEnvironmentBlob(
-      List<DockerEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<DockerEnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (DockerEnvironmentBlob val : lst) {
-      collect.add(postVisitDockerEnvironmentBlob(val));
-    }
-    return collect;
-  }
-
-  public List<DockerEnvironmentBlob> postVisitDeepListOfDockerEnvironmentBlob(
-      List<DockerEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<DockerEnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (DockerEnvironmentBlob val : lst) {
-      collect.add(postVisitDeepDockerEnvironmentBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitDockerEnvironmentBlob(DockerEnvironmentBlob blob) throws ModelDBException {}
-
-  public void preVisitDeepDockerEnvironmentBlob(DockerEnvironmentBlob blob)
+  public void preVisitDeepAutogenDockerEnvironmentBlob(AutogenDockerEnvironmentBlob blob)
       throws ModelDBException {}
 
-  public DockerEnvironmentBlob postVisitDockerEnvironmentBlob(DockerEnvironmentBlob blob)
-      throws ModelDBException {
+  public AutogenDockerEnvironmentBlob postVisitAutogenDockerEnvironmentBlob(
+      AutogenDockerEnvironmentBlob blob) throws ModelDBException {
     return blob;
   }
 
-  public DockerEnvironmentBlob postVisitDeepDockerEnvironmentBlob(DockerEnvironmentBlob blob)
-      throws ModelDBException {
+  public AutogenDockerEnvironmentBlob postVisitDeepAutogenDockerEnvironmentBlob(
+      AutogenDockerEnvironmentBlob blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfDockerEnvironmentDiff(List<DockerEnvironmentDiff> lst)
+  public void preVisitListOfAutogenDockerEnvironmentDiff(List<AutogenDockerEnvironmentDiff> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (DockerEnvironmentDiff val : lst) {
-      preVisitDockerEnvironmentDiff(val);
+    for (AutogenDockerEnvironmentDiff val : lst) {
+      preVisitAutogenDockerEnvironmentDiff(val);
     }
   }
 
-  public void preVisitDeepListOfDockerEnvironmentDiff(List<DockerEnvironmentDiff> lst)
+  public void preVisitDeepListOfAutogenDockerEnvironmentDiff(List<AutogenDockerEnvironmentDiff> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (DockerEnvironmentDiff val : lst) {
-      preVisitDeepDockerEnvironmentDiff(val);
+    for (AutogenDockerEnvironmentDiff val : lst) {
+      preVisitDeepAutogenDockerEnvironmentDiff(val);
     }
   }
 
-  public List<DockerEnvironmentDiff> postVisitListOfDockerEnvironmentDiff(
-      List<DockerEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenDockerEnvironmentDiff> postVisitListOfAutogenDockerEnvironmentDiff(
+      List<AutogenDockerEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<DockerEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (DockerEnvironmentDiff val : lst) {
-      collect.add(postVisitDockerEnvironmentDiff(val));
+    final List<AutogenDockerEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenDockerEnvironmentDiff val : lst) {
+      collect.add(postVisitAutogenDockerEnvironmentDiff(val));
     }
     return collect;
   }
 
-  public List<DockerEnvironmentDiff> postVisitDeepListOfDockerEnvironmentDiff(
-      List<DockerEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenDockerEnvironmentDiff> postVisitDeepListOfAutogenDockerEnvironmentDiff(
+      List<AutogenDockerEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<DockerEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (DockerEnvironmentDiff val : lst) {
-      collect.add(postVisitDeepDockerEnvironmentDiff(val));
+    final List<AutogenDockerEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenDockerEnvironmentDiff val : lst) {
+      collect.add(postVisitDeepAutogenDockerEnvironmentDiff(val));
     }
     return collect;
   }
 
-  public void preVisitDockerEnvironmentDiff(DockerEnvironmentDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepDockerEnvironmentDiff(DockerEnvironmentDiff blob)
+  public void preVisitAutogenDockerEnvironmentDiff(AutogenDockerEnvironmentDiff blob)
       throws ModelDBException {}
 
-  public DockerEnvironmentDiff postVisitDockerEnvironmentDiff(DockerEnvironmentDiff blob)
-      throws ModelDBException {
+  public void preVisitDeepAutogenDockerEnvironmentDiff(AutogenDockerEnvironmentDiff blob)
+      throws ModelDBException {}
+
+  public AutogenDockerEnvironmentDiff postVisitAutogenDockerEnvironmentDiff(
+      AutogenDockerEnvironmentDiff blob) throws ModelDBException {
     return blob;
   }
 
-  public DockerEnvironmentDiff postVisitDeepDockerEnvironmentDiff(DockerEnvironmentDiff blob)
-      throws ModelDBException {
+  public AutogenDockerEnvironmentDiff postVisitDeepAutogenDockerEnvironmentDiff(
+      AutogenDockerEnvironmentDiff blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfEnvironmentBlob(List<EnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (EnvironmentBlob val : lst) {
-      preVisitEnvironmentBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfEnvironmentBlob(List<EnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (EnvironmentBlob val : lst) {
-      preVisitDeepEnvironmentBlob(val);
-    }
-  }
-
-  public List<EnvironmentBlob> postVisitListOfEnvironmentBlob(List<EnvironmentBlob> lst)
+  public void preVisitListOfAutogenEnvironmentBlob(List<AutogenEnvironmentBlob> lst)
       throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenEnvironmentBlob val : lst) {
+      preVisitAutogenEnvironmentBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenEnvironmentBlob(List<AutogenEnvironmentBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenEnvironmentBlob val : lst) {
+      preVisitDeepAutogenEnvironmentBlob(val);
+    }
+  }
+
+  public List<AutogenEnvironmentBlob> postVisitListOfAutogenEnvironmentBlob(
+      List<AutogenEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<EnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (EnvironmentBlob val : lst) {
-      collect.add(postVisitEnvironmentBlob(val));
+    final List<AutogenEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenEnvironmentBlob val : lst) {
+      collect.add(postVisitAutogenEnvironmentBlob(val));
     }
     return collect;
   }
 
-  public List<EnvironmentBlob> postVisitDeepListOfEnvironmentBlob(List<EnvironmentBlob> lst)
-      throws ModelDBException {
+  public List<AutogenEnvironmentBlob> postVisitDeepListOfAutogenEnvironmentBlob(
+      List<AutogenEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<EnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (EnvironmentBlob val : lst) {
-      collect.add(postVisitDeepEnvironmentBlob(val));
+    final List<AutogenEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenEnvironmentBlob val : lst) {
+      collect.add(postVisitDeepAutogenEnvironmentBlob(val));
     }
     return collect;
   }
 
-  public void preVisitEnvironmentBlob(EnvironmentBlob blob) throws ModelDBException {}
+  public void preVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepEnvironmentBlob(EnvironmentBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
+      throws ModelDBException {}
 
-  public EnvironmentBlob postVisitEnvironmentBlob(EnvironmentBlob blob) throws ModelDBException {
+  public AutogenEnvironmentBlob postVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
+      throws ModelDBException {
     return blob;
   }
 
-  public EnvironmentBlob postVisitDeepEnvironmentBlob(EnvironmentBlob blob)
+  public AutogenEnvironmentBlob postVisitDeepAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfEnvironmentDiff(List<EnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (EnvironmentDiff val : lst) {
-      preVisitEnvironmentDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfEnvironmentDiff(List<EnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (EnvironmentDiff val : lst) {
-      preVisitDeepEnvironmentDiff(val);
-    }
-  }
-
-  public List<EnvironmentDiff> postVisitListOfEnvironmentDiff(List<EnvironmentDiff> lst)
+  public void preVisitListOfAutogenEnvironmentDiff(List<AutogenEnvironmentDiff> lst)
       throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenEnvironmentDiff val : lst) {
+      preVisitAutogenEnvironmentDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenEnvironmentDiff(List<AutogenEnvironmentDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenEnvironmentDiff val : lst) {
+      preVisitDeepAutogenEnvironmentDiff(val);
+    }
+  }
+
+  public List<AutogenEnvironmentDiff> postVisitListOfAutogenEnvironmentDiff(
+      List<AutogenEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<EnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (EnvironmentDiff val : lst) {
-      collect.add(postVisitEnvironmentDiff(val));
+    final List<AutogenEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenEnvironmentDiff val : lst) {
+      collect.add(postVisitAutogenEnvironmentDiff(val));
     }
     return collect;
   }
 
-  public List<EnvironmentDiff> postVisitDeepListOfEnvironmentDiff(List<EnvironmentDiff> lst)
-      throws ModelDBException {
+  public List<AutogenEnvironmentDiff> postVisitDeepListOfAutogenEnvironmentDiff(
+      List<AutogenEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<EnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (EnvironmentDiff val : lst) {
-      collect.add(postVisitDeepEnvironmentDiff(val));
+    final List<AutogenEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenEnvironmentDiff val : lst) {
+      collect.add(postVisitDeepAutogenEnvironmentDiff(val));
     }
     return collect;
   }
 
-  public void preVisitEnvironmentDiff(EnvironmentDiff blob) throws ModelDBException {}
+  public void preVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepEnvironmentDiff(EnvironmentDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
+      throws ModelDBException {}
 
-  public EnvironmentDiff postVisitEnvironmentDiff(EnvironmentDiff blob) throws ModelDBException {
+  public AutogenEnvironmentDiff postVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
+      throws ModelDBException {
     return blob;
   }
 
-  public EnvironmentDiff postVisitDeepEnvironmentDiff(EnvironmentDiff blob)
+  public AutogenEnvironmentDiff postVisitDeepAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfEnvironmentVariablesBlob(List<EnvironmentVariablesBlob> lst)
-      throws ModelDBException {
+  public void preVisitListOfAutogenEnvironmentVariablesBlob(
+      List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (EnvironmentVariablesBlob val : lst) {
-      preVisitEnvironmentVariablesBlob(val);
+    for (AutogenEnvironmentVariablesBlob val : lst) {
+      preVisitAutogenEnvironmentVariablesBlob(val);
     }
   }
 
-  public void preVisitDeepListOfEnvironmentVariablesBlob(List<EnvironmentVariablesBlob> lst)
-      throws ModelDBException {
+  public void preVisitDeepListOfAutogenEnvironmentVariablesBlob(
+      List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (EnvironmentVariablesBlob val : lst) {
-      preVisitDeepEnvironmentVariablesBlob(val);
+    for (AutogenEnvironmentVariablesBlob val : lst) {
+      preVisitDeepAutogenEnvironmentVariablesBlob(val);
     }
   }
 
-  public List<EnvironmentVariablesBlob> postVisitListOfEnvironmentVariablesBlob(
-      List<EnvironmentVariablesBlob> lst) throws ModelDBException {
+  public List<AutogenEnvironmentVariablesBlob> postVisitListOfAutogenEnvironmentVariablesBlob(
+      List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<EnvironmentVariablesBlob> collect = new ArrayList<>(lst.size());
-    for (EnvironmentVariablesBlob val : lst) {
-      collect.add(postVisitEnvironmentVariablesBlob(val));
+    final List<AutogenEnvironmentVariablesBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenEnvironmentVariablesBlob val : lst) {
+      collect.add(postVisitAutogenEnvironmentVariablesBlob(val));
     }
     return collect;
   }
 
-  public List<EnvironmentVariablesBlob> postVisitDeepListOfEnvironmentVariablesBlob(
-      List<EnvironmentVariablesBlob> lst) throws ModelDBException {
+  public List<AutogenEnvironmentVariablesBlob> postVisitDeepListOfAutogenEnvironmentVariablesBlob(
+      List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<EnvironmentVariablesBlob> collect = new ArrayList<>(lst.size());
-    for (EnvironmentVariablesBlob val : lst) {
-      collect.add(postVisitDeepEnvironmentVariablesBlob(val));
+    final List<AutogenEnvironmentVariablesBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenEnvironmentVariablesBlob val : lst) {
+      collect.add(postVisitDeepAutogenEnvironmentVariablesBlob(val));
     }
     return collect;
   }
 
-  public void preVisitEnvironmentVariablesBlob(EnvironmentVariablesBlob blob)
+  public void preVisitAutogenEnvironmentVariablesBlob(AutogenEnvironmentVariablesBlob blob)
       throws ModelDBException {}
 
-  public void preVisitDeepEnvironmentVariablesBlob(EnvironmentVariablesBlob blob)
+  public void preVisitDeepAutogenEnvironmentVariablesBlob(AutogenEnvironmentVariablesBlob blob)
       throws ModelDBException {}
 
-  public EnvironmentVariablesBlob postVisitEnvironmentVariablesBlob(EnvironmentVariablesBlob blob)
-      throws ModelDBException {
+  public AutogenEnvironmentVariablesBlob postVisitAutogenEnvironmentVariablesBlob(
+      AutogenEnvironmentVariablesBlob blob) throws ModelDBException {
     return blob;
   }
 
-  public EnvironmentVariablesBlob postVisitDeepEnvironmentVariablesBlob(
-      EnvironmentVariablesBlob blob) throws ModelDBException {
+  public AutogenEnvironmentVariablesBlob postVisitDeepAutogenEnvironmentVariablesBlob(
+      AutogenEnvironmentVariablesBlob blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfEnvironmentVariablesDiff(List<EnvironmentVariablesDiff> lst)
-      throws ModelDBException {
+  public void preVisitListOfAutogenEnvironmentVariablesDiff(
+      List<AutogenEnvironmentVariablesDiff> lst) throws ModelDBException {
     if (lst == null) return;
-    for (EnvironmentVariablesDiff val : lst) {
-      preVisitEnvironmentVariablesDiff(val);
+    for (AutogenEnvironmentVariablesDiff val : lst) {
+      preVisitAutogenEnvironmentVariablesDiff(val);
     }
   }
 
-  public void preVisitDeepListOfEnvironmentVariablesDiff(List<EnvironmentVariablesDiff> lst)
-      throws ModelDBException {
+  public void preVisitDeepListOfAutogenEnvironmentVariablesDiff(
+      List<AutogenEnvironmentVariablesDiff> lst) throws ModelDBException {
     if (lst == null) return;
-    for (EnvironmentVariablesDiff val : lst) {
-      preVisitDeepEnvironmentVariablesDiff(val);
+    for (AutogenEnvironmentVariablesDiff val : lst) {
+      preVisitDeepAutogenEnvironmentVariablesDiff(val);
     }
   }
 
-  public List<EnvironmentVariablesDiff> postVisitListOfEnvironmentVariablesDiff(
-      List<EnvironmentVariablesDiff> lst) throws ModelDBException {
+  public List<AutogenEnvironmentVariablesDiff> postVisitListOfAutogenEnvironmentVariablesDiff(
+      List<AutogenEnvironmentVariablesDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<EnvironmentVariablesDiff> collect = new ArrayList<>(lst.size());
-    for (EnvironmentVariablesDiff val : lst) {
-      collect.add(postVisitEnvironmentVariablesDiff(val));
+    final List<AutogenEnvironmentVariablesDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenEnvironmentVariablesDiff val : lst) {
+      collect.add(postVisitAutogenEnvironmentVariablesDiff(val));
     }
     return collect;
   }
 
-  public List<EnvironmentVariablesDiff> postVisitDeepListOfEnvironmentVariablesDiff(
-      List<EnvironmentVariablesDiff> lst) throws ModelDBException {
+  public List<AutogenEnvironmentVariablesDiff> postVisitDeepListOfAutogenEnvironmentVariablesDiff(
+      List<AutogenEnvironmentVariablesDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<EnvironmentVariablesDiff> collect = new ArrayList<>(lst.size());
-    for (EnvironmentVariablesDiff val : lst) {
-      collect.add(postVisitDeepEnvironmentVariablesDiff(val));
+    final List<AutogenEnvironmentVariablesDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenEnvironmentVariablesDiff val : lst) {
+      collect.add(postVisitDeepAutogenEnvironmentVariablesDiff(val));
     }
     return collect;
   }
 
-  public void preVisitEnvironmentVariablesDiff(EnvironmentVariablesDiff blob)
+  public void preVisitAutogenEnvironmentVariablesDiff(AutogenEnvironmentVariablesDiff blob)
       throws ModelDBException {}
 
-  public void preVisitDeepEnvironmentVariablesDiff(EnvironmentVariablesDiff blob)
+  public void preVisitDeepAutogenEnvironmentVariablesDiff(AutogenEnvironmentVariablesDiff blob)
       throws ModelDBException {}
 
-  public EnvironmentVariablesDiff postVisitEnvironmentVariablesDiff(EnvironmentVariablesDiff blob)
-      throws ModelDBException {
+  public AutogenEnvironmentVariablesDiff postVisitAutogenEnvironmentVariablesDiff(
+      AutogenEnvironmentVariablesDiff blob) throws ModelDBException {
     return blob;
   }
 
-  public EnvironmentVariablesDiff postVisitDeepEnvironmentVariablesDiff(
-      EnvironmentVariablesDiff blob) throws ModelDBException {
+  public AutogenEnvironmentVariablesDiff postVisitDeepAutogenEnvironmentVariablesDiff(
+      AutogenEnvironmentVariablesDiff blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfGitCodeBlob(List<GitCodeBlob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenGitCodeBlob(List<AutogenGitCodeBlob> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (GitCodeBlob val : lst) {
-      preVisitGitCodeBlob(val);
+    for (AutogenGitCodeBlob val : lst) {
+      preVisitAutogenGitCodeBlob(val);
     }
   }
 
-  public void preVisitDeepListOfGitCodeBlob(List<GitCodeBlob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenGitCodeBlob(List<AutogenGitCodeBlob> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (GitCodeBlob val : lst) {
-      preVisitDeepGitCodeBlob(val);
+    for (AutogenGitCodeBlob val : lst) {
+      preVisitDeepAutogenGitCodeBlob(val);
     }
   }
 
-  public List<GitCodeBlob> postVisitListOfGitCodeBlob(List<GitCodeBlob> lst)
+  public List<AutogenGitCodeBlob> postVisitListOfAutogenGitCodeBlob(List<AutogenGitCodeBlob> lst)
       throws ModelDBException {
     if (lst == null) return null;
-    final List<GitCodeBlob> collect = new ArrayList<>(lst.size());
-    for (GitCodeBlob val : lst) {
-      collect.add(postVisitGitCodeBlob(val));
+    final List<AutogenGitCodeBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenGitCodeBlob val : lst) {
+      collect.add(postVisitAutogenGitCodeBlob(val));
     }
     return collect;
   }
 
-  public List<GitCodeBlob> postVisitDeepListOfGitCodeBlob(List<GitCodeBlob> lst)
-      throws ModelDBException {
+  public List<AutogenGitCodeBlob> postVisitDeepListOfAutogenGitCodeBlob(
+      List<AutogenGitCodeBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<GitCodeBlob> collect = new ArrayList<>(lst.size());
-    for (GitCodeBlob val : lst) {
-      collect.add(postVisitDeepGitCodeBlob(val));
+    final List<AutogenGitCodeBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenGitCodeBlob val : lst) {
+      collect.add(postVisitDeepAutogenGitCodeBlob(val));
     }
     return collect;
   }
 
-  public void preVisitGitCodeBlob(GitCodeBlob blob) throws ModelDBException {}
+  public void preVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepGitCodeBlob(GitCodeBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {}
 
-  public GitCodeBlob postVisitGitCodeBlob(GitCodeBlob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public GitCodeBlob postVisitDeepGitCodeBlob(GitCodeBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfGitCodeDiff(List<GitCodeDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (GitCodeDiff val : lst) {
-      preVisitGitCodeDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfGitCodeDiff(List<GitCodeDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (GitCodeDiff val : lst) {
-      preVisitDeepGitCodeDiff(val);
-    }
-  }
-
-  public List<GitCodeDiff> postVisitListOfGitCodeDiff(List<GitCodeDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<GitCodeDiff> collect = new ArrayList<>(lst.size());
-    for (GitCodeDiff val : lst) {
-      collect.add(postVisitGitCodeDiff(val));
-    }
-    return collect;
-  }
-
-  public List<GitCodeDiff> postVisitDeepListOfGitCodeDiff(List<GitCodeDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<GitCodeDiff> collect = new ArrayList<>(lst.size());
-    for (GitCodeDiff val : lst) {
-      collect.add(postVisitDeepGitCodeDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitGitCodeDiff(GitCodeDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepGitCodeDiff(GitCodeDiff blob) throws ModelDBException {}
-
-  public GitCodeDiff postVisitGitCodeDiff(GitCodeDiff blob) throws ModelDBException {
-    return blob;
-  }
-
-  public GitCodeDiff postVisitDeepGitCodeDiff(GitCodeDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfHyperparameterConfigBlob(List<HyperparameterConfigBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterConfigBlob val : lst) {
-      preVisitHyperparameterConfigBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfHyperparameterConfigBlob(List<HyperparameterConfigBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterConfigBlob val : lst) {
-      preVisitDeepHyperparameterConfigBlob(val);
-    }
-  }
-
-  public List<HyperparameterConfigBlob> postVisitListOfHyperparameterConfigBlob(
-      List<HyperparameterConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterConfigBlob> collect = new ArrayList<>(lst.size());
-    for (HyperparameterConfigBlob val : lst) {
-      collect.add(postVisitHyperparameterConfigBlob(val));
-    }
-    return collect;
-  }
-
-  public List<HyperparameterConfigBlob> postVisitDeepListOfHyperparameterConfigBlob(
-      List<HyperparameterConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterConfigBlob> collect = new ArrayList<>(lst.size());
-    for (HyperparameterConfigBlob val : lst) {
-      collect.add(postVisitDeepHyperparameterConfigBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitHyperparameterConfigBlob(HyperparameterConfigBlob blob)
-      throws ModelDBException {}
-
-  public void preVisitDeepHyperparameterConfigBlob(HyperparameterConfigBlob blob)
-      throws ModelDBException {}
-
-  public HyperparameterConfigBlob postVisitHyperparameterConfigBlob(HyperparameterConfigBlob blob)
+  public AutogenGitCodeBlob postVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob)
       throws ModelDBException {
     return blob;
   }
 
-  public HyperparameterConfigBlob postVisitDeepHyperparameterConfigBlob(
-      HyperparameterConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfHyperparameterConfigDiff(List<HyperparameterConfigDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterConfigDiff val : lst) {
-      preVisitHyperparameterConfigDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfHyperparameterConfigDiff(List<HyperparameterConfigDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterConfigDiff val : lst) {
-      preVisitDeepHyperparameterConfigDiff(val);
-    }
-  }
-
-  public List<HyperparameterConfigDiff> postVisitListOfHyperparameterConfigDiff(
-      List<HyperparameterConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterConfigDiff> collect = new ArrayList<>(lst.size());
-    for (HyperparameterConfigDiff val : lst) {
-      collect.add(postVisitHyperparameterConfigDiff(val));
-    }
-    return collect;
-  }
-
-  public List<HyperparameterConfigDiff> postVisitDeepListOfHyperparameterConfigDiff(
-      List<HyperparameterConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterConfigDiff> collect = new ArrayList<>(lst.size());
-    for (HyperparameterConfigDiff val : lst) {
-      collect.add(postVisitDeepHyperparameterConfigDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitHyperparameterConfigDiff(HyperparameterConfigDiff blob)
-      throws ModelDBException {}
-
-  public void preVisitDeepHyperparameterConfigDiff(HyperparameterConfigDiff blob)
-      throws ModelDBException {}
-
-  public HyperparameterConfigDiff postVisitHyperparameterConfigDiff(HyperparameterConfigDiff blob)
-      throws ModelDBException {
-    return blob;
-  }
-
-  public HyperparameterConfigDiff postVisitDeepHyperparameterConfigDiff(
-      HyperparameterConfigDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfHyperparameterSetConfigBlob(List<HyperparameterSetConfigBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterSetConfigBlob val : lst) {
-      preVisitHyperparameterSetConfigBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfHyperparameterSetConfigBlob(List<HyperparameterSetConfigBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterSetConfigBlob val : lst) {
-      preVisitDeepHyperparameterSetConfigBlob(val);
-    }
-  }
-
-  public List<HyperparameterSetConfigBlob> postVisitListOfHyperparameterSetConfigBlob(
-      List<HyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
-    for (HyperparameterSetConfigBlob val : lst) {
-      collect.add(postVisitHyperparameterSetConfigBlob(val));
-    }
-    return collect;
-  }
-
-  public List<HyperparameterSetConfigBlob> postVisitDeepListOfHyperparameterSetConfigBlob(
-      List<HyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
-    for (HyperparameterSetConfigBlob val : lst) {
-      collect.add(postVisitDeepHyperparameterSetConfigBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitHyperparameterSetConfigBlob(HyperparameterSetConfigBlob blob)
-      throws ModelDBException {}
-
-  public void preVisitDeepHyperparameterSetConfigBlob(HyperparameterSetConfigBlob blob)
-      throws ModelDBException {}
-
-  public HyperparameterSetConfigBlob postVisitHyperparameterSetConfigBlob(
-      HyperparameterSetConfigBlob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public HyperparameterSetConfigBlob postVisitDeepHyperparameterSetConfigBlob(
-      HyperparameterSetConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfHyperparameterSetConfigDiff(List<HyperparameterSetConfigDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterSetConfigDiff val : lst) {
-      preVisitHyperparameterSetConfigDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfHyperparameterSetConfigDiff(List<HyperparameterSetConfigDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterSetConfigDiff val : lst) {
-      preVisitDeepHyperparameterSetConfigDiff(val);
-    }
-  }
-
-  public List<HyperparameterSetConfigDiff> postVisitListOfHyperparameterSetConfigDiff(
-      List<HyperparameterSetConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterSetConfigDiff> collect = new ArrayList<>(lst.size());
-    for (HyperparameterSetConfigDiff val : lst) {
-      collect.add(postVisitHyperparameterSetConfigDiff(val));
-    }
-    return collect;
-  }
-
-  public List<HyperparameterSetConfigDiff> postVisitDeepListOfHyperparameterSetConfigDiff(
-      List<HyperparameterSetConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterSetConfigDiff> collect = new ArrayList<>(lst.size());
-    for (HyperparameterSetConfigDiff val : lst) {
-      collect.add(postVisitDeepHyperparameterSetConfigDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitHyperparameterSetConfigDiff(HyperparameterSetConfigDiff blob)
-      throws ModelDBException {}
-
-  public void preVisitDeepHyperparameterSetConfigDiff(HyperparameterSetConfigDiff blob)
-      throws ModelDBException {}
-
-  public HyperparameterSetConfigDiff postVisitHyperparameterSetConfigDiff(
-      HyperparameterSetConfigDiff blob) throws ModelDBException {
-    return blob;
-  }
-
-  public HyperparameterSetConfigDiff postVisitDeepHyperparameterSetConfigDiff(
-      HyperparameterSetConfigDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfHyperparameterValuesConfigBlob(List<HyperparameterValuesConfigBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterValuesConfigBlob val : lst) {
-      preVisitHyperparameterValuesConfigBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfHyperparameterValuesConfigBlob(
-      List<HyperparameterValuesConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (HyperparameterValuesConfigBlob val : lst) {
-      preVisitDeepHyperparameterValuesConfigBlob(val);
-    }
-  }
-
-  public List<HyperparameterValuesConfigBlob> postVisitListOfHyperparameterValuesConfigBlob(
-      List<HyperparameterValuesConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterValuesConfigBlob> collect = new ArrayList<>(lst.size());
-    for (HyperparameterValuesConfigBlob val : lst) {
-      collect.add(postVisitHyperparameterValuesConfigBlob(val));
-    }
-    return collect;
-  }
-
-  public List<HyperparameterValuesConfigBlob> postVisitDeepListOfHyperparameterValuesConfigBlob(
-      List<HyperparameterValuesConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<HyperparameterValuesConfigBlob> collect = new ArrayList<>(lst.size());
-    for (HyperparameterValuesConfigBlob val : lst) {
-      collect.add(postVisitDeepHyperparameterValuesConfigBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitHyperparameterValuesConfigBlob(HyperparameterValuesConfigBlob blob)
-      throws ModelDBException {}
-
-  public void preVisitDeepHyperparameterValuesConfigBlob(HyperparameterValuesConfigBlob blob)
-      throws ModelDBException {}
-
-  public HyperparameterValuesConfigBlob postVisitHyperparameterValuesConfigBlob(
-      HyperparameterValuesConfigBlob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public HyperparameterValuesConfigBlob postVisitDeepHyperparameterValuesConfigBlob(
-      HyperparameterValuesConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfNotebookCodeBlob(List<NotebookCodeBlob> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (NotebookCodeBlob val : lst) {
-      preVisitNotebookCodeBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfNotebookCodeBlob(List<NotebookCodeBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (NotebookCodeBlob val : lst) {
-      preVisitDeepNotebookCodeBlob(val);
-    }
-  }
-
-  public List<NotebookCodeBlob> postVisitListOfNotebookCodeBlob(List<NotebookCodeBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<NotebookCodeBlob> collect = new ArrayList<>(lst.size());
-    for (NotebookCodeBlob val : lst) {
-      collect.add(postVisitNotebookCodeBlob(val));
-    }
-    return collect;
-  }
-
-  public List<NotebookCodeBlob> postVisitDeepListOfNotebookCodeBlob(List<NotebookCodeBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<NotebookCodeBlob> collect = new ArrayList<>(lst.size());
-    for (NotebookCodeBlob val : lst) {
-      collect.add(postVisitDeepNotebookCodeBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitNotebookCodeBlob(NotebookCodeBlob blob) throws ModelDBException {}
-
-  public void preVisitDeepNotebookCodeBlob(NotebookCodeBlob blob) throws ModelDBException {}
-
-  public NotebookCodeBlob postVisitNotebookCodeBlob(NotebookCodeBlob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public NotebookCodeBlob postVisitDeepNotebookCodeBlob(NotebookCodeBlob blob)
+  public AutogenGitCodeBlob postVisitDeepAutogenGitCodeBlob(AutogenGitCodeBlob blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfNotebookCodeDiff(List<NotebookCodeDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (NotebookCodeDiff val : lst) {
-      preVisitNotebookCodeDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfNotebookCodeDiff(List<NotebookCodeDiff> lst)
+  public void preVisitListOfAutogenGitCodeDiff(List<AutogenGitCodeDiff> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (NotebookCodeDiff val : lst) {
-      preVisitDeepNotebookCodeDiff(val);
+    for (AutogenGitCodeDiff val : lst) {
+      preVisitAutogenGitCodeDiff(val);
     }
   }
 
-  public List<NotebookCodeDiff> postVisitListOfNotebookCodeDiff(List<NotebookCodeDiff> lst)
+  public void preVisitDeepListOfAutogenGitCodeDiff(List<AutogenGitCodeDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenGitCodeDiff val : lst) {
+      preVisitDeepAutogenGitCodeDiff(val);
+    }
+  }
+
+  public List<AutogenGitCodeDiff> postVisitListOfAutogenGitCodeDiff(List<AutogenGitCodeDiff> lst)
       throws ModelDBException {
     if (lst == null) return null;
-    final List<NotebookCodeDiff> collect = new ArrayList<>(lst.size());
-    for (NotebookCodeDiff val : lst) {
-      collect.add(postVisitNotebookCodeDiff(val));
+    final List<AutogenGitCodeDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenGitCodeDiff val : lst) {
+      collect.add(postVisitAutogenGitCodeDiff(val));
     }
     return collect;
   }
 
-  public List<NotebookCodeDiff> postVisitDeepListOfNotebookCodeDiff(List<NotebookCodeDiff> lst)
-      throws ModelDBException {
+  public List<AutogenGitCodeDiff> postVisitDeepListOfAutogenGitCodeDiff(
+      List<AutogenGitCodeDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<NotebookCodeDiff> collect = new ArrayList<>(lst.size());
-    for (NotebookCodeDiff val : lst) {
-      collect.add(postVisitDeepNotebookCodeDiff(val));
+    final List<AutogenGitCodeDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenGitCodeDiff val : lst) {
+      collect.add(postVisitDeepAutogenGitCodeDiff(val));
     }
     return collect;
   }
 
-  public void preVisitNotebookCodeDiff(NotebookCodeDiff blob) throws ModelDBException {}
+  public void preVisitAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepNotebookCodeDiff(NotebookCodeDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {}
 
-  public NotebookCodeDiff postVisitNotebookCodeDiff(NotebookCodeDiff blob) throws ModelDBException {
+  public AutogenGitCodeDiff postVisitAutogenGitCodeDiff(AutogenGitCodeDiff blob)
+      throws ModelDBException {
     return blob;
   }
 
-  public NotebookCodeDiff postVisitDeepNotebookCodeDiff(NotebookCodeDiff blob)
+  public AutogenGitCodeDiff postVisitDeepAutogenGitCodeDiff(AutogenGitCodeDiff blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfPathDatasetBlob(List<PathDatasetBlob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenHyperparameterConfigBlob(
+      List<AutogenHyperparameterConfigBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (PathDatasetBlob val : lst) {
-      preVisitPathDatasetBlob(val);
+    for (AutogenHyperparameterConfigBlob val : lst) {
+      preVisitAutogenHyperparameterConfigBlob(val);
     }
   }
 
-  public void preVisitDeepListOfPathDatasetBlob(List<PathDatasetBlob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenHyperparameterConfigBlob(
+      List<AutogenHyperparameterConfigBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (PathDatasetBlob val : lst) {
-      preVisitDeepPathDatasetBlob(val);
+    for (AutogenHyperparameterConfigBlob val : lst) {
+      preVisitDeepAutogenHyperparameterConfigBlob(val);
     }
   }
 
-  public List<PathDatasetBlob> postVisitListOfPathDatasetBlob(List<PathDatasetBlob> lst)
-      throws ModelDBException {
+  public List<AutogenHyperparameterConfigBlob> postVisitListOfAutogenHyperparameterConfigBlob(
+      List<AutogenHyperparameterConfigBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PathDatasetBlob> collect = new ArrayList<>(lst.size());
-    for (PathDatasetBlob val : lst) {
-      collect.add(postVisitPathDatasetBlob(val));
+    final List<AutogenHyperparameterConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterConfigBlob val : lst) {
+      collect.add(postVisitAutogenHyperparameterConfigBlob(val));
     }
     return collect;
   }
 
-  public List<PathDatasetBlob> postVisitDeepListOfPathDatasetBlob(List<PathDatasetBlob> lst)
-      throws ModelDBException {
+  public List<AutogenHyperparameterConfigBlob> postVisitDeepListOfAutogenHyperparameterConfigBlob(
+      List<AutogenHyperparameterConfigBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PathDatasetBlob> collect = new ArrayList<>(lst.size());
-    for (PathDatasetBlob val : lst) {
-      collect.add(postVisitDeepPathDatasetBlob(val));
+    final List<AutogenHyperparameterConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterConfigBlob val : lst) {
+      collect.add(postVisitDeepAutogenHyperparameterConfigBlob(val));
     }
     return collect;
   }
 
-  public void preVisitPathDatasetBlob(PathDatasetBlob blob) throws ModelDBException {}
+  public void preVisitAutogenHyperparameterConfigBlob(AutogenHyperparameterConfigBlob blob)
+      throws ModelDBException {}
 
-  public void preVisitDeepPathDatasetBlob(PathDatasetBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenHyperparameterConfigBlob(AutogenHyperparameterConfigBlob blob)
+      throws ModelDBException {}
 
-  public PathDatasetBlob postVisitPathDatasetBlob(PathDatasetBlob blob) throws ModelDBException {
+  public AutogenHyperparameterConfigBlob postVisitAutogenHyperparameterConfigBlob(
+      AutogenHyperparameterConfigBlob blob) throws ModelDBException {
     return blob;
   }
 
-  public PathDatasetBlob postVisitDeepPathDatasetBlob(PathDatasetBlob blob)
+  public AutogenHyperparameterConfigBlob postVisitDeepAutogenHyperparameterConfigBlob(
+      AutogenHyperparameterConfigBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenHyperparameterConfigDiff(
+      List<AutogenHyperparameterConfigDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenHyperparameterConfigDiff val : lst) {
+      preVisitAutogenHyperparameterConfigDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenHyperparameterConfigDiff(
+      List<AutogenHyperparameterConfigDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenHyperparameterConfigDiff val : lst) {
+      preVisitDeepAutogenHyperparameterConfigDiff(val);
+    }
+  }
+
+  public List<AutogenHyperparameterConfigDiff> postVisitListOfAutogenHyperparameterConfigDiff(
+      List<AutogenHyperparameterConfigDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenHyperparameterConfigDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterConfigDiff val : lst) {
+      collect.add(postVisitAutogenHyperparameterConfigDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenHyperparameterConfigDiff> postVisitDeepListOfAutogenHyperparameterConfigDiff(
+      List<AutogenHyperparameterConfigDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenHyperparameterConfigDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterConfigDiff val : lst) {
+      collect.add(postVisitDeepAutogenHyperparameterConfigDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenHyperparameterConfigDiff(AutogenHyperparameterConfigDiff blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenHyperparameterConfigDiff(AutogenHyperparameterConfigDiff blob)
+      throws ModelDBException {}
+
+  public AutogenHyperparameterConfigDiff postVisitAutogenHyperparameterConfigDiff(
+      AutogenHyperparameterConfigDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenHyperparameterConfigDiff postVisitDeepAutogenHyperparameterConfigDiff(
+      AutogenHyperparameterConfigDiff blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenHyperparameterSetConfigBlob(
+      List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenHyperparameterSetConfigBlob val : lst) {
+      preVisitAutogenHyperparameterSetConfigBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenHyperparameterSetConfigBlob(
+      List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenHyperparameterSetConfigBlob val : lst) {
+      preVisitDeepAutogenHyperparameterSetConfigBlob(val);
+    }
+  }
+
+  public List<AutogenHyperparameterSetConfigBlob> postVisitListOfAutogenHyperparameterSetConfigBlob(
+      List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterSetConfigBlob val : lst) {
+      collect.add(postVisitAutogenHyperparameterSetConfigBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenHyperparameterSetConfigBlob>
+      postVisitDeepListOfAutogenHyperparameterSetConfigBlob(
+          List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterSetConfigBlob val : lst) {
+      collect.add(postVisitDeepAutogenHyperparameterSetConfigBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenHyperparameterSetConfigBlob(AutogenHyperparameterSetConfigBlob blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenHyperparameterSetConfigBlob(
+      AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {}
+
+  public AutogenHyperparameterSetConfigBlob postVisitAutogenHyperparameterSetConfigBlob(
+      AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenHyperparameterSetConfigBlob postVisitDeepAutogenHyperparameterSetConfigBlob(
+      AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenHyperparameterSetConfigDiff(
+      List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenHyperparameterSetConfigDiff val : lst) {
+      preVisitAutogenHyperparameterSetConfigDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenHyperparameterSetConfigDiff(
+      List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenHyperparameterSetConfigDiff val : lst) {
+      preVisitDeepAutogenHyperparameterSetConfigDiff(val);
+    }
+  }
+
+  public List<AutogenHyperparameterSetConfigDiff> postVisitListOfAutogenHyperparameterSetConfigDiff(
+      List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenHyperparameterSetConfigDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterSetConfigDiff val : lst) {
+      collect.add(postVisitAutogenHyperparameterSetConfigDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenHyperparameterSetConfigDiff>
+      postVisitDeepListOfAutogenHyperparameterSetConfigDiff(
+          List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenHyperparameterSetConfigDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterSetConfigDiff val : lst) {
+      collect.add(postVisitDeepAutogenHyperparameterSetConfigDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenHyperparameterSetConfigDiff(AutogenHyperparameterSetConfigDiff blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenHyperparameterSetConfigDiff(
+      AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {}
+
+  public AutogenHyperparameterSetConfigDiff postVisitAutogenHyperparameterSetConfigDiff(
+      AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenHyperparameterSetConfigDiff postVisitDeepAutogenHyperparameterSetConfigDiff(
+      AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenHyperparameterValuesConfigBlob(
+      List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenHyperparameterValuesConfigBlob val : lst) {
+      preVisitAutogenHyperparameterValuesConfigBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenHyperparameterValuesConfigBlob(
+      List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenHyperparameterValuesConfigBlob val : lst) {
+      preVisitDeepAutogenHyperparameterValuesConfigBlob(val);
+    }
+  }
+
+  public List<AutogenHyperparameterValuesConfigBlob>
+      postVisitListOfAutogenHyperparameterValuesConfigBlob(
+          List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenHyperparameterValuesConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterValuesConfigBlob val : lst) {
+      collect.add(postVisitAutogenHyperparameterValuesConfigBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenHyperparameterValuesConfigBlob>
+      postVisitDeepListOfAutogenHyperparameterValuesConfigBlob(
+          List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenHyperparameterValuesConfigBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenHyperparameterValuesConfigBlob val : lst) {
+      collect.add(postVisitDeepAutogenHyperparameterValuesConfigBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenHyperparameterValuesConfigBlob(
+      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenHyperparameterValuesConfigBlob(
+      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {}
+
+  public AutogenHyperparameterValuesConfigBlob postVisitAutogenHyperparameterValuesConfigBlob(
+      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenHyperparameterValuesConfigBlob postVisitDeepAutogenHyperparameterValuesConfigBlob(
+      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenNotebookCodeBlob(List<AutogenNotebookCodeBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenNotebookCodeBlob val : lst) {
+      preVisitAutogenNotebookCodeBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenNotebookCodeBlob(List<AutogenNotebookCodeBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenNotebookCodeBlob val : lst) {
+      preVisitDeepAutogenNotebookCodeBlob(val);
+    }
+  }
+
+  public List<AutogenNotebookCodeBlob> postVisitListOfAutogenNotebookCodeBlob(
+      List<AutogenNotebookCodeBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenNotebookCodeBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenNotebookCodeBlob val : lst) {
+      collect.add(postVisitAutogenNotebookCodeBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenNotebookCodeBlob> postVisitDeepListOfAutogenNotebookCodeBlob(
+      List<AutogenNotebookCodeBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenNotebookCodeBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenNotebookCodeBlob val : lst) {
+      collect.add(postVisitDeepAutogenNotebookCodeBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
+      throws ModelDBException {}
+
+  public AutogenNotebookCodeBlob postVisitAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
+      throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenNotebookCodeBlob postVisitDeepAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfPathDatasetComponentBlob(List<PathDatasetComponentBlob> lst)
+  public void preVisitListOfAutogenNotebookCodeDiff(List<AutogenNotebookCodeDiff> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (PathDatasetComponentBlob val : lst) {
-      preVisitPathDatasetComponentBlob(val);
+    for (AutogenNotebookCodeDiff val : lst) {
+      preVisitAutogenNotebookCodeDiff(val);
     }
   }
 
-  public void preVisitDeepListOfPathDatasetComponentBlob(List<PathDatasetComponentBlob> lst)
+  public void preVisitDeepListOfAutogenNotebookCodeDiff(List<AutogenNotebookCodeDiff> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (PathDatasetComponentBlob val : lst) {
-      preVisitDeepPathDatasetComponentBlob(val);
+    for (AutogenNotebookCodeDiff val : lst) {
+      preVisitDeepAutogenNotebookCodeDiff(val);
     }
   }
 
-  public List<PathDatasetComponentBlob> postVisitListOfPathDatasetComponentBlob(
-      List<PathDatasetComponentBlob> lst) throws ModelDBException {
+  public List<AutogenNotebookCodeDiff> postVisitListOfAutogenNotebookCodeDiff(
+      List<AutogenNotebookCodeDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PathDatasetComponentBlob> collect = new ArrayList<>(lst.size());
-    for (PathDatasetComponentBlob val : lst) {
-      collect.add(postVisitPathDatasetComponentBlob(val));
+    final List<AutogenNotebookCodeDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenNotebookCodeDiff val : lst) {
+      collect.add(postVisitAutogenNotebookCodeDiff(val));
     }
     return collect;
   }
 
-  public List<PathDatasetComponentBlob> postVisitDeepListOfPathDatasetComponentBlob(
-      List<PathDatasetComponentBlob> lst) throws ModelDBException {
+  public List<AutogenNotebookCodeDiff> postVisitDeepListOfAutogenNotebookCodeDiff(
+      List<AutogenNotebookCodeDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PathDatasetComponentBlob> collect = new ArrayList<>(lst.size());
-    for (PathDatasetComponentBlob val : lst) {
-      collect.add(postVisitDeepPathDatasetComponentBlob(val));
+    final List<AutogenNotebookCodeDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenNotebookCodeDiff val : lst) {
+      collect.add(postVisitDeepAutogenNotebookCodeDiff(val));
     }
     return collect;
   }
 
-  public void preVisitPathDatasetComponentBlob(PathDatasetComponentBlob blob)
+  public void preVisitAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
       throws ModelDBException {}
 
-  public void preVisitDeepPathDatasetComponentBlob(PathDatasetComponentBlob blob)
+  public void preVisitDeepAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
       throws ModelDBException {}
 
-  public PathDatasetComponentBlob postVisitPathDatasetComponentBlob(PathDatasetComponentBlob blob)
+  public AutogenNotebookCodeDiff postVisitAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
       throws ModelDBException {
     return blob;
   }
 
-  public PathDatasetComponentBlob postVisitDeepPathDatasetComponentBlob(
-      PathDatasetComponentBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfPathDatasetComponentDiff(List<PathDatasetComponentDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (PathDatasetComponentDiff val : lst) {
-      preVisitPathDatasetComponentDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfPathDatasetComponentDiff(List<PathDatasetComponentDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (PathDatasetComponentDiff val : lst) {
-      preVisitDeepPathDatasetComponentDiff(val);
-    }
-  }
-
-  public List<PathDatasetComponentDiff> postVisitListOfPathDatasetComponentDiff(
-      List<PathDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<PathDatasetComponentDiff> collect = new ArrayList<>(lst.size());
-    for (PathDatasetComponentDiff val : lst) {
-      collect.add(postVisitPathDatasetComponentDiff(val));
-    }
-    return collect;
-  }
-
-  public List<PathDatasetComponentDiff> postVisitDeepListOfPathDatasetComponentDiff(
-      List<PathDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<PathDatasetComponentDiff> collect = new ArrayList<>(lst.size());
-    for (PathDatasetComponentDiff val : lst) {
-      collect.add(postVisitDeepPathDatasetComponentDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitPathDatasetComponentDiff(PathDatasetComponentDiff blob)
-      throws ModelDBException {}
-
-  public void preVisitDeepPathDatasetComponentDiff(PathDatasetComponentDiff blob)
-      throws ModelDBException {}
-
-  public PathDatasetComponentDiff postVisitPathDatasetComponentDiff(PathDatasetComponentDiff blob)
-      throws ModelDBException {
-    return blob;
-  }
-
-  public PathDatasetComponentDiff postVisitDeepPathDatasetComponentDiff(
-      PathDatasetComponentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfPathDatasetDiff(List<PathDatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (PathDatasetDiff val : lst) {
-      preVisitPathDatasetDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfPathDatasetDiff(List<PathDatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (PathDatasetDiff val : lst) {
-      preVisitDeepPathDatasetDiff(val);
-    }
-  }
-
-  public List<PathDatasetDiff> postVisitListOfPathDatasetDiff(List<PathDatasetDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<PathDatasetDiff> collect = new ArrayList<>(lst.size());
-    for (PathDatasetDiff val : lst) {
-      collect.add(postVisitPathDatasetDiff(val));
-    }
-    return collect;
-  }
-
-  public List<PathDatasetDiff> postVisitDeepListOfPathDatasetDiff(List<PathDatasetDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<PathDatasetDiff> collect = new ArrayList<>(lst.size());
-    for (PathDatasetDiff val : lst) {
-      collect.add(postVisitDeepPathDatasetDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitPathDatasetDiff(PathDatasetDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepPathDatasetDiff(PathDatasetDiff blob) throws ModelDBException {}
-
-  public PathDatasetDiff postVisitPathDatasetDiff(PathDatasetDiff blob) throws ModelDBException {
-    return blob;
-  }
-
-  public PathDatasetDiff postVisitDeepPathDatasetDiff(PathDatasetDiff blob)
+  public AutogenNotebookCodeDiff postVisitDeepAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfPythonEnvironmentBlob(List<PythonEnvironmentBlob> lst)
+  public void preVisitListOfAutogenPathDatasetBlob(List<AutogenPathDatasetBlob> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (PythonEnvironmentBlob val : lst) {
-      preVisitPythonEnvironmentBlob(val);
+    for (AutogenPathDatasetBlob val : lst) {
+      preVisitAutogenPathDatasetBlob(val);
     }
   }
 
-  public void preVisitDeepListOfPythonEnvironmentBlob(List<PythonEnvironmentBlob> lst)
+  public void preVisitDeepListOfAutogenPathDatasetBlob(List<AutogenPathDatasetBlob> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (PythonEnvironmentBlob val : lst) {
-      preVisitDeepPythonEnvironmentBlob(val);
+    for (AutogenPathDatasetBlob val : lst) {
+      preVisitDeepAutogenPathDatasetBlob(val);
     }
   }
 
-  public List<PythonEnvironmentBlob> postVisitListOfPythonEnvironmentBlob(
-      List<PythonEnvironmentBlob> lst) throws ModelDBException {
+  public List<AutogenPathDatasetBlob> postVisitListOfAutogenPathDatasetBlob(
+      List<AutogenPathDatasetBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PythonEnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (PythonEnvironmentBlob val : lst) {
-      collect.add(postVisitPythonEnvironmentBlob(val));
+    final List<AutogenPathDatasetBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenPathDatasetBlob val : lst) {
+      collect.add(postVisitAutogenPathDatasetBlob(val));
     }
     return collect;
   }
 
-  public List<PythonEnvironmentBlob> postVisitDeepListOfPythonEnvironmentBlob(
-      List<PythonEnvironmentBlob> lst) throws ModelDBException {
+  public List<AutogenPathDatasetBlob> postVisitDeepListOfAutogenPathDatasetBlob(
+      List<AutogenPathDatasetBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PythonEnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (PythonEnvironmentBlob val : lst) {
-      collect.add(postVisitDeepPythonEnvironmentBlob(val));
+    final List<AutogenPathDatasetBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenPathDatasetBlob val : lst) {
+      collect.add(postVisitDeepAutogenPathDatasetBlob(val));
     }
     return collect;
   }
 
-  public void preVisitPythonEnvironmentBlob(PythonEnvironmentBlob blob) throws ModelDBException {}
+  public void preVisitAutogenPathDatasetBlob(AutogenPathDatasetBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepPythonEnvironmentBlob(PythonEnvironmentBlob blob)
+  public void preVisitDeepAutogenPathDatasetBlob(AutogenPathDatasetBlob blob)
       throws ModelDBException {}
 
-  public PythonEnvironmentBlob postVisitPythonEnvironmentBlob(PythonEnvironmentBlob blob)
+  public AutogenPathDatasetBlob postVisitAutogenPathDatasetBlob(AutogenPathDatasetBlob blob)
       throws ModelDBException {
     return blob;
   }
 
-  public PythonEnvironmentBlob postVisitDeepPythonEnvironmentBlob(PythonEnvironmentBlob blob)
+  public AutogenPathDatasetBlob postVisitDeepAutogenPathDatasetBlob(AutogenPathDatasetBlob blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfPythonEnvironmentDiff(List<PythonEnvironmentDiff> lst)
-      throws ModelDBException {
+  public void preVisitListOfAutogenPathDatasetComponentBlob(
+      List<AutogenPathDatasetComponentBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (PythonEnvironmentDiff val : lst) {
-      preVisitPythonEnvironmentDiff(val);
+    for (AutogenPathDatasetComponentBlob val : lst) {
+      preVisitAutogenPathDatasetComponentBlob(val);
     }
   }
 
-  public void preVisitDeepListOfPythonEnvironmentDiff(List<PythonEnvironmentDiff> lst)
-      throws ModelDBException {
+  public void preVisitDeepListOfAutogenPathDatasetComponentBlob(
+      List<AutogenPathDatasetComponentBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (PythonEnvironmentDiff val : lst) {
-      preVisitDeepPythonEnvironmentDiff(val);
+    for (AutogenPathDatasetComponentBlob val : lst) {
+      preVisitDeepAutogenPathDatasetComponentBlob(val);
     }
   }
 
-  public List<PythonEnvironmentDiff> postVisitListOfPythonEnvironmentDiff(
-      List<PythonEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenPathDatasetComponentBlob> postVisitListOfAutogenPathDatasetComponentBlob(
+      List<AutogenPathDatasetComponentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PythonEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (PythonEnvironmentDiff val : lst) {
-      collect.add(postVisitPythonEnvironmentDiff(val));
+    final List<AutogenPathDatasetComponentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenPathDatasetComponentBlob val : lst) {
+      collect.add(postVisitAutogenPathDatasetComponentBlob(val));
     }
     return collect;
   }
 
-  public List<PythonEnvironmentDiff> postVisitDeepListOfPythonEnvironmentDiff(
-      List<PythonEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenPathDatasetComponentBlob> postVisitDeepListOfAutogenPathDatasetComponentBlob(
+      List<AutogenPathDatasetComponentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PythonEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (PythonEnvironmentDiff val : lst) {
-      collect.add(postVisitDeepPythonEnvironmentDiff(val));
+    final List<AutogenPathDatasetComponentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenPathDatasetComponentBlob val : lst) {
+      collect.add(postVisitDeepAutogenPathDatasetComponentBlob(val));
     }
     return collect;
   }
 
-  public void preVisitPythonEnvironmentDiff(PythonEnvironmentDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepPythonEnvironmentDiff(PythonEnvironmentDiff blob)
+  public void preVisitAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
       throws ModelDBException {}
 
-  public PythonEnvironmentDiff postVisitPythonEnvironmentDiff(PythonEnvironmentDiff blob)
+  public void preVisitDeepAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
+      throws ModelDBException {}
+
+  public AutogenPathDatasetComponentBlob postVisitAutogenPathDatasetComponentBlob(
+      AutogenPathDatasetComponentBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenPathDatasetComponentBlob postVisitDeepAutogenPathDatasetComponentBlob(
+      AutogenPathDatasetComponentBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenPathDatasetComponentDiff(
+      List<AutogenPathDatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenPathDatasetComponentDiff val : lst) {
+      preVisitAutogenPathDatasetComponentDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenPathDatasetComponentDiff(
+      List<AutogenPathDatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenPathDatasetComponentDiff val : lst) {
+      preVisitDeepAutogenPathDatasetComponentDiff(val);
+    }
+  }
+
+  public List<AutogenPathDatasetComponentDiff> postVisitListOfAutogenPathDatasetComponentDiff(
+      List<AutogenPathDatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenPathDatasetComponentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenPathDatasetComponentDiff val : lst) {
+      collect.add(postVisitAutogenPathDatasetComponentDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenPathDatasetComponentDiff> postVisitDeepListOfAutogenPathDatasetComponentDiff(
+      List<AutogenPathDatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenPathDatasetComponentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenPathDatasetComponentDiff val : lst) {
+      collect.add(postVisitDeepAutogenPathDatasetComponentDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenPathDatasetComponentDiff(AutogenPathDatasetComponentDiff blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenPathDatasetComponentDiff(AutogenPathDatasetComponentDiff blob)
+      throws ModelDBException {}
+
+  public AutogenPathDatasetComponentDiff postVisitAutogenPathDatasetComponentDiff(
+      AutogenPathDatasetComponentDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenPathDatasetComponentDiff postVisitDeepAutogenPathDatasetComponentDiff(
+      AutogenPathDatasetComponentDiff blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenPathDatasetDiff(List<AutogenPathDatasetDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenPathDatasetDiff val : lst) {
+      preVisitAutogenPathDatasetDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenPathDatasetDiff(List<AutogenPathDatasetDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenPathDatasetDiff val : lst) {
+      preVisitDeepAutogenPathDatasetDiff(val);
+    }
+  }
+
+  public List<AutogenPathDatasetDiff> postVisitListOfAutogenPathDatasetDiff(
+      List<AutogenPathDatasetDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenPathDatasetDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenPathDatasetDiff val : lst) {
+      collect.add(postVisitAutogenPathDatasetDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenPathDatasetDiff> postVisitDeepListOfAutogenPathDatasetDiff(
+      List<AutogenPathDatasetDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenPathDatasetDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenPathDatasetDiff val : lst) {
+      collect.add(postVisitDeepAutogenPathDatasetDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenPathDatasetDiff(AutogenPathDatasetDiff blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenPathDatasetDiff(AutogenPathDatasetDiff blob)
+      throws ModelDBException {}
+
+  public AutogenPathDatasetDiff postVisitAutogenPathDatasetDiff(AutogenPathDatasetDiff blob)
       throws ModelDBException {
     return blob;
   }
 
-  public PythonEnvironmentDiff postVisitDeepPythonEnvironmentDiff(PythonEnvironmentDiff blob)
+  public AutogenPathDatasetDiff postVisitDeepAutogenPathDatasetDiff(AutogenPathDatasetDiff blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfPythonRequirementEnvironmentBlob(
-      List<PythonRequirementEnvironmentBlob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenPythonEnvironmentBlob(List<AutogenPythonEnvironmentBlob> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (PythonRequirementEnvironmentBlob val : lst) {
-      preVisitPythonRequirementEnvironmentBlob(val);
+    for (AutogenPythonEnvironmentBlob val : lst) {
+      preVisitAutogenPythonEnvironmentBlob(val);
     }
   }
 
-  public void preVisitDeepListOfPythonRequirementEnvironmentBlob(
-      List<PythonRequirementEnvironmentBlob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenPythonEnvironmentBlob(List<AutogenPythonEnvironmentBlob> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (PythonRequirementEnvironmentBlob val : lst) {
-      preVisitDeepPythonRequirementEnvironmentBlob(val);
+    for (AutogenPythonEnvironmentBlob val : lst) {
+      preVisitDeepAutogenPythonEnvironmentBlob(val);
     }
   }
 
-  public List<PythonRequirementEnvironmentBlob> postVisitListOfPythonRequirementEnvironmentBlob(
-      List<PythonRequirementEnvironmentBlob> lst) throws ModelDBException {
+  public List<AutogenPythonEnvironmentBlob> postVisitListOfAutogenPythonEnvironmentBlob(
+      List<AutogenPythonEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PythonRequirementEnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (PythonRequirementEnvironmentBlob val : lst) {
-      collect.add(postVisitPythonRequirementEnvironmentBlob(val));
+    final List<AutogenPythonEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenPythonEnvironmentBlob val : lst) {
+      collect.add(postVisitAutogenPythonEnvironmentBlob(val));
     }
     return collect;
   }
 
-  public List<PythonRequirementEnvironmentBlob> postVisitDeepListOfPythonRequirementEnvironmentBlob(
-      List<PythonRequirementEnvironmentBlob> lst) throws ModelDBException {
+  public List<AutogenPythonEnvironmentBlob> postVisitDeepListOfAutogenPythonEnvironmentBlob(
+      List<AutogenPythonEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PythonRequirementEnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (PythonRequirementEnvironmentBlob val : lst) {
-      collect.add(postVisitDeepPythonRequirementEnvironmentBlob(val));
+    final List<AutogenPythonEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenPythonEnvironmentBlob val : lst) {
+      collect.add(postVisitDeepAutogenPythonEnvironmentBlob(val));
     }
     return collect;
   }
 
-  public void preVisitPythonRequirementEnvironmentBlob(PythonRequirementEnvironmentBlob blob)
+  public void preVisitAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob blob)
       throws ModelDBException {}
 
-  public void preVisitDeepPythonRequirementEnvironmentBlob(PythonRequirementEnvironmentBlob blob)
+  public void preVisitDeepAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob blob)
       throws ModelDBException {}
 
-  public PythonRequirementEnvironmentBlob postVisitPythonRequirementEnvironmentBlob(
-      PythonRequirementEnvironmentBlob blob) throws ModelDBException {
+  public AutogenPythonEnvironmentBlob postVisitAutogenPythonEnvironmentBlob(
+      AutogenPythonEnvironmentBlob blob) throws ModelDBException {
     return blob;
   }
 
-  public PythonRequirementEnvironmentBlob postVisitDeepPythonRequirementEnvironmentBlob(
-      PythonRequirementEnvironmentBlob blob) throws ModelDBException {
+  public AutogenPythonEnvironmentBlob postVisitDeepAutogenPythonEnvironmentBlob(
+      AutogenPythonEnvironmentBlob blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfPythonRequirementEnvironmentDiff(
-      List<PythonRequirementEnvironmentDiff> lst) throws ModelDBException {
+  public void preVisitListOfAutogenPythonEnvironmentDiff(List<AutogenPythonEnvironmentDiff> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (PythonRequirementEnvironmentDiff val : lst) {
-      preVisitPythonRequirementEnvironmentDiff(val);
+    for (AutogenPythonEnvironmentDiff val : lst) {
+      preVisitAutogenPythonEnvironmentDiff(val);
     }
   }
 
-  public void preVisitDeepListOfPythonRequirementEnvironmentDiff(
-      List<PythonRequirementEnvironmentDiff> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenPythonEnvironmentDiff(List<AutogenPythonEnvironmentDiff> lst)
+      throws ModelDBException {
     if (lst == null) return;
-    for (PythonRequirementEnvironmentDiff val : lst) {
-      preVisitDeepPythonRequirementEnvironmentDiff(val);
+    for (AutogenPythonEnvironmentDiff val : lst) {
+      preVisitDeepAutogenPythonEnvironmentDiff(val);
     }
   }
 
-  public List<PythonRequirementEnvironmentDiff> postVisitListOfPythonRequirementEnvironmentDiff(
-      List<PythonRequirementEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenPythonEnvironmentDiff> postVisitListOfAutogenPythonEnvironmentDiff(
+      List<AutogenPythonEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PythonRequirementEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (PythonRequirementEnvironmentDiff val : lst) {
-      collect.add(postVisitPythonRequirementEnvironmentDiff(val));
+    final List<AutogenPythonEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenPythonEnvironmentDiff val : lst) {
+      collect.add(postVisitAutogenPythonEnvironmentDiff(val));
     }
     return collect;
   }
 
-  public List<PythonRequirementEnvironmentDiff> postVisitDeepListOfPythonRequirementEnvironmentDiff(
-      List<PythonRequirementEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenPythonEnvironmentDiff> postVisitDeepListOfAutogenPythonEnvironmentDiff(
+      List<AutogenPythonEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<PythonRequirementEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (PythonRequirementEnvironmentDiff val : lst) {
-      collect.add(postVisitDeepPythonRequirementEnvironmentDiff(val));
+    final List<AutogenPythonEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenPythonEnvironmentDiff val : lst) {
+      collect.add(postVisitDeepAutogenPythonEnvironmentDiff(val));
     }
     return collect;
   }
 
-  public void preVisitPythonRequirementEnvironmentDiff(PythonRequirementEnvironmentDiff blob)
+  public void preVisitAutogenPythonEnvironmentDiff(AutogenPythonEnvironmentDiff blob)
       throws ModelDBException {}
 
-  public void preVisitDeepPythonRequirementEnvironmentDiff(PythonRequirementEnvironmentDiff blob)
+  public void preVisitDeepAutogenPythonEnvironmentDiff(AutogenPythonEnvironmentDiff blob)
       throws ModelDBException {}
 
-  public PythonRequirementEnvironmentDiff postVisitPythonRequirementEnvironmentDiff(
-      PythonRequirementEnvironmentDiff blob) throws ModelDBException {
+  public AutogenPythonEnvironmentDiff postVisitAutogenPythonEnvironmentDiff(
+      AutogenPythonEnvironmentDiff blob) throws ModelDBException {
     return blob;
   }
 
-  public PythonRequirementEnvironmentDiff postVisitDeepPythonRequirementEnvironmentDiff(
-      PythonRequirementEnvironmentDiff blob) throws ModelDBException {
+  public AutogenPythonEnvironmentDiff postVisitDeepAutogenPythonEnvironmentDiff(
+      AutogenPythonEnvironmentDiff blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfS3DatasetBlob(List<S3DatasetBlob> lst) throws ModelDBException {
+  public void preVisitListOfAutogenPythonRequirementEnvironmentBlob(
+      List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (S3DatasetBlob val : lst) {
-      preVisitS3DatasetBlob(val);
+    for (AutogenPythonRequirementEnvironmentBlob val : lst) {
+      preVisitAutogenPythonRequirementEnvironmentBlob(val);
     }
   }
 
-  public void preVisitDeepListOfS3DatasetBlob(List<S3DatasetBlob> lst) throws ModelDBException {
+  public void preVisitDeepListOfAutogenPythonRequirementEnvironmentBlob(
+      List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (S3DatasetBlob val : lst) {
-      preVisitDeepS3DatasetBlob(val);
+    for (AutogenPythonRequirementEnvironmentBlob val : lst) {
+      preVisitDeepAutogenPythonRequirementEnvironmentBlob(val);
     }
   }
 
-  public List<S3DatasetBlob> postVisitListOfS3DatasetBlob(List<S3DatasetBlob> lst)
-      throws ModelDBException {
+  public List<AutogenPythonRequirementEnvironmentBlob>
+      postVisitListOfAutogenPythonRequirementEnvironmentBlob(
+          List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<S3DatasetBlob> collect = new ArrayList<>(lst.size());
-    for (S3DatasetBlob val : lst) {
-      collect.add(postVisitS3DatasetBlob(val));
+    final List<AutogenPythonRequirementEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenPythonRequirementEnvironmentBlob val : lst) {
+      collect.add(postVisitAutogenPythonRequirementEnvironmentBlob(val));
     }
     return collect;
   }
 
-  public List<S3DatasetBlob> postVisitDeepListOfS3DatasetBlob(List<S3DatasetBlob> lst)
-      throws ModelDBException {
+  public List<AutogenPythonRequirementEnvironmentBlob>
+      postVisitDeepListOfAutogenPythonRequirementEnvironmentBlob(
+          List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<S3DatasetBlob> collect = new ArrayList<>(lst.size());
-    for (S3DatasetBlob val : lst) {
-      collect.add(postVisitDeepS3DatasetBlob(val));
+    final List<AutogenPythonRequirementEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenPythonRequirementEnvironmentBlob val : lst) {
+      collect.add(postVisitDeepAutogenPythonRequirementEnvironmentBlob(val));
     }
     return collect;
   }
 
-  public void preVisitS3DatasetBlob(S3DatasetBlob blob) throws ModelDBException {}
+  public void preVisitAutogenPythonRequirementEnvironmentBlob(
+      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepS3DatasetBlob(S3DatasetBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenPythonRequirementEnvironmentBlob(
+      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {}
 
-  public S3DatasetBlob postVisitS3DatasetBlob(S3DatasetBlob blob) throws ModelDBException {
+  public AutogenPythonRequirementEnvironmentBlob postVisitAutogenPythonRequirementEnvironmentBlob(
+      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
     return blob;
   }
 
-  public S3DatasetBlob postVisitDeepS3DatasetBlob(S3DatasetBlob blob) throws ModelDBException {
+  public AutogenPythonRequirementEnvironmentBlob
+      postVisitDeepAutogenPythonRequirementEnvironmentBlob(
+          AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfS3DatasetComponentBlob(List<S3DatasetComponentBlob> lst)
-      throws ModelDBException {
+  public void preVisitListOfAutogenPythonRequirementEnvironmentDiff(
+      List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return;
-    for (S3DatasetComponentBlob val : lst) {
-      preVisitS3DatasetComponentBlob(val);
+    for (AutogenPythonRequirementEnvironmentDiff val : lst) {
+      preVisitAutogenPythonRequirementEnvironmentDiff(val);
     }
   }
 
-  public void preVisitDeepListOfS3DatasetComponentBlob(List<S3DatasetComponentBlob> lst)
-      throws ModelDBException {
+  public void preVisitDeepListOfAutogenPythonRequirementEnvironmentDiff(
+      List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return;
-    for (S3DatasetComponentBlob val : lst) {
-      preVisitDeepS3DatasetComponentBlob(val);
+    for (AutogenPythonRequirementEnvironmentDiff val : lst) {
+      preVisitDeepAutogenPythonRequirementEnvironmentDiff(val);
     }
   }
 
-  public List<S3DatasetComponentBlob> postVisitListOfS3DatasetComponentBlob(
-      List<S3DatasetComponentBlob> lst) throws ModelDBException {
+  public List<AutogenPythonRequirementEnvironmentDiff>
+      postVisitListOfAutogenPythonRequirementEnvironmentDiff(
+          List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<S3DatasetComponentBlob> collect = new ArrayList<>(lst.size());
-    for (S3DatasetComponentBlob val : lst) {
-      collect.add(postVisitS3DatasetComponentBlob(val));
+    final List<AutogenPythonRequirementEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenPythonRequirementEnvironmentDiff val : lst) {
+      collect.add(postVisitAutogenPythonRequirementEnvironmentDiff(val));
     }
     return collect;
   }
 
-  public List<S3DatasetComponentBlob> postVisitDeepListOfS3DatasetComponentBlob(
-      List<S3DatasetComponentBlob> lst) throws ModelDBException {
+  public List<AutogenPythonRequirementEnvironmentDiff>
+      postVisitDeepListOfAutogenPythonRequirementEnvironmentDiff(
+          List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<S3DatasetComponentBlob> collect = new ArrayList<>(lst.size());
-    for (S3DatasetComponentBlob val : lst) {
-      collect.add(postVisitDeepS3DatasetComponentBlob(val));
+    final List<AutogenPythonRequirementEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenPythonRequirementEnvironmentDiff val : lst) {
+      collect.add(postVisitDeepAutogenPythonRequirementEnvironmentDiff(val));
     }
     return collect;
   }
 
-  public void preVisitS3DatasetComponentBlob(S3DatasetComponentBlob blob) throws ModelDBException {}
+  public void preVisitAutogenPythonRequirementEnvironmentDiff(
+      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepS3DatasetComponentBlob(S3DatasetComponentBlob blob)
-      throws ModelDBException {}
+  public void preVisitDeepAutogenPythonRequirementEnvironmentDiff(
+      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {}
 
-  public S3DatasetComponentBlob postVisitS3DatasetComponentBlob(S3DatasetComponentBlob blob)
-      throws ModelDBException {
+  public AutogenPythonRequirementEnvironmentDiff postVisitAutogenPythonRequirementEnvironmentDiff(
+      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
     return blob;
   }
 
-  public S3DatasetComponentBlob postVisitDeepS3DatasetComponentBlob(S3DatasetComponentBlob blob)
-      throws ModelDBException {
+  public AutogenPythonRequirementEnvironmentDiff
+      postVisitDeepAutogenPythonRequirementEnvironmentDiff(
+          AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfS3DatasetComponentDiff(List<S3DatasetComponentDiff> lst)
+  public void preVisitListOfAutogenS3DatasetBlob(List<AutogenS3DatasetBlob> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (S3DatasetComponentDiff val : lst) {
-      preVisitS3DatasetComponentDiff(val);
+    for (AutogenS3DatasetBlob val : lst) {
+      preVisitAutogenS3DatasetBlob(val);
     }
   }
 
-  public void preVisitDeepListOfS3DatasetComponentDiff(List<S3DatasetComponentDiff> lst)
+  public void preVisitDeepListOfAutogenS3DatasetBlob(List<AutogenS3DatasetBlob> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (S3DatasetComponentDiff val : lst) {
-      preVisitDeepS3DatasetComponentDiff(val);
+    for (AutogenS3DatasetBlob val : lst) {
+      preVisitDeepAutogenS3DatasetBlob(val);
     }
   }
 
-  public List<S3DatasetComponentDiff> postVisitListOfS3DatasetComponentDiff(
-      List<S3DatasetComponentDiff> lst) throws ModelDBException {
+  public List<AutogenS3DatasetBlob> postVisitListOfAutogenS3DatasetBlob(
+      List<AutogenS3DatasetBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<S3DatasetComponentDiff> collect = new ArrayList<>(lst.size());
-    for (S3DatasetComponentDiff val : lst) {
-      collect.add(postVisitS3DatasetComponentDiff(val));
+    final List<AutogenS3DatasetBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenS3DatasetBlob val : lst) {
+      collect.add(postVisitAutogenS3DatasetBlob(val));
     }
     return collect;
   }
 
-  public List<S3DatasetComponentDiff> postVisitDeepListOfS3DatasetComponentDiff(
-      List<S3DatasetComponentDiff> lst) throws ModelDBException {
+  public List<AutogenS3DatasetBlob> postVisitDeepListOfAutogenS3DatasetBlob(
+      List<AutogenS3DatasetBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<S3DatasetComponentDiff> collect = new ArrayList<>(lst.size());
-    for (S3DatasetComponentDiff val : lst) {
-      collect.add(postVisitDeepS3DatasetComponentDiff(val));
+    final List<AutogenS3DatasetBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenS3DatasetBlob val : lst) {
+      collect.add(postVisitDeepAutogenS3DatasetBlob(val));
     }
     return collect;
   }
 
-  public void preVisitS3DatasetComponentDiff(S3DatasetComponentDiff blob) throws ModelDBException {}
+  public void preVisitAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepS3DatasetComponentDiff(S3DatasetComponentDiff blob)
-      throws ModelDBException {}
+  public void preVisitDeepAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {}
 
-  public S3DatasetComponentDiff postVisitS3DatasetComponentDiff(S3DatasetComponentDiff blob)
+  public AutogenS3DatasetBlob postVisitAutogenS3DatasetBlob(AutogenS3DatasetBlob blob)
       throws ModelDBException {
     return blob;
   }
 
-  public S3DatasetComponentDiff postVisitDeepS3DatasetComponentDiff(S3DatasetComponentDiff blob)
-      throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfS3DatasetDiff(List<S3DatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (S3DatasetDiff val : lst) {
-      preVisitS3DatasetDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfS3DatasetDiff(List<S3DatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return;
-    for (S3DatasetDiff val : lst) {
-      preVisitDeepS3DatasetDiff(val);
-    }
-  }
-
-  public List<S3DatasetDiff> postVisitListOfS3DatasetDiff(List<S3DatasetDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<S3DatasetDiff> collect = new ArrayList<>(lst.size());
-    for (S3DatasetDiff val : lst) {
-      collect.add(postVisitS3DatasetDiff(val));
-    }
-    return collect;
-  }
-
-  public List<S3DatasetDiff> postVisitDeepListOfS3DatasetDiff(List<S3DatasetDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return null;
-    final List<S3DatasetDiff> collect = new ArrayList<>(lst.size());
-    for (S3DatasetDiff val : lst) {
-      collect.add(postVisitDeepS3DatasetDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitS3DatasetDiff(S3DatasetDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepS3DatasetDiff(S3DatasetDiff blob) throws ModelDBException {}
-
-  public S3DatasetDiff postVisitS3DatasetDiff(S3DatasetDiff blob) throws ModelDBException {
-    return blob;
-  }
-
-  public S3DatasetDiff postVisitDeepS3DatasetDiff(S3DatasetDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
-  public void preVisitListOfVersionEnvironmentBlob(List<VersionEnvironmentBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (VersionEnvironmentBlob val : lst) {
-      preVisitVersionEnvironmentBlob(val);
-    }
-  }
-
-  public void preVisitDeepListOfVersionEnvironmentBlob(List<VersionEnvironmentBlob> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (VersionEnvironmentBlob val : lst) {
-      preVisitDeepVersionEnvironmentBlob(val);
-    }
-  }
-
-  public List<VersionEnvironmentBlob> postVisitListOfVersionEnvironmentBlob(
-      List<VersionEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<VersionEnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (VersionEnvironmentBlob val : lst) {
-      collect.add(postVisitVersionEnvironmentBlob(val));
-    }
-    return collect;
-  }
-
-  public List<VersionEnvironmentBlob> postVisitDeepListOfVersionEnvironmentBlob(
-      List<VersionEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<VersionEnvironmentBlob> collect = new ArrayList<>(lst.size());
-    for (VersionEnvironmentBlob val : lst) {
-      collect.add(postVisitDeepVersionEnvironmentBlob(val));
-    }
-    return collect;
-  }
-
-  public void preVisitVersionEnvironmentBlob(VersionEnvironmentBlob blob) throws ModelDBException {}
-
-  public void preVisitDeepVersionEnvironmentBlob(VersionEnvironmentBlob blob)
-      throws ModelDBException {}
-
-  public VersionEnvironmentBlob postVisitVersionEnvironmentBlob(VersionEnvironmentBlob blob)
-      throws ModelDBException {
-    return blob;
-  }
-
-  public VersionEnvironmentBlob postVisitDeepVersionEnvironmentBlob(VersionEnvironmentBlob blob)
+  public AutogenS3DatasetBlob postVisitDeepAutogenS3DatasetBlob(AutogenS3DatasetBlob blob)
       throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
 
-  public void preVisitListOfVersionEnvironmentDiff(List<VersionEnvironmentDiff> lst)
+  public void preVisitListOfAutogenS3DatasetComponentBlob(List<AutogenS3DatasetComponentBlob> lst)
       throws ModelDBException {
     if (lst == null) return;
-    for (VersionEnvironmentDiff val : lst) {
-      preVisitVersionEnvironmentDiff(val);
+    for (AutogenS3DatasetComponentBlob val : lst) {
+      preVisitAutogenS3DatasetComponentBlob(val);
     }
   }
 
-  public void preVisitDeepListOfVersionEnvironmentDiff(List<VersionEnvironmentDiff> lst)
-      throws ModelDBException {
+  public void preVisitDeepListOfAutogenS3DatasetComponentBlob(
+      List<AutogenS3DatasetComponentBlob> lst) throws ModelDBException {
     if (lst == null) return;
-    for (VersionEnvironmentDiff val : lst) {
-      preVisitDeepVersionEnvironmentDiff(val);
+    for (AutogenS3DatasetComponentBlob val : lst) {
+      preVisitDeepAutogenS3DatasetComponentBlob(val);
     }
   }
 
-  public List<VersionEnvironmentDiff> postVisitListOfVersionEnvironmentDiff(
-      List<VersionEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenS3DatasetComponentBlob> postVisitListOfAutogenS3DatasetComponentBlob(
+      List<AutogenS3DatasetComponentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<VersionEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (VersionEnvironmentDiff val : lst) {
-      collect.add(postVisitVersionEnvironmentDiff(val));
+    final List<AutogenS3DatasetComponentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenS3DatasetComponentBlob val : lst) {
+      collect.add(postVisitAutogenS3DatasetComponentBlob(val));
     }
     return collect;
   }
 
-  public List<VersionEnvironmentDiff> postVisitDeepListOfVersionEnvironmentDiff(
-      List<VersionEnvironmentDiff> lst) throws ModelDBException {
+  public List<AutogenS3DatasetComponentBlob> postVisitDeepListOfAutogenS3DatasetComponentBlob(
+      List<AutogenS3DatasetComponentBlob> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<VersionEnvironmentDiff> collect = new ArrayList<>(lst.size());
-    for (VersionEnvironmentDiff val : lst) {
-      collect.add(postVisitDeepVersionEnvironmentDiff(val));
+    final List<AutogenS3DatasetComponentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenS3DatasetComponentBlob val : lst) {
+      collect.add(postVisitDeepAutogenS3DatasetComponentBlob(val));
     }
     return collect;
   }
 
-  public void preVisitVersionEnvironmentDiff(VersionEnvironmentDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepVersionEnvironmentDiff(VersionEnvironmentDiff blob)
+  public void preVisitAutogenS3DatasetComponentBlob(AutogenS3DatasetComponentBlob blob)
       throws ModelDBException {}
 
-  public VersionEnvironmentDiff postVisitVersionEnvironmentDiff(VersionEnvironmentDiff blob)
+  public void preVisitDeepAutogenS3DatasetComponentBlob(AutogenS3DatasetComponentBlob blob)
+      throws ModelDBException {}
+
+  public AutogenS3DatasetComponentBlob postVisitAutogenS3DatasetComponentBlob(
+      AutogenS3DatasetComponentBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenS3DatasetComponentBlob postVisitDeepAutogenS3DatasetComponentBlob(
+      AutogenS3DatasetComponentBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenS3DatasetComponentDiff(List<AutogenS3DatasetComponentDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenS3DatasetComponentDiff val : lst) {
+      preVisitAutogenS3DatasetComponentDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenS3DatasetComponentDiff(
+      List<AutogenS3DatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenS3DatasetComponentDiff val : lst) {
+      preVisitDeepAutogenS3DatasetComponentDiff(val);
+    }
+  }
+
+  public List<AutogenS3DatasetComponentDiff> postVisitListOfAutogenS3DatasetComponentDiff(
+      List<AutogenS3DatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenS3DatasetComponentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenS3DatasetComponentDiff val : lst) {
+      collect.add(postVisitAutogenS3DatasetComponentDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenS3DatasetComponentDiff> postVisitDeepListOfAutogenS3DatasetComponentDiff(
+      List<AutogenS3DatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenS3DatasetComponentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenS3DatasetComponentDiff val : lst) {
+      collect.add(postVisitDeepAutogenS3DatasetComponentDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenS3DatasetComponentDiff(AutogenS3DatasetComponentDiff blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenS3DatasetComponentDiff(AutogenS3DatasetComponentDiff blob)
+      throws ModelDBException {}
+
+  public AutogenS3DatasetComponentDiff postVisitAutogenS3DatasetComponentDiff(
+      AutogenS3DatasetComponentDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenS3DatasetComponentDiff postVisitDeepAutogenS3DatasetComponentDiff(
+      AutogenS3DatasetComponentDiff blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenS3DatasetDiff(List<AutogenS3DatasetDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenS3DatasetDiff val : lst) {
+      preVisitAutogenS3DatasetDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenS3DatasetDiff(List<AutogenS3DatasetDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenS3DatasetDiff val : lst) {
+      preVisitDeepAutogenS3DatasetDiff(val);
+    }
+  }
+
+  public List<AutogenS3DatasetDiff> postVisitListOfAutogenS3DatasetDiff(
+      List<AutogenS3DatasetDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenS3DatasetDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenS3DatasetDiff val : lst) {
+      collect.add(postVisitAutogenS3DatasetDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenS3DatasetDiff> postVisitDeepListOfAutogenS3DatasetDiff(
+      List<AutogenS3DatasetDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenS3DatasetDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenS3DatasetDiff val : lst) {
+      collect.add(postVisitDeepAutogenS3DatasetDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {}
+
+  public void preVisitDeepAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {}
+
+  public AutogenS3DatasetDiff postVisitAutogenS3DatasetDiff(AutogenS3DatasetDiff blob)
       throws ModelDBException {
     return blob;
   }
 
-  public VersionEnvironmentDiff postVisitDeepVersionEnvironmentDiff(VersionEnvironmentDiff blob)
+  public AutogenS3DatasetDiff postVisitDeepAutogenS3DatasetDiff(AutogenS3DatasetDiff blob)
       throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenVersionEnvironmentBlob(List<AutogenVersionEnvironmentBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenVersionEnvironmentBlob val : lst) {
+      preVisitAutogenVersionEnvironmentBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenVersionEnvironmentBlob(
+      List<AutogenVersionEnvironmentBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenVersionEnvironmentBlob val : lst) {
+      preVisitDeepAutogenVersionEnvironmentBlob(val);
+    }
+  }
+
+  public List<AutogenVersionEnvironmentBlob> postVisitListOfAutogenVersionEnvironmentBlob(
+      List<AutogenVersionEnvironmentBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenVersionEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenVersionEnvironmentBlob val : lst) {
+      collect.add(postVisitAutogenVersionEnvironmentBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenVersionEnvironmentBlob> postVisitDeepListOfAutogenVersionEnvironmentBlob(
+      List<AutogenVersionEnvironmentBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenVersionEnvironmentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenVersionEnvironmentBlob val : lst) {
+      collect.add(postVisitDeepAutogenVersionEnvironmentBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob blob)
+      throws ModelDBException {}
+
+  public AutogenVersionEnvironmentBlob postVisitAutogenVersionEnvironmentBlob(
+      AutogenVersionEnvironmentBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenVersionEnvironmentBlob postVisitDeepAutogenVersionEnvironmentBlob(
+      AutogenVersionEnvironmentBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenVersionEnvironmentDiff(List<AutogenVersionEnvironmentDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenVersionEnvironmentDiff val : lst) {
+      preVisitAutogenVersionEnvironmentDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenVersionEnvironmentDiff(
+      List<AutogenVersionEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenVersionEnvironmentDiff val : lst) {
+      preVisitDeepAutogenVersionEnvironmentDiff(val);
+    }
+  }
+
+  public List<AutogenVersionEnvironmentDiff> postVisitListOfAutogenVersionEnvironmentDiff(
+      List<AutogenVersionEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenVersionEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenVersionEnvironmentDiff val : lst) {
+      collect.add(postVisitAutogenVersionEnvironmentDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenVersionEnvironmentDiff> postVisitDeepListOfAutogenVersionEnvironmentDiff(
+      List<AutogenVersionEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenVersionEnvironmentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenVersionEnvironmentDiff val : lst) {
+      collect.add(postVisitDeepAutogenVersionEnvironmentDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenVersionEnvironmentDiff(AutogenVersionEnvironmentDiff blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenVersionEnvironmentDiff(AutogenVersionEnvironmentDiff blob)
+      throws ModelDBException {}
+
+  public AutogenVersionEnvironmentDiff postVisitAutogenVersionEnvironmentDiff(
+      AutogenVersionEnvironmentDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenVersionEnvironmentDiff postVisitDeepAutogenVersionEnvironmentDiff(
+      AutogenVersionEnvironmentDiff blob) throws ModelDBException {
     if (blob != null) return blob.postVisitDeep(this);
     return null;
   }
@@ -2277,196 +2367,218 @@ public class Visitor {
     return blob;
   }
 
-  public void preVisitListOfDiffStatusEnumDiffStatus(List<DiffStatusEnumDiffStatus> lst)
-      throws ModelDBException {
+  public void preVisitListOfAutogenDiffStatusEnumDiffStatus(
+      List<AutogenDiffStatusEnumDiffStatus> lst) throws ModelDBException {
     if (lst == null) return;
-    for (DiffStatusEnumDiffStatus val : lst) {
-      preVisitDiffStatusEnumDiffStatus(val);
+    for (AutogenDiffStatusEnumDiffStatus val : lst) {
+      preVisitAutogenDiffStatusEnumDiffStatus(val);
     }
   }
 
-  public void preVisitDeepListOfDiffStatusEnumDiffStatus(List<DiffStatusEnumDiffStatus> lst)
-      throws ModelDBException {
+  public void preVisitDeepListOfAutogenDiffStatusEnumDiffStatus(
+      List<AutogenDiffStatusEnumDiffStatus> lst) throws ModelDBException {
     if (lst == null) return;
-    for (DiffStatusEnumDiffStatus val : lst) {
-      preVisitDeepDiffStatusEnumDiffStatus(val);
+    for (AutogenDiffStatusEnumDiffStatus val : lst) {
+      preVisitDeepAutogenDiffStatusEnumDiffStatus(val);
     }
   }
 
-  public List<DiffStatusEnumDiffStatus> postVisitListOfDiffStatusEnumDiffStatus(
-      List<DiffStatusEnumDiffStatus> lst) throws ModelDBException {
+  public List<AutogenDiffStatusEnumDiffStatus> postVisitListOfAutogenDiffStatusEnumDiffStatus(
+      List<AutogenDiffStatusEnumDiffStatus> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<DiffStatusEnumDiffStatus> collect = new ArrayList<>(lst.size());
-    for (DiffStatusEnumDiffStatus val : lst) {
-      collect.add(postVisitDiffStatusEnumDiffStatus(val));
+    final List<AutogenDiffStatusEnumDiffStatus> collect = new ArrayList<>(lst.size());
+    for (AutogenDiffStatusEnumDiffStatus val : lst) {
+      collect.add(postVisitAutogenDiffStatusEnumDiffStatus(val));
     }
     return collect;
   }
 
-  public List<DiffStatusEnumDiffStatus> postVisitDeepListOfDiffStatusEnumDiffStatus(
-      List<DiffStatusEnumDiffStatus> lst) throws ModelDBException {
+  public List<AutogenDiffStatusEnumDiffStatus> postVisitDeepListOfAutogenDiffStatusEnumDiffStatus(
+      List<AutogenDiffStatusEnumDiffStatus> lst) throws ModelDBException {
     if (lst == null) return null;
-    final List<DiffStatusEnumDiffStatus> collect = new ArrayList<>(lst.size());
-    for (DiffStatusEnumDiffStatus val : lst) {
-      collect.add(postVisitDeepDiffStatusEnumDiffStatus(val));
+    final List<AutogenDiffStatusEnumDiffStatus> collect = new ArrayList<>(lst.size());
+    for (AutogenDiffStatusEnumDiffStatus val : lst) {
+      collect.add(postVisitDeepAutogenDiffStatusEnumDiffStatus(val));
     }
     return collect;
   }
 
-  public void preVisitDiffStatusEnumDiffStatus(DiffStatusEnumDiffStatus blob)
+  public void preVisitAutogenDiffStatusEnumDiffStatus(AutogenDiffStatusEnumDiffStatus blob)
       throws ModelDBException {}
 
-  public void preVisitDeepDiffStatusEnumDiffStatus(DiffStatusEnumDiffStatus blob)
+  public void preVisitDeepAutogenDiffStatusEnumDiffStatus(AutogenDiffStatusEnumDiffStatus blob)
       throws ModelDBException {}
 
-  public DiffStatusEnumDiffStatus postVisitDiffStatusEnumDiffStatus(DiffStatusEnumDiffStatus blob)
-      throws ModelDBException {
+  public AutogenDiffStatusEnumDiffStatus postVisitAutogenDiffStatusEnumDiffStatus(
+      AutogenDiffStatusEnumDiffStatus blob) throws ModelDBException {
     return blob;
   }
 
-  public DiffStatusEnumDiffStatus postVisitDeepDiffStatusEnumDiffStatus(
-      DiffStatusEnumDiffStatus blob) throws ModelDBException {
+  public AutogenDiffStatusEnumDiffStatus postVisitDeepAutogenDiffStatusEnumDiffStatus(
+      AutogenDiffStatusEnumDiffStatus blob) throws ModelDBException {
     return blob;
   }
 
   public <T> T genericPostVisitDeep(T b) throws ModelDBException {
-    if (b instanceof Blob) {
-      return Utils.removeEmpty((T) postVisitDeepBlob((Blob) b));
+    if (b instanceof AutogenBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenBlob((AutogenBlob) b));
     }
-    if (b instanceof BlobDiff) {
-      return Utils.removeEmpty((T) postVisitDeepBlobDiff((BlobDiff) b));
+    if (b instanceof AutogenBlobDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenBlobDiff((AutogenBlobDiff) b));
     }
-    if (b instanceof CodeBlob) {
-      return Utils.removeEmpty((T) postVisitDeepCodeBlob((CodeBlob) b));
+    if (b instanceof AutogenCodeBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenCodeBlob((AutogenCodeBlob) b));
     }
-    if (b instanceof CodeDiff) {
-      return Utils.removeEmpty((T) postVisitDeepCodeDiff((CodeDiff) b));
+    if (b instanceof AutogenCodeDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenCodeDiff((AutogenCodeDiff) b));
     }
-    if (b instanceof CommandLineEnvironmentDiff) {
-      return Utils.removeEmpty(
-          (T) postVisitDeepCommandLineEnvironmentDiff((CommandLineEnvironmentDiff) b));
-    }
-    if (b instanceof ConfigBlob) {
-      return Utils.removeEmpty((T) postVisitDeepConfigBlob((ConfigBlob) b));
-    }
-    if (b instanceof ConfigDiff) {
-      return Utils.removeEmpty((T) postVisitDeepConfigDiff((ConfigDiff) b));
-    }
-    if (b instanceof ContinuousHyperparameterSetConfigBlob) {
+    if (b instanceof AutogenCommandLineEnvironmentDiff) {
       return Utils.removeEmpty(
           (T)
-              postVisitDeepContinuousHyperparameterSetConfigBlob(
-                  (ContinuousHyperparameterSetConfigBlob) b));
+              postVisitDeepAutogenCommandLineEnvironmentDiff(
+                  (AutogenCommandLineEnvironmentDiff) b));
     }
-    if (b instanceof DatasetBlob) {
-      return Utils.removeEmpty((T) postVisitDeepDatasetBlob((DatasetBlob) b));
+    if (b instanceof AutogenConfigBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenConfigBlob((AutogenConfigBlob) b));
     }
-    if (b instanceof DatasetDiff) {
-      return Utils.removeEmpty((T) postVisitDeepDatasetDiff((DatasetDiff) b));
+    if (b instanceof AutogenConfigDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenConfigDiff((AutogenConfigDiff) b));
     }
-    if (b instanceof DiscreteHyperparameterSetConfigBlob) {
+    if (b instanceof AutogenContinuousHyperparameterSetConfigBlob) {
       return Utils.removeEmpty(
           (T)
-              postVisitDeepDiscreteHyperparameterSetConfigBlob(
-                  (DiscreteHyperparameterSetConfigBlob) b));
+              postVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
+                  (AutogenContinuousHyperparameterSetConfigBlob) b));
     }
-    if (b instanceof DockerEnvironmentBlob) {
-      return Utils.removeEmpty((T) postVisitDeepDockerEnvironmentBlob((DockerEnvironmentBlob) b));
+    if (b instanceof AutogenDatasetBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenDatasetBlob((AutogenDatasetBlob) b));
     }
-    if (b instanceof DockerEnvironmentDiff) {
-      return Utils.removeEmpty((T) postVisitDeepDockerEnvironmentDiff((DockerEnvironmentDiff) b));
+    if (b instanceof AutogenDatasetDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenDatasetDiff((AutogenDatasetDiff) b));
     }
-    if (b instanceof EnvironmentBlob) {
-      return Utils.removeEmpty((T) postVisitDeepEnvironmentBlob((EnvironmentBlob) b));
-    }
-    if (b instanceof EnvironmentDiff) {
-      return Utils.removeEmpty((T) postVisitDeepEnvironmentDiff((EnvironmentDiff) b));
-    }
-    if (b instanceof EnvironmentVariablesBlob) {
+    if (b instanceof AutogenDiscreteHyperparameterSetConfigBlob) {
       return Utils.removeEmpty(
-          (T) postVisitDeepEnvironmentVariablesBlob((EnvironmentVariablesBlob) b));
+          (T)
+              postVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
+                  (AutogenDiscreteHyperparameterSetConfigBlob) b));
     }
-    if (b instanceof EnvironmentVariablesDiff) {
+    if (b instanceof AutogenDockerEnvironmentBlob) {
       return Utils.removeEmpty(
-          (T) postVisitDeepEnvironmentVariablesDiff((EnvironmentVariablesDiff) b));
+          (T) postVisitDeepAutogenDockerEnvironmentBlob((AutogenDockerEnvironmentBlob) b));
     }
-    if (b instanceof GitCodeBlob) {
-      return Utils.removeEmpty((T) postVisitDeepGitCodeBlob((GitCodeBlob) b));
-    }
-    if (b instanceof GitCodeDiff) {
-      return Utils.removeEmpty((T) postVisitDeepGitCodeDiff((GitCodeDiff) b));
-    }
-    if (b instanceof HyperparameterConfigBlob) {
+    if (b instanceof AutogenDockerEnvironmentDiff) {
       return Utils.removeEmpty(
-          (T) postVisitDeepHyperparameterConfigBlob((HyperparameterConfigBlob) b));
+          (T) postVisitDeepAutogenDockerEnvironmentDiff((AutogenDockerEnvironmentDiff) b));
     }
-    if (b instanceof HyperparameterConfigDiff) {
+    if (b instanceof AutogenEnvironmentBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenEnvironmentBlob((AutogenEnvironmentBlob) b));
+    }
+    if (b instanceof AutogenEnvironmentDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenEnvironmentDiff((AutogenEnvironmentDiff) b));
+    }
+    if (b instanceof AutogenEnvironmentVariablesBlob) {
       return Utils.removeEmpty(
-          (T) postVisitDeepHyperparameterConfigDiff((HyperparameterConfigDiff) b));
+          (T) postVisitDeepAutogenEnvironmentVariablesBlob((AutogenEnvironmentVariablesBlob) b));
     }
-    if (b instanceof HyperparameterSetConfigBlob) {
+    if (b instanceof AutogenEnvironmentVariablesDiff) {
       return Utils.removeEmpty(
-          (T) postVisitDeepHyperparameterSetConfigBlob((HyperparameterSetConfigBlob) b));
+          (T) postVisitDeepAutogenEnvironmentVariablesDiff((AutogenEnvironmentVariablesDiff) b));
     }
-    if (b instanceof HyperparameterSetConfigDiff) {
+    if (b instanceof AutogenGitCodeBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenGitCodeBlob((AutogenGitCodeBlob) b));
+    }
+    if (b instanceof AutogenGitCodeDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenGitCodeDiff((AutogenGitCodeDiff) b));
+    }
+    if (b instanceof AutogenHyperparameterConfigBlob) {
       return Utils.removeEmpty(
-          (T) postVisitDeepHyperparameterSetConfigDiff((HyperparameterSetConfigDiff) b));
+          (T) postVisitDeepAutogenHyperparameterConfigBlob((AutogenHyperparameterConfigBlob) b));
     }
-    if (b instanceof HyperparameterValuesConfigBlob) {
+    if (b instanceof AutogenHyperparameterConfigDiff) {
       return Utils.removeEmpty(
-          (T) postVisitDeepHyperparameterValuesConfigBlob((HyperparameterValuesConfigBlob) b));
+          (T) postVisitDeepAutogenHyperparameterConfigDiff((AutogenHyperparameterConfigDiff) b));
     }
-    if (b instanceof NotebookCodeBlob) {
-      return Utils.removeEmpty((T) postVisitDeepNotebookCodeBlob((NotebookCodeBlob) b));
-    }
-    if (b instanceof NotebookCodeDiff) {
-      return Utils.removeEmpty((T) postVisitDeepNotebookCodeDiff((NotebookCodeDiff) b));
-    }
-    if (b instanceof PathDatasetBlob) {
-      return Utils.removeEmpty((T) postVisitDeepPathDatasetBlob((PathDatasetBlob) b));
-    }
-    if (b instanceof PathDatasetComponentBlob) {
+    if (b instanceof AutogenHyperparameterSetConfigBlob) {
       return Utils.removeEmpty(
-          (T) postVisitDeepPathDatasetComponentBlob((PathDatasetComponentBlob) b));
+          (T)
+              postVisitDeepAutogenHyperparameterSetConfigBlob(
+                  (AutogenHyperparameterSetConfigBlob) b));
     }
-    if (b instanceof PathDatasetComponentDiff) {
+    if (b instanceof AutogenHyperparameterSetConfigDiff) {
       return Utils.removeEmpty(
-          (T) postVisitDeepPathDatasetComponentDiff((PathDatasetComponentDiff) b));
+          (T)
+              postVisitDeepAutogenHyperparameterSetConfigDiff(
+                  (AutogenHyperparameterSetConfigDiff) b));
     }
-    if (b instanceof PathDatasetDiff) {
-      return Utils.removeEmpty((T) postVisitDeepPathDatasetDiff((PathDatasetDiff) b));
-    }
-    if (b instanceof PythonEnvironmentBlob) {
-      return Utils.removeEmpty((T) postVisitDeepPythonEnvironmentBlob((PythonEnvironmentBlob) b));
-    }
-    if (b instanceof PythonEnvironmentDiff) {
-      return Utils.removeEmpty((T) postVisitDeepPythonEnvironmentDiff((PythonEnvironmentDiff) b));
-    }
-    if (b instanceof PythonRequirementEnvironmentBlob) {
+    if (b instanceof AutogenHyperparameterValuesConfigBlob) {
       return Utils.removeEmpty(
-          (T) postVisitDeepPythonRequirementEnvironmentBlob((PythonRequirementEnvironmentBlob) b));
+          (T)
+              postVisitDeepAutogenHyperparameterValuesConfigBlob(
+                  (AutogenHyperparameterValuesConfigBlob) b));
     }
-    if (b instanceof PythonRequirementEnvironmentDiff) {
+    if (b instanceof AutogenNotebookCodeBlob) {
       return Utils.removeEmpty(
-          (T) postVisitDeepPythonRequirementEnvironmentDiff((PythonRequirementEnvironmentDiff) b));
+          (T) postVisitDeepAutogenNotebookCodeBlob((AutogenNotebookCodeBlob) b));
     }
-    if (b instanceof S3DatasetBlob) {
-      return Utils.removeEmpty((T) postVisitDeepS3DatasetBlob((S3DatasetBlob) b));
+    if (b instanceof AutogenNotebookCodeDiff) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenNotebookCodeDiff((AutogenNotebookCodeDiff) b));
     }
-    if (b instanceof S3DatasetComponentBlob) {
-      return Utils.removeEmpty((T) postVisitDeepS3DatasetComponentBlob((S3DatasetComponentBlob) b));
+    if (b instanceof AutogenPathDatasetBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenPathDatasetBlob((AutogenPathDatasetBlob) b));
     }
-    if (b instanceof S3DatasetComponentDiff) {
-      return Utils.removeEmpty((T) postVisitDeepS3DatasetComponentDiff((S3DatasetComponentDiff) b));
+    if (b instanceof AutogenPathDatasetComponentBlob) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenPathDatasetComponentBlob((AutogenPathDatasetComponentBlob) b));
     }
-    if (b instanceof S3DatasetDiff) {
-      return Utils.removeEmpty((T) postVisitDeepS3DatasetDiff((S3DatasetDiff) b));
+    if (b instanceof AutogenPathDatasetComponentDiff) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenPathDatasetComponentDiff((AutogenPathDatasetComponentDiff) b));
     }
-    if (b instanceof VersionEnvironmentBlob) {
-      return Utils.removeEmpty((T) postVisitDeepVersionEnvironmentBlob((VersionEnvironmentBlob) b));
+    if (b instanceof AutogenPathDatasetDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenPathDatasetDiff((AutogenPathDatasetDiff) b));
     }
-    if (b instanceof VersionEnvironmentDiff) {
-      return Utils.removeEmpty((T) postVisitDeepVersionEnvironmentDiff((VersionEnvironmentDiff) b));
+    if (b instanceof AutogenPythonEnvironmentBlob) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenPythonEnvironmentBlob((AutogenPythonEnvironmentBlob) b));
+    }
+    if (b instanceof AutogenPythonEnvironmentDiff) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenPythonEnvironmentDiff((AutogenPythonEnvironmentDiff) b));
+    }
+    if (b instanceof AutogenPythonRequirementEnvironmentBlob) {
+      return Utils.removeEmpty(
+          (T)
+              postVisitDeepAutogenPythonRequirementEnvironmentBlob(
+                  (AutogenPythonRequirementEnvironmentBlob) b));
+    }
+    if (b instanceof AutogenPythonRequirementEnvironmentDiff) {
+      return Utils.removeEmpty(
+          (T)
+              postVisitDeepAutogenPythonRequirementEnvironmentDiff(
+                  (AutogenPythonRequirementEnvironmentDiff) b));
+    }
+    if (b instanceof AutogenS3DatasetBlob) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenS3DatasetBlob((AutogenS3DatasetBlob) b));
+    }
+    if (b instanceof AutogenS3DatasetComponentBlob) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenS3DatasetComponentBlob((AutogenS3DatasetComponentBlob) b));
+    }
+    if (b instanceof AutogenS3DatasetComponentDiff) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenS3DatasetComponentDiff((AutogenS3DatasetComponentDiff) b));
+    }
+    if (b instanceof AutogenS3DatasetDiff) {
+      return Utils.removeEmpty((T) postVisitDeepAutogenS3DatasetDiff((AutogenS3DatasetDiff) b));
+    }
+    if (b instanceof AutogenVersionEnvironmentBlob) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenVersionEnvironmentBlob((AutogenVersionEnvironmentBlob) b));
+    }
+    if (b instanceof AutogenVersionEnvironmentDiff) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenVersionEnvironmentDiff((AutogenVersionEnvironmentDiff) b));
     }
     return Utils.removeEmpty(b);
   }

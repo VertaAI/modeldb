@@ -10,109 +10,109 @@ public class Utils {
     Visitor v =
         new Visitor() {
           @Override
-          public Blob postVisitBlob(Blob blob) throws ModelDBException {
+          public AutogenBlob postVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
             if (blob == null) return null;
-            Blob other = new Blob();
+            AutogenBlob other = new AutogenBlob();
             if (blob.getDataset() != null) return other.setDataset(blob.getDataset());
             if (blob.getConfig() != null) return other.setConfig(blob.getConfig());
             if (blob.getCode() != null) return other.setCode(blob.getCode());
             if (blob.getEnvironment() != null) return other.setEnvironment(blob.getEnvironment());
-            return super.postVisitBlob(blob);
+            return super.postVisitAutogenBlob(blob);
           }
 
           @Override
-          public BlobDiff postVisitBlobDiff(BlobDiff blob) throws ModelDBException {
+          public AutogenBlobDiff postVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
             if (blob == null) return null;
-            BlobDiff other = new BlobDiff();
+            AutogenBlobDiff other = new AutogenBlobDiff();
             if (blob.getDataset() != null) return other.setDataset(blob.getDataset());
             if (blob.getConfig() != null) return other.setConfig(blob.getConfig());
             if (blob.getCode() != null) return other.setCode(blob.getCode());
             if (blob.getEnvironment() != null) return other.setEnvironment(blob.getEnvironment());
-            return super.postVisitBlobDiff(blob);
+            return super.postVisitAutogenBlobDiff(blob);
           }
 
           @Override
-          public DatasetBlob postVisitDatasetBlob(DatasetBlob blob) throws ModelDBException {
+          public AutogenDatasetBlob postVisitAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {
             if (blob == null) return null;
-            DatasetBlob other = new DatasetBlob();
+            AutogenDatasetBlob other = new AutogenDatasetBlob();
             if (blob.getPath() != null) return other.setPath(blob.getPath());
             if (blob.getS3() != null) return other.setS3(blob.getS3());
-            return super.postVisitDatasetBlob(blob);
+            return super.postVisitAutogenDatasetBlob(blob);
           }
 
           @Override
-          public DatasetDiff postVisitDatasetDiff(DatasetDiff blob) throws ModelDBException {
+          public AutogenDatasetDiff postVisitAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {
             if (blob == null) return null;
-            DatasetDiff other = new DatasetDiff();
+            AutogenDatasetDiff other = new AutogenDatasetDiff();
             if (blob.getPath() != null) return other.setPath(blob.getPath());
             if (blob.getS3() != null) return other.setS3(blob.getS3());
-            return super.postVisitDatasetDiff(blob);
+            return super.postVisitAutogenDatasetDiff(blob);
           }
 
           @Override
-          public EnvironmentBlob postVisitEnvironmentBlob(EnvironmentBlob blob)
+          public AutogenEnvironmentBlob postVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
               throws ModelDBException {
             if (blob == null) return null;
-            EnvironmentBlob other =
-                new EnvironmentBlob()
+            AutogenEnvironmentBlob other =
+                new AutogenEnvironmentBlob()
                     .setCommandLine(blob.getCommandLine())
                     .setEnvironmentVariables(blob.getEnvironmentVariables());
             if (blob.getPython() != null) return other.setPython(blob.getPython());
             if (blob.getDocker() != null) return other.setDocker(blob.getDocker());
-            return super.postVisitEnvironmentBlob(blob);
+            return super.postVisitAutogenEnvironmentBlob(blob);
           }
 
           @Override
-          public EnvironmentDiff postVisitEnvironmentDiff(EnvironmentDiff blob)
+          public AutogenEnvironmentDiff postVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
               throws ModelDBException {
             if (blob == null) return null;
-            EnvironmentDiff other =
-                new EnvironmentDiff()
+            AutogenEnvironmentDiff other =
+                new AutogenEnvironmentDiff()
                     .setCommandLine(blob.getCommandLine())
                     .setEnvironmentVariables(blob.getEnvironmentVariables());
             if (blob.getPython() != null) return other.setPython(blob.getPython());
             if (blob.getDocker() != null) return other.setDocker(blob.getDocker());
-            return super.postVisitEnvironmentDiff(blob);
+            return super.postVisitAutogenEnvironmentDiff(blob);
           }
 
           @Override
-          public CodeBlob postVisitCodeBlob(CodeBlob blob) throws ModelDBException {
+          public AutogenCodeBlob postVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
             if (blob == null) return null;
-            CodeBlob other = new CodeBlob();
+            AutogenCodeBlob other = new AutogenCodeBlob();
             if (blob.getNotebook() != null) return other.setNotebook(blob.getNotebook());
             if (blob.getGit() != null) return other.setGit(blob.getGit());
-            return super.postVisitCodeBlob(blob);
+            return super.postVisitAutogenCodeBlob(blob);
           }
 
           @Override
-          public CodeDiff postVisitCodeDiff(CodeDiff blob) throws ModelDBException {
+          public AutogenCodeDiff postVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
             if (blob == null) return null;
-            CodeDiff other = new CodeDiff();
+            AutogenCodeDiff other = new AutogenCodeDiff();
             if (blob.getNotebook() != null) return other.setNotebook(blob.getNotebook());
             if (blob.getGit() != null) return other.setGit(blob.getGit());
-            return super.postVisitCodeDiff(blob);
+            return super.postVisitAutogenCodeDiff(blob);
           }
 
           @Override
-          public HyperparameterValuesConfigBlob postVisitHyperparameterValuesConfigBlob(
-              HyperparameterValuesConfigBlob blob) throws ModelDBException {
+          public AutogenHyperparameterValuesConfigBlob postVisitAutogenHyperparameterValuesConfigBlob(
+              AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
             if (blob == null) return null;
-            HyperparameterValuesConfigBlob other = new HyperparameterValuesConfigBlob();
+            AutogenHyperparameterValuesConfigBlob other = new AutogenHyperparameterValuesConfigBlob();
             if (blob.getFloatValue() != null) return other.setFloatValue(blob.getFloatValue());
             if (blob.getIntValue() != null) return other.setIntValue(blob.getIntValue());
             if (blob.getStringValue() != null) return other.setStringValue(blob.getStringValue());
-            return super.postVisitHyperparameterValuesConfigBlob(blob);
+            return super.postVisitAutogenHyperparameterValuesConfigBlob(blob);
           }
 
           @Override
-          public HyperparameterSetConfigBlob postVisitHyperparameterSetConfigBlob(
-              HyperparameterSetConfigBlob blob) throws ModelDBException {
+          public AutogenHyperparameterSetConfigBlob postVisitAutogenHyperparameterSetConfigBlob(
+              AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
             if (blob == null) return null;
-            HyperparameterSetConfigBlob other =
-                new HyperparameterSetConfigBlob().setName(blob.getName());
+            AutogenHyperparameterSetConfigBlob other =
+                new AutogenHyperparameterSetConfigBlob().setName(blob.getName());
             if (blob.getDiscrete() != null) return other.setDiscrete(blob.getDiscrete());
             if (blob.getContinuous() != null) return other.setContinuous(blob.getContinuous());
-            return super.postVisitHyperparameterSetConfigBlob(blob);
+            return super.postVisitAutogenHyperparameterSetConfigBlob(blob);
           }
         };
 

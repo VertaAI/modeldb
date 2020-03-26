@@ -16,7 +16,7 @@ import ai.verta.swagger.client.objects._
 
 case class CommonKeyValue (
   key: Option[String] = None,
-  value: Option[GenericObject] = None,
+  value: Option[ProtobufValue] = None,
   value_type: Option[ValueTypeEnumValueType] = None
 ) extends BaseSwagger {
   def toJson(): JValue = CommonKeyValue.toJson(this)
@@ -27,7 +27,7 @@ object CommonKeyValue {
     new JObject(
       List[Option[JField]](
         obj.key.map(x => JField("key", JString(x))),
-        obj.value.map(x => JField("value", ((x: GenericObject) => x.toJson())(x))),
+        obj.value.map(x => JField("value", ((x: ProtobufValue) => ProtobufValue.toJson(x))(x))),
         obj.value_type.map(x => JField("value_type", ((x: ValueTypeEnumValueType) => ValueTypeEnumValueType.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -43,7 +43,7 @@ object CommonKeyValue {
         CommonKeyValue(
           // TODO: handle required
           key = fieldsMap.get("key").map(JsonConverter.fromJsonString),
-          value = fieldsMap.get("value").map(GenericObject.fromJson),
+          value = fieldsMap.get("value").map(ProtobufValue.fromJson),
           value_type = fieldsMap.get("value_type").map(ValueTypeEnumValueType.fromJson)
         )
       }
