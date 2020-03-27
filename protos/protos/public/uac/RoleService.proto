@@ -90,6 +90,7 @@ message ModelResourceEnum {
         DATASET = 5;
         DATASET_VERSION = 6;
         DASHBOARD = 7;
+        REPOSITORY = 8;
     }
 };
 
