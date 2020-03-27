@@ -14,8 +14,8 @@ import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class VersioningBlobExpanded (
-  location: Option[List[String]] = None,
-  blob: Option[VersioningBlob] = None
+  blob: Option[VersioningBlob] = None,
+  location: Option[List[String]] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningBlobExpanded.toJson(this)
 }
@@ -24,8 +24,8 @@ object VersioningBlobExpanded {
   def toJson(obj: VersioningBlobExpanded): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.location.map(x => JField("location", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.blob.map(x => JField("blob", ((x: VersioningBlob) => VersioningBlob.toJson(x))(x)))
+        obj.blob.map(x => JField("blob", ((x: VersioningBlob) => VersioningBlob.toJson(x))(x))),
+        obj.location.map(x => JField("location", ((x: List[String]) => JArray(x.map(JString)))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -39,8 +39,8 @@ object VersioningBlobExpanded {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningBlobExpanded(
           // TODO: handle required
-          location = fieldsMap.get("location").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          blob = fieldsMap.get("blob").map(VersioningBlob.fromJson)
+          blob = fieldsMap.get("blob").map(VersioningBlob.fromJson),
+          location = fieldsMap.get("location").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

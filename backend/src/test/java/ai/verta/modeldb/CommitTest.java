@@ -97,6 +97,8 @@ public class CommitTest {
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
 
+  private static long time = Calendar.getInstance().getTimeInMillis();
+
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void setServerAndService() throws Exception {
@@ -722,7 +724,7 @@ public class CommitTest {
                             PathDatasetComponentBlob.newBuilder()
                                 .setPath(path)
                                 .setSize(2)
-                                .setLastModifiedAtSource(Calendar.getInstance().getTimeInMillis())
+                                .setLastModifiedAtSource(time)
                                 .build())
                         .build())
                 .build())

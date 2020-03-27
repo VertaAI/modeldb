@@ -26,17 +26,17 @@ import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbExperiment (
-  id: Option[String] = None,
-  project_id: Option[String] = None,
-  name: Option[String] = None,
-  description: Option[String] = None,
-  date_created: Option[String] = None,
-  date_updated: Option[String] = None,
+  artifacts: Option[List[ModeldbArtifact]] = None,
   attributes: Option[List[CommonKeyValue]] = None,
-  tags: Option[List[String]] = None,
-  owner: Option[String] = None,
   code_version_snapshot: Option[ModeldbCodeVersion] = None,
-  artifacts: Option[List[ModeldbArtifact]] = None
+  date_created: Option[] = None,
+  date_updated: Option[] = None,
+  description: Option[String] = None,
+  id: Option[String] = None,
+  name: Option[String] = None,
+  owner: Option[String] = None,
+  project_id: Option[String] = None,
+  tags: Option[List[String]] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbExperiment.toJson(this)
 }
@@ -45,17 +45,17 @@ object ModeldbExperiment {
   def toJson(obj: ModeldbExperiment): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.id.map(x => JField("id", JString(x))),
-        obj.project_id.map(x => JField("project_id", JString(x))),
-        obj.name.map(x => JField("name", JString(x))),
-        obj.description.map(x => JField("description", JString(x))),
-        obj.date_created.map(x => JField("date_created", JString(x))),
-        obj.date_updated.map(x => JField("date_updated", JString(x))),
+        obj.artifacts.map(x => JField("artifacts", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x))),
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
-        obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.owner.map(x => JField("owner", JString(x))),
         obj.code_version_snapshot.map(x => JField("code_version_snapshot", ((x: ModeldbCodeVersion) => ModeldbCodeVersion.toJson(x))(x))),
-        obj.artifacts.map(x => JField("artifacts", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x)))
+        obj.date_created.map(x => JField("date_created", (x))),
+        obj.date_updated.map(x => JField("date_updated", (x))),
+        obj.description.map(x => JField("description", JString(x))),
+        obj.id.map(x => JField("id", JString(x))),
+        obj.name.map(x => JField("name", JString(x))),
+        obj.owner.map(x => JField("owner", JString(x))),
+        obj.project_id.map(x => JField("project_id", JString(x))),
+        obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -69,17 +69,17 @@ object ModeldbExperiment {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbExperiment(
           // TODO: handle required
-          id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
-          project_id = fieldsMap.get("project_id").map(JsonConverter.fromJsonString),
-          name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
-          description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
-          date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonString),
-          date_updated = fieldsMap.get("date_updated").map(JsonConverter.fromJsonString),
+          artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          owner = fieldsMap.get("owner").map(JsonConverter.fromJsonString),
           code_version_snapshot = fieldsMap.get("code_version_snapshot").map(ModeldbCodeVersion.fromJson),
-          artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          date_created = fieldsMap.get("date_created").map(),
+          date_updated = fieldsMap.get("date_updated").map(),
+          description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
+          id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
+          name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
+          owner = fieldsMap.get("owner").map(JsonConverter.fromJsonString),
+          project_id = fieldsMap.get("project_id").map(JsonConverter.fromJsonString),
+          tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
