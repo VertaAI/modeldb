@@ -14,6 +14,8 @@ import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceImplBase;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
@@ -110,6 +112,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           throw new ModelDBException("Repository name is empty", Code.INVALID_ARGUMENT);
         }
 
+        roleService.validateEntityUserWithUserInfo(
+           ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
         UserInfo userInfo = authService.getCurrentLoginUserInfo();
         SetRepository.Builder requestBuilder = request.toBuilder();
         if (userInfo != null) {
