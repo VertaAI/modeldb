@@ -5,14 +5,14 @@ import { IConfigBlobDiff } from 'core/shared/models/Versioning/Blob/ConfigBlob';
 import {
   DiffType,
   ComparedCommitType,
-  getDiffBlobsData,
+  getCommitDataFromNullableDiffs,
 } from 'core/shared/models/Versioning/Blob/Diff';
 import HyperparameterItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterItem/HyperparameterItem';
 import HyperparameterSetItem from 'core/shared/view/domain/Versioning/Blob/ConfigBlob/HyperparameterSetItem/HyperparameterSetItem';
 
 import { IComparedCommitsInfo } from '../../types';
 import { diffColors } from '../shared/styles';
-import CompareTable from './CompareTable/CompareTable';
+import CompareTable, { IRow } from './CompareTable/CompareTable';
 import sortArrayByAnotherArrayKeys from '../shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
 
 interface ILocalProps {
@@ -21,13 +21,20 @@ interface ILocalProps {
 }
 
 const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
-  const { blobAData: blobA, blobBData: blobB } = getDiffBlobsData(diff);
+  const A: IRow = {
+    hyperparameters: getCommitDataFromNullableDiffs('A', diff.data.hyperparameters),
+    hyperparameterSet: getCommitDataFromNullableDiffs('A', diff.data.hyperparameterSet),
+  };
+  const B: IRow = {
+    hyperparameters: getCommitDataFromNullableDiffs('B', diff.data.hyperparameters),
+    hyperparameterSet: getCommitDataFromNullableDiffs('B', diff.data.hyperparameterSet),
+  };
 
   return (
     <div>
       <CompareTable
-        blobA={blobA}
-        blobB={blobB}
+        A={A}
+        B={B}
         columns={{
           property: {
             title: 'Properties',
@@ -47,20 +54,18 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
       >
         <CompareTable.PropDefinition
           title="Hyperparameters"
-          isHidden={Boolean(
-            blobA && blobB && !blobA.hyperparameters && !blobB.hyperparameters
-          )}
-          render={({ blobData, anotherBlobData, type }) => {
-            return blobData && blobData.hyperparameters
+          isHidden={Boolean(!A.hyperparameters && !B.hyperparameters)}
+          render={({ currentData, anotherData, type }) => {
+            return currentData.hyperparameters
               ? sortArrayByAnotherArrayKeys(
-                  ({ name }) => name,
-                  blobData.hyperparameters,
-                  anotherBlobData ? anotherBlobData.hyperparameters || [] : []
+                  ({ data: { name } }) => name,
+                  currentData.hyperparameters,
+                  anotherData.hyperparameters || [],
                 ).map(h => (
                   <HyperparameterItem
-                    {...getHyperparameterDiffStyles(diff.diffType, type)}
-                    hyperparameter={h}
-                    key={h.name}
+                    {...getHyperparameterDiffStyles(h.diffType, type)}
+                    hyperparameter={h.data}
+                    key={h.data.name}
                   />
                 ))
               : null;
@@ -68,23 +73,18 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
         />
         <CompareTable.PropDefinition
           title="Hyperparameters set"
-          isHidden={Boolean(
-            blobA &&
-              blobB &&
-              !blobA.hyperparameterSet &&
-              !blobB.hyperparameterSet
-          )}
-          render={({ blobData, anotherBlobData, type }) => {
-            return blobData && blobData.hyperparameterSet
+          isHidden={Boolean(!A.hyperparameterSet && !B.hyperparameterSet)}
+          render={({ currentData, anotherData, type }) => {
+            return currentData.hyperparameterSet
               ? sortArrayByAnotherArrayKeys(
-                  ({ name }) => name,
-                  blobData.hyperparameterSet,
-                  anotherBlobData ? anotherBlobData.hyperparameterSet || [] : []
+                  ({ data: { name } }) => name,
+                  currentData.hyperparameterSet,
+                  anotherData.hyperparameterSet || []
                 ).map(h => (
                   <HyperparameterSetItem
                     {...getHyperparameterDiffStyles(diff.diffType, type)}
-                    hyperparameterSetItem={h}
-                    key={h.name}
+                    hyperparameterSetItem={h.data}
+                    key={h.data.name}
                   />
                 ))
               : null;

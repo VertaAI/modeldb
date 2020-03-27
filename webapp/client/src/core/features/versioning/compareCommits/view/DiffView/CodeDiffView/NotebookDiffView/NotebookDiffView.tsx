@@ -2,8 +2,6 @@ import * as React from 'react';
 
 import {
   INotebookCodeDiff,
-  getPathDatasetBlobDiffFromNotebook,
-  getGitCodeDiffFromNotebook,
 } from 'core/shared/models/Versioning/Blob/CodeBlob';
 
 import GitDiffView from '../GitDiffView/GitDiffView';
@@ -17,8 +15,8 @@ interface ILocalProps {
 }
 
 const NotebookDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
-  const pathDatasetBlobDiff = getPathDatasetBlobDiffFromNotebook(diff);
-  const gitBlobDiff = getGitCodeDiffFromNotebook(diff);
+  const pathDatasetBlobDiff = diff.data.path;
+  const gitBlobDiff = diff.data.git;
   return (
     <div className={styles.root}>
       {pathDatasetBlobDiff && (

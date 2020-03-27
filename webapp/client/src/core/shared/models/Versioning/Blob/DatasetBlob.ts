@@ -1,30 +1,19 @@
 import { SHA } from '../RepositoryData';
-import { GenericDiff } from './Diff';
+import { IElementDiff, IBlobDiff } from './Diff';
 
 export type IDatasetBlob = IPathDatasetBlob | IS3DatasetBlob;
-export type IDatasetBlobDiff = IPathDatasetBlobDiff | IS3DatasetBlobDiff;
 
 export interface IPathDatasetBlob {
   type: 'path';
   category: 'dataset';
   components: IPathDatasetComponentBlob[];
 }
-export type IPathDatasetBlobDiff = GenericDiff<
-  IPathDatasetBlob,
-  IPathDatasetBlob['category'],
-  IPathDatasetBlob['type']
->;
 
 export interface IS3DatasetBlob {
   category: 'dataset';
   type: 's3';
   components: IS3DatasetComponentBlob[];
 }
-export type IS3DatasetBlobDiff = GenericDiff<
-  IS3DatasetBlob,
-  IS3DatasetBlob['category'],
-  IS3DatasetBlob['type']
->;
 export interface IS3DatasetComponentBlob {
   path: IPathDatasetComponentBlob;
 }
@@ -44,3 +33,34 @@ export const datasetBlobTypes: Record<
   s3: 's3',
   path: 'path',
 };
+
+// diff
+
+export type IPathDatasetBlobDiff = IBlobDiff<
+  IPathDatasetBlobDiffData,
+  IPathDatasetBlob['category'],
+  IPathDatasetBlob['type']
+>;
+export type IPathDatasetBlobDiffData = {
+  type: 'path';
+  category: 'dataset';
+  components: IPathDatasetComponentBlobDiff[];
+};
+
+export type IS3DatasetBlobDiff = IBlobDiff<
+IS3DatasetBlobDiffData,
+  IS3DatasetBlob['category'],
+  IS3DatasetBlob['type']
+>;
+export type IS3DatasetBlobDiffData = {
+  category: IS3DatasetBlob['category'];
+  type: IS3DatasetBlob['type'];
+  components: Array<{
+    path: IPathDatasetComponentBlobDiff;
+  }>;
+};
+
+export type IPathDatasetComponentBlobDiff = IElementDiff<IPathDatasetComponentBlob>;
+
+export type IDatasetBlobDiff = IPathDatasetBlobDiff | IS3DatasetBlobDiff;
+export type IDatasetBlobDiffData = IPathDatasetBlobDiffData | IS3DatasetBlobDiffData;

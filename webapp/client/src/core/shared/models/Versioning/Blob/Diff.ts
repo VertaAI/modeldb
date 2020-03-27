@@ -14,94 +14,80 @@ export type Diff =
   | IConfigBlobDiff
   | IEnvironmentBlobDiff;
 
-export type IUnknownBlobDiff = GenericDiff<
+export type IUnknownBlobDiff = IBlobDiff<
   { category: 'unknown'; data: object },
   'unknown',
   'unknown'
 >;
 
-export interface IDeleteGenericDiff<
-  Blob,
-  Category extends string,
-  Type extends string
-> {
-  category: Category;
-  type: Type;
-  diffType: 'deleted';
-  blob: Blob;
-  location: DataLocation;
-}
+export type IBlobDiff<Data, BlobCategory, BlobType = BlobCategory> =
+  {
+    diffType: 'added';
+    type: BlobType;
+    category: BlobCategory;
+    location: DataLocation;
+    data: Data;
+  } |
+  {
+    diffType: 'deleted';
+    category: BlobCategory;
+    type: BlobType;
+    location: DataLocation;
+    data: Data;
+  } |
+  {
+    diffType: 'updated';
+    category: BlobCategory;
+    type: BlobType;
+    location: DataLocation;
+    data: Data;
+  }
 
-export interface IAddGenericDiff<
-  Blob,
-  Category extends string,
-  Type extends string
-> {
-  diffType: 'added';
-  type: Type;
-  category: Category;
-  blob: Blob;
-  location: DataLocation;
-}
-
-export interface IUpdateGenericDiff<
-  Blob,
-  Category extends string,
-  Type extends string
-> {
-  diffType: 'updated';
-  type: Type;
-  category: Category;
-  blobA: Blob;
-  blobB: Blob;
-  location: DataLocation;
-}
-
-export type GenericDiff<Blob, Category extends string, Type extends string> =
-  | IDeleteGenericDiff<Blob, Category, Type>
-  | IAddGenericDiff<Blob, Category, Type>
-  | IUpdateGenericDiff<Blob, Category, Type>;
-
-export const getDiffBlobs = <T extends GenericDiff<any, any, any>>(
-  diff: T
-): {
-  blobA: T extends GenericDiff<infer Blob, any, any> ? Blob : never;
-  blobB: T extends GenericDiff<infer Blob, any, any> ? Blob : never;
-} => {
-  const blobA = matchBy(diff as GenericDiff<any, any, any>, 'diffType')({
-    added: d => undefined,
-    deleted: d => d && d.blob,
-    updated: d => d && d.blobA,
-  });
-  const blobB = matchBy(diff as GenericDiff<any, any, any>, 'diffType')({
-    added: d => d && d.blob,
-    deleted: d => undefined,
-    updated: d => d && d.blobB,
-  });
-  return {
-    blobA,
-    blobB,
+export type IElementDiff<Element> =
+  {
+    diffType: 'updated';
+    A: Element;
+    B: Element;
+  } |
+  {
+    diffType: 'deleted';
+    A: Element;
+  } |
+  {
+    diffType: 'added';
+    B: Element;
   };
+
+export const getAData = <T extends IElementDiff<any>>(newDiff: T): T extends IElementDiff<infer Element> ? Element | undefined : never => {
+  return matchBy(newDiff as IElementDiff<any>, 'diffType')({
+    added: (diff) => undefined,
+    deleted: (diff) => diff.A,
+    updated: (diff) => diff.A,
+  });
 };
-export const getDiffBlobsData = <
-  T extends GenericDiff<{ data: any }, any, any>
->(
-  diff: T
-): {
-  blobAData: T extends GenericDiff<infer Blob, any, any>
-    ? Blob extends { data: any }
-      ? Blob['data']
-      : never
-    : never;
-  blobBData: T extends GenericDiff<infer Blob, any, any>
-    ? Blob extends { data: any }
-      ? Blob['data']
-      : never
-    : never;
+export const getBData = <T extends IElementDiff<any>>(newDiff: T): T extends IElementDiff<infer Element> ? Element | undefined : never => {
+  return matchBy(newDiff as IElementDiff<any>, 'diffType')({
+    added: (diff) => diff.B,
+    deleted: (diff) => undefined,
+    updated: (diff) => diff.B,
+  });
+};
+export const getABData = <T extends IElementDiff<any>>(newDiff: T): {
+  A: T extends IElementDiff<infer Element> ? Element | undefined : never;
+  B: T extends IElementDiff<infer Element> ? Element | undefined : never;
 } => {
-  const { blobA, blobB } = getDiffBlobs(diff);
-  return {
-    blobAData: blobA && blobA.data,
-    blobBData: blobB && blobB.data,
-  };
+  return { A: getAData(newDiff), B: getBData(newDiff) };
+};
+
+export type DataWithDiffTypeFromDiffs<T extends IElementDiff<any>> = { data: T extends IElementDiff<infer Data> ? Data : never; diffType: DiffType };
+export const getCommitDataWithDiffTypeFromDiffs = <T extends IElementDiff<any>>(type: ComparedCommitType, diffs: T[]): Array<DataWithDiffTypeFromDiffs<T>> => {
+  const getData = type === 'A' ? getAData : getBData;
+
+  return diffs
+    .filter(diff => Boolean(getData(diff)))
+    .map((diff) => ({ data: getData(diff)!, diffType: diff.diffType })) as any;
+};
+
+export const getCommitDataFromNullableDiffs = <T extends IElementDiff<any>>(type: ComparedCommitType, diffs: T[] | undefined) => {
+  return diffs ? getCommitDataWithDiffTypeFromDiffs(type, diffs) : undefined;
 };

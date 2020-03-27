@@ -15,7 +15,7 @@ interface ILocalProps {
 const CodeDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
   return matchBy(diff, 'type')({
     git: gitDiff => (
-      <GitDiffView diff={gitDiff} comparedCommitsInfo={comparedCommitsInfo} />
+      <GitDiffView diff={gitDiff.data} comparedCommitsInfo={comparedCommitsInfo} />
     ),
     notebook: notebookDiff => (
       <NotebookDiffView

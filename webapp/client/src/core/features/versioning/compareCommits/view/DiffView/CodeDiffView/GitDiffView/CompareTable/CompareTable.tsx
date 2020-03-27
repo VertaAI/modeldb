@@ -14,8 +14,8 @@ import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
 
 interface ILocalProps {
   diffInfo: Record<keyof IGitCodeBlob['data'], boolean>;
-  blobA?: IGitCodeBlob;
-  blobB?: IGitCodeBlob;
+  A?: IGitCodeBlob;
+  B?: IGitCodeBlob;
   columns: Record<ComparedCommitType, { title: string }> & {
     property: { title: string; width: number };
   };
@@ -120,7 +120,7 @@ class CompareTable extends React.Component<ILocalProps, IState> {
       case ColumnNames.A: {
         const renderProps: IPropDefinitionRenderProps = {
           type: ColumnNames.A,
-          blobData: this.props.blobA ? this.props.blobA.data : undefined,
+          blobData: this.props.A ? this.props.A.data : undefined,
           diffBlobProperties: this.props.diffInfo,
         };
         return propDefinition.render(renderProps);
@@ -128,7 +128,7 @@ class CompareTable extends React.Component<ILocalProps, IState> {
       case ColumnNames.B: {
         const renderProps: IPropDefinitionRenderProps = {
           type: ColumnNames.B,
-          blobData: this.props.blobB ? this.props.blobB.data : undefined,
+          blobData: this.props.B ? this.props.B.data : undefined,
           diffBlobProperties: this.props.diffInfo,
         };
         return propDefinition.render(renderProps);
