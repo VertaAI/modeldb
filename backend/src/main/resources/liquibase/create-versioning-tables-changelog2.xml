@@ -296,7 +296,7 @@
 				constraintName="ck_versioning_modeldb_entity_mapping"
 				tableName="versioning_modeldb_entity_mapping"/>
 	</changeSet>
-	<changeSet id="changeKeysOfFolderElement" author="lezhevg">
+	<changeSet id="createTempTableWithNewKeysOfFolderElement" author="lezhevg">
 		<createTable tableName="folder_element_temp">
 			<column name="folder_hash" type="varchar(64)">
 				<constraints primaryKey="true" nullable="false"/>
@@ -307,9 +307,13 @@
 			</column>
 			<column name="element_type" type="varchar(50)"/>
 		</createTable>
+	</changeSet>
+	<changeSet id="copyDataToANewTable" author="lezhevg">
 		<sql>
 			INSERT INTO folder_element_temp SELECT * FROM folder_element;
 		</sql>
+	</changeSet>
+	<changeSet id="replaceOldFolderElement" author="lezhevg">
 		<dropTable tableName="folder_element"/>
 		<createTable tableName="folder_element">
 			<column name="folder_hash" type="varchar(64)">
