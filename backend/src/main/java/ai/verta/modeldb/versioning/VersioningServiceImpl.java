@@ -358,7 +358,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      e.printStackTrace();
       ModelDBUtils.observeError(
           responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
     }
@@ -384,7 +383,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      e.printStackTrace();
       ModelDBUtils.observeError(
           responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
     }

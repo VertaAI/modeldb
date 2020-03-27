@@ -3,7 +3,6 @@ package ai.verta.modeldb.datasetVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
-import ai.verta.modeldb.CreateDataset;
 import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.CreateDatasetVersion.Response;
 import ai.verta.modeldb.Dataset;
@@ -32,7 +31,6 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -43,7 +41,6 @@ import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -170,21 +167,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(CreateDataset.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, CreateDatasetVersion.Response.getDefaultInstance());
     }
   }
 
@@ -229,21 +214,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetAllDatasetVersionsByDatasetId.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetAllDatasetVersionsByDatasetId.Response.getDefaultInstance());
     }
   }
 
@@ -273,21 +246,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           DeleteDatasetVersion.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteDatasetVersion.Response.getDefaultInstance());
     }
   }
 
@@ -335,22 +296,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL_VALUE)
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(
-                  Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance());
     }
   }
 
@@ -405,21 +353,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           GetDatasetVersionById.Response.newBuilder().setDatasetVersion(datasetVersion).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetDatasetVersionById.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetDatasetVersionById.Response.getDefaultInstance());
     }
   }
 
@@ -461,21 +397,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(FindDatasetVersions.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, FindDatasetVersions.Response.getDefaultInstance());
     }
   }
 
@@ -526,21 +450,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateDatasetVersionDescription.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateDatasetVersionDescription.Response.getDefaultInstance());
     }
   }
 
@@ -590,21 +502,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddDatasetVersionTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddDatasetVersionTags.Response.getDefaultInstance());
     }
   }
 
@@ -637,21 +537,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
     }
   }
 
@@ -701,21 +588,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteDatasetVersionTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteDatasetVersionTags.Response.getDefaultInstance());
     }
   }
 
@@ -764,21 +639,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddDatasetVersionAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -827,21 +690,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateDatasetVersionAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -889,21 +740,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           GetAttributes.Response.newBuilder().addAllAttributes(attributes).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -955,21 +793,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteDatasetVersionAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -1007,21 +833,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .setDatasetVersion(datasetVersion)
               .build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage());
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(SetDatasetVersionVisibilty.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SetDatasetVersionVisibilty.Response.getDefaultInstance());
     }
   }
 
@@ -1047,21 +861,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           DeleteDatasetVersions.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteDatasetVersions.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteDatasetVersions.Response.getDefaultInstance());
     }
   }
 

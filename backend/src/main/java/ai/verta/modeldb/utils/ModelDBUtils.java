@@ -42,6 +42,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -404,6 +406,15 @@ public class ModelDBUtils {
     executor.scheduleAtFixedRate(task, frequency, frequency, timeUnit);
   }
 
+  public static Throwable findRootCause(Throwable throwable) {
+    Objects.requireNonNull(throwable);
+    Throwable rootCause = throwable;
+    while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+      rootCause = rootCause.getCause();
+    }
+    return rootCause;
+  }
+
   public static <T extends GeneratedMessageV3> void observeError(
       StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
     Status status;
@@ -411,8 +422,18 @@ public class ModelDBUtils {
     if (e instanceof StatusRuntimeException) {
       statusRuntimeException = e;
     } else {
-      if (e instanceof ModelDBException) {
-        LOGGER.warn("Exception occured: {}", e.getMessage());
+      Throwable throwable = findRootCause(e);
+      if (throwable instanceof SocketException) {
+        String errorMessage = "Database Connection not found: ";
+        LOGGER.warn(errorMessage + "{}", e.getMessage());
+        status =
+            Status.newBuilder()
+                .setCode(Code.UNAVAILABLE_VALUE)
+                .setMessage(errorMessage + throwable.getMessage())
+                .addDetails(Any.pack(defaultInstance))
+                .build();
+      } else if (e instanceof ModelDBException) {
+        LOGGER.warn("Exception occurred: {}", e.getMessage());
         ModelDBException ModelDBException = (ModelDBException) e;
         status =
             Status.newBuilder()
@@ -421,10 +442,10 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
-        LOGGER.error("Exception occured:", e);
+        LOGGER.error("Exception occurred:", e);
         status =
             Status.newBuilder()
-                .setCode(io.grpc.Status.Code.INTERNAL.value())
+                .setCode(Code.INTERNAL_VALUE)
                 .setMessage(ModelDBConstants.INTERNAL_ERROR)
                 .addDetails(Any.pack(defaultInstance))
                 .build();
