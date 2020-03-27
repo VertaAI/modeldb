@@ -662,12 +662,19 @@ public class BlobDAORdbImpl implements BlobDAO {
               final AutogenBlob a = fromBlobProto(blobExpandedCommitA);
               final AutogenBlob b = fromBlobProto(blobExpandedCommitB);
               if (TypeChecker.sameType(a, b)) {
-                return Stream.of(
-                    DiffComputer.computeBlobDiff(a, b)
-                        .setLocation(blobExpandedCommitA.getLocationList())
-                        .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.MODIFIED))
-                        .toProto()
-                        .build());
+                AutogenBlobDiff blobDiff = DiffComputer.computeBlobDiff(a, b);
+                // diff can be null because the old hash computation could detect two same entities
+                // evaluate to different sha because it evaluated the list it contains in random
+                // order
+                if (blobDiff != null) {
+                  return Stream.of(
+                      blobDiff
+                          .setLocation(blobExpandedCommitA.getLocationList())
+                          .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.MODIFIED))
+                          .toProto()
+                          .build());
+                }
+                return null;
               } else {
                 return Stream.of(
                     DiffComputer.computeBlobDiff(a, null)
