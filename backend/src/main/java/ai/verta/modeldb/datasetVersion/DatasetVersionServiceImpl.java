@@ -107,7 +107,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     Set<String> datasetIdSet = new HashSet<>(datasetIdDatasetVersionIdMap.values());
 
     List<String> accessibleDatasetVersionIds = new ArrayList<>();
-    List<String> allowedDatasetVersionIds;
+    List<String> allowedDatasetIds;
     // Validate if current user has access to the entity or not
     if (datasetIdSet.size() == 1) {
       roleService.isSelfAllowed(
@@ -116,13 +116,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           new ArrayList<>(datasetIdSet).get(0));
       accessibleDatasetVersionIds.addAll(requestedDatasetVersionIds);
     } else {
-      allowedDatasetVersionIds =
+      allowedDatasetIds =
           roleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
       // Validate if current user has access to the entity or not
-      allowedDatasetVersionIds.retainAll(datasetIdSet);
+      allowedDatasetIds.retainAll(datasetIdSet);
       for (Map.Entry<String, String> entry : datasetIdDatasetVersionIdMap.entrySet()) {
-        if (allowedDatasetVersionIds.contains(entry.getValue())) {
+        if (allowedDatasetIds.contains(entry.getValue())) {
           accessibleDatasetVersionIds.add(entry.getKey());
         }
       }
