@@ -870,7 +870,9 @@ func init() {
 	proto.RegisterType((*RemoveTeamUser_Response)(nil), "ai.verta.uac.RemoveTeamUser.Response")
 }
 
-func init() { proto.RegisterFile("protos/public/uac/Team.proto", fileDescriptor_18f8730ffa785f19) }
+func init() {
+	proto.RegisterFile("protos/public/uac/Team.proto", fileDescriptor_18f8730ffa785f19)
+}
 
 var fileDescriptor_18f8730ffa785f19 = []byte{
 	// 777 bytes of a gzipped FileDescriptorProto
@@ -927,11 +929,11 @@ var fileDescriptor_18f8730ffa785f19 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // TeamServiceClient is the client API for TeamService service.
 //
@@ -964,10 +966,10 @@ type TeamServiceClient interface {
 }
 
 type teamServiceClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewTeamServiceClient(cc *grpc.ClientConn) TeamServiceClient {
+func NewTeamServiceClient(cc grpc.ClientConnInterface) TeamServiceClient {
 	return &teamServiceClient{cc}
 }
 

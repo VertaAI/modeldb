@@ -617,7 +617,9 @@ func init() {
 	proto.RegisterType((*GetJob_Response)(nil), "ai.verta.modeldb.GetJob.Response")
 }
 
-func init() { proto.RegisterFile("protos/public/modeldb/Job.proto", fileDescriptor_7dcdcababea00ad0) }
+func init() {
+	proto.RegisterFile("protos/public/modeldb/Job.proto", fileDescriptor_7dcdcababea00ad0)
+}
 
 var fileDescriptor_7dcdcababea00ad0 = []byte{
 	// 673 bytes of a gzipped FileDescriptorProto
@@ -668,11 +670,11 @@ var fileDescriptor_7dcdcababea00ad0 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // JobServiceClient is the client API for JobService service.
 //
@@ -685,10 +687,10 @@ type JobServiceClient interface {
 }
 
 type jobServiceClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewJobServiceClient(cc *grpc.ClientConn) JobServiceClient {
+func NewJobServiceClient(cc grpc.ClientConnInterface) JobServiceClient {
 	return &jobServiceClient{cc}
 }
 
