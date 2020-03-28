@@ -64,33 +64,15 @@ class Python(_environment._Environment):
         if self._msg.python.requirements:
             lines.append("requirements:")
             lines.extend(
-                "    {}{}{}".format(
-                    req_msg.library,
-                    req_msg.constraint,
-                    "{}.{}.{}{}".format(
-                        req_msg.version.major,
-                        req_msg.version.minor,
-                        req_msg.version.patch,
-                        req_msg.version.suffix,
-                    )
-                )
-                for req_msg
+                "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
+                for req_spec_msg
                 in self._msg.python.requirements
             )
         if self._msg.python.constraints:
             lines.append("constraints:")
             lines.extend(
-                "    {}{}{}".format(
-                    req_msg.library,
-                    req_msg.constraint,
-                    "{}.{}.{}{}".format(
-                        req_msg.version.major,
-                        req_msg.version.minor,
-                        req_msg.version.patch,
-                        req_msg.version.suffix,
-                    )
-                )
-                for req_msg
+                "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
+                for req_spec_msg
                 in self._msg.python.constraints
             )
         if self._msg.environment_variables:
@@ -137,6 +119,31 @@ class Python(_environment._Environment):
         req_blob_msg.version.suffix = suffix
 
         return req_blob_msg
+
+    @staticmethod
+    def _req_spec_msg_to_str(msg):
+        """
+        Inverse of :meth:`Python._req_spec_to_msg`.
+
+        Parameters
+        ----------
+        msg : PythonRequirementEnvironmentBlob
+
+        Returns
+        -------
+        req_spec : str
+
+        """
+        return "{}{}{}".format(
+            msg.library,
+            msg.constraint,
+            "{}.{}.{}{}".format(
+                msg.version.major,
+                msg.version.minor,
+                msg.version.patch,
+                msg.version.suffix,
+            )
+        )
 
     def _capture_python_version(self):
         self._msg.python.version.major = sys.version_info.major
