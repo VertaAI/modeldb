@@ -56,6 +56,13 @@ class S3(_dataset._Dataset):
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
         self._msg.s3.components.extend(s3_metadata)  # pylint: disable=no-member
 
+    def __repr__(self):
+        lines = ["S3 Blob"]
+        for component in self._msg.s3.components:
+            lines.extend(self._path_component_to_repr_lines(component.path))
+
+        return "\n    ".join(lines)
+
     @staticmethod
     def _parse_s3_url(path):
         url_components = urlparse(path, allow_fragments=False)

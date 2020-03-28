@@ -53,6 +53,63 @@ class Python(_environment._Environment):
         if constraints is not None:
             self._capture_constraints(constraints)
 
+    def __repr__(self):
+        lines = ["Python Blob"]
+        if self._msg.python.version.major:
+            lines.append("Python {}.{}.{}".format(
+                self._msg.python.version.major,
+                self._msg.python.version.minor,
+                self._msg.python.version.patch,
+            ))
+        if self._msg.python.requirements:
+            lines.append("requirements:")
+            lines.extend(
+                "    {}{}{}".format(
+                    req_msg.library,
+                    req_msg.constraint,
+                    "{}.{}.{}{}".format(
+                        req_msg.version.major,
+                        req_msg.version.minor,
+                        req_msg.version.patch,
+                        req_msg.version.suffix,
+                    )
+                )
+                for req_msg
+                in self._msg.python.requirements
+            )
+        if self._msg.python.constraints:
+            lines.append("constraints:")
+            lines.extend(
+                "    {}{}{}".format(
+                    req_msg.library,
+                    req_msg.constraint,
+                    "{}.{}.{}{}".format(
+                        req_msg.version.major,
+                        req_msg.version.minor,
+                        req_msg.version.patch,
+                        req_msg.version.suffix,
+                    )
+                )
+                for req_msg
+                in self._msg.python.constraints
+            )
+        if self._msg.environment_variables:
+            lines.append("environment variables:")
+            lines.extend(
+                "    {}={}".format(env_var_msg.name, env_var_msg.value)
+                for env_var_msg
+                in self._msg.environment_variables
+            )
+        if self._msg.command_line:
+            lines.append("command line arguments:")
+            lines.extend(
+                "    {}".format(arg)
+                for arg
+                in self._msg.command_line
+            )
+
+        return "\n    ".join(lines)
+
     @staticmethod
     def _req_spec_to_msg(req_spec):
         """

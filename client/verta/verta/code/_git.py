@@ -64,3 +64,19 @@ class Git(_code._Code):
             self._msg.git.tag = tag or _git_utils.get_git_commit_tag(ref)
             self._msg.git.hash = _git_utils.get_git_commit_hash(ref)  # use full commit hash
             self._msg.git.is_dirty = _git_utils.get_git_commit_dirtiness(ref)
+
+    def __repr__(self):
+        lines = ["Git Blob"]
+        if self._msg.git.hash:
+            lines.append("{}commit {}".format(
+                "dirty " if self._msg.git.is_dirty else "",
+                self._msg.git.hash,
+            ))
+        if self._msg.git.branch:
+            lines.append("on branch {}".format(self._msg.git.branch))
+        if self._msg.git.tag:
+            lines.append("with tag {}".format(self._msg.git.tag))
+        if self._msg.git.repo:
+            lines.append("in repo {}".format(self._msg.git.repo))
+
+        return "\n    ".join(lines)
