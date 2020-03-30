@@ -7,18 +7,16 @@ import ai.verta.modeldb.DeleteComment;
 import ai.verta.modeldb.GetComments;
 import ai.verta.modeldb.GetComments.Response;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.UpdateComment;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.Calendar;
@@ -128,21 +126,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           commentDAO.addComment(experimentRunEntity, request.getEntityId(), comment);
       responseObserver.onNext(AddComment.Response.newBuilder().setComment(newComment).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddComment.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
     }
   }
 
@@ -161,21 +146,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           UpdateComment.Response.newBuilder().setComment(updatedComment).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateComment.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
     }
   }
 
@@ -200,21 +172,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       List<Comment> comments = commentDAO.getComments(experimentRunEntity, request.getEntityId());
       responseObserver.onNext(GetComments.Response.newBuilder().addAllComments(comments).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetComments.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
     }
   }
 
@@ -251,21 +210,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
               experimentRunEntity, request.getEntityId(), request.getId(), userInfo);
       responseObserver.onNext(DeleteComment.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteComment.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
     }
   }
 }

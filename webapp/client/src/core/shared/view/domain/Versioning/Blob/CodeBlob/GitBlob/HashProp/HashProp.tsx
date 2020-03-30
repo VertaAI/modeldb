@@ -13,16 +13,20 @@ interface ILocalProps {
 }
 
 const HashProp = ({ remoteRepoUrl, commitHash, rootStyles }: ILocalProps) => {
-  return matchBy(remoteRepoUrl, 'type')({
-    github: ({ value }) => (
-      <ExternalLink
-        url={Github.makeCommitUrl(value, commitHash)}
-        text={commitHash}
-        rootStyle={rootStyles}
-      />
-    ),
-    unknown: ({ value }) => <span style={rootStyles}>{value}</span>,
-  });
+  return (
+    <span data-test="git-hash" data-root-styles={rootStyles}>
+      {matchBy(remoteRepoUrl, 'type')({
+        github: ({ value }) => (
+          <ExternalLink
+            url={Github.makeCommitUrl(value, commitHash)}
+            text={commitHash}
+            rootStyle={rootStyles}
+          />
+        ),
+        unknown: ({ value }) => <span style={rootStyles}>{value}</span>,
+      })}
+    </span>
+  );
 };
 
 export default HashProp;

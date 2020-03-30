@@ -83,13 +83,14 @@ class Dataset(object):
 
         # these could be updated by separate calls
         self.name = dataset.name
-        self.dataset_type = dataset.dataset_type
+        self.dataset_type = self.__class__.__name__
+        self._dataset_type = dataset.dataset_type
         self.desc = dataset.description
         self.attrs = dataset.attributes
         self.tags = dataset.tags
 
     def __repr__(self):
-        return "<Dataset \"{}\">".format(self.name)
+        return "<{} \"{}\">".format(self.__class__.__name__, self.name)
 
     @staticmethod
     def _generate_default_name():
@@ -506,7 +507,7 @@ class DatasetVersion(object):
         self.attrs = dataset_version.attributes
         self.id = dataset_version.id
         self.version = dataset_version.version
-        self.dataset_type = dataset_version.dataset_type
+        self._dataset_type = dataset_version.dataset_type
         self.dataset_version = dataset_version
         self.dataset_version_info = None
 
@@ -521,7 +522,7 @@ class DatasetVersion(object):
             msg_copy.CopyFrom(self.dataset_version_info)
             return msg_copy.__repr__()
         else:
-            return "<DatasetVersion \"{}\">".format(self.version)
+            return "<{} \"{}\">".format(self.__class__.__name__, self.version)
 
     # TODO: get by dataset_id and version is not supported on the backend
     @staticmethod

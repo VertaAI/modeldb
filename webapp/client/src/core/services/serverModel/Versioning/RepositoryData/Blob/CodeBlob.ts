@@ -5,7 +5,7 @@ import {
   makeGitCodeBlobRemoteRepoUrl,
 } from 'core/shared/models/Versioning/Blob/CodeBlob';
 
-import { convertPathDatasetBlob } from './DatasetBlob';
+import { convertServerDatasetPathComponent } from './DatasetBlob';
 
 export const convertServerCodeBlobToClient = (
   serverCode: any
@@ -36,7 +36,7 @@ export const convertServerNotebookBlob = (
         ? convertServerGitBlob(serverNotebook.git_repo)
         : null,
       path: serverNotebook.path
-        ? convertPathDatasetBlob(serverNotebook.path)
+        ? convertServerDatasetPathComponent(serverNotebook.path)
         : null,
     },
   };

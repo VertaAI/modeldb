@@ -405,7 +405,8 @@
         "EXPERIMENT_RUN",
         "DATASET",
         "DATASET_VERSION",
-        "DASHBOARD"
+        "DASHBOARD",
+        "REPOSITORY"
       ],
       "default": "UNKNOWN"
     },

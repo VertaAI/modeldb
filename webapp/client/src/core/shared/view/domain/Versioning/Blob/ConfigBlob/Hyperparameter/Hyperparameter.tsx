@@ -1,9 +1,5 @@
-import cn from 'classnames';
 import * as React from 'react';
 
-import { IConfigHyperparameter } from 'core/shared/models/Versioning/Blob/ConfigBlob';
-
-import HyperparameterValue from '../HyperparameterValue/HyperparameterValue';
 import styles from './Hyperparameter.module.css';
 
 interface ILocalProps {
@@ -14,11 +10,11 @@ interface ILocalProps {
 
 const Hyperparameter = ({ name, children, rootStyles }: ILocalProps) => {
   return (
-    <div className={styles.root} style={rootStyles}>
-      <span className={styles.name} title={name}>
+    <div className={styles.root} data-test="hyperparameter" style={rootStyles}>
+      <span className={styles.name} title={name} data-test="name">
         {name}
       </span>
-      <span className={styles.value}>{children}</span>
+      <span className={styles.value} data-test="value">{children}</span>
     </div>
   );
 };

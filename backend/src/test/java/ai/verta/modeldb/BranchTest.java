@@ -46,6 +46,7 @@ import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
@@ -504,6 +505,7 @@ public class BranchTest {
       e.printStackTrace();
     }
 
+    Collections.reverse(commitShaList);
     commitShaList.forEach(
         commitSha -> {
           DeleteCommitRequest deleteCommitRequest =
@@ -691,6 +693,7 @@ public class BranchTest {
         2,
         listBranchCommitsResponse.getCommitsCount());
 
+    Collections.reverse(commitShaList);
     commitShaList.forEach(
         commitSha -> {
           DeleteCommitRequest deleteCommitRequest =

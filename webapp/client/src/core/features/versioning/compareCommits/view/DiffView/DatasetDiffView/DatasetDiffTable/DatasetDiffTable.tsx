@@ -116,7 +116,8 @@ const DatasetDiffTable: React.FC<ILocalProps> = ({
         isFirstCommit: diffType === 'deleted',
       };
     })
-    .flat();
+    .flat()
+    .filter(d => Boolean(d.data));
 
   return (
     <div className={styles.root}>
