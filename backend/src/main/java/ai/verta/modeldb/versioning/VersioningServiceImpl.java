@@ -5,6 +5,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
@@ -14,6 +15,8 @@ import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob.Builder;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceImplBase;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
@@ -117,6 +120,12 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
         }
         SetRepository.Response response = repositoryDAO.setRepository(requestBuilder.build(), true);
+        Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
+        roleService.createRoleBinding(
+            ownerRole,
+            new CollaboratorUser(authService, userInfo),
+            String.valueOf(response.getRepository().getId()),
+            ModelDBServiceResourceTypes.PROJECT);
 
         RepositoryIdentification repositoryId =
             RepositoryIdentification.newBuilder()
