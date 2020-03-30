@@ -72,7 +72,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       // should save each blob during one session to avoid recurring entities ids
       blobContainer.process(session, rootTree, fileHasher, blobHashes);
     }
-    final InternalFolderElement internalFolderElement = rootTree.saveFolders(session, fileHasher);
+    Set<String> hashes = new HashSet<>();
+    final InternalFolderElement internalFolderElement =
+        rootTree.saveFolders(session, fileHasher, hashes);
     return internalFolderElement.getElementSha();
   }
 
