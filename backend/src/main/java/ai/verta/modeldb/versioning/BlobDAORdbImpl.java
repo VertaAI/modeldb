@@ -72,7 +72,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       // should save each blob during one session to avoid recurring entities ids
       blobContainer.process(session, rootTree, fileHasher, blobHashes);
     }
-    final InternalFolderElement internalFolderElement = rootTree.saveFolders(session, fileHasher);
+    Set<String> hashes = new HashSet<>();
+    final InternalFolderElement internalFolderElement =
+        rootTree.saveFolders(session, fileHasher, hashes);
     return internalFolderElement.getElementSha();
   }
 
@@ -664,12 +666,19 @@ public class BlobDAORdbImpl implements BlobDAO {
               final AutogenBlob a = fromBlobProto(blobExpandedCommitA);
               final AutogenBlob b = fromBlobProto(blobExpandedCommitB);
               if (TypeChecker.sameType(a, b)) {
-                return Stream.of(
-                    DiffComputer.computeBlobDiff(a, b)
-                        .setLocation(blobExpandedCommitA.getLocationList())
-                        .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.MODIFIED))
-                        .toProto()
-                        .build());
+                AutogenBlobDiff blobDiff = DiffComputer.computeBlobDiff(a, b);
+                // diff can be null because the old hash computation could detect two same entities
+                // evaluate to different sha because it evaluated the list it contains in random
+                // order
+                if (blobDiff != null) {
+                  return Stream.of(
+                      blobDiff
+                          .setLocation(blobExpandedCommitA.getLocationList())
+                          .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.MODIFIED))
+                          .toProto()
+                          .build());
+                }
+                return null;
               } else {
                 return Stream.of(
                     DiffComputer.computeBlobDiff(a, null)

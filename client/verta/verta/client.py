@@ -249,13 +249,15 @@ class Client(object):
         config_file = self._find_config_in_all_dirs()
         if config_file is not None:
             stream = open(config_file, 'r')
-            self._config = _utils.json_to_proto(
-                yaml.load(stream, Loader=yaml.FullLoader),
+            self._config = yaml.load(stream, Loader=yaml.FullLoader)
+            # validate config against proto spec
+            _utils.json_to_proto(
+                self._config,
                 _ConfigProtos.Config,
                 ignore_unknown_fields=False,
             )
         else:
-            self._config = _ConfigProtos.Config()
+            self._config = {}
 
     def _find_config_in_all_dirs(self):
         res = self._find_config('./', True)
@@ -277,7 +279,7 @@ class Client(object):
 
     def _set_from_config_if_none(self, var, resource_name):
         if var is None:
-            var = getattr(self._config, resource_name, None)
+            var = self._config.get(resource_name)
             if var:
                 print("setting {} from config file".format(resource_name))
         return var or None
