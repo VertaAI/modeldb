@@ -124,7 +124,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
             ownerRole,
             new CollaboratorUser(authService, userInfo),
             String.valueOf(response.getRepository().getId()),
-            ModelDBServiceResourceTypes.PROJECT);
+            ModelDBServiceResourceTypes.REPOSITORY);
 
         RepositoryIdentification repositoryId =
             RepositoryIdentification.newBuilder()

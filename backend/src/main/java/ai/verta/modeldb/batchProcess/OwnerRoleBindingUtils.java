@@ -14,6 +14,7 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import java.util.HashSet;
@@ -306,7 +307,7 @@ public class OwnerRoleBindingUtils {
     final int pagesize = 200;
     LOGGER.debug("Total repositories {}", count);
 
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
+    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
     while (lowerBound < count) {
 
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -348,7 +349,7 @@ public class OwnerRoleBindingUtils {
                     ownerRole,
                     new CollaboratorUser(authService, userInfoValue),
                     String.valueOf(repositoryEntity.getId()),
-                    ModelResourceEnum.ModelDBServiceResourceTypes.DATASET_VERSION);
+                    ModelDBServiceResourceTypes.REPOSITORY);
               } catch (Exception e) {
                 e.printStackTrace();
                 LOGGER.error(e.getMessage());
