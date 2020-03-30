@@ -4,10 +4,6 @@
     "title": "protos/public/uac/Collaborator.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -23,6 +19,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -50,6 +52,12 @@
             "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -76,6 +84,12 @@
             "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -100,6 +114,12 @@
             "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -123,6 +143,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -173,6 +199,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -304,6 +336,39 @@
       ],
       "default": "UNKNOWN"
     },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
     "uacAction": {
       "type": "object",
       "properties": {
@@ -392,11 +457,23 @@
     "uacGetCollaboratorResponse": {
       "type": "object",
       "properties": {
-        "shared_users": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacGetCollaboratorResponse"
-          }
+        "user_id": {
+          "type": "string"
+        },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "share_via_type": {
+          "$ref": "#/definitions/uacShareViaEnum"
+        },
+        "verta_id": {
+          "type": "string"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "authz_entity_type": {
+          "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         }
       }
     },

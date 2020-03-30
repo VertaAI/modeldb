@@ -4,10 +4,6 @@
     "title": "protos/public/uac/UACService.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -24,6 +20,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacCreateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -52,6 +54,12 @@
             "schema": {
               "$ref": "#/definitions/uacDeleteUserResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -79,6 +87,12 @@
             "schema": {
               "$ref": "#/definitions/uacUserInfo"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -95,6 +109,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -132,6 +152,12 @@
             "schema": {
               "$ref": "#/definitions/uacGetUsersResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -158,6 +184,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacUpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -188,6 +220,39 @@
         "VERTA"
       ],
       "default": "UNKNOWN"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
     },
     "uacCreateUser": {
       "type": "object",

@@ -4,10 +4,6 @@
     "title": "protos/public/uac/Authorization.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -23,6 +19,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacGetAllowedEntitiesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -50,6 +52,12 @@
             "schema": {
               "$ref": "#/definitions/uacGetAllowedResourcesResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -75,6 +83,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacGetAllowedResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -102,6 +116,12 @@
             "schema": {
               "$ref": "#/definitions/uacGetSelfAllowedActionsBatchResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -127,6 +147,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacGetSelfAllowedResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -154,6 +180,12 @@
             "schema": {
               "$ref": "#/definitions/uacGetSelfAllowedResourcesResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -180,6 +212,12 @@
             "schema": {
               "$ref": "#/definitions/uacIsAllowedResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -205,6 +243,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/uacIsSelfAllowedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -305,6 +349,39 @@
         "MODELDB_SERVICE"
       ],
       "default": "UNKNOWN"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
     },
     "uacAction": {
       "type": "object",

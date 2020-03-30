@@ -114,7 +114,9 @@ func init() {
 	proto.RegisterType((*Config)(nil), "ai.verta.client.Config")
 }
 
-func init() { proto.RegisterFile("protos/public/client/Config.proto", fileDescriptor_51f2a5edc2f29c82) }
+func init() {
+	proto.RegisterFile("protos/public/client/Config.proto", fileDescriptor_51f2a5edc2f29c82)
+}
 
 var fileDescriptor_51f2a5edc2f29c82 = []byte{
 	// 255 bytes of a gzipped FileDescriptorProto

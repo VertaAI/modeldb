@@ -4,10 +4,6 @@
     "title": "protos/public/modeldb/metadata/MetadataService.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -23,6 +19,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/metadataGetLabelsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -65,6 +67,12 @@
             "schema": {
               "$ref": "#/definitions/metadataDeleteLabelsRequestResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -88,6 +96,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/metadataAddLabelsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -186,6 +200,39 @@
         },
         "string_id": {
           "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     }
