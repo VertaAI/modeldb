@@ -2,6 +2,7 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
+import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
@@ -14,6 +15,8 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.CollaboratorServiceGrpc;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
@@ -26,6 +29,7 @@ import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +58,15 @@ public class ExperimentTest {
   @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
   private ManagedChannel channel = null;
+  private ManagedChannel client2Channel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
+  private static InProcessChannelBuilder client2ChannelBuilder =
+      InProcessChannelBuilder.forName(serverName).directExecutor();
+  private static AuthClientInterceptor authClientInterceptor;
   private static App app;
 
   @SuppressWarnings("unchecked")
@@ -92,8 +100,9 @@ public class ExperimentTest {
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
+      authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
+      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
   }
 
@@ -107,12 +116,17 @@ public class ExperimentTest {
     if (!channel.isShutdown()) {
       channel.shutdownNow();
     }
+    if (!client2Channel.isShutdown()) {
+      client2Channel.shutdownNow();
+    }
   }
 
   @Before
   public void initializeChannel() throws IOException {
     grpcCleanup.register(serverBuilder.build().start());
     channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
+    client2Channel =
+        grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
   }
 
   private void checkEqualsAssert(StatusRuntimeException e) {
@@ -3201,6 +3215,126 @@ public class ExperimentTest {
     // Delete Project
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    LOGGER.info("Batch Delete Experiment test stop................................");
+  }
+
+  @Test
+  public void batchDeleteExperiments() {
+    LOGGER.info("Batch Delete Experiment test start................................");
+
+    ProjectTest projectTest = new ProjectTest();
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ProjectServiceBlockingStub projectServiceStubClient2 =
+        ProjectServiceGrpc.newBlockingStub(client2Channel);
+    ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceBlockingStub experimentServiceStubClient2 =
+        ExperimentServiceGrpc.newBlockingStub(client2Channel);
+    CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStubClient2 =
+        CollaboratorServiceGrpc.newBlockingStub(client2Channel);
+
+    // Create project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project1 = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+
+    createProjectRequest = projectTest.getCreateProjectRequest("experimentRun_project_ypcdt2");
+    createProjectResponse = projectServiceStubClient2.createProject(createProjectRequest);
+    Project project2 = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+
+    AddCollaboratorRequest addCollaboratorRequest =
+        CollaboratorTest.addCollaboratorRequest(
+            Collections.singletonList(project2.getId()),
+            authClientInterceptor.getClient1Email(),
+            CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
+
+    AddCollaboratorRequest.Response response =
+        collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+    LOGGER.info("Collaborator added in server : " + response.getStatus());
+    assertTrue(response.getStatus());
+
+    List<String> experimentIdsUser1 = new ArrayList<>();
+    for (int count = 0; count < 5; count++) {
+      CreateExperiment createExperimentRequest =
+          getCreateExperimentRequest(project1.getId(), "Experiment_n_sprt_" + count);
+      CreateExperiment.Response createExperimentResponse =
+          experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment = createExperimentResponse.getExperiment();
+      experimentIdsUser1.add(experiment.getId());
+      LOGGER.info("Experiment created successfully");
+    }
+
+    CreateExperiment createExperimentRequest =
+        getCreateExperimentRequest(project2.getId(), "Experiment_n_sprt_by_other_user_owner_1");
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment otherOwnerExperiment = createExperimentResponse.getExperiment();
+
+    List<String> experimentIdsUser2 = new ArrayList<>();
+    for (int count = 0; count < 5; count++) {
+      createExperimentRequest =
+          getCreateExperimentRequest(project2.getId(), "Experiment_n_sprt_" + count);
+      createExperimentResponse =
+          experimentServiceStubClient2.createExperiment(createExperimentRequest);
+      Experiment experiment = createExperimentResponse.getExperiment();
+      experimentIdsUser2.add(experiment.getId());
+      LOGGER.info("Experiment created successfully");
+    }
+
+    for (String id : experimentIdsUser1.subList(0, 2)) {
+      // For single Experiment which is accessible to user1
+      DeleteExperiments deleteExperiments = DeleteExperiments.newBuilder().addIds(id).build();
+      DeleteExperiments.Response deleteExperimentsResponse =
+          experimentServiceStub.deleteExperiments(deleteExperiments);
+      assertTrue(deleteExperimentsResponse.getStatus());
+    }
+    // For multiple Experiment which is accessible to user1
+    DeleteExperiments deleteExperiments =
+        DeleteExperiments.newBuilder()
+            .addAllIds(experimentIdsUser1.subList(2, experimentIdsUser1.size()))
+            .build();
+    DeleteExperiments.Response deleteExperimentsResponse =
+        experimentServiceStub.deleteExperiments(deleteExperiments);
+    assertTrue(deleteExperimentsResponse.getStatus());
+
+    // For multiple Experiment which is not accessible to user1
+    try {
+      deleteExperiments = DeleteExperiments.newBuilder().addAllIds(experimentIdsUser2).build();
+      experimentServiceStub.deleteExperiments(deleteExperiments);
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
+
+    // For single Experiment which is not accessible to user1
+    try {
+      deleteExperiments = DeleteExperiments.newBuilder().addIds(experimentIdsUser2.get(0)).build();
+      experimentServiceStub.deleteExperiments(deleteExperiments);
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
+
+    // For single Experiment which is user1 has owner but user1 haven't DELETE action for the
+    // project of experiment
+    deleteExperiments = DeleteExperiments.newBuilder().addIds(otherOwnerExperiment.getId()).build();
+    deleteExperimentsResponse = experimentServiceStub.deleteExperiments(deleteExperiments);
+    assertTrue(deleteExperimentsResponse.getStatus());
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project1.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    deleteProject = DeleteProject.newBuilder().setId(project2.getId()).build();
+    deleteProjectResponse = projectServiceStubClient2.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
     LOGGER.info(deleteProjectResponse.toString());
     assertTrue(deleteProjectResponse.getStatus());

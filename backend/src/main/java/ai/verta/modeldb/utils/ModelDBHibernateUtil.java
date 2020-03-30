@@ -581,7 +581,8 @@ public class ModelDBHibernateUtil {
 
   /**
    * Don't change anything in this function because based on the function backend READY status will
-   * define. If you want to define new migration then add new if check for your migration in `if (migration) {` condition.
+   * define. If you want to define new migration then add new if check for your migration in `if
+   * (migration) {` condition.
    */
   @SuppressWarnings("unchecked")
   private static void runMigration() {
@@ -612,7 +613,7 @@ public class ModelDBHibernateUtil {
                                 });
                         completableFutures[index] = futureTask;
                         index = index + 1;
-                      }//add else if here for the new migration type
+                      } // add else if here for the new migration type
                     }
                   }
                   if (index > 0) {
