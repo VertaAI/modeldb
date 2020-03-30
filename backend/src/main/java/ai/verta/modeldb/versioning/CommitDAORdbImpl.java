@@ -44,13 +44,16 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setMessage(commit.getMessage())
               .setCommitSha(commitSha)
               .build();
+      RepositoryEntity repositoryEntity = getRepository.apply(session);
       CommitEntity commitEntity =
           new CommitEntity(
-              getRepository.apply(session),
+              repositoryEntity,
               getCommits(session, commit.getParentShasList()),
               internalCommit,
               rootSha);
       session.saveOrUpdate(commitEntity);
+      repositoryEntity.setDate_updated(commitEntity.getDate_created());
+      session.update(repositoryEntity);
       session.getTransaction().commit();
       return Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
     }
@@ -216,6 +219,8 @@ public class CommitDAORdbImpl implements CommitDAO {
         commitEntity.getRepository().remove(repositoryEntity);
         session.update(commitEntity);
       }
+      repositoryEntity.setDate_updated(new Date().getTime());
+      session.update(repositoryEntity);
       session.getTransaction().commit();
       return DeleteCommitRequest.Response.newBuilder().build();
     }
