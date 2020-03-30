@@ -33,6 +33,59 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+/*
+ * Examples:
+ *
+ location: "location"
+ config {
+   hyperparameters {
+     B {
+       name: "test"
+       value {
+         string_value: "test"
+       }
+     }
+   }
+ }
+
+ code {
+   git {
+     status: ADDED
+     B {
+       repo: "test"
+     }
+   }
+ }
+
+ location: "location"
+ status: MODIFIED
+ environment {
+   environment_variables {
+     status: ADDED
+     A {
+       name: "word1 word2"
+     }
+     B {
+       name: "word1"
+     }
+   }
+ }
+
+ location: "location"
+ status: DELETED
+ dataset {
+   s3 {
+     components {
+       path {
+         status: DELETED
+         A {
+           md5: "test_md5"
+         }
+       }
+     }
+   }
+ }
+ */
 @RunWith(Parameterized.class)
 public class ValidatorBlobDiffTest {
   private static final Logger LOGGER = LogManager.getLogger(ValidatorBlobDiffTest.class);

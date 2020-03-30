@@ -33,6 +33,103 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+/*
+Examples:
+environment {
+  docker {
+    sha: "test_sha"
+  }
+}
+
+config {
+  hyperparameter_set {
+    name: "test"
+    continuous {
+      interval_begin {
+        string_value: "test"
+      }
+    }
+  }
+}
+
+environment {
+  environment_variables {
+    name: "Env"
+    value: "ASDF"
+  }
+  environment_variables {
+    name: "Env"
+    value: "ASDF2"
+  }
+}
+
+code {
+  git {
+    is_dirty: true
+  }
+}
+
+config {
+  hyperparameter_set {
+    continuous {
+      interval_begin {
+        string_value: "1"
+      }
+    }
+  }
+}
+
+dataset {
+  path {
+    components {
+      size: 3
+    }
+  }
+}
+
+environment {
+  python {
+    requirements {
+      library: "numpy"
+      version {
+        major: 3
+      }
+    }
+    requirements {
+      library: "numpy"
+      version {
+        major: 3
+      }
+    }
+  }
+}
+environment {
+  python {
+    constraints {
+      library: "numpy"
+      version {
+        major: 3
+      }
+    }
+    constraints {
+      library: "numpy"
+      version {
+        major: 3
+      }
+    }
+  }
+}
+
+environment {
+  python {
+    constraints {
+      version {
+        patch: 6
+      }
+    }
+  }
+}
+ */
 @RunWith(Parameterized.class)
 public class ValidatorBlobTest {
   private static final Logger LOGGER = LogManager.getLogger(ValidatorBlobTest.class);
