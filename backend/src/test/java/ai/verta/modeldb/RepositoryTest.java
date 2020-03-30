@@ -1,6 +1,7 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
+import static org.junit.Assert.assertEquals;
 
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -22,6 +23,7 @@ import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -157,22 +159,50 @@ public class RepositoryTest {
     return result.getRepository().getId();
   }
 
+  private void checkEqualsAssert(StatusRuntimeException e) {
+    Status status = Status.fromThrowable(e);
+    LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+    } else {
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
+    }
+  }
+
   @Test
   public void createDeleteRepositoryTest() {
     LOGGER.info("Create and delete repository test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
+    VersioningServiceBlockingStub versioningServiceBlockingStubClient2 =
+        VersioningServiceGrpc.newBlockingStub(client2Channel);
 
     long id = createRepository(versioningServiceBlockingStub, NAME);
+    try {
+      final DeleteRepositoryRequest deleteRepository;
+      deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build();
+      try {
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
+        Assert.fail();
+      } catch (StatusRuntimeException e) {
+        checkEqualsAssert(e);
+      }
+    } finally {
+      final DeleteRepositoryRequest deleteRepository;
+      deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
 
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Create and delete repository test end................................");
   }

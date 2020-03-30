@@ -14,6 +14,8 @@ import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -290,6 +292,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
+      // Get self allowed resources id where user has delete permission
+      List<String> allowedRepositoryIds =
+          roleService.getAccessibleResourceIdsByActions(
+              ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.DELETE,
+              Collections.singletonList(String.valueOf(repository.getId())));
+      if (allowedRepositoryIds.isEmpty()) {
+        throw new ModelDBException("Delete Access Denied for given repository Id : " + request.getRepositoryId(), Code.PERMISSION_DENIED);
+      }
 
       ListBranchesRequest.Response listBranchesResponse =
           listBranches(
