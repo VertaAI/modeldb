@@ -175,34 +175,17 @@ public class RepositoryTest {
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
-    VersioningServiceBlockingStub versioningServiceBlockingStubClient2 =
-        VersioningServiceGrpc.newBlockingStub(client2Channel);
 
     long id = createRepository(versioningServiceBlockingStub, NAME);
-    try {
-      final DeleteRepositoryRequest deleteRepository;
-      deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-              .build();
-      try {
-        DeleteRepositoryRequest.Response deleteResult =
-            versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
-        Assert.fail();
-      } catch (StatusRuntimeException e) {
-        checkEqualsAssert(e);
-      }
-    } finally {
-      final DeleteRepositoryRequest deleteRepository;
-      deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-              .build();
-      DeleteRepositoryRequest.Response deleteResult =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
-    }
 
+    final DeleteRepositoryRequest deleteRepository;
+    deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Create and delete repository test end................................");
   }
@@ -213,6 +196,8 @@ public class RepositoryTest {
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
+    VersioningServiceBlockingStub versioningServiceBlockingStubClient2 =
+        VersioningServiceGrpc.newBlockingStub(client2Channel);
 
     long id = createRepository(versioningServiceBlockingStub, NAME);
     try {
@@ -240,9 +225,20 @@ public class RepositoryTest {
         DeleteRepositoryRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
             .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
+    try {
+      versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        Assert.fail();
+      }
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
+
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
 
     try {
       deleteRepository =
