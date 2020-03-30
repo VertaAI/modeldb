@@ -8,7 +8,7 @@ option java_multiple_files = true;
 import "protos/public/common/CommonService.proto";
 import "protos/public/modeldb/CommonService.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/struct.proto";
+// import "google/protobuf/struct.proto";
 
 /*
 * ExperimentRun Entity

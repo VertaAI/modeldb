@@ -58,7 +58,6 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -70,7 +69,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -201,21 +199,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(CreateProject.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(CreateProject.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, CreateProject.Response.getDefaultInstance());
     }
   }
 
@@ -257,21 +242,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           UpdateProjectName.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateProjectName.Response.getDefaultInstance());
     }
   }
 
@@ -313,21 +286,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateProjectDescription.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateProjectDescription.Response.getDefaultInstance());
     }
   }
 
@@ -369,21 +330,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddProjectAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddProjectAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -432,21 +381,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           UpdateProjectAttributes.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(UpdateProjectAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, UpdateProjectAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -497,21 +434,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           GetAttributes.Response.newBuilder().addAllAttributes(attributes).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -557,21 +481,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProjectAttributes.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteProjectAttributes.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteProjectAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -612,21 +524,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           AddProjectTags.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddProjectTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, AddProjectTags.Response.getDefaultInstance());
     }
   }
 
@@ -656,21 +555,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(tags).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
     }
   }
 
@@ -719,21 +605,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteProjectTags.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteProjectTags.Response.getDefaultInstance());
     }
   }
 
@@ -776,21 +650,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           AddProjectTag.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddProjectTag.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, AddProjectTag.Response.getDefaultInstance());
     }
   }
 
@@ -831,21 +692,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteProjectTag.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteProjectTag.Response.getDefaultInstance());
     }
   }
 
@@ -879,21 +728,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(DeleteProject.Response.newBuilder().setStatus(deletedStatus).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteProject.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, DeleteProject.Response.getDefaultInstance());
     }
   }
 
@@ -932,21 +768,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetProjects.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetProjects.Response.getDefaultInstance());
     }
   }
 
@@ -977,21 +800,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           GetPublicProjects.Response.newBuilder().addAllProjects(projectList).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetPublicProjects.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetPublicProjects.Response.getDefaultInstance());
     }
   }
 
@@ -1022,21 +833,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(GetProjectById.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetProjectById.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetProjectById.Response.getDefaultInstance());
     }
   }
 
@@ -1114,21 +912,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetProjectByName.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetProjectByName.Response.getDefaultInstance());
     }
   }
 
@@ -1169,21 +955,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(DeepCopyProject.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetProjectByName.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, DeepCopyProject.Response.getDefaultInstance());
     }
   }
 
@@ -1319,21 +1092,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetSummary.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetSummary.Response.getDefaultInstance());
     }
   }
 
@@ -1373,21 +1133,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(
           SetProjectReadme.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage());
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(SetProjectReadme.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SetProjectReadme.Response.getDefaultInstance());
     }
   }
 
@@ -1418,21 +1166,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(
           GetProjectReadme.Response.newBuilder().setReadmeText(project.getReadmeText()).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage());
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetProjectReadme.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetProjectReadme.Response.getDefaultInstance());
     }
   }
 
@@ -1488,21 +1224,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(
           SetProjectShortName.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage());
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(SetProjectShortName.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SetProjectShortName.Response.getDefaultInstance());
     }
   }
 
@@ -1533,21 +1257,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(
           GetProjectShortName.Response.newBuilder().setShortName(project.getShortName()).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage());
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetProjectShortName.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetProjectShortName.Response.getDefaultInstance());
     }
   }
 
@@ -1580,21 +1292,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(
           SetProjectVisibilty.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage());
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(SetProjectVisibilty.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SetProjectVisibilty.Response.getDefaultInstance());
     }
   }
 
@@ -1653,21 +1353,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogProjectCodeVersion.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, LogProjectCodeVersion.Response.getDefaultInstance());
     }
   }
 
@@ -1703,21 +1391,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           GetProjectCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetProjectCodeVersion.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetProjectCodeVersion.Response.getDefaultInstance());
     }
   }
 
@@ -1741,21 +1417,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(FindProjects.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, FindProjects.Response.getDefaultInstance());
     }
   }
 
@@ -1822,21 +1485,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetUrlForArtifact.Response.getDefaultInstance());
     }
   }
 
@@ -1884,21 +1535,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(LogProjectArtifacts.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, LogProjectArtifacts.Response.getDefaultInstance());
     }
   }
 
@@ -1926,21 +1565,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetArtifacts.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetArtifacts.Response.getDefaultInstance());
     }
   }
 
@@ -1976,21 +1602,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteProjectArtifact.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteProjectArtifact.Response.getDefaultInstance());
     }
   }
 
@@ -2015,21 +1629,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProjects.Response.newBuilder().setStatus(deletedStatus).build());
       responseObserver.onCompleted();
 
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteProjects.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, DeleteProjects.Response.getDefaultInstance());
     }
   }
 
@@ -2069,21 +1670,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseObserver.onNext(
           SetProjectWorkspace.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(SetProjectWorkspace.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, SetProjectWorkspace.Response.getDefaultInstance());
     }
   }
 }

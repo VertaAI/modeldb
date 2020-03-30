@@ -9,17 +9,22 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 import * as React from 'react';
 
-import { IConfigBlobDataDiff } from 'core/shared/models/Versioning/Blob/ConfigBlob';
-import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
+import { ComparedCommitType, DataWithDiffTypeFromDiffs } from 'core/shared/models/Versioning/Blob/Diff';
+import { IConfigHyperparameterDiff, IConfigHyperparameterSetItemDiff } from 'core/shared/models/Versioning/Blob/ConfigBlob';
 
 interface ILocalProps {
-  blobA?: IConfigBlobDataDiff['data'];
-  blobB?: IConfigBlobDataDiff['data'];
+  A: IRow;
+  B: IRow;
   columns: Record<ComparedCommitType, { title: string }> & {
     property: { title: string; width: number };
   };
   children: any;
 }
+
+export type IRow = {
+  hyperparameters?: Array<DataWithDiffTypeFromDiffs<IConfigHyperparameterDiff>>;
+  hyperparameterSet?: Array<DataWithDiffTypeFromDiffs<IConfigHyperparameterSetItemDiff>>;
+};
 
 const ColumnNames: { [T in keyof ILocalProps['columns']]: T } = {
   A: 'A',
@@ -39,8 +44,8 @@ export interface IPropDefinition {
 }
 export interface IPropDefinitionRenderProps {
   type: ComparedCommitType;
-  blobData?: IConfigBlobDataDiff['data'];
-  anotherBlobData?: IConfigBlobDataDiff['data'];
+  currentData: IRow;
+  anotherData: IRow;
 }
 
 function PropDefinition(props: IPropDefinition) {
@@ -122,16 +127,16 @@ class CompareTable extends React.Component<ILocalProps, IState> {
       case ColumnNames.A: {
         const renderProps: IPropDefinitionRenderProps = {
           type: ColumnNames.A,
-          blobData: this.props.blobA,
-          anotherBlobData: this.props.blobB,
+          currentData: this.props.A,
+          anotherData: this.props.B,
         };
         return propDefinition.render(renderProps);
       }
       case ColumnNames.B: {
         const renderProps: IPropDefinitionRenderProps = {
           type: ColumnNames.B,
-          blobData: this.props.blobB,
-          anotherBlobData: this.props.blobA,
+          currentData: this.props.B,
+          anotherData: this.props.A,
         };
         return propDefinition.render(renderProps);
       }

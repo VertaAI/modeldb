@@ -15,7 +15,7 @@ import ai.verta.swagger.client.objects._
 
 case class VersioningListBranchesRequestResponse (
   branches: Option[List[String]] = None,
-  total_records: Option[String] = None
+  total_records: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningListBranchesRequestResponse.toJson(this)
 }
@@ -25,7 +25,7 @@ object VersioningListBranchesRequestResponse {
     new JObject(
       List[Option[JField]](
         obj.branches.map(x => JField("branches", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.total_records.map(x => JField("total_records", JString(x)))
+        obj.total_records.map(x => JField("total_records", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -40,7 +40,7 @@ object VersioningListBranchesRequestResponse {
         VersioningListBranchesRequestResponse(
           // TODO: handle required
           branches = fieldsMap.get("branches").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          total_records = fieldsMap.get("total_records").map(JsonConverter.fromJsonString)
+          total_records = fieldsMap.get("total_records").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

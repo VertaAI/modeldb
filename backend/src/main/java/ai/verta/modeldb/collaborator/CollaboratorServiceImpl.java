@@ -9,7 +9,6 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dataset.DatasetDAO;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -36,7 +35,6 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.Metadata;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -362,21 +360,9 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
       responseObserver.onNext(
           addORUpdateCollaborators(request, ModelDBServiceResourceTypes.PROJECT));
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddCollaboratorRequest.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddCollaboratorRequest.Response.getDefaultInstance());
     }
   }
 
@@ -460,21 +446,9 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
 
       responseObserver.onNext(removeCollaborator(request, ModelDBServiceResourceTypes.PROJECT));
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(RemoveCollaborator.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, RemoveCollaborator.Response.getDefaultInstance());
     }
   }
 
@@ -515,21 +489,8 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
       responseObserver.onNext(
           GetCollaborator.Response.newBuilder().addAllSharedUsers(responseData).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetCollaborator.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetCollaborator.Response.getDefaultInstance());
     }
   }
 
@@ -547,21 +508,9 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
       responseObserver.onNext(
           addORUpdateCollaborators(request, ModelDBServiceResourceTypes.DATASET));
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddCollaboratorRequest.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddCollaboratorRequest.Response.getDefaultInstance());
     }
   }
 
@@ -602,21 +551,8 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
       responseObserver.onNext(
           GetCollaborator.Response.newBuilder().addAllSharedUsers(responseData).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetCollaborator.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(responseObserver, e, GetCollaborator.Response.getDefaultInstance());
     }
   }
 
@@ -648,21 +584,9 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
 
       responseObserver.onNext(removeCollaborator(request, ModelDBServiceResourceTypes.DATASET));
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(RemoveCollaborator.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, RemoveCollaborator.Response.getDefaultInstance());
     }
   }
 

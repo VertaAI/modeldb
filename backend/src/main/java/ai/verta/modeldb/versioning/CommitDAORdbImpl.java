@@ -130,26 +130,9 @@ public class CommitDAORdbImpl implements CommitDAO {
 
   private String generateCommitSHA(String blobSHA, Commit commit, long timeCreated)
       throws NoSuchAlgorithmException {
-
-    StringBuilder sb = new StringBuilder();
-    if (!commit.getParentShasList().isEmpty()) {
-      List<String> parentSHAs = commit.getParentShasList();
-      parentSHAs = parentSHAs.stream().sorted().collect(Collectors.toList());
-      sb.append("parent:");
-      parentSHAs.forEach(pSHA -> sb.append(pSHA));
-    }
-    sb.append(":message:")
-        .append(commit.getMessage())
-        .append(":date_created:")
-        .append(timeCreated)
-        .append(":author:")
-        .append(commit.getAuthor())
-        .append(":rootHash:")
-        .append(blobSHA);
-
-    return FileHasher.getSha(sb.toString());
+    return VersioningUtils.generateCommitSHA(
+        commit.getParentShasList(), commit.getMessage(), timeCreated, commit.getAuthor(), blobSHA);
   }
-
   /**
    * @param session
    * @param ShasList : a list of sha for which the function returns commits

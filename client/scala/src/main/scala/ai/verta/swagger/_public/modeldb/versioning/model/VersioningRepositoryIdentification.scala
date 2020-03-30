@@ -15,7 +15,7 @@ import ai.verta.swagger.client.objects._
 
 case class VersioningRepositoryIdentification (
   named_id: Option[VersioningRepositoryNamedIdentification] = None,
-  repo_id: Option[String] = None
+  repo_id: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningRepositoryIdentification.toJson(this)
 }
@@ -25,7 +25,7 @@ object VersioningRepositoryIdentification {
     new JObject(
       List[Option[JField]](
         obj.named_id.map(x => JField("named_id", ((x: VersioningRepositoryNamedIdentification) => VersioningRepositoryNamedIdentification.toJson(x))(x))),
-        obj.repo_id.map(x => JField("repo_id", JString(x)))
+        obj.repo_id.map(x => JField("repo_id", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -40,7 +40,7 @@ object VersioningRepositoryIdentification {
         VersioningRepositoryIdentification(
           // TODO: handle required
           named_id = fieldsMap.get("named_id").map(VersioningRepositoryNamedIdentification.fromJson),
-          repo_id = fieldsMap.get("repo_id").map(JsonConverter.fromJsonString)
+          repo_id = fieldsMap.get("repo_id").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
