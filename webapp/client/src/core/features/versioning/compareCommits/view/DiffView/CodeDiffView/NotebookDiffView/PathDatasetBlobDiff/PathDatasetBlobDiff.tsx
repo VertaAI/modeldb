@@ -1,7 +1,6 @@
 import * as React from 'react';
 
-import { IPathDatasetBlobDiff } from 'core/shared/models/Versioning/Blob/CodeBlob';
-import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
+import { IPathDatasetComponentBlob, IPathDatasetComponentBlobDiff } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { formatBytes } from 'core/shared/utils/mapperConverters';
 import matchBy from 'core/shared/utils/matchBy';
 
@@ -10,7 +9,7 @@ import styles from './PathDatasetBlobDiff.module.css';
 import Table from './Table/Table';
 
 interface ILocalProps {
-  diff: IPathDatasetBlobDiff;
+  diff: IPathDatasetComponentBlobDiff;
 }
 
 const PathDatasetBlobDiff = ({ diff }: ILocalProps) => {
@@ -21,13 +20,13 @@ const PathDatasetBlobDiff = ({ diff }: ILocalProps) => {
           <>
             <div className={styles.pathComponents}>
               <PathComponentsTable
-                components={updatedDiff.blobA.components}
+                components={[updatedDiff.A]}
                 isDeleted={true}
               />
             </div>
             <div className={styles.pathComponents}>
               <PathComponentsTable
-                components={updatedDiff.blobB.components}
+                components={[updatedDiff.B]}
                 isDeleted={false}
               />
             </div>
@@ -37,7 +36,7 @@ const PathDatasetBlobDiff = ({ diff }: ILocalProps) => {
           <>
             <div className={styles.pathComponents}>
               <PathComponentsTable
-                components={deletedDiff.blob.components}
+                components={[deletedDiff.B]}
                 isDeleted={false}
               />
             </div>
@@ -47,7 +46,7 @@ const PathDatasetBlobDiff = ({ diff }: ILocalProps) => {
           <>
             <div className={styles.pathComponents}>
               <PathComponentsTable
-                components={deletedDiff.blob.components}
+                components={[deletedDiff.A]}
                 isDeleted={true}
               />
             </div>

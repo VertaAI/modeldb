@@ -259,13 +259,11 @@ public class EnvironmentContainer extends BlobContainer {
             .append(pythonRequirementEnvironmentBlob.getConstraint());
         appendVersion(sb, pythonRequirementEnvironmentBlob.getVersion().toProto().build());
       }
-      sb.append(new HashSet<>(requirements).hashCode());
     }
     List<AutogenPythonRequirementEnvironmentBlob> constraints = blobNew.getConstraints();
     if (constraints != null) {
       sb.append(":constraints:");
-      for (AutogenPythonRequirementEnvironmentBlob pythonConstraintEnvironmentBlob :
-          constraints) {
+      for (AutogenPythonRequirementEnvironmentBlob pythonConstraintEnvironmentBlob : constraints) {
         sb.append(":library:")
             .append(pythonConstraintEnvironmentBlob.getLibrary())
             .append(":constraint:")

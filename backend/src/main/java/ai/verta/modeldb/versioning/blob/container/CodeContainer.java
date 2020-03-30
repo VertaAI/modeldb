@@ -87,12 +87,14 @@ public class CodeContainer extends BlobContainer {
       Session session, GitCodeBlob gitCodeBlob, Set<String> blobHashes)
       throws NoSuchAlgorithmException {
     String sha = computeSHA(gitCodeBlob);
-    GitCodeBlobEntity gitCodeBlobEntity = new GitCodeBlobEntity(sha, gitCodeBlob);
     if (!blobHashes.contains(sha)) {
+      GitCodeBlobEntity gitCodeBlobEntity = new GitCodeBlobEntity(sha, gitCodeBlob);
       session.saveOrUpdate(gitCodeBlobEntity);
       blobHashes.add(sha);
+      return gitCodeBlobEntity;
+    } else {
+      return session.get(GitCodeBlobEntity.class, sha);
     }
-    return gitCodeBlobEntity;
   }
 
   private String computeSHA(GitCodeBlob gitCodeBlob) throws NoSuchAlgorithmException {

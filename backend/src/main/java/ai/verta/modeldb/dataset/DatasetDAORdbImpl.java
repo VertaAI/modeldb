@@ -521,12 +521,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       if (!accessibleDatasetIds.isEmpty()) {
         Expression<String> exp = datasetRoot.get(ModelDBConstants.ID);
         Predicate predicate2 = exp.in(accessibleDatasetIds);
-        finalPredicatesList.add(
-            builder.or(
-                predicate2,
-                builder.equal(
-                    datasetRoot.get(ModelDBConstants.DATASET_VISIBILITY),
-                    DatasetVisibility.PUBLIC.getNumber())));
+        finalPredicatesList.add(predicate2);
       }
 
       String entityName = "datasetEntity";

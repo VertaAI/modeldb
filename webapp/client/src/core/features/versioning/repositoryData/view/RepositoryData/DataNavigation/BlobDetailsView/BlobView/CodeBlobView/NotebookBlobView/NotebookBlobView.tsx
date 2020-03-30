@@ -24,7 +24,7 @@ const NotebookBlobView = ({ blob: { data } }: ILocalProps) => {
           <div className={styles.path__title}>
             <PageHeader title="Path" size="medium" />
           </div>
-          <PathDatasetComponents data={data.path.components} />
+          <PathDatasetComponents data={[data.path]} />
         </div>
       )}
     </div>

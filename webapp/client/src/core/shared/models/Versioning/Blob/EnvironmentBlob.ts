@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import { SHA } from '../RepositoryData';
-import { GenericDiff } from './Diff';
+import { IElementDiff, IBlobDiff } from './Diff';
 
 export interface IEnvironmentBlob {
   category: 'environment';
@@ -12,8 +12,8 @@ export interface IEnvironmentBlob {
   };
 }
 
-export type IEnvironmentBlobDiff = GenericDiff<
-  IEnvironmentBlobDataDiff,
+export type IEnvironmentBlobDiff = IBlobDiff<
+  IElementDiff<IEnvironmentBlobDataDiff>,
   'environment',
   'environment'
 >;
