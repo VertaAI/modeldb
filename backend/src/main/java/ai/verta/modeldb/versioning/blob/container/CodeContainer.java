@@ -11,6 +11,7 @@ import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.NotebookCodeBlob;
+import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
@@ -35,7 +36,6 @@ public class CodeContainer extends BlobContainer {
       case NOTEBOOK:
         final NotebookCodeBlob notebook = code.getNotebook();
         validate(notebook.getGitRepo());
-        validate(notebook.getPath());
         break;
       default:
         throw new ModelDBException("Blob unknown type", Code.INVALID_ARGUMENT);
@@ -64,7 +64,12 @@ public class CodeContainer extends BlobContainer {
         blobType = NOTEBOOK_CODE_BLOB;
         NotebookCodeBlob notebook = code.getNotebook();
         GitCodeBlobEntity gitCodeBlobEntity = saveBlob(session, notebook.getGitRepo(), blobHashes);
-        String pathBlobSha = DatasetContainer.saveBlob(session, notebook.getPath(), blobHashes);
+        PathDatasetBlob.Builder pathDatasetBlobBuilder = PathDatasetBlob.newBuilder();
+        if (notebook.getPath() != null) {
+          pathDatasetBlobBuilder.addComponents(notebook.getPath());
+        }
+        String pathBlobSha =
+            DatasetContainer.saveBlob(session, pathDatasetBlobBuilder.build(), blobHashes);
         blobHash = FileHasher.getSha(gitCodeBlobEntity.getBlobHash() + ":" + pathBlobSha);
         if (!blobHashes.contains(blobHash)) {
           session.saveOrUpdate(
@@ -82,12 +87,14 @@ public class CodeContainer extends BlobContainer {
       Session session, GitCodeBlob gitCodeBlob, Set<String> blobHashes)
       throws NoSuchAlgorithmException {
     String sha = computeSHA(gitCodeBlob);
-    GitCodeBlobEntity gitCodeBlobEntity = new GitCodeBlobEntity(sha, gitCodeBlob);
     if (!blobHashes.contains(sha)) {
+      GitCodeBlobEntity gitCodeBlobEntity = new GitCodeBlobEntity(sha, gitCodeBlob);
       session.saveOrUpdate(gitCodeBlobEntity);
       blobHashes.add(sha);
+      return gitCodeBlobEntity;
+    } else {
+      return session.get(GitCodeBlobEntity.class, sha);
     }
-    return gitCodeBlobEntity;
   }
 
   private String computeSHA(GitCodeBlob gitCodeBlob) throws NoSuchAlgorithmException {

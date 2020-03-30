@@ -15,7 +15,7 @@ import ai.verta.swagger.client.objects._
 
 case class VersioningListCommitsLogRequestResponse (
   commits: Option[List[VersioningCommit]] = None,
-  total_records: Option[String] = None
+  total_records: Option[] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningListCommitsLogRequestResponse.toJson(this)
 }
@@ -25,7 +25,7 @@ object VersioningListCommitsLogRequestResponse {
     new JObject(
       List[Option[JField]](
         obj.commits.map(x => JField("commits", ((x: List[VersioningCommit]) => JArray(x.map(((x: VersioningCommit) => VersioningCommit.toJson(x)))))(x))),
-        obj.total_records.map(x => JField("total_records", JString(x)))
+        obj.total_records.map(x => JField("total_records", (x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -40,7 +40,7 @@ object VersioningListCommitsLogRequestResponse {
         VersioningListCommitsLogRequestResponse(
           // TODO: handle required
           commits = fieldsMap.get("commits").map((x: JValue) => x match {case JArray(elements) => elements.map(VersioningCommit.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          total_records = fieldsMap.get("total_records").map(JsonConverter.fromJsonString)
+          total_records = fieldsMap.get("total_records").map()
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

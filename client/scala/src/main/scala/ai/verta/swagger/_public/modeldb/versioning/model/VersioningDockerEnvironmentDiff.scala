@@ -15,7 +15,8 @@ import ai.verta.swagger.client.objects._
 
 case class VersioningDockerEnvironmentDiff (
   A: Option[VersioningDockerEnvironmentBlob] = None,
-  B: Option[VersioningDockerEnvironmentBlob] = None
+  B: Option[VersioningDockerEnvironmentBlob] = None,
+  status: Option[DiffStatusEnumDiffStatus] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningDockerEnvironmentDiff.toJson(this)
 }
@@ -25,7 +26,8 @@ object VersioningDockerEnvironmentDiff {
     new JObject(
       List[Option[JField]](
         obj.A.map(x => JField("A", ((x: VersioningDockerEnvironmentBlob) => VersioningDockerEnvironmentBlob.toJson(x))(x))),
-        obj.B.map(x => JField("B", ((x: VersioningDockerEnvironmentBlob) => VersioningDockerEnvironmentBlob.toJson(x))(x)))
+        obj.B.map(x => JField("B", ((x: VersioningDockerEnvironmentBlob) => VersioningDockerEnvironmentBlob.toJson(x))(x))),
+        obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -40,7 +42,8 @@ object VersioningDockerEnvironmentDiff {
         VersioningDockerEnvironmentDiff(
           // TODO: handle required
           A = fieldsMap.get("A").map(VersioningDockerEnvironmentBlob.fromJson),
-          B = fieldsMap.get("B").map(VersioningDockerEnvironmentBlob.fromJson)
+          B = fieldsMap.get("B").map(VersioningDockerEnvironmentBlob.fromJson),
+          status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

@@ -16,7 +16,8 @@ FieldType = collections.namedtuple('FieldType', ['safe_name', 'name', 'type'])
 @click.option('--templates')
 @click.option('--file-suffix')
 @click.option('--case')
-def main(output_dir, input, templates, file_suffix, case):
+@click.option('--model')
+def main(output_dir, input, templates, file_suffix, case, model=None):
     with open(input) as f:
         content = json.load(f)
 
@@ -25,6 +26,9 @@ def main(output_dir, input, templates, file_suffix, case):
             return init
         return val[0]
 
+    if '.' not in file_suffix:
+        file_suffix = '.' + file_suffix
+
     protos_index = functools.reduce(basedirReducer, enumerate(input.split('/')), None)
     basedir = input.split('/')[protos_index+1:-1]
     api_name = input.split('/')[-1].split('.')[0]
@@ -32,7 +36,10 @@ def main(output_dir, input, templates, file_suffix, case):
     result_dir = os.path.join(output_dir, *basedir)
     result_package = '.'.join(basedir)
 
-    create_models(result_dir, result_package, content, templates, file_suffix, case)
+    if model is None:
+        model = "model" + file_suffix
+
+    create_models(result_dir, result_package, content, templates, file_suffix, case, model)
     create_api(result_dir, result_package, api_name, content, templates, file_suffix, case)
 
 def create_api(result_dir, result_package, api_name, content, templates, file_suffix, case):
@@ -61,16 +68,16 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
             for param_def in op_content.get('parameters', []):
                 name = param_def['name']
                 safe_name = to_language_case(name.replace('.', '_'), case)
-                parameters.append(FieldType(safe_name, name, resolve_type(param_def)))
+                parameters.append(FieldType(safe_name, name, dict(resolve_type(param_def), var_name=safe_name)))
 
                 if param_def.get('required', False):
                     required.append(parameters[-1])
 
                 if param_def['in'] == 'body':
                     got_body_parameter = True
-                    body_type = resolve_type(param_def)
+                    body_type = dict(resolve_type(param_def), var_name=safe_name)
                 elif param_def['in'] == 'query':
-                    query.append(FieldType(safe_name, name, resolve_type(param_def)))
+                    query.append(FieldType(safe_name, name, dict(resolve_type(param_def), var_name=safe_name)))
                 elif param_def['in'] == 'path':
                     path = path.replace('{%s}' % name, "$%s" % safe_name)
                 else:
@@ -116,7 +123,7 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
 
     os.makedirs(os.path.join(result_dir, 'api'), exist_ok=True)
 
-    with open(os.path.join(templates, 'api.'+file_suffix)) as f:
+    with open(os.path.join(templates, 'api'+file_suffix)) as f:
         template = f.read()
 
     info = {
@@ -126,7 +133,7 @@ def create_api(result_dir, result_package, api_name, content, templates, file_su
         'operations': operations_info,
     }
 
-    with open(os.path.join(result_dir, 'api', api_name+'Api.'+file_suffix), 'w') as f:
+    with open(os.path.join(result_dir, 'api', api_name+'Api'+file_suffix), 'w') as f:
         f.write(pystache.Renderer(partials=load_partials(templates)).render(template, info))
 
 
@@ -146,16 +153,16 @@ def keyword_safe(s):
     return s
 
 
-def create_models(result_dir, result_package, content, templates, file_suffix, case):
+def create_models(result_dir, result_package, content, templates, file_suffix, case, model):
     enums = []
     os.makedirs(os.path.join(result_dir, 'model'), exist_ok=True)
     for k, v in content['definitions'].items():
         if 'enum' in v:
             enums.append(capitalize_first(k))
     for k, v in content['definitions'].items():
-        create_model(result_dir, result_package, k, v, enums, templates, file_suffix, case)
+        create_model(result_dir, result_package, k, v, enums, templates, file_suffix, case, model)
     if len(content['definitions']) == 0:
-        filename = os.path.join(result_dir, 'model', 'dummy.'+file_suffix)
+        filename = os.path.join(result_dir, 'model', 'dummy'+file_suffix)
         with open(filename, 'w') as f:
             f.write('''
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT
@@ -163,19 +170,20 @@ package ai.verta.swagger.%s.model
 case class dummy()
 ''' % result_package)
 
-def create_model(result_dir, result_package, definition_name, definition, enums, templates, file_suffix, case):
+def create_model(result_dir, result_package, definition_name, definition, enums, templates, file_suffix, case, model):
     capitalized_definition_name = capitalize_first(definition_name)
-    filename = os.path.join(result_dir, 'model', capitalized_definition_name+'.'+file_suffix)
+    filename = os.path.join(result_dir, 'model', capitalized_definition_name+file_suffix)
 
-    with open(os.path.join(templates, 'model.'+file_suffix)) as f:
+    with open(os.path.join(templates, model)) as f:
         template = f.read()
 
     required = definition.get('required', list())
     properties = definition.get('properties', dict())
     properties = [{'name': keyword_safe(to_language_case(k, case)),
                    'required': k in required,
-                   'type': resolve_type(v)
+                   'type': dict(resolve_type(v), var_name=keyword_safe(to_language_case(k, case)))
                   } for k, v in properties.items()]
+    properties = sorted(properties, key=lambda x: x['name'])
     for i, p in enumerate(properties):
         p.update({'last': i == len(properties)-1})
 
@@ -209,7 +217,9 @@ def create_typedef(**kwargs):
         'is_map': kwargs.get('is_map', False),
         'string': kwargs.get('string', False),
         'integer': kwargs.get('integer', False),
+        'long': kwargs.get('long', False),
         'double': kwargs.get('double', False),
+        'float': kwargs.get('float', False),
         'any': kwargs.get('any', False),
         'is_custom': kwargs.get('custom', None) is not None,
     })
@@ -225,6 +235,12 @@ def resolve_type(typedef):
         return resolve_type(typedef['schema'])
 
     if typedef['type'] == 'string':
+        if 'format' in typedef:
+            # TODO: support long?
+            if typedef['format'] == 'uint64':
+                return create_typedef(long=True, is_basic=True)
+            if typedef['format'] == 'int64':
+                return create_typedef(long=True, is_basic=True)
         return create_typedef(string=True, is_basic=True)
     elif typedef['type'] == 'boolean':
         return create_typedef(boolean=True, is_basic=True)
@@ -237,7 +253,7 @@ def resolve_type(typedef):
         if typedef['format'] == 'double':
             return create_typedef(double=True, is_basic=True)
         elif typedef['format'] == 'float':
-            return create_typedef(double=True, is_basic=True)
+            return create_typedef(float=True, is_basic=True)
         else:
             raise ValueError(typedef['format'])
     elif typedef['type'] == 'array':
@@ -255,6 +271,8 @@ def capitalize_first(s):
 def to_language_case(base, case):
     if case == 'camel':
         return to_camel_case(base)
+    if case == 'capital':
+        return to_capital_case(base)
     if case == 'snake':
         return base
     raise ValueError(case)
@@ -264,6 +282,12 @@ def to_camel_case(snake_str):
     # We capitalize the first letter of each component except the first one
     # with the 'title' method and join them together.
     return components[0] + ''.join(x.title() for x in components[1:])
+
+def to_capital_case(snake_str):
+    components = snake_str.split('_')
+    # We capitalize the first letter of each component except the first one
+    # with the 'title' method and join them together.
+    return ''.join(x.title() for x in components)
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-import { GenericDiff } from './Diff';
+import { IElementDiff, IBlobDiff } from './Diff';
 
 export interface IConfigBlob {
   category: 'config';
@@ -7,14 +7,6 @@ export interface IConfigBlob {
     hyperparameters: IConfigHyperparameter[];
   };
 }
-export type IConfigBlobDiff = GenericDiff<
-  IConfigBlobDataDiff,
-  IConfigBlob['category'],
-  IConfigBlob['category']
->;
-export type IConfigBlobDataDiff = Omit<IConfigBlob, 'data'> & {
-  data: Partial<IConfigBlob['data']>;
-};
 
 export interface IConfigHyperparameter {
   name: string;
@@ -43,3 +35,14 @@ export type IConfigHyperparameterValue =
   | { type: 'int'; value: number }
   | { type: 'float'; value: number }
   | { type: 'string'; value: string };
+
+
+export type IConfigHyperparameterDiff = IElementDiff<IConfigHyperparameter>;
+export type IConfigHyperparameterSetItemDiff = IElementDiff<IConfigHyperparameterSetItem>;
+
+export type IConfigBlobDiff = IBlobDiff<IConfigBlobDiffData, IConfigBlob['category']>;
+
+export type IConfigBlobDiffData = {
+  hyperparameters?: IConfigHyperparameterDiff[];
+  hyperparameterSet?: IConfigHyperparameterSetItemDiff[];
+};

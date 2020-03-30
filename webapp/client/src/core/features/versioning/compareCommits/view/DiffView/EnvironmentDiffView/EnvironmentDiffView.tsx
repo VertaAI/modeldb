@@ -5,7 +5,7 @@ import { shortenSHA } from 'core/shared/view/domain/Versioning/ShortenedSHA/Shor
 import {
   DiffType,
   ComparedCommitType,
-  getDiffBlobs,
+  getABData,
 } from 'core/shared/models/Versioning/Blob/Diff';
 import {
   IEnvironmentBlobDiff,
@@ -28,7 +28,7 @@ interface ILocalProps {
 }
 
 const EnvironmentDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
-  const { blobA, blobB } = getDiffBlobs(diff);
+  const { A: blobA, B: blobB } = getABData(diff.data);
   const blobType =
     (blobA && blobA.data && blobA.data.type) ||
     (blobB && blobB.data && blobB.data.type);
@@ -64,7 +64,7 @@ const EnvironmentCommonDetailsDiff = ({
   diff: IEnvironmentBlobDiff;
   comparedCommitsInfo: IComparedCommitsInfo;
 }) => {
-  const { blobA, blobB } = getDiffBlobs(diff);
+  const { A: blobA, B: blobB } = getABData(diff.data);
 
   return (
     <CompareTable
@@ -137,7 +137,7 @@ const DockerDiff = ({
   diff: IEnvironmentBlobDiff;
   comparedCommitsInfo: IComparedCommitsInfo;
 }) => {
-  const { blobA, blobB } = getDiffBlobs(diff);
+  const { A: blobA, B: blobB } = getABData(diff.data);
 
   return (
     <CompareTable
@@ -185,7 +185,7 @@ const PythonDiff = ({
   diff: IEnvironmentBlobDiff;
   comparedCommitsInfo: IComparedCommitsInfo;
 }) => {
-  const { blobA, blobB } = getDiffBlobs(diff);
+  const { A: blobA, B: blobB } = getABData(diff.data);
 
   return (
     <CompareTable

@@ -9,6 +9,7 @@ import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.CodeBlob.Builder;
 import ai.verta.modeldb.versioning.NotebookCodeBlob;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
+import io.grpc.Status.Code;
 import org.hibernate.Session;
 
 public class CodeBlobFactory extends BlobFactory {
@@ -33,7 +34,11 @@ public class CodeBlobFactory extends BlobFactory {
         final NotebookCodeBlob.Builder builder = NotebookCodeBlob.newBuilder();
         PathDatasetBlob pathBlob = DatasetBlobFactory.getPathBlob(session, datasetBlobHash);
         if (pathBlob != null) {
-          builder.setPath(pathBlob);
+          if (pathBlob.getComponentsCount() == 1) {
+            builder.setPath(pathBlob.getComponents(0));
+          } else {
+            throw new ModelDBException("Path should have only one component", Code.INTERNAL);
+          }
         }
         codeBlobBuilder.setNotebook(
             builder.setGitRepo(notebookCodeBlobEntity.getGitCodeBlobEntity().toProto()).build());

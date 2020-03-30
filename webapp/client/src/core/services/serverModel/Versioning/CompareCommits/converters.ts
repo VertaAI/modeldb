@@ -38,11 +38,11 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
 
   switch (category) {
     case 'code': {
-      return convertServerCodeDiff(serverDiff, diffType);
+      return convertServerCodeDiff(serverDiff);
     }
 
     case 'config': {
-      return convertServerConfigDiff(serverDiff, diffType);
+      return convertServerConfigDiff(serverDiff);
     }
 
     case 'environment': {
@@ -59,7 +59,7 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
             type: 'unknown',
             location: serverDiff.location,
             blob: serverDiff[serverDiffCategory],
-          };
+          } as any;
 
         case 'updated': {
           return {
@@ -69,7 +69,7 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
             location: serverDiff.location,
             blobA: serverDiff[serverDiffCategory].A,
             blobB: serverDiff[serverDiffCategory].B,
-          };
+          } as any;
         }
 
         default:
@@ -78,7 +78,7 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
     }
 
     case 'dataset': {
-      return convertServerDatasetDiff(serverDiff, diffType);
+      return convertServerDatasetDiff(serverDiff);
     }
 
     default: {
