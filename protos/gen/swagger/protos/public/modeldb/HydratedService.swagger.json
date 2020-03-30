@@ -4,10 +4,6 @@
     "title": "protos/public/modeldb/HydratedService.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -24,6 +20,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryDatasetVersionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -52,6 +54,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryDatasetsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -78,6 +86,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryDatasetsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -106,6 +120,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryDatasetsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -132,6 +152,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryExperimentRunsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -160,6 +186,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryExperimentsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -186,6 +218,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryProjectsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -214,6 +252,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryProjectsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -240,6 +284,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryProjectsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -268,6 +318,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryProjectsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -294,6 +350,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryDatasetsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -322,6 +384,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryProjectsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -347,6 +415,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbGetHydratedDatasetByNameResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -377,6 +451,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbGetHydratedDatasetsByProjectIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -429,6 +509,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbGetHydratedExperimentRunByIdResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -452,6 +538,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbGetHydratedExperimentRunsByProjectIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -504,6 +596,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbGetHydratedExperimentsByProjectIdResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -555,6 +653,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbGetHydratedProjectByIdResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -578,6 +682,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/modeldbGetHydratedProjectsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -630,6 +740,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbGetHydratedProjectsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -681,6 +797,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryExperimentRunsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -703,7 +825,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "collectionFormat": "multi"
           },
           {
             "name": "sort_key",
@@ -747,6 +870,12 @@
             "schema": {
               "$ref": "#/definitions/modeldbAdvancedQueryExperimentRunsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -757,7 +886,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "collectionFormat": "multi"
           },
           {
             "name": "sort_key",
@@ -956,7 +1086,7 @@
           "type": "string"
         },
         "value": {
-          "$ref": "#/definitions/protobufValue"
+          "type": "object"
         },
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
@@ -1918,7 +2048,7 @@
           "type": "string"
         },
         "value": {
-          "$ref": "#/definitions/protobufValue"
+          "type": "object"
         },
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType"
@@ -2073,7 +2203,7 @@
           "$ref": "#/definitions/ValueTypeEnumValueType"
         },
         "value": {
-          "$ref": "#/definitions/protobufValue"
+          "type": "object"
         }
       }
     },
@@ -2120,18 +2250,17 @@
         }
       }
     },
-    "protobufListValue": {
+    "protobufAny": {
       "type": "object",
       "properties": {
-        "values": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufValue"
-          },
-          "description": "Repeated field of dynamically typed values."
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
-      },
-      "description": "`ListValue` is a wrapper around a repeated field of values.\n\nThe JSON representation for `ListValue` is JSON array."
+      }
     },
     "protobufNullValue": {
       "type": "string",
@@ -2141,50 +2270,26 @@
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "protobufStruct": {
+    "runtimeError": {
       "type": "object",
       "properties": {
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/protobufValue"
-          },
-          "description": "Unordered map of dynamically typed values."
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
-      },
-      "description": "`Struct` represents a structured data value, consisting of fields\nwhich map to dynamically typed values. In some languages, `Struct`\nmight be supported by a native representation. For example, in\nscripting languages like JS a struct is represented as an\nobject. The details of that representation are described together\nwith the proto support for the language.\n\nThe JSON representation for `Struct` is JSON object."
-    },
-    "protobufValue": {
-      "type": "object",
-      "properties": {
-        "null_value": {
-          "$ref": "#/definitions/protobufNullValue",
-          "description": "Represents a null value."
-        },
-        "number_value": {
-          "type": "number",
-          "format": "double",
-          "description": "Represents a double value."
-        },
-        "string_value": {
-          "type": "string",
-          "description": "Represents a string value."
-        },
-        "bool_value": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "Represents a boolean value."
-        },
-        "struct_value": {
-          "$ref": "#/definitions/protobufStruct",
-          "description": "Represents a structured value."
-        },
-        "list_value": {
-          "$ref": "#/definitions/protobufListValue",
-          "description": "Represents a repeated `Value`."
-        }
-      },
-      "description": "`Value` represents a dynamically typed value which can be either\nnull, a number, a string, a boolean, a recursive struct value, or a\nlist of values. A producer of value is expected to set one of that\nvariants, absence of any variant indicates an error.\n\nThe JSON representation for `Value` is JSON value."
+      }
     },
     "uacAction": {
       "type": "object",
