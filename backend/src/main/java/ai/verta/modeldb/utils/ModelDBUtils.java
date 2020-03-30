@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -407,7 +406,9 @@ public class ModelDBUtils {
   }
 
   public static Throwable findRootCause(Throwable throwable) {
-    Objects.requireNonNull(throwable);
+    if (throwable == null) {
+      return null;
+    }
     Throwable rootCause = throwable;
     while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
       rootCause = rootCause.getCause();
@@ -423,6 +424,8 @@ public class ModelDBUtils {
       statusRuntimeException = e;
     } else {
       Throwable throwable = findRootCause(e);
+      // Condition 'throwable != null' covered by below condition 'throwable instanceof
+      // SocketException'
       if (throwable instanceof SocketException) {
         String errorMessage = "Database Connection not found: ";
         LOGGER.warn(errorMessage + "{}", e.getMessage());
