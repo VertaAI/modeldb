@@ -151,7 +151,7 @@ export default class RepositoryDataService extends BaseDataService {
     const response = await this.get({
       url: DataLocation.addAsLocationPrefixQueryParams(
         location,
-        `/v1/modeldb/versioning/repositories/${repositoryId}/branches/${branch}/log`
+        `/v1/modeldb/versioning/repositories/${repositoryId}/branches/${branch}/commits`
       ),
       config: {
         params: {
@@ -282,7 +282,7 @@ export default class RepositoryDataService extends BaseDataService {
     branch: Branch
   ): Promise<IHydratedCommit> {
     const response = await this.get({
-      url: `/v1/modeldb/versioning/repositories/${repositoryId}/branches/${branch}/log`,
+      url: `/v1/modeldb/versioning/repositories/${repositoryId}/branches/${branch}/commits`,
       config: {
         params: convertClientPaginationToNamespacedServerPagination({
           currentPage: 0,

@@ -15,11 +15,12 @@ const HyperparameterItem = ({
   valueStyles?: React.CSSProperties;
 }) => {
   return (
-    <Hyperparameter name={hyperparameter.name} rootStyles={rootStyles}>
-      <HyperparameterValue
-        value={hyperparameter.value}
-        rootStyles={valueStyles}
-      />
+    <Hyperparameter
+      name={hyperparameter.name}
+      rootStyles={rootStyles}
+      valueStyles={valueStyles}
+    >
+      <HyperparameterValue value={hyperparameter.value} />
     </Hyperparameter>
   );
 };

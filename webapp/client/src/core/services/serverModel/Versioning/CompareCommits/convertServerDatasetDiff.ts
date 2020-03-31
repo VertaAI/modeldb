@@ -1,35 +1,42 @@
 import {
   IDatasetBlob,
   IDatasetBlobDiff,
+  IDatasetBlobDiffData,
 } from 'core/shared/models/Versioning/Blob/DatasetBlob';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
 
+import { convertServerDatasetPathComponent } from '../RepositoryData/Blob/DatasetBlob';
 import {
-  convertServerDatasetPathComponent,
-} from '../RepositoryData/Blob/DatasetBlob';
-import { IServerBlobDiff, IServerElementDiff, convertServerElementDiffToClient, serverDiffTypeToClient } from './ServerDiff';
-import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+  IServerBlobDiff,
+  IServerElementDiff,
+  convertServerElementDiffToClient,
+  convertServerBlobDiffToClient,
+} from './ServerDiff';
 
 const convertServerDatasetDiff = (
-  serverDatasetDiff: IServerDatasetDiff,
+  serverDatasetDiff: IServerDatasetDiff
 ): IDatasetBlobDiff => {
-  const { location } = serverDatasetDiff;
-  const serverDatasetBlobType = Object.keys(serverDatasetDiff.dataset)[0] as IDatasetBlobDiff['type'];
+  const serverDatasetBlobType = Object.keys(
+    serverDatasetDiff.dataset
+  )[0] as IDatasetBlobDiff['type'];
 
-  return {
-    category: 'dataset',
-    diffType: serverDiffTypeToClient(serverDatasetDiff.status),
-    location: location as DataLocation,
-    data: {
+  return convertServerBlobDiffToClient<IServerDatasetDiff, IDatasetBlobDiff>(
+    {
       category: 'dataset',
       type: serverDatasetBlobType,
-      components: convertDatasetComponents(
-        (serverDatasetDiff.dataset[serverDatasetBlobType]!).components,
-        serverDatasetBlobType,
-      ),
-    } as any,
-    type: serverDatasetBlobType,
-  };
+      convertData: () => {
+        return {
+          category: 'dataset',
+          type: serverDatasetBlobType,
+          components: convertDatasetComponents(
+            serverDatasetDiff.dataset[serverDatasetBlobType]!.components,
+            serverDatasetBlobType
+          ),
+        } as IDatasetBlobDiffData;
+      },
+    },
+    serverDatasetDiff
+  );
 };
 
 const convertDatasetComponents = (
@@ -38,11 +45,20 @@ const convertDatasetComponents = (
 ) => {
   switch (datasetBlobType) {
     case 'path':
-      return (serverComponents as IServerPathDatasetComponentBlobDiff[]).map(path => convertServerElementDiffToClient(convertServerDatasetPathComponent, path));
+      return (serverComponents as IServerPathDatasetComponentBlobDiff[]).map(
+        path =>
+          convertServerElementDiffToClient(
+            convertServerDatasetPathComponent,
+            path
+          )
+      );
 
     case 's3':
-      return (serverComponents as IServerS3Component[]).map((d) => ({
-        path: convertServerElementDiffToClient(convertServerDatasetPathComponent, d.path),
+      return (serverComponents as IServerS3Component[]).map(d => ({
+        path: convertServerElementDiffToClient(
+          convertServerDatasetPathComponent,
+          d.path
+        ),
       }));
 
     default:
@@ -58,16 +74,18 @@ export type IServerDatasetDiff = IServerBlobDiff<{
     path?: {
       components: IServerPathDatasetComponentBlobDiff[];
     };
-  }
+  };
 }>;
 
-type IServerComponent = IServerS3Component | IServerPathDatasetComponentBlobDiff;
+type IServerComponent =
+  | IServerS3Component
+  | IServerPathDatasetComponentBlobDiff;
 
 type IServerS3Component = { path: IServerPathDatasetComponentBlobDiff };
 
 export type IServerPathDatasetComponentBlobDiff = IServerElementDiff<{
   path?: string; // Full path to the file
-  size? : number;
+  size?: number;
   last_modified_at_source?: number;
   sha256?: string;
   md5?: string;

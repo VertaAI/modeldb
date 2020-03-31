@@ -60,7 +60,7 @@ const ExperimentRuns = (props: AllProps) => {
     <PageCard>
       <div className={styles.root}>
         <PageHeader
-          title="Associated Experiment Runs"
+          title="Associated experiment runs"
           size="small"
           withoutSeparator={true}
         />
