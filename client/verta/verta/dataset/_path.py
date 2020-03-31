@@ -56,7 +56,7 @@ class Path(_dataset._Dataset):
 
     def __repr__(self):
         lines = ["Path Version"]
-        for component in self._msg.path.components:
+        for component in sorted(self._msg.path.components, key=lambda component_msg: component_msg.path):
             lines.extend(self._path_component_to_repr_lines(component))
 
         return "\n    ".join(lines)
