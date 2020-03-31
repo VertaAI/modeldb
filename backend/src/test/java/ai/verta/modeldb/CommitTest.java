@@ -67,7 +67,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -885,7 +884,6 @@ public class CommitTest {
   }
 
   @Test
-  @Ignore
   public void getCommitBlobListTest() {
     LOGGER.info("List commit blob test start................................");
 
@@ -956,7 +954,7 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")*/
+            .addLocationPrefix("modeldb")
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -974,7 +972,7 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb.json")*/
+            .addLocationPrefix("modeldb.json")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1006,7 +1004,6 @@ public class CommitTest {
   }
 
   @Test
-  @Ignore
   public void getCommitBlobListUsecase2Test() {
     LOGGER.info("List commit blob test start................................");
 
@@ -1092,8 +1089,8 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")
-            .addLocationPrefix("environment")*/
+            .addLocationPrefix("modeldb")
+            .addLocationPrefix("environment")
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -1113,8 +1110,8 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")
-            .addLocationPrefix("dataset")*/
+            .addLocationPrefix("modeldb")
+            .addLocationPrefix("dataset")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1131,9 +1128,9 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")
+            .addLocationPrefix("modeldb")
             .addLocationPrefix("march")
-            .addLocationPrefix("dataset")*/
+            .addLocationPrefix("dataset")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1146,9 +1143,9 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")
+            .addLocationPrefix("modeldb")
             .addLocationPrefix("dataset")
-            .addLocationPrefix("march")*/
+            .addLocationPrefix("march")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1165,7 +1162,7 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")*/
+            .addLocationPrefix("modeldb")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1184,7 +1181,7 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("dataset.json")*/
+            .addLocationPrefix("dataset.json")
             .build();
 
     try {
@@ -1619,6 +1616,64 @@ public class CommitTest {
     Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("List commit environment blob test end................................");
+  }
+
+  /**
+   * Check parent commits exists or not when creating new commit.
+   * if parent commit not exists then ModelDB throw the error with INVALID_ARGUMENT
+   * @throws ModelDBException modelDBException
+   */
+  @Test
+  public void createDeleteCommitWithParentCommitExistsTest() throws ModelDBException {
+    LOGGER.info("Check parent commits exists of commit test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateCommitRequest createCommitRequest =
+        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+
+    CreateCommitRequest createCommitRequest1 = createCommitRequest.toBuilder().build();
+    Commit commit =
+        createCommitRequest1.toBuilder().getCommit().toBuilder().addParentShas("abc").build();
+    createCommitRequest1 = createCommitRequest1.toBuilder().setCommit(commit).build();
+
+    try {
+      CreateCommitRequest.Response commitResponse =
+          versioningServiceBlockingStub.createCommit(createCommitRequest1);
+      assertTrue("Commit not found in response", commitResponse.hasCommit());
+    } catch (StatusRuntimeException e) {
+      Assert.assertEquals(Code.INVALID_ARGUMENT, e.getStatus().getCode());
+      e.printStackTrace();
+    }
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+    LOGGER.info("Check parent commits exists of commit test end................................");
   }
 
   @Test

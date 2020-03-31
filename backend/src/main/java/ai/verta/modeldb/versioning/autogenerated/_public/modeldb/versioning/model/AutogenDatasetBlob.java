@@ -122,12 +122,12 @@ public class AutogenDatasetBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.DatasetBlob, AutogenPathDatasetBlob> f =
           x -> AutogenPathDatasetBlob.fromProto(blob.getPath());
-      obj.Path = Utils.removeEmpty(f.apply(blob));
+      obj.setPath(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.DatasetBlob, AutogenS3DatasetBlob> f =
           x -> AutogenS3DatasetBlob.fromProto(blob.getS3());
-      obj.S3 = Utils.removeEmpty(f.apply(blob));
+      obj.setS3(f.apply(blob));
     }
     return obj;
   }

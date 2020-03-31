@@ -10,9 +10,11 @@ import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
@@ -36,6 +38,21 @@ public class CommitDAORdbImpl implements CommitDAO {
       session.beginTransaction();
       final String rootSha = setBlobs.apply(session);
       final String commitSha = generateCommitSHA(rootSha, commit, timeCreated);
+      RepositoryEntity repositoryEntity = getRepository.apply(session);
+
+      Map<String, CommitEntity> parentCommitEntities = new HashMap<>();
+      if (!commit.getParentShasList().isEmpty()) {
+        parentCommitEntities =
+            getCommits(session, repositoryEntity.getId(), commit.getParentShasList());
+        if (parentCommitEntities.size() != commit.getParentShasCount()) {
+          for (String parentSHA : commit.getParentShasList()) {
+            if (!parentCommitEntities.containsKey(parentSHA)) {
+              throw new ModelDBException(
+                  "Parent commit '" + parentSHA + "' not found in DB", Code.INVALID_ARGUMENT);
+            }
+          }
+        }
+      }
 
       Commit internalCommit =
           Commit.newBuilder()
@@ -44,11 +61,10 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setMessage(commit.getMessage())
               .setCommitSha(commitSha)
               .build();
-      RepositoryEntity repositoryEntity = getRepository.apply(session);
       CommitEntity commitEntity =
           new CommitEntity(
               repositoryEntity,
-              getCommits(session, commit.getParentShasList()),
+              new ArrayList<>(parentCommitEntities.values()),
               internalCommit,
               rootSha);
       session.saveOrUpdate(commitEntity);
@@ -137,22 +153,24 @@ public class CommitDAORdbImpl implements CommitDAO {
         commit.getParentShasList(), commit.getMessage(), timeCreated, commit.getAuthor(), blobSHA);
   }
   /**
-   * @param session
-   * @param ShasList : a list of sha for which the function returns commits
-   * @return
-   * @throws ModelDBException : if any of the input sha are not identified as a commit
+   * @param session session
+   * @param parentShaList : a list of sha for which the function returns commits
+   * @return {@link Map<String, CommitEntity>}
    */
-  private List<CommitEntity> getCommits(Session session, ProtocolStringList ShasList)
-      throws ModelDBException {
-    List<CommitEntity> result =
-        ShasList.stream()
-            .map(sha -> session.get(CommitEntity.class, sha))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-    if (result.size() != ShasList.size()) {
-      throw new ModelDBException("Cannot find commits", Code.INVALID_ARGUMENT);
-    }
-    return result;
+  private Map<String, CommitEntity> getCommits(
+      Session session, Long repoId, ProtocolStringList parentShaList) {
+    StringBuilder commitQueryBuilder =
+        new StringBuilder(
+            "SELECT cm FROM "
+                + CommitEntity.class.getSimpleName()
+                + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId AND cm.commit_hash IN (:commitHashes)");
+
+    Query<CommitEntity> commitEntityQuery =
+        session.createQuery(commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
+    commitEntityQuery.setParameter("repoId", repoId);
+    commitEntityQuery.setParameter("commitHashes", parentShaList);
+    return commitEntityQuery.list().stream()
+        .collect(Collectors.toMap(CommitEntity::getCommit_hash, commitEntity -> commitEntity));
   }
 
   @Override

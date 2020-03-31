@@ -153,17 +153,17 @@ public class AutogenHyperparameterValuesConfigBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob, Float> f =
           x -> (blob.getFloatValue());
-      obj.FloatValue = Utils.removeEmpty(f.apply(blob));
+      obj.setFloatValue(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob, Long> f =
           x -> (blob.getIntValue());
-      obj.IntValue = Utils.removeEmpty(f.apply(blob));
+      obj.setIntValue(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob, String> f =
           x -> (blob.getStringValue());
-      obj.StringValue = Utils.removeEmpty(f.apply(blob));
+      obj.setStringValue(f.apply(blob));
     }
     return obj;
   }
