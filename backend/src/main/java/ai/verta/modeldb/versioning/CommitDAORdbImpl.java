@@ -223,7 +223,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       if (branchEntity != null) {
         throw new ModelDBException(
             "Commit is associated with branch name : " + branchEntity.getId().getBranch(),
-            Code.INVALID_ARGUMENT);
+            Code.FAILED_PRECONDITION);
       }
 
       String getLabelsHql =
@@ -239,7 +239,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
       List<LabelsMappingEntity> labelsMappingEntities = query.list();
       if (labelsMappingEntities.size() > 0) {
-        throw new ModelDBException("Commit is associated with Label", Code.INVALID_ARGUMENT);
+        throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
       }
 
       // delete associated branch

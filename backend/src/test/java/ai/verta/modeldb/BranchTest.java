@@ -197,7 +197,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(getBranchResponse.getCommit().getCommitSha())
@@ -377,7 +376,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(getBranchResponse.getCommit().getCommitSha())
@@ -394,7 +392,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -410,7 +407,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -426,7 +422,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -521,7 +516,7 @@ public class BranchTest {
             try {
               versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
             } catch (StatusRuntimeException e) {
-              Assert.assertEquals(Code.INVALID_ARGUMENT, e.getStatus().getCode());
+              Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
               e.printStackTrace();
 
               DeleteBranchRequest deleteBranchRequest1 =
@@ -548,6 +543,10 @@ public class BranchTest {
     LOGGER.info("Branch test end................................");
   }
 
+  /**
+   * Prevent deletion of commit if referred to by branch or tag. if commit associated with branch or
+   * tag ModelDb throws the error with status code FAILED_PRECONDITION
+   */
   @Test
   public void branchTest() {
     LOGGER.info("branch test start................................");
@@ -615,7 +614,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(parentCommit.getCommitSha())
@@ -632,7 +630,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commit1.getCommitSha())
@@ -648,7 +645,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commit2.getCommitSha())
@@ -664,7 +660,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commit3.getCommitSha())
@@ -724,7 +719,7 @@ public class BranchTest {
             try {
               versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
             } catch (StatusRuntimeException e) {
-              Assert.assertEquals(Code.INVALID_ARGUMENT, e.getStatus().getCode());
+              Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
               e.printStackTrace();
             }
           } else {
