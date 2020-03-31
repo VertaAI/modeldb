@@ -71,7 +71,10 @@ class Hyperparameters(_configuration._Configuration):
                 self._msg_to_value(hyperparam_msg.value),
             )
             for hyperparam_msg
-            in self._msg.hyperparameters
+            in sorted(
+                self._msg.hyperparameters,
+                key=lambda hyperparam_msg: hyperparam_msg.name
+            )
         )
         lines.extend(
             "{}: range({}, {}, {})".format(
@@ -81,7 +84,10 @@ class Hyperparameters(_configuration._Configuration):
                 self._msg_to_value(hyperparam_msg.continuous.interval_step),
             )
             for hyperparam_msg
-            in self._msg.hyperparameter_set
+            in sorted(
+                self._msg.hyperparameter_set,
+                key=lambda hyperparam_msg: hyperparam_msg.name
+            )
             if hyperparam_msg.WhichOneof('value') == "continuous"
         )
         lines.extend(
@@ -90,7 +96,10 @@ class Hyperparameters(_configuration._Configuration):
                 ', '.join(str(self._msg_to_value(value_msg)) for value_msg in hyperparam_msg.discrete.values)
             )
             for hyperparam_msg
-            in self._msg.hyperparameter_set
+            in sorted(
+                self._msg.hyperparameter_set,
+                key=lambda hyperparam_msg: hyperparam_msg.name
+            )
             if hyperparam_msg.WhichOneof('value') == "discrete"
         )
 
