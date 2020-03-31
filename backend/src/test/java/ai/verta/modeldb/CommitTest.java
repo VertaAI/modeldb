@@ -1619,8 +1619,9 @@ public class CommitTest {
   }
 
   /**
-   * Check parent commits exists or not when creating new commit.
-   * if parent commit not exists then ModelDB throw the error with INVALID_ARGUMENT
+   * Check parent commits exists or not when creating new commit. if parent commit not exists then
+   * ModelDB throw the error with INVALID_ARGUMENT
+   *
    * @throws ModelDBException modelDBException
    */
   @Test
@@ -1676,8 +1677,14 @@ public class CommitTest {
     LOGGER.info("Check parent commits exists of commit test end................................");
   }
 
+  /**
+   * When create and delete the commit we should have to update Repository 'updated_time' so this
+   * test case check the repository 'updated_time' updated or not
+   *
+   * @throws ModelDBException modelDBException
+   */
   @Test
-  public void checkRepoUpdatedTimeWithCeateDeleteCommitTest() throws ModelDBException {
+  public void checkRepoUpdatedTimeWithCreateDeleteCommitTest() throws ModelDBException {
     LOGGER.info(
         "Check repo updated time with Create & Delete of commit test start................................");
 
