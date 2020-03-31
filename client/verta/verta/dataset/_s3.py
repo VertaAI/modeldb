@@ -58,7 +58,11 @@ class S3(_dataset._Dataset):
 
     def __repr__(self):
         lines = ["S3 Version"]
-        for component in sorted(self._msg.s3.components, key=lambda component_msg: component_msg.path.path):
+        components = sorted(
+            self._msg.s3.components,
+            key=lambda component_msg: component_msg.path.path,
+        )
+        for component in components:
             lines.extend(self._path_component_to_repr_lines(component.path))
 
         return "\n    ".join(lines)
