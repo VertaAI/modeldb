@@ -13,6 +13,7 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
@@ -21,6 +22,8 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
@@ -153,6 +156,15 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         DatasetVersionEntity datasetVersionEntity =
             RdbmsUtils.generateDatasetVersionEntity(datasetVersion);
         session.save(datasetVersionEntity);
+
+        Role ownerRole =
+            roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
+        roleService.createRoleBinding(
+            ownerRole,
+            new CollaboratorUser(authService, userInfo),
+            datasetVersion.getId(),
+            ModelDBServiceResourceTypes.DATASET_VERSION);
+
         setDatasetUpdateTime(session, Collections.singletonList(datasetVersion.getDatasetId()));
         transaction.commit();
         LOGGER.debug("DatasetVersion created successfully");
@@ -193,6 +205,17 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             session.load(DatasetVersionEntity.class, datasetVersionId);
         datasetIds.add(datasetVersionObj.getDataset_id());
         session.delete(datasetVersionObj);
+
+        String ownerRoleBindingName =
+            roleService.buildRoleBindingName(
+                ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
+                datasetVersionObj.getId(),
+                datasetVersionObj.getOwner(),
+                ModelDBServiceResourceTypes.DATASET_VERSION.name());
+        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
+        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+          roleService.deleteRoleBinding(roleBinding.getId());
+        }
       }
       setDatasetUpdateTime(session, datasetIds);
       transaction.commit();
