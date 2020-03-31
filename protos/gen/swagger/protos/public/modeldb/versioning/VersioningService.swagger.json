@@ -3551,6 +3551,13 @@
         },
         "content": {
           "$ref": "#/definitions/versioningCommit"
+        },
+        "branch_a": {
+          "type": "string",
+          "title": "for a or b only one of commit or branch should be populated"
+        },
+        "branch_b": {
+          "type": "string"
         }
       }
     },

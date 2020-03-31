@@ -386,6 +386,11 @@ message MergeRepositoryCommitsRequest {
     //repeated BlobExpanded conflict_resolution_blobs = 5; // Set of blobs that must resolve any conflict encountered
     //bool force_manual_conflict_resolution = 6;
 
+    //for a or b only one of commit or branch should be populated
+    string branch_a = 5;
+    string branch_b =6;
+
+
     message Response {
         Commit commit = 1;
 
