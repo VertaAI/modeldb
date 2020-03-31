@@ -562,13 +562,10 @@ public class CommitTest {
     GetBranchRequest.Response getBranchResponse =
         versioningServiceBlockingStub.getBranch(getBranchRequest);
 
-    List<Commit> commitList = new LinkedList<>();
     CreateCommitRequest createCommitRequest =
         getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitList.add(commitResponse.getCommit());
-    commitList.add(getBranchResponse.getCommit());
 
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
@@ -604,15 +601,12 @@ public class CommitTest {
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.FAILED_PRECONDITION.getCode(), status.getCode());
     }
-    commitList.forEach(
-        commit -> {
-          DeleteCommitRequest deleteCommitRequest =
-              DeleteCommitRequest.newBuilder()
-                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-                  .setCommitSha(commit.getCommitSha())
-                  .build();
-          versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-        });
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
 
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()

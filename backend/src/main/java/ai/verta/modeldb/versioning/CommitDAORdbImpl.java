@@ -1,10 +1,14 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
+import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
+import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import com.google.protobuf.ProtocolStringList;
@@ -226,6 +230,37 @@ public class CommitDAORdbImpl implements CommitDAO {
       if (!commitEntity.getChild_commits().isEmpty()) {
         throw new ModelDBException(
             "Commit has the child, please delete child commit first", Code.FAILED_PRECONDITION);
+      }
+
+      StringBuilder getBranchByCommitHQLBuilder =
+          new StringBuilder("FROM ")
+              .append(BranchEntity.class.getSimpleName())
+              .append(" br where br.id.repository_id = :repositoryId ")
+              .append(" AND br.commit_hash = :commitHash ");
+      Query getBranchByCommitQuery = session.createQuery(getBranchByCommitHQLBuilder.toString());
+      getBranchByCommitQuery.setParameter("repositoryId", repositoryEntity.getId());
+      getBranchByCommitQuery.setParameter("commitHash", commitEntity.getCommit_hash());
+      BranchEntity branchEntity = (BranchEntity) getBranchByCommitQuery.uniqueResult();
+      if (branchEntity != null) {
+        throw new ModelDBException(
+            "Commit is associated with branch name : " + branchEntity.getId().getBranch(),
+            Code.FAILED_PRECONDITION);
+      }
+
+      String getLabelsHql =
+          new StringBuilder("From LabelsMappingEntity lm where lm.id.")
+              .append(ModelDBConstants.ENTITY_HASH)
+              .append(" = :entityHash ")
+              .append(" AND lm.id.")
+              .append(ModelDBConstants.ENTITY_TYPE)
+              .append(" = :entityType")
+              .toString();
+      Query query = session.createQuery(getLabelsHql);
+      query.setParameter("entityHash", commitEntity.getCommit_hash());
+      query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_COMMIT_VALUE);
+      List<LabelsMappingEntity> labelsMappingEntities = query.list();
+      if (labelsMappingEntities.size() > 0) {
+        throw new ModelDBException("Commit is associated with Label", Code.FAILED_PRECONDITION);
       }
 
       // delete associated branch

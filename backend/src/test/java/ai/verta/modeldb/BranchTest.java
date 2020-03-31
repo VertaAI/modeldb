@@ -46,7 +46,7 @@ import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
@@ -197,7 +197,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(getBranchResponse.getCommit().getCommitSha())
@@ -372,13 +371,11 @@ public class BranchTest {
             .addAllLocation(location4)
             .build();
 
-    List<String> commitShaList = new ArrayList<>();
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(getBranchResponse.getCommit().getCommitSha())
@@ -388,14 +385,13 @@ public class BranchTest {
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit1 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -404,14 +400,13 @@ public class BranchTest {
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit2 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -420,14 +415,13 @@ public class BranchTest {
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit3 = commitResponse.getCommit();
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitResponse.getCommit().getCommitSha())
@@ -436,14 +430,20 @@ public class BranchTest {
             .build();
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commitShaList.add(commitResponse.getCommit().getCommitSha());
+    Commit commit4 = commitResponse.getCommit();
+
+    List<Commit> commitShaList = new LinkedList<>();
+    commitShaList.add(commit4);
+    commitShaList.add(commit3);
+    commitShaList.add(commit2);
+    commitShaList.add(commit1);
 
     String branchName1 = "branch-commits-label-1";
     SetBranchRequest setBranchRequest =
         SetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setBranch(branchName1)
-            .setCommitSha(commitShaList.get(0))
+            .setCommitSha(commit4.getCommitSha())
             .build();
     versioningServiceBlockingStub.setBranch(setBranchRequest);
 
@@ -452,7 +452,7 @@ public class BranchTest {
         SetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setBranch(branchName2)
-            .setCommitSha(commitShaList.get(1))
+            .setCommitSha(commit3.getCommitSha())
             .build();
     versioningServiceBlockingStub.setBranch(setBranchRequest);
 
@@ -465,7 +465,7 @@ public class BranchTest {
     Commit branchRootCommit = getBranchResponse.getCommit();
     Assert.assertEquals(
         "Expected commit not found in the response",
-        commitShaList.get(0),
+        commit4.getCommitSha(),
         branchRootCommit.getCommitSha());
 
     ListBranchesRequest listBranchesRequest =
@@ -505,15 +505,31 @@ public class BranchTest {
       e.printStackTrace();
     }
 
-    Collections.reverse(commitShaList);
     commitShaList.forEach(
-        commitSha -> {
+        commit -> {
           DeleteCommitRequest deleteCommitRequest =
               DeleteCommitRequest.newBuilder()
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-                  .setCommitSha(commitSha)
+                  .setCommitSha(commit.getCommitSha())
                   .build();
-          versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+          if (commit.equals(commit3)) {
+            try {
+              versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+            } catch (StatusRuntimeException e) {
+              Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
+              e.printStackTrace();
+
+              DeleteBranchRequest deleteBranchRequest1 =
+                  DeleteBranchRequest.newBuilder()
+                      .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                      .setBranch(branchName2)
+                      .build();
+              versioningServiceBlockingStub.deleteBranch(deleteBranchRequest1);
+              versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+            }
+          } else {
+            versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+          }
         });
 
     DeleteRepositoryRequest deleteRepository =
@@ -527,6 +543,10 @@ public class BranchTest {
     LOGGER.info("Branch test end................................");
   }
 
+  /**
+   * Prevent deletion of commit if referred to by branch or tag. if commit associated with branch or
+   * tag ModelDb throws the error with status code FAILED_PRECONDITION
+   */
   @Test
   public void branchTest() {
     LOGGER.info("branch test start................................");
@@ -594,7 +614,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(parentCommit.getCommitSha())
@@ -611,7 +630,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commit1.getCommitSha())
@@ -627,7 +645,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commit2.getCommitSha())
@@ -643,7 +660,6 @@ public class BranchTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commit3.getCommitSha())
@@ -658,7 +674,6 @@ public class BranchTest {
     commitShaList.add(commit3.getCommitSha());
     commitShaList.add(commit2.getCommitSha());
     commitShaList.add(commit1.getCommitSha());
-    commitShaList.add(parentCommit.getCommitSha());
 
     String branchName = "get-list-branch-commits";
     SetBranchRequest setBranchRequest =
@@ -693,7 +708,6 @@ public class BranchTest {
         2,
         listBranchCommitsResponse.getCommitsCount());
 
-    Collections.reverse(commitShaList);
     commitShaList.forEach(
         commitSha -> {
           DeleteCommitRequest deleteCommitRequest =
@@ -701,7 +715,16 @@ public class BranchTest {
                   .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
                   .setCommitSha(commitSha)
                   .build();
-          versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+          if (commitShaList.get(3).equals(commitSha)) {
+            try {
+              versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+            } catch (StatusRuntimeException e) {
+              Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
+              e.printStackTrace();
+            }
+          } else {
+            versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+          }
         });
 
     DeleteRepositoryRequest deleteRepository =
