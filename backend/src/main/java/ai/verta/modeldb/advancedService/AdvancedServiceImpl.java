@@ -505,15 +505,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         LOGGER.info(
             "roleService.isCurrentUser(experimentRun.getOwner() {}",
             authService.isCurrentUser(experimentRun.getOwner()));
+        LOGGER.info("Final actionList {}", projectActionList);
+        // Add user specific actions
+        hydratedExperimentRunBuilder.addAllAllowedActions(projectActionList);
         if (currentUserVertaID.equalsIgnoreCase(experimentRun.getOwner())) {
           List<Action> experimentRunActionList =
               experimentRunActions.get(experimentRun.getId()).getActionsList();
           LOGGER.debug("ExperimentRun Owner actionList {}", experimentRunActionList);
           hydratedExperimentRunBuilder.addAllAllowedActions(experimentRunActionList);
-        } else {
-          LOGGER.info("Final actionList {}", projectActionList);
-          // Add user specific actions
-          hydratedExperimentRunBuilder.addAllAllowedActions(projectActionList);
         }
       } else {
         LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
@@ -910,14 +909,13 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (userInfoValue != null) {
         hydratedExperimentBuilder.setOwnerUserInfo(userInfoValue);
 
+        LOGGER.debug("project actionList {}", projectActionList);
+        hydratedExperimentBuilder.addAllAllowedActions(projectActionList);
         if (currentUserVertaID.equalsIgnoreCase(experiment.getOwner())) {
           List<Action> experimentActionList =
               experimentActions.get(experiment.getId()).getActionsList();
           LOGGER.debug("Experiment Owner actionList {}", experimentActionList);
           hydratedExperimentBuilder.addAllAllowedActions(experimentActionList);
-        } else {
-          LOGGER.debug("project actionList {}", projectActionList);
-          hydratedExperimentBuilder.addAllAllowedActions(projectActionList);
         }
       } else {
         LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
@@ -1256,12 +1254,11 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       hydratedDatasetVersionBuilder.setOwnerUserInfo(ownerUserInfo);
 
       if (datasetActions != null && datasetActions.size() > 0) {
+        LOGGER.debug("dataset actionList {}", datasetActionList);
+        hydratedDatasetVersionBuilder.addAllAllowedActions(datasetActionList);
         if (authService.isCurrentUser(datasetVersion.getOwner())) {
           LOGGER.debug("DatasetVersion Owner actionList {}", datasetVersionActionList);
           hydratedDatasetVersionBuilder.addAllAllowedActions(datasetVersionActionList);
-        } else {
-          LOGGER.debug("dataset actionList {}", datasetActionList);
-          hydratedDatasetVersionBuilder.addAllAllowedActions(datasetActionList);
         }
       }
     }

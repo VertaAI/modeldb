@@ -1838,7 +1838,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           Status.newBuilder()
               .setCode(Code.PERMISSION_DENIED_VALUE)
               .setMessage(
-                  "Access is denied. Experiment not found for given ids : "
+                  "Access is denied. ExperimentRun not found for given ids : "
                       + requestedExperimentRunIds)
               .build();
       throw StatusProto.toStatusRuntimeException(status);
@@ -1858,10 +1858,33 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           roleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
       // Validate if current user has access to the entity or not
-      allowedProjectIds.retainAll(requestedExperimentRunIds);
-      accessibleExperimentRunIds.addAll(allowedProjectIds);
+      allowedProjectIds.retainAll(projectIdSet);
+      for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
+        if (allowedProjectIds.contains(entry.getValue())) {
+          accessibleExperimentRunIds.add(entry.getKey());
+        }
+      }
     }
     return accessibleExperimentRunIds;
+  }
+
+  private List<String> getAccessibleExperimentRunIDsByAction(
+      List<String> requestedExperimentRunIds, ModelDBServiceActions modelDBServiceActions) {
+    // Validate if current user has access to the entity or not
+    if (requestedExperimentRunIds.size() == 1) {
+      roleService.isSelfAllowed(
+          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+          modelDBServiceActions,
+          requestedExperimentRunIds.get(0));
+      return requestedExperimentRunIds;
+    } else {
+      List<String> allowedExperimentRunIds =
+          roleService.getSelfAllowedResources(
+              ModelDBServiceResourceTypes.EXPERIMENT_RUN, modelDBServiceActions);
+      // Validate if current user has access to the entity or not
+      allowedExperimentRunIds.retainAll(requestedExperimentRunIds);
+      return allowedExperimentRunIds;
+    }
   }
 
   @Override
@@ -2412,20 +2435,36 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   private boolean deleteExperimentRuns(List<String> experimentRunIds) {
-    List<String> accessibleExperimentRunIds =
-        getAccessibleExperimentRunIDs(experimentRunIds, ModelDBServiceActions.UPDATE);
-    if (accessibleExperimentRunIds.isEmpty()) {
+    Set<String> finalAccessibleExperimentRunsSet = new HashSet<>();
+    try {
+      List<String> accessibleExperimentRunIdsByProject =
+          getAccessibleExperimentRunIDs(experimentRunIds, ModelDBServiceActions.DELETE);
+      finalAccessibleExperimentRunsSet.addAll(accessibleExperimentRunIdsByProject);
+    } catch (StatusRuntimeException ex) {
+      LOGGER.warn(ex.getMessage(), ex);
+      if (ex.getStatus().getCode().value() != Code.PERMISSION_DENIED_VALUE) {
+        throw ex;
+      }
+    }
+
+    if (!finalAccessibleExperimentRunsSet.containsAll(experimentRunIds)) {
+      List<String> accessibleExperimentRunIDsByAction =
+          getAccessibleExperimentRunIDsByAction(experimentRunIds, ModelDBServiceActions.DELETE);
+      finalAccessibleExperimentRunsSet.addAll(accessibleExperimentRunIDsByAction);
+    }
+
+    if (finalAccessibleExperimentRunsSet.isEmpty()) {
       Status statusMessage =
           Status.newBuilder()
               .setCode(Code.PERMISSION_DENIED_VALUE)
               .setMessage(
                   "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                      + accessibleExperimentRunIds)
+                      + experimentRunIds)
               .build();
       throw StatusProto.toStatusRuntimeException(statusMessage);
     }
 
-    return experimentRunDAO.deleteExperimentRuns(accessibleExperimentRunIds);
+    return experimentRunDAO.deleteExperimentRuns(new ArrayList<>(finalAccessibleExperimentRunsSet));
   }
 
   @Override

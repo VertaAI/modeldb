@@ -213,27 +213,27 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, Long> f =
           x -> (blob.getLastModifiedAtSource());
-      obj.LastModifiedAtSource = Utils.removeEmpty(f.apply(blob));
+      obj.setLastModifiedAtSource(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
           x -> (blob.getMd5());
-      obj.Md5 = Utils.removeEmpty(f.apply(blob));
+      obj.setMd5(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
           x -> (blob.getPath());
-      obj.Path = Utils.removeEmpty(f.apply(blob));
+      obj.setPath(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, String> f =
           x -> (blob.getSha256());
-      obj.Sha256 = Utils.removeEmpty(f.apply(blob));
+      obj.setSha256(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.PathDatasetComponentBlob, Long> f =
           x -> (blob.getSize());
-      obj.Size = Utils.removeEmpty(f.apply(blob));
+      obj.setSize(f.apply(blob));
     }
     return obj;
   }

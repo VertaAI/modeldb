@@ -115,7 +115,7 @@ public class AutogenS3DatasetBlob implements ProtoType {
               blob.getComponentsList().stream()
                   .map(AutogenS3DatasetComponentBlob::fromProto)
                   .collect(Collectors.toList());
-      obj.Components = Utils.removeEmpty(f.apply(blob));
+      obj.setComponents(f.apply(blob));
     }
     return obj;
   }
