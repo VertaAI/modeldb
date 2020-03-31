@@ -66,21 +66,30 @@ class Python(_environment._Environment):
             lines.extend(
                 "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
                 for req_spec_msg
-                in self._msg.python.requirements
+                in sorted(
+                    self._msg.python.requirements,
+                    key=lambda req_spec_msg: req_spec_msg.library,
+                )
             )
         if self._msg.python.constraints:
             lines.append("constraints:")
             lines.extend(
                 "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
                 for req_spec_msg
-                in self._msg.python.constraints
+                in sorted(
+                    self._msg.python.constraints,
+                    key=lambda req_spec_msg: req_spec_msg.library,
+                )
             )
         if self._msg.environment_variables:
             lines.append("environment variables:")
             lines.extend(
                 "    {}={}".format(env_var_msg.name, env_var_msg.value)
                 for env_var_msg
-                in self._msg.environment_variables
+                in sorted(
+                    self._msg.environment_variables,
+                    key=lambda env_var_msg: env_var_msg.name,
+                )
             )
         if self._msg.command_line:
             lines.append("command line arguments:")

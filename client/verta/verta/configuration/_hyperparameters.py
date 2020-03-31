@@ -73,7 +73,7 @@ class Hyperparameters(_configuration._Configuration):
             for hyperparam_msg
             in sorted(
                 self._msg.hyperparameters,
-                key=lambda hyperparam_msg: hyperparam_msg.name
+                key=lambda hyperparam_msg: hyperparam_msg.name,
             )
         )
         lines.extend(
@@ -86,7 +86,7 @@ class Hyperparameters(_configuration._Configuration):
             for hyperparam_msg
             in sorted(
                 self._msg.hyperparameter_set,
-                key=lambda hyperparam_msg: hyperparam_msg.name
+                key=lambda hyperparam_msg: hyperparam_msg.name,
             )
             if hyperparam_msg.WhichOneof('value') == "continuous"
         )
@@ -98,7 +98,7 @@ class Hyperparameters(_configuration._Configuration):
             for hyperparam_msg
             in sorted(
                 self._msg.hyperparameter_set,
-                key=lambda hyperparam_msg: hyperparam_msg.name
+                key=lambda hyperparam_msg: hyperparam_msg.name,
             )
             if hyperparam_msg.WhichOneof('value') == "discrete"
         )
