@@ -457,23 +457,11 @@
     "uacGetCollaboratorResponse": {
       "type": "object",
       "properties": {
-        "user_id": {
-          "type": "string"
-        },
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
-        },
-        "share_via_type": {
-          "$ref": "#/definitions/uacShareViaEnum"
-        },
-        "verta_id": {
-          "type": "string"
-        },
-        "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
-        "authz_entity_type": {
-          "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
+        "shared_users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacGetCollaboratorResponse"
+          }
         }
       }
     },

@@ -172,7 +172,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
         DeleteRepositoryRequest.Response response =
-            repositoryDAO.deleteRepository(request, commitDAO);
+            repositoryDAO.deleteRepository(request, commitDAO, experimentRunDAO);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -357,7 +357,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      e.printStackTrace();
       ModelDBUtils.observeError(
           responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
     }
@@ -383,7 +382,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      e.printStackTrace();
       ModelDBUtils.observeError(
           responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
     }

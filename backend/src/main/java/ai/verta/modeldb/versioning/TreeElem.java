@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.hibernate.Session;
 
 public class TreeElem {
@@ -46,7 +47,7 @@ public class TreeElem {
     return type;
   }
 
-  InternalFolderElement saveFolders(Session session, FileHasher fileHasher)
+  InternalFolderElement saveFolders(Session session, FileHasher fileHasher, Set<String> hashes)
       throws NoSuchAlgorithmException {
     if (children.isEmpty()) {
       return InternalFolderElement.newBuilder()
@@ -57,7 +58,7 @@ public class TreeElem {
       InternalFolder.Builder internalFolder = InternalFolder.newBuilder();
       List<InternalFolderElement> elems = new LinkedList<>();
       for (TreeElem elem : children.values()) {
-        InternalFolderElement build = elem.saveFolders(session, fileHasher);
+        InternalFolderElement build = elem.saveFolders(session, fileHasher, hashes);
         elems.add(build);
         if (elem.getType().equals(TREE)) {
           internalFolder.addSubFolders(build);
@@ -82,7 +83,14 @@ public class TreeElem {
               new InternalFolderElementEntity(
                   treeBuild.getElementSha(), next.getBlobHash(), next.getType(), next.getPath());
         }
-        session.saveOrUpdate(internalFolderElementEntity);
+        String key =
+            internalFolderElementEntity.getFolder_hash()
+                + ":"
+                + internalFolderElementEntity.getElement_name();
+        if (!hashes.contains(key)) {
+          session.saveOrUpdate(internalFolderElementEntity);
+          hashes.add(key);
+        }
       }
       return treeBuild;
     }

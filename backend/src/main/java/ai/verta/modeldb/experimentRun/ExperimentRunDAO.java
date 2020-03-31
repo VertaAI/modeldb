@@ -473,6 +473,8 @@ public interface ExperimentRunDAO {
   LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
       throws InvalidProtocolBufferException, ModelDBException;
 
+  void deleteLogVersionedInputs(Session session, Long repoId, String commitHash);
+
   GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException;
 

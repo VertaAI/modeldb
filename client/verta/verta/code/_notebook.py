@@ -53,7 +53,7 @@ class Notebook(_code._Code):
         super(Notebook, self).__init__()
 
         if notebook_path is not None:
-            self._msg.notebook.path.CopyFrom(_path.Path(notebook_path)._msg.path)
+            self._msg.notebook.path.CopyFrom(_path.Path(notebook_path)._msg.path.components[0])
             try:
                 self._git_blob = _git.Git()
                 repo_root = _git_utils.get_git_repo_root_dir()
@@ -63,7 +63,7 @@ class Notebook(_code._Code):
             else:
                 self._msg.notebook.git_repo.CopyFrom(self._git_blob._msg.git)
                 # amend notebook path to be relative to repo root
-                file_msg = self._msg.notebook.path.components[0]
+                file_msg = self._msg.notebook.path
                 file_msg.path = os.path.relpath(file_msg.path, repo_root)
 
     def __repr__(self):

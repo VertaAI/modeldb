@@ -180,7 +180,7 @@ public class AutogenConfigBlob implements ProtoType {
               blob.getHyperparameterSetList().stream()
                   .map(AutogenHyperparameterSetConfigBlob::fromProto)
                   .collect(Collectors.toList());
-      obj.HyperparameterSet = Utils.removeEmpty(f.apply(blob));
+      obj.setHyperparameterSet(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.ConfigBlob, List<AutogenHyperparameterConfigBlob>> f =
@@ -188,7 +188,7 @@ public class AutogenConfigBlob implements ProtoType {
               blob.getHyperparametersList().stream()
                   .map(AutogenHyperparameterConfigBlob::fromProto)
                   .collect(Collectors.toList());
-      obj.Hyperparameters = Utils.removeEmpty(f.apply(blob));
+      obj.setHyperparameters(f.apply(blob));
     }
     return obj;
   }
