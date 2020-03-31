@@ -183,22 +183,22 @@ public class AutogenVersionEnvironmentBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob, Integer> f =
           x -> (blob.getMajor());
-      obj.Major = Utils.removeEmpty(f.apply(blob));
+      obj.setMajor(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob, Integer> f =
           x -> (blob.getMinor());
-      obj.Minor = Utils.removeEmpty(f.apply(blob));
+      obj.setMinor(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob, Integer> f =
           x -> (blob.getPatch());
-      obj.Patch = Utils.removeEmpty(f.apply(blob));
+      obj.setPatch(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.VersionEnvironmentBlob, String> f =
           x -> (blob.getSuffix());
-      obj.Suffix = Utils.removeEmpty(f.apply(blob));
+      obj.setSuffix(f.apply(blob));
     }
     return obj;
   }

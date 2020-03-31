@@ -123,12 +123,12 @@ public class AutogenEnvironmentVariablesBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob, String> f =
           x -> (blob.getName());
-      obj.Name = Utils.removeEmpty(f.apply(blob));
+      obj.setName(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentVariablesBlob, String> f =
           x -> (blob.getValue());
-      obj.Value = Utils.removeEmpty(f.apply(blob));
+      obj.setValue(f.apply(blob));
     }
     return obj;
   }

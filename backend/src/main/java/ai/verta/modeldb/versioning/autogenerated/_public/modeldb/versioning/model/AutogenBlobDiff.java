@@ -256,31 +256,31 @@ public class AutogenBlobDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.BlobDiff, AutogenCodeDiff> f =
           x -> AutogenCodeDiff.fromProto(blob.getCode());
-      obj.Code = Utils.removeEmpty(f.apply(blob));
+      obj.setCode(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.BlobDiff, AutogenConfigDiff> f =
           x -> AutogenConfigDiff.fromProto(blob.getConfig());
-      obj.Config = Utils.removeEmpty(f.apply(blob));
+      obj.setConfig(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.BlobDiff, AutogenDatasetDiff> f =
           x -> AutogenDatasetDiff.fromProto(blob.getDataset());
-      obj.Dataset = Utils.removeEmpty(f.apply(blob));
+      obj.setDataset(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.BlobDiff, AutogenEnvironmentDiff> f =
           x -> AutogenEnvironmentDiff.fromProto(blob.getEnvironment());
-      obj.Environment = Utils.removeEmpty(f.apply(blob));
+      obj.setEnvironment(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.BlobDiff, List<String>> f = x -> blob.getLocationList();
-      obj.Location = Utils.removeEmpty(f.apply(blob));
+      obj.setLocation(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.BlobDiff, AutogenDiffStatusEnumDiffStatus> f =
           x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
-      obj.Status = Utils.removeEmpty(f.apply(blob));
+      obj.setStatus(f.apply(blob));
     }
     return obj;
   }

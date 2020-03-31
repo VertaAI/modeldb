@@ -153,17 +153,17 @@ public class AutogenGitCodeDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.GitCodeDiff, AutogenGitCodeBlob> f =
           x -> AutogenGitCodeBlob.fromProto(blob.getA());
-      obj.A = Utils.removeEmpty(f.apply(blob));
+      obj.setA(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.GitCodeDiff, AutogenGitCodeBlob> f =
           x -> AutogenGitCodeBlob.fromProto(blob.getB());
-      obj.B = Utils.removeEmpty(f.apply(blob));
+      obj.setB(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.GitCodeDiff, AutogenDiffStatusEnumDiffStatus> f =
           x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
-      obj.Status = Utils.removeEmpty(f.apply(blob));
+      obj.setStatus(f.apply(blob));
     }
     return obj;
   }

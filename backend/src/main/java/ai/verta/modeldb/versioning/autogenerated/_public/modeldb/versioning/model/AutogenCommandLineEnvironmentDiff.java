@@ -176,19 +176,19 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.CommandLineEnvironmentDiff, List<String>> f =
           x -> blob.getAList();
-      obj.A = Utils.removeEmpty(f.apply(blob));
+      obj.setA(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.CommandLineEnvironmentDiff, List<String>> f =
           x -> blob.getBList();
-      obj.B = Utils.removeEmpty(f.apply(blob));
+      obj.setB(f.apply(blob));
     }
     {
       Function<
               ai.verta.modeldb.versioning.CommandLineEnvironmentDiff,
               AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
-      obj.Status = Utils.removeEmpty(f.apply(blob));
+      obj.setStatus(f.apply(blob));
     }
     return obj;
   }
