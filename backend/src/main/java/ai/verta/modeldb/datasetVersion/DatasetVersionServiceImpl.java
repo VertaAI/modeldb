@@ -117,8 +117,12 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           roleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
       // Validate if current user has access to the entity or not
-      allowedDatasetIds.retainAll(requestedDatasetVersionIds);
-      accessibleDatasetVersionIds.addAll(allowedDatasetIds);
+      allowedDatasetIds.retainAll(datasetIdSet);
+      for (Map.Entry<String, String> entry : datasetIdDatasetVersionIdMap.entrySet()) {
+        if (allowedDatasetIds.contains(entry.getValue())) {
+          accessibleDatasetVersionIds.add(entry.getKey());
+        }
+      }
     }
     return accessibleDatasetVersionIds;
   }

@@ -30,10 +30,11 @@ public interface ExperimentRunDAO {
    * Insert ExperimentRun entity in database.
    *
    * @param ExperimentRun experimentRun
+   * @param userInfo
    * @return ExperimentRun insertedExperimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun insertExperimentRun(ExperimentRun experimentRun)
+  ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException;
 
   /**
