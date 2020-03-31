@@ -41,6 +41,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -125,6 +126,25 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
     }
     return accessibleDatasetVersionIds;
+  }
+
+  public List<String> getAccessibleDatasetVersionIDsByAction(
+      List<String> requestedDatasetVersionIds, ModelDBServiceActions modelDBServiceActions) {
+    // Validate if current user has access to the entity or not
+    if (requestedDatasetVersionIds.size() == 1) {
+      roleService.isSelfAllowed(
+          ModelDBServiceResourceTypes.DATASET_VERSION,
+          modelDBServiceActions,
+          requestedDatasetVersionIds.get(0));
+      return requestedDatasetVersionIds;
+    } else {
+      List<String> allowedDatasetVersionIds =
+          roleService.getSelfAllowedResources(
+              ModelDBServiceResourceTypes.DATASET_VERSION, modelDBServiceActions);
+      // Validate if current user has access to the entity or not
+      allowedDatasetVersionIds.retainAll(requestedDatasetVersionIds);
+      return allowedDatasetVersionIds;
+    }
   }
 
   /**
@@ -873,9 +893,25 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
   private boolean deleteDatasetVersions(List<String> datasetVersionIds)
       throws InvalidProtocolBufferException {
-    List<String> accessibleDatasetVersionIds =
-        getAccessibleDatasetVersionIDs(datasetVersionIds, ModelDBServiceActions.UPDATE);
-    if (accessibleDatasetVersionIds.isEmpty()) {
+    Set<String> finalAccessibleDatasetVersionSet = new HashSet<>();
+    try {
+      List<String> accessibleDatasetVersionIdsByDataset =
+          getAccessibleDatasetVersionIDs(datasetVersionIds, ModelDBServiceActions.DELETE);
+      finalAccessibleDatasetVersionSet.addAll(accessibleDatasetVersionIdsByDataset);
+    } catch (StatusRuntimeException ex) {
+      LOGGER.warn(ex.getMessage(), ex);
+      if (ex.getStatus().getCode().value() != Code.PERMISSION_DENIED_VALUE) {
+        throw ex;
+      }
+    }
+
+    if (!finalAccessibleDatasetVersionSet.containsAll(datasetVersionIds)) {
+      List<String> accessibleDatasetVersionIdsByAction =
+          getAccessibleDatasetVersionIDsByAction(datasetVersionIds, ModelDBServiceActions.DELETE);
+      finalAccessibleDatasetVersionSet.addAll(accessibleDatasetVersionIdsByAction);
+    }
+
+    if (finalAccessibleDatasetVersionSet.isEmpty()) {
       Status statusMessage =
           Status.newBuilder()
               .setCode(Code.PERMISSION_DENIED_VALUE)

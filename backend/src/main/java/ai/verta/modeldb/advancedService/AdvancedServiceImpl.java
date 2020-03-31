@@ -78,7 +78,6 @@ import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
@@ -441,17 +440,29 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Set<String> experimentIdSet = new HashSet<>();
     Set<String> vertaIdList = new HashSet<>();
     Set<String> projectIdSet = new HashSet<>();
+    Set<String> experimentRunIdSet = new HashSet<>();
     for (ExperimentRun experimentRun : experimentRuns) {
       vertaIdList.add(experimentRun.getOwner());
       experimentIdSet.add(experimentRun.getExperimentId());
       projectIdSet.add(experimentRun.getProjectId());
+      experimentRunIdSet.add(experimentRun.getId());
     }
 
-    Map<String, Actions> actions = new HashMap<>();
+    Map<String, Actions> projectActions = new HashMap<>();
     if (projectIdSet.size() > 0) {
-      actions =
+      projectActions =
           roleService.getSelfAllowedActionsBatch(
               new ArrayList<>(projectIdSet), ModelDBServiceResourceTypes.PROJECT);
+    }
+    List<Action> projectActionList =
+        ModelDBUtils.getActionsList(new ArrayList<>(projectIdSet), projectActions);
+    LOGGER.debug("project actionList {}", projectActionList);
+
+    Map<String, Actions> experimentRunActions = new HashMap<>();
+    if (experimentRunIdSet.size() > 0) {
+      experimentRunActions =
+          roleService.getSelfAllowedActionsBatch(
+              new ArrayList<>(experimentRunIdSet), ModelDBServiceResourceTypes.EXPERIMENT_RUN);
     }
 
     LOGGER.trace("vertaIdList {}", vertaIdList);
@@ -491,30 +502,18 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         LOGGER.trace("comments {}", comments);
         hydratedExperimentRunBuilder.addAllComments(comments);
 
-        List<Action> actionList =
-            ModelDBUtils.getActionsList(new ArrayList<>(projectIdSet), actions);
-        LOGGER.info("actionList {}", actionList);
-        Action deleteAction =
-            Action.newBuilder()
-                .setModeldbServiceAction(ModelDBServiceActions.DELETE)
-                .setService(Service.MODELDB_SERVICE)
-                .build();
-        Action updateAction =
-            Action.newBuilder()
-                .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
-                .setService(Service.MODELDB_SERVICE)
-                .build();
         LOGGER.info(
             "roleService.isCurrentUser(experimentRun.getOwner() {}",
             authService.isCurrentUser(experimentRun.getOwner()));
-        if (currentUserVertaID.equalsIgnoreCase(experimentRun.getOwner())
-            && !actionList.contains(deleteAction)
-            && actionList.contains(updateAction)) {
-          actionList.add(deleteAction);
-        }
-        LOGGER.info("actionList {}", actionList);
+        LOGGER.info("Final actionList {}", projectActionList);
         // Add user specific actions
-        hydratedExperimentRunBuilder.addAllAllowedActions(actionList);
+        hydratedExperimentRunBuilder.addAllAllowedActions(projectActionList);
+        if (currentUserVertaID.equalsIgnoreCase(experimentRun.getOwner())) {
+          List<Action> experimentRunActionList =
+              experimentRunActions.get(experimentRun.getId()).getActionsList();
+          LOGGER.debug("ExperimentRun Owner actionList {}", experimentRunActionList);
+          hydratedExperimentRunBuilder.addAllAllowedActions(experimentRunActionList);
+        }
       } else {
         LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
       }
@@ -872,14 +871,28 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
   private List<HydratedExperiment> getHydratedExperiments(
       String projectId, List<Experiment> experiments) {
-    Map<String, Actions> actions =
-        roleService.getSelfAllowedActionsBatch(
-            Collections.singletonList(projectId), ModelDBServiceResourceTypes.PROJECT);
     LOGGER.debug("experiments count in getHydratedExperiments method : {}", experiments.size());
     Set<String> vertaIdList = new HashSet<>();
+    Set<String> experimentIds = new HashSet<>();
     for (Experiment experiment : experiments) {
       vertaIdList.add(experiment.getOwner());
+      experimentIds.add(experiment.getId());
     }
+
+    Map<String, Actions> projectActions =
+        roleService.getSelfAllowedActionsBatch(
+            Collections.singletonList(projectId), ModelDBServiceResourceTypes.PROJECT);
+
+    List<Action> projectActionList = new LinkedList<>();
+    if (projectActions != null && projectActions.size() > 0) {
+      projectActionList =
+          ModelDBUtils.getActionsList(Collections.singletonList(projectId), projectActions);
+    }
+    LOGGER.debug("project actionList {}", projectActionList);
+
+    Map<String, Actions> experimentActions =
+        roleService.getSelfAllowedActionsBatch(
+            new ArrayList<>(experimentIds), ModelDBServiceResourceTypes.EXPERIMENT);
 
     // Fetch the experiment owners userInfo
     Map<String, UserInfo> userInfoMap =
@@ -895,26 +908,15 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       UserInfo userInfoValue = userInfoMap.get(experiment.getOwner());
       if (userInfoValue != null) {
         hydratedExperimentBuilder.setOwnerUserInfo(userInfoValue);
-        List<Action> actionList = new LinkedList<>();
-        if (actions != null && actions.size() > 0) {
-          actionList = ModelDBUtils.getActionsList(Collections.singletonList(projectId), actions);
+
+        LOGGER.debug("project actionList {}", projectActionList);
+        hydratedExperimentBuilder.addAllAllowedActions(projectActionList);
+        if (currentUserVertaID.equalsIgnoreCase(experiment.getOwner())) {
+          List<Action> experimentActionList =
+              experimentActions.get(experiment.getId()).getActionsList();
+          LOGGER.debug("Experiment Owner actionList {}", experimentActionList);
+          hydratedExperimentBuilder.addAllAllowedActions(experimentActionList);
         }
-        Action deleteAction =
-            Action.newBuilder()
-                .setModeldbServiceAction(ModelDBServiceActions.DELETE)
-                .setService(Service.MODELDB_SERVICE)
-                .build();
-        Action updateAction =
-            Action.newBuilder()
-                .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
-                .setService(Service.MODELDB_SERVICE)
-                .build();
-        if (currentUserVertaID.equalsIgnoreCase(experiment.getOwner())
-            && !actionList.contains(deleteAction)
-            && actionList.contains(updateAction)) {
-          actionList.add(deleteAction);
-        }
-        hydratedExperimentBuilder.addAllAllowedActions(actionList);
       } else {
         LOGGER.error(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
       }
@@ -1226,38 +1228,39 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     UserInfo ownerUserInfo =
         authService.getUserInfo(datasetVersion.getOwner(), UserIdentifier.VERTA_ID);
 
-    Map<String, Actions> selfAllowedActions =
+    Map<String, Actions> datasetActions =
         roleService.getSelfAllowedActionsBatch(
             Collections.singletonList(datasetVersion.getDatasetId()),
             ModelDBServiceResourceTypes.DATASET);
+    List<Action> datasetActionList = new ArrayList<>();
+    if (datasetActions != null && datasetActions.size() > 0) {
+      datasetActionList =
+          ModelDBUtils.getActionsList(
+              Collections.singletonList(datasetVersion.getDatasetId()), datasetActions);
+    }
+
+    Map<String, Actions> datasetVersionActions =
+        roleService.getSelfAllowedActionsBatch(
+            Collections.singletonList(datasetVersion.getId()),
+            ModelDBServiceResourceTypes.DATASET_VERSION);
+    List<Action> datasetVersionActionList = new ArrayList<>();
+    if (datasetVersionActions != null && datasetVersionActions.size() > 0) {
+      datasetVersionActionList = datasetVersionActions.get(datasetVersion.getId()).getActionsList();
+    }
 
     HydratedDatasetVersion.Builder hydratedDatasetVersionBuilder =
         HydratedDatasetVersion.newBuilder().setDatasetVersion(datasetVersion);
     if (ownerUserInfo != null) {
       hydratedDatasetVersionBuilder.setOwnerUserInfo(ownerUserInfo);
-    }
-    if (selfAllowedActions != null && selfAllowedActions.size() > 0) {
-      List<Action> actionList =
-          new ArrayList<Action>(
-              selfAllowedActions.get(datasetVersion.getDatasetId()).getActionsList());
-      if (ownerUserInfo != null) {
-        Action deleteAction =
-            Action.newBuilder()
-                .setModeldbServiceAction(ModelDBServiceActions.DELETE)
-                .setService(Service.MODELDB_SERVICE)
-                .build();
-        Action updateAction =
-            Action.newBuilder()
-                .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
-                .setService(Service.MODELDB_SERVICE)
-                .build();
-        if (authService.isCurrentUser(datasetVersion.getOwner())
-            && !actionList.contains(deleteAction)
-            && actionList.contains(updateAction)) {
-          actionList.add(deleteAction);
+
+      if (datasetActions != null && datasetActions.size() > 0) {
+        LOGGER.debug("dataset actionList {}", datasetActionList);
+        hydratedDatasetVersionBuilder.addAllAllowedActions(datasetActionList);
+        if (authService.isCurrentUser(datasetVersion.getOwner())) {
+          LOGGER.debug("DatasetVersion Owner actionList {}", datasetVersionActionList);
+          hydratedDatasetVersionBuilder.addAllAllowedActions(datasetVersionActionList);
         }
       }
-      hydratedDatasetVersionBuilder.addAllAllowedActions(actionList);
     }
     return hydratedDatasetVersionBuilder.build();
   }
