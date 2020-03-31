@@ -54,6 +54,7 @@ public interface ModelDBConstants {
   // Column/protos field names
   String ARTIFACTS = "artifacts";
   String ATTRIBUTES = "attributes";
+  String REPOSITORY_COLLABORATORS = "repository_collaborators";
   String DATASET_COLLABORATORS = "dataset_collaborators";
   String DATASETS = "datasets";
   String DATE_CREATED = "date_created";

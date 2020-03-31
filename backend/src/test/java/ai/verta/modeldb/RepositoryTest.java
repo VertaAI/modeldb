@@ -1,7 +1,9 @@
 package ai.verta.modeldb;
 
+import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestUser;
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 
+import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -20,6 +22,9 @@ import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
+import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.GetCollaborator;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status.Code;
@@ -163,8 +168,26 @@ public class RepositoryTest {
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
+    CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
+        CollaboratorServiceGrpc.newBlockingStub(channel);
 
     long id = createRepository(versioningServiceBlockingStub, NAME);
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      GetCollaborator.Response res = collaboratorServiceStub.getRepositoryCollaborators(
+          GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
+      AddCollaboratorRequest addCollaboratorRequest =
+          addCollaboratorRequestUser(
+              String.valueOf(id),
+              authClientInterceptor.getClient2Email(),
+              CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+              "Please refer shared repository for your invention");
+      AddCollaboratorRequest.Response result = collaboratorServiceStub
+          .addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+      GetCollaborator.Response res2 = collaboratorServiceStub.getRepositoryCollaborators(
+          GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
+      GetCollaborator.Response res3 = collaboratorServiceStub.getRepositoryCollaborators(
+          GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
+    }
 
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()
