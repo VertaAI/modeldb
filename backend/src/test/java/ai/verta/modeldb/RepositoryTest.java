@@ -173,20 +173,22 @@ public class RepositoryTest {
 
     long id = createRepository(versioningServiceBlockingStub, NAME);
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      GetCollaborator.Response res = collaboratorServiceStub.getRepositoryCollaborators(
-          GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
+      GetCollaborator.Response checkCollaboratorsResponse1 =
+          collaboratorServiceStub.getRepositoryCollaborators(
+              GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
+      Assert.assertEquals(0, checkCollaboratorsResponse1.getSharedUsersCount());
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestUser(
               String.valueOf(id),
               authClientInterceptor.getClient2Email(),
               CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
               "Please refer shared repository for your invention");
-      AddCollaboratorRequest.Response result = collaboratorServiceStub
-          .addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
-      GetCollaborator.Response res2 = collaboratorServiceStub.getRepositoryCollaborators(
-          GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
-      GetCollaborator.Response res3 = collaboratorServiceStub.getRepositoryCollaborators(
-          GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
+      Assert.assertTrue(
+          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest).getStatus());
+      GetCollaborator.Response checkCollaboratorsResponse2 =
+          collaboratorServiceStub.getRepositoryCollaborators(
+              GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
+      Assert.assertEquals(1, checkCollaboratorsResponse2.getSharedUsersCount());
     }
 
     DeleteRepositoryRequest deleteRepository =

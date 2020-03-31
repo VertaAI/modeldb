@@ -115,7 +115,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           String vertaId = authService.getVertaIdFromUserInfo(userInfo);
           requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
         }
-        SetRepository.Response response = repositoryDAO.setRepository(requestBuilder.build(), userInfo, true);
+        SetRepository.Response response =
+            repositoryDAO.setRepository(requestBuilder.build(), userInfo, true);
 
         RepositoryIdentification repositoryId =
             RepositoryIdentification.newBuilder()

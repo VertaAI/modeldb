@@ -13,6 +13,7 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Actions;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddCollaboratorRequest.Response;
@@ -57,16 +58,19 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
   private RoleService roleService;
   private ProjectDAO projectDAO;
   private DatasetDAO datasetDAO;
+  private final RepositoryDAO repositoryDAO;
 
   public CollaboratorServiceImpl(
       AuthService authService,
       RoleService roleService,
       ProjectDAO projectDAO,
-      DatasetDAO datasetDAO) {
+      DatasetDAO datasetDAO,
+      RepositoryDAO repositoryDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.projectDAO = projectDAO;
     this.datasetDAO = datasetDAO;
+    this.repositoryDAO = repositoryDAO;
   }
 
   private CollaboratorBase getShareWithCollaborator(
@@ -162,6 +166,8 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
       entityOwnersMap = projectDAO.getOwnersByProjectIds(entityIds);
     } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
       entityOwnersMap = datasetDAO.getOwnersByDatasetIds(entityIds);
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
+      entityOwnersMap = repositoryDAO.getOwnersByRepositoryIds(entityIds);
     }
     return entityOwnersMap;
   }
@@ -181,6 +187,12 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
     } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)
         && collaboratorType.equals(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)) {
       return ModelDBConstants.ROLE_DATASET_READ_ONLY;
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)
+        && collaboratorType.equals(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)) {
+      return ModelDBConstants.ROLE_REPOSITORY_READ_WRITE;
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)
+        && collaboratorType.equals(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)) {
+      return ModelDBConstants.ROLE_REPOSITORY_READ_ONLY;
     } else {
       String errorMessage = "collaborator type and resource type are not found as expected";
       LOGGER.warn(errorMessage);
@@ -618,7 +630,9 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
 
       // Check User Role
       roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ, request.getEntityId());
+          ModelDBServiceResourceTypes.REPOSITORY,
+          ModelDBServiceActions.READ,
+          request.getEntityId());
 
       // list of repositories and their owners
       Map<String, String> repositoryOwnersMap =
