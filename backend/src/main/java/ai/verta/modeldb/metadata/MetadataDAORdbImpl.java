@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.TransactionException;
 import org.hibernate.query.Query;
 
 public class MetadataDAORdbImpl implements MetadataDAO {
@@ -59,18 +58,21 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       Transaction transaction = session.beginTransaction();
       for (String label : labels) {
         LabelsMappingEntity labelsMappingEntity = new LabelsMappingEntity(id, label);
-        session.save(labelsMappingEntity);
+        LabelsMappingEntity existingLabelsMappingEntity =
+            session.get(LabelsMappingEntity.class, labelsMappingEntity.getId());
+        if (existingLabelsMappingEntity == null) {
+          session.save(labelsMappingEntity);
+        } else {
+          Status status =
+              Status.newBuilder()
+                  .setCode(Code.ALREADY_EXISTS_VALUE)
+                  .setMessage("Label '" + label + "' already exists with given ID")
+                  .build();
+          throw StatusProto.toStatusRuntimeException(status);
+        }
       }
       transaction.commit();
       return true;
-    } catch (TransactionException ex) {
-      LOGGER.warn(ex.getMessage());
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.ALREADY_EXISTS_VALUE)
-              .setMessage("Label already exists with given ID")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
     }
   }
 
@@ -96,8 +98,18 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
       for (String label : labels) {
         LabelsMappingEntity labelsMappingEntity = new LabelsMappingEntity(id, label);
-        labelsMappingEntity = session.load(LabelsMappingEntity.class, labelsMappingEntity.getId());
-        session.delete(labelsMappingEntity);
+        LabelsMappingEntity existingLabelsMappingEntity =
+            session.get(LabelsMappingEntity.class, labelsMappingEntity.getId());
+        if (existingLabelsMappingEntity != null) {
+          session.delete(existingLabelsMappingEntity);
+        } else {
+          Status status =
+              Status.newBuilder()
+                  .setCode(Code.NOT_FOUND_VALUE)
+                  .setMessage("Label '" + label + "' not found in DB")
+                  .build();
+          throw StatusProto.toStatusRuntimeException(status);
+        }
       }
       transaction.commit();
       return true;
