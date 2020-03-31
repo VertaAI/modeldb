@@ -79,6 +79,10 @@ public class RepositoryEntity {
     return date_updated;
   }
 
+  public void setDate_updated(Long date_updated) {
+    this.date_updated = date_updated;
+  }
+
   public String getWorkspace_id() {
     return workspace_id;
   }
