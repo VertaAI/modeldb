@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ai.verta.client;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/client";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+
+/* Client config file
+ * all fields optional
+ */
+message Config {
+    string email = 1;
+    string dev_key = 2;
+    string host = 3;
+
+    string workspace = 4;
+    string project = 5;
+    string experiment = 6;
+    string dataset = 7;
+}

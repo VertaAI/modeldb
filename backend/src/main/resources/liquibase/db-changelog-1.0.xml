@@ -7,7 +7,7 @@
 
     <include file="src/main/resources/liquibase/create-tables-changelog-1.0.xml"/>
 
-    <changeSet id="1" author="anandJ">
+    <changeSet id="1" author="anandJ" failOnError="false">
         <sqlFile path="src/main/resources/liquibase/create_indexes.sql"/>
     </changeSet>
 

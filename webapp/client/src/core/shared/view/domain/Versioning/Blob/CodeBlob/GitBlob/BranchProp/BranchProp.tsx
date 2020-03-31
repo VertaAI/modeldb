@@ -12,16 +12,20 @@ interface ILocalProps {
 }
 
 const BranchProp = ({ remoteRepoUrl, branch, rootStyles }: ILocalProps) => {
-  return matchBy(remoteRepoUrl, 'type')({
-    github: ({ value }) => (
-      <ExternalLink
-        url={Github.makeBranchUrl(value, branch)}
-        text={branch}
-        rootStyle={rootStyles}
-      />
-    ),
-    unknown: ({ value }) => <span style={rootStyles}>{value}</span>,
-  });
+  return (
+    <span data-test="git-branch" data-root-styles={rootStyles}>
+      {matchBy(remoteRepoUrl, 'type')({
+        github: ({ value }) => (
+          <ExternalLink
+            url={Github.makeBranchUrl(value, branch)}
+            text={branch}
+            rootStyle={rootStyles}
+          />
+        ),
+        unknown: ({ value }) => <span style={rootStyles}>{value}</span>,
+      })}
+    </span>
+  );
 };
 
 export default BranchProp;

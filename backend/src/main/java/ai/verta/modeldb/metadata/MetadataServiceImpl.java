@@ -1,15 +1,13 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.ModelDBAuthInterceptor;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Any;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
@@ -49,21 +47,9 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       List<String> labels = metadataDAO.getLabels(request.getId());
       responseObserver.onNext(GetLabelsRequest.Response.newBuilder().addAllLabels(labels).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(GetLabelsRequest.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, GetLabelsRequest.Response.getDefaultInstance());
     }
   }
 
@@ -96,21 +82,9 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       boolean status = metadataDAO.addLabels(request.getId(), request.getLabelsList());
       responseObserver.onNext(AddLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(AddLabelsRequest.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
     }
   }
 
@@ -143,21 +117,9 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       boolean status = metadataDAO.deleteLabels(request.getId(), request.getLabelsList());
       responseObserver.onNext(DeleteLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
-      responseObserver.onError(e);
     } catch (Exception e) {
-      LOGGER.warn(e.getMessage(), e);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL.getNumber())
-              .setMessage(ModelDBConstants.INTERNAL_ERROR)
-              .addDetails(Any.pack(DeleteLabelsRequest.Response.getDefaultInstance()))
-              .build();
-      StatusRuntimeException statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-      ErrorCountResource.inc(statusRuntimeException);
-      responseObserver.onError(statusRuntimeException);
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteLabelsRequest.Response.getDefaultInstance());
     }
   }
 }

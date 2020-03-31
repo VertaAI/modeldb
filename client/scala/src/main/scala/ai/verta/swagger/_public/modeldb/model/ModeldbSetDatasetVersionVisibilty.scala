@@ -14,8 +14,8 @@ import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbSetDatasetVersionVisibilty (
-  id: Option[String] = None,
-  dataset_version_visibility: Option[DatasetVisibilityEnumDatasetVisibility] = None
+  dataset_version_visibility: Option[DatasetVisibilityEnumDatasetVisibility] = None,
+  id: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbSetDatasetVersionVisibilty.toJson(this)
 }
@@ -24,8 +24,8 @@ object ModeldbSetDatasetVersionVisibilty {
   def toJson(obj: ModeldbSetDatasetVersionVisibilty): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.id.map(x => JField("id", JString(x))),
-        obj.dataset_version_visibility.map(x => JField("dataset_version_visibility", ((x: DatasetVisibilityEnumDatasetVisibility) => DatasetVisibilityEnumDatasetVisibility.toJson(x))(x)))
+        obj.dataset_version_visibility.map(x => JField("dataset_version_visibility", ((x: DatasetVisibilityEnumDatasetVisibility) => DatasetVisibilityEnumDatasetVisibility.toJson(x))(x))),
+        obj.id.map(x => JField("id", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -39,8 +39,8 @@ object ModeldbSetDatasetVersionVisibilty {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbSetDatasetVersionVisibilty(
           // TODO: handle required
-          id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
-          dataset_version_visibility = fieldsMap.get("dataset_version_visibility").map(DatasetVisibilityEnumDatasetVisibility.fromJson)
+          dataset_version_visibility = fieldsMap.get("dataset_version_visibility").map(DatasetVisibilityEnumDatasetVisibility.fromJson),
+          id = fieldsMap.get("id").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

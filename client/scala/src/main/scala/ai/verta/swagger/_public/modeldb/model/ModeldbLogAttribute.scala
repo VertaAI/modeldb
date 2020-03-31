@@ -13,8 +13,8 @@ import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbLogAttribute (
-  id: Option[String] = None,
-  attribute: Option[CommonKeyValue] = None
+  attribute: Option[CommonKeyValue] = None,
+  id: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbLogAttribute.toJson(this)
 }
@@ -23,8 +23,8 @@ object ModeldbLogAttribute {
   def toJson(obj: ModeldbLogAttribute): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.id.map(x => JField("id", JString(x))),
-        obj.attribute.map(x => JField("attribute", ((x: CommonKeyValue) => CommonKeyValue.toJson(x))(x)))
+        obj.attribute.map(x => JField("attribute", ((x: CommonKeyValue) => CommonKeyValue.toJson(x))(x))),
+        obj.id.map(x => JField("id", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -38,8 +38,8 @@ object ModeldbLogAttribute {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbLogAttribute(
           // TODO: handle required
-          id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
-          attribute = fieldsMap.get("attribute").map(CommonKeyValue.fromJson)
+          attribute = fieldsMap.get("attribute").map(CommonKeyValue.fromJson),
+          id = fieldsMap.get("id").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

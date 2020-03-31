@@ -66,7 +66,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,6 +95,8 @@ public class CommitTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
+
+  private static long time = Calendar.getInstance().getTimeInMillis();
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -722,7 +723,7 @@ public class CommitTest {
                             PathDatasetComponentBlob.newBuilder()
                                 .setPath(path)
                                 .setSize(2)
-                                .setLastModifiedAtSource(Calendar.getInstance().getTimeInMillis())
+                                .setLastModifiedAtSource(time)
                                 .build())
                         .build())
                 .build())
@@ -882,7 +883,6 @@ public class CommitTest {
   }
 
   @Test
-  @Ignore
   public void getCommitBlobListTest() {
     LOGGER.info("List commit blob test start................................");
 
@@ -953,7 +953,7 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")*/
+            .addLocationPrefix("modeldb")
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -971,7 +971,7 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb.json")*/
+            .addLocationPrefix("modeldb.json")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1003,7 +1003,6 @@ public class CommitTest {
   }
 
   @Test
-  @Ignore
   public void getCommitBlobListUsecase2Test() {
     LOGGER.info("List commit blob test start................................");
 
@@ -1089,8 +1088,8 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")
-            .addLocationPrefix("environment")*/
+            .addLocationPrefix("modeldb")
+            .addLocationPrefix("environment")
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -1110,8 +1109,8 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")
-            .addLocationPrefix("dataset")*/
+            .addLocationPrefix("modeldb")
+            .addLocationPrefix("dataset")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1128,9 +1127,9 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")
+            .addLocationPrefix("modeldb")
             .addLocationPrefix("march")
-            .addLocationPrefix("dataset")*/
+            .addLocationPrefix("dataset")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1143,9 +1142,9 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")
+            .addLocationPrefix("modeldb")
             .addLocationPrefix("dataset")
-            .addLocationPrefix("march")*/
+            .addLocationPrefix("march")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1162,7 +1161,7 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("modeldb")*/
+            .addLocationPrefix("modeldb")
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -1181,7 +1180,7 @@ public class CommitTest {
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            /*.addLocationPrefix("dataset.json")*/
+            .addLocationPrefix("dataset.json")
             .build();
 
     try {

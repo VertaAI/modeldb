@@ -14,8 +14,8 @@ import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class VersioningPythonRequirementEnvironmentBlob (
-  library: Option[String] = None,
   constraint: Option[String] = None,
+  library: Option[String] = None,
   version: Option[VersioningVersionEnvironmentBlob] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningPythonRequirementEnvironmentBlob.toJson(this)
@@ -25,8 +25,8 @@ object VersioningPythonRequirementEnvironmentBlob {
   def toJson(obj: VersioningPythonRequirementEnvironmentBlob): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.library.map(x => JField("library", JString(x))),
         obj.constraint.map(x => JField("constraint", JString(x))),
+        obj.library.map(x => JField("library", JString(x))),
         obj.version.map(x => JField("version", ((x: VersioningVersionEnvironmentBlob) => VersioningVersionEnvironmentBlob.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -41,8 +41,8 @@ object VersioningPythonRequirementEnvironmentBlob {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningPythonRequirementEnvironmentBlob(
           // TODO: handle required
-          library = fieldsMap.get("library").map(JsonConverter.fromJsonString),
           constraint = fieldsMap.get("constraint").map(JsonConverter.fromJsonString),
+          library = fieldsMap.get("library").map(JsonConverter.fromJsonString),
           version = fieldsMap.get("version").map(VersioningVersionEnvironmentBlob.fromJson)
         )
       }

@@ -28,6 +28,8 @@ class Python(_environment._Environment):
         captured.
     env_vars : list of str, optional
         Names of environment variables to capture. If not provided, nothing will be captured.
+    _autocapture : bool, default True
+        Whether to enable the automatic capturing behavior of parameters above.
 
     Examples
     --------
@@ -41,11 +43,15 @@ class Python(_environment._Environment):
         )
 
     """
-    def __init__(self, requirements=None, constraints=None, env_vars=None):
-        super(Python, self).__init__(env_vars=env_vars)
-        self._capture_python_version()
-        self._capture_requirements(requirements)
-        self._capture_constraints(constraints)
+    def __init__(self, requirements=None, constraints=None, env_vars=None, _autocapture=True):
+        super(Python, self).__init__(env_vars, _autocapture)
+
+        if _autocapture:
+            self._capture_python_version()
+        if requirements is not None or _autocapture:
+            self._capture_requirements(requirements)
+        if constraints is not None:
+            self._capture_constraints(constraints)
 
     @staticmethod
     def _req_spec_to_msg(req_spec):
