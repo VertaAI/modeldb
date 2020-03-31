@@ -5,6 +5,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
@@ -16,6 +17,8 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Organization;
+import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -286,6 +289,71 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
   }
 
+  private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
+    UserInfo unsignedUser = authService.getUnsignedUser();
+    for (RepositoryEntity repositoryEntity : allowedResources) {
+      String repositoryId = String.valueOf(repositoryEntity.getId());
+      String ownerRoleBindingName =
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_REPOSITORY_OWNER,
+              repositoryId,
+              repositoryEntity.getOwner(),
+              ModelDBServiceResourceTypes.REPOSITORY.name());
+      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
+      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+        roleService.deleteRoleBinding(roleBinding.getId());
+      }
+
+      // Remove all repositoryEntity collaborators
+      roleService.removeResourceRoleBindings(
+          repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY);
+
+      // Delete workspace based roleBindings
+      deleteWorkspaceRoleBindings(
+          repositoryEntity.getWorkspace_id(),
+          WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+          String.valueOf(repositoryEntity.getId()));
+    }
+  }
+
+  private void deleteWorkspaceRoleBindings(
+      String workspaceId,
+      WorkspaceType workspaceType,
+      String resourceId) {
+    if (workspaceId != null && !workspaceId.isEmpty()) {
+      switch (workspaceType) {
+        case ORGANIZATION:
+          Organization org = (Organization) roleService.getOrgById(workspaceId);
+          String repositoryAdminRoleBindingName =
+              roleService.buildRoleBindingName(
+                  ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+                  resourceId,
+                  new CollaboratorUser(authService, org.getOwnerId()),
+                  ModelDBServiceResourceTypes.REPOSITORY.name());
+          RoleBinding repositoryAdminRoleBinding =
+              roleService.getRoleBindingByName(repositoryAdminRoleBindingName);
+          if (repositoryAdminRoleBinding != null && !repositoryAdminRoleBinding.getId().isEmpty()) {
+            roleService.deleteRoleBinding(repositoryAdminRoleBinding.getId());
+          }
+          break;
+        case USER:
+          String repositoryRoleBindingName =
+              roleService.buildRoleBindingName(
+                  ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+                  resourceId,
+                  new CollaboratorUser(authService, workspaceId),
+                  ModelDBServiceResourceTypes.REPOSITORY.name());
+          RoleBinding repositoryRoleBinding = roleService.getRoleBindingByName(repositoryRoleBindingName);
+          if (repositoryRoleBinding != null && !repositoryRoleBinding.getId().isEmpty()) {
+            roleService.deleteRoleBinding(repositoryRoleBinding.getId());
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
   @Override
   public DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request, CommitDAO commitDAO) throws ModelDBException {
@@ -293,10 +361,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
       // Get self allowed resources id where user has delete permission
+      List<String> requestedIdList = Collections.singletonList(String.valueOf(repository.getId()));
       List<String> allowedRepositoryIds =
           roleService.getAccessibleResourceIdsByActions(
               ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.DELETE,
-              Collections.singletonList(String.valueOf(repository.getId())));
+              requestedIdList);
       if (allowedRepositoryIds.isEmpty()) {
         throw new ModelDBException("Delete Access Denied for given repository Id : " + request.getRepositoryId(), Code.PERMISSION_DENIED);
       }
@@ -332,6 +401,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 }
               });
 
+      deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
       session.delete(repository);
       session.getTransaction().commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
