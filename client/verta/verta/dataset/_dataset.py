@@ -32,9 +32,14 @@ class _Dataset(blob.Blob):
             Lines to be used in the ``__repr__`` of a dataset blob object.
 
         """
-        return [
-            path_component_msg.path,
-            "    {} bytes".format(path_component_msg.size),
-            "    last modified {}".format(_utils.timestamp_to_str(path_component_msg.last_modified_at_source)),
-            "    checksum: {}".format(path_component_msg.md5),
-        ]
+        lines = [path_component_msg.path]
+        if path_component_msg.size:
+            lines.append("    {} bytes".format(path_component_msg.size))
+        if path_component_msg.last_modified_at_source:
+            lines.append("    last modified {}".format(_utils.timestamp_to_str(path_component_msg.last_modified_at_source)))
+        if path_component_msg.md5:
+            lines.append("    MD5 checksum: {}".format(path_component_msg.md5))
+        if path_component_msg.sha256:
+            lines.append("    SHA-256 checksum: {}".format(path_component_msg.sha256))
+
+        return lines
