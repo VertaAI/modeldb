@@ -151,7 +151,7 @@ public class Autogen{{class_name}} implements ProtoType {
         {{^required}}
         {
             Function<ai.verta.modeldb.versioning.{{class_name}},{{#type}}{{> type}}{{/type}}> f = x -> {{#type}}{{#is_list}}blob.get{{name}}List(){{#list_type}}{{#custom}}.stream().map(Autogen{{name}}::fromProto).collect(Collectors.toList()){{/custom}}{{/list_type}}{{/is_list}}{{^is_list}}{{#custom}}Autogen{{name}}.fromProto{{/custom}}(blob.get{{name}}()){{/is_list}}{{/type}};
-            obj.{{name}} = Utils.removeEmpty(f.apply(blob));
+            obj.set{{name}}(f.apply(blob));
         }
         {{/required}}
         {{/properties}}

@@ -124,12 +124,12 @@ public class AutogenNotebookCodeDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.NotebookCodeDiff, AutogenGitCodeDiff> f =
           x -> AutogenGitCodeDiff.fromProto(blob.getGitRepo());
-      obj.GitRepo = Utils.removeEmpty(f.apply(blob));
+      obj.setGitRepo(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.NotebookCodeDiff, AutogenPathDatasetComponentDiff> f =
           x -> AutogenPathDatasetComponentDiff.fromProto(blob.getPath());
-      obj.Path = Utils.removeEmpty(f.apply(blob));
+      obj.setPath(f.apply(blob));
     }
     return obj;
   }

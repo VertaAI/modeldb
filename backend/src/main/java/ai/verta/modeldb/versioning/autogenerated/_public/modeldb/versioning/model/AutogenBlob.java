@@ -182,22 +182,22 @@ public class AutogenBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.Blob, AutogenCodeBlob> f =
           x -> AutogenCodeBlob.fromProto(blob.getCode());
-      obj.Code = Utils.removeEmpty(f.apply(blob));
+      obj.setCode(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.Blob, AutogenConfigBlob> f =
           x -> AutogenConfigBlob.fromProto(blob.getConfig());
-      obj.Config = Utils.removeEmpty(f.apply(blob));
+      obj.setConfig(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.Blob, AutogenDatasetBlob> f =
           x -> AutogenDatasetBlob.fromProto(blob.getDataset());
-      obj.Dataset = Utils.removeEmpty(f.apply(blob));
+      obj.setDataset(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.Blob, AutogenEnvironmentBlob> f =
           x -> AutogenEnvironmentBlob.fromProto(blob.getEnvironment());
-      obj.Environment = Utils.removeEmpty(f.apply(blob));
+      obj.setEnvironment(f.apply(blob));
     }
     return obj;
   }

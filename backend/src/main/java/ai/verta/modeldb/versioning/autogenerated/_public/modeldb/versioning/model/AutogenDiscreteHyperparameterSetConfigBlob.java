@@ -125,7 +125,7 @@ public class AutogenDiscreteHyperparameterSetConfigBlob implements ProtoType {
                   blob.getValuesList().stream()
                       .map(AutogenHyperparameterValuesConfigBlob::fromProto)
                       .collect(Collectors.toList());
-      obj.Values = Utils.removeEmpty(f.apply(blob));
+      obj.setValues(f.apply(blob));
     }
     return obj;
   }
