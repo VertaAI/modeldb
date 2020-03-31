@@ -54,7 +54,7 @@ class Python(_environment._Environment):
             self._capture_constraints(constraints)
 
     def __repr__(self):
-        lines = ["Python Blob"]
+        lines = ["Python Version"]
         if self._msg.python.version.major:
             lines.append("Python {}.{}.{}".format(
                 self._msg.python.version.major,

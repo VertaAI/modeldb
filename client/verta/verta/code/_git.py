@@ -66,7 +66,7 @@ class Git(_code._Code):
             self._msg.git.is_dirty = _git_utils.get_git_commit_dirtiness(ref)
 
     def __repr__(self):
-        lines = ["Git Blob"]
+        lines = ["Git Version"]
         if self._msg.git.hash:
             lines.append("{}commit {}".format(
                 "dirty " if self._msg.git.is_dirty else "",

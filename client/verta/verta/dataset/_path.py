@@ -55,7 +55,7 @@ class Path(_dataset._Dataset):
         self._msg.path.components.extend(metadata)
 
     def __repr__(self):
-        lines = ["Path Blob"]
+        lines = ["Path Version"]
         for component in self._msg.path.components:
             lines.extend(self._path_component_to_repr_lines(component))
 

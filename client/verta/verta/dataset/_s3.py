@@ -57,7 +57,7 @@ class S3(_dataset._Dataset):
         self._msg.s3.components.extend(s3_metadata)  # pylint: disable=no-member
 
     def __repr__(self):
-        lines = ["S3 Blob"]
+        lines = ["S3 Version"]
         for component in self._msg.s3.components:
             lines.extend(self._path_component_to_repr_lines(component.path))
 

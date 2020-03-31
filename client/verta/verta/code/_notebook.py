@@ -67,7 +67,7 @@ class Notebook(_code._Code):
                 file_msg.path = os.path.relpath(file_msg.path, repo_root)
 
     def __repr__(self):
-        lines = ["Notebook Blob"]
+        lines = ["Notebook Version"]
         file_msg = self._msg.notebook.path
         if file_msg.path:
             lines.extend(_path.Path._path_component_to_repr_lines(file_msg))

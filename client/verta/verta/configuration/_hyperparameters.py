@@ -64,7 +64,7 @@ class Hyperparameters(_configuration._Configuration):
             )
 
     def __repr__(self):
-        lines = ["Hyperparameters Blob"]
+        lines = ["Hyperparameters Version"]
         lines.extend(
             "{}: {}".format(
                 hyperparam_msg.name,
