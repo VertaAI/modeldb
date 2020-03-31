@@ -448,7 +448,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Hydrated serviceImpl initialized");
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       serverBuilder.addService(
-          new CollaboratorServiceImpl(authService, roleService, projectDAO, datasetDAO));
+          new CollaboratorServiceImpl(authService, roleService, projectDAO, datasetDAO, repositoryDAO));
       LOGGER.debug("Collaborator serviceImpl initialized");
     }
     serverBuilder.addService(

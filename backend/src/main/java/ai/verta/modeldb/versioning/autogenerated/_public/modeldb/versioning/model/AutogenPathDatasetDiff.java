@@ -117,7 +117,7 @@ public class AutogenPathDatasetDiff implements ProtoType {
                   blob.getComponentsList().stream()
                       .map(AutogenPathDatasetComponentDiff::fromProto)
                       .collect(Collectors.toList());
-      obj.Components = Utils.removeEmpty(f.apply(blob));
+      obj.setComponents(f.apply(blob));
     }
     return obj;
   }

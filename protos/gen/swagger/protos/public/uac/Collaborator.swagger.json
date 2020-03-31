@@ -75,6 +75,38 @@
         ]
       }
     },
+    "/collaborator/addOrUpdateRepositoryCollaborator": {
+      "post": {
+        "operationId": "addOrUpdateRepositoryCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/getDatasetCollaborators": {
       "get": {
         "operationId": "getDatasetCollaborators",
@@ -108,6 +140,36 @@
     "/collaborator/getProjectCollaborators": {
       "get": {
         "operationId": "getProjectCollaborators",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/getRepositoryCollaborators": {
+      "get": {
+        "operationId": "getRepositoryCollaborators",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -194,6 +256,62 @@
     "/collaborator/removeProjectCollaborator": {
       "delete": {
         "operationId": "removeProjectCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date_deleted",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "authz_entity_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ORGANIZATION",
+              "TEAM",
+              "USER"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/removeRepositoryCollaborator": {
+      "delete": {
+        "operationId": "removeRepositoryCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",

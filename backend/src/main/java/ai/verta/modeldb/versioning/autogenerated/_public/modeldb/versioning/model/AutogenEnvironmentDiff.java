@@ -214,12 +214,12 @@ public class AutogenEnvironmentDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.EnvironmentDiff, AutogenCommandLineEnvironmentDiff> f =
           x -> AutogenCommandLineEnvironmentDiff.fromProto(blob.getCommandLine());
-      obj.CommandLine = Utils.removeEmpty(f.apply(blob));
+      obj.setCommandLine(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentDiff, AutogenDockerEnvironmentDiff> f =
           x -> AutogenDockerEnvironmentDiff.fromProto(blob.getDocker());
-      obj.Docker = Utils.removeEmpty(f.apply(blob));
+      obj.setDocker(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentDiff, List<AutogenEnvironmentVariablesDiff>>
@@ -228,12 +228,12 @@ public class AutogenEnvironmentDiff implements ProtoType {
                   blob.getEnvironmentVariablesList().stream()
                       .map(AutogenEnvironmentVariablesDiff::fromProto)
                       .collect(Collectors.toList());
-      obj.EnvironmentVariables = Utils.removeEmpty(f.apply(blob));
+      obj.setEnvironmentVariables(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentDiff, AutogenPythonEnvironmentDiff> f =
           x -> AutogenPythonEnvironmentDiff.fromProto(blob.getPython());
-      obj.Python = Utils.removeEmpty(f.apply(blob));
+      obj.setPython(f.apply(blob));
     }
     return obj;
   }

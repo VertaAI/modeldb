@@ -19,13 +19,16 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.RoleBinding;
+import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,6 +39,8 @@ import org.hibernate.query.Query;
 
 public class RepositoryDAORdbImpl implements RepositoryDAO {
 
+  private static final String GET_REPOSITORY_BY_IDS_QUERY =
+      "From RepositoryEntity ent where ent.id IN (:ids)";
   private static final Logger LOGGER = LogManager.getLogger(RepositoryDAORdbImpl.class);
   private final AuthService authService;
   private final RoleService roleService;
@@ -245,8 +250,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public SetRepository.Response setRepository(SetRepository request, boolean create)
-      throws ModelDBException {
+  public SetRepository.Response setRepository(
+      SetRepository request, UserInfo userInfo, boolean create) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
       session.beginTransaction();
@@ -284,6 +289,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         repository.update(request);
       }
       session.saveOrUpdate(repository);
+      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
+      roleService.createRoleBinding(
+          ownerRole,
+          new CollaboratorUser(authService, userInfo),
+          String.valueOf(repository.getId()),
+          ModelDBServiceResourceTypes.REPOSITORY);
       session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }
@@ -731,6 +742,23 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               commits.stream().map(CommitEntity::toCommitProto).collect(Collectors.toList()))
           .setTotalRecords(commits.size())
           .build();
+    }
+  }
+
+  @Override
+  public Map<String, String> getOwnersByRepositoryIds(List<String> entityIds) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Query query = session.createQuery(GET_REPOSITORY_BY_IDS_QUERY);
+      query.setParameterList("ids", entityIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+
+      @SuppressWarnings("unchecked")
+      List<RepositoryEntity> repositoryEntities = query.list();
+      LOGGER.debug("Got Repository by Id");
+      Map<String, String> repositoryOwnersMap = new HashMap<>();
+      for (RepositoryEntity repositoryEntity : repositoryEntities) {
+        repositoryOwnersMap.put(String.valueOf(repositoryEntity.getId()), repositoryEntity.getOwner());
+      }
+      return repositoryOwnersMap;
     }
   }
 }

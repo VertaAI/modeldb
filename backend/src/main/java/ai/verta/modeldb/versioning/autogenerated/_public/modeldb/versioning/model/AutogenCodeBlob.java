@@ -123,12 +123,12 @@ public class AutogenCodeBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.CodeBlob, AutogenGitCodeBlob> f =
           x -> AutogenGitCodeBlob.fromProto(blob.getGit());
-      obj.Git = Utils.removeEmpty(f.apply(blob));
+      obj.setGit(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.CodeBlob, AutogenNotebookCodeBlob> f =
           x -> AutogenNotebookCodeBlob.fromProto(blob.getNotebook());
-      obj.Notebook = Utils.removeEmpty(f.apply(blob));
+      obj.setNotebook(f.apply(blob));
     }
     return obj;
   }

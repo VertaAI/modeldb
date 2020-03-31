@@ -222,7 +222,6 @@ public class DiffTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(getBranchResponse.getCommit().getCommitSha())
@@ -255,7 +254,6 @@ public class DiffTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setAuthor(authClientInterceptor.getClient1Email())
                     .setMessage("this is the test commit message")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(commitA.getCommitSha())

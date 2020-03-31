@@ -223,12 +223,12 @@ public class AutogenEnvironmentBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.EnvironmentBlob, List<String>> f =
           x -> blob.getCommandLineList();
-      obj.CommandLine = Utils.removeEmpty(f.apply(blob));
+      obj.setCommandLine(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentBlob, AutogenDockerEnvironmentBlob> f =
           x -> AutogenDockerEnvironmentBlob.fromProto(blob.getDocker());
-      obj.Docker = Utils.removeEmpty(f.apply(blob));
+      obj.setDocker(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentBlob, List<AutogenEnvironmentVariablesBlob>>
@@ -237,12 +237,12 @@ public class AutogenEnvironmentBlob implements ProtoType {
                   blob.getEnvironmentVariablesList().stream()
                       .map(AutogenEnvironmentVariablesBlob::fromProto)
                       .collect(Collectors.toList());
-      obj.EnvironmentVariables = Utils.removeEmpty(f.apply(blob));
+      obj.setEnvironmentVariables(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.EnvironmentBlob, AutogenPythonEnvironmentBlob> f =
           x -> AutogenPythonEnvironmentBlob.fromProto(blob.getPython());
-      obj.Python = Utils.removeEmpty(f.apply(blob));
+      obj.setPython(f.apply(blob));
     }
     return obj;
   }

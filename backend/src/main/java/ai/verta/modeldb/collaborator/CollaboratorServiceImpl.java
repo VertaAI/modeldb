@@ -13,6 +13,7 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Actions;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddCollaboratorRequest.Response;
@@ -57,16 +58,19 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
   private RoleService roleService;
   private ProjectDAO projectDAO;
   private DatasetDAO datasetDAO;
+  private final RepositoryDAO repositoryDAO;
 
   public CollaboratorServiceImpl(
       AuthService authService,
       RoleService roleService,
       ProjectDAO projectDAO,
-      DatasetDAO datasetDAO) {
+      DatasetDAO datasetDAO,
+      RepositoryDAO repositoryDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.projectDAO = projectDAO;
     this.datasetDAO = datasetDAO;
+    this.repositoryDAO = repositoryDAO;
   }
 
   private CollaboratorBase getShareWithCollaborator(
@@ -131,6 +135,30 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
     }
   }
 
+  private void validateRequestParameters(RemoveCollaborator request, String entityType) {
+    String errorMessage = null;
+
+    if (request.getShareWith().isEmpty() && request.getEntityId().isEmpty()) {
+      errorMessage =
+          "Shared User and " + entityType + " ID not found in RemoveCollaborator request";
+    } else if (request.getShareWith().isEmpty()) {
+      errorMessage = "Shared User not found in RemoveCollaborator request";
+    } else if (request.getEntityId().isEmpty()) {
+      errorMessage = entityType + " ID not found in RemoveCollaborator request";
+    }
+
+    if (errorMessage != null) {
+      LOGGER.warn(errorMessage);
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.INVALID_ARGUMENT_VALUE)
+              .setMessage(errorMessage)
+              .addDetails(Any.pack(RemoveCollaborator.Response.getDefaultInstance()))
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+  }
+
   private Map<String, String> getEntityOwnerMap(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     Map<String, String> entityOwnersMap = new HashMap<>();
@@ -138,6 +166,8 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
       entityOwnersMap = projectDAO.getOwnersByProjectIds(entityIds);
     } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
       entityOwnersMap = datasetDAO.getOwnersByDatasetIds(entityIds);
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
+      entityOwnersMap = repositoryDAO.getOwnersByRepositoryIds(entityIds);
     }
     return entityOwnersMap;
   }
@@ -157,6 +187,12 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
     } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)
         && collaboratorType.equals(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)) {
       return ModelDBConstants.ROLE_DATASET_READ_ONLY;
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)
+        && collaboratorType.equals(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)) {
+      return ModelDBConstants.ROLE_REPOSITORY_READ_WRITE;
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)
+        && collaboratorType.equals(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)) {
+      return ModelDBConstants.ROLE_REPOSITORY_READ_ONLY;
     } else {
       String errorMessage = "collaborator type and resource type are not found as expected";
       LOGGER.warn(errorMessage);
@@ -424,25 +460,7 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      String errorMessage = null;
-      if (request.getShareWith().isEmpty() && request.getEntityId().isEmpty()) {
-        errorMessage = "Shared User and Project ID not found in RemoveProjectCollaborator request";
-      } else if (request.getShareWith().isEmpty()) {
-        errorMessage = "Shared User not found in RemoveProjectCollaborator request";
-      } else if (request.getEntityId().isEmpty()) {
-        errorMessage = "Project ID not found in RemoveProjectCollaborator request";
-      }
-
-      if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(RemoveCollaborator.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
+      validateRequestParameters(request, ModelDBConstants.PROJECT_COLLABORATORS);
 
       responseObserver.onNext(removeCollaborator(request, ModelDBServiceResourceTypes.PROJECT));
       responseObserver.onCompleted();
@@ -562,27 +580,89 @@ public class CollaboratorServiceImpl extends CollaboratorServiceImplBase {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      String errorMessage = null;
-      if (request.getShareWith().isEmpty() && request.getEntityId().isEmpty()) {
-        errorMessage = "Shared User and Dataset ID not found in RemoveDatasetCollaborator request";
-      } else if (request.getShareWith().isEmpty()) {
-        errorMessage = "Shared User not found in RemoveDatasetCollaborator request";
-      } else if (request.getEntityId().isEmpty()) {
-        errorMessage = "Dataset ID not found in RemoveDatasetCollaborator request";
-      }
+      validateRequestParameters(request, ModelDBConstants.DATASET_COLLABORATORS);
 
-      if (errorMessage != null) {
+      responseObserver.onNext(removeCollaborator(request, ModelDBServiceResourceTypes.DATASET));
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, RemoveCollaborator.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void addOrUpdateRepositoryCollaborator(
+      AddCollaboratorRequest request,
+      StreamObserver<AddCollaboratorRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+
+      // validate request parameters
+      validateRequestParameters(request, ModelDBConstants.REPOSITORY_COLLABORATORS);
+
+      responseObserver.onNext(
+          addORUpdateCollaborators(request, ModelDBServiceResourceTypes.REPOSITORY));
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, AddCollaboratorRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getRepositoryCollaborators(
+      GetCollaborator request, StreamObserver<GetCollaborator.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getEntityId().isEmpty()) {
+        String errorMessage = "Repository ID not found in GetCollaborator request";
         LOGGER.warn(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(RemoveCollaborator.Response.getDefaultInstance()))
+                .addDetails(Any.pack(GetCollaborator.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      responseObserver.onNext(removeCollaborator(request, ModelDBServiceResourceTypes.DATASET));
+      // Check User Role
+      roleService.isSelfAllowed(
+          ModelDBServiceResourceTypes.REPOSITORY,
+          ModelDBServiceActions.READ,
+          request.getEntityId());
+
+      // list of repositories and their owners
+      Map<String, String> repositoryOwnersMap =
+          getEntityOwnerMap(
+              Collections.singletonList(request.getEntityId()),
+              ModelDBServiceResourceTypes.REPOSITORY);
+      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+      List<GetCollaboratorResponse> responseData =
+          roleService.getResourceCollaborators(
+              ModelDBServiceResourceTypes.REPOSITORY,
+              request.getEntityId(),
+              repositoryOwnersMap.get(request.getEntityId()),
+              requestHeaders);
+      responseObserver.onNext(
+          GetCollaborator.Response.newBuilder().addAllSharedUsers(responseData).build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(responseObserver, e, GetCollaborator.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void removeRepositoryCollaborator(
+      RemoveCollaborator request, StreamObserver<RemoveCollaborator.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      validateRequestParameters(request, ModelDBConstants.REPOSITORY_COLLABORATORS);
+
+      responseObserver.onNext(removeCollaborator(request, ModelDBServiceResourceTypes.REPOSITORY));
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
