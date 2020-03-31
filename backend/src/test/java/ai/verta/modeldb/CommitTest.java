@@ -1620,6 +1620,11 @@ public class CommitTest {
     LOGGER.info("List commit environment blob test end................................");
   }
 
+  /**
+   * Check parent commits exists or not when creating new commit.
+   * if parent commit not exists then ModelDB throw the error with INVALID_ARGUMENT
+   * @throws ModelDBException modelDBException
+   */
   @Test
   public void createDeleteCommitWithParentCommitExistsTest() throws ModelDBException {
     LOGGER.info("Check parent commits exists of commit test start................................");
