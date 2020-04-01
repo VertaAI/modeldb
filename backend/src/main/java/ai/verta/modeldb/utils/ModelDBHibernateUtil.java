@@ -244,6 +244,7 @@ public class ModelDBHibernateUtil {
         runMigration();
 
         LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
+        isReady = true;
         return sessionFactory;
       } catch (Exception e) {
         e.printStackTrace();
