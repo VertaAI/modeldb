@@ -4,6 +4,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.uac.UserInfo;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.hibernate.Session;
 
 public interface RepositoryDAO {
@@ -15,13 +16,14 @@ public interface RepositoryDAO {
 
   SetRepository.Response setRepository(SetRepository request, UserInfo userInfo,
       boolean create)
-      throws ModelDBException;
+      throws ModelDBException, InvalidProtocolBufferException;
 
   DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException;
 
-  ListRepositoriesRequest.Response listRepositories(ListRepositoriesRequest request)
+  ListRepositoriesRequest.Response listRepositories(ListRepositoriesRequest request,
+      UserInfo userInfo)
       throws ModelDBException;
 
   ListTagsRequest.Response listTags(ListTagsRequest request) throws ModelDBException;

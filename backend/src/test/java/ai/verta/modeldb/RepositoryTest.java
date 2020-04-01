@@ -365,46 +365,50 @@ public class RepositoryTest {
     Long[] repoIds = new Long[2];
     repoIds[0] = repoId1;
     repoIds[1] = repoId2;
+    try {
 
-    ListRepositoriesRequest listRepositoriesRequest = ListRepositoriesRequest.newBuilder().build();
-    ListRepositoriesRequest.Response listRepositoriesResponse =
-        versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
-    Assert.assertEquals(
-        "Repository count not match with expected repository count",
-        2,
-        listRepositoriesResponse.getRepositoriesCount());
-    Assert.assertEquals(
-        "Repository name not match with expected repository name",
-        NAME_2,
-        listRepositoriesResponse.getRepositories(0).getName());
-    Assert.assertEquals(
-        "Repository name not match with expected repository name",
-        NAME,
-        listRepositoriesResponse.getRepositories(1).getName());
+      ListRepositoriesRequest listRepositoriesRequest = ListRepositoriesRequest.newBuilder()
+          .build();
+      ListRepositoriesRequest.Response listRepositoriesResponse =
+          versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          2,
+          listRepositoriesResponse.getRepositoriesCount());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME_2,
+          listRepositoriesResponse.getRepositories(0).getName());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME,
+          listRepositoriesResponse.getRepositories(1).getName());
 
-    listRepositoriesRequest =
-        ListRepositoriesRequest.newBuilder()
-            .setPagination(Pagination.newBuilder().setPageLimit(1).setPageNumber(1).build())
-            .build();
-    listRepositoriesResponse =
-        versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
-    Assert.assertEquals(
-        "Repository count not match with expected repository count",
-        1,
-        listRepositoriesResponse.getRepositoriesCount());
-    Assert.assertEquals(
-        "Repository name not match with expected repository name",
-        NAME_2,
-        listRepositoriesResponse.getRepositories(0).getName());
-
-    for (long repoId : repoIds) {
-      DeleteRepositoryRequest deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+      listRepositoriesRequest =
+          ListRepositoriesRequest.newBuilder()
+              .setPagination(Pagination.newBuilder().setPageLimit(1).setPageNumber(1).build())
               .build();
-      DeleteRepositoryRequest.Response deleteResult =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
+      listRepositoriesResponse =
+          versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          1,
+          listRepositoriesResponse.getRepositoriesCount());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME_2,
+          listRepositoriesResponse.getRepositories(0).getName());
+    }
+    finally {
+      for (long repoId : repoIds) {
+        DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+                .build();
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+        Assert.assertTrue(deleteResult.getStatus());
+      }
     }
 
     LOGGER.info("List repository test end................................");

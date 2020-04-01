@@ -70,7 +70,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
             throw new ModelDBException("Page limit is invalid", Code.INVALID_ARGUMENT);
           }
         }
-        Response response = repositoryDAO.listRepositories(request);
+        UserInfo userInfo = authService.getCurrentLoginUserInfo();
+        Response response = repositoryDAO.listRepositories(request, userInfo);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }

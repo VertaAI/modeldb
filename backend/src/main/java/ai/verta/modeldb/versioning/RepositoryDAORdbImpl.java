@@ -2,6 +2,7 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -22,11 +23,14 @@ import ai.verta.uac.Organization;
 import ai.verta.uac.RoleBinding;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -251,8 +255,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public SetRepository.Response setRepository(
-      SetRepository request, UserInfo userInfo, boolean create) throws ModelDBException {
+  public SetRepository.Response setRepository(SetRepository request, UserInfo userInfo,
+      boolean create)
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
       session.beginTransaction();
@@ -276,6 +281,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 request.getRepository().getOwner());
       } else {
         repository = getRepositoryById(session, request.getId());
+        roleService.validateEntityUserWithUserInfo(
+            ModelDBServiceResourceTypes.REPOSITORY, repository.getId().toString(), ModelDBServiceActions.UPDATE);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
             session,
             SHORT_NAME,
@@ -423,7 +430,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public ListRepositoriesRequest.Response listRepositories(ListRepositoriesRequest request)
+  public ListRepositoriesRequest.Response listRepositories(ListRepositoriesRequest request,
+      UserInfo currentLoginUserInfo)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       WorkspaceDTO workspaceDTO =
@@ -475,7 +483,20 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               workspaceDTO.getWorkspaceType(),
               false,
               null);
-      list.forEach((o) -> builder.addRepositories(((RepositoryEntity) o).toProto()));
+      Map<String, RepositoryEntity> result = new LinkedHashMap<>();
+      for (Object o : list) {
+        RepositoryEntity repositoryEntity = (RepositoryEntity) o;
+        result.put(repositoryEntity.getId().toString(), repositoryEntity);
+      }
+      List<String> accessibleResourceIds =
+          roleService.getAccessibleResourceIds(
+              null,
+              new CollaboratorUser(authService, currentLoginUserInfo),
+              ProjectVisibility.PRIVATE,
+              ModelDBServiceResourceTypes.REPOSITORY,
+              new ArrayList<>(result.keySet()));
+      result.keySet().retainAll(accessibleResourceIds);
+      result.values().forEach(repositoryEntity -> builder.addRepositories(repositoryEntity.toProto()));
       final Long value = (Long) query.uniqueResult();
       builder.setTotalRecords(value);
       return builder.build();
