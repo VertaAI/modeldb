@@ -195,9 +195,30 @@ public class RepositoryTest {
       versioningServiceBlockingStub.createRepository(setRepository);
       Assert.fail();
     } catch (StatusRuntimeException e) {
-      Assert.assertTrue(
-          Code.PERMISSION_DENIED.equals(e.getStatus().getCode())
-              || Code.ALREADY_EXISTS.equals(e.getStatus().getCode()));
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        assertEquals(Status.PERMISSION_DENIED.getCode(), e.getStatus().getCode());
+      } else {
+        assertEquals(Status.ALREADY_EXISTS.getCode(), e.getStatus().getCode());
+      }
+    }
+    try {
+      versioningServiceBlockingStubClient2.updateRepository(SetRepository.newBuilder().setId(
+          RepositoryIdentification.newBuilder().setRepoId(id)).setRepository(
+          Repository.newBuilder().setName("new_name")).build());
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        Assert.fail();
+      }
+    } catch (StatusRuntimeException e) {
+      assertEquals(Code.PERMISSION_DENIED, e.getStatus().getCode());
+    }
+    try {
+      versioningServiceBlockingStubClient2.getRepository(GetRepositoryRequest.newBuilder().setId(
+          RepositoryIdentification.newBuilder().setRepoId(id)).build());
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        Assert.fail();
+      }
+    } catch (StatusRuntimeException e) {
+      assertEquals(Code.PERMISSION_DENIED, e.getStatus().getCode());
     }
 
     DeleteRepositoryRequest deleteRepository =
@@ -242,45 +263,47 @@ public class RepositoryTest {
 
     long id = createRepository(versioningServiceBlockingStub, NAME);
 
-    SetRepository setRepository =
-        SetRepository.newBuilder()
-            .setId(
-                RepositoryIdentification.newBuilder()
-                    .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME).build())
-                    .build())
-            .setRepository(Repository.newBuilder().setName(NAME_2))
-            .build();
-    SetRepository.Response result = versioningServiceBlockingStub.updateRepository(setRepository);
-    Assert.assertTrue(result.hasRepository());
-    Assert.assertEquals(NAME_2, result.getRepository().getName());
+    try {
+      SetRepository setRepository =
+          SetRepository.newBuilder()
+              .setId(
+                  RepositoryIdentification.newBuilder()
+                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME).build())
+                      .build())
+              .setRepository(Repository.newBuilder().setName(NAME_2))
+              .build();
+      SetRepository.Response result = versioningServiceBlockingStub.updateRepository(setRepository);
+      Assert.assertTrue(result.hasRepository());
+      Assert.assertEquals(NAME_2, result.getRepository().getName());
 
-    GetRepositoryRequest getRepositoryRequest =
-        GetRepositoryRequest.newBuilder()
-            .setId(
-                RepositoryIdentification.newBuilder()
-                    .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME_2)))
-            .build();
-    GetRepositoryRequest.Response getByNameResult =
-        versioningServiceBlockingStub.getRepository(getRepositoryRequest);
-    Assert.assertEquals(
-        "Repository Id not match with expected repository Id",
-        id,
-        getByNameResult.getRepository().getId());
-    Assert.assertEquals(
-        "Repository name not match with expected repository name",
-        NAME_2,
-        getByNameResult.getRepository().getName());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      Assert.assertEquals(RESOURCE_OWNER_ID, getByNameResult.getRepository().getOwner());
+      GetRepositoryRequest getRepositoryRequest =
+          GetRepositoryRequest.newBuilder()
+              .setId(
+                  RepositoryIdentification.newBuilder()
+                      .setNamedId(RepositoryNamedIdentification.newBuilder().setName(NAME_2)))
+              .build();
+      GetRepositoryRequest.Response getByNameResult =
+          versioningServiceBlockingStub.getRepository(getRepositoryRequest);
+      Assert.assertEquals(
+          "Repository Id not match with expected repository Id",
+          id,
+          getByNameResult.getRepository().getId());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME_2,
+          getByNameResult.getRepository().getName());
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        Assert.assertEquals(RESOURCE_OWNER_ID, getByNameResult.getRepository().getOwner());
+      }
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Update repository by name test end................................");
   }
@@ -367,8 +390,8 @@ public class RepositoryTest {
     repoIds[1] = repoId2;
     try {
 
-      ListRepositoriesRequest listRepositoriesRequest = ListRepositoriesRequest.newBuilder()
-          .build();
+      ListRepositoriesRequest listRepositoriesRequest =
+          ListRepositoriesRequest.newBuilder().build();
       ListRepositoriesRequest.Response listRepositoriesResponse =
           versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
       Assert.assertEquals(
@@ -398,8 +421,7 @@ public class RepositoryTest {
           "Repository name not match with expected repository name",
           NAME_2,
           listRepositoriesResponse.getRepositories(0).getName());
-    }
-    finally {
+    } finally {
       for (long repoId : repoIds) {
         DeleteRepositoryRequest deleteRepository =
             DeleteRepositoryRequest.newBuilder()

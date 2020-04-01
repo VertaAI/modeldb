@@ -16,7 +16,6 @@ import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
-import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -251,7 +250,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       List<BlobContainer> blobContainers;
       final RepositoryFunction repositoryFunction =
-          (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId());
+          (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true);
       if (request.getBlobsCount() != 0) {
         blobContainers = validateBlobs(request);
       } else {
@@ -413,16 +412,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     }
   }
 
-  String generateAndValidateSha(PathDatasetComponentBlob path)
-      throws ModelDBException, NoSuchAlgorithmException {
-    String sha = path.getSha256();
-    String generatedSha = fileHasher.getSha(path);
-    if (!sha.isEmpty() && !sha.equals(generatedSha)) {
-      throw new ModelDBException("Checksum is wrong", Code.INVALID_ARGUMENT);
-    }
-    return generatedSha;
-  }
-
   @Override
   public void computeRepositoryDiff(
       ComputeRepositoryDiffRequest request,
@@ -453,7 +442,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
         MergeRepositoryCommitsRequest.Response mergeResponse =
             blobDAO.mergeCommit(
-                (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+                (session) ->
+                    repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true),
                 request);
         responseObserver.onNext(mergeResponse);
         responseObserver.onCompleted();

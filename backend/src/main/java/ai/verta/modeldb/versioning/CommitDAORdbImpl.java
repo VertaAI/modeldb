@@ -210,7 +210,7 @@ public class CommitDAORdbImpl implements CommitDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(session, request.getRepositoryId());
+          repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true);
       boolean exists =
           VersioningUtils.commitRepositoryMappingExists(
               session, request.getCommitSha(), repositoryEntity.getId());
