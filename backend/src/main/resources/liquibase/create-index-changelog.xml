@@ -5,7 +5,7 @@
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
         logicalFilePath="src/main/resources/liquibase/create-index-changelog.xml">
 
-    <changeSet author="anandJ" id="1-create-text-indexes-postgres">
+    <changeSet author="anandJ" id="1-create-text-indexes-postgres" failOnError="false">
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
         </preConditions>
@@ -26,7 +26,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet author="anandJ" id="1-create-text-indexes-mysql">
+    <changeSet author="anandJ" id="1-create-text-indexes-mysql" failOnError="false">
         <preConditions onFail="MARK_RAN">
             <dbms type="mysql"/>
         </preConditions>
@@ -36,7 +36,8 @@
             CREATE INDEX at_kv_key on attribute (kv_key(255));
         </sql>
     </changeSet>
-        <changeSet author="raviS" id="recreate-text-indexes-postgres">
+
+    <changeSet author="raviS" id="recreate-text-indexes-postgres" failOnError="false">
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
         </preConditions>
@@ -556,6 +557,81 @@
         </preConditions>
         <createIndex indexName="c_e_id" tableName="comment">
             <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_kv_kv_val_sql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <indexExists indexName="kv_kv_val"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX kv_kv_val ON keyvalue (kv_value(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_kv_kv_key_sql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <indexExists indexName="kv_kv_key"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX kv_kv_key ON keyvalue (kv_key(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_at_kv_key_sql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <indexExists indexName="at_kv_key"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX at_kv_key on attribute (kv_key(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_kv_kv_val_postgres">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <indexExists indexName="kv_kv_val"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_kv_val"
+                     tableName="keyvalue">
+            <column name="kv_value"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_kv_kv_key_postgres">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <indexExists indexName="kv_kv_key"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_kv_key"
+                     tableName="keyvalue">
+            <column name="kv_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_at_kv_key_postgres">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <indexExists indexName="at_kv_key"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="at_kv_key"
+                     tableName="attribute">
+            <column name="kv_key"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog>
