@@ -12,6 +12,7 @@ import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
+import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
@@ -296,7 +297,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public DeleteRepositoryRequest.Response deleteRepository(
-      DeleteRepositoryRequest request, CommitDAO commitDAO) throws ModelDBException {
+      DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
@@ -331,6 +333,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   }
                 }
               });
+      // Delete all VersionedInputs for repository ID
+      experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
 
       session.delete(repository);
       session.getTransaction().commit();

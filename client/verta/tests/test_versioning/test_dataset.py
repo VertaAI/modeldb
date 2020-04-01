@@ -60,6 +60,14 @@ class TestS3:
 
         assert len(multiple_dataset._msg.s3.components) == len(bucket_dataset._msg.s3.components)
 
+    def test_repr(self):
+        """Tests that __repr__() executes without error"""
+        pytest.importorskip("boto3")
+
+        dataset_ver = verta.dataset.S3("s3://verta-starter")
+
+        assert dataset_ver.__repr__()
+
 
 class TestPath:
     def test_dirpath(self):
@@ -103,3 +111,9 @@ class TestPath:
         ])
         dir_dataset = verta.dataset.Path("modelapi_hypothesis/")
         assert len(multiple_dataset._msg.path.components) == len(dir_dataset._msg.path.components)
+
+    def test_repr(self):
+        """Tests that __repr__() executes without error"""
+        dataset = verta.dataset.Path("modelapi_hypothesis/")
+
+        assert dataset.__repr__()

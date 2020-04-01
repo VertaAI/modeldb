@@ -68,7 +68,7 @@ public class OwnerRoleBindingUtils {
     Long count = getEntityCount(ExperimentEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = 200;
+    final int pagesize = 5000;
     LOGGER.debug("Total experiments {}", count);
 
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
@@ -148,7 +148,7 @@ public class OwnerRoleBindingUtils {
     Long count = getEntityCount(ExperimentRunEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = 200;
+    final int pagesize = 5000;
     LOGGER.debug("Total experimentruns {}", count);
 
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
@@ -223,7 +223,7 @@ public class OwnerRoleBindingUtils {
     Long count = getEntityCount(DatasetVersionEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = 200;
+    final int pagesize = 5000;
     LOGGER.debug("Total datasetVersions {}", count);
 
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
