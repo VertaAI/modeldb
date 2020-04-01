@@ -120,3 +120,13 @@ class TestPython:
             env_ver._msg,
             including_default_value_fields=False,
         )
+
+    def test_repr(self):
+        """Tests that __repr__() executes without error"""
+        env_ver = verta.environment.Python(
+            requirements=['verta==0.14.1'],
+            constraints=['six==1.14.0'],
+            env_vars=['HOME'],
+        )
+
+        assert env_ver.__repr__()

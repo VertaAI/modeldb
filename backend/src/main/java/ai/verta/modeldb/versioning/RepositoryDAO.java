@@ -5,6 +5,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.uac.UserInfo;
 import java.util.List;
 import java.util.Map;
+import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import org.hibernate.Session;
 
 public interface RepositoryDAO {
@@ -18,7 +19,8 @@ public interface RepositoryDAO {
       throws ModelDBException;
 
   DeleteRepositoryRequest.Response deleteRepository(
-      DeleteRepositoryRequest request, CommitDAO commitDAO) throws ModelDBException;
+      DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException;
 
   ListRepositoriesRequest.Response listRepositories(ListRepositoriesRequest request)
       throws ModelDBException;
