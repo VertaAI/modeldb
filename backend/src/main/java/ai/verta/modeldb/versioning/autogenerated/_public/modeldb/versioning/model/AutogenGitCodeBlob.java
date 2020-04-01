@@ -211,23 +211,23 @@ public class AutogenGitCodeBlob implements ProtoType {
     AutogenGitCodeBlob obj = new AutogenGitCodeBlob();
     {
       Function<ai.verta.modeldb.versioning.GitCodeBlob, String> f = x -> (blob.getBranch());
-      obj.Branch = Utils.removeEmpty(f.apply(blob));
+      obj.setBranch(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.GitCodeBlob, String> f = x -> (blob.getHash());
-      obj.Hash = Utils.removeEmpty(f.apply(blob));
+      obj.setHash(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.GitCodeBlob, Boolean> f = x -> (blob.getIsDirty());
-      obj.IsDirty = Utils.removeEmpty(f.apply(blob));
+      obj.setIsDirty(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.GitCodeBlob, String> f = x -> (blob.getRepo());
-      obj.Repo = Utils.removeEmpty(f.apply(blob));
+      obj.setRepo(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.GitCodeBlob, String> f = x -> (blob.getTag());
-      obj.Tag = Utils.removeEmpty(f.apply(blob));
+      obj.setTag(f.apply(blob));
     }
     return obj;
   }

@@ -47,6 +47,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -5834,6 +5835,11 @@ public class HydratedServiceTest {
   @Test
   public void checkCollaboratorDeleteActionTest() {
     LOGGER.info("Check collaborator has delete action test start.........");
+
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      Assert.assertTrue(true);
+      return;
+    }
 
     ExperimentTest experimentTest = new ExperimentTest();
     ExperimentRunTest experimentRunTest = new ExperimentRunTest();

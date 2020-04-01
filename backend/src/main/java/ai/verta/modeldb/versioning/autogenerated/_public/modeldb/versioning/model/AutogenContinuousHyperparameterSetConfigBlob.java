@@ -166,21 +166,21 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
               ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
               AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalBegin());
-      obj.IntervalBegin = Utils.removeEmpty(f.apply(blob));
+      obj.setIntervalBegin(f.apply(blob));
     }
     {
       Function<
               ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
               AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalEnd());
-      obj.IntervalEnd = Utils.removeEmpty(f.apply(blob));
+      obj.setIntervalEnd(f.apply(blob));
     }
     {
       Function<
               ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
               AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalStep());
-      obj.IntervalStep = Utils.removeEmpty(f.apply(blob));
+      obj.setIntervalStep(f.apply(blob));
     }
     return obj;
   }

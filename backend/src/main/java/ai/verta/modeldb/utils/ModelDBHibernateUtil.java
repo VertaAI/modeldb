@@ -240,11 +240,11 @@ public class ModelDBHibernateUtil {
           exportSchema(metaDataSrc.buildMetadata());
         }
 
-        // Check if any migration need to be run or not and based on the migration status will
-        // decide a READY state of the modelDB backend
+        // Check if any migration need to be run or not and based on the migration status flag
         runMigration();
 
         LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
+        isReady = true;
         return sessionFactory;
       } catch (Exception e) {
         e.printStackTrace();
@@ -580,14 +580,12 @@ public class ModelDBHibernateUtil {
   }
 
   /**
-   * Don't change anything in this function because based on the function backend READY status will
-   * define. If you want to define new migration then add new if check for your migration in `if
-   * (migration) {` condition.
+   * If you want to define new migration then add new if check for your migration in `if (migration)
+   * {` condition.
    */
   @SuppressWarnings("unchecked")
   private static void runMigration() {
     App app = App.getInstance();
-    Object t = app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
     Map<String, Boolean> migrationTypeMap =
         (Map<String, Boolean>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
     if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
@@ -628,13 +626,8 @@ public class ModelDBHibernateUtil {
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
                 }
                 isMigrationUtilsCall = false;
-                LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
-                isReady = true;
               })
           .start();
-    } else {
-      LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
-      isReady = true;
     }
   }
 }
