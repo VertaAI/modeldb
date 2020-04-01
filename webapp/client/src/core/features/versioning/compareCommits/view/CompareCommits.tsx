@@ -17,6 +17,7 @@ import { IApplicationState } from 'store/store';
 
 import styles from './CompareCommits.module.css';
 import DiffView from './DiffView/DiffView';
+import { getComparedCommitName } from './DiffView/shared/comparedCommitsNames';
 
 const mapStateToProps = (state: IApplicationState) => ({
   loadingCommitsDiff: selectors.selectCommunications(state).loadingCommitsDiff,
@@ -75,12 +76,30 @@ const CompareCommits: React.FC<AllProps> = ({
           <>
             <div className={styles.commitsInfo}>
               <div className={styles.commit}>
-                <span className={styles.commitTitle}>From Commit SHA: </span>
-                <ShortenedSHA sha={commitASha} />
+                {getComparedCommitName(
+                  (fromCommitSha, commitSha) => (
+                    <>
+                      <span className={styles.commitTitle}>
+                        {fromCommitSha}{' '}
+                      </span>
+                      <ShortenedSHA sha={commitSha} />
+                    </>
+                  ),
+                  'A',
+                  commitASha
+                )}
               </div>
               <div className={styles.commit}>
-                <span className={styles.commitTitle}>To Commit SHA: </span>
-                <ShortenedSHA sha={commitBSha} />
+                {getComparedCommitName(
+                  (toCommitSha, commitSha) => (
+                    <>
+                      <span className={styles.commitTitle}>{toCommitSha} </span>
+                      <ShortenedSHA sha={commitSha} />
+                    </>
+                  ),
+                  'B',
+                  commitBSha
+                )}
               </div>
             </div>
             <div className={styles.diff}>

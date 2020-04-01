@@ -3,7 +3,10 @@ import {
   parseGithubRemoteRepoUrl,
 } from 'core/shared/utils/github/github';
 
-import { IPathDatasetComponentBlob, IPathDatasetComponentBlobDiff } from './DatasetBlob';
+import {
+  IPathDatasetComponentBlob,
+  IPathDatasetComponentBlobDiff,
+} from './DatasetBlob';
 import { IElementDiff, IBlobDiff } from './Diff';
 
 export interface ICodeBlob {

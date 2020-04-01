@@ -13,14 +13,14 @@ const UnknownDiffView = ({ diff }: { diff: IUnknownBlobDiff }) => {
         {matchBy(diff, 'diffType')({
           added: d => null,
           deleted: d => <JsonView object={d.data.data} />,
-          updated: d => <JsonView object={d.data.data} />,
+          modified: d => <JsonView object={d.data.data} />,
         })}
       </div>
       <div className={styles.diffRight}>
         {matchBy(diff, 'diffType')({
           deleted: d => null,
           added: d => <JsonView object={d.data.data} />,
-          updated: d => <JsonView object={d.data.data} />,
+          modified: d => <JsonView object={d.data.data} />,
         })}
       </div>
     </div>

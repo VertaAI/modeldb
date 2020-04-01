@@ -1,0 +1,14 @@
+.blobBox {
+  margin-top: 15px;
+}
+.blobBox:first-child {
+  margin-top: 5px;
+}
+
+.dataBox {
+  border: 1px solid var(--border-color1);
+  border-radius: 3px;
+}
+.dataBox.withPadding {
+  padding: 6px 4px;
+}
