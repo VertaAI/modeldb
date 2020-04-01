@@ -304,7 +304,7 @@ public class OwnerRoleBindingUtils {
     Long count = getEntityCount(RepositoryEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = 200;
+    final int pagesize = 5000;
     LOGGER.debug("Total repositories {}", count);
 
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
