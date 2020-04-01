@@ -55,4 +55,4 @@ helm del --purge <release-name-used-install-cmd>
 
 ## AWS ami
 
-An pre-baked ami `modeldb-ubuntu-18.04-amd64-minikube-1.14.9-oss-1584489693` with modeldb running on minikube is made available on AWS. You can launch a EC2 machine with the image to spin up a deployment of ModelDB, accessible at http://<public hostname or ip>: 30080.
+An pre-baked ami `modeldb-ubuntu-18.04-amd64-minikube-1.14.9-oss-1585711178` with modeldb running on minikube is made available on AWS. You can launch a EC2 machine with the image to spin up a deployment of ModelDB, accessible at http://< public hostname or ip >: 30080. You will be required to open the port 30080 to access modeldb via vlient or browser.
