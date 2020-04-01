@@ -62,6 +62,8 @@ class TestS3:
 
     def test_repr(self):
         """Tests that __repr__() executes without error"""
+        pytest.importorskip("boto3")
+
         dataset_ver = verta.dataset.S3("s3://verta-starter")
 
         assert dataset_ver.__repr__()
