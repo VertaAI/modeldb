@@ -310,7 +310,7 @@
 	</changeSet>
 	<changeSet id="copyDataToANewTable" author="lezhevg">
 		<sql>
-			INSERT INTO folder_element_temp SELECT * FROM folder_element;
+			INSERT INTO folder_element_temp SELECT folder_hash, element_sha, element_name, element_type  FROM folder_element;
 		</sql>
 	</changeSet>
 	<changeSet id="replaceOldFolderElement" author="lezhevg">
