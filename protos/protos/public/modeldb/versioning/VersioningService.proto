@@ -385,7 +385,7 @@ message MergeRepositoryCommitsRequest {
     message Response {
         Commit commit = 1;
 
-        repeated BlobDiff diffs = 2;
+        repeated BlobDiff conflicts = 2;
         // In case of a conflict, stop at the first such conflict and return it
         Commit common_base = 3; // Common base shared between the two commits
         //repeated BlobDiff diffs_a = 3; // Diff between the common base and commit A
