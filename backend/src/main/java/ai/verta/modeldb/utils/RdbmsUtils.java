@@ -1387,15 +1387,21 @@ public class RdbmsUtils {
   public static List<VersioningModeldbEntityMapping> getVersioningMappingFromVersioningInput(
       VersioningEntry versioningEntry, Object entity) throws InvalidProtocolBufferException {
     List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = new ArrayList<>();
-    for (Map.Entry<String, Location> locationEntry :
-        versioningEntry.getKeyLocationMapMap().entrySet()) {
+    if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
       versioningModeldbEntityMappings.add(
           new VersioningModeldbEntityMapping(
-              versioningEntry.getRepositoryId(),
-              versioningEntry.getCommit(),
-              locationEntry.getKey(),
-              ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()),
-              entity));
+              versioningEntry.getRepositoryId(), versioningEntry.getCommit(), null, null, entity));
+    } else {
+      for (Map.Entry<String, Location> locationEntry :
+          versioningEntry.getKeyLocationMapMap().entrySet()) {
+        versioningModeldbEntityMappings.add(
+            new VersioningModeldbEntityMapping(
+                versioningEntry.getRepositoryId(),
+                versioningEntry.getCommit(),
+                locationEntry.getKey(),
+                ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()),
+                entity));
+      }
     }
     return versioningModeldbEntityMappings;
   }
@@ -1408,11 +1414,14 @@ public class RdbmsUtils {
         versioningModeldbEntityMappings) {
       versioningEntry.setRepositoryId(versioningModeldbEntityMapping.getRepository_id());
       versioningEntry.setCommit(versioningModeldbEntityMapping.getCommit());
-      Location.Builder locationBuilder = Location.newBuilder();
-      ModelDBUtils.getProtoObjectFromString(
-          versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
-      versioningEntry.putKeyLocationMap(
-          versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());
+      if (versioningModeldbEntityMapping.getVersioning_location() != null
+          && !versioningModeldbEntityMapping.getVersioning_location().isEmpty()) {
+        Location.Builder locationBuilder = Location.newBuilder();
+        ModelDBUtils.getProtoObjectFromString(
+            versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
+        versioningEntry.putKeyLocationMap(
+            versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());
+      }
     }
     return versioningEntry.build();
   }
