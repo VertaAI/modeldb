@@ -1,10 +1,8 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestUser;
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 import static org.junit.Assert.assertEquals;
 
-import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -23,9 +21,6 @@ import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
-import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.GetCollaborator;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -172,47 +167,6 @@ public class RepositoryTest {
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
-  }
-
-  @Test
-  public void createDeleteRepositoryTest() {
-    LOGGER.info("Create and delete repository test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, NAME);
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      GetCollaborator.Response checkCollaboratorsResponse1 =
-          collaboratorServiceStub.getRepositoryCollaborators(
-              GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
-      Assert.assertEquals(0, checkCollaboratorsResponse1.getSharedUsersCount());
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestUser(
-              String.valueOf(id),
-              authClientInterceptor.getClient2Email(),
-              CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
-              "Please refer shared repository for your invention");
-      Assert.assertTrue(
-          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest).getStatus());
-      GetCollaborator.Response checkCollaboratorsResponse2 =
-          collaboratorServiceStub.getRepositoryCollaborators(
-              GetCollaborator.newBuilder().setEntityId(String.valueOf(id)).build());
-      Assert.assertEquals(1, checkCollaboratorsResponse2.getSharedUsersCount());
-    }
-
-    final DeleteRepositoryRequest deleteRepository;
-    deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    LOGGER.info("Create and delete repository test end................................");
   }
 
   @Test

@@ -54,7 +54,6 @@ public interface ModelDBConstants {
   // Column/protos field names
   String ARTIFACTS = "artifacts";
   String ATTRIBUTES = "attributes";
-  String REPOSITORY_COLLABORATORS = "repository_collaborators";
   String DATASET_COLLABORATORS = "dataset_collaborators";
   String DATASETS = "datasets";
   String DATE_CREATED = "date_created";
@@ -187,8 +186,6 @@ public interface ModelDBConstants {
   String ROLE_EXPERIMENT_RUN_OWNER = "EXPERIMENT_RUN_OWNER";
   String ROLE_DATASET_VERSION_OWNER = "DATASET_VERSION_OWNER";
   String ROLE_REPOSITORY_OWNER = "REPOSITORY_OWNER";
-  String ROLE_REPOSITORY_READ_WRITE = "REPOSITORY_READ_WRITE";
-  String ROLE_REPOSITORY_READ_ONLY = "REPOSITORY_READ_ONLY";
   String ROLE_REPOSITORY_ADMIN = "REPOSITORY_ADMIN";
 
   // Telemetry Constants

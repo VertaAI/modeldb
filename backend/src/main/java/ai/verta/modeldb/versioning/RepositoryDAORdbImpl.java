@@ -374,11 +374,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
       // Get self allowed resources id where user has delete permission
-      List<String> requestedIdList = Collections.singletonList(String.valueOf(repository.getId()));
       List<String> allowedRepositoryIds =
           roleService.getAccessibleResourceIdsByActions(
               ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.DELETE,
-              requestedIdList);
+              Collections.singletonList(String.valueOf(repository.getId())));
       if (allowedRepositoryIds.isEmpty()) {
         throw new ModelDBException("Delete Access Denied for given repository Id : " + request.getRepositoryId(), Code.PERMISSION_DENIED);
       }
@@ -746,23 +745,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               commits.stream().map(CommitEntity::toCommitProto).collect(Collectors.toList()))
           .setTotalRecords(commits.size())
           .build();
-    }
-  }
-
-  @Override
-  public Map<String, String> getOwnersByRepositoryIds(List<String> entityIds) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(GET_REPOSITORY_BY_IDS_QUERY);
-      query.setParameterList("ids", entityIds.stream().map(Long::valueOf).collect(Collectors.toList()));
-
-      @SuppressWarnings("unchecked")
-      List<RepositoryEntity> repositoryEntities = query.list();
-      LOGGER.debug("Got Repository by Id");
-      Map<String, String> repositoryOwnersMap = new HashMap<>();
-      for (RepositoryEntity repositoryEntity : repositoryEntities) {
-        repositoryOwnersMap.put(String.valueOf(repositoryEntity.getId()), repositoryEntity.getOwner());
-      }
-      return repositoryOwnersMap;
     }
   }
 }

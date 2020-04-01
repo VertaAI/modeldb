@@ -3,8 +3,6 @@ package ai.verta.modeldb.versioning;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.uac.UserInfo;
-import java.util.List;
-import java.util.Map;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import org.hibernate.Session;
 
@@ -15,7 +13,8 @@ public interface RepositoryDAO {
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
       throws ModelDBException;
 
-  SetRepository.Response setRepository(SetRepository request, UserInfo userInfo, boolean create)
+  SetRepository.Response setRepository(SetRepository request, UserInfo userInfo,
+      boolean create)
       throws ModelDBException;
 
   DeleteRepositoryRequest.Response deleteRepository(
@@ -45,12 +44,4 @@ public interface RepositoryDAO {
 
   ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
       throws ModelDBException;
-
-  /**
-   * Getting all the owners with respected to entity ids and returned by this method.
-   *
-   * @param entityIds : List<String> list of accessible entity Id
-   * @return {@link Map} : Map<String,String> where key= entityId, value= entity owner Id
-   */
-  Map<String, String> getOwnersByRepositoryIds(List<String> entityIds);
 }

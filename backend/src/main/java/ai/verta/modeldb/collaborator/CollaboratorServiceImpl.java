@@ -13,7 +13,6 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Actions;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddCollaboratorRequest.Response;

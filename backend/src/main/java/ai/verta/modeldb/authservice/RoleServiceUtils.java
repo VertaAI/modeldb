@@ -583,12 +583,6 @@ public class RoleServiceUtils implements RoleService {
           resourceId,
           collaborator,
           ModelDBServiceResourceTypes.DATASET.name());
-    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.REPOSITORY.name());
     } else {
       return ModelDBConstants.EMPTY_STRING;
     }

@@ -88,7 +88,6 @@ service CollaboratorService {
             get: "/v1/collaborator/getProjectCollaborators"
         };
     };
-    
     rpc addOrUpdateDatasetCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
         option (google.api.http) = {
             post: "/v1/collaborator/addOrUpdateDatasetCollaborator"
@@ -105,25 +104,6 @@ service CollaboratorService {
     rpc getDatasetCollaborators (GetCollaborator) returns (GetCollaborator.Response){
         option (google.api.http) = {
             get: "/v1/collaborator/getDatasetCollaborators"
-        };
-    };
-    
-    rpc addOrUpdateRepositoryCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
-        option (google.api.http) = {
-            post: "/v1/collaborator/addOrUpdateRepositoryCollaborator"
-            body: "*"
-        };
-    };
-
-    rpc removeRepositoryCollaborator (RemoveCollaborator) returns (RemoveCollaborator.Response){
-        option (google.api.http) = {
-            delete: "/v1/collaborator/removeRepositoryCollaborator"
-        };
-    };
-
-    rpc getRepositoryCollaborators (GetCollaborator) returns (GetCollaborator.Response){
-        option (google.api.http) = {
-            get: "/v1/collaborator/getRepositoryCollaborators"
         };
     };
 }

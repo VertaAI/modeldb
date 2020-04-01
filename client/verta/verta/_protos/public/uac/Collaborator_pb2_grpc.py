@@ -44,21 +44,6 @@ class CollaboratorServiceStub(object):
         request_serializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
         response_deserializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
         )
-    self.addOrUpdateRepositoryCollaborator = channel.unary_unary(
-        '/ai.verta.uac.CollaboratorService/addOrUpdateRepositoryCollaborator',
-        request_serializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
-        response_deserializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.FromString,
-        )
-    self.removeRepositoryCollaborator = channel.unary_unary(
-        '/ai.verta.uac.CollaboratorService/removeRepositoryCollaborator',
-        request_serializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.RemoveCollaborator.SerializeToString,
-        response_deserializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.RemoveCollaborator.Response.FromString,
-        )
-    self.getRepositoryCollaborators = channel.unary_unary(
-        '/ai.verta.uac.CollaboratorService/getRepositoryCollaborators',
-        request_serializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
-        response_deserializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
-        )
 
 
 class CollaboratorServiceServicer(object):
@@ -107,27 +92,6 @@ class CollaboratorServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def addOrUpdateRepositoryCollaborator(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def removeRepositoryCollaborator(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getRepositoryCollaborators(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_CollaboratorServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -158,21 +122,6 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
       ),
       'getDatasetCollaborators': grpc.unary_unary_rpc_method_handler(
           servicer.getDatasetCollaborators,
-          request_deserializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.GetCollaborator.FromString,
-          response_serializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
-      ),
-      'addOrUpdateRepositoryCollaborator': grpc.unary_unary_rpc_method_handler(
-          servicer.addOrUpdateRepositoryCollaborator,
-          request_deserializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.AddCollaboratorRequest.FromString,
-          response_serializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.SerializeToString,
-      ),
-      'removeRepositoryCollaborator': grpc.unary_unary_rpc_method_handler(
-          servicer.removeRepositoryCollaborator,
-          request_deserializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.RemoveCollaborator.FromString,
-          response_serializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.RemoveCollaborator.Response.SerializeToString,
-      ),
-      'getRepositoryCollaborators': grpc.unary_unary_rpc_method_handler(
-          servicer.getRepositoryCollaborators,
           request_deserializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.GetCollaborator.FromString,
           response_serializer=protos_dot_public_dot_uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
       ),
