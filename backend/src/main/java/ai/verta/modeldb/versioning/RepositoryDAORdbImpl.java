@@ -25,11 +25,9 @@ import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -290,19 +288,20 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         repository.update(request);
       }
       session.saveOrUpdate(repository);
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          String.valueOf(repository.getId()),
-          ModelDBServiceResourceTypes.REPOSITORY);
-      session.getTransaction().commit();
+      if (create) {
+        Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
+        roleService.createRoleBinding(
+            ownerRole,
+            new CollaboratorUser(authService, userInfo),
+            String.valueOf(repository.getId()),
+            ModelDBServiceResourceTypes.REPOSITORY);
+        session.getTransaction().commit();
+      }
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }
   }
 
   private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
-    UserInfo unsignedUser = authService.getUnsignedUser();
     for (RepositoryEntity repositoryEntity : allowedResources) {
       String repositoryId = String.valueOf(repositoryEntity.getId());
       String ownerRoleBindingName =
@@ -321,49 +320,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY);
 
       // Delete workspace based roleBindings
-      deleteWorkspaceRoleBindings(
+      roleService.deleteWorkspaceRoleBindings(
           repositoryEntity.getWorkspace_id(),
           WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-          String.valueOf(repositoryEntity.getId()));
+          String.valueOf(repositoryEntity.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+          ModelDBServiceResourceTypes.REPOSITORY);
     }
   }
 
   private void deleteWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceType workspaceType,
-      String resourceId) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      switch (workspaceType) {
-        case ORGANIZATION:
-          Organization org = (Organization) roleService.getOrgById(workspaceId);
-          String repositoryAdminRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-                  resourceId,
-                  new CollaboratorUser(authService, org.getOwnerId()),
-                  ModelDBServiceResourceTypes.REPOSITORY.name());
-          RoleBinding repositoryAdminRoleBinding =
-              roleService.getRoleBindingByName(repositoryAdminRoleBindingName);
-          if (repositoryAdminRoleBinding != null && !repositoryAdminRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(repositoryAdminRoleBinding.getId());
-          }
-          break;
-        case USER:
-          String repositoryRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-                  resourceId,
-                  new CollaboratorUser(authService, workspaceId),
-                  ModelDBServiceResourceTypes.REPOSITORY.name());
-          RoleBinding repositoryRoleBinding = roleService.getRoleBindingByName(repositoryRoleBindingName);
-          if (repositoryRoleBinding != null && !repositoryRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(repositoryRoleBinding.getId());
-          }
-          break;
-        default:
-          break;
-      }
-    }
+      String resourceId, String roleName, ModelDBServiceResourceTypes resourceTypes) {
   }
 
   @Override

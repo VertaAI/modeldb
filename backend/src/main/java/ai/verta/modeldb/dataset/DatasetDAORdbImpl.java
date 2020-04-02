@@ -274,24 +274,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       switch (workspaceType) {
         case ORGANIZATION:
-          Organization org = (Organization) roleService.getOrgById(workspaceId);
-          String datasetAdminRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_DATASET_ADMIN,
-                  datasetId,
-                  new CollaboratorUser(authService, org.getOwnerId()),
-                  ModelDBServiceResourceTypes.DATASET.name());
-          RoleBinding datasetAdminRoleBinding =
-              roleService.getRoleBindingByName(datasetAdminRoleBindingName);
-          if (datasetAdminRoleBinding != null && !datasetAdminRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(datasetAdminRoleBinding.getId());
-          }
           if (datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC)) {
             String orgDatasetReadRoleBindingName =
                 roleService.buildRoleBindingName(
                     ModelDBConstants.ROLE_DATASET_READ_ONLY,
                     datasetId,
-                    new CollaboratorOrg(org.getId()),
+                    new CollaboratorOrg(workspaceId),
                     ModelDBServiceResourceTypes.DATASET.name());
             RoleBinding orgDatasetReadRoleBinding =
                 roleService.getRoleBindingByName(orgDatasetReadRoleBindingName);
@@ -301,21 +289,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           }
           break;
         case USER:
-          String datasetRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_DATASET_ADMIN,
-                  datasetId,
-                  new CollaboratorUser(authService, workspaceId),
-                  ModelDBServiceResourceTypes.DATASET.name());
-          RoleBinding datasetRoleBinding = roleService.getRoleBindingByName(datasetRoleBindingName);
-          if (datasetRoleBinding != null && !datasetRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(datasetRoleBinding.getId());
-          }
-          break;
         default:
           break;
       }
     }
+    roleService.deleteWorkspaceRoleBindings(workspaceId, workspaceType, datasetId,
+        ModelDBConstants.ROLE_DATASET_ADMIN, ModelDBServiceResourceTypes.DATASET);
   }
 
   public void deleteDatasetVersionsByDatasetIDs(Session session, List<String> datasetIds) {
