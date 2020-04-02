@@ -1,5 +1,6 @@
 package ai.verta.modeldb.authservice;
 
+import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -232,6 +233,11 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public List<Organization> listMyOrganizations() {
     return Collections.emptyList();
+  }
+
+  @Override
+  public void deleteWorkspaceRoleBindings(String workspace_id, WorkspaceType forNumber,
+      String valueOf, String roleRepositoryAdmin, ModelDBServiceResourceTypes repository) {
   }
 
   @Override

@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -347,47 +346,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY);
 
       // Delete workspace based roleBindings
-      deleteWorkspaceRoleBindings(
+      roleService.deleteWorkspaceRoleBindings(
           repositoryEntity.getWorkspace_id(),
           WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-          String.valueOf(repositoryEntity.getId()));
-    }
-  }
-
-  private void deleteWorkspaceRoleBindings(
-      String workspaceId, WorkspaceType workspaceType, String resourceId) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      switch (workspaceType) {
-        case ORGANIZATION:
-          Organization org = (Organization) roleService.getOrgById(workspaceId);
-          String repositoryAdminRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-                  resourceId,
-                  new CollaboratorUser(authService, org.getOwnerId()),
-                  ModelDBServiceResourceTypes.REPOSITORY.name());
-          RoleBinding repositoryAdminRoleBinding =
-              roleService.getRoleBindingByName(repositoryAdminRoleBindingName);
-          if (repositoryAdminRoleBinding != null && !repositoryAdminRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(repositoryAdminRoleBinding.getId());
-          }
-          break;
-        case USER:
-          String repositoryRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-                  resourceId,
-                  new CollaboratorUser(authService, workspaceId),
-                  ModelDBServiceResourceTypes.REPOSITORY.name());
-          RoleBinding repositoryRoleBinding =
-              roleService.getRoleBindingByName(repositoryRoleBindingName);
-          if (repositoryRoleBinding != null && !repositoryRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(repositoryRoleBinding.getId());
-          }
-          break;
-        default:
-          break;
-      }
+          String.valueOf(repositoryEntity.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+          ModelDBServiceResourceTypes.REPOSITORY);
     }
   }
 
