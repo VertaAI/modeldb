@@ -540,8 +540,11 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<ai.verta.modeldb.versioning.BlobDiff> diffB =
           computeDiffFromCommitMaps(locationBlobsMapParentCommit, locationBlobsMapCommitB)
               .getDiffsList();
+
+      HashSet<String> conflictKeys = new HashSet<>();
+
       List<BlobContainer> blobContainerList =
-          getBlobContainers(diffB, locationBlobsMapCommitASimple);
+          getBlobContainers(diffB, locationBlobsMapCommitASimple, conflictKeys);
 
       final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
       long timeCreated = new Date().getTime();
@@ -720,13 +723,14 @@ public class BlobDAORdbImpl implements BlobDAO {
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
       Map<String, BlobExpanded> locationBlobsMap =
           getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
-      return getBlobContainers(request.getDiffsList(), locationBlobsMap);
+      return getBlobContainers(request.getDiffsList(), locationBlobsMap, new HashSet<String>());
     }
   }
 
   private List<BlobContainer> getBlobContainers(
       List<ai.verta.modeldb.versioning.BlobDiff> blobDiffList,
-      Map<String, BlobExpanded> locationBlobsMap)
+      Map<String, BlobExpanded> locationBlobsMap,
+      HashSet<String> conflictKeys)
       throws ModelDBException {
     Map<String, BlobExpanded> locationBlobsMapNew = new LinkedHashMap<>();
     for (ai.verta.modeldb.versioning.BlobDiff blobDiff : blobDiffList) {
@@ -739,7 +743,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       AutogenBlob blob =
           DiffMerger.mergeBlob(
               blobExpanded == null ? null : AutogenBlob.fromProto(blobExpanded.getBlob()),
-              AutogenBlobDiff.fromProto(blobDiff));
+              AutogenBlobDiff.fromProto(blobDiff),
+              conflictKeys);
       locationBlobsMapNew.put(
           getStringFromLocationList(locationList),
           blob == null
