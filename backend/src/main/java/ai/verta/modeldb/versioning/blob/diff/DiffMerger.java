@@ -62,7 +62,7 @@ public class DiffMerger {
                       } else if (elStatus.Status == DiffStatusEnum.DiffStatus.ADDED) {
                         if (diffB != null) {
                           if (elA.isEmpty()) elA.add(diffB);
-                          else {
+                          else if(!elA.contains(diffB)){
                             conflictKeys.add(key);
                           }
                         }
