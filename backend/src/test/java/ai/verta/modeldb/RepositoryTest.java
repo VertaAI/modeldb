@@ -178,8 +178,7 @@ public class RepositoryTest {
 
     long id = createRepository(versioningServiceBlockingStub, NAME);
 
-    final DeleteRepositoryRequest deleteRepository;
-    deleteRepository =
+    final DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
             .build();
