@@ -385,13 +385,13 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (!request.getBranchA().isEmpty()
           && !request.getBranchB().isEmpty()
-          && request.getCommitA() != null
-          && request.getCommitB() != null) {
+          && !request.getCommitA().isEmpty()
+          && !request.getCommitB().isEmpty()) {
         throw new ModelDBException(
             "Branches and Commits both are not allowed in the request",
             Status.Code.INVALID_ARGUMENT);
       } else if ((!request.getBranchA().isEmpty() || !request.getBranchB().isEmpty())
-          && (request.getCommitA() != null || request.getCommitB() != null)) {
+          && (!request.getCommitA().isEmpty() || !request.getCommitB().isEmpty())) {
         throw new ModelDBException(
             "Branches and Commits both are not allowed in the request",
             Status.Code.INVALID_ARGUMENT);
