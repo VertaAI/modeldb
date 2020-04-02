@@ -209,12 +209,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       repository =
           getRepositoryByName(session, id.getNamedId().getName(), workspaceDTO)
               .orElseThrow(
-                  () -> new ModelDBException("Couldn't find repository by name", Code.NOT_FOUND));
+                  () ->
+                      new ModelDBException(
+                          "Couldn't find repository by name " + id.getNamedId().getName(),
+                          Code.NOT_FOUND));
     } else {
       repository =
           getRepositoryById(session, id.getRepoId())
               .orElseThrow(
-                  () -> new ModelDBException("Couldn't find repository by id", Code.NOT_FOUND));
+                  () ->
+                      new ModelDBException(
+                          "Couldn't find repository by id " + id.getRepoId(), Code.NOT_FOUND));
     }
     return repository;
   }
@@ -406,7 +411,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               session, request.getCommitSha(), repository.getId());
       if (!exists) {
         throw new ModelDBException(
-            "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
+            "Commit_hash and repository_id mapping not found for repository "
+                + repository.getId()
+                + " commit "
+                + " request.getCommitSha()",
+            Code.NOT_FOUND);
       }
 
       Query query = session.createQuery(GET_TAG_HQL);
@@ -435,7 +444,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       query.setParameter("tag", request.getTag());
       TagsEntity tagsEntity = (TagsEntity) query.uniqueResult();
       if (tagsEntity == null) {
-        throw new ModelDBException("Tag not found", Code.NOT_FOUND);
+        throw new ModelDBException("Tag not found " + request.getTag(), Code.NOT_FOUND);
       }
 
       CommitEntity commitEntity = session.get(CommitEntity.class, tagsEntity.getCommit_hash());
@@ -452,7 +461,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       TagsEntity tagsEntity =
           session.get(TagsEntity.class, new TagsEntity.TagId(request.getTag(), repository.getId()));
       if (tagsEntity == null) {
-        throw new ModelDBException("Tag not found", Code.NOT_FOUND);
+        throw new ModelDBException("Tag not found " + request.getTag(), Code.NOT_FOUND);
       }
       session.delete(tagsEntity);
       session.getTransaction().commit();
@@ -497,7 +506,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               session, request.getCommitSha(), repository.getId());
       if (!exists) {
         throw new ModelDBException(
-            "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
+            "Commit_hash and repository_id mapping not found for repository "
+                + repository.getId()
+                + " and commit "
+                + request.getCommitSha(),
+            Code.NOT_FOUND);
       }
 
       Query query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
@@ -529,7 +542,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       query.setParameter("branch", request.getBranch());
       BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
       if (branchEntity == null) {
-        throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
+        throw new ModelDBException(
+            ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
       }
 
       CommitEntity commitEntity = session.get(CommitEntity.class, branchEntity.getCommit_hash());
@@ -549,7 +563,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               BranchEntity.class,
               new BranchEntity.BranchId(request.getBranch(), repository.getId()));
       if (branchEntity == null) {
-        throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
+        throw new ModelDBException(
+            ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
       }
       session.delete(branchEntity);
       session.getTransaction().commit();
@@ -617,13 +632,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         query.setParameter("branch", request.getBranch());
         BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
         if (branchEntity == null) {
-          throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
+          throw new ModelDBException(
+              ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
         }
         referenceCommit = branchEntity.getCommit_hash();
       } else {
         CommitEntity commit = session.get(CommitEntity.class, request.getCommitSha());
         if (commit == null) {
-          throw new ModelDBException(ModelDBConstants.COMMIT_NOT_FOUND, Code.NOT_FOUND);
+          throw new ModelDBException(
+              ModelDBConstants.COMMIT_NOT_FOUND + request.getCommitSha(), Code.NOT_FOUND);
         }
         referenceCommit = commit.getCommit_hash();
       }
