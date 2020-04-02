@@ -161,6 +161,8 @@ public interface ModelDBConstants {
   // Migration Constants
   String MIGRATION = "migration";
   String SUB_ENTITIES_OWNERS_RBAC_MIGRATION = "SUB_ENTITIES_OWNERS_RBAC_MIGRATION";
+  String ROLE_REPOSITORY_READ_WRITE = "REPOSITORY_READ_WRITE";
+  String ROLE_REPOSITORY_READ_ONLY = "REPOSITORY_READ_ONLY";
 
   enum UserIdentifier {
     VERTA_ID,
