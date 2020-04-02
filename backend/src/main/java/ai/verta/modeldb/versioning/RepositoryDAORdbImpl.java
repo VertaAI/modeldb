@@ -19,7 +19,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
@@ -321,6 +320,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             ownerRole,
             new CollaboratorUser(authService, userInfo),
             String.valueOf(repository.getId()),
+            ModelDBServiceResourceTypes.REPOSITORY);
+        roleService.createWorkspaceRoleBinding(
+            repository.getWorkspace_id(),
+            WorkspaceType.forNumber(repository.getWorkspace_type()),
+            String.valueOf(repository.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
             ModelDBServiceResourceTypes.REPOSITORY);
       }
       session.getTransaction().commit();

@@ -154,31 +154,19 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       String datasetId,
       DatasetVisibility datasetVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      Role datasetAdmin = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_ADMIN, null);
+      roleService.createWorkspaceRoleBinding(workspaceId, workspaceType, datasetId, ModelDBConstants.ROLE_DATASET_ADMIN, ModelDBServiceResourceTypes.DATASET);
       Role datasetRead = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_READ_ONLY, null);
       switch (workspaceType) {
         case ORGANIZATION:
-          Organization org = (Organization) roleService.getOrgById(workspaceId);
-          roleService.createRoleBinding(
-              datasetAdmin,
-              new CollaboratorUser(authService, org.getOwnerId()),
-              datasetId,
-              ModelDBServiceResourceTypes.DATASET);
           if (datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC)) {
             roleService.createRoleBinding(
                 datasetRead,
-                new CollaboratorOrg(org.getId()),
+                new CollaboratorOrg(workspaceId),
                 datasetId,
                 ModelDBServiceResourceTypes.DATASET);
           }
           break;
         case USER:
-          roleService.createRoleBinding(
-              datasetAdmin,
-              new CollaboratorUser(authService, workspaceId),
-              datasetId,
-              ModelDBServiceResourceTypes.DATASET);
-          break;
         default:
           break;
       }

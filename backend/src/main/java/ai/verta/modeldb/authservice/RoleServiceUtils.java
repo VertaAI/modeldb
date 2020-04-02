@@ -1137,4 +1137,30 @@ public class RoleServiceUtils implements RoleService {
       }
     }
   }
+
+  @Override
+  public void createWorkspaceRoleBinding(String workspaceId, WorkspaceType workspaceType,
+      String resourceId, String roleAdminName, ModelDBServiceResourceTypes resourceType) {
+    if (workspaceId != null && !workspaceId.isEmpty()) {
+      Role admin = getRoleByName(roleAdminName, null);
+      final CollaboratorUser collaboratorUser;
+      switch (workspaceType) {
+        case ORGANIZATION:
+          Organization org = (Organization) getOrgById(workspaceId);
+          collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
+          break;
+        case USER:
+          collaboratorUser = new CollaboratorUser(authService, workspaceId);
+          break;
+        default:
+          return;
+      }
+      createRoleBinding(
+          admin,
+          collaboratorUser,
+          resourceId,
+          resourceType);
+    }
+
+  }
 }
