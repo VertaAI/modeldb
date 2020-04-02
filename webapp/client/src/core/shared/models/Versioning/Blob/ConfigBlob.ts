@@ -36,11 +36,15 @@ export type IConfigHyperparameterValue =
   | { type: 'float'; value: number }
   | { type: 'string'; value: string };
 
-
 export type IConfigHyperparameterDiff = IElementDiff<IConfigHyperparameter>;
-export type IConfigHyperparameterSetItemDiff = IElementDiff<IConfigHyperparameterSetItem>;
+export type IConfigHyperparameterSetItemDiff = IElementDiff<
+  IConfigHyperparameterSetItem
+>;
 
-export type IConfigBlobDiff = IBlobDiff<IConfigBlobDiffData, IConfigBlob['category']>;
+export type IConfigBlobDiff = IBlobDiff<
+  IConfigBlobDiffData,
+  IConfigBlob['category']
+>;
 
 export type IConfigBlobDiffData = {
   hyperparameters?: IConfigHyperparameterDiff[];
