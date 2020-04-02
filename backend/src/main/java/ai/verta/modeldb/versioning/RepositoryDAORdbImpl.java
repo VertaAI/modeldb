@@ -295,8 +295,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             new CollaboratorUser(authService, userInfo),
             String.valueOf(repository.getId()),
             ModelDBServiceResourceTypes.REPOSITORY);
-        session.getTransaction().commit();
       }
+      session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }
   }
@@ -326,12 +326,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           String.valueOf(repositoryEntity.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
           ModelDBServiceResourceTypes.REPOSITORY);
     }
-  }
-
-  private void deleteWorkspaceRoleBindings(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String resourceId, String roleName, ModelDBServiceResourceTypes resourceTypes) {
   }
 
   @Override
