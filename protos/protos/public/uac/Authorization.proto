@@ -33,6 +33,8 @@ message GetAllowedEntities {
 message GetAllowedResources {
     repeated Entities entities = 1;
     repeated Action actions = 2;
+    ResourceType resource_type = 3;
+    ServiceEnum.Service service = 4;
 
     message Response {
         repeated Resources resources = 1;
@@ -52,7 +54,8 @@ message IsSelfAllowed {
 // Same as GetAllowedResources, but infers entities from the current logged user
 message GetSelfAllowedResources {
     repeated Action actions = 2;
-
+    ResourceType resource_type = 3;
+    ServiceEnum.Service service = 4;
     message Response {
         repeated Resources resources = 1;
     };
