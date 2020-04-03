@@ -10,6 +10,7 @@ def code():
 
 
 @code.command()
-def git():
+@click.argument('blob')
+def git(blob):
     """Create Git code blob at location BLOB from current environment."""
-    pass
+    click.echo("git version created at {}".format(blob))

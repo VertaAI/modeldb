@@ -8,8 +8,11 @@ import click
 def add(blobs):
     """Stage BLOBS to be committed."""
     if not blobs:
-        pass
-    pass
+        click.echo("no blobs specified, so no blobs added")
+        return
+
+    for blob in blobs:
+        click.echo("adding {}".format(blob))
 
 
 @click.command()
@@ -17,8 +20,11 @@ def add(blobs):
 def rm(blobs):
     """Unstage BLOBS from being committed."""
     if not blobs:
-        pass
-    pass
+        click.echo("no blobs specified, so no blobs removed")
+        return
+
+    for blob in blobs:
+        click.echo("removing {}".format(blob))
 
 
 @click.command()
@@ -27,18 +33,19 @@ def rm(blobs):
 def commit(message, all):
     """Record changes to the repository."""
     if all:
-        pass
-    pass
+        click.echo("adding all blobs")
+
+    click.echo("commit saved with message \"{}\"".format(message))
 
 
 @click.command()
 def status():
     """Show staged changes, unstaged changes, and untracked blobs."""
-    pass
+    click.echo("these blobs have changed")
 
 
 @click.command()
 @click.argument('blob', type=click.Path(exists=True))  # TODO: make optional, to diff all blobs
 def diff(blob):
     """Show changes in a blob from the current commit."""
-    pass
+    click.echo("{} has changed in this way".format(blob))

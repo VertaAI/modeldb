@@ -13,4 +13,4 @@ def environment():
 @click.argument('blob')
 def python(blob):
     """Create Python environment blob at location BLOB from current environment."""
-    pass
+    click.echo("Python version created at {}".format(blob))

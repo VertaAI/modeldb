@@ -7,7 +7,7 @@ import click
 @click.option('--repo', help="Repository name.")  # TODO: default, get from state
 def branch(repo):
     """List available branches."""
-    click.echo("you have no branches because this is a demo")
+    click.echo("here are the branches in {}".format(repo))
 
 
 @click.command()
@@ -25,4 +25,4 @@ def checkout(b, branch, repo):
 @click.command()
 def log():
     """Show commit logs."""
-    click.echo("here's the log")
+    click.echo("here is the log")

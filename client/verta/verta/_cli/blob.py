@@ -11,7 +11,7 @@ from .blobs import code, dataset, environment
 @click.argument('branch')
 def pull(repo, branch):
     """Pull all blobs from REPO BRANCH, mirroring their remote locations."""
-    pass
+    click.echo("pulling blobs from {}'s {} branch".format(repo, branch))
 
 
 @click.group()
