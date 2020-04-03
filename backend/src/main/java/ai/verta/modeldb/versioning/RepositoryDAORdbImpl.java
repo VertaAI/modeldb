@@ -448,7 +448,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         query.setFirstResult((request.getPagination().getPageNumber() - 1) * pageLimit);
         query.setMaxResults(pageLimit);
       }
-      List list = query.list();
+      List repoList = query.list();
       ListRepositoriesRequest.Response.Builder builder =
           ListRepositoriesRequest.Response.newBuilder();
       query_prefix =
@@ -468,8 +468,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               false,
               null);
       Map<String, RepositoryEntity> result = new LinkedHashMap<>();
-      for (Object o : list) {
-        RepositoryEntity repositoryEntity = (RepositoryEntity) o;
+      for (Object repoObj : repoList) {
+        RepositoryEntity repositoryEntity = (RepositoryEntity) repoObj;
         result.put(repositoryEntity.getId().toString(), repositoryEntity);
       }
       List<String> accessibleResourceIds =
