@@ -383,15 +383,23 @@ public class BlobDAORdbImpl implements BlobDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
 
+      boolean invalidParam = false;
       if (!request.getBranchA().isEmpty()
           && !request.getBranchB().isEmpty()
           && !request.getCommitA().isEmpty()
           && !request.getCommitB().isEmpty()) {
-        throw new ModelDBException(
-            "Branches and Commits both are not allowed in the request",
-            Status.Code.INVALID_ARGUMENT);
-      } else if ((!request.getBranchA().isEmpty() || !request.getBranchB().isEmpty())
-          && (!request.getCommitA().isEmpty() || !request.getCommitB().isEmpty())) {
+        invalidParam = true;
+      } else if (!request.getBranchA().isEmpty() && !request.getCommitA().isEmpty()) {
+        invalidParam = true;
+      } else if (request.getBranchA().isEmpty() && request.getCommitA().isEmpty()) {
+        invalidParam = true;
+      } else if (!request.getBranchB().isEmpty() && !request.getCommitB().isEmpty()) {
+        invalidParam = true;
+      } else if (request.getBranchB().isEmpty() && request.getCommitB().isEmpty()) {
+        invalidParam = true;
+      }
+
+      if (invalidParam) {
         throw new ModelDBException(
             "Branches and Commits both are not allowed in the request",
             Status.Code.INVALID_ARGUMENT);
@@ -400,28 +408,42 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(session, request.getRepositoryId());
 
-      CommitEntity internalCommitA;
-      CommitEntity internalCommitB;
-      if (request.getBranchA().isEmpty() || request.getBranchB().isEmpty()) {
+      CommitEntity internalCommitA = null;
+      CommitEntity internalCommitB = null;
+      String errorNameA = null;
+      String errorNameB = null;
+      if (!request.getCommitA().isEmpty()) {
+        errorNameA = request.getCommitA();
         internalCommitA = session.get(CommitEntity.class, request.getCommitA());
-        if (internalCommitA == null) {
-          throw new ModelDBException(
-              "No such commit found : " + request.getCommitA(), Status.Code.NOT_FOUND);
-        }
+      }
 
+      if (!request.getCommitB().isEmpty()) {
+        errorNameB = request.getCommitB();
         internalCommitB = session.get(CommitEntity.class, request.getCommitB());
-        if (internalCommitB == null) {
-          throw new ModelDBException(
-              "No such commit found : " + request.getCommitB(), Status.Code.NOT_FOUND);
-        }
-      } else {
+      }
+
+      if (!request.getBranchA().isEmpty()) {
+        errorNameA = request.getBranchA();
         BranchEntity branchAEntity =
             repositoryDAO.getBranchEntity(session, repositoryEntity.getId(), request.getBranchA());
         internalCommitA = session.get(CommitEntity.class, branchAEntity.getCommit_hash());
+      }
 
+      if (!request.getBranchB().isEmpty()) {
+        errorNameB = request.getBranchB();
         BranchEntity branchBEntity =
             repositoryDAO.getBranchEntity(session, repositoryEntity.getId(), request.getBranchB());
         internalCommitB = session.get(CommitEntity.class, branchBEntity.getCommit_hash());
+      }
+
+      if (internalCommitA == null) {
+        throw new ModelDBException(
+            "No such commit OR branch found : " + errorNameA, Status.Code.NOT_FOUND);
+      }
+
+      if (internalCommitB == null) {
+        throw new ModelDBException(
+            "No such commit OR branch found : " + errorNameB, Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
@@ -510,14 +532,23 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryDAO repositoryDAO, MergeRepositoryCommitsRequest request)
       throws ModelDBException, NoSuchAlgorithmException {
 
+    boolean invalidParam = false;
     if (!request.getBranchA().isEmpty()
         && !request.getBranchB().isEmpty()
         && !request.getCommitShaA().isEmpty()
         && !request.getCommitShaB().isEmpty()) {
-      throw new ModelDBException(
-          "Branches and Commits both are not allowed in the request", Status.Code.INVALID_ARGUMENT);
-    } else if ((!request.getBranchA().isEmpty() || !request.getBranchB().isEmpty())
-        && (!request.getCommitShaA().isEmpty() || !request.getCommitShaB().isEmpty())) {
+      invalidParam = true;
+    } else if (!request.getBranchA().isEmpty() && !request.getCommitShaA().isEmpty()) {
+      invalidParam = true;
+    } else if (request.getBranchA().isEmpty() && request.getCommitShaA().isEmpty()) {
+      invalidParam = true;
+    } else if (!request.getBranchB().isEmpty() && !request.getCommitShaB().isEmpty()) {
+      invalidParam = true;
+    } else if (request.getBranchB().isEmpty() && request.getCommitShaB().isEmpty()) {
+      invalidParam = true;
+    }
+
+    if (invalidParam) {
       throw new ModelDBException(
           "Branches and Commits both are not allowed in the request", Status.Code.INVALID_ARGUMENT);
     }
@@ -527,34 +558,48 @@ public class BlobDAORdbImpl implements BlobDAO {
     Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapParentCommit =
         new HashMap<String, Map.Entry<BlobExpanded, String>>();
     Map<String, BlobExpanded> locationBlobsMapCommitASimple = new HashMap<String, BlobExpanded>();
-    CommitEntity internalCommitA;
-    CommitEntity internalCommitB;
+    CommitEntity internalCommitA = null;
+    CommitEntity internalCommitB = null;
     try (Session readSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(readSession, request.getRepositoryId());
 
-      if (request.getBranchA().isEmpty() || request.getBranchB().isEmpty()) {
-        internalCommitA = readSession.get(CommitEntity.class, request.getCommitShaA());
-        if (internalCommitA == null) {
-          throw new ModelDBException(
-              "No such commit found : " + request.getCommitShaA(), Status.Code.NOT_FOUND);
-        }
-
-        internalCommitB = readSession.get(CommitEntity.class, request.getCommitShaB());
-        if (internalCommitB == null) {
-          throw new ModelDBException(
-              "No such commit found : " + request.getCommitShaB(), Status.Code.NOT_FOUND);
-        }
-      } else {
+      String errorNameA = null;
+      String errorNameB = null;
+      if (!request.getBranchA().isEmpty()) {
+        errorNameA = request.getBranchA();
         BranchEntity branchAEntity =
             repositoryDAO.getBranchEntity(
                 readSession, repositoryEntity.getId(), request.getBranchA());
         internalCommitA = readSession.get(CommitEntity.class, branchAEntity.getCommit_hash());
+      }
 
+      if (!request.getBranchB().isEmpty()) {
+        errorNameB = request.getBranchB();
         BranchEntity branchBEntity =
             repositoryDAO.getBranchEntity(
                 readSession, repositoryEntity.getId(), request.getBranchB());
         internalCommitB = readSession.get(CommitEntity.class, branchBEntity.getCommit_hash());
+      }
+
+      if (!request.getCommitShaA().isEmpty()) {
+        errorNameA = request.getCommitShaA();
+        internalCommitA = readSession.get(CommitEntity.class, request.getCommitShaA());
+      }
+
+      if (!request.getCommitShaB().isEmpty()) {
+        errorNameB = request.getCommitShaB();
+        internalCommitB = readSession.get(CommitEntity.class, request.getCommitShaB());
+      }
+
+      if (internalCommitA == null) {
+        throw new ModelDBException(
+            "No such commit OR branch found : " + errorNameA, Status.Code.NOT_FOUND);
+      }
+
+      if (internalCommitB == null) {
+        throw new ModelDBException(
+            "No such commit OR branch found : " + errorNameB, Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
