@@ -159,9 +159,10 @@ public interface ModelDBConstants {
   String VERSIONED_ALIAS = "ver_";
 
   // Migration Constants
-  String COLLABORATORS_RBAC_MIGRATION = "collaborators_rbac";
   String MIGRATION = "migration";
-  String OWNERS_RBAC_MIGRATION = "owners_rbac";
+  String SUB_ENTITIES_OWNERS_RBAC_MIGRATION = "SUB_ENTITIES_OWNERS_RBAC_MIGRATION";
+  String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
+      "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -183,6 +184,11 @@ public interface ModelDBConstants {
   String ROLE_PROJECT_DEPLOY = "PROJECT_DEPLOY";
   String ROLE_PROJECT_ADMIN = "PROJECT_ADMIN";
   String ROLE_DATASET_ADMIN = "DATASET_ADMIN";
+  String ROLE_EXPERIMENT_OWNER = "EXPERIMENT_OWNER";
+  String ROLE_EXPERIMENT_RUN_OWNER = "EXPERIMENT_RUN_OWNER";
+  String ROLE_DATASET_VERSION_OWNER = "DATASET_VERSION_OWNER";
+  String ROLE_REPOSITORY_OWNER = "REPOSITORY_OWNER";
+  String ROLE_REPOSITORY_ADMIN = "REPOSITORY_ADMIN";
 
   // Telemetry Constants
   String TELEMETRY = "telemetry";
@@ -201,8 +207,8 @@ public interface ModelDBConstants {
   String ENTITY_TYPE = "entity_type";
   String LABEL = "label";
   String BRANCH = "branch";
-  String BRANCH_NOT_FOUND = "Branch not found";
-  String COMMIT_NOT_FOUND = "Commit not found";
+  String BRANCH_NOT_FOUND = "Branch not found ";
+  String COMMIT_NOT_FOUND = "Commit not found ";
   String INITIAL_COMMIT_MESSAGE = "Initial commit";
   String MASTER_BRANCH = "master";
   String COMMIT = "commit";

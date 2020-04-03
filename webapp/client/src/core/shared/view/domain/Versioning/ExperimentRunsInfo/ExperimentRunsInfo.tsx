@@ -74,7 +74,7 @@ class ExperimentRunsInfo extends React.PureComponent<ILocalProps> {
                     workspaceName,
                   })}
                 >
-                  {experimentRun.id}
+                  {experimentRun.id.slice(0, 7)}...
                 </NavLink>
                 &nbsp;
                 <CopyButton value={experimentRun.id} />

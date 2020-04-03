@@ -234,7 +234,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceActions.UPDATE);
       validateExperimentEntity(request.getExperimentId());
 
-      experimentRun = experimentRunDAO.insertExperimentRun(experimentRun);
+      experimentRun = experimentRunDAO.insertExperimentRun(experimentRun, userInfo);
       responseObserver.onNext(
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build());
       responseObserver.onCompleted();
@@ -1838,7 +1838,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           Status.newBuilder()
               .setCode(Code.PERMISSION_DENIED_VALUE)
               .setMessage(
-                  "Access is denied. Experiment not found for given ids : "
+                  "Access is denied. ExperimentRun not found for given ids : "
                       + requestedExperimentRunIds)
               .build();
       throw StatusProto.toStatusRuntimeException(status);
@@ -1858,8 +1858,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           roleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
       // Validate if current user has access to the entity or not
-      allowedProjectIds.retainAll(requestedExperimentRunIds);
-      accessibleExperimentRunIds.addAll(allowedProjectIds);
+      allowedProjectIds.retainAll(projectIdSet);
+      for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
+        if (allowedProjectIds.contains(entry.getValue())) {
+          accessibleExperimentRunIds.add(entry.getKey());
+        }
+      }
     }
     return accessibleExperimentRunIds;
   }

@@ -24,13 +24,20 @@ interface ILocalProps {
   tags: CommitTag[];
   branches: RepositoryBranches;
   commitPointer: CommitPointer;
+  valueLabel?: string;
   onChangeCommitPointer(commitPointer: CommitPointer): void;
 }
 
 type AllProps = ILocalProps;
 
 const BranchesAndTagsList: React.FC<AllProps> = props => {
-  const { tags, onChangeCommitPointer, commitPointer, branches } = props;
+  const {
+    tags,
+    onChangeCommitPointer,
+    commitPointer,
+    branches,
+    valueLabel,
+  } = props;
 
   const [isOpened, changeVisibility] = React.useState(false);
   const [activeTab, changeTab] = React.useState<'branches' | 'tags'>(
@@ -70,14 +77,16 @@ const BranchesAndTagsList: React.FC<AllProps> = props => {
                 title={commitPointer.value}
                 onClick={() => changeVisibility(true)}
               >
-                {matchType(
-                  {
-                    branch: () => 'Branch:',
-                    tag: () => 'Tag:',
-                    commitSha: () => 'Tree:',
-                  },
-                  commitPointer.type
-                )}{' '}
+                {valueLabel ||
+                  matchType(
+                    {
+                      branch: () => 'Branch',
+                      tag: () => 'Tag',
+                      commitSha: () => 'Tree',
+                    },
+                    commitPointer.type
+                  )}
+                {`: `}
                 <div
                   className={styles.summary__value}
                   data-test="branches-and-tags-list-selected-value"

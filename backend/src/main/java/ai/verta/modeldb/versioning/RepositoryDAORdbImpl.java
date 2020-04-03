@@ -2,25 +2,38 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
+import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Organization;
+import ai.verta.uac.RoleBinding;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +44,8 @@ import org.hibernate.query.Query;
 
 public class RepositoryDAORdbImpl implements RepositoryDAO {
 
+  private static final String GET_REPOSITORY_BY_IDS_QUERY =
+      "From RepositoryEntity ent where ent.id IN (:ids)";
   private static final Logger LOGGER = LogManager.getLogger(RepositoryDAORdbImpl.class);
   private final AuthService authService;
   private final RoleService roleService;
@@ -200,22 +215,48 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
-      throws ModelDBException {
+  public RepositoryEntity getRepositoryById(
+      Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException {
     RepositoryEntity repository;
     if (id.hasNamedId()) {
       WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(id, true);
       repository =
           getRepositoryByName(session, id.getNamedId().getName(), workspaceDTO)
               .orElseThrow(
-                  () -> new ModelDBException("Couldn't find repository by name", Code.NOT_FOUND));
+                  () ->
+                      new ModelDBException(
+                          "Couldn't find repository by name " + id.getNamedId().getName(),
+                          Code.NOT_FOUND));
     } else {
       repository =
           getRepositoryById(session, id.getRepoId())
               .orElseThrow(
-                  () -> new ModelDBException("Couldn't find repository by id", Code.NOT_FOUND));
+                  () ->
+                      new ModelDBException(
+                          "Couldn't find repository by id " + id.getRepoId(), Code.NOT_FOUND));
+    }
+    try {
+      if (checkWrite) {
+        roleService.validateEntityUserWithUserInfo(
+            ModelDBServiceResourceTypes.REPOSITORY,
+            repository.getId().toString(),
+            ModelDBServiceActions.UPDATE);
+      }
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.REPOSITORY,
+          repository.getId().toString(),
+          ModelDBServiceActions.READ);
+    } catch (InvalidProtocolBufferException e) {
+      LOGGER.error(e);
+      throw new ModelDBException("Unexpected error", e);
     }
     return repository;
+  }
+
+  @Override
+  public RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
+      throws ModelDBException {
+    return getRepositoryById(session, id, false);
   }
 
   private Optional<RepositoryEntity> getRepositoryById(Session session, long id) {
@@ -240,8 +281,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public SetRepository.Response setRepository(SetRepository request, boolean create)
-      throws ModelDBException {
+  public SetRepository.Response setRepository(
+      SetRepository request, UserInfo userInfo, boolean create)
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
       session.beginTransaction();
@@ -264,7 +306,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 workspaceDTO,
                 request.getRepository().getOwner());
       } else {
-        repository = getRepositoryById(session, request.getId());
+        repository = getRepositoryById(session, request.getId(), true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
             session,
             SHORT_NAME,
@@ -279,17 +321,64 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         repository.update(request);
       }
       session.saveOrUpdate(repository);
+      if (create) {
+        Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
+        roleService.createRoleBinding(
+            ownerRole,
+            new CollaboratorUser(authService, userInfo),
+            String.valueOf(repository.getId()),
+            ModelDBServiceResourceTypes.REPOSITORY);
+      }
       session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }
   }
 
+  private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
+    for (RepositoryEntity repositoryEntity : allowedResources) {
+      String repositoryId = String.valueOf(repositoryEntity.getId());
+      String ownerRoleBindingName =
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_REPOSITORY_OWNER,
+              repositoryId,
+              repositoryEntity.getOwner(),
+              ModelDBServiceResourceTypes.REPOSITORY.name());
+      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
+      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+        roleService.deleteRoleBinding(roleBinding.getId());
+      }
+
+      // Remove all repositoryEntity collaborators
+      roleService.removeResourceRoleBindings(
+          repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY);
+
+      // Delete workspace based roleBindings
+      roleService.deleteWorkspaceRoleBindings(
+          repositoryEntity.getWorkspace_id(),
+          WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+          String.valueOf(repositoryEntity.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+          ModelDBServiceResourceTypes.REPOSITORY);
+    }
+  }
+
   @Override
   public DeleteRepositoryRequest.Response deleteRepository(
-      DeleteRepositoryRequest request, CommitDAO commitDAO) throws ModelDBException {
+      DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
+      // Get self allowed resources id where user has delete permission
+      List<String> allowedRepositoryIds =
+          roleService.getAccessibleResourceIdsByActions(
+              ModelDBServiceResourceTypes.REPOSITORY,
+              ModelDBServiceActions.DELETE,
+              Collections.singletonList(String.valueOf(repository.getId())));
+      if (allowedRepositoryIds.isEmpty()) {
+        throw new ModelDBException(
+            "Delete Access Denied for given repository Id : " + request.getRepositoryId(),
+            Code.PERMISSION_DENIED);
+      }
 
       ListBranchesRequest.Response listBranchesResponse =
           listBranches(
@@ -321,7 +410,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   }
                 }
               });
+      // Delete all VersionedInputs for repository ID
+      experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
 
+      deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
       session.delete(repository);
       session.getTransaction().commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
@@ -329,8 +421,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public ListRepositoriesRequest.Response listRepositories(ListRepositoriesRequest request)
-      throws ModelDBException {
+  public ListRepositoriesRequest.Response listRepositories(
+      ListRepositoriesRequest request, UserInfo currentLoginUserInfo) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       WorkspaceDTO workspaceDTO =
           verifyAndGetWorkspaceDTO(
@@ -362,7 +454,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         query.setFirstResult((request.getPagination().getPageNumber() - 1) * pageLimit);
         query.setMaxResults(pageLimit);
       }
-      List list = query.list();
+      List repoList = query.list();
       ListRepositoriesRequest.Response.Builder builder =
           ListRepositoriesRequest.Response.newBuilder();
       query_prefix =
@@ -381,7 +473,22 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               workspaceDTO.getWorkspaceType(),
               false,
               null);
-      list.forEach((o) -> builder.addRepositories(((RepositoryEntity) o).toProto()));
+      Map<String, RepositoryEntity> result = new LinkedHashMap<>();
+      for (Object repoObj : repoList) {
+        RepositoryEntity repositoryEntity = (RepositoryEntity) repoObj;
+        result.put(repositoryEntity.getId().toString(), repositoryEntity);
+      }
+      List<String> accessibleResourceIds =
+          roleService.getAccessibleResourceIds(
+              null,
+              new CollaboratorUser(authService, currentLoginUserInfo),
+              ProjectVisibility.PRIVATE,
+              ModelDBServiceResourceTypes.REPOSITORY,
+              new ArrayList<>(result.keySet()));
+      result.keySet().retainAll(accessibleResourceIds);
+      result
+          .values()
+          .forEach(repositoryEntity -> builder.addRepositories(repositoryEntity.toProto()));
       final Long value = (Long) query.uniqueResult();
       builder.setTotalRecords(value);
       return builder.build();
@@ -395,14 +502,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public SetTagRequest.Response setTag(SetTagRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
+      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
 
       boolean exists =
           VersioningUtils.commitRepositoryMappingExists(
               session, request.getCommitSha(), repository.getId());
       if (!exists) {
         throw new ModelDBException(
-            "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
+            "Commit_hash and repository_id mapping not found for repository "
+                + repository.getId()
+                + " commit "
+                + " request.getCommitSha()",
+            Code.NOT_FOUND);
       }
 
       Query query = session.createQuery(GET_TAG_HQL);
@@ -431,7 +542,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       query.setParameter("tag", request.getTag());
       TagsEntity tagsEntity = (TagsEntity) query.uniqueResult();
       if (tagsEntity == null) {
-        throw new ModelDBException("Tag not found", Code.NOT_FOUND);
+        throw new ModelDBException("Tag not found " + request.getTag(), Code.NOT_FOUND);
       }
 
       CommitEntity commitEntity = session.get(CommitEntity.class, tagsEntity.getCommit_hash());
@@ -444,11 +555,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public DeleteTagRequest.Response deleteTag(DeleteTagRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
+      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
       TagsEntity tagsEntity =
           session.get(TagsEntity.class, new TagsEntity.TagId(request.getTag(), repository.getId()));
       if (tagsEntity == null) {
-        throw new ModelDBException("Tag not found", Code.NOT_FOUND);
+        throw new ModelDBException("Tag not found " + request.getTag(), Code.NOT_FOUND);
       }
       session.delete(tagsEntity);
       session.getTransaction().commit();
@@ -486,14 +597,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public SetBranchRequest.Response setBranch(SetBranchRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
+      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
 
       boolean exists =
           VersioningUtils.commitRepositoryMappingExists(
               session, request.getCommitSha(), repository.getId());
       if (!exists) {
         throw new ModelDBException(
-            "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
+            "Commit_hash and repository_id mapping not found for repository "
+                + repository.getId()
+                + " and commit "
+                + request.getCommitSha(),
+            Code.NOT_FOUND);
       }
 
       Query query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
@@ -545,13 +660,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
-      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
+      RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
       BranchEntity branchEntity =
           session.get(
               BranchEntity.class,
               new BranchEntity.BranchId(request.getBranch(), repository.getId()));
       if (branchEntity == null) {
-        throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
+        throw new ModelDBException(
+            ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
       }
       session.delete(branchEntity);
       session.getTransaction().commit();
@@ -619,13 +735,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         query.setParameter("branch", request.getBranch());
         BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
         if (branchEntity == null) {
-          throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
+          throw new ModelDBException(
+              ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
         }
         referenceCommit = branchEntity.getCommit_hash();
       } else {
         CommitEntity commit = session.get(CommitEntity.class, request.getCommitSha());
         if (commit == null) {
-          throw new ModelDBException(ModelDBConstants.COMMIT_NOT_FOUND, Code.NOT_FOUND);
+          throw new ModelDBException(
+              ModelDBConstants.COMMIT_NOT_FOUND + request.getCommitSha(), Code.NOT_FOUND);
         }
         referenceCommit = commit.getCommit_hash();
       }

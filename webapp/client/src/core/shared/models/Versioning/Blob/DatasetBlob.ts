@@ -48,7 +48,7 @@ export type IPathDatasetBlobDiffData = {
 };
 
 export type IS3DatasetBlobDiff = IBlobDiff<
-IS3DatasetBlobDiffData,
+  IS3DatasetBlobDiffData,
   IS3DatasetBlob['category'],
   IS3DatasetBlob['type']
 >;
@@ -60,7 +60,11 @@ export type IS3DatasetBlobDiffData = {
   }>;
 };
 
-export type IPathDatasetComponentBlobDiff = IElementDiff<IPathDatasetComponentBlob>;
+export type IPathDatasetComponentBlobDiff = IElementDiff<
+  IPathDatasetComponentBlob
+>;
 
 export type IDatasetBlobDiff = IPathDatasetBlobDiff | IS3DatasetBlobDiff;
-export type IDatasetBlobDiffData = IPathDatasetBlobDiffData | IS3DatasetBlobDiffData;
+export type IDatasetBlobDiffData =
+  | IPathDatasetBlobDiffData
+  | IS3DatasetBlobDiffData;

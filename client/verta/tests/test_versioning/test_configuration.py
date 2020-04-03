@@ -89,3 +89,19 @@ class TestHyperparameters:
         commit.update('config', config)
         commit.save(message="banana")
         assert commit.get('config')
+
+    def test_repr(self):
+        """Tests that __repr__() executes without error"""
+        config = verta.configuration.Hyperparameters(
+            hyperparameters={
+                'a': 1, 'b': 1,
+            },
+            hyperparameter_ranges={
+                'c': (1, 5, 1), 'd': (1, 5, 1),
+            },
+            hyperparameter_sets={
+                'e': [1, 2], 'f': [1, 2],
+            },
+        )
+
+        assert config.__repr__()

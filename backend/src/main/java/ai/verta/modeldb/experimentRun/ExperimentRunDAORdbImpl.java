@@ -21,6 +21,8 @@ import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -44,6 +46,9 @@ import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -77,6 +82,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
   private final AuthService authService;
+  private final RoleService roleService;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
@@ -174,8 +180,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .toString();
 
   public ExperimentRunDAORdbImpl(
-      AuthService authService, RepositoryDAO repositoryDAO, CommitDAO commitDAO, BlobDAO blobDAO) {
+      AuthService authService,
+      RoleService roleService,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      BlobDAO blobDAO) {
     this.authService = authService;
+    this.roleService = roleService;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
@@ -246,8 +257,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       errorMessage = "Repository Id not found in VersioningEntry";
     } else if (versioningEntry.getCommit().isEmpty()) {
       errorMessage = "Commit hash not found in VersioningEntry";
-    } else if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
-      errorMessage = "Location map should not be empty in VersioningEntry";
     }
 
     if (errorMessage != null) {
@@ -260,21 +269,25 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             session,
             versioningEntry.getCommit(),
             (session1) -> repositoryDAO.getRepositoryById(session, repositoryIdentification));
-    Map<String, BlobExpanded> locationBlobMap =
-        blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
-    for (Map.Entry<String, Location> locationBlobKeyMap :
-        versioningEntry.getKeyLocationMapMap().entrySet()) {
-      if (!locationBlobMap.containsKey(
-          String.join("#", locationBlobKeyMap.getValue().getLocationList()))) {
-        throw new ModelDBException(
-            "Location list for key '" + locationBlobKeyMap.getKey() + "' not found in commit blobs",
-            io.grpc.Status.Code.INVALID_ARGUMENT);
+    if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
+      Map<String, BlobExpanded> locationBlobMap =
+          blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
+      for (Map.Entry<String, Location> locationBlobKeyMap :
+          versioningEntry.getKeyLocationMapMap().entrySet()) {
+        if (!locationBlobMap.containsKey(
+            String.join("#", locationBlobKeyMap.getValue().getLocationList()))) {
+          throw new ModelDBException(
+              "Location list for key '"
+                  + locationBlobKeyMap.getKey()
+                  + "' not found in commit blobs",
+              io.grpc.Status.Code.INVALID_ARGUMENT);
+        }
       }
     }
   }
 
   @Override
-  public ExperimentRun insertExperimentRun(ExperimentRun experimentRun)
+  public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
@@ -284,6 +297,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       session.saveOrUpdate(experimentRunObj);
+
+      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
+      roleService.createRoleBinding(
+          ownerRole,
+          new CollaboratorUser(authService, userInfo),
+          experimentRun.getId(),
+          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
+
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
           session,
@@ -347,6 +368,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         projectIds.add(experimentRunEntity.getProject_id());
         experimentIds.add(experimentRunEntity.getExperiment_id());
         session.delete(experimentRunEntity);
+
+        String ownerRoleBindingName =
+            roleService.buildRoleBindingName(
+                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
+                experimentRunEntity.getId(),
+                experimentRunEntity.getOwner(),
+                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
+        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
+        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+          roleService.deleteRoleBinding(roleBinding.getId());
+        }
       }
 
       // Update parent entity timestamp
@@ -1620,6 +1652,27 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .setExperimentRun(runEntity.getProtoObject())
           .build();
     }
+  }
+
+  @Override
+  public void deleteLogVersionedInputs(Session session, Long repoId, String commitHash) {
+    StringBuilder fetchAllExpRunLogVersionedInputsHqlBuilder =
+        new StringBuilder(
+            "DELETE FROM VersioningModeldbEntityMapping vm WHERE vm.repository_id = :repoId ");
+    fetchAllExpRunLogVersionedInputsHqlBuilder
+        .append(" AND vm.entity_type = '")
+        .append(ExperimentRunEntity.class.getSimpleName())
+        .append("' ");
+    if (commitHash != null && !commitHash.isEmpty()) {
+      fetchAllExpRunLogVersionedInputsHqlBuilder.append(" AND vm.commit = :commitHash");
+    }
+    Query query = session.createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString());
+    query.setParameter("repoId", repoId);
+    if (commitHash != null && !commitHash.isEmpty()) {
+      query.setParameter("commitHash", commitHash);
+    }
+    query.executeUpdate();
+    LOGGER.debug("ExperimentRun versioning deleted successfully");
   }
 
   @Override

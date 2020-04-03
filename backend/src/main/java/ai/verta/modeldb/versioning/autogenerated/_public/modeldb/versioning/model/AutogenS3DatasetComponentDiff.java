@@ -94,7 +94,7 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenPathDatasetComponentDiff>
           f = x -> AutogenPathDatasetComponentDiff.fromProto(blob.getPath());
-      obj.Path = Utils.removeEmpty(f.apply(blob));
+      obj.setPath(f.apply(blob));
     }
     return obj;
   }

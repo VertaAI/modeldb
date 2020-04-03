@@ -154,19 +154,19 @@ public class AutogenPythonRequirementEnvironmentBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob, String> f =
           x -> (blob.getConstraint());
-      obj.Constraint = Utils.removeEmpty(f.apply(blob));
+      obj.setConstraint(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob, String> f =
           x -> (blob.getLibrary());
-      obj.Library = Utils.removeEmpty(f.apply(blob));
+      obj.setLibrary(f.apply(blob));
     }
     {
       Function<
               ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob,
               AutogenVersionEnvironmentBlob>
           f = x -> AutogenVersionEnvironmentBlob.fromProto(blob.getVersion());
-      obj.Version = Utils.removeEmpty(f.apply(blob));
+      obj.setVersion(f.apply(blob));
     }
     return obj;
   }

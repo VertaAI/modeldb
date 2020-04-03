@@ -180,7 +180,7 @@ public class AutogenConfigDiff implements ProtoType {
               blob.getHyperparameterSetList().stream()
                   .map(AutogenHyperparameterSetConfigDiff::fromProto)
                   .collect(Collectors.toList());
-      obj.HyperparameterSet = Utils.removeEmpty(f.apply(blob));
+      obj.setHyperparameterSet(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.ConfigDiff, List<AutogenHyperparameterConfigDiff>> f =
@@ -188,7 +188,7 @@ public class AutogenConfigDiff implements ProtoType {
               blob.getHyperparametersList().stream()
                   .map(AutogenHyperparameterConfigDiff::fromProto)
                   .collect(Collectors.toList());
-      obj.Hyperparameters = Utils.removeEmpty(f.apply(blob));
+      obj.setHyperparameters(f.apply(blob));
     }
     return obj;
   }

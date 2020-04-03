@@ -4,16 +4,16 @@ import { IEnvironmentBlob } from 'core/shared/models/Versioning/Blob/Environment
 import matchBy from 'core/shared/utils/matchBy';
 import AnsiView from 'core/shared/view/elements/AnsiView/AnsiView';
 import CopyButton from 'core/shared/view/elements/CopyButton/CopyButton';
-import {
-  RecordInfo,
-  PageHeader,
-  PageContent,
-} from 'core/shared/view/elements/PageComponents';
 import KeyValuePairs from 'core/shared/view/elements/KeyValuePairs/KeyValuePairs';
 
 import DockerEnvironmentBlobView from './DockerEnvironmentBlobView/DockerEnvironmentBlobView';
 import styles from './EnvironmentBlobView.module.css';
 import PythonEnvironmentBlobView from './PythonEnvironmentBlobView/PythonEnvironmentBlobView';
+import makePropertiesTableComponents from 'core/shared/view/domain/Versioning/Blob/PropertiesTable/PropertiesTable';
+import {
+  MultipleBlobDataBox,
+  BlobDataBox,
+} from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 interface ILocalProps {
   blob: IEnvironmentBlob;
@@ -21,66 +21,59 @@ interface ILocalProps {
 
 const EnvironmentBlobView = ({ blob }: ILocalProps) => {
   return (
-    <div className={styles.root}>
-      <PageHeader title="Environment" size="medium" />
-      <PageContent>
-        <EnvironmentDetails
-          commandLine={blob.data.commandLine}
-          variables={blob.data.variables}
-        />
-        <div className={styles.detail}>
-          {matchBy(blob.data.data, 'type')({
-            python: pythonBlob => (
-              <PythonEnvironmentBlobView blob={pythonBlob} />
-            ),
-            docker: dockerBlob => (
-              <DockerEnvironmentBlobView blob={dockerBlob} />
-            ),
-          })}
-        </div>
-      </PageContent>
-    </div>
+    <MultipleBlobDataBox title="Environment">
+      <EnvironmentDetails
+        commandLine={blob.data.commandLine}
+        variables={blob.data.variables}
+      />
+      {matchBy(blob.data.data, 'type')({
+        python: pythonBlob => <PythonEnvironmentBlobView blob={pythonBlob} />,
+        docker: dockerBlob => <DockerEnvironmentBlobView blob={dockerBlob} />,
+      })}
+    </MultipleBlobDataBox>
   );
 };
 
-const EnvironmentDetails = ({
-  commandLine,
-  variables,
-}: {
-  commandLine: IEnvironmentBlob['data']['commandLine'];
-  variables: IEnvironmentBlob['data']['variables'];
-}) => {
-  return commandLine || variables ? (
-    <div className={styles.section}>
-      <div className={styles.section__title}>
-        <PageHeader
-          title="Common details"
-          size="small"
-          withoutSeparator={true}
+const tableComponents = makePropertiesTableComponents<
+  Pick<IEnvironmentBlob['data'], 'commandLine' | 'variables'>
+>();
+
+const EnvironmentDetails = (
+  data: Pick<IEnvironmentBlob['data'], 'commandLine' | 'variables'>
+) => {
+  return data.commandLine || data.variables ? (
+    <BlobDataBox title="Common details">
+      <tableComponents.Table data={data}>
+        <tableComponents.PropDefinition
+          title="Environment variables"
+          render={({ data: { variables } }) =>
+            variables && (
+              <KeyValuePairs
+                data={variables.map(({ name, value }) => ({
+                  key: name,
+                  value,
+                }))}
+              />
+            )
+          }
         />
-      </div>
-      <div className={styles.section__content}>
-        {variables && (
-          <RecordInfo label="Environment variables">
-            <KeyValuePairs
-              data={variables.map(({ name, value }) => ({ key: name, value }))}
-            />
-          </RecordInfo>
-        )}
-        {commandLine && (
-          <RecordInfo label="Command line">
-            <div className={styles.commandLineContent}>
-              <div className={styles.commandLineView}>
-                <AnsiView data={commandLine.join('\n')} />
+        <tableComponents.PropDefinition
+          title="Command line"
+          render={({ data: { commandLine } }) =>
+            commandLine && (
+              <div className={styles.commandLineContent}>
+                <div className={styles.commandLineView}>
+                  <AnsiView data={commandLine.join('\n')} />
+                </div>
+                <div className={styles.coppyCommandLine}>
+                  <CopyButton value={commandLine.join('\n')} />
+                </div>
               </div>
-              <div className={styles.coppyCommandLine}>
-                <CopyButton value={commandLine.join('\n')} />
-              </div>
-            </div>
-          </RecordInfo>
-        )}
-      </div>
-    </div>
+            )
+          }
+        />
+      </tableComponents.Table>
+    </BlobDataBox>
   ) : null;
 };
 

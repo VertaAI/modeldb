@@ -281,16 +281,6 @@ def commit(repository):
 
     yield commit
 
-    if commit.id is not None:
-        try:
-            utils.delete_commit(repository.id, commit.id, repository._conn)
-        except requests.HTTPError as e:
-            try:
-                if e.response.status_code == 404 and e.response.json()['code'] == 5:
-                    pass  # already deleted in test
-            except:
-                six.raise_from(e, None)
-
 
 @pytest.fixture
 def created_datasets(client):

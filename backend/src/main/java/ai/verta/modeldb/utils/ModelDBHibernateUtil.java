@@ -1,9 +1,13 @@
 package ai.verta.modeldb.utils;
 
+import static ai.verta.modeldb.authservice.AuthServiceChannel.isMigrationUtilsCall;
+
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
+import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -63,6 +67,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -235,10 +241,14 @@ public class ModelDBHibernateUtil {
           exportSchema(metaDataSrc.buildMetadata());
         }
 
+        // Check if any migration need to be run or not and based on the migration status flag
+        runMigration();
+
         LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
         isReady = true;
         return sessionFactory;
       } catch (Exception e) {
+        e.printStackTrace();
         LOGGER.warn(
             "ModelDBHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
         if (registry != null) {
@@ -568,5 +578,69 @@ public class ModelDBHibernateUtil {
       query.setParameter(ModelDBConstants.WORKSPACE_TYPE, workspaceType.getNumber());
     }
     return query;
+  }
+
+  /**
+   * If you want to define new migration then add new if check for your migration in `if (migration)
+   * {` condition.
+   */
+  @SuppressWarnings("unchecked")
+  private static void runMigration() {
+    App app = App.getInstance();
+    Map<String, Boolean> migrationTypeMap =
+        (Map<String, Boolean>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
+    if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
+      new Thread(
+              () -> {
+                isMigrationUtilsCall = true;
+                int index = 0;
+                try {
+                  CompletableFuture<Boolean>[] completableFutures =
+                      new CompletableFuture[migrationTypeMap.size()];
+                  for (String migrationName : migrationTypeMap.keySet()) {
+                    Boolean migration = migrationTypeMap.get(migrationName);
+                    if (migration) {
+                      if (migrationName.equals(
+                          ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION)) {
+                        // Manually migration for populate RoleBinding of experiment, experimentRun
+                        // &
+                        // datasetVersion owner
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  OwnerRoleBindingUtils.execute();
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      }
+                      if (migrationName.equals(
+                          ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION)) {
+                        // Manual migration for populate RoleBinding of repository
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  OwnerRoleBindingRepositoryUtils.execute();
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      } // add else if here for the new migration type
+                    }
+                  }
+                  if (index > 0) {
+                    CompletableFuture<Void> combinedFuture =
+                        CompletableFuture.allOf(completableFutures);
+                    combinedFuture.get();
+                    LOGGER.warn("Finished all the future tasks");
+                  }
+                } catch (InterruptedException | ExecutionException e) {
+                  LOGGER.warn(
+                      "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
+                }
+                isMigrationUtilsCall = false;
+              })
+          .start();
+    }
   }
 }

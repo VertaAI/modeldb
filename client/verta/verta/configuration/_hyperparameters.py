@@ -63,6 +63,48 @@ class Hyperparameters(_configuration._Configuration):
                 in six.viewitems(hyperparameter_sets)
             )
 
+    def __repr__(self):
+        lines = ["Hyperparameters Version"]
+        lines.extend(
+            "{}: {}".format(
+                hyperparam_msg.name,
+                self._msg_to_value(hyperparam_msg.value),
+            )
+            for hyperparam_msg
+            in sorted(
+                self._msg.hyperparameters,
+                key=lambda hyperparam_msg: hyperparam_msg.name,
+            )
+        )
+        lines.extend(
+            "{}: range({}, {}, {})".format(
+                hyperparam_msg.name,
+                self._msg_to_value(hyperparam_msg.continuous.interval_begin),
+                self._msg_to_value(hyperparam_msg.continuous.interval_end),
+                self._msg_to_value(hyperparam_msg.continuous.interval_step),
+            )
+            for hyperparam_msg
+            in sorted(
+                self._msg.hyperparameter_set,
+                key=lambda hyperparam_msg: hyperparam_msg.name,
+            )
+            if hyperparam_msg.WhichOneof('value') == "continuous"
+        )
+        lines.extend(
+            "{}: [{}]".format(
+                hyperparam_msg.name,
+                ', '.join(str(self._msg_to_value(value_msg)) for value_msg in hyperparam_msg.discrete.values)
+            )
+            for hyperparam_msg
+            in sorted(
+                self._msg.hyperparameter_set,
+                key=lambda hyperparam_msg: hyperparam_msg.name,
+            )
+            if hyperparam_msg.WhichOneof('value') == "discrete"
+        )
+
+        return "\n    ".join(lines)
+
     @staticmethod
     def _value_to_msg(value):
         """
@@ -90,6 +132,22 @@ class Hyperparameters(_configuration._Configuration):
                             " not {}".format(value, type(value)))
 
         return msg
+
+    @staticmethod
+    def _msg_to_value(msg):
+        """
+        Inverse of :meth:`Hyperparameters._value_to_msg`.
+
+        Parameters
+        ----------
+        msg : HyperparameterValuesConfigBlob
+
+        Returns
+        -------
+        value : int or float or str or None
+
+        """
+        return getattr(msg, msg.WhichOneof('value'), None)
 
     @classmethod
     def _hyperparameter_to_msg(cls, name, value):

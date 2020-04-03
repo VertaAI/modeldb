@@ -173,7 +173,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experiment.getProjectId(),
           ModelDBServiceActions.UPDATE);
 
-      experiment = experimentDAO.insertExperiment(experiment);
+      experiment = experimentDAO.insertExperiment(experiment, userInfo);
       responseObserver.onNext(
           CreateExperiment.Response.newBuilder().setExperiment(experiment).build());
       responseObserver.onCompleted();
@@ -1096,8 +1096,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           roleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
       // Validate if current user has access to the entity or not
-      allowedProjectIds.retainAll(requestedExperimentIds);
-      accessibleExperimentIds.addAll(allowedProjectIds);
+      allowedProjectIds.retainAll(projectIdSet);
+      for (Map.Entry<String, String> entry : projectIdExperimentIdMap.entrySet()) {
+        if (allowedProjectIds.contains(entry.getValue())) {
+          accessibleExperimentIds.add(entry.getKey());
+        }
+      }
     }
     return accessibleExperimentIds;
   }

@@ -1108,4 +1108,33 @@ public class RoleServiceUtils implements RoleService {
       throw ex;
     }
   }
+
+  @Override
+  public void deleteWorkspaceRoleBindings(String workspaceId, WorkspaceType workspaceType,
+      String resourceId, String roleName, ModelDBServiceResourceTypes resourceTypes) {
+    if (workspaceId != null && !workspaceId.isEmpty()) {
+      CollaboratorUser collaboratorUser;
+      switch (workspaceType) {
+        case ORGANIZATION:
+          Organization org = (Organization) getOrgById(workspaceId);
+          collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
+          break;
+        case USER:
+          collaboratorUser = new CollaboratorUser(authService, workspaceId);
+          break;
+        default:
+          return;
+      }
+      String roleBindingName =
+          buildRoleBindingName(
+              roleName,
+              resourceId,
+              collaboratorUser,
+              resourceTypes.name());
+      RoleBinding roleBinding = getRoleBindingByName(roleBindingName);
+      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+        deleteRoleBinding(roleBinding.getId());
+      }
+    }
+  }
 }

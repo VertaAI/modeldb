@@ -11,8 +11,8 @@ import {
   emptyFolder,
 } from 'core/shared/models/Versioning/RepositoryData';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
+import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
-import DataBox from '../shared/DataBox/DataBox';
 import CurrentCommitInfo from './CurrentCommitInfo/CurrentCommitInfo';
 import FolderElement from './FolderElement/FolderElement';
 import NavigationItem from './NavigationItem/NavigationItem';
@@ -38,7 +38,7 @@ const FolderView: React.FC<ILocalProps> = ({
   ];
 
   return (
-    <DataBox>
+    <DataBox withPadding={false}>
       <div className={styles.root}>
         <CurrentCommitInfo repositoryName={repositoryName} data={commit} />
         {R.equals(data, emptyFolder) ? (

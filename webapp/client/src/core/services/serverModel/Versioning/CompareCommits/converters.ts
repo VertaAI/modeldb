@@ -25,17 +25,6 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
       ? (serverDiffCategory as IBlob['data']['category'])
       : 'unknown';
 
-  const diffType: DiffType = serverDiff.status
-    ? matchType(
-        {
-          MODIFIED: () => 'updated',
-          DELETED: () => 'deleted',
-          ADDED: () => 'added',
-        },
-        serverDiff.status
-      )
-    : 'added';
-
   switch (category) {
     case 'code': {
       return convertServerCodeDiff(serverDiff);
@@ -46,10 +35,24 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
     }
 
     case 'environment': {
-      return convertServerEnvironmentDiff(serverDiff, diffType);
+      return convertServerEnvironmentDiff(serverDiff);
+    }
+
+    case 'dataset': {
+      return convertServerDatasetDiff(serverDiff);
     }
 
     case 'unknown': {
+      const diffType: DiffType = serverDiff.status
+        ? matchType(
+            {
+              MODIFIED: () => 'modified',
+              DELETED: () => 'deleted',
+              ADDED: () => 'added',
+            },
+            serverDiff.status
+          )
+        : 'added';
       switch (diffType) {
         case 'added':
         case 'deleted':
@@ -61,7 +64,7 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
             blob: serverDiff[serverDiffCategory],
           } as any;
 
-        case 'updated': {
+        case 'modified': {
           return {
             diffType,
             category: 'unknown',
@@ -75,10 +78,6 @@ export const convertServerDiffToClient = (serverDiff: any): Diff => {
         default:
           exhaustiveCheck(diffType, '');
       }
-    }
-
-    case 'dataset': {
-      return convertServerDatasetDiff(serverDiff);
     }
 
     default: {
