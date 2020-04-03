@@ -383,27 +383,9 @@ public class BlobDAORdbImpl implements BlobDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
 
-      boolean invalidParam = false;
-      if (!request.getBranchA().isEmpty()
-          && !request.getBranchB().isEmpty()
-          && !request.getCommitA().isEmpty()
-          && !request.getCommitB().isEmpty()) {
-        invalidParam = true;
-      } else if (!request.getBranchA().isEmpty() && !request.getCommitA().isEmpty()) {
-        invalidParam = true;
-      } else if (request.getBranchA().isEmpty() && request.getCommitA().isEmpty()) {
-        invalidParam = true;
-      } else if (!request.getBranchB().isEmpty() && !request.getCommitB().isEmpty()) {
-        invalidParam = true;
-      } else if (request.getBranchB().isEmpty() && request.getCommitB().isEmpty()) {
-        invalidParam = true;
-      }
-
-      if (invalidParam) {
-        throw new ModelDBException(
-            "Branches and Commits both are not allowed in the request",
-            Status.Code.INVALID_ARGUMENT);
-      }
+      // validating request
+      validateDiffMergeRequest(
+          request.getBranchA(), request.getBranchB(), request.getCommitA(), request.getCommitB());
 
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(session, request.getRepositoryId());
@@ -527,24 +509,18 @@ public class BlobDAORdbImpl implements BlobDAO {
         .build();
   }
 
-  @Override
-  public MergeRepositoryCommitsRequest.Response mergeCommit(
-      RepositoryDAO repositoryDAO, MergeRepositoryCommitsRequest request)
-      throws ModelDBException, NoSuchAlgorithmException {
-
+  public void validateDiffMergeRequest(
+      String branchA, String branchB, String commitA, String commitB) throws ModelDBException {
     boolean invalidParam = false;
-    if (!request.getBranchA().isEmpty()
-        && !request.getBranchB().isEmpty()
-        && !request.getCommitShaA().isEmpty()
-        && !request.getCommitShaB().isEmpty()) {
+    if (!branchA.isEmpty() && !branchB.isEmpty() && !commitA.isEmpty() && !commitB.isEmpty()) {
       invalidParam = true;
-    } else if (!request.getBranchA().isEmpty() && !request.getCommitShaA().isEmpty()) {
+    } else if (!branchA.isEmpty() && !commitA.isEmpty()) {
       invalidParam = true;
-    } else if (request.getBranchA().isEmpty() && request.getCommitShaA().isEmpty()) {
+    } else if (branchA.isEmpty() && commitA.isEmpty()) {
       invalidParam = true;
-    } else if (!request.getBranchB().isEmpty() && !request.getCommitShaB().isEmpty()) {
+    } else if (!branchB.isEmpty() && !commitB.isEmpty()) {
       invalidParam = true;
-    } else if (request.getBranchB().isEmpty() && request.getCommitShaB().isEmpty()) {
+    } else if (branchB.isEmpty() && commitB.isEmpty()) {
       invalidParam = true;
     }
 
@@ -552,6 +528,19 @@ public class BlobDAORdbImpl implements BlobDAO {
       throw new ModelDBException(
           "Branches and Commits both are not allowed in the request", Status.Code.INVALID_ARGUMENT);
     }
+  }
+
+  @Override
+  public MergeRepositoryCommitsRequest.Response mergeCommit(
+      RepositoryDAO repositoryDAO, MergeRepositoryCommitsRequest request)
+      throws ModelDBException, NoSuchAlgorithmException {
+
+    // validating request
+    validateDiffMergeRequest(
+        request.getBranchA(),
+        request.getBranchB(),
+        request.getCommitShaA(),
+        request.getCommitShaB());
 
     Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitB =
         new HashMap<String, Map.Entry<BlobExpanded, String>>();
