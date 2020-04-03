@@ -26,8 +26,7 @@ public interface BlobDAO {
       Session session, String folderHash, List<String> locationList) throws ModelDBException;
 
   ComputeRepositoryDiffRequest.Response computeRepositoryDiff(
-      RepositoryFunction repositoryFunction, ComputeRepositoryDiffRequest request)
-      throws ModelDBException;
+      RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request) throws ModelDBException;
 
   List<BlobContainer> convertBlobDiffsToBlobs(
       List<AutogenBlobDiff> blobDiffs,
@@ -36,6 +35,6 @@ public interface BlobDAO {
       throws ModelDBException;
 
   MergeRepositoryCommitsRequest.Response mergeCommit(
-      RepositoryFunction getRepository, MergeRepositoryCommitsRequest request)
+      RepositoryDAO repositoryDAO, MergeRepositoryCommitsRequest request)
       throws ModelDBException, NoSuchAlgorithmException;
 }

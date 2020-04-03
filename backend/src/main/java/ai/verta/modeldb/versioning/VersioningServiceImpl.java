@@ -434,9 +434,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
       ComputeRepositoryDiffRequest.Response response =
-          blobDAO.computeRepositoryDiff(
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-              request);
+          blobDAO.computeRepositoryDiff(repositoryDAO, request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -455,10 +453,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
         MergeRepositoryCommitsRequest.Response mergeResponse =
-            blobDAO.mergeCommit(
-                (session) ->
-                    repositoryDAO.getRepositoryById(session, request.getRepositoryId(), true),
-                request);
+            blobDAO.mergeCommit(repositoryDAO, request);
         responseObserver.onNext(mergeResponse);
         responseObserver.onCompleted();
       }
