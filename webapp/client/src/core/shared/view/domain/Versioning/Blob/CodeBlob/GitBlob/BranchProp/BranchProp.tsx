@@ -22,7 +22,7 @@ const BranchProp = ({ remoteRepoUrl, branch, rootStyles }: ILocalProps) => {
             rootStyle={rootStyles}
           />
         ),
-        unknown: ({ value }) => <span style={rootStyles}>{value}</span>,
+        unknown: () => <span style={rootStyles}>{branch}</span>,
       })}
     </span>
   );

@@ -23,7 +23,7 @@ const HashProp = ({ remoteRepoUrl, commitHash, rootStyles }: ILocalProps) => {
             rootStyle={rootStyles}
           />
         ),
-        unknown: ({ value }) => <span style={rootStyles}>{value}</span>,
+        unknown: () => <span style={rootStyles}>{commitHash}</span>,
       })}
     </span>
   );

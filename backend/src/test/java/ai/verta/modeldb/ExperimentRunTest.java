@@ -46,7 +46,6 @@ import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8730,13 +8729,11 @@ public class ExperimentRunTest {
         experiment.getDateUpdated(),
         getExperimentByIdResponse.getExperiment().getDateUpdated());
 
-    for (String id : experimentRunIds) {
-      DeleteExperimentRuns deleteExperimentRuns =
-          DeleteExperimentRuns.newBuilder().addIds(id).build();
-      DeleteExperimentRuns.Response deleteExperimentRunsResponse =
-          experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
-      assertTrue(deleteExperimentRunsResponse.getStatus());
-    }
+    DeleteExperimentRuns deleteExperimentRuns =
+        DeleteExperimentRuns.newBuilder().addAllIds(experimentRunIds).build();
+    DeleteExperimentRuns.Response deleteExperimentRunsResponse =
+        experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
+    assertTrue(deleteExperimentRunsResponse.getStatus());
 
     GetExperimentRunsInExperiment getExperimentRunsInExperiment =
         GetExperimentRunsInExperiment.newBuilder().setExperimentId(experiment.getId()).build();
@@ -8750,155 +8747,6 @@ public class ExperimentRunTest {
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info("Batch Delete ExperimentRun test stop................................");
-  }
-
-  @Test
-  public void batchDeleteExperimentRunWithMultipleProjectsTest() {
-    LOGGER.info("Batch Delete ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ProjectServiceBlockingStub projectServiceStubClient2 =
-        ProjectServiceGrpc.newBlockingStub(client2Channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStubClient2 =
-        ExperimentServiceGrpc.newBlockingStub(client2Channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
-        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStubClient2 =
-        CollaboratorServiceGrpc.newBlockingStub(client2Channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project1 = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    createProjectRequest = projectTest.getCreateProjectRequest("experimentRun_project_ypcdt2");
-    createProjectResponse = projectServiceStubClient2.createProject(createProjectRequest);
-    Project project2 = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    AddCollaboratorRequest addCollaboratorRequest =
-        CollaboratorTest.addCollaboratorRequest(
-            Collections.singletonList(project2.getId()),
-            authClientInterceptor.getClient1Email(),
-            CollaboratorType.READ_WRITE);
-
-    AddCollaboratorRequest.Response response =
-        collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-    LOGGER.info("Collaborator added in server : " + response.getStatus());
-    assertTrue(response.getStatus());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project1.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project2.getId(), "Experiment_n_sprt_abc");
-    createExperimentResponse =
-        experimentServiceStubClient2.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
-    List<String> experimentRunIdsUser1 = new ArrayList<>();
-    for (int count = 0; count < 5; count++) {
-      CreateExperimentRun createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project1.getId(), experiment1.getId(), "ExperimentRun_n_sprt_" + count);
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-      experimentRunIdsUser1.add(experimentRun.getId());
-      LOGGER.info("ExperimentRun created successfully");
-    }
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(
-            project2.getId(), experiment2.getId(), "ExperimentRun_n_sprt_by_other_user_owner_1");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun otherOwnerExperimentRun = createExperimentRunResponse.getExperimentRun();
-
-    List<String> experimentRunIdsUser2 = new ArrayList<>();
-    for (int count = 0; count < 5; count++) {
-      createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project2.getId(), experiment2.getId(), "ExperimentRun_n_sprt_" + count);
-      createExperimentRunResponse =
-          experimentRunServiceStubClient2.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-      experimentRunIdsUser2.add(experimentRun.getId());
-      LOGGER.info("ExperimentRun created successfully");
-    }
-
-    for (String id : experimentRunIdsUser1.subList(0, 2)) {
-      // For single ExperimentRun which is accessible to user1
-      DeleteExperimentRuns deleteExperimentRuns =
-          DeleteExperimentRuns.newBuilder().addIds(id).build();
-      DeleteExperimentRuns.Response deleteExperimentRunsResponse =
-          experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
-      assertTrue(deleteExperimentRunsResponse.getStatus());
-    }
-    // For multiple ExperimentRun which is accessible to user1
-    DeleteExperimentRuns deleteExperimentRuns =
-        DeleteExperimentRuns.newBuilder()
-            .addAllIds(experimentRunIdsUser1.subList(2, experimentRunIdsUser1.size()))
-            .build();
-    DeleteExperimentRuns.Response deleteExperimentRunsResponse =
-        experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
-    assertTrue(deleteExperimentRunsResponse.getStatus());
-
-    // For multiple ExperimentRun which is not accessible to user1
-    try {
-      deleteExperimentRuns =
-          DeleteExperimentRuns.newBuilder().addAllIds(experimentRunIdsUser2).build();
-      experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
-    } catch (StatusRuntimeException e) {
-      checkEqualsAssert(e);
-    }
-
-    // For single ExperimentRun which is not accessible to user1
-    try {
-      deleteExperimentRuns =
-          DeleteExperimentRuns.newBuilder().addIds(experimentRunIdsUser2.get(0)).build();
-      experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
-    } catch (StatusRuntimeException e) {
-      checkEqualsAssert(e);
-    }
-
-    // For single ExperimentRun which is user1 has owner but user1 haven't DELETE action for the
-    // project of experimentRun
-    deleteExperimentRuns =
-        DeleteExperimentRuns.newBuilder().addIds(otherOwnerExperimentRun.getId()).build();
-    deleteExperimentRunsResponse =
-        experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
-    assertTrue(deleteExperimentRunsResponse.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project1.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    deleteProject = DeleteProject.newBuilder().setId(project2.getId()).build();
-    deleteProjectResponse = projectServiceStubClient2.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
     LOGGER.info(deleteProjectResponse.toString());
     assertTrue(deleteProjectResponse.getStatus());
@@ -8985,20 +8833,16 @@ public class ExperimentRunTest {
       LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
-      try {
-        experimentRunServiceStubClient2.deleteExperimentRuns(deleteExperimentRuns);
-      } catch (StatusRuntimeException e) {
-        checkEqualsAssert(e);
-      }
+      DeleteExperimentRuns.Response deleteExperimentRunsResponse =
+          experimentRunServiceStubClient2.deleteExperimentRuns(deleteExperimentRuns);
+      assertTrue(deleteExperimentRunsResponse.getStatus());
 
       DeleteExperimentRun deleteExperimentRun =
           DeleteExperimentRun.newBuilder().setId(experimentRunIds.get(4)).build();
 
-      try {
-        experimentRunServiceStubClient2.deleteExperimentRuns(deleteExperimentRuns);
-      } catch (StatusRuntimeException e) {
-        checkEqualsAssert(e);
-      }
+      DeleteExperimentRun.Response deleteExperimentRunResponse =
+          experimentRunServiceStubClient2.deleteExperimentRun(deleteExperimentRun);
+      assertTrue(deleteExperimentRunResponse.getStatus());
 
     } else {
       deleteExperimentRuns = DeleteExperimentRuns.newBuilder().addAllIds(experimentRunIds).build();
@@ -9015,7 +8859,7 @@ public class ExperimentRunTest {
         experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
     assertEquals(
         "ExperimentRuns count not match with expected experimentRun count",
-        5,
+        0,
         experimentRunResponse.getExperimentRunsCount());
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
@@ -9737,5 +9581,242 @@ public class ExperimentRunTest {
     assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Fetch ExperimentRun blob for commit test stop................................");
+  }
+
+  @Test
+  public void versioningWithoutLocationAtExperimentRunCreateTest() throws ModelDBException {
+    LOGGER.info(
+        "Versioning without Locations ExperimentRun test start................................");
+
+    ProjectTest projectTest = new ProjectTest();
+
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStub =
+        ExperimentRunServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    Commit commit =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(111)
+            .addParentShas(getBranchResponse.getCommit().getCommitSha())
+            .build();
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setCommit(commit)
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addLocation("dataset")
+                    .addLocation("train")
+                    .build())
+            .build();
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    // Create project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project = createProjectResponse.getProject();
+
+    // Create two experiment of above project
+    CreateExperiment createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment experiment = createExperimentResponse.getExperiment();
+
+    CreateExperimentRun createExperimentRunRequest =
+        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getCommitSha())
+                    .build())
+            .build();
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun.getName());
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        createExperimentRunRequest.getVersionedInputs(),
+        experimentRun.getVersionedInputs());
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response getExperimentRunByIdRes =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        createExperimentRunRequest.getVersionedInputs(),
+        getExperimentRunByIdRes.getExperimentRun().getVersionedInputs());
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        0,
+        getExperimentRunByIdRes.getExperimentRun().getVersionedInputs().getKeyLocationMapCount());
+
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    LOGGER.info(
+        "Versioning without Locations ExperimentRun test stop................................");
+  }
+
+  @Test
+  public void logGetVersioningWithoutLocationsExperimentRunCreateTest() throws ModelDBException {
+    LOGGER.info(
+        "Log and Get Versioning without locations ExperimentRun test start................................");
+
+    ProjectTest projectTest = new ProjectTest();
+
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStub =
+        ExperimentRunServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    // Create project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project = createProjectResponse.getProject();
+
+    // Create two experiment of above project
+    CreateExperiment createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    Experiment experiment = createExperimentResponse.getExperiment();
+
+    CreateExperimentRun createExperimentRunRequest =
+        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun.getName());
+    assertFalse(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        createExperimentRunRequest.hasVersionedInputs());
+
+    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    Commit commit =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(111)
+            .addParentShas(getBranchResponse.getCommit().getCommitSha())
+            .build();
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setCommit(commit)
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addLocation("dataset")
+                    .addLocation("train")
+                    .build())
+            .build();
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    LogVersionedInput logVersionedInput =
+        LogVersionedInput.newBuilder()
+            .setId(experimentRun.getId())
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getCommitSha())
+                    .build())
+            .build();
+    LogVersionedInput.Response logVersionedInputResponse =
+        experimentRunServiceStub.logVersionedInput(logVersionedInput);
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        logVersionedInput.getVersionedInputs(),
+        logVersionedInputResponse.getExperimentRun().getVersionedInputs());
+
+    GetVersionedInput getVersionedInput =
+        GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
+    GetVersionedInput.Response getVersionedInputResponse =
+        experimentRunServiceStub.getVersionedInputs(getVersionedInput);
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        logVersionedInput.getVersionedInputs(),
+        getVersionedInputResponse.getVersionedInputs());
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        0,
+        getVersionedInputResponse.getVersionedInputs().getKeyLocationMapCount());
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    LOGGER.info(
+        "Log and Get Versioning without locations ExperimentRun test stop................................");
   }
 }

@@ -55,7 +55,7 @@ const RepositoryBreadcrumbs: React.FC<AllProps> = ({
     ...locationBreadcrumbs,
   ];
 
-  return location.length ? (
+  return (
     <div className={styles.root}>
       {breacrumbItems.map((item, i) => (
         <Breadcrumb
@@ -65,7 +65,7 @@ const RepositoryBreadcrumbs: React.FC<AllProps> = ({
         />
       ))}
     </div>
-  ) : null;
+  );
 };
 
 const Breadcrumb = React.memo(

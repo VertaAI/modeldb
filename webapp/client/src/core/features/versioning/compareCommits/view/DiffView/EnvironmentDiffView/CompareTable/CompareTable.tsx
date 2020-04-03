@@ -1,25 +1,24 @@
 import { DataTypeProvider, Column } from '@devexpress/dx-react-grid';
-import {
-  Table,
-  Grid,
-  TableHeaderRow,
-} from '@devexpress/dx-react-grid-material-ui';
 import Paper from '@material-ui/core/Paper';
 import { bind } from 'decko';
 import * as R from 'ramda';
 import * as React from 'react';
 
 import { ComparedCommitType } from 'core/shared/models/Versioning/Blob/Diff';
+import { IEnvironmentBlobDataDiff } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import {
-  IEnvironmentBlobDiff,
-  IEnvironmentBlobDataDiff,
-} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import { PageHeader } from 'core/shared/view/elements/PageComponents';
+  Table as TablePlugin,
+  Grid,
+  TableHeaderRow,
+  TableWrapper,
+} from 'core/shared/view/elements/Table/Plugins';
+
+import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 interface ILocalProps {
   title: string;
-  blobA?: IEnvironmentBlobDataDiff;
-  blobB?: IEnvironmentBlobDataDiff;
+  A?: IEnvironmentBlobDataDiff;
+  B?: IEnvironmentBlobDataDiff;
   columns: Record<ComparedCommitType, { title: string }> & {
     property: { title: string; width: number };
   };
@@ -34,7 +33,7 @@ const ColumnNames: { [T in keyof ILocalProps['columns']]: T } = {
 
 interface IState {
   columns: Column[];
-  tableColumnExtensions: Table.ColumnExtension[];
+  tableColumnExtensions: any[];
 }
 
 export interface IPropDefinition {
@@ -91,20 +90,22 @@ class CompareTable extends React.Component<ILocalProps, IState> {
     const propDefinitions: IPropDefinition[] = this.getPropDefinitions().filter(
       ({ isHidden }) => isHidden !== true
     );
+
     return (
-      <div>
-        <PageHeader title={title} withoutSeparator={true} size="small" />
+      <BlobDataBox title={title}>
         <Paper>
-          <Grid rows={propDefinitions} columns={columns}>
-            <DataTypeProvider
-              formatterComponent={this.ColumnFactory as any}
-              for={columns.map(({ name }) => name)}
-            />
-            <Table columnExtensions={tableColumnExtensions} />
-            <TableHeaderRow />
-          </Grid>
+          <TableWrapper isHeightByContent={true}>
+            <Grid rows={propDefinitions} columns={columns}>
+              <DataTypeProvider
+                formatterComponent={this.ColumnFactory as any}
+                for={columns.map(({ name }) => name)}
+              />
+              <TablePlugin columnExtensions={tableColumnExtensions} />
+              <TableHeaderRow />
+            </Grid>
+          </TableWrapper>
         </Paper>
-      </div>
+      </BlobDataBox>
     );
   }
 
@@ -131,16 +132,16 @@ class CompareTable extends React.Component<ILocalProps, IState> {
       case ColumnNames.A: {
         const renderProps: IPropDefinitionRenderProps = {
           type: ColumnNames.A,
-          blobData: this.props.blobA,
-          anotherBlobData: this.props.blobB,
+          blobData: this.props.A,
+          anotherBlobData: this.props.B,
         };
         return propDefinition.render(renderProps);
       }
       case ColumnNames.B: {
         const renderProps: IPropDefinitionRenderProps = {
           type: ColumnNames.B,
-          blobData: this.props.blobB,
-          anotherBlobData: this.props.blobA,
+          blobData: this.props.B,
+          anotherBlobData: this.props.A,
         };
         return propDefinition.render(renderProps);
       }
