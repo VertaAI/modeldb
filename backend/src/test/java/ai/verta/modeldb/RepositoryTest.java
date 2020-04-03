@@ -170,26 +170,6 @@ public class RepositoryTest {
   }
 
   @Test
-  public void createDeleteRepositoryTest() {
-    LOGGER.info("Create and delete repository test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, NAME);
-
-    final DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    LOGGER.info("Create and delete repository test end................................");
-  }
-
-  @Test
   public void createDeleteRepositoryNegativeTest() {
     LOGGER.info("Create and delete repository negative test start................................");
 

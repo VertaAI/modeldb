@@ -804,18 +804,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       switch (workspaceType) {
         case ORGANIZATION:
-          Organization org = (Organization) roleService.getOrgById(workspaceId);
-          String projectAdminRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_PROJECT_ADMIN,
-                  projectId,
-                  new CollaboratorUser(authService, org.getOwnerId()),
-                  ModelDBServiceResourceTypes.PROJECT.name());
-          RoleBinding projectAdminRoleBinding =
-              roleService.getRoleBindingByName(projectAdminRoleBindingName);
-          if (projectAdminRoleBinding != null && !projectAdminRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(projectAdminRoleBinding.getId());
-          }
           if (projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC)) {
             String globalSharingRoleName =
                 new StringBuilder()
@@ -838,21 +826,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           }
           break;
         case USER:
-          String projectRoleBindingName =
-              roleService.buildRoleBindingName(
-                  ModelDBConstants.ROLE_PROJECT_ADMIN,
-                  projectId,
-                  new CollaboratorUser(authService, workspaceId),
-                  ModelDBServiceResourceTypes.PROJECT.name());
-          RoleBinding projectRoleBinding = roleService.getRoleBindingByName(projectRoleBindingName);
-          if (projectRoleBinding != null && !projectRoleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(projectRoleBinding.getId());
-          }
-          break;
         default:
           break;
       }
     }
+    roleService.deleteWorkspaceRoleBindings(workspaceId, workspaceType, projectId,
+        ModelDBConstants.ROLE_PROJECT_ADMIN, ModelDBServiceResourceTypes.PROJECT);
   }
 
   @Override

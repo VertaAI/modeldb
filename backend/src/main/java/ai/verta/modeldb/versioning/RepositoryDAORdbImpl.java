@@ -18,6 +18,8 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Organization;
+import ai.verta.uac.RoleBinding;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
@@ -36,6 +38,8 @@ import org.hibernate.query.Query;
 
 public class RepositoryDAORdbImpl implements RepositoryDAO {
 
+  private static final String GET_REPOSITORY_BY_IDS_QUERY =
+      "From RepositoryEntity ent where ent.id IN (:ids)";
   private static final Logger LOGGER = LogManager.getLogger(RepositoryDAORdbImpl.class);
   private final AuthService authService;
   private final RoleService roleService;
@@ -250,9 +254,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public SetRepository.Response setRepository(SetRepository request, UserInfo userInfo,
-      boolean create)
-      throws ModelDBException {
+  public SetRepository.Response setRepository(
+      SetRepository request, UserInfo userInfo, boolean create) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
       session.beginTransaction();
@@ -290,14 +293,43 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         repository.update(request);
       }
       session.saveOrUpdate(repository);
-      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
-      roleService.createRoleBinding(
-          ownerRole,
-          new CollaboratorUser(authService, userInfo),
-          String.valueOf(repository.getId()),
-          ModelDBServiceResourceTypes.REPOSITORY);
+      if (create) {
+        Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
+        roleService.createRoleBinding(
+            ownerRole,
+            new CollaboratorUser(authService, userInfo),
+            String.valueOf(repository.getId()),
+            ModelDBServiceResourceTypes.REPOSITORY);
+      }
       session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
+    }
+  }
+
+  private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
+    for (RepositoryEntity repositoryEntity : allowedResources) {
+      String repositoryId = String.valueOf(repositoryEntity.getId());
+      String ownerRoleBindingName =
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_REPOSITORY_OWNER,
+              repositoryId,
+              repositoryEntity.getOwner(),
+              ModelDBServiceResourceTypes.REPOSITORY.name());
+      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
+      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+        roleService.deleteRoleBinding(roleBinding.getId());
+      }
+
+      // Remove all repositoryEntity collaborators
+      roleService.removeResourceRoleBindings(
+          repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY);
+
+      // Delete workspace based roleBindings
+      roleService.deleteWorkspaceRoleBindings(
+          repositoryEntity.getWorkspace_id(),
+          WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+          String.valueOf(repositoryEntity.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+          ModelDBServiceResourceTypes.REPOSITORY);
     }
   }
 
@@ -350,6 +382,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       // Delete all VersionedInputs for repository ID
       experimentRunDAO.deleteLogVersionedInputs(session, repository.getId(), null);
 
+      deleteRoleBindingsOfAccessibleResources(Collections.singletonList(repository));
       session.delete(repository);
       session.getTransaction().commit();
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
