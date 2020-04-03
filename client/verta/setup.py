@@ -36,7 +36,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            "verta = verta.cli:main",
+            "verta = verta._cli:cli",
         ],
     },
 )

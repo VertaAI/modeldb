@@ -4,11 +4,11 @@ import click
 
 
 @click.group()
-def main():
+def cli():
     pass
 
 ###### remote ######
-@main.group()
+@cli.group()
 def remote():
     """Configure remote repositories"""
     pass
@@ -27,7 +27,7 @@ def use(name):
     click.echo("Now using repo {}".format(name))
 
 ###### branch ######
-@main.command()
+@cli.command()
 @click.option('--repo', help="Repository name")
 def branch(repo):
     """List available branches"""
