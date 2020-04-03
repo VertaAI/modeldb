@@ -81,7 +81,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -1869,25 +1868,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     return accessibleExperimentRunIds;
   }
 
-  private List<String> getAccessibleExperimentRunIDsByAction(
-      List<String> requestedExperimentRunIds, ModelDBServiceActions modelDBServiceActions) {
-    // Validate if current user has access to the entity or not
-    if (requestedExperimentRunIds.size() == 1) {
-      roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
-          modelDBServiceActions,
-          requestedExperimentRunIds.get(0));
-      return requestedExperimentRunIds;
-    } else {
-      List<String> allowedExperimentRunIds =
-          roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.EXPERIMENT_RUN, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedExperimentRunIds.retainAll(requestedExperimentRunIds);
-      return allowedExperimentRunIds;
-    }
-  }
-
   @Override
   public void findExperimentRuns(
       FindExperimentRuns request, StreamObserver<FindExperimentRuns.Response> responseObserver) {
@@ -2435,37 +2415,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     }
   }
 
-  private boolean deleteExperimentRuns(List<String> experimentRunIds) {
-    Set<String> finalAccessibleExperimentRunsSet = new HashSet<>();
-    try {
-      List<String> accessibleExperimentRunIdsByProject =
-          getAccessibleExperimentRunIDs(experimentRunIds, ModelDBServiceActions.DELETE);
-      finalAccessibleExperimentRunsSet.addAll(accessibleExperimentRunIdsByProject);
-    } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() != Code.PERMISSION_DENIED_VALUE) {
-        throw ex;
-      }
-    }
-
-    if (!finalAccessibleExperimentRunsSet.containsAll(experimentRunIds)) {
-      List<String> accessibleExperimentRunIDsByAction =
-          getAccessibleExperimentRunIDsByAction(experimentRunIds, ModelDBServiceActions.DELETE);
-      finalAccessibleExperimentRunsSet.addAll(accessibleExperimentRunIDsByAction);
-    }
-
-    if (finalAccessibleExperimentRunsSet.isEmpty()) {
+  private boolean deleteExperimentRuns(List<String> experimentIds) {
+    List<String> accessibleExperimentRunIds =
+        getAccessibleExperimentRunIDs(experimentIds, ModelDBServiceActions.UPDATE);
+    if (accessibleExperimentRunIds.isEmpty()) {
       Status statusMessage =
           Status.newBuilder()
               .setCode(Code.PERMISSION_DENIED_VALUE)
               .setMessage(
                   "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                      + experimentRunIds)
+                      + accessibleExperimentRunIds)
               .build();
       throw StatusProto.toStatusRuntimeException(statusMessage);
     }
 
-    return experimentRunDAO.deleteExperimentRuns(new ArrayList<>(finalAccessibleExperimentRunsSet));
+    return experimentRunDAO.deleteExperimentRuns(accessibleExperimentRunIds);
   }
 
   @Override
