@@ -161,6 +161,8 @@ public interface ModelDBConstants {
   // Migration Constants
   String MIGRATION = "migration";
   String SUB_ENTITIES_OWNERS_RBAC_MIGRATION = "SUB_ENTITIES_OWNERS_RBAC_MIGRATION";
+  String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
+      "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -185,6 +187,7 @@ public interface ModelDBConstants {
   String ROLE_EXPERIMENT_OWNER = "EXPERIMENT_OWNER";
   String ROLE_EXPERIMENT_RUN_OWNER = "EXPERIMENT_RUN_OWNER";
   String ROLE_DATASET_VERSION_OWNER = "DATASET_VERSION_OWNER";
+  String ROLE_REPOSITORY_OWNER = "REPOSITORY_OWNER";
 
   // Telemetry Constants
   String TELEMETRY = "telemetry";

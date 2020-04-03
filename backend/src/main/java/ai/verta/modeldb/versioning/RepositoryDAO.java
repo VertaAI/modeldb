@@ -3,6 +3,7 @@ package ai.verta.modeldb.versioning;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.uac.UserInfo;
 import org.hibernate.Session;
 
 public interface RepositoryDAO {
@@ -12,7 +13,7 @@ public interface RepositoryDAO {
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
       throws ModelDBException;
 
-  SetRepository.Response setRepository(SetRepository request, boolean create)
+  SetRepository.Response setRepository(SetRepository request, UserInfo userInfo, boolean create)
       throws ModelDBException;
 
   DeleteRepositoryRequest.Response deleteRepository(

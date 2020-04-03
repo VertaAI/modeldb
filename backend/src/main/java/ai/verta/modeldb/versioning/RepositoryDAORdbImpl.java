@@ -5,6 +5,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
@@ -15,6 +16,8 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -246,8 +249,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public SetRepository.Response setRepository(SetRepository request, boolean create)
-      throws ModelDBException {
+  public SetRepository.Response setRepository(
+      SetRepository request, UserInfo userInfo, boolean create) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
       session.beginTransaction();
@@ -285,6 +288,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         repository.update(request);
       }
       session.saveOrUpdate(repository);
+      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
+      roleService.createRoleBinding(
+          ownerRole,
+          new CollaboratorUser(authService, userInfo),
+          String.valueOf(repository.getId()),
+          ModelDBServiceResourceTypes.REPOSITORY);
       session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     }

@@ -62,9 +62,10 @@ public class Validator extends Visitor {
   }
 
   @Override
-  public AutogenContinuousHyperparameterSetConfigBlob postVisitAutogenContinuousHyperparameterSetConfigBlob(
-      AutogenContinuousHyperparameterSetConfigBlob autogenContinuousHyperparameterSetConfigBlob)
-      throws ModelDBException {
+  public AutogenContinuousHyperparameterSetConfigBlob
+      postVisitAutogenContinuousHyperparameterSetConfigBlob(
+          AutogenContinuousHyperparameterSetConfigBlob autogenContinuousHyperparameterSetConfigBlob)
+          throws ModelDBException {
     AutogenHyperparameterValuesConfigBlob beginSetConfigBlob =
         autogenContinuousHyperparameterSetConfigBlob.getIntervalBegin();
     AutogenHyperparameterValuesConfigBlob endSetConfigBlob =
@@ -105,8 +106,8 @@ public class Validator extends Visitor {
   }
 
   @Override
-  public AutogenDockerEnvironmentBlob postVisitAutogenDockerEnvironmentBlob(AutogenDockerEnvironmentBlob blob)
-      throws ModelDBException {
+  public AutogenDockerEnvironmentBlob postVisitAutogenDockerEnvironmentBlob(
+      AutogenDockerEnvironmentBlob blob) throws ModelDBException {
     if (blob.getRepository().isEmpty()) {
       throw new ModelDBException(
           "Environment repository path should not be empty", Code.INVALID_ARGUMENT);
@@ -134,8 +135,8 @@ public class Validator extends Visitor {
   private static final String PATTERN = "[a-zA-Z0-9_-]+";
 
   @Override
-  public AutogenEnvironmentVariablesBlob postVisitAutogenEnvironmentVariablesBlob(AutogenEnvironmentVariablesBlob blob)
-      throws ModelDBException {
+  public AutogenEnvironmentVariablesBlob postVisitAutogenEnvironmentVariablesBlob(
+      AutogenEnvironmentVariablesBlob blob) throws ModelDBException {
     if (!Pattern.compile(PATTERN).matcher(blob.getName()).matches()) {
       throw new ModelDBException(
           "Environment variable name: "
@@ -147,7 +148,8 @@ public class Validator extends Visitor {
   }
 
   @Override
-  public AutogenGitCodeBlob postVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {
+  public AutogenGitCodeBlob postVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob)
+      throws ModelDBException {
     if (blob.getRepo().isEmpty()) {
       throw new ModelDBException("Code repository path should not be empty", Code.INVALID_ARGUMENT);
     }
@@ -180,8 +182,8 @@ public class Validator extends Visitor {
   }*/
 
   @Override
-  public AutogenPathDatasetComponentBlob postVisitAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
-      throws ModelDBException {
+  public AutogenPathDatasetComponentBlob postVisitAutogenPathDatasetComponentBlob(
+      AutogenPathDatasetComponentBlob blob) throws ModelDBException {
     if (blob.getPath().isEmpty()) {
       throw new ModelDBException("Dataset path is empty", Code.INVALID_ARGUMENT);
     }
@@ -189,8 +191,8 @@ public class Validator extends Visitor {
   }
 
   @Override
-  public AutogenPythonEnvironmentBlob postVisitAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob blob)
-      throws ModelDBException {
+  public AutogenPythonEnvironmentBlob postVisitAutogenPythonEnvironmentBlob(
+      AutogenPythonEnvironmentBlob blob) throws ModelDBException {
     if (blob.getRequirements() != null) {
       Set<AutogenPythonRequirementEnvironmentBlob> pythonRequirementHash =
           new HashSet<>(blob.getRequirements());
@@ -219,8 +221,8 @@ public class Validator extends Visitor {
   }
 
   @Override
-  public AutogenDiffStatusEnumDiffStatus postVisitDeepAutogenDiffStatusEnumDiffStatus(AutogenDiffStatusEnumDiffStatus blob)
-      throws ModelDBException {
+  public AutogenDiffStatusEnumDiffStatus postVisitDeepAutogenDiffStatusEnumDiffStatus(
+      AutogenDiffStatusEnumDiffStatus blob) throws ModelDBException {
     if (blob == null) {
       throw new ModelDBException("Unknown status", Status.Code.INVALID_ARGUMENT);
     }

@@ -114,4 +114,8 @@ public class RepositoryEntity {
     this.name = request.getRepository().getName();
     this.date_updated = new Date().getTime();
   }
+
+  public String getOwner() {
+    return owner;
+  }
 }
