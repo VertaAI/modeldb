@@ -27,7 +27,6 @@ import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,16 +124,6 @@ public class DatasetVersionTest {
     channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
     client2Channel =
         grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
-  }
-
-  private void checkEqualsAssert(StatusRuntimeException e) {
-    Status status = Status.fromThrowable(e);
-    LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
-    } else {
-      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
-    }
   }
 
   public CreateDatasetVersion getDatasetVersionRequest(String datasetId) {
@@ -2240,12 +2229,11 @@ public class DatasetVersionTest {
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
-      try {
-        datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
-        LOGGER.info("DeleteDatasetVersion deleted successfully");
-      } catch (StatusRuntimeException e) {
-        checkEqualsAssert(e);
-      }
+      DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
+          datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
+      LOGGER.info("DeleteDatasetVersion deleted successfully");
+      LOGGER.info(deleteDatasetVersionsResponse.toString());
+      assertTrue(deleteDatasetVersionsResponse.getStatus());
     } else {
       DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
           datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersionsRequest);
@@ -2261,149 +2249,5 @@ public class DatasetVersionTest {
     assertTrue(deleteDatasetResponse.getStatus());
     LOGGER.info(
         "delete DatasetVersion by parent entities owner test stop................................");
-  }
-
-  @Test
-  public void batchDeleteDatasetVersions() {
-    LOGGER.info("Batch Delete DatasetVersions test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStubClient2 =
-        DatasetServiceGrpc.newBlockingStub(client2Channel);
-    DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
-        DatasetVersionServiceGrpc.newBlockingStub(channel);
-    DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStubClient2 =
-        DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
-    CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStubClient2 =
-        CollaboratorServiceGrpc.newBlockingStub(client2Channel);
-
-    // Create dataset
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("datasetVersion_dataset_ypcdt1");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset1 = createDatasetResponse.getDataset();
-    LOGGER.info("Dataset created successfully");
-
-    createDatasetRequest = datasetTest.getDatasetRequest("datasetVersion_dataset_ypcdt2");
-    createDatasetResponse = datasetServiceStubClient2.createDataset(createDatasetRequest);
-    Dataset dataset2 = createDatasetResponse.getDataset();
-    LOGGER.info("Dataset created successfully");
-
-    AddCollaboratorRequest addCollaboratorRequest =
-        CollaboratorTest.addCollaboratorRequest(
-            Collections.singletonList(dataset2.getId()),
-            authClientInterceptor.getClient1Email(),
-            CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
-
-    AddCollaboratorRequest.Response response =
-        collaboratorServiceStubClient2.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
-    LOGGER.info("Collaborator added in server : " + response.getStatus());
-    assertTrue(response.getStatus());
-
-    List<String> datasetVersionIdsUser1 = new ArrayList<>();
-    for (int count = 0; count < 5; count++) {
-      CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset1.getId());
-      createDatasetVersionRequest =
-          createDatasetVersionRequest
-              .toBuilder()
-              .setRawDatasetVersionInfo(
-                  RawDatasetVersionInfo.newBuilder().setSize(count).setNumRecords(count).build())
-              .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
-              .build();
-      CreateDatasetVersion.Response createDatasetVersionResponse =
-          datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-      DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-      datasetVersionIdsUser1.add(datasetVersion.getId());
-      LOGGER.info("DatasetVersion created successfully");
-    }
-
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset2.getId());
-    createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setRawDatasetVersionInfo(
-                RawDatasetVersionInfo.newBuilder().setSize(111).setNumRecords(111).build())
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
-            .build();
-    CreateDatasetVersion.Response createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion otherOwnerDatasetVersion = createDatasetVersionResponse.getDatasetVersion();
-
-    List<String> datasetVersionIdsUser2 = new ArrayList<>();
-    for (int count = 0; count < 5; count++) {
-      createDatasetVersionRequest = getDatasetVersionRequest(dataset2.getId());
-      createDatasetVersionRequest =
-          createDatasetVersionRequest
-              .toBuilder()
-              .setRawDatasetVersionInfo(
-                  RawDatasetVersionInfo.newBuilder().setSize(count).setNumRecords(count).build())
-              .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
-              .build();
-      createDatasetVersionResponse =
-          datasetVersionServiceStubClient2.createDatasetVersion(createDatasetVersionRequest);
-      DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-      datasetVersionIdsUser2.add(datasetVersion.getId());
-      LOGGER.info("DatasetVersion created successfully");
-    }
-
-    for (String id : datasetVersionIdsUser1.subList(0, 2)) {
-      // For single DatasetVersion which is accessible to user1
-      DeleteDatasetVersions deleteDatasetVersions =
-          DeleteDatasetVersions.newBuilder().addIds(id).build();
-      DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
-          datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersions);
-      assertTrue(deleteDatasetVersionsResponse.getStatus());
-    }
-    // For multiple DatasetVersion which is accessible to user1
-    DeleteDatasetVersions deleteDatasetVersions =
-        DeleteDatasetVersions.newBuilder()
-            .addAllIds(datasetVersionIdsUser1.subList(2, datasetVersionIdsUser1.size()))
-            .build();
-    DeleteDatasetVersions.Response deleteDatasetVersionsResponse =
-        datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersions);
-    assertTrue(deleteDatasetVersionsResponse.getStatus());
-
-    // For multiple DatasetVersion which is not accessible to user1
-    try {
-      deleteDatasetVersions =
-          DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIdsUser2).build();
-      datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersions);
-    } catch (StatusRuntimeException e) {
-      checkEqualsAssert(e);
-    }
-
-    // For single DatasetVersion which is not accessible to user1
-    try {
-      deleteDatasetVersions =
-          DeleteDatasetVersions.newBuilder().addIds(datasetVersionIdsUser2.get(0)).build();
-      datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersions);
-    } catch (StatusRuntimeException e) {
-      checkEqualsAssert(e);
-    }
-
-    // For single DatasetVersion which is user1 has owner but user1 haven't DELETE action for the
-    // dataset of datasetVersion
-    deleteDatasetVersions =
-        DeleteDatasetVersions.newBuilder().addIds(otherOwnerDatasetVersion.getId()).build();
-    deleteDatasetVersionsResponse =
-        datasetVersionServiceStub.deleteDatasetVersions(deleteDatasetVersions);
-    assertTrue(deleteDatasetVersionsResponse.getStatus());
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset1.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    deleteDataset = DeleteDataset.newBuilder().setId(dataset2.getId()).build();
-    deleteDatasetResponse = datasetServiceStubClient2.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    LOGGER.info("Batch Delete DatasetVersions test stop................................");
   }
 }

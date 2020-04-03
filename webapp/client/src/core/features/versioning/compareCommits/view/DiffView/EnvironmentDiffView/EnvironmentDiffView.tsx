@@ -16,11 +16,13 @@ import {
 import PythonRequirementEnvironment from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
 import PythonVersion from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
 
-import { IComparedCommitsInfo } from '../../types';
+import { IComparedCommitsInfo, getCssDiffColor } from '../../model';
 import sortArrayByAnotherArrayKeys from '../shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
 import { diffColors } from '../shared/styles';
 import CompareTable from './CompareTable/CompareTable';
 import styles from './EnvironmentDiffView.module.css';
+import { MultipleBlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import { getColumnComparedCommitsTitles } from '../shared/comparedCommitsNames';
 
 interface ILocalProps {
   diff: IEnvironmentBlobDiff;
@@ -34,7 +36,7 @@ const EnvironmentDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
     (blobB && blobB.data && blobB.data.type);
 
   return (
-    <div className={styles.root}>
+    <MultipleBlobDataBox title="Environment">
       {checkCommonEnvironmentDataIsChanged(blobA, blobB) && (
         <div className={styles.diff}>
           <EnvironmentCommonDetailsDiff
@@ -44,16 +46,12 @@ const EnvironmentDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
         </div>
       )}
       {blobType === 'docker' && (
-        <div className={styles.diff}>
-          <DockerDiff diff={diff} comparedCommitsInfo={comparedCommitsInfo} />
-        </div>
+        <DockerDiff diff={diff} comparedCommitsInfo={comparedCommitsInfo} />
       )}
       {blobType === 'python' && (
-        <div className={styles.diff}>
-          <PythonDiff diff={diff} comparedCommitsInfo={comparedCommitsInfo} />
-        </div>
+        <PythonDiff diff={diff} comparedCommitsInfo={comparedCommitsInfo} />
       )}
-    </div>
+    </MultipleBlobDataBox>
   );
 };
 
@@ -69,8 +67,8 @@ const EnvironmentCommonDetailsDiff = ({
   return (
     <CompareTable
       title="Common Details"
-      blobA={blobA}
-      blobB={blobB}
+      A={blobA}
+      B={blobB}
       columns={{
         property: {
           title: 'Properties',
@@ -94,19 +92,27 @@ const EnvironmentCommonDetailsDiff = ({
         render={({ blobData, anotherBlobData, type }) => {
           const displayedVariables =
             blobData && blobData.variables
-              ? sortArrayByAnotherArrayKeys(
+              ? getDiffViewModelForArrayItems(
+                  diff.diffType,
                   ({ name }) => name,
                   blobData.variables,
-                  anotherBlobData ? anotherBlobData.variables || [] : []
+                  anotherBlobData ? anotherBlobData.variables : []
                 )
               : null;
           return displayedVariables ? (
             <KeyValuePairs
-              data={displayedVariables.map(({ name, value }) => ({
+              data={displayedVariables.map(({ data: { name, value } }) => ({
                 key: name,
                 value,
               }))}
-              getRootStyles={() => getDiffStyles(diff.diffType, type)}
+              getStyles={pair => {
+                const res = displayedVariables.find(
+                  ({ data }) => data.name === pair.key
+                );
+                return res
+                  ? getDiffStylesForUniqItem(res.diffType, type)
+                  : undefined;
+              }}
             />
           ) : null;
         }}
@@ -118,7 +124,7 @@ const EnvironmentCommonDetailsDiff = ({
           return blobData && blobData.commandLine ? (
             <div className={styles.commandLine}>
               {blobData.commandLine.map((line, i) => (
-                <div style={getDiffStyles(diff.diffType, type)} key={i}>
+                <div style={getCommonDiffStyles(type)} key={i}>
                   {line}
                 </div>
               ))}
@@ -142,23 +148,14 @@ const DockerDiff = ({
   return (
     <CompareTable
       title="Docker details"
-      blobA={blobA}
-      blobB={blobB}
+      A={blobA}
+      B={blobB}
       columns={{
         property: {
           title: 'Properties',
           width: 190,
         },
-        A: {
-          title: `From Commit SHA: ${shortenSHA(
-            comparedCommitsInfo.commitA.sha
-          )}`,
-        },
-        B: {
-          title: `To Commit SHA: ${shortenSHA(
-            comparedCommitsInfo.commitB.sha
-          )}`,
-        },
+        ...getColumnComparedCommitsTitles(comparedCommitsInfo),
       }}
     >
       <CompareTable.PropDefinition
@@ -168,7 +165,7 @@ const DockerDiff = ({
             blobData.data &&
             blobData.data.type === 'docker' &&
             blobData.data.data.repository ? (
-            <span style={getDiffStyles(diff.diffType, type)}>
+            <span style={getCommonDiffStyles(type)}>
               {makeDockerImage(blobData.data.data)}
             </span>
           ) : null;
@@ -190,23 +187,14 @@ const PythonDiff = ({
   return (
     <CompareTable
       title="Python Details"
-      blobA={blobA}
-      blobB={blobB}
+      A={blobA}
+      B={blobB}
       columns={{
         property: {
           title: 'Properties',
           width: 190,
         },
-        A: {
-          title: `From Commit SHA: ${shortenSHA(
-            comparedCommitsInfo.commitA.sha
-          )}`,
-        },
-        B: {
-          title: `To Commit SHA: ${shortenSHA(
-            comparedCommitsInfo.commitB.sha
-          )}`,
-        },
+        ...getColumnComparedCommitsTitles(comparedCommitsInfo),
       }}
     >
       <CompareTable.PropDefinition
@@ -222,7 +210,7 @@ const PythonDiff = ({
             pythonVersion => (
               <PythonVersion
                 pythonVersion={pythonVersion}
-                rootStyles={getDiffStyles(diff.diffType, type)}
+                rootStyles={getCommonDiffStyles(type)}
               />
             )
           );
@@ -239,7 +227,8 @@ const PythonDiff = ({
             blobData,
             'requirements',
             requirements =>
-              sortArrayByAnotherArrayKeys(
+              getDiffViewModelForArrayItems(
+                diff.diffType,
                 ({ library }) => library,
                 requirements,
                 safeMapPythonBlobDataDiff(
@@ -247,13 +236,15 @@ const PythonDiff = ({
                   'requirements',
                   r => r
                 ) || []
-              ).map((r, i) => (
-                <PythonRequirementEnvironment
-                  pythonRequirementEnvironment={r}
-                  rootStyles={getDiffStyles(diff.diffType, type)}
-                  key={i}
-                />
-              ))
+              ).map((r, i) => {
+                return (
+                  <PythonRequirementEnvironment
+                    {...getDiffStylesForUniqItem(r.diffType, type)}
+                    pythonRequirementEnvironment={r.data}
+                    key={i}
+                  />
+                );
+              })
           );
         }}
       />
@@ -268,7 +259,8 @@ const PythonDiff = ({
             blobData,
             'constraints',
             constraints =>
-              sortArrayByAnotherArrayKeys(
+              getDiffViewModelForArrayItems(
+                diff.diffType,
                 ({ library }) => library,
                 constraints,
                 safeMapPythonBlobDataDiff(
@@ -278,8 +270,8 @@ const PythonDiff = ({
                 ) || []
               ).map((r, i) => (
                 <PythonRequirementEnvironment
-                  pythonRequirementEnvironment={r}
-                  rootStyles={getDiffStyles(diff.diffType, type)}
+                  {...getDiffStylesForUniqItem(r.diffType, type)}
+                  pythonRequirementEnvironment={r.data}
                   key={i}
                 />
               ))
@@ -290,16 +282,57 @@ const PythonDiff = ({
   );
 };
 
-const getDiffStyles = (diffType: DiffType, type: ComparedCommitType) => {
-  if (diffType === 'deleted') {
-    return { backgroundColor: diffColors.red };
+function getDiffViewModelForArrayItems<T>(
+  diffType: DiffType,
+  getItemKey: (item: T) => string,
+  currentItems: T[],
+  otherItems: T[] | undefined
+) {
+  const sorted = sortArrayByAnotherArrayKeys(
+    getItemKey,
+    currentItems,
+    otherItems || []
+  );
+  return getDiffInfoForItems(diffType, getItemKey, sorted, otherItems);
+}
+
+function getDiffInfoForItems<T>(
+  diffType: DiffType,
+  getItemKey: (item: T) => string,
+  currentItems: T[],
+  otherItems: T[] | undefined
+): Array<{ data: T; diffType: DiffType }> {
+  return currentItems.map(item => {
+    if (diffType === 'added' || diffType === 'deleted') {
+      return { diffType: diffType, data: item };
+    } else {
+      return {
+        diffType: (otherItems || []).find(
+          anotherItem => getItemKey(anotherItem) === getItemKey(item)
+        )
+          ? ('modified' as const)
+          : ('added' as const),
+        data: item,
+      };
+    }
+  });
+}
+
+const getDiffStylesForUniqItem = (
+  diffType: DiffType,
+  type: ComparedCommitType
+) => {
+  if (diffType === 'added' || diffType === 'deleted') {
+    return {
+      rootStyles: getCommonDiffStyles(type),
+    };
+  } else {
+    return { valueStyles: getCommonDiffStyles(type) };
   }
-  if (diffType === 'added') {
-    return { backgroundColor: diffColors.green };
-  }
-  return type === 'A'
-    ? { backgroundColor: diffColors.red }
-    : { backgroundColor: diffColors.green };
+};
+
+const getCommonDiffStyles = (type: ComparedCommitType) => {
+  return { backgroundColor: getCssDiffColor(type) };
 };
 
 export default EnvironmentDiffView;
