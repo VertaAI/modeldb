@@ -32,6 +32,41 @@ Release Notes
      <>`__
 
 
+v0.14.2 (2020-04-01)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `use friendly default messages for merges and reverts
+  <https://github.com/VertaAI/modeldb/pull/355>`__
+- `implement __repr__ for Blobs
+  <https://github.com/VertaAI/modeldb/pull/434>`__
+
+Bug Fixes
+^^^^^^^^^
+- `filter out spaCy models from pip freeze
+  <https://github.com/VertaAI/modeldb/pull/367>`__
+- `make dataset.dataset_type friendlier
+  <https://github.com/VertaAI/modeldb/pull/419>`__
+- `enable e.g. Notebook Blobs to be retrieved from a Commit outside of Notebooks
+  <https://github.com/VertaAI/modeldb/pull/424>`__
+- `enable set_repository() without Verta authentication credentials
+  <https://github.com/VertaAI/modeldb/pull/451>`__
+- `validate Client config file against protobuf spec
+  <https://github.com/VertaAI/modeldb/pull/420>`__
+- `add more helpful typechecks on Commit methods
+  <https://github.com/VertaAI/modeldb/pull/415>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `update protobufs for diffapi changes
+  <https://github.com/VertaAI/modeldb/pull/431>`__
+- `fix race condition when running parallel tests
+  <https://github.com/VertaAI/modeldb/pull/401>`__
+- `update tests to delete children Commits first
+  <https://github.com/VertaAI/modeldb/pull/421>`__
+
+
 v0.14.1 (2020-03-17)
 --------------------
 

@@ -14,7 +14,6 @@ import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
-import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob.ValueCase;
 import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
@@ -32,111 +31,6 @@ public class ConfigContainer extends BlobContainer {
   public ConfigContainer(BlobExpanded blobExpanded) {
     super(blobExpanded);
     config = blobExpanded.getBlob().getConfig();
-  }
-
-  @Override
-  public void validate() throws ModelDBException {
-    for (HyperparameterConfigBlob hyperparameterConfigBlob : config.getHyperparametersList()) {
-      final String name = hyperparameterConfigBlob.getName();
-      if (name.isEmpty()) {
-        throw new ModelDBException("Hyperparameter name is empty", Code.INVALID_ARGUMENT);
-      }
-      final HyperparameterValuesConfigBlob value = hyperparameterConfigBlob.getValue();
-      validate(name, value);
-    }
-    for (HyperparameterSetConfigBlob hyperparameterSetConfigBlob :
-        config.getHyperparameterSetList()) {
-      final String name = hyperparameterSetConfigBlob.getName();
-      if (name.isEmpty()) {
-        throw new ModelDBException("Hyperparameter set name is empty", Code.INVALID_ARGUMENT);
-      }
-      switch (hyperparameterSetConfigBlob.getValueCase()) {
-        case CONTINUOUS:
-          final ContinuousHyperparameterSetConfigBlob continuous =
-              hyperparameterSetConfigBlob.getContinuous();
-          if (!continuous.hasIntervalBegin()) {
-            throw new ModelDBException(
-                "Hyperparameter set " + name + " doesn't have interval begin",
-                Code.INVALID_ARGUMENT);
-          }
-          if (!continuous.hasIntervalEnd()) {
-            throw new ModelDBException(
-                "Hyperparameter set " + name + " doesn't have interval end", Code.INVALID_ARGUMENT);
-          }
-          if (!continuous.hasIntervalStep()) {
-            throw new ModelDBException(
-                "Hyperparameter set " + name + " doesn't have interval step",
-                Code.INVALID_ARGUMENT);
-          }
-
-          HyperparameterValuesConfigBlob beginSetConfigBlob = continuous.getIntervalBegin();
-          HyperparameterValuesConfigBlob endSetConfigBlob = continuous.getIntervalEnd();
-          HyperparameterValuesConfigBlob stepSetConfigBlob = continuous.getIntervalStep();
-
-          if (beginSetConfigBlob.getValueCase().equals(ValueCase.VALUE_NOT_SET)
-              || endSetConfigBlob.getValueCase().equals(ValueCase.VALUE_NOT_SET)
-              || stepSetConfigBlob.getValueCase().equals(ValueCase.VALUE_NOT_SET)) {
-            throw new ModelDBException(
-                "Hyperparameter continuous set doesn't have one of the INT_VALUE, FLOAT_VALUE, STRING_VALUE",
-                Code.INVALID_ARGUMENT);
-          }
-
-          if (beginSetConfigBlob.getValueCase().equals(ValueCase.STRING_VALUE)) {
-            try {
-              Double.parseDouble(beginSetConfigBlob.getStringValue());
-            } catch (Exception ex) {
-              throw new ModelDBException(
-                  "beginSetConfigBlob has a STRING_VALUE which is not in a valid numeric notation");
-            }
-          }
-          if (endSetConfigBlob.getValueCase().equals(ValueCase.STRING_VALUE)) {
-            try {
-              Double.parseDouble(endSetConfigBlob.getStringValue());
-            } catch (Exception ex) {
-              throw new ModelDBException(
-                  "endSetConfigBlob has a STRING_VALUE which is not in a valid numeric notation");
-            }
-          }
-          if (stepSetConfigBlob.getValueCase().equals(ValueCase.STRING_VALUE)) {
-            try {
-              Double.parseDouble(stepSetConfigBlob.getStringValue());
-            } catch (Exception ex) {
-              throw new ModelDBException(
-                  "stepSetConfigBlob has a STRING_VALUE which is not in a valid numeric notation");
-            }
-          }
-
-          validate(name, continuous.getIntervalBegin());
-          validate(name, continuous.getIntervalEnd());
-          validate(name, continuous.getIntervalStep());
-          break;
-        case DISCRETE:
-          DiscreteHyperparameterSetConfigBlob discrete = hyperparameterSetConfigBlob.getDiscrete();
-          if (discrete.getValuesCount() == 0) {
-            throw new ModelDBException("No values for set " + name + " found");
-          }
-          for (HyperparameterValuesConfigBlob value : discrete.getValuesList()) {
-            validate(name, value);
-          }
-          break;
-        case VALUE_NOT_SET:
-        default:
-          throw new ModelDBException(
-              "Hyperparameter set " + name + " value has unknown type", Code.INVALID_ARGUMENT);
-      }
-    }
-  }
-
-  void validate(String name, HyperparameterValuesConfigBlob value) throws ModelDBException {
-    switch (value.getValueCase()) {
-      case INT_VALUE:
-      case FLOAT_VALUE:
-      case STRING_VALUE:
-        break;
-      case VALUE_NOT_SET:
-      default:
-        throw new ModelDBException("Hyperparameter " + name + " value has unknown type");
-    }
   }
 
   @Override

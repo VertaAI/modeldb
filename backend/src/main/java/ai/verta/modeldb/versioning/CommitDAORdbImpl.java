@@ -240,11 +240,18 @@ public class CommitDAORdbImpl implements CommitDAO {
       Query getBranchByCommitQuery = session.createQuery(getBranchByCommitHQLBuilder.toString());
       getBranchByCommitQuery.setParameter("repositoryId", repositoryEntity.getId());
       getBranchByCommitQuery.setParameter("commitHash", commitEntity.getCommit_hash());
-      BranchEntity branchEntity = (BranchEntity) getBranchByCommitQuery.uniqueResult();
-      if (branchEntity != null) {
-        throw new ModelDBException(
-            "Commit is associated with branch name : " + branchEntity.getId().getBranch(),
-            Code.FAILED_PRECONDITION);
+      List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
+      if (branchEntities != null && !branchEntities.isEmpty()) {
+        StringBuilder errorMessage = new StringBuilder("Commit is associated with branch name : ");
+        int count = 0;
+        for (BranchEntity branchEntity : branchEntities) {
+          errorMessage.append(branchEntity.getId().getBranch());
+          if (count < branchEntities.size() - 1) {
+            errorMessage.append(", ");
+          }
+          count++;
+        }
+        throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
       }
 
       String getLabelsHql =

@@ -1,11 +1,14 @@
 import * as React from 'react';
 
 import { INotebookCodeBlob } from 'core/shared/models/Versioning/Blob/CodeBlob';
-import { PageHeader } from 'core/shared/view/elements/PageComponents';
 
 import PathDatasetComponents from '../../shared/PathDatasetComponents/PathDatasetComponents';
 import GitBlobView from '../GitBlobView/GitBlobView';
 import styles from './NotebookBlobView.module.css';
+import {
+  BlobDataBox,
+  MultipleBlobDataBox,
+} from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 interface ILocalProps {
   blob: INotebookCodeBlob;
@@ -13,21 +16,22 @@ interface ILocalProps {
 
 const NotebookBlobView = ({ blob: { data } }: ILocalProps) => {
   return (
-    <div className={styles.root}>
-      {data.gitBlob && (
-        <div className={styles.gitBlob}>
-          <GitBlobView blob={data.gitBlob} />
-        </div>
-      )}
-      {data.path && (
-        <div className={styles.path}>
-          <div className={styles.path__title}>
-            <PageHeader title="Path" size="medium" />
+    <MultipleBlobDataBox title="Notebook">
+      <>
+        {data.gitBlob && (
+          <div className={styles.gitBlob}>
+            <GitBlobView blob={data.gitBlob} />
           </div>
-          <PathDatasetComponents data={[data.path]} />
-        </div>
-      )}
-    </div>
+        )}
+        {data.path && (
+          <div className={styles.path}>
+            <BlobDataBox title="Path">
+              <PathDatasetComponents data={[data.path]} />
+            </BlobDataBox>
+          </div>
+        )}
+      </>
+    </MultipleBlobDataBox>
   );
 };
 

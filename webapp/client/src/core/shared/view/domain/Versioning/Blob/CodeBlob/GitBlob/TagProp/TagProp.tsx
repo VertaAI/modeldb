@@ -20,7 +20,7 @@ const TagProp = ({ remoteRepoUrl, tag, rootStyles }: ILocalProps) => {
         rootStyle={rootStyles}
       />
     ),
-    unknown: ({ value }) => <span style={rootStyles}>{value}</span>,
+    unknown: () => <span style={rootStyles}>{tag}</span>,
   });
 };
 

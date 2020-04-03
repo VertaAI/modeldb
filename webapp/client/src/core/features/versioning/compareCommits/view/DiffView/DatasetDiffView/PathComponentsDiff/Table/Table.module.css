@@ -8,11 +8,11 @@
   text-overflow: ellipsis;
 }
 
-.deleted {
+.redDiff {
   background-color: redDiff;
 }
 
-.added {
+.greenDiff {
   background-color: greenDiff;
 }
 

@@ -14,6 +14,7 @@ export interface ICompareChangesState {
     loadingCommitPointersCommits: ICommunication<
       AppError<UnavailableEntityApiErrorType>
     >;
+    mergingCommits: ICommunication<AppError>;
   };
 }
 

@@ -21,7 +21,7 @@ export interface IRepositoriesState {
       IRepository['name'],
       AppError<UnavailableEntityApiErrorType>
     >;
-    deletingRepositoryById: ICommunicationById<string, AppError>;
+    deletingRepositoryById: ICommunicationById<IRepository['id'], AppError>;
     addingRepositoryLabel: ICommunicationById<IRepository['id'], AppError>;
     deletingRepositoryLabel: ICommunicationById<IRepository['id'], AppError>;
   };
