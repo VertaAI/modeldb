@@ -10,6 +10,7 @@ from . import blob
 
 @click.group()
 def cli():
+    """ModelDB versioning CLI for snapshotting and tracking model ingredients."""
     pass
 
 
