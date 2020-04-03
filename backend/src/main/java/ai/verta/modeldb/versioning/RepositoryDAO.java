@@ -4,6 +4,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.uac.UserInfo;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.uac.UserInfo;
 import org.hibernate.Session;
 
 public interface RepositoryDAO {

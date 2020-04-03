@@ -1,11 +1,10 @@
 import { ActionType, createReducer } from 'typesafe-actions';
 
+import { updateById } from 'core/shared/utils/collection';
 import { substractPaginationTotalCount } from 'core/shared/models/Pagination';
 
 import * as actions from '../actions';
 import { IRepositoriesState } from '../types';
-import update from 'ramda/es/update';
-import { updateById } from 'core/shared/utils/collection';
 
 const initial: IRepositoriesState['data'] = {
   repositories: null,

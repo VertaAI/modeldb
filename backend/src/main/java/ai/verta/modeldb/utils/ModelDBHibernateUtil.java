@@ -6,6 +6,7 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
@@ -608,6 +609,18 @@ public class ModelDBHibernateUtil {
                             CompletableFuture.supplyAsync(
                                 () -> {
                                   OwnerRoleBindingUtils.execute();
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      }
+                      if (migrationName.equals(
+                          ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION)) {
+                        // Manual migration for populate RoleBinding of repository
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  OwnerRoleBindingRepositoryUtils.execute();
                                   return true;
                                 });
                         completableFutures[index] = futureTask;

@@ -8,16 +8,20 @@ import {
 interface ILocalProps {
   pythonRequirementEnvironment: IPythonRequirementEnvironment;
   rootStyles?: React.CSSProperties;
+  valueStyles?: React.CSSProperties;
 }
 
 const PythonRequirementEnvironment = ({
   pythonRequirementEnvironment: { library, constraint, version },
   rootStyles,
+  valueStyles,
 }: ILocalProps) => {
   return (
     <div key={library} style={rootStyles}>
-      {library} {constraint || ''}{' '}
-      {version ? versionEnvironmentToString(version) : ''}
+      {library}{' '}
+      <span style={valueStyles}>
+        {constraint || ''} {version ? versionEnvironmentToString(version) : ''}
+      </span>
     </div>
   );
 };

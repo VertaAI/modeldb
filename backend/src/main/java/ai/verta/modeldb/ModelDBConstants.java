@@ -161,6 +161,8 @@ public interface ModelDBConstants {
   // Migration Constants
   String MIGRATION = "migration";
   String SUB_ENTITIES_OWNERS_RBAC_MIGRATION = "SUB_ENTITIES_OWNERS_RBAC_MIGRATION";
+  String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
+      "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -204,8 +206,8 @@ public interface ModelDBConstants {
   String ENTITY_TYPE = "entity_type";
   String LABEL = "label";
   String BRANCH = "branch";
-  String BRANCH_NOT_FOUND = "Branch not found";
-  String COMMIT_NOT_FOUND = "Commit not found";
+  String BRANCH_NOT_FOUND = "Branch not found ";
+  String COMMIT_NOT_FOUND = "Commit not found ";
   String INITIAL_COMMIT_MESSAGE = "Initial commit";
   String MASTER_BRANCH = "master";
   String COMMIT = "commit";
