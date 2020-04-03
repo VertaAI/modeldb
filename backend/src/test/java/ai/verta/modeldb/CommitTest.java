@@ -1,5 +1,6 @@
 package ai.verta.modeldb;
 
+import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
@@ -39,6 +40,7 @@ import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
@@ -1751,5 +1753,80 @@ public class CommitTest {
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info(
         "Check repo updated time with Create & Delete of commit test end................................");
+  }
+
+  @Test
+  public void deleteCommitHasHeadOfTwoBranchesTest() throws ModelDBException {
+    LOGGER.info("branch test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateCommitRequest createCommitRequest =
+        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    Commit commit1 = commitResponse.getCommit();
+
+    createCommitRequest =
+        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+
+    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
+    Commit commit2 = commitResponse.getCommit();
+
+    List<Commit> commitShaList = new LinkedList<>();
+    commitShaList.add(commit2);
+    commitShaList.add(commit1);
+
+    String branchName1 = "branch-commits-label-1";
+    SetBranchRequest setBranchRequest =
+        SetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(branchName1)
+            .setCommitSha(commit1.getCommitSha())
+            .build();
+    versioningServiceBlockingStub.setBranch(setBranchRequest);
+
+    String branchName2 = "branch-commits-label-2";
+    setBranchRequest =
+        SetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(branchName2)
+            .setCommitSha(commit1.getCommitSha())
+            .build();
+    versioningServiceBlockingStub.setBranch(setBranchRequest);
+
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commit1.getCommitSha())
+            .build();
+    try {
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
+      e.printStackTrace();
+    }
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("Branch test end................................");
   }
 }
