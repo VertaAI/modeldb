@@ -526,11 +526,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       locationBlobsMapCommitA =
           getCommitBlobMapWithHash(readSession, internalCommitA.getRootSha(), new ArrayList<>());
 
-      for (Entry<String, Entry<BlobExpanded, String>> locationBlobsEntry :
-          locationBlobsMapCommitA.entrySet()) {
-        locationBlobsMapCommitASimple.put(
-            locationBlobsEntry.getKey(), locationBlobsEntry.getValue().getKey());
-      }
+      locationBlobsMapCommitASimple = convertToLocationBlobMap(locationBlobsMapCommitA);
 
       locationBlobsMapCommitB =
           getCommitBlobMapWithHash(readSession, internalCommitB.getRootSha(), new ArrayList<>());
@@ -587,11 +583,14 @@ public class BlobDAORdbImpl implements BlobDAO {
             .setCommit(commitEntity.toCommitProto())
             .build();
       } else {
+        Map<String, BlobExpanded> locationBlobsMapParentCommitSimple =
+            convertToLocationBlobMap(locationBlobsMapParentCommit);
 
         List<ai.verta.modeldb.versioning.BlobDiff> diffA =
             computeDiffFromCommitMaps(locationBlobsMapParentCommit, locationBlobsMapCommitA)
                 .getDiffsList();
-        List<BlobDiff> blobDiffList = getConflictDiff(diffA, diffB, conflictLocationMap);
+        List<BlobDiff> blobDiffList =
+            getConflictDiff(diffA, diffB, conflictLocationMap, locationBlobsMapParentCommitSimple);
         writeSession.getTransaction().commit();
         LOGGER.debug("conflict found", conflictLocationMap);
         return MergeRepositoryCommitsRequest.Response.newBuilder()
@@ -605,7 +604,8 @@ public class BlobDAORdbImpl implements BlobDAO {
   private List<BlobDiff> getConflictDiff(
       List<BlobDiff> diffListA,
       List<BlobDiff> diffListB,
-      HashMap<String, List<String>> conflictLocationMap) {
+      HashMap<String, List<String>> conflictLocationMap,
+      Map<String, BlobExpanded> locationBlobsMapParentCommitSimple) {
     List<BlobDiff> blobDiffList = new LinkedList<BlobDiff>(); // TODO sort?
     HashMap<String, List<BlobDiff>> diffMapA =
         getLocationMapDiff(diffListA, conflictLocationMap.keySet());
@@ -619,15 +619,84 @@ public class BlobDAORdbImpl implements BlobDAO {
           diffMapA.getOrDefault(entry.getKey(), Collections.emptyList());
       List<BlobDiff> locSpecificBlobDiffB =
           diffMapB.getOrDefault(entry.getKey(), Collections.emptyList());
+      BlobExpanded parentBlobExpanded =
+          locationBlobsMapParentCommitSimple.getOrDefault(
+              entry.getKey(), BlobExpanded.newBuilder().build());
+
       BlobDiff.Builder diffBuilder = BlobDiff.newBuilder().setStatus(DiffStatus.CONFLICTED);
       if (!locSpecificBlobDiffA.isEmpty()) {
         diffBuilder.addAllLocation(locSpecificBlobDiffA.get(0).getLocationList());
       } else {
         diffBuilder.addAllLocation(locSpecificBlobDiffB.get(0).getLocationList());
       }
+      setConflictBlobsInDiff(
+          diffBuilder, locSpecificBlobDiffA, locSpecificBlobDiffB, parentBlobExpanded.getBlob());
       blobDiffList.add(diffBuilder.build());
     }
     return blobDiffList;
+  }
+
+  private void setConflictBlobsInDiff(
+      BlobDiff.Builder diffBuilder,
+      List<BlobDiff> locSpecificBlobDiffA,
+      List<BlobDiff> locSpecificBlobDiffB,
+      Blob parentBlob) {
+
+    for (int blobDiffAIndex = 0; blobDiffAIndex < locSpecificBlobDiffA.size(); blobDiffAIndex++) {
+      BlobDiff blobDiffA = locSpecificBlobDiffA.get(blobDiffAIndex);
+      BlobDiff blobDiffB = locSpecificBlobDiffB.get(blobDiffAIndex);
+      switch (blobDiffA.getContentCase()) {
+        case DATASET:
+          DatasetDiff.Builder datasetDiff = DatasetDiff.newBuilder();
+          switch (blobDiffA.getDataset().getContentCase()) {
+            case PATH:
+              PathDatasetDiff.Builder pathDatasetDiffBuilder = PathDatasetDiff.newBuilder();
+              List<PathDatasetComponentDiff> pathDatasetComponentDiffAList =
+                  blobDiffA.getDataset().getPath().getComponentsList();
+              List<PathDatasetComponentDiff> pathDatasetComponentDiffBList =
+                  blobDiffB.getDataset().getPath().getComponentsList();
+              for (int index = 0; index < pathDatasetComponentDiffAList.size(); index++) {
+                PathDatasetComponentDiff pathDatasetComponentDiffA =
+                    pathDatasetComponentDiffAList.get(index);
+                PathDatasetComponentDiff pathDatasetComponentDiffB =
+                    pathDatasetComponentDiffBList.get(index);
+                PathDatasetComponentDiff pathDatasetComponentDiff =
+                    PathDatasetComponentDiff.newBuilder()
+                        .setStatus(DiffStatus.CONFLICTED)
+                        .setA(pathDatasetComponentDiffA.getB())
+                        .setB(pathDatasetComponentDiffB.getB())
+                        .build();
+                pathDatasetDiffBuilder.addComponents(pathDatasetComponentDiff);
+              }
+              datasetDiff.setPath(pathDatasetDiffBuilder.build());
+              break;
+            case S3:
+              S3DatasetDiff.Builder s3DatasetDiff = S3DatasetDiff.newBuilder();
+              List<S3DatasetComponentDiff> s3DatasetComponentDiffsAList =
+                  blobDiffA.getDataset().getS3().getComponentsList();
+              List<S3DatasetComponentDiff> s3DatasetComponentDiffsBList =
+                  blobDiffB.getDataset().getS3().getComponentsList();
+              for (int index = 0; index < s3DatasetComponentDiffsAList.size(); index++) {
+                S3DatasetComponentDiff s3DatasetComponentDiffA =
+                    s3DatasetComponentDiffsAList.get(index);
+                S3DatasetComponentDiff s3DatasetComponentDiffB =
+                    s3DatasetComponentDiffsBList.get(index);
+                PathDatasetComponentDiff pathDatasetComponentDiff =
+                    PathDatasetComponentDiff.newBuilder()
+                        .setStatus(DiffStatus.CONFLICTED)
+                        .setA(s3DatasetComponentDiffA.getPath().getB())
+                        .setB(s3DatasetComponentDiffB.getPath().getB())
+                        .build();
+                s3DatasetDiff.addComponents(
+                    S3DatasetComponentDiff.newBuilder().setPath(pathDatasetComponentDiff).build());
+              }
+              datasetDiff.setS3(s3DatasetDiff);
+              break;
+          }
+          diffBuilder.setDataset(datasetDiff.build());
+          break;
+      }
+    }
   }
 
   private HashMap<String, List<BlobDiff>> getLocationMapDiff(
