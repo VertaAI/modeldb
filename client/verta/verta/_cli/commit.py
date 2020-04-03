@@ -28,12 +28,16 @@ def rm(blobs):
 
 
 @click.command()
-@click.option('-m', '--message', help="Commit message.")
+@click.option('-m', '--message', required=True, help="Commit message.")
 @click.option('-a', '--all', is_flag=True, help="Commit all changed blobs.")  # NOTE: this looks difficult
-def commit(message, all):
+@click.option('--amend', is_flag=True, help="Amend previous commit.")
+def commit(message, all, amend):
     """Record changes to the repository."""
     if all:
         click.echo("adding all blobs")
+
+    if amend:
+        click.echo("amending previous commit")
 
     click.echo("commit saved with message \"{}\"".format(message))
 
