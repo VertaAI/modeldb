@@ -1106,25 +1106,6 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     return accessibleExperimentIds;
   }
 
-  public List<String> getAccessibleExperimentIDsByAction(
-      List<String> requestedExperimentIds, ModelDBServiceActions modelDBServiceActions) {
-    // Validate if current user has access to the entity or not
-    if (requestedExperimentIds.size() == 1) {
-      roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.EXPERIMENT,
-          modelDBServiceActions,
-          requestedExperimentIds.get(0));
-      return requestedExperimentIds;
-    } else {
-      List<String> allowedExperimentRunIds =
-          roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.EXPERIMENT, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedExperimentRunIds.retainAll(requestedExperimentIds);
-      return allowedExperimentRunIds;
-    }
-  }
-
   @Override
   public void findExperiments(
       FindExperiments request, StreamObserver<FindExperiments.Response> responseObserver) {
@@ -1446,33 +1427,19 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   private boolean deleteExperiments(List<String> experimentIds)
       throws InvalidProtocolBufferException {
 
-    Set<String> finalAccessibleExperimentSet = new HashSet<>();
-    try {
-      List<String> accessibleExperimentRunIdsByProject =
-          getAccessibleExperimentIDs(experimentIds, ModelDBServiceActions.DELETE);
-      finalAccessibleExperimentSet.addAll(accessibleExperimentRunIdsByProject);
-    } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() != Code.PERMISSION_DENIED_VALUE) {
-        throw ex;
-      }
-    }
+    List<String> accessibleExperimentIds =
+        getAccessibleExperimentIDs(experimentIds, ModelDBServiceActions.UPDATE);
 
-    if (!finalAccessibleExperimentSet.containsAll(experimentIds)) {
-      List<String> accessibleExperimentRunIDsByAction =
-          getAccessibleExperimentIDsByAction(experimentIds, ModelDBServiceActions.DELETE);
-      finalAccessibleExperimentSet.addAll(accessibleExperimentRunIDsByAction);
-    }
-
-    if (finalAccessibleExperimentSet.isEmpty()) {
+    if (accessibleExperimentIds.isEmpty()) {
       String errorMessage =
-          "Access is denied. User is unauthorized for given Experiment IDs : " + experimentIds;
+          "Access is denied. User is unauthorized for given Experiment IDs : "
+              + accessibleExperimentIds;
       ModelDBUtils.logAndThrowError(
           errorMessage,
           Code.PERMISSION_DENIED_VALUE,
           Any.pack(DeleteExperiments.getDefaultInstance()));
     }
 
-    return experimentDAO.deleteExperiments(new ArrayList<>(finalAccessibleExperimentSet));
+    return experimentDAO.deleteExperiments(accessibleExperimentIds);
   }
 }
