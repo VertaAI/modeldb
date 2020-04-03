@@ -249,9 +249,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public SetRepository.Response setRepository(SetRepository request, UserInfo userInfo,
-      boolean create)
-      throws ModelDBException {
+  public SetRepository.Response setRepository(
+      SetRepository request, UserInfo userInfo, boolean create) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
       session.beginTransaction();
