@@ -480,6 +480,12 @@
           "items": {
             "$ref": "#/definitions/uacAction"
           }
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
         }
       },
       "title": "Same as above, but lists the resources on which actions can be performed by entities"
@@ -522,6 +528,12 @@
           "items": {
             "$ref": "#/definitions/uacAction"
           }
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
         }
       },
       "title": "Same as GetAllowedResources, but infers entities from the current logged user"
@@ -597,6 +609,21 @@
         }
       }
     },
+    "uacResourceType": {
+      "type": "object",
+      "properties": {
+        "role_service_resource_type": {
+          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
+          "title": "Separate based on the service itself"
+        },
+        "authz_service_resource_type": {
+          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
+        },
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        }
+      }
+    },
     "uacResources": {
       "type": "object",
       "properties": {
@@ -610,15 +637,8 @@
           },
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
         },
-        "role_service_resource_type": {
-          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "title": "Separate based on the service itself"
-        },
-        "authz_service_resource_type": {
-          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
-        },
-        "modeldb_service_resource_type": {
-          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
         }
       },
       "title": "A resource describes a specific object in a service that can receive an action"

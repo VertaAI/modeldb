@@ -626,6 +626,21 @@
       },
       "title": "Allows grouping multiple resources and actions for more descriptive permissions"
     },
+    "uacResourceType": {
+      "type": "object",
+      "properties": {
+        "role_service_resource_type": {
+          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
+          "title": "Separate based on the service itself"
+        },
+        "authz_service_resource_type": {
+          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
+        },
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        }
+      }
+    },
     "uacResources": {
       "type": "object",
       "properties": {
@@ -639,15 +654,8 @@
           },
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
         },
-        "role_service_resource_type": {
-          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "title": "Separate based on the service itself"
-        },
-        "authz_service_resource_type": {
-          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
-        },
-        "modeldb_service_resource_type": {
-          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
         }
       },
       "title": "A resource describes a specific object in a service that can receive an action"
