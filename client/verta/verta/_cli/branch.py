@@ -9,6 +9,7 @@ def branch(repo):
     """List available branches."""
     click.echo("you have no branches because this is a demo")
 
+
 @click.command()
 @click.option('-b', is_flag=True, help="Create and checkout a new branch.")
 @click.argument('branch')
@@ -19,3 +20,9 @@ def checkout(b, branch, repo):
     if b:
         msg = "creating and "+msg
     click.echo(msg)
+
+
+@click.command()
+def log():
+    """Show commit logs."""
+    click.echo("here's the log")
