@@ -83,6 +83,7 @@ import { ReactComponent as Upload } from './imgs/upload.svg';
 import { ReactComponent as User } from './imgs/user.svg';
 import { ReactComponent as Users } from './imgs/users.svg';
 import { ReactComponent as Repository } from './imgs/repository.svg';
+import { ReactComponent as Datasets } from './imgs/datasets.svg';
 import { ReactComponent as File } from './imgs/file.svg';
 
 import styles from './Icon.module.css';
@@ -176,7 +177,8 @@ export type IconType =
   | 'organization-workspace'
   | 'personal-workspace'
   | 'repository'
-  | 'file';
+  | 'file'
+  | 'datasets';
 
 export class Icon extends React.PureComponent<ILocalProps> {
   public render() {
@@ -277,6 +279,7 @@ export class Icon extends React.PureComponent<ILocalProps> {
       'personal-workspace': PersonalWorkspace,
       repository: Repository,
       file: File,
+      datasets: Datasets,
     };
     return icons[this.props.type];
   }

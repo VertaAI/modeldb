@@ -6,27 +6,37 @@ import styles from './KeyValuePairs.module.css';
 
 interface ILocalProps {
   data: Array<IKeyValuePair<string>>;
-  getRootStyles?: (
+  getStyles?: (
     pair: IKeyValuePair<string>
-  ) => React.CSSProperties | undefined;
+  ) =>
+    | { rootStyles?: React.CSSProperties; valueStyles?: React.CSSProperties }
+    | undefined;
 }
 
-const KeyValuePairs = ({
-  data,
-  getRootStyles = () => undefined,
-}: ILocalProps) => {
+const KeyValuePairs = ({ data, getStyles = () => undefined }: ILocalProps) => {
   return (
     <div className={styles.root}>
-      {data.map(pair => (
-        <div className={styles.pair} key={pair.key} style={getRootStyles(pair)}>
-          <span className={styles.pair__key} title={pair.key}>
-            {pair.key}
-          </span>
-          <span className={styles.pair__value} title={pair.value}>
-            {pair.value}
-          </span>
-        </div>
-      ))}
+      {data.map(pair => {
+        const pairStyles = getStyles(pair) || {};
+        return (
+          <div
+            className={styles.pair}
+            key={pair.key}
+            style={pairStyles.rootStyles}
+          >
+            <span className={styles.pair__key} title={pair.key}>
+              {pair.key}
+            </span>
+            <span
+              className={styles.pair__value}
+              title={pair.value}
+              style={pairStyles.valueStyles}
+            >
+              {pair.value}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 };

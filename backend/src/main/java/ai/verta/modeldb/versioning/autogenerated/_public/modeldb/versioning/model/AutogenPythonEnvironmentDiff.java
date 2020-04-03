@@ -214,7 +214,7 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
                   blob.getConstraintsList().stream()
                       .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
                       .collect(Collectors.toList());
-      obj.Constraints = Utils.removeEmpty(f.apply(blob));
+      obj.setConstraints(f.apply(blob));
     }
     {
       Function<
@@ -225,12 +225,12 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
                   blob.getRequirementsList().stream()
                       .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
                       .collect(Collectors.toList());
-      obj.Requirements = Utils.removeEmpty(f.apply(blob));
+      obj.setRequirements(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.PythonEnvironmentDiff, AutogenVersionEnvironmentDiff> f =
           x -> AutogenVersionEnvironmentDiff.fromProto(blob.getVersion());
-      obj.Version = Utils.removeEmpty(f.apply(blob));
+      obj.setVersion(f.apply(blob));
     }
     return obj;
   }

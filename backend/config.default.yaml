@@ -60,6 +60,7 @@ authService:
   port: 50051
 
 migration:
+  SUB_ENTITIES_OWNERS_RBAC_MIGRATION: false
   #xyz : true
 
 feature-flag:

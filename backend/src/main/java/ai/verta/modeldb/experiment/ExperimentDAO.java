@@ -18,10 +18,12 @@ public interface ExperimentDAO {
    * Insert Experiment entity in database.
    *
    * @param Experiment experiment
+   * @param userInfo
    * @return Experiment insertedExperiment
    * @throws InvalidProtocolBufferException
    */
-  Experiment insertExperiment(Experiment experiment) throws InvalidProtocolBufferException;
+  Experiment insertExperiment(Experiment experiment, UserInfo userInfo)
+      throws InvalidProtocolBufferException;
 
   /**
    * @param experimentId : experiment.id

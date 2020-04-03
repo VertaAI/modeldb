@@ -37,10 +37,11 @@ public class PublicRoleServiceUtils implements RoleService {
   private DatasetDAO datasetDAO;
 
   public PublicRoleServiceUtils(AuthService authService) {
-    ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService);
+    ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             authService,
+            this,
             new RepositoryDAORdbImpl(authService, this),
             new CommitDAORdbImpl(),
             new BlobDAORdbImpl(authService));

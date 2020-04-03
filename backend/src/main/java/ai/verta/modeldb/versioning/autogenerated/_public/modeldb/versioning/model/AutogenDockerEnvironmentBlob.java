@@ -153,15 +153,15 @@ public class AutogenDockerEnvironmentBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob, String> f =
           x -> (blob.getRepository());
-      obj.Repository = Utils.removeEmpty(f.apply(blob));
+      obj.setRepository(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob, String> f = x -> (blob.getSha());
-      obj.Sha = Utils.removeEmpty(f.apply(blob));
+      obj.setSha(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.DockerEnvironmentBlob, String> f = x -> (blob.getTag());
-      obj.Tag = Utils.removeEmpty(f.apply(blob));
+      obj.setTag(f.apply(blob));
     }
     return obj;
   }

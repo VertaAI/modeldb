@@ -4,7 +4,7 @@
 .pair {
   line-height: 20px !important;
   display: grid;
-  grid-template-columns: 90px 60px;
+  grid-template-columns: 90px auto;
   grid-gap: 5px;
   white-space: pre-wrap;
   font-size: 13px;
