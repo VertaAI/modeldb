@@ -35,3 +35,10 @@ def commit(message, all):
 def status():
     """Show staged changes, unstaged changes, and untracked blobs."""
     pass
+
+
+@click.command()
+@click.argument('blob', type=click.Path(exists=True))  # TODO: make optional, to diff all blobs
+def diff(blob):
+    """Show changes in a blob from the current commit."""
+    pass
