@@ -397,8 +397,30 @@ public class MergeTest {
                             VersionEnvironmentBlob.newBuilder()
                                 .setMajor(1)
                                 .setMinor(1)
-                                .setPatch(1)));
+                                .setPatch(1)))
+                .setVersion(VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(3));
 
+        PythonEnvironmentBlob.Builder pythonBuilder2 =
+                PythonEnvironmentBlob.newBuilder()
+                    .addRequirements(
+                        PythonRequirementEnvironmentBlob.newBuilder()
+                            .setLibrary("numpy")
+                            .setConstraint(">=")
+                            .setVersion(
+                                VersionEnvironmentBlob.newBuilder()
+                                    .setMajor(1)
+                                    .setMinor(19)
+                                    .setPatch(1)))
+                    .addRequirements(
+                        PythonRequirementEnvironmentBlob.newBuilder()
+                            .setLibrary("flask")
+                            .setVersion(
+                                VersionEnvironmentBlob.newBuilder()
+                                    .setMajor(1)
+                                    .setMinor(1)
+                                    .setPatch(1)))
+                    .setVersion(VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(4));
+        
         EnvironmentBlob.Builder builder =
             EnvironmentBlob.newBuilder()
                 .addAllCommandLine(Arrays.asList("ECHO 123", "ls ..", "make all"))
@@ -421,10 +443,16 @@ public class MergeTest {
         Blob.Builder builderForBlob =
             Blob.newBuilder().setEnvironment(builder.setPython(pythonBuilder));
         blobExpanded2 =
-            BlobExpanded.newBuilder().setBlob(builderForBlob).addAllLocation(LOCATION2).build();
+                BlobExpanded.newBuilder()
+                    .setBlob(Blob.newBuilder().setEnvironment(builder.setPython(pythonBuilder)))
+                    .addAllLocation(LOCATION2)
+                    .build();
 
         blobExpanded3 =
-            BlobExpanded.newBuilder().setBlob(builderForBlob).addAllLocation(LOCATION3).build();
+                BlobExpanded.newBuilder()
+                    .setBlob(Blob.newBuilder().setEnvironment(builder.setPython(pythonBuilder2)))
+                    .addAllLocation(LOCATION1)
+                    .build();
 
         blobExpanded4 =
             BlobExpanded.newBuilder().setBlob(builderForBlob).addAllLocation(LOCATION4).build();
