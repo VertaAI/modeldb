@@ -3,8 +3,9 @@ import React from 'react';
 import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
 import * as DataLocationHelpers from 'core/shared/models/Versioning/DataLocation';
 import matchBy from 'core/shared/utils/matchBy';
+import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
-import { IComparedCommitsInfo } from '../types';
+import { IComparedCommitsInfo } from '../model';
 import CodeDiffView from './CodeDiffView/CodeDiffView';
 import ConfigDiffView from './ConfigDiffView/ConfigDiffView';
 import DatasetDiffView from './DatasetDiffView/DatasetDiffView';
@@ -19,7 +20,7 @@ interface ILocalProps {
 
 const DiffView: React.FC<ILocalProps> = ({ diff, comparedCommitsInfo }) => {
   return (
-    <div className={styles.root}>
+    <DataBox withPadding={true} additionalClassname={styles.root}>
       <div className={styles.header}>
         <span className={styles.location}>
           {DataLocationHelpers.toPathname(diff.location)}
@@ -41,7 +42,7 @@ const DiffView: React.FC<ILocalProps> = ({ diff, comparedCommitsInfo }) => {
         ),
         unknown: d => <UnknownDiffView diff={d} />,
       })}
-    </div>
+    </DataBox>
   );
 };
 

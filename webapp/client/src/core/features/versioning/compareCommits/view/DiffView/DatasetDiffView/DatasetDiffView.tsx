@@ -1,58 +1,32 @@
 import * as React from 'react';
 
-import { IDatasetBlobDiff, IDatasetBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
+import { IDatasetBlobDiff } from 'core/shared/models/Versioning/Blob/DatasetBlob';
+import matchType from 'core/shared/utils/matchType';
+import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 import matchBy from 'core/shared/utils/matchBy';
 
-import DatasetDiffTable from './DatasetDiffTable/DatasetDiffTable';
-import { ComparedCommitType, getAData, getBData } from 'core/shared/models/Versioning/Blob/Diff';
-import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
+import PathComponentsDiff from './PathComponentsDiff/PathComponentsDiff';
 
 const DatasetDiffView = ({ diff }: { diff: IDatasetBlobDiff }) => {
-  return matchBy(diff, 'diffType')({
-    added: d => {
-      return <DatasetDiffTable blobA={getDatasetBlobFromDiff('B', d)} diffType={diff.diffType} />;
+  const title = matchType(
+    {
+      s3: () => 'S3 Dataset',
+      path: () => 'Path Dataset',
     },
-    deleted: d => <DatasetDiffTable blobA={getDatasetBlobFromDiff('A', d)} diffType={diff.diffType} />,
-    updated: d => {
-      return (
-        <DatasetDiffTable
-          blobA={getDatasetBlobFromDiff('A', d)}
-          blobB={getDatasetBlobFromDiff('B', d)}
-          diffType={diff.diffType}
-        />
-      );
-    },
-  });
-};
+    diff.type
+  );
 
-const getDatasetBlobFromDiff = (type: ComparedCommitType, diff: IDatasetBlobDiff): IDatasetBlob => {
-  switch (diff.type) {
-    case 'path': {
-      return {
-        type: 'path',
-        category: 'dataset',
-        components: diff.data.components
-          .map((c) => {
-            return type === 'A' ? getAData(c)! : getBData(c)!;
-          })
-          .filter(Boolean),
-      };      
-    }
-    case 's3': {
-      return {
-        type: 's3',
-        category: 'dataset',
-        components: diff.data.components
-          .map((c) => {
-            return {
-              path: type === 'A' ? getAData(c.path)! : getBData(c.path)!,
-            };
-          })
-          .filter((c) => Boolean(c.path)),
-      };
-    }
-    default: return exhaustiveCheck(diff, '');
-  }
+  const pathComponentsDiff = matchBy(diff, 'type')({
+    path: pathDiff =>
+      pathDiff.data.components.map(pathComponent => pathComponent),
+    s3: s3Diff => s3Diff.data.components.map(({ path }) => path),
+  });
+
+  return (
+    <BlobDataBox title={title}>
+      <PathComponentsDiff diff={pathComponentsDiff} />
+    </BlobDataBox>
+  );
 };
 
 export default DatasetDiffView;

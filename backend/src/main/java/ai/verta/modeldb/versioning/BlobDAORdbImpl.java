@@ -535,7 +535,9 @@ public class BlobDAORdbImpl implements BlobDAO {
           computeDiffFromCommitMaps(locationBlobsMapParentCommit, locationBlobsMapCommitB)
               .getDiffsList();
       List<BlobContainer> blobContainerList =
-          getBlobContainers(diffB, locationBlobsMapCommitASimple);
+          getBlobContainers(
+              diffB.stream().map(AutogenBlobDiff::fromProto).collect(Collectors.toList()),
+              locationBlobsMapCommitASimple);
 
       final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
       long timeCreated = new Date().getTime();
@@ -705,7 +707,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public List<BlobContainer> convertBlobDiffsToBlobs(
-      CreateCommitRequest request,
+      List<AutogenBlobDiff> diffs,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException {
@@ -714,26 +716,25 @@ public class BlobDAORdbImpl implements BlobDAO {
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
       Map<String, BlobExpanded> locationBlobsMap =
           getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
-      return getBlobContainers(request.getDiffsList(), locationBlobsMap);
+      return getBlobContainers(diffs, locationBlobsMap);
     }
   }
 
   private List<BlobContainer> getBlobContainers(
-      List<ai.verta.modeldb.versioning.BlobDiff> blobDiffList,
-      Map<String, BlobExpanded> locationBlobsMap)
+      List<AutogenBlobDiff> diffs, Map<String, BlobExpanded> locationBlobsMap)
       throws ModelDBException {
     Map<String, BlobExpanded> locationBlobsMapNew = new LinkedHashMap<>();
-    for (ai.verta.modeldb.versioning.BlobDiff blobDiff : blobDiffList) {
-      final ProtocolStringList locationList = blobDiff.getLocationList();
+    for (AutogenBlobDiff blobDiff : diffs) {
+      final List<String> locationList = blobDiff.getLocation();
       if (locationList == null || locationList.isEmpty()) {
         throw new ModelDBException(
-            "Location in BlobDiff should not be empty", Status.Code.INVALID_ARGUMENT);
+            "Location in BlobDiff should not be empty", Status.Code.INTERNAL);
       }
       BlobExpanded blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
       AutogenBlob blob =
           DiffMerger.mergeBlob(
               blobExpanded == null ? null : AutogenBlob.fromProto(blobExpanded.getBlob()),
-              AutogenBlobDiff.fromProto(blobDiff));
+              blobDiff);
       locationBlobsMapNew.put(
           getStringFromLocationList(locationList),
           blob == null
