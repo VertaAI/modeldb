@@ -515,19 +515,25 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
+  public BranchEntity getBranchEntity(Session session, Long repoId, String branchName)
+      throws ModelDBException {
+    Query query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
+    query.setParameter("repositoryId", repoId);
+    query.setParameter("branch", branchName);
+    BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
+    if (branchEntity == null) {
+      throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
+    }
+    return branchEntity;
+  }
+
+  @Override
   public GetBranchRequest.Response getBranch(GetBranchRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
-      Query query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
-      query.setParameter("repositoryId", repository.getId());
-      query.setParameter("branch", request.getBranch());
-      BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
-      if (branchEntity == null) {
-        throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
-      }
-
+      BranchEntity branchEntity = getBranchEntity(session, repository.getId(), request.getBranch());
       CommitEntity commitEntity = session.get(CommitEntity.class, branchEntity.getCommit_hash());
       session.getTransaction().commit();
       return GetBranchRequest.Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
