@@ -84,9 +84,9 @@ Object {
       },
       "type": "git",
     },
-    "diffType": "updated",
+    "diffType": "modified",
   },
-  "diffType": "updated",
+  "diffType": "modified",
   "location": Array [
     "repo_gitadf",
   ],

@@ -18,11 +18,15 @@ const HyperparameterSetItem = ({
 }: ILocalProps) => {
   if (hyperparameterSetItem.type === 'discrete') {
     return (
-      <Hyperparameter name={hyperparameterSetItem.name} rootStyles={rootStyles}>
+      <Hyperparameter
+        name={hyperparameterSetItem.name}
+        rootStyles={rootStyles}
+        valueStyles={valueStyles}
+      >
         [
         {hyperparameterSetItem.values.map((hp, i) => (
           <>
-            <HyperparameterValue value={hp} rootStyles={valueStyles} />
+            <HyperparameterValue value={hp} />
             {i !== hyperparameterSetItem.values.length && ','}
           </>
         ))}
@@ -32,8 +36,12 @@ const HyperparameterSetItem = ({
   }
 
   return (
-    <Hyperparameter name={hyperparameterSetItem.name} rootStyles={rootStyles}>
-      <span style={valueStyles}>
+    <Hyperparameter
+      name={hyperparameterSetItem.name}
+      rootStyles={rootStyles}
+      valueStyles={valueStyles}
+    >
+      <span>
         (Start=
         <HyperparameterValue value={hyperparameterSetItem.intervalBegin} />,
         End=

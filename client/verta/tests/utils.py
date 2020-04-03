@@ -129,8 +129,3 @@ def delete_repository(id_, conn):
     request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(conn.scheme, conn.socket, id_)
     response = requests.delete(request_url, headers=conn.auth)
     response.raise_for_status()
-
-def delete_commit(repo_id, id_, conn):
-    request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}".format(conn.scheme, conn.socket, repo_id, id_)
-    response = requests.delete(request_url, headers=conn.auth)
-    response.raise_for_status()

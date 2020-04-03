@@ -1,54 +1,57 @@
 import * as React from 'react';
 
-import {
-  IPythonEnvironmentBlob,
-  versionEnvironmentToString,
-} from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
+import { IPythonEnvironmentBlob } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import PythonVersion from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonVersion/PythonVersion';
-import {
-  PageHeader,
-  RecordInfo,
-} from 'core/shared/view/elements/PageComponents';
+import PythonRequirementEnvironment from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
 
 import styles from './PythonEnvironmentBlobView.module.css';
-import PythonRequirementEnvironment from 'core/shared/view/domain/Versioning/Blob/EnvironmentBlob/PythonBlob/PythonRequirementEnvironment/PythonRequirementEnvironment';
+import makePropertiesTableComponents from 'core/shared/view/domain/Versioning/Blob/PropertiesTable/PropertiesTable';
+import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 interface ILocalProps {
   blob: IPythonEnvironmentBlob;
 }
 
+const tableComponents = makePropertiesTableComponents<
+  IPythonEnvironmentBlob['data']
+>();
+
 const PythonEnvironmentBlobView = ({ blob: { data } }: ILocalProps) => {
   return (
-    <div className={styles.root}>
-      <PageHeader title="Python details" size="small" withoutSeparator={true} />
+    <BlobDataBox title="Python details">
       <div className={styles.content}>
-        {data.pythonVersion && (
-          <RecordInfo label="Python">
-            <PythonVersion pythonVersion={data.pythonVersion} />
-          </RecordInfo>
-        )}
-        {data.requirements && (
-          <RecordInfo label="Requirements">
-            {data.requirements.map((c, i) => (
-              <PythonRequirementEnvironment
-                pythonRequirementEnvironment={c}
-                key={i}
-              />
-            ))}
-          </RecordInfo>
-        )}
-        {data.constraints && (
-          <RecordInfo label="Constaints">
-            {data.constraints.map((c, i) => (
-              <PythonRequirementEnvironment
-                pythonRequirementEnvironment={c}
-                key={i}
-              />
-            ))}
-          </RecordInfo>
-        )}
+        <tableComponents.Table data={data}>
+          <tableComponents.PropDefinition
+            title="Python"
+            render={({ data: { pythonVersion } }) =>
+              pythonVersion && <PythonVersion pythonVersion={pythonVersion} />
+            }
+          />
+          <tableComponents.PropDefinition
+            title="Requirements"
+            render={({ data: { requirements } }) =>
+              (requirements || []).map((c, i) => (
+                <PythonRequirementEnvironment
+                  pythonRequirementEnvironment={c}
+                  key={i}
+                />
+              ))
+            }
+          />
+          <tableComponents.PropDefinition
+            title="Constraints"
+            render={({ data: { constraints } }) =>
+              (constraints || []).map((c, i) => (
+                <PythonRequirementEnvironment
+                  pythonRequirementEnvironment={c}
+                  key={i}
+                />
+              ))
+            }
+          />
+        </tableComponents.Table>
       </div>
-    </div>
+    </BlobDataBox>
   );
 };
 

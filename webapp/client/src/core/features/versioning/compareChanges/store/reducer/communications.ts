@@ -9,4 +9,7 @@ export default combineReducers<ICompareChangesState['communications']>({
   loadingCommitPointersCommits: makeCommunicationReducerFromResetableAsyncAction(
     actions.loadCommitPointersCommits
   ),
+  mergingCommits: makeCommunicationReducerFromResetableAsyncAction(
+    actions.mergeCommits
+  ),
 });

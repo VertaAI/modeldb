@@ -30,10 +30,11 @@ public interface ExperimentRunDAO {
    * Insert ExperimentRun entity in database.
    *
    * @param ExperimentRun experimentRun
+   * @param userInfo
    * @return ExperimentRun insertedExperimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun insertExperimentRun(ExperimentRun experimentRun)
+  ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException;
 
   /**
@@ -472,6 +473,8 @@ public interface ExperimentRunDAO {
 
   LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
       throws InvalidProtocolBufferException, ModelDBException;
+
+  void deleteLogVersionedInputs(Session session, Long repoId, String commitHash);
 
   GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException;

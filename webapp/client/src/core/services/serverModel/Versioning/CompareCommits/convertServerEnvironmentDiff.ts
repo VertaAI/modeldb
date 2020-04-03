@@ -1,6 +1,8 @@
 import {
   DiffType,
   ComparedCommitType,
+  IElementDiff,
+  elementDiffMakers,
 } from 'core/shared/models/Versioning/Blob/Diff';
 import {
   IEnvironmentBlobDiff,
@@ -12,57 +14,41 @@ import {
   IPythonEnvironmentBlob,
 } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
 import { convertServerDockerBlob } from '../RepositoryData/Blob/EnviromentBlob';
-import { IServerBlobDiff, IServerElementDiff } from './ServerDiff';
-import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+import {
+  IServerBlobDiff,
+  IServerElementDiff,
+  convertServerBlobDiffToClient,
+} from './ServerDiff';
+import matchType from 'core/shared/utils/matchType';
 
 export const convertServerEnvironmentDiff = (
-  serverConfigDiff: IServerEnvironmentDiff,
-  diffType: DiffType
+  serverConfigDiff: IServerEnvironmentDiff
 ): IEnvironmentBlobDiff => {
-  const { environment } = serverConfigDiff;
-  switch (serverConfigDiff.status) {
-    case 'ADDED': {
-      return {
-        category: 'environment',
-        type: 'environment',
-        diffType: 'added',
-        location: serverConfigDiff.location as DataLocation,
-        data: {
-          diffType: 'added',
-          B: convertToDiffBlobData('B', environment),
-        },
-      };
-    }
-    case 'DELETED': {
-      return {
-        category: 'environment',
-        type: 'environment',
-        diffType: 'deleted',
-        location: serverConfigDiff.location as DataLocation,
-        data: {
-          diffType: 'deleted',
-          A: convertToDiffBlobData('A', environment),
-        },
-      };
-    }
-
-    case 'MODIFIED': {
-      return {
-        category: 'environment',
-        type: 'environment',
-        diffType: 'updated',
-        location: serverConfigDiff.location as DataLocation,
-        data: {
-          diffType: 'updated',
-          A: convertToDiffBlobData('A', environment),
-          B: convertToDiffBlobData('B', environment),
-        },
-      };
-    }
-
-    default:
-      throw new Error('is not handled!');
-  }
+  return convertServerBlobDiffToClient(
+    {
+      convertData: ({ environment }, { diffType }) => {
+        return matchType<DiffType, IElementDiff<IEnvironmentBlobDataDiff>>(
+          {
+            added: () =>
+              elementDiffMakers.added(convertToDiffBlobData('B', environment)),
+            deleted: () =>
+              elementDiffMakers.deleted(
+                convertToDiffBlobData('A', environment)
+              ),
+            modified: () =>
+              elementDiffMakers.modified(
+                convertToDiffBlobData('A', environment),
+                convertToDiffBlobData('B', environment)
+              ),
+          },
+          diffType
+        );
+      },
+      category: 'environment',
+      type: 'environment',
+    },
+    serverConfigDiff
+  );
 };
 
 const convertToDiffBlobData = (

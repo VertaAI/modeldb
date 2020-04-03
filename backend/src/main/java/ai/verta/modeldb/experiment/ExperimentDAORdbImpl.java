@@ -10,6 +10,8 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -20,6 +22,9 @@ import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.ModelResourceEnum;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -54,6 +59,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentDAORdbImpl.class.getName());
   private final AuthService authService;
+  private final RoleService roleService;
 
   private static final String UPDATE_PARENT_TIMESTAMP_QUERY =
       new StringBuilder("UPDATE ProjectEntity p SET p.")
@@ -136,8 +142,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           .append(" IN (:experimentIds) ")
           .toString();
 
-  public ExperimentDAORdbImpl(AuthService authService) {
+  public ExperimentDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
+    this.roleService = roleService;
   }
 
   private void updateParentEntitiesTimestamp(
@@ -194,11 +201,20 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   @Override
-  public Experiment insertExperiment(Experiment experiment) throws InvalidProtocolBufferException {
+  public Experiment insertExperiment(Experiment experiment, UserInfo userInfo)
+      throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experiment, true);
       Transaction transaction = session.beginTransaction();
       session.save(RdbmsUtils.generateExperimentEntity(experiment));
+
+      Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
+      roleService.createRoleBinding(
+          ownerRole,
+          new CollaboratorUser(authService, userInfo),
+          experiment.getId(),
+          ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
+
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
           session,
@@ -501,6 +517,17 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
         experimentRunIds.add(experimentRunEntity.getId());
         session.delete(experimentRunEntity);
+
+        String ownerRoleBindingName =
+            roleService.buildRoleBindingName(
+                ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
+                experimentRunEntity.getId(),
+                experimentRunEntity.getOwner(),
+                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
+        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
+        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+          roleService.deleteRoleBinding(roleBinding.getId());
+        }
       }
       // Delete the ExperimentRUn comments
       if (!experimentRunIds.isEmpty()) {
@@ -512,6 +539,17 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
         projectIds.add(experimentObj.getProject_id());
         session.delete(experimentObj);
+
+        String ownerRoleBindingName =
+            roleService.buildRoleBindingName(
+                ModelDBConstants.ROLE_EXPERIMENT_OWNER,
+                experimentObj.getId(),
+                experimentObj.getOwner(),
+                ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
+        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
+        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
+          roleService.deleteRoleBinding(roleBinding.getId());
+        }
       }
 
       // Update parent entity timestamp

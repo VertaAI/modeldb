@@ -225,24 +225,25 @@ class Client(object):
             return self.expt.expt_runs
 
     def _get_personal_workspace(self):
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
-            self._conn, params={'email': self._conn.auth['Grpc-Metadata-email']},
-        )
+        if self._conn.auth is not None:
+            response = _utils.make_request(
+                "GET",
+                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
+                self._conn, params={'email': self._conn.auth['Grpc-Metadata-email']},
+            )
 
-        if response.ok:
-            try:
-                response_json = response.json()
-            except ValueError:  # not JSON response
-                pass
+            if response.ok:
+                try:
+                    response_json = response.json()
+                except ValueError:  # not JSON response
+                    pass
+                else:
+                    return response_json['verta_info']['username']
             else:
-                return response_json['verta_info']['username']
-        else:
-            if response.status_code == 404:  # UAC not found
-                pass
-            else:
-                _utils.raise_for_http_error(response)
+                if response.status_code == 404:  # UAC not found
+                    pass
+                else:
+                    _utils.raise_for_http_error(response)
         return _OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
