@@ -43,6 +43,13 @@ def commit(message, all, amend):
 
 
 @click.command()
+@click.argument('tag')
+def tag(tag):
+    """Tag the head commit."""
+    click.echo("tagging head commit as {}".format(tag))
+
+
+@click.command()
 def status():
     """Show staged changes, unstaged changes, and untracked blobs."""
     click.echo("these blobs have changed")
@@ -51,5 +58,5 @@ def status():
 @click.command()
 @click.argument('blob', type=click.Path(exists=True))  # TODO: make optional, to diff all blobs
 def diff(blob):
-    """Show changes in a blob from the current commit."""
+    """Show changes in a blob from the head commit."""
     click.echo("{} has changed in this way".format(blob))
