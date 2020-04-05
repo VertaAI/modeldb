@@ -293,8 +293,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           break;
       }
     }
-    roleService.deleteWorkspaceRoleBindings(workspaceId, workspaceType, datasetId,
-        ModelDBConstants.ROLE_DATASET_ADMIN, ModelDBServiceResourceTypes.DATASET);
+    roleService.deleteWorkspaceRoleBindings(
+        workspaceId,
+        workspaceType,
+        datasetId,
+        ModelDBConstants.ROLE_DATASET_ADMIN,
+        ModelDBServiceResourceTypes.DATASET);
   }
 
   public void deleteDatasetVersionsByDatasetIDs(Session session, List<String> datasetIds) {

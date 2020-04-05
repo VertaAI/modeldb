@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenEnvironmentVariablesBlob implements ProtoType {
   private String Name;
@@ -50,17 +54,15 @@ public class AutogenEnvironmentVariablesBlob implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenEnvironmentVariablesBlob");
-    if (this.Name != null && !this.Name.equals("")) {
-      sb.append("::Name::").append(Name);
-    }
-    if (this.Value != null && !this.Value.equals("")) {
-      sb.append("::Value::").append(Value);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -88,11 +90,6 @@ public class AutogenEnvironmentVariablesBlob implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.Name, this.Value);
   }
 
   public AutogenEnvironmentVariablesBlob setName(String value) {
