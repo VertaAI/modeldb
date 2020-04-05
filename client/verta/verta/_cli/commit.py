@@ -43,10 +43,15 @@ def commit(message, all, amend):
 
 
 @click.command()
+@click.option('-d', '--delete', is_flag=True, help="Delete TAG.")
 @click.argument('tag')
-def tag(tag):
+def tag(delete, tag):
     """Tag the head commit."""
-    click.echo("tagging head commit as {}".format(tag))
+    if delete:
+        msg = "deleting tag {}".format(tag)
+    else:
+        msg = "tagging head commit as {}".format(tag)
+    click.echo(msg)
 
 
 @click.command()
