@@ -663,9 +663,11 @@ new HashMap<String, Map.Entry<BlobExpanded, String>>();
                 .setMessage(mergeMessage)
                 .setCommitSha(commitSha)
                 .build();
+        RepositoryEntity repositoryEntity =	              
+                repositoryDAO.getRepositoryById(writeSession, request.getRepositoryId());
         CommitEntity commitEntity =
             new CommitEntity(
-                repositoryFunction.apply(writeSession), parentCommits, internalCommit, rootSha);
+            		repositoryEntity, parentCommits, internalCommit, rootSha);
         writeSession.saveOrUpdate(commitEntity);
         writeSession.getTransaction().commit();
         return MergeRepositoryCommitsRequest.Response.newBuilder()
