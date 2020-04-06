@@ -15,10 +15,8 @@ import ai.verta.swagger._public.uac.model.ServiceEnumService._
 import ai.verta.swagger.client.objects._
 
 case class UacResources (
-  authz_service_resource_type: Option[AuthzResourceEnumAuthzServiceResourceTypes] = None,
-  modeldb_service_resource_type: Option[ModelResourceEnumModelDBServiceResourceTypes] = None,
   resource_ids: Option[List[String]] = None,
-  role_service_resource_type: Option[RoleResourceEnumRoleServiceResourceTypes] = None,
+  resource_type: Option[UacResourceType] = None,
   service: Option[ServiceEnumService] = None
 ) extends BaseSwagger {
   def toJson(): JValue = UacResources.toJson(this)
@@ -28,10 +26,8 @@ object UacResources {
   def toJson(obj: UacResources): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.authz_service_resource_type.map(x => JField("authz_service_resource_type", ((x: AuthzResourceEnumAuthzServiceResourceTypes) => AuthzResourceEnumAuthzServiceResourceTypes.toJson(x))(x))),
-        obj.modeldb_service_resource_type.map(x => JField("modeldb_service_resource_type", ((x: ModelResourceEnumModelDBServiceResourceTypes) => ModelResourceEnumModelDBServiceResourceTypes.toJson(x))(x))),
         obj.resource_ids.map(x => JField("resource_ids", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.role_service_resource_type.map(x => JField("role_service_resource_type", ((x: RoleResourceEnumRoleServiceResourceTypes) => RoleResourceEnumRoleServiceResourceTypes.toJson(x))(x))),
+        obj.resource_type.map(x => JField("resource_type", ((x: UacResourceType) => UacResourceType.toJson(x))(x))),
         obj.service.map(x => JField("service", ((x: ServiceEnumService) => ServiceEnumService.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -46,10 +42,8 @@ object UacResources {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         UacResources(
           // TODO: handle required
-          authz_service_resource_type = fieldsMap.get("authz_service_resource_type").map(AuthzResourceEnumAuthzServiceResourceTypes.fromJson),
-          modeldb_service_resource_type = fieldsMap.get("modeldb_service_resource_type").map(ModelResourceEnumModelDBServiceResourceTypes.fromJson),
           resource_ids = fieldsMap.get("resource_ids").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          role_service_resource_type = fieldsMap.get("role_service_resource_type").map(RoleResourceEnumRoleServiceResourceTypes.fromJson),
+          resource_type = fieldsMap.get("resource_type").map(UacResourceType.fromJson),
           service = fieldsMap.get("service").map(ServiceEnumService.fromJson)
         )
       }

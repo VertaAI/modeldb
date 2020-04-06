@@ -1529,8 +1529,8 @@ _COMPUTEREPOSITORYDIFFREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5131,
-  serialized_end=5195,
+  serialized_start=5167,
+  serialized_end=5231,
 )
 
 _COMPUTEREPOSITORYDIFFREQUEST = _descriptor.Descriptor(
@@ -1575,6 +1575,20 @@ _COMPUTEREPOSITORYDIFFREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='branch_a', full_name='ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest.branch_a', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='branch_b', full_name='ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest.branch_b', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -1588,7 +1602,7 @@ _COMPUTEREPOSITORYDIFFREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=4920,
-  serialized_end=5195,
+  serialized_end=5231,
 )
 
 
@@ -1669,8 +1683,8 @@ _LISTCOMMITSLOGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5198,
-  serialized_end=5424,
+  serialized_start=5234,
+  serialized_end=5460,
 )
 
 
@@ -1707,8 +1721,8 @@ _LISTBRANCHESREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5528,
-  serialized_end=5579,
+  serialized_start=5564,
+  serialized_end=5615,
 )
 
 _LISTBRANCHESREQUEST = _descriptor.Descriptor(
@@ -1737,8 +1751,8 @@ _LISTBRANCHESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5427,
-  serialized_end=5579,
+  serialized_start=5463,
+  serialized_end=5615,
 )
 
 
@@ -1805,8 +1819,8 @@ _GETBRANCHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5582,
-  serialized_end=5759,
+  serialized_start=5618,
+  serialized_end=5795,
 )
 
 
@@ -1873,8 +1887,8 @@ _SETBRANCHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5762,
-  serialized_end=5906,
+  serialized_start=5798,
+  serialized_end=5942,
 )
 
 
@@ -1934,8 +1948,8 @@ _DELETEBRANCHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5908,
-  serialized_end=6035,
+  serialized_start=5944,
+  serialized_end=6071,
 )
 
 
@@ -1972,8 +1986,8 @@ _LISTTAGSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6135,
-  serialized_end=6182,
+  serialized_start=6171,
+  serialized_end=6218,
 )
 
 _LISTTAGSREQUEST = _descriptor.Descriptor(
@@ -2002,8 +2016,8 @@ _LISTTAGSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6038,
-  serialized_end=6182,
+  serialized_start=6074,
+  serialized_end=6218,
 )
 
 
@@ -2070,8 +2084,8 @@ _GETTAGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6185,
-  serialized_end=6356,
+  serialized_start=6221,
+  serialized_end=6392,
 )
 
 
@@ -2138,8 +2152,8 @@ _SETTAGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6359,
-  serialized_end=6497,
+  serialized_start=6395,
+  serialized_end=6533,
 )
 
 
@@ -2199,8 +2213,8 @@ _DELETETAGREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6499,
-  serialized_end=6620,
+  serialized_start=6535,
+  serialized_end=6656,
 )
 
 
@@ -2280,6 +2294,20 @@ _MERGEREPOSITORYCOMMITSREQUEST = _descriptor.Descriptor(
       name='content', full_name='ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest.content', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='branch_a', full_name='ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest.branch_a', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='branch_b', full_name='ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest.branch_b', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),

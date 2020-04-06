@@ -94,18 +94,22 @@ message ModelResourceEnum {
     }
 };
 
+message ResourceType {
+	oneof resource {
+    // Separate based on the service itself
+        RoleResourceEnum.RoleServiceResourceTypes role_service_resource_type = 1;
+        AuthzResourceEnum.AuthzServiceResourceTypes authz_service_resource_type = 2;
+        ModelResourceEnum.ModelDBServiceResourceTypes modeldb_service_resource_type = 3;
+    };
+}
+
 // A resource describes a specific object in a service that can receive an action
 message Resources {
     ServiceEnum.Service service = 1;
     // Internal ID for the resource in the service, whose meaning doesn't matter for other services
     // This is optional. If empty, means all resources
     repeated string resource_ids = 2;
-    oneof resource {
-    // Separate based on the service itself
-        RoleResourceEnum.RoleServiceResourceTypes role_service_resource_type = 3;
-        AuthzResourceEnum.AuthzServiceResourceTypes authz_service_resource_type = 4;
-        ModelResourceEnum.ModelDBServiceResourceTypes modeldb_service_resource_type = 5;
-    };
+    ResourceType resource_type = 6;
 };
 
 // Roles can be scoped by organization/team or global

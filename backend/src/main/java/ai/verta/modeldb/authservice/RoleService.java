@@ -1,5 +1,6 @@
 package ai.verta.modeldb.authservice;
 
+import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.Actions;
@@ -136,4 +137,6 @@ public interface RoleService {
   WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
   List<Organization> listMyOrganizations();
+
+  void deleteWorkspaceRoleBindings(String workspace_id, WorkspaceType forNumber, String valueOf, String roleRepositoryAdmin, ModelDBServiceResourceTypes repository);
 }

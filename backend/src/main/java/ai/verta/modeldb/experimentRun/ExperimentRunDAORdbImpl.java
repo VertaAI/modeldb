@@ -257,8 +257,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       errorMessage = "Repository Id not found in VersioningEntry";
     } else if (versioningEntry.getCommit().isEmpty()) {
       errorMessage = "Commit hash not found in VersioningEntry";
-    } else if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
-      errorMessage = "Location map should not be empty in VersioningEntry";
     }
 
     if (errorMessage != null) {
@@ -271,15 +269,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             session,
             versioningEntry.getCommit(),
             (session1) -> repositoryDAO.getRepositoryById(session, repositoryIdentification));
-    Map<String, BlobExpanded> locationBlobMap =
-        blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
-    for (Map.Entry<String, Location> locationBlobKeyMap :
-        versioningEntry.getKeyLocationMapMap().entrySet()) {
-      if (!locationBlobMap.containsKey(
-          String.join("#", locationBlobKeyMap.getValue().getLocationList()))) {
-        throw new ModelDBException(
-            "Location list for key '" + locationBlobKeyMap.getKey() + "' not found in commit blobs",
-            io.grpc.Status.Code.INVALID_ARGUMENT);
+    if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
+      Map<String, BlobExpanded> locationBlobMap =
+          blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
+      for (Map.Entry<String, Location> locationBlobKeyMap :
+          versioningEntry.getKeyLocationMapMap().entrySet()) {
+        if (!locationBlobMap.containsKey(
+            String.join("#", locationBlobKeyMap.getValue().getLocationList()))) {
+          throw new ModelDBException(
+              "Location list for key '"
+                  + locationBlobKeyMap.getKey()
+                  + "' not found in commit blobs",
+              io.grpc.Status.Code.INVALID_ARGUMENT);
+        }
       }
     }
   }

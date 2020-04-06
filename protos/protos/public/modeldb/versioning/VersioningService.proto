@@ -278,6 +278,10 @@ message ComputeRepositoryDiffRequest {
     //Replace commit_a with the nearest common ancestor of commit_a and commit_b
     bool replace_a_with_common_ancestor = 5;
 
+    //for a or b only one of commit or branch should be populated
+    string branch_a = 6;
+    string branch_b =7;
+
     message Response {
         repeated BlobDiff diffs = 1;
     }
@@ -381,6 +385,11 @@ message MergeRepositoryCommitsRequest {
     Commit content = 4;
     //repeated BlobExpanded conflict_resolution_blobs = 5; // Set of blobs that must resolve any conflict encountered
     //bool force_manual_conflict_resolution = 6;
+
+    //for a or b only one of commit or branch should be populated
+    string branch_a = 5;
+    string branch_b =6;
+
 
     message Response {
         Commit commit = 1;

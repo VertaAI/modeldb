@@ -10,13 +10,15 @@ import ai.verta.swagger.client.objects._
 import ai.verta.swagger._public.modeldb.versioning.model._
 
 class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
-  def ComputeRepositoryDiffAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, repository_id_repo_id: , commit_a: String, commit_b: String, location_prefix: List[String], replace_a_with_common_ancestor: Boolean)(implicit ec: ExecutionContext): Future[Try[VersioningComputeRepositoryDiffRequestResponse]] = {
+  def ComputeRepositoryDiffAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, repository_id_repo_id: , commit_a: String, commit_b: String, location_prefix: List[String], replace_a_with_common_ancestor: Boolean, branch_a: String, branch_b: String)(implicit ec: ExecutionContext): Future[Try[VersioningComputeRepositoryDiffRequestResponse]] = {
     val __query = Map[String,String](
       "repository_id.repo_id" -> client.toQuery(repository_id_repo_id),
       "commit_a" -> client.toQuery(commit_a),
       "commit_b" -> client.toQuery(commit_b),
       "location_prefix" -> client.toQuery(location_prefix),
-      "replace_a_with_common_ancestor" -> client.toQuery(replace_a_with_common_ancestor)
+      "replace_a_with_common_ancestor" -> client.toQuery(replace_a_with_common_ancestor),
+      "branch_a" -> client.toQuery(branch_a),
+      "branch_b" -> client.toQuery(branch_b)
     )
     if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
     if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
@@ -24,23 +26,25 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
     return client.request[String, VersioningComputeRepositoryDiffRequestResponse]("GET", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/diff", __query, body, VersioningComputeRepositoryDiffRequestResponse.fromJson)
   }
 
-  def ComputeRepositoryDiff(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, repository_id_repo_id: , commit_a: String, commit_b: String, location_prefix: List[String], replace_a_with_common_ancestor: Boolean)(implicit ec: ExecutionContext): Try[VersioningComputeRepositoryDiffRequestResponse] = Await.result(ComputeRepositoryDiffAsync(repository_id_named_id_workspace_name, repository_id_named_id_name, repository_id_repo_id, commit_a, commit_b, location_prefix, replace_a_with_common_ancestor), Duration.Inf)
+  def ComputeRepositoryDiff(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, repository_id_repo_id: , commit_a: String, commit_b: String, location_prefix: List[String], replace_a_with_common_ancestor: Boolean, branch_a: String, branch_b: String)(implicit ec: ExecutionContext): Try[VersioningComputeRepositoryDiffRequestResponse] = Await.result(ComputeRepositoryDiffAsync(repository_id_named_id_workspace_name, repository_id_named_id_name, repository_id_repo_id, commit_a, commit_b, location_prefix, replace_a_with_common_ancestor, branch_a, branch_b), Duration.Inf)
 
-  def ComputeRepositoryDiff2Async(repository_id_repo_id: , repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, commit_a: String, commit_b: String, location_prefix: List[String], replace_a_with_common_ancestor: Boolean)(implicit ec: ExecutionContext): Future[Try[VersioningComputeRepositoryDiffRequestResponse]] = {
+  def ComputeRepositoryDiff2Async(repository_id_repo_id: , repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, commit_a: String, commit_b: String, location_prefix: List[String], replace_a_with_common_ancestor: Boolean, branch_a: String, branch_b: String)(implicit ec: ExecutionContext): Future[Try[VersioningComputeRepositoryDiffRequestResponse]] = {
     val __query = Map[String,String](
       "repository_id.named_id.name" -> client.toQuery(repository_id_named_id_name),
       "repository_id.named_id.workspace_name" -> client.toQuery(repository_id_named_id_workspace_name),
       "commit_a" -> client.toQuery(commit_a),
       "commit_b" -> client.toQuery(commit_b),
       "location_prefix" -> client.toQuery(location_prefix),
-      "replace_a_with_common_ancestor" -> client.toQuery(replace_a_with_common_ancestor)
+      "replace_a_with_common_ancestor" -> client.toQuery(replace_a_with_common_ancestor),
+      "branch_a" -> client.toQuery(branch_a),
+      "branch_b" -> client.toQuery(branch_b)
     )
     if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
     val body: String = null
     return client.request[String, VersioningComputeRepositoryDiffRequestResponse]("GET", basePath + s"/versioning/repositories/$repository_id_repo_id/diff", __query, body, VersioningComputeRepositoryDiffRequestResponse.fromJson)
   }
 
-  def ComputeRepositoryDiff2(repository_id_repo_id: , repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, commit_a: String, commit_b: String, location_prefix: List[String], replace_a_with_common_ancestor: Boolean)(implicit ec: ExecutionContext): Try[VersioningComputeRepositoryDiffRequestResponse] = Await.result(ComputeRepositoryDiff2Async(repository_id_repo_id, repository_id_named_id_name, repository_id_named_id_workspace_name, commit_a, commit_b, location_prefix, replace_a_with_common_ancestor), Duration.Inf)
+  def ComputeRepositoryDiff2(repository_id_repo_id: , repository_id_named_id_name: String, repository_id_named_id_workspace_name: String, commit_a: String, commit_b: String, location_prefix: List[String], replace_a_with_common_ancestor: Boolean, branch_a: String, branch_b: String)(implicit ec: ExecutionContext): Try[VersioningComputeRepositoryDiffRequestResponse] = Await.result(ComputeRepositoryDiff2Async(repository_id_repo_id, repository_id_named_id_name, repository_id_named_id_workspace_name, commit_a, commit_b, location_prefix, replace_a_with_common_ancestor, branch_a, branch_b), Duration.Inf)
 
   def CreateCommitAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, body: VersioningCreateCommitRequest)(implicit ec: ExecutionContext): Future[Try[VersioningCreateCommitRequestResponse]] = {
     val __query = Map[String,String](

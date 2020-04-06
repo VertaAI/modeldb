@@ -6,13 +6,14 @@ package versioning
 import (
 	context "context"
 	fmt "fmt"
+	math "math"
+
 	modeldb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	proto "github.com/golang/protobuf/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -2020,10 +2021,13 @@ type ComputeRepositoryDiffRequest struct {
 	// This will be used to limit the search to scope just this location, like `git log /my/path` would do
 	LocationPrefix []string `protobuf:"bytes,4,rep,name=location_prefix,json=locationPrefix,proto3" json:"location_prefix,omitempty"`
 	//Replace commit_a with the nearest common ancestor of commit_a and commit_b
-	ReplaceAWithCommonAncestor bool     `protobuf:"varint,5,opt,name=replace_a_with_common_ancestor,json=replaceAWithCommonAncestor,proto3" json:"replace_a_with_common_ancestor,omitempty"`
-	XXX_NoUnkeyedLiteral       struct{} `json:"-"`
-	XXX_unrecognized           []byte   `json:"-"`
-	XXX_sizecache              int32    `json:"-"`
+	ReplaceAWithCommonAncestor bool `protobuf:"varint,5,opt,name=replace_a_with_common_ancestor,json=replaceAWithCommonAncestor,proto3" json:"replace_a_with_common_ancestor,omitempty"`
+	//for a or b only one of commit or branch should be populated
+	BranchA              string   `protobuf:"bytes,6,opt,name=branch_a,json=branchA,proto3" json:"branch_a,omitempty"`
+	BranchB              string   `protobuf:"bytes,7,opt,name=branch_b,json=branchB,proto3" json:"branch_b,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *ComputeRepositoryDiffRequest) Reset()         { *m = ComputeRepositoryDiffRequest{} }
@@ -2084,6 +2088,20 @@ func (m *ComputeRepositoryDiffRequest) GetReplaceAWithCommonAncestor() bool {
 		return m.ReplaceAWithCommonAncestor
 	}
 	return false
+}
+
+func (m *ComputeRepositoryDiffRequest) GetBranchA() string {
+	if m != nil {
+		return m.BranchA
+	}
+	return ""
+}
+
+func (m *ComputeRepositoryDiffRequest) GetBranchB() string {
+	if m != nil {
+		return m.BranchB
+	}
+	return ""
 }
 
 type ComputeRepositoryDiffRequest_Response struct {
@@ -2905,13 +2923,16 @@ func (m *DeleteTagRequest_Response) XXX_DiscardUnknown() {
 var xxx_messageInfo_DeleteTagRequest_Response proto.InternalMessageInfo
 
 type MergeRepositoryCommitsRequest struct {
-	RepositoryId         *RepositoryIdentification `protobuf:"bytes,1,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
-	CommitShaA           string                    `protobuf:"bytes,2,opt,name=commit_sha_a,json=commitShaA,proto3" json:"commit_sha_a,omitempty"`
-	CommitShaB           string                    `protobuf:"bytes,3,opt,name=commit_sha_b,json=commitShaB,proto3" json:"commit_sha_b,omitempty"`
-	Content              *Commit                   `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
-	XXX_unrecognized     []byte                    `json:"-"`
-	XXX_sizecache        int32                     `json:"-"`
+	RepositoryId *RepositoryIdentification `protobuf:"bytes,1,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
+	CommitShaA   string                    `protobuf:"bytes,2,opt,name=commit_sha_a,json=commitShaA,proto3" json:"commit_sha_a,omitempty"`
+	CommitShaB   string                    `protobuf:"bytes,3,opt,name=commit_sha_b,json=commitShaB,proto3" json:"commit_sha_b,omitempty"`
+	Content      *Commit                   `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
+	//for a or b only one of commit or branch should be populated
+	BranchA              string   `protobuf:"bytes,5,opt,name=branch_a,json=branchA,proto3" json:"branch_a,omitempty"`
+	BranchB              string   `protobuf:"bytes,6,opt,name=branch_b,json=branchB,proto3" json:"branch_b,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *MergeRepositoryCommitsRequest) Reset()         { *m = MergeRepositoryCommitsRequest{} }
@@ -2965,6 +2986,20 @@ func (m *MergeRepositoryCommitsRequest) GetContent() *Commit {
 		return m.Content
 	}
 	return nil
+}
+
+func (m *MergeRepositoryCommitsRequest) GetBranchA() string {
+	if m != nil {
+		return m.BranchA
+	}
+	return ""
+}
+
+func (m *MergeRepositoryCommitsRequest) GetBranchB() string {
+	if m != nil {
+		return m.BranchB
+	}
+	return ""
 }
 
 type MergeRepositoryCommitsRequest_Response struct {

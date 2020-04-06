@@ -14,6 +14,8 @@ import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class VersioningMergeRepositoryCommitsRequest (
+  branch_a: Option[String] = None,
+  branch_b: Option[String] = None,
   commit_sha_a: Option[String] = None,
   commit_sha_b: Option[String] = None,
   content: Option[VersioningCommit] = None,
@@ -26,6 +28,8 @@ object VersioningMergeRepositoryCommitsRequest {
   def toJson(obj: VersioningMergeRepositoryCommitsRequest): JObject = {
     new JObject(
       List[Option[JField]](
+        obj.branch_a.map(x => JField("branch_a", JString(x))),
+        obj.branch_b.map(x => JField("branch_b", JString(x))),
         obj.commit_sha_a.map(x => JField("commit_sha_a", JString(x))),
         obj.commit_sha_b.map(x => JField("commit_sha_b", JString(x))),
         obj.content.map(x => JField("content", ((x: VersioningCommit) => VersioningCommit.toJson(x))(x))),
@@ -43,6 +47,8 @@ object VersioningMergeRepositoryCommitsRequest {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningMergeRepositoryCommitsRequest(
           // TODO: handle required
+          branch_a = fieldsMap.get("branch_a").map(JsonConverter.fromJsonString),
+          branch_b = fieldsMap.get("branch_b").map(JsonConverter.fromJsonString),
           commit_sha_a = fieldsMap.get("commit_sha_a").map(JsonConverter.fromJsonString),
           commit_sha_b = fieldsMap.get("commit_sha_b").map(JsonConverter.fromJsonString),
           content = fieldsMap.get("content").map(VersioningCommit.fromJson),
