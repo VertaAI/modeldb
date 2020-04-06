@@ -244,7 +244,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       String projectId,
       ProjectVisibility projectVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspaceRoleBinding(workspaceId, workspaceType, projectId, ModelDBConstants.ROLE_PROJECT_ADMIN, ModelDBServiceResourceTypes.PROJECT);
+      roleService.createWorkspaceRoleBinding(
+          workspaceId,
+          workspaceType,
+          projectId,
+          ModelDBConstants.ROLE_PROJECT_ADMIN,
+          ModelDBServiceResourceTypes.PROJECT,
+          false,
+          ModelDBConstants.ROLE_PROJECT_READ_ONLY);
       switch (workspaceType) {
         case ORGANIZATION:
           if (projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC)) {
@@ -817,8 +824,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           break;
       }
     }
-    roleService.deleteWorkspaceRoleBindings(workspaceId, workspaceType, projectId,
-        ModelDBConstants.ROLE_PROJECT_ADMIN, ModelDBServiceResourceTypes.PROJECT);
+    roleService.deleteWorkspaceRoleBindings(
+        workspaceId,
+        workspaceType,
+        projectId,
+        ModelDBConstants.ROLE_PROJECT_ADMIN,
+        ModelDBServiceResourceTypes.PROJECT,
+        false,
+        ModelDBConstants.ROLE_DATASET_READ_ONLY);
   }
 
   @Override

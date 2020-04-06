@@ -1144,12 +1144,30 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public void deleteWorkspaceRoleBindings(String workspaceId, WorkspaceType workspaceType,
-      String resourceId, String roleName, ModelDBServiceResourceTypes resourceTypes) {
+  public void deleteWorkspaceRoleBindings(
+      String workspaceId,
+      WorkspaceType workspaceType,
+      String resourceId,
+      String roleName,
+      ModelDBServiceResourceTypes resourceTypes,
+      boolean orgScopedPublic,
+      String roleReadOnly) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       CollaboratorUser collaboratorUser;
       switch (workspaceType) {
         case ORGANIZATION:
+          if (orgScopedPublic) {
+            String orgReadRoleBindingName =
+                buildRoleBindingName(
+                    roleReadOnly,
+                    resourceId,
+                    new CollaboratorOrg(workspaceId),
+                    resourceTypes.name());
+            RoleBinding orgReadRoleBinding = getRoleBindingByName(orgReadRoleBindingName);
+            if (orgReadRoleBinding != null && !orgReadRoleBinding.getId().isEmpty()) {
+              deleteRoleBinding(orgReadRoleBinding.getId());
+            }
+          }
           Organization org = (Organization) getOrgById(workspaceId);
           collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
           break;
@@ -1160,11 +1178,7 @@ public class RoleServiceUtils implements RoleService {
           return;
       }
       String roleBindingName =
-          buildRoleBindingName(
-              roleName,
-              resourceId,
-              collaboratorUser,
-              resourceTypes.name());
+          buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
       RoleBinding roleBinding = getRoleBindingByName(roleBindingName);
       if (roleBinding != null && !roleBinding.getId().isEmpty()) {
         deleteRoleBinding(roleBinding.getId());
@@ -1173,8 +1187,14 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public void createWorkspaceRoleBinding(String workspaceId, WorkspaceType workspaceType,
-      String resourceId, String roleAdminName, ModelDBServiceResourceTypes resourceType) {
+  public void createWorkspaceRoleBinding(
+      String workspaceId,
+      WorkspaceType workspaceType,
+      String resourceId,
+      String roleAdminName,
+      ModelDBServiceResourceTypes resourceType,
+      boolean orgScopedPublic,
+      String roleReadOnlyName) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       Role admin = getRoleByName(roleAdminName, null);
       final CollaboratorUser collaboratorUser;
@@ -1182,6 +1202,14 @@ public class RoleServiceUtils implements RoleService {
         case ORGANIZATION:
           Organization org = (Organization) getOrgById(workspaceId);
           collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
+          if (orgScopedPublic) {
+            Role readOnlyRole = getRoleByName(roleReadOnlyName, null);
+            createRoleBinding(
+                readOnlyRole,
+                new CollaboratorOrg(workspaceId),
+                resourceId,
+                ModelDBServiceResourceTypes.PROJECT);
+          }
           break;
         case USER:
           collaboratorUser = new CollaboratorUser(authService, workspaceId);
@@ -1189,12 +1217,7 @@ public class RoleServiceUtils implements RoleService {
         default:
           return;
       }
-      createRoleBinding(
-          admin,
-          collaboratorUser,
-          resourceId,
-          resourceType);
+      createRoleBinding(admin, collaboratorUser, resourceId, resourceType);
     }
-
   }
 }

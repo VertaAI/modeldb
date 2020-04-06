@@ -49,8 +49,7 @@ public class DatasetContainer extends BlobContainer {
         Map<String, AutogenS3DatasetComponentBlob> componentHashes = new LinkedHashMap<>();
         AutogenS3DatasetBlob autogenS3DatasetBlob = AutogenS3DatasetBlob.fromProto(s3);
         if (autogenS3DatasetBlob != null && autogenS3DatasetBlob.getComponents() != null) {
-          for (AutogenS3DatasetComponentBlob componentBlob :
-              autogenS3DatasetBlob.getComponents()) {
+          for (AutogenS3DatasetComponentBlob componentBlob : autogenS3DatasetBlob.getComponents()) {
             final String componentHash = computeSHA(componentBlob);
             componentHashes.put(componentHash, componentBlob);
           }
@@ -89,8 +88,7 @@ public class DatasetContainer extends BlobContainer {
     Map<String, AutogenPathDatasetComponentBlob> componentHashes = new LinkedHashMap<>();
     AutogenPathDatasetBlob autogenPathDatasetBlob = AutogenPathDatasetBlob.fromProto(path);
     if (autogenPathDatasetBlob != null && autogenPathDatasetBlob.getComponents() != null) {
-      for (AutogenPathDatasetComponentBlob componentBlob :
-          autogenPathDatasetBlob.getComponents()) {
+      for (AutogenPathDatasetComponentBlob componentBlob : autogenPathDatasetBlob.getComponents()) {
         final String componentHash = computeSHA(componentBlob);
         componentHashes.put(componentHash, componentBlob);
       }
