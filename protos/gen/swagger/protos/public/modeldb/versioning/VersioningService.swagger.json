@@ -1006,6 +1006,19 @@
             "required": false,
             "type": "boolean",
             "format": "boolean"
+          },
+          {
+            "name": "branch_a",
+            "description": "for a or b only one of commit or branch should be populated.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "branch_b",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -2239,6 +2252,19 @@
             "required": false,
             "type": "boolean",
             "format": "boolean"
+          },
+          {
+            "name": "branch_a",
+            "description": "for a or b only one of commit or branch should be populated.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "branch_b",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -3525,6 +3551,13 @@
         },
         "content": {
           "$ref": "#/definitions/versioningCommit"
+        },
+        "branch_a": {
+          "type": "string",
+          "title": "for a or b only one of commit or branch should be populated"
+        },
+        "branch_b": {
+          "type": "string"
         }
       }
     },

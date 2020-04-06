@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n%protos/public/uac/Authorization.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a#protos/public/uac/RoleService.proto\"\xa5\x01\n\tIsAllowed\x12(\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.Entities\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12*\n\tresources\x18\x03 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x1a\x1b\n\x08Response\x12\x0f\n\x07\x61llowed\x18\x01 \x01(\x08\"\x9d\x01\n\x12GetAllowedEntities\x12%\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12*\n\tresources\x18\x02 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x1a\x34\n\x08Response\x12(\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.Entities\"\x9e\x01\n\x13GetAllowedResources\x12(\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.Entities\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\x1a\x36\n\x08Response\x12*\n\tresources\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Resources\"\x7f\n\rIsSelfAllowed\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12*\n\tresources\x18\x03 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x1a\x1b\n\x08Response\x12\x0f\n\x07\x61llowed\x18\x01 \x01(\x08\"x\n\x17GetSelfAllowedResources\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\x1a\x36\n\x08Response\x12*\n\tresources\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Resources\"0\n\x07\x41\x63tions\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\xed\x01\n\x1aGetSelfAllowedActionsBatch\x12*\n\tresources\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.Resources\x1a\xa2\x01\n\x08Response\x12O\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32>.ai.verta.uac.GetSelfAllowedActionsBatch.Response.ActionsEntry\x1a\x45\n\x0c\x41\x63tionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.ai.verta.uac.Actions:\x02\x38\x01\x32\xab\t\n\x0c\x41uthzService\x12\x66\n\tisAllowed\x12\x17.ai.verta.uac.IsAllowed\x1a .ai.verta.uac.IsAllowed.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/authz/isAllowed:\x01*\x12\x8a\x01\n\x12getAllowedEntities\x12 .ai.verta.uac.GetAllowedEntities\x1a).ai.verta.uac.GetAllowedEntities.Response\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/authz/getAllowedEntities:\x01*\x12\x8e\x01\n\x13getAllowedResources\x12!.ai.verta.uac.GetAllowedResources\x1a*.ai.verta.uac.GetAllowedResources.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/authz/getAllowedResources:\x01*\x12\x9d\x01\n\x1agetDireclyAllowedResources\x12!.ai.verta.uac.GetAllowedResources\x1a*.ai.verta.uac.GetAllowedResources.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/authz/getDirectlyAllowedResources:\x01*\x12v\n\risSelfAllowed\x12\x1b.ai.verta.uac.IsSelfAllowed\x1a$.ai.verta.uac.IsSelfAllowed.Response\"\"\x82\xd3\xe4\x93\x02\x1c\"\x17/v1/authz/isSelfAllowed:\x01*\x12\x9e\x01\n\x17getSelfAllowedResources\x12%.ai.verta.uac.GetSelfAllowedResources\x1a..ai.verta.uac.GetSelfAllowedResources.Response\",\x82\xd3\xe4\x93\x02&\"!/v1/authz/getSelfAllowedResources:\x01*\x12\xae\x01\n\x1fgetSelfDirectlyAllowedResources\x12%.ai.verta.uac.GetSelfAllowedResources\x1a..ai.verta.uac.GetSelfAllowedResources.Response\"4\x82\xd3\xe4\x93\x02.\")/v1/authz/getSelfDirectlyAllowedResources:\x01*\x12\xaa\x01\n\x1agetSelfAllowedActionsBatch\x12(.ai.verta.uac.GetSelfAllowedActionsBatch\x1a\x31.ai.verta.uac.GetSelfAllowedActionsBatch.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/authz/getSelfAllowedActionsBatch:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n%protos/public/uac/Authorization.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a#protos/public/uac/RoleService.proto\"\xa5\x01\n\tIsAllowed\x12(\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.Entities\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12*\n\tresources\x18\x03 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x1a\x1b\n\x08Response\x12\x0f\n\x07\x61llowed\x18\x01 \x01(\x08\"\x9d\x01\n\x12GetAllowedEntities\x12%\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12*\n\tresources\x18\x02 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x1a\x34\n\x08Response\x12(\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.Entities\"\x85\x02\n\x13GetAllowedResources\x12(\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.Entities\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12\x31\n\rresource_type\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12\x32\n\x07service\x18\x04 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x1a\x36\n\x08Response\x12*\n\tresources\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Resources\"\x7f\n\rIsSelfAllowed\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12*\n\tresources\x18\x03 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x1a\x1b\n\x08Response\x12\x0f\n\x07\x61llowed\x18\x01 \x01(\x08\"\xdf\x01\n\x17GetSelfAllowedResources\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12\x31\n\rresource_type\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12\x32\n\x07service\x18\x04 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x1a\x36\n\x08Response\x12*\n\tresources\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Resources\"0\n\x07\x41\x63tions\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\xed\x01\n\x1aGetSelfAllowedActionsBatch\x12*\n\tresources\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.Resources\x1a\xa2\x01\n\x08Response\x12O\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32>.ai.verta.uac.GetSelfAllowedActionsBatch.Response.ActionsEntry\x1a\x45\n\x0c\x41\x63tionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.ai.verta.uac.Actions:\x02\x38\x01\x32\xab\t\n\x0c\x41uthzService\x12\x66\n\tisAllowed\x12\x17.ai.verta.uac.IsAllowed\x1a .ai.verta.uac.IsAllowed.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/authz/isAllowed:\x01*\x12\x8a\x01\n\x12getAllowedEntities\x12 .ai.verta.uac.GetAllowedEntities\x1a).ai.verta.uac.GetAllowedEntities.Response\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/authz/getAllowedEntities:\x01*\x12\x8e\x01\n\x13getAllowedResources\x12!.ai.verta.uac.GetAllowedResources\x1a*.ai.verta.uac.GetAllowedResources.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/authz/getAllowedResources:\x01*\x12\x9d\x01\n\x1agetDireclyAllowedResources\x12!.ai.verta.uac.GetAllowedResources\x1a*.ai.verta.uac.GetAllowedResources.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/authz/getDirectlyAllowedResources:\x01*\x12v\n\risSelfAllowed\x12\x1b.ai.verta.uac.IsSelfAllowed\x1a$.ai.verta.uac.IsSelfAllowed.Response\"\"\x82\xd3\xe4\x93\x02\x1c\"\x17/v1/authz/isSelfAllowed:\x01*\x12\x9e\x01\n\x17getSelfAllowedResources\x12%.ai.verta.uac.GetSelfAllowedResources\x1a..ai.verta.uac.GetSelfAllowedResources.Response\",\x82\xd3\xe4\x93\x02&\"!/v1/authz/getSelfAllowedResources:\x01*\x12\xae\x01\n\x1fgetSelfDirectlyAllowedResources\x12%.ai.verta.uac.GetSelfAllowedResources\x1a..ai.verta.uac.GetSelfAllowedResources.Response\"4\x82\xd3\xe4\x93\x02.\")/v1/authz/getSelfDirectlyAllowedResources:\x01*\x12\xaa\x01\n\x1agetSelfAllowedActionsBatch\x12(.ai.verta.uac.GetSelfAllowedActionsBatch\x1a\x31.ai.verta.uac.GetSelfAllowedActionsBatch.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/authz/getSelfAllowedActionsBatch:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,protos_dot_public_dot_uac_dot_RoleService__pb2.DESCRIPTOR,])
 
@@ -196,8 +196,8 @@ _GETALLOWEDRESOURCES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=555,
-  serialized_end=609,
+  serialized_start=658,
+  serialized_end=712,
 )
 
 _GETALLOWEDRESOURCES = _descriptor.Descriptor(
@@ -221,6 +221,20 @@ _GETALLOWEDRESOURCES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='resource_type', full_name='ai.verta.uac.GetAllowedResources.resource_type', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='service', full_name='ai.verta.uac.GetAllowedResources.service', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -234,7 +248,7 @@ _GETALLOWEDRESOURCES = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=451,
-  serialized_end=609,
+  serialized_end=712,
 )
 
 
@@ -301,8 +315,8 @@ _ISSELFALLOWED = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=611,
-  serialized_end=738,
+  serialized_start=714,
+  serialized_end=841,
 )
 
 
@@ -332,8 +346,8 @@ _GETSELFALLOWEDRESOURCES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=555,
-  serialized_end=609,
+  serialized_start=658,
+  serialized_end=712,
 )
 
 _GETSELFALLOWEDRESOURCES = _descriptor.Descriptor(
@@ -350,6 +364,20 @@ _GETSELFALLOWEDRESOURCES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='resource_type', full_name='ai.verta.uac.GetSelfAllowedResources.resource_type', index=1,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='service', full_name='ai.verta.uac.GetSelfAllowedResources.service', index=2,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -362,8 +390,8 @@ _GETSELFALLOWEDRESOURCES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=740,
-  serialized_end=860,
+  serialized_start=844,
+  serialized_end=1067,
 )
 
 
@@ -393,8 +421,8 @@ _ACTIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=862,
-  serialized_end=910,
+  serialized_start=1069,
+  serialized_end=1117,
 )
 
 
@@ -431,8 +459,8 @@ _GETSELFALLOWEDACTIONSBATCH_RESPONSE_ACTIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1081,
-  serialized_end=1150,
+  serialized_start=1288,
+  serialized_end=1357,
 )
 
 _GETSELFALLOWEDACTIONSBATCH_RESPONSE = _descriptor.Descriptor(
@@ -461,8 +489,8 @@ _GETSELFALLOWEDACTIONSBATCH_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=988,
-  serialized_end=1150,
+  serialized_start=1195,
+  serialized_end=1357,
 )
 
 _GETSELFALLOWEDACTIONSBATCH = _descriptor.Descriptor(
@@ -491,8 +519,8 @@ _GETSELFALLOWEDACTIONSBATCH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=913,
-  serialized_end=1150,
+  serialized_start=1120,
+  serialized_end=1357,
 )
 
 _ISALLOWED_RESPONSE.containing_type = _ISALLOWED
@@ -507,12 +535,16 @@ _GETALLOWEDRESOURCES_RESPONSE.fields_by_name['resources'].message_type = protos_
 _GETALLOWEDRESOURCES_RESPONSE.containing_type = _GETALLOWEDRESOURCES
 _GETALLOWEDRESOURCES.fields_by_name['entities'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._ENTITIES
 _GETALLOWEDRESOURCES.fields_by_name['actions'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._ACTION
+_GETALLOWEDRESOURCES.fields_by_name['resource_type'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._RESOURCETYPE
+_GETALLOWEDRESOURCES.fields_by_name['service'].enum_type = protos_dot_public_dot_uac_dot_RoleService__pb2._SERVICEENUM_SERVICE
 _ISSELFALLOWED_RESPONSE.containing_type = _ISSELFALLOWED
 _ISSELFALLOWED.fields_by_name['actions'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._ACTION
 _ISSELFALLOWED.fields_by_name['resources'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._RESOURCES
 _GETSELFALLOWEDRESOURCES_RESPONSE.fields_by_name['resources'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._RESOURCES
 _GETSELFALLOWEDRESOURCES_RESPONSE.containing_type = _GETSELFALLOWEDRESOURCES
 _GETSELFALLOWEDRESOURCES.fields_by_name['actions'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._ACTION
+_GETSELFALLOWEDRESOURCES.fields_by_name['resource_type'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._RESOURCETYPE
+_GETSELFALLOWEDRESOURCES.fields_by_name['service'].enum_type = protos_dot_public_dot_uac_dot_RoleService__pb2._SERVICEENUM_SERVICE
 _ACTIONS.fields_by_name['actions'].message_type = protos_dot_public_dot_uac_dot_RoleService__pb2._ACTION
 _GETSELFALLOWEDACTIONSBATCH_RESPONSE_ACTIONSENTRY.fields_by_name['value'].message_type = _ACTIONS
 _GETSELFALLOWEDACTIONSBATCH_RESPONSE_ACTIONSENTRY.containing_type = _GETSELFALLOWEDACTIONSBATCH_RESPONSE
@@ -643,8 +675,8 @@ _AUTHZSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1153,
-  serialized_end=2348,
+  serialized_start=1360,
+  serialized_end=2555,
   methods=[
   _descriptor.MethodDescriptor(
     name='isAllowed',
