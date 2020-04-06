@@ -1,6 +1,7 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.uac.UserInfo;
@@ -36,6 +37,9 @@ public interface RepositoryDAO {
   DeleteTagRequest.Response deleteTag(DeleteTagRequest request) throws ModelDBException;
 
   SetBranchRequest.Response setBranch(SetBranchRequest request) throws ModelDBException;
+
+  BranchEntity getBranchEntity(Session session, Long repoId, String branchName)
+      throws ModelDBException;
 
   GetBranchRequest.Response getBranch(GetBranchRequest request) throws ModelDBException;
 
