@@ -26,6 +26,9 @@ public class AutogenGitCodeDiffGen extends Generator<AutogenGitCodeDiff> {
       obj.setB(Utils.removeEmpty(gen().type(AutogenGitCodeBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
+      obj.setC(Utils.removeEmpty(gen().type(AutogenGitCodeBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       obj.setStatus(
           Utils.removeEmpty(gen().type(AutogenDiffStatusEnumDiffStatus.class).generate(r, status)));
     }
