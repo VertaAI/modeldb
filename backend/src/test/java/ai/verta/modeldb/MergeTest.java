@@ -208,7 +208,7 @@ public class MergeTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
             .setCommit(
                 Commit.newBuilder()
-                    .setMessage("this is the test commit message")
+                    .setMessage("this is the first non init commit")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
                     .addParentShas(getBranchResponse.getCommit().getCommitSha())
                     .build());
@@ -294,7 +294,53 @@ public class MergeTest {
     Assert.assertTrue(mergeReponse2.getCommit().getCommitSha() == "");
     Assert.assertTrue(!mergeReponse2.getConflictsList().isEmpty());
 
-    for (Commit commit : new Commit[] {mergeReponse1.getCommit(), commitB, commitA}) {
+    // Now we apply commit D and commit E on top of commit A , these two commits both modify blobs
+    // in commit A in different ways and should lead to conflict
+
+    createCommitRequestBuilder =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(
+                Commit.newBuilder()
+                    .setMessage("this commit modifies blob in first non init commit")
+                    .setDateCreated(Calendar.getInstance().getTimeInMillis())
+                    .addParentShas(commitA.getCommitSha())
+                    .build());
+
+    LinkedList<BlobExpanded> blobsD = new LinkedList<>();
+    blobsD.add(blobExpandedArray[2]);
+    createCommitRequest = createCommitRequestBuilder.addAllBlobs(blobsD).build();
+    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
+    Commit commitD = commitResponse.getCommit();
+
+    createCommitRequestBuilder =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(
+                Commit.newBuilder()
+                    .setMessage("this commit also modifies blob in first non init commit")
+                    .setDateCreated(Calendar.getInstance().getTimeInMillis())
+                    .addParentShas(commitA.getCommitSha())
+                    .build());
+
+    LinkedList<BlobExpanded> blobsE = new LinkedList<>();
+    blobsE.add(blobExpandedArray[3]);
+    createCommitRequest = createCommitRequestBuilder.addAllBlobs(blobsE).build();
+    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
+    Commit commitE = commitResponse.getCommit();
+    repositoryMergeRequest =
+        MergeRepositoryCommitsRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitShaA(commitD.getCommitSha())
+            .setCommitShaB(commitE.getCommitSha())
+            .build();
+    MergeRepositoryCommitsRequest.Response mergeReponse3 =
+        versioningServiceBlockingStub.mergeRepositoryCommits(repositoryMergeRequest);
+    Assert.assertTrue(mergeReponse3.getCommit().getCommitSha() == "");
+    Assert.assertTrue(!mergeReponse3.getConflictsList().isEmpty());
+
+    for (Commit commit :
+        new Commit[] {commitE, commitD, commitC, mergeReponse1.getCommit(), commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -349,6 +395,12 @@ public class MergeTest {
         .build();
   }
 
+  /**
+   * blob 1 is original blob 2 is completely unrelated blob used for merge to go through blob 3 is
+   * meant to modify blob 1 blob 4 is meant to modify blob 1
+   *
+   * @return
+   */
   private BlobExpanded[] createBlobs(int blobType) {
     final BlobExpanded blobExpanded1, blobExpanded2, blobExpanded3, blobExpanded4, blobExpanded5;
     switch (blobType) {
@@ -372,11 +424,10 @@ public class MergeTest {
                 .addAllLocation(LOCATION1)
                 .build();
 
-        String path4 = "xyz.txt";
         blobExpanded4 =
             BlobExpanded.newBuilder()
-                .setBlob(getDatasetBlobFromPath(path4, 4))
-                .addAllLocation(LOCATION4)
+                .setBlob(getDatasetBlobFromPath(path1, 4))
+                .addAllLocation(LOCATION1)
                 .build();
 
         String path5 = "/protos/proto/public/algebra.txt";
@@ -435,6 +486,22 @@ public class MergeTest {
                                                         .setFloatValue(1.35f))))))
                 .addAllLocation(LOCATION1)
                 .build();
+        blobExpanded4 =
+            BlobExpanded.newBuilder()
+                .setBlob(
+                    Blob.newBuilder()
+                        .setConfig(
+                            ConfigBlob.newBuilder()
+                                .addHyperparameterSet(
+                                    HyperparameterSetConfigBlob.newBuilder()
+                                        .setName("C")
+                                        .setDiscrete(
+                                            DiscreteHyperparameterSetConfigBlob.newBuilder()
+                                                .addValues(
+                                                    HyperparameterValuesConfigBlob.newBuilder()
+                                                        .setFloatValue(1.36f))))))
+                .addAllLocation(LOCATION1)
+                .build();
         break;
       case 2:
         PythonEnvironmentBlob.Builder pythonBuilder =
@@ -480,7 +547,27 @@ public class MergeTest {
                                 .setPatch(1)))
                 .setVersion(
                     VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(4));
-
+        PythonEnvironmentBlob.Builder pythonBuilder3 =
+            PythonEnvironmentBlob.newBuilder()
+                .addRequirements(
+                    PythonRequirementEnvironmentBlob.newBuilder()
+                        .setLibrary("flask")
+                        .setVersion(
+                            VersionEnvironmentBlob.newBuilder()
+                                .setMajor(1)
+                                .setMinor(1)
+                                .setPatch(2)))
+                .addRequirements(
+                    PythonRequirementEnvironmentBlob.newBuilder()
+                        .setLibrary("numpy")
+                        .setConstraint(">=")
+                        .setVersion(
+                            VersionEnvironmentBlob.newBuilder()
+                                .setMajor(1)
+                                .setMinor(19)
+                                .setPatch(1)))
+                .setVersion(
+                    VersionEnvironmentBlob.newBuilder().setMajor(2).setMinor(7).setPatch(4));
         EnvironmentBlob.Builder builder =
             EnvironmentBlob.newBuilder()
                 .addAllCommandLine(Arrays.asList("ECHO 123", "ls ..", "make all"))
@@ -515,10 +602,10 @@ public class MergeTest {
                 .build();
 
         blobExpanded4 =
-            BlobExpanded.newBuilder().setBlob(builderForBlob).addAllLocation(LOCATION4).build();
-
-        blobExpanded5 =
-            BlobExpanded.newBuilder().setBlob(builderForBlob).addAllLocation(LOCATION5).build();
+            BlobExpanded.newBuilder()
+                .setBlob(Blob.newBuilder().setEnvironment(builder.setPython(pythonBuilder2)))
+                .addAllLocation(LOCATION1)
+                .build();
         break;
       default:
         blobExpanded1 =
@@ -557,8 +644,20 @@ public class MergeTest {
                                         .setBranch("feature"))))
                 .addAllLocation(LOCATION1)
                 .build();
+        blobExpanded4 =
+            BlobExpanded.newBuilder()
+                .setBlob(
+                    Blob.newBuilder()
+                        .setCode(
+                            CodeBlob.newBuilder()
+                                .setGit(
+                                    GitCodeBlob.newBuilder()
+                                        .setRepo("https://github.com/VertaAI/modeldb")
+                                        .setBranch("anotherFeature"))))
+                .addAllLocation(LOCATION1)
+                .build();
         break;
     }
-    return new BlobExpanded[] {blobExpanded1, blobExpanded2, blobExpanded3};
+    return new BlobExpanded[] {blobExpanded1, blobExpanded2, blobExpanded3, blobExpanded4};
   }
 }

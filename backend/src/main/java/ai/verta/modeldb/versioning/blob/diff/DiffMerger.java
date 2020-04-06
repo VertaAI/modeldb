@@ -69,15 +69,19 @@ public class DiffMerger {
                       } else if (elStatus.Status == DiffStatusEnum.DiffStatus.MODIFIED) {
                         // TODO: error otherwise
                         if (diffA != null && diffB != null) {
-                          elA.remove(diffA);
-                          // Send the current set of keys colliding in case the merger wants to
-                          // handle in a special way
-                          // The default behavior should be just to replace A with B
-                          if (merger != null) {
-                            F merged = merger.apply(elA, el);
-                            elA.add(merged);
+                          if (!elA.contains(diffA)) { // diff is applied on a state different from A
+                            conflictKeys.add(key);
                           } else {
-                            elA.add(diffB);
+                            elA.remove(diffA);
+                            // Send the current set of keys colliding in case the merger wants to
+                            // handle in a special way
+                            // The default behavior should be just to replace A with B
+                            if (merger != null) {
+                              F merged = merger.apply(elA, el);
+                              elA.add(merged);
+                            } else {
+                              elA.add(diffB);
+                            }
                           }
                         }
                       }
