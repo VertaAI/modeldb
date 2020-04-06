@@ -13,7 +13,6 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.collaborator.CollaboratorServiceImpl;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
@@ -446,11 +445,6 @@ public class App implements ApplicationContextAware {
             datasetDAO,
             datasetVersionDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      serverBuilder.addService(
-          new CollaboratorServiceImpl(authService, roleService, projectDAO, datasetDAO));
-      LOGGER.debug("Collaborator serviceImpl initialized");
-    }
     serverBuilder.addService(
         new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
     LOGGER.trace("Lineage serviceImpl initialized");

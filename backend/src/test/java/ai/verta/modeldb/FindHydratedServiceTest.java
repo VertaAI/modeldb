@@ -126,6 +126,7 @@ public class FindHydratedServiceTest {
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
       uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
+      collaboratorServiceStub = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     }
 
     // Create all service blocking stub
@@ -133,7 +134,6 @@ public class FindHydratedServiceTest {
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
     commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
-    collaboratorServiceStub = CollaboratorServiceGrpc.newBlockingStub(channel);
     hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
 
     // Create all entities

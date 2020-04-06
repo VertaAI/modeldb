@@ -170,7 +170,7 @@ public class HydratedServiceTest {
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -321,7 +321,7 @@ public class HydratedServiceTest {
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -490,7 +490,7 @@ public class HydratedServiceTest {
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -782,7 +782,7 @@ public class HydratedServiceTest {
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -5853,7 +5853,7 @@ public class HydratedServiceTest {
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingClient2Stub =
         HydratedServiceGrpc.newBlockingStub(client2Channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     // Create project
     ProjectTest projectTest = new ProjectTest();

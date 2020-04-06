@@ -19,8 +19,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.uac.Organization;
-import ai.verta.uac.RoleBinding;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
@@ -356,7 +354,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       roleService.deleteWorkspaceRoleBindings(
           repositoryEntity.getWorkspace_id(),
           WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-          String.valueOf(repositoryEntity.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+          String.valueOf(repositoryEntity.getId()),
+          ModelDBConstants.ROLE_REPOSITORY_ADMIN,
           ModelDBServiceResourceTypes.REPOSITORY);
     }
   }

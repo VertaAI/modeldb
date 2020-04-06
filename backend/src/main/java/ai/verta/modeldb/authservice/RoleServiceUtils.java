@@ -1132,8 +1132,12 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public void deleteWorkspaceRoleBindings(String workspaceId, WorkspaceType workspaceType,
-      String resourceId, String roleName, ModelDBServiceResourceTypes resourceTypes) {
+  public void deleteWorkspaceRoleBindings(
+      String workspaceId,
+      WorkspaceType workspaceType,
+      String resourceId,
+      String roleName,
+      ModelDBServiceResourceTypes resourceTypes) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       CollaboratorUser collaboratorUser;
       switch (workspaceType) {
@@ -1148,11 +1152,7 @@ public class RoleServiceUtils implements RoleService {
           return;
       }
       String roleBindingName =
-          buildRoleBindingName(
-              roleName,
-              resourceId,
-              collaboratorUser,
-              resourceTypes.name());
+          buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
       RoleBinding roleBinding = getRoleBindingByName(roleBindingName);
       if (roleBinding != null && !roleBinding.getId().isEmpty()) {
         deleteRoleBinding(roleBinding.getId());
