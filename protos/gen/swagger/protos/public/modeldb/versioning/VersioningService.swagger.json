@@ -2549,6 +2549,15 @@
       ],
       "default": "UNKNOWN"
     },
+    "RepositoryVisibilityEnumRepositoryVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
+    },
     "TernaryEnumTernary": {
       "type": "string",
       "enum": [
@@ -3721,6 +3730,9 @@
         },
         "workspace_type": {
           "$ref": "#/definitions/WorkspaceTypeEnumWorkspaceType"
+        },
+        "repository_visibility": {
+          "$ref": "#/definitions/RepositoryVisibilityEnumRepositoryVisibility"
         },
         "owner": {
           "type": "string"
