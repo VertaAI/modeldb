@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.versioning',
   syntax='proto3',
   serialized_options=b'P\001ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning',
-  serialized_pb=b'\n+protos/public/modeldb/versioning/Code.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a.protos/public/modeldb/versioning/Dataset.proto\x1a,protos/public/modeldb/versioning/Enums.proto\"\x91\x01\n\x08\x43odeBlob\x12\x37\n\x03git\x18\x01 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlobH\x00\x12\x41\n\x08notebook\x18\x02 \x01(\x0b\x32-.ai.verta.modeldb.versioning.NotebookCodeBlobH\x00\x42\t\n\x07\x63ontent\"X\n\x0bGitCodeBlob\x12\x0c\n\x04repo\x18\x01 \x01(\t\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0e\n\x06\x62ranch\x18\x03 \x01(\t\x12\x0b\n\x03tag\x18\x04 \x01(\t\x12\x10\n\x08is_dirty\x18\x05 \x01(\x08\"\x93\x01\n\x10NotebookCodeBlob\x12\x43\n\x04path\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\x12:\n\x08git_repo\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlob\"\x91\x01\n\x08\x43odeDiff\x12\x37\n\x03git\x18\x01 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeDiffH\x00\x12\x41\n\x08notebook\x18\x02 \x01(\x0b\x32-.ai.verta.modeldb.versioning.NotebookCodeDiffH\x00\x42\t\n\x07\x63ontent\"\xbf\x01\n\x0bGitCodeDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x33\n\x01\x41\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlob\x12\x33\n\x01\x42\x18\x03 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlob\"\x93\x01\n\x10NotebookCodeDiff\x12\x43\n\x04path\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentDiff\x12:\n\x08git_repo\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeDiffBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
+  serialized_pb=b'\n+protos/public/modeldb/versioning/Code.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a.protos/public/modeldb/versioning/Dataset.proto\x1a,protos/public/modeldb/versioning/Enums.proto\"\x91\x01\n\x08\x43odeBlob\x12\x37\n\x03git\x18\x01 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlobH\x00\x12\x41\n\x08notebook\x18\x02 \x01(\x0b\x32-.ai.verta.modeldb.versioning.NotebookCodeBlobH\x00\x42\t\n\x07\x63ontent\"X\n\x0bGitCodeBlob\x12\x0c\n\x04repo\x18\x01 \x01(\t\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0e\n\x06\x62ranch\x18\x03 \x01(\t\x12\x0b\n\x03tag\x18\x04 \x01(\t\x12\x10\n\x08is_dirty\x18\x05 \x01(\x08\"\x93\x01\n\x10NotebookCodeBlob\x12\x43\n\x04path\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\x12:\n\x08git_repo\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlob\"\x91\x01\n\x08\x43odeDiff\x12\x37\n\x03git\x18\x01 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeDiffH\x00\x12\x41\n\x08notebook\x18\x02 \x01(\x0b\x32-.ai.verta.modeldb.versioning.NotebookCodeDiffH\x00\x42\t\n\x07\x63ontent\"\xf4\x01\n\x0bGitCodeDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x33\n\x01\x41\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlob\x12\x33\n\x01\x42\x18\x03 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlob\x12\x33\n\x01\x43\x18\x04 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeBlob\"\x93\x01\n\x10NotebookCodeDiff\x12\x43\n\x04path\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentDiff\x12:\n\x08git_repo\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.versioning.GitCodeDiffBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
   ,
   dependencies=[protos_dot_public_dot_modeldb_dot_versioning_dot_Dataset__pb2.DESCRIPTOR,protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2.DESCRIPTOR,])
 
@@ -234,6 +234,13 @@ _GITCODEDIFF = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='C', full_name='ai.verta.modeldb.versioning.GitCodeDiff.C', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -247,7 +254,7 @@ _GITCODEDIFF = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=707,
-  serialized_end=898,
+  serialized_end=951,
 )
 
 
@@ -284,8 +291,8 @@ _NOTEBOOKCODEDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=901,
-  serialized_end=1048,
+  serialized_start=954,
+  serialized_end=1101,
 )
 
 _CODEBLOB.fields_by_name['git'].message_type = _GITCODEBLOB
@@ -309,6 +316,7 @@ _CODEDIFF.fields_by_name['notebook'].containing_oneof = _CODEDIFF.oneofs_by_name
 _GITCODEDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
 _GITCODEDIFF.fields_by_name['A'].message_type = _GITCODEBLOB
 _GITCODEDIFF.fields_by_name['B'].message_type = _GITCODEBLOB
+_GITCODEDIFF.fields_by_name['C'].message_type = _GITCODEBLOB
 _NOTEBOOKCODEDIFF.fields_by_name['path'].message_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Dataset__pb2._PATHDATASETCOMPONENTDIFF
 _NOTEBOOKCODEDIFF.fields_by_name['git_repo'].message_type = _GITCODEDIFF
 DESCRIPTOR.message_types_by_name['CodeBlob'] = _CODEBLOB

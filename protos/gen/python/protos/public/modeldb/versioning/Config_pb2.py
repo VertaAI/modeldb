@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.versioning',
   syntax='proto3',
   serialized_options=b'P\001ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning',
-  serialized_pb=b'\n-protos/public/modeldb/versioning/Config.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a,protos/public/modeldb/versioning/Enums.proto\"\xb2\x01\n\nConfigBlob\x12T\n\x12hyperparameter_set\x18\x01 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\x12N\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlob\"t\n\x18HyperparameterConfigBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12J\n\x05value\x18\x02 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"m\n\x1eHyperparameterValuesConfigBlob\x12\x13\n\tint_value\x18\x01 \x01(\x03H\x00\x12\x15\n\x0b\x66loat_value\x18\x02 \x01(\x02H\x00\x12\x16\n\x0cstring_value\x18\x03 \x01(\tH\x00\x42\x07\n\x05value\"\xe4\x01\n\x1bHyperparameterSetConfigBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12X\n\ncontinuous\x18\x02 \x01(\x0b\x32\x42.ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlobH\x00\x12T\n\x08\x64iscrete\x18\x03 \x01(\x0b\x32@.ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlobH\x00\x42\x07\n\x05value\"\xa3\x02\n%ContinuousHyperparameterSetConfigBlob\x12S\n\x0einterval_begin\x18\x02 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12Q\n\x0cinterval_end\x18\x03 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12R\n\rinterval_step\x18\x04 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"r\n#DiscreteHyperparameterSetConfigBlob\x12K\n\x06values\x18\x04 \x03(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"\xb2\x01\n\nConfigDiff\x12T\n\x12hyperparameter_set\x18\x01 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigDiff\x12N\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigDiff\"\xef\x01\n\x1bHyperparameterSetConfigDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x43\n\x01\x41\x18\x02 \x01(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\x12\x43\n\x01\x42\x18\x03 \x01(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\"\xe6\x01\n\x18HyperparameterConfigDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12@\n\x01\x41\x18\x02 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlob\x12@\n\x01\x42\x18\x03 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlobBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
+  serialized_pb=b'\n-protos/public/modeldb/versioning/Config.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a,protos/public/modeldb/versioning/Enums.proto\"\xb2\x01\n\nConfigBlob\x12T\n\x12hyperparameter_set\x18\x01 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\x12N\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlob\"t\n\x18HyperparameterConfigBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12J\n\x05value\x18\x02 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"m\n\x1eHyperparameterValuesConfigBlob\x12\x13\n\tint_value\x18\x01 \x01(\x03H\x00\x12\x15\n\x0b\x66loat_value\x18\x02 \x01(\x02H\x00\x12\x16\n\x0cstring_value\x18\x03 \x01(\tH\x00\x42\x07\n\x05value\"\xe4\x01\n\x1bHyperparameterSetConfigBlob\x12\x0c\n\x04name\x18\x01 \x01(\t\x12X\n\ncontinuous\x18\x02 \x01(\x0b\x32\x42.ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlobH\x00\x12T\n\x08\x64iscrete\x18\x03 \x01(\x0b\x32@.ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlobH\x00\x42\x07\n\x05value\"\xa3\x02\n%ContinuousHyperparameterSetConfigBlob\x12S\n\x0einterval_begin\x18\x02 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12Q\n\x0cinterval_end\x18\x03 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\x12R\n\rinterval_step\x18\x04 \x01(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"r\n#DiscreteHyperparameterSetConfigBlob\x12K\n\x06values\x18\x04 \x03(\x0b\x32;.ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob\"\xb2\x01\n\nConfigDiff\x12T\n\x12hyperparameter_set\x18\x01 \x03(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigDiff\x12N\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigDiff\"\xb4\x02\n\x1bHyperparameterSetConfigDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x43\n\x01\x41\x18\x02 \x01(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\x12\x43\n\x01\x42\x18\x03 \x01(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\x12\x43\n\x01\x43\x18\x04 \x01(\x0b\x32\x38.ai.verta.modeldb.versioning.HyperparameterSetConfigBlob\"\xa8\x02\n\x18HyperparameterConfigDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12@\n\x01\x41\x18\x02 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlob\x12@\n\x01\x42\x18\x03 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlob\x12@\n\x01\x43\x18\x04 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.HyperparameterConfigBlobBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
   ,
   dependencies=[protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2.DESCRIPTOR,])
 
@@ -340,6 +340,13 @@ _HYPERPARAMETERSETCONFIGDIFF = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='C', full_name='ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.C', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -353,7 +360,7 @@ _HYPERPARAMETERSETCONFIGDIFF = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1357,
-  serialized_end=1596,
+  serialized_end=1665,
 )
 
 
@@ -385,6 +392,13 @@ _HYPERPARAMETERCONFIGDIFF = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='C', full_name='ai.verta.modeldb.versioning.HyperparameterConfigDiff.C', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -397,8 +411,8 @@ _HYPERPARAMETERCONFIGDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1599,
-  serialized_end=1829,
+  serialized_start=1668,
+  serialized_end=1964,
 )
 
 _CONFIGBLOB.fields_by_name['hyperparameter_set'].message_type = _HYPERPARAMETERSETCONFIGBLOB
@@ -430,9 +444,11 @@ _CONFIGDIFF.fields_by_name['hyperparameters'].message_type = _HYPERPARAMETERCONF
 _HYPERPARAMETERSETCONFIGDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
 _HYPERPARAMETERSETCONFIGDIFF.fields_by_name['A'].message_type = _HYPERPARAMETERSETCONFIGBLOB
 _HYPERPARAMETERSETCONFIGDIFF.fields_by_name['B'].message_type = _HYPERPARAMETERSETCONFIGBLOB
+_HYPERPARAMETERSETCONFIGDIFF.fields_by_name['C'].message_type = _HYPERPARAMETERSETCONFIGBLOB
 _HYPERPARAMETERCONFIGDIFF.fields_by_name['status'].enum_type = protos_dot_public_dot_modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
 _HYPERPARAMETERCONFIGDIFF.fields_by_name['A'].message_type = _HYPERPARAMETERCONFIGBLOB
 _HYPERPARAMETERCONFIGDIFF.fields_by_name['B'].message_type = _HYPERPARAMETERCONFIGBLOB
+_HYPERPARAMETERCONFIGDIFF.fields_by_name['C'].message_type = _HYPERPARAMETERCONFIGBLOB
 DESCRIPTOR.message_types_by_name['ConfigBlob'] = _CONFIGBLOB
 DESCRIPTOR.message_types_by_name['HyperparameterConfigBlob'] = _HYPERPARAMETERCONFIGBLOB
 DESCRIPTOR.message_types_by_name['HyperparameterValuesConfigBlob'] = _HYPERPARAMETERVALUESCONFIGBLOB

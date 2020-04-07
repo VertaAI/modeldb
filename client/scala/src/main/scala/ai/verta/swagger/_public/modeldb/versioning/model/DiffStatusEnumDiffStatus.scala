@@ -11,6 +11,7 @@ object DiffStatusEnumDiffStatus {
   val ADDED: DiffStatusEnumDiffStatus = "ADDED"
   val DELETED: DiffStatusEnumDiffStatus = "DELETED"
   val MODIFIED: DiffStatusEnumDiffStatus = "MODIFIED"
+  val CONFLICTED: DiffStatusEnumDiffStatus = "CONFLICTED"
 
   def toJson(obj: DiffStatusEnumDiffStatus): JString = JString(obj)
 

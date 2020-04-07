@@ -18,11 +18,13 @@ import org.apache.commons.codec.binary.Hex;
 public class AutogenVersionEnvironmentDiff implements ProtoType {
   private AutogenVersionEnvironmentBlob A;
   private AutogenVersionEnvironmentBlob B;
+  private AutogenVersionEnvironmentBlob C;
   private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenVersionEnvironmentDiff() {
     this.A = null;
     this.B = null;
+    this.C = null;
     this.Status = null;
   }
 
@@ -31,6 +33,9 @@ public class AutogenVersionEnvironmentDiff implements ProtoType {
       return false;
     }
     if (this.B != null && !this.B.equals(null)) {
+      return false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -52,6 +57,11 @@ public class AutogenVersionEnvironmentDiff implements ProtoType {
     if (this.B != null && !this.B.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"B\": " + B);
+      first = false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"C\": " + C);
       first = false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -102,6 +112,15 @@ public class AutogenVersionEnvironmentDiff implements ProtoType {
       }
     }
     {
+      Function3<AutogenVersionEnvironmentBlob, AutogenVersionEnvironmentBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.C != null || other.C != null) {
+        if (this.C == null && other.C != null) return false;
+        if (this.C != null && other.C == null) return false;
+        if (!f.apply(this.C, other.C)) return false;
+      }
+    }
+    {
       Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Status != null || other.Status != null) {
@@ -131,6 +150,15 @@ public class AutogenVersionEnvironmentDiff implements ProtoType {
     return this.B;
   }
 
+  public AutogenVersionEnvironmentDiff setC(AutogenVersionEnvironmentBlob value) {
+    this.C = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenVersionEnvironmentBlob getC() {
+    return this.C;
+  }
+
   public AutogenVersionEnvironmentDiff setStatus(AutogenDiffStatusEnumDiffStatus value) {
     this.Status = Utils.removeEmpty(value);
     return this;
@@ -156,6 +184,11 @@ public class AutogenVersionEnvironmentDiff implements ProtoType {
       Function<ai.verta.modeldb.versioning.VersionEnvironmentDiff, AutogenVersionEnvironmentBlob>
           f = x -> AutogenVersionEnvironmentBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.VersionEnvironmentDiff, AutogenVersionEnvironmentBlob>
+          f = x -> AutogenVersionEnvironmentBlob.fromProto(blob.getC());
+      obj.setC(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.VersionEnvironmentDiff, AutogenDiffStatusEnumDiffStatus>
@@ -189,6 +222,16 @@ public class AutogenVersionEnvironmentDiff implements ProtoType {
       }
     }
     {
+      if (this.C != null && !this.C.equals(null)) {
+        Function<ai.verta.modeldb.versioning.VersionEnvironmentDiff.Builder, Void> f =
+            x -> {
+              builder.setC(this.C.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
       if (this.Status != null && !this.Status.equals(null)) {
         Function<ai.verta.modeldb.versioning.VersionEnvironmentDiff.Builder, Void> f =
             x -> {
@@ -209,6 +252,7 @@ public class AutogenVersionEnvironmentDiff implements ProtoType {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenVersionEnvironmentBlob(this.A);
     visitor.preVisitDeepAutogenVersionEnvironmentBlob(this.B);
+    visitor.preVisitDeepAutogenVersionEnvironmentBlob(this.C);
     visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -219,6 +263,7 @@ public class AutogenVersionEnvironmentDiff implements ProtoType {
   public AutogenVersionEnvironmentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setA(visitor.postVisitDeepAutogenVersionEnvironmentBlob(this.A));
     this.setB(visitor.postVisitDeepAutogenVersionEnvironmentBlob(this.B));
+    this.setC(visitor.postVisitDeepAutogenVersionEnvironmentBlob(this.C));
     this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }

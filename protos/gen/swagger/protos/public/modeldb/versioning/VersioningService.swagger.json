@@ -2571,9 +2571,19 @@
         "UNKNOWN",
         "ADDED",
         "DELETED",
-        "MODIFIED"
+        "MODIFIED",
+        "CONFLICTED"
       ],
       "default": "UNKNOWN"
+    },
+    "RepositoryVisibilityEnumRepositoryVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
     },
     "TernaryEnumTernary": {
       "type": "string",
@@ -2962,6 +2972,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "C": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -3164,6 +3180,9 @@
         },
         "B": {
           "$ref": "#/definitions/versioningDockerEnvironmentBlob"
+        },
+        "C": {
+          "$ref": "#/definitions/versioningDockerEnvironmentBlob"
         }
       }
     },
@@ -3232,6 +3251,9 @@
           "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
         },
         "B": {
+          "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
+        },
+        "C": {
           "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
         }
       }
@@ -3345,6 +3367,9 @@
         },
         "B": {
           "$ref": "#/definitions/versioningGitCodeBlob"
+        },
+        "C": {
+          "$ref": "#/definitions/versioningGitCodeBlob"
         }
       }
     },
@@ -3369,6 +3394,9 @@
           "$ref": "#/definitions/versioningHyperparameterConfigBlob"
         },
         "B": {
+          "$ref": "#/definitions/versioningHyperparameterConfigBlob"
+        },
+        "C": {
           "$ref": "#/definitions/versioningHyperparameterConfigBlob"
         }
       }
@@ -3397,6 +3425,9 @@
           "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
         },
         "B": {
+          "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
+        },
+        "C": {
           "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
         }
       }
@@ -3566,6 +3597,16 @@
       "properties": {
         "commit": {
           "$ref": "#/definitions/versioningCommit"
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningBlobDiff"
+          }
+        },
+        "common_base": {
+          "$ref": "#/definitions/versioningCommit",
+          "title": "In case of a conflict, stop at the first such conflict and return it"
         }
       }
     },
@@ -3649,6 +3690,9 @@
         },
         "B": {
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "C": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         }
       }
     },
@@ -3728,6 +3772,9 @@
         },
         "B": {
           "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
+        },
+        "C": {
+          "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
         }
       }
     },
@@ -3754,6 +3801,9 @@
         },
         "workspace_type": {
           "$ref": "#/definitions/WorkspaceTypeEnumWorkspaceType"
+        },
+        "repository_visibility": {
+          "$ref": "#/definitions/RepositoryVisibilityEnumRepositoryVisibility"
         },
         "owner": {
           "type": "string"
@@ -3867,6 +3917,9 @@
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         },
         "B": {
+          "$ref": "#/definitions/versioningVersionEnvironmentBlob"
+        },
+        "C": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }

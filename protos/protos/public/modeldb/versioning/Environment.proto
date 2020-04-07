@@ -61,24 +61,28 @@ message CommandLineEnvironmentDiff {
     DiffStatusEnum.DiffStatus status = 1;
     repeated string A = 2;
     repeated string B = 3;
+    repeated string C = 4;
 }
 
 message EnvironmentVariablesDiff {
     DiffStatusEnum.DiffStatus status = 1;
     EnvironmentVariablesBlob A = 2;
     EnvironmentVariablesBlob B = 3;
+    EnvironmentVariablesBlob C = 4;
 }
 
 message PythonRequirementEnvironmentDiff {
     DiffStatusEnum.DiffStatus status = 1;
     PythonRequirementEnvironmentBlob A = 2;
     PythonRequirementEnvironmentBlob B = 3;
+    PythonRequirementEnvironmentBlob C = 4;
 }
 
 message VersionEnvironmentDiff {
     DiffStatusEnum.DiffStatus status = 1;
     VersionEnvironmentBlob A = 2;
     VersionEnvironmentBlob B = 3;
+    VersionEnvironmentBlob C = 4;
 }
 
 message PythonEnvironmentDiff {
@@ -92,4 +96,5 @@ message DockerEnvironmentDiff {
     DiffStatusEnum.DiffStatus status = 1;
     DockerEnvironmentBlob A = 2;
     DockerEnvironmentBlob B = 3;
+    DockerEnvironmentBlob C = 4;
 }

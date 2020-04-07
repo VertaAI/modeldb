@@ -39,6 +39,7 @@ message GitCodeDiff {
     DiffStatusEnum.DiffStatus status = 1;
     GitCodeBlob A = 2;
     GitCodeBlob B = 3;
+    GitCodeBlob C = 4;
 }
 
 message NotebookCodeDiff {

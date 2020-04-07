@@ -28,6 +28,10 @@ public class AutogenDockerEnvironmentDiffGen extends Generator<AutogenDockerEnvi
           Utils.removeEmpty(gen().type(AutogenDockerEnvironmentBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
+      obj.setC(
+          Utils.removeEmpty(gen().type(AutogenDockerEnvironmentBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       obj.setStatus(
           Utils.removeEmpty(gen().type(AutogenDiffStatusEnumDiffStatus.class).generate(r, status)));
     }

@@ -90,6 +90,14 @@ message BlobDiff {
     }
 }
 
+message RepositoryVisibilityEnum {
+    enum RepositoryVisibility {
+        PRIVATE = 0;// default
+        PUBLIC = 1;
+        ORG_SCOPED_PUBLIC = 2;
+    }
+}
+
 message Repository {
     uint64 id = 1;
     string name = 2; // Name that can be used in URL, like in GitHub
@@ -98,6 +106,8 @@ message Repository {
 
     string workspace_id = 5;
     WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
+    
+    RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
 
     string owner = 10;
 }
@@ -394,9 +404,9 @@ message MergeRepositoryCommitsRequest {
     message Response {
         Commit commit = 1;
 
-
+        repeated BlobDiff conflicts = 2;
         // In case of a conflict, stop at the first such conflict and return it
-        //Commit common_base = 2; // Common base shared between the two commits
+        Commit common_base = 3; // Common base shared between the two commits
         //repeated BlobDiff diffs_a = 3; // Diff between the common base and commit A
         //repeated BlobDiff diffs_b = 4; // Diff between the common base and commit B
     }
