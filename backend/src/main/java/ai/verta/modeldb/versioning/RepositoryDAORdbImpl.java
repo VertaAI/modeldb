@@ -360,8 +360,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 && request
                     .getRepository()
                     .getRepositoryVisibility()
-                    .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC),
-            ModelDBConstants.ROLE_REPOSITORY_READ_ONLY);
+                    .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC));
       }
       session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
@@ -395,8 +394,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           ModelDBServiceResourceTypes.REPOSITORY,
           repositoryEntity
               .getRepositoryVisibility()
-              .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
-          ModelDBConstants.ROLE_REPOSITORY_READ_ONLY);
+              .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE));
     }
   }
 
