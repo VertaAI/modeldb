@@ -17,6 +17,7 @@ import ai.verta.swagger.client.objects._
 case class VersioningPythonRequirementEnvironmentDiff (
   A: Option[VersioningPythonRequirementEnvironmentBlob] = None,
   B: Option[VersioningPythonRequirementEnvironmentBlob] = None,
+  C: Option[VersioningPythonRequirementEnvironmentBlob] = None,
   status: Option[DiffStatusEnumDiffStatus] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningPythonRequirementEnvironmentDiff.toJson(this)
@@ -28,6 +29,7 @@ object VersioningPythonRequirementEnvironmentDiff {
       List[Option[JField]](
         obj.A.map(x => JField("A", ((x: VersioningPythonRequirementEnvironmentBlob) => VersioningPythonRequirementEnvironmentBlob.toJson(x))(x))),
         obj.B.map(x => JField("B", ((x: VersioningPythonRequirementEnvironmentBlob) => VersioningPythonRequirementEnvironmentBlob.toJson(x))(x))),
+        obj.C.map(x => JField("C", ((x: VersioningPythonRequirementEnvironmentBlob) => VersioningPythonRequirementEnvironmentBlob.toJson(x))(x))),
         obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -44,6 +46,7 @@ object VersioningPythonRequirementEnvironmentDiff {
           // TODO: handle required
           A = fieldsMap.get("A").map(VersioningPythonRequirementEnvironmentBlob.fromJson),
           B = fieldsMap.get("B").map(VersioningPythonRequirementEnvironmentBlob.fromJson),
+          C = fieldsMap.get("C").map(VersioningPythonRequirementEnvironmentBlob.fromJson),
           status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)
         )
       }

@@ -17,6 +17,7 @@ import ai.verta.swagger.client.objects._
 case class VersioningCommandLineEnvironmentDiff (
   A: Option[List[String]] = None,
   B: Option[List[String]] = None,
+  C: Option[List[String]] = None,
   status: Option[DiffStatusEnumDiffStatus] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningCommandLineEnvironmentDiff.toJson(this)
@@ -28,6 +29,7 @@ object VersioningCommandLineEnvironmentDiff {
       List[Option[JField]](
         obj.A.map(x => JField("A", ((x: List[String]) => JArray(x.map(JString)))(x))),
         obj.B.map(x => JField("B", ((x: List[String]) => JArray(x.map(JString)))(x))),
+        obj.C.map(x => JField("C", ((x: List[String]) => JArray(x.map(JString)))(x))),
         obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -44,6 +46,7 @@ object VersioningCommandLineEnvironmentDiff {
           // TODO: handle required
           A = fieldsMap.get("A").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           B = fieldsMap.get("B").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          C = fieldsMap.get("C").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)
         )
       }

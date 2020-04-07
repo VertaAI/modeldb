@@ -14,11 +14,13 @@ import java.util.function.Function;
 public class AutogenGitCodeDiff implements ProtoType {
   private AutogenGitCodeBlob A;
   private AutogenGitCodeBlob B;
+  private AutogenGitCodeBlob C;
   private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenGitCodeDiff() {
     this.A = null;
     this.B = null;
+    this.C = null;
     this.Status = null;
   }
 
@@ -27,6 +29,9 @@ public class AutogenGitCodeDiff implements ProtoType {
       return false;
     }
     if (this.B != null && !this.B.equals(null)) {
+      return false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -50,6 +55,11 @@ public class AutogenGitCodeDiff implements ProtoType {
       sb.append("\"B\": " + B);
       first = false;
     }
+    if (this.C != null && !this.C.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"C\": " + C);
+      first = false;
+    }
     if (this.Status != null && !this.Status.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Status\": " + Status);
@@ -68,6 +78,9 @@ public class AutogenGitCodeDiff implements ProtoType {
     }
     if (this.B != null && !this.B.equals(null)) {
       sb.append("::B::").append(B);
+    }
+    if (this.C != null && !this.C.equals(null)) {
+      sb.append("::C::").append(C);
     }
     if (this.Status != null && !this.Status.equals(null)) {
       sb.append("::Status::").append(Status);
@@ -101,6 +114,14 @@ public class AutogenGitCodeDiff implements ProtoType {
       }
     }
     {
+      Function3<AutogenGitCodeBlob, AutogenGitCodeBlob, Boolean> f = (x, y) -> x.equals(y);
+      if (this.C != null || other.C != null) {
+        if (this.C == null && other.C != null) return false;
+        if (this.C != null && other.C == null) return false;
+        if (!f.apply(this.C, other.C)) return false;
+      }
+    }
+    {
       Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Status != null || other.Status != null) {
@@ -114,7 +135,7 @@ public class AutogenGitCodeDiff implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.A, this.B, this.Status);
+    return Objects.hash(this.A, this.B, this.C, this.Status);
   }
 
   public AutogenGitCodeDiff setA(AutogenGitCodeBlob value) {
@@ -133,6 +154,15 @@ public class AutogenGitCodeDiff implements ProtoType {
 
   public AutogenGitCodeBlob getB() {
     return this.B;
+  }
+
+  public AutogenGitCodeDiff setC(AutogenGitCodeBlob value) {
+    this.C = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenGitCodeBlob getC() {
+    return this.C;
   }
 
   public AutogenGitCodeDiff setStatus(AutogenDiffStatusEnumDiffStatus value) {
@@ -159,6 +189,11 @@ public class AutogenGitCodeDiff implements ProtoType {
       Function<ai.verta.modeldb.versioning.GitCodeDiff, AutogenGitCodeBlob> f =
           x -> AutogenGitCodeBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.GitCodeDiff, AutogenGitCodeBlob> f =
+          x -> AutogenGitCodeBlob.fromProto(blob.getC());
+      obj.setC(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.GitCodeDiff, AutogenDiffStatusEnumDiffStatus> f =
@@ -192,6 +227,16 @@ public class AutogenGitCodeDiff implements ProtoType {
       }
     }
     {
+      if (this.C != null && !this.C.equals(null)) {
+        Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder, Void> f =
+            x -> {
+              builder.setC(this.C.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
       if (this.Status != null && !this.Status.equals(null)) {
         Function<ai.verta.modeldb.versioning.GitCodeDiff.Builder, Void> f =
             x -> {
@@ -212,6 +257,7 @@ public class AutogenGitCodeDiff implements ProtoType {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenGitCodeBlob(this.A);
     visitor.preVisitDeepAutogenGitCodeBlob(this.B);
+    visitor.preVisitDeepAutogenGitCodeBlob(this.C);
     visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -222,6 +268,7 @@ public class AutogenGitCodeDiff implements ProtoType {
   public AutogenGitCodeDiff postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setA(visitor.postVisitDeepAutogenGitCodeBlob(this.A));
     this.setB(visitor.postVisitDeepAutogenGitCodeBlob(this.B));
+    this.setC(visitor.postVisitDeepAutogenGitCodeBlob(this.C));
     this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }

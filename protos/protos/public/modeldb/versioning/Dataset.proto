@@ -46,6 +46,7 @@ message PathDatasetComponentDiff {
     DiffStatusEnum.DiffStatus status = 1;
     PathDatasetComponentBlob A = 2;
     PathDatasetComponentBlob B = 3;
+    PathDatasetComponentBlob C = 4;
 }
 
 message PathDatasetDiff {

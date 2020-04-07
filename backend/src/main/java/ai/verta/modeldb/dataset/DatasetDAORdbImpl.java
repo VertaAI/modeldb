@@ -154,19 +154,31 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       String datasetId,
       DatasetVisibility datasetVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspaceRoleBinding(workspaceId, workspaceType, datasetId, ModelDBConstants.ROLE_DATASET_ADMIN, ModelDBServiceResourceTypes.DATASET);
+      Role datasetAdmin = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_ADMIN, null);
       Role datasetRead = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_READ_ONLY, null);
       switch (workspaceType) {
         case ORGANIZATION:
+          Organization org = (Organization) roleService.getOrgById(workspaceId);
+          roleService.createRoleBinding(
+              datasetAdmin,
+              new CollaboratorUser(authService, org.getOwnerId()),
+              datasetId,
+              ModelDBServiceResourceTypes.DATASET);
           if (datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC)) {
             roleService.createRoleBinding(
                 datasetRead,
-                new CollaboratorOrg(workspaceId),
+                new CollaboratorOrg(org.getId()),
                 datasetId,
                 ModelDBServiceResourceTypes.DATASET);
           }
           break;
         case USER:
+          roleService.createRoleBinding(
+              datasetAdmin,
+              new CollaboratorUser(authService, workspaceId),
+              datasetId,
+              ModelDBServiceResourceTypes.DATASET);
+          break;
         default:
           break;
       }
@@ -281,8 +293,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           break;
       }
     }
-    roleService.deleteWorkspaceRoleBindings(workspaceId, workspaceType, datasetId,
-        ModelDBConstants.ROLE_DATASET_ADMIN, ModelDBServiceResourceTypes.DATASET);
+    roleService.deleteWorkspaceRoleBindings(
+        workspaceId,
+        workspaceType,
+        datasetId,
+        ModelDBConstants.ROLE_DATASET_ADMIN,
+        ModelDBServiceResourceTypes.DATASET);
   }
 
   public void deleteDatasetVersionsByDatasetIDs(Session session, List<String> datasetIds) {

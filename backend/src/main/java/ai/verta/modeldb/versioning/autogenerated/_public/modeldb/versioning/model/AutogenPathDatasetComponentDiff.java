@@ -14,11 +14,13 @@ import java.util.function.Function;
 public class AutogenPathDatasetComponentDiff implements ProtoType {
   private AutogenPathDatasetComponentBlob A;
   private AutogenPathDatasetComponentBlob B;
+  private AutogenPathDatasetComponentBlob C;
   private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenPathDatasetComponentDiff() {
     this.A = null;
     this.B = null;
+    this.C = null;
     this.Status = null;
   }
 
@@ -27,6 +29,9 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
       return false;
     }
     if (this.B != null && !this.B.equals(null)) {
+      return false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -50,6 +55,11 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
       sb.append("\"B\": " + B);
       first = false;
     }
+    if (this.C != null && !this.C.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"C\": " + C);
+      first = false;
+    }
     if (this.Status != null && !this.Status.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Status\": " + Status);
@@ -68,6 +78,9 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
     }
     if (this.B != null && !this.B.equals(null)) {
       sb.append("::B::").append(B);
+    }
+    if (this.C != null && !this.C.equals(null)) {
+      sb.append("::C::").append(C);
     }
     if (this.Status != null && !this.Status.equals(null)) {
       sb.append("::Status::").append(Status);
@@ -103,6 +116,15 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
       }
     }
     {
+      Function3<AutogenPathDatasetComponentBlob, AutogenPathDatasetComponentBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.C != null || other.C != null) {
+        if (this.C == null && other.C != null) return false;
+        if (this.C != null && other.C == null) return false;
+        if (!f.apply(this.C, other.C)) return false;
+      }
+    }
+    {
       Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Status != null || other.Status != null) {
@@ -116,7 +138,7 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.A, this.B, this.Status);
+    return Objects.hash(this.A, this.B, this.C, this.Status);
   }
 
   public AutogenPathDatasetComponentDiff setA(AutogenPathDatasetComponentBlob value) {
@@ -135,6 +157,15 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
 
   public AutogenPathDatasetComponentBlob getB() {
     return this.B;
+  }
+
+  public AutogenPathDatasetComponentDiff setC(AutogenPathDatasetComponentBlob value) {
+    this.C = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenPathDatasetComponentBlob getC() {
+    return this.C;
   }
 
   public AutogenPathDatasetComponentDiff setStatus(AutogenDiffStatusEnumDiffStatus value) {
@@ -164,6 +195,12 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
               ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenPathDatasetComponentBlob>
           f = x -> AutogenPathDatasetComponentBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
+    }
+    {
+      Function<
+              ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenPathDatasetComponentBlob>
+          f = x -> AutogenPathDatasetComponentBlob.fromProto(blob.getC());
+      obj.setC(f.apply(blob));
     }
     {
       Function<
@@ -198,6 +235,16 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
       }
     }
     {
+      if (this.C != null && !this.C.equals(null)) {
+        Function<ai.verta.modeldb.versioning.PathDatasetComponentDiff.Builder, Void> f =
+            x -> {
+              builder.setC(this.C.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
       if (this.Status != null && !this.Status.equals(null)) {
         Function<ai.verta.modeldb.versioning.PathDatasetComponentDiff.Builder, Void> f =
             x -> {
@@ -218,6 +265,7 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenPathDatasetComponentBlob(this.A);
     visitor.preVisitDeepAutogenPathDatasetComponentBlob(this.B);
+    visitor.preVisitDeepAutogenPathDatasetComponentBlob(this.C);
     visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -228,6 +276,7 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
   public AutogenPathDatasetComponentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setA(visitor.postVisitDeepAutogenPathDatasetComponentBlob(this.A));
     this.setB(visitor.postVisitDeepAutogenPathDatasetComponentBlob(this.B));
+    this.setC(visitor.postVisitDeepAutogenPathDatasetComponentBlob(this.C));
     this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }

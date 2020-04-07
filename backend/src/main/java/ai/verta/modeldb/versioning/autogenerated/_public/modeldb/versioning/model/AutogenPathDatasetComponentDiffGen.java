@@ -28,6 +28,10 @@ public class AutogenPathDatasetComponentDiffGen extends Generator<AutogenPathDat
           Utils.removeEmpty(gen().type(AutogenPathDatasetComponentBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
+      obj.setC(
+          Utils.removeEmpty(gen().type(AutogenPathDatasetComponentBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       obj.setStatus(
           Utils.removeEmpty(gen().type(AutogenDiffStatusEnumDiffStatus.class).generate(r, status)));
     }

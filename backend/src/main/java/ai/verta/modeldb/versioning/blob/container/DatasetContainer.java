@@ -47,29 +47,24 @@ public class DatasetContainer extends BlobContainer {
 
         // sorted
         Map<String, AutogenS3DatasetComponentBlob> componentHashes = new LinkedHashMap<>();
-        AutogenS3DatasetBlob autogenS3DatasetBlob = AutogenS3DatasetBlob.fromProto(s3);
-        if (autogenS3DatasetBlob != null && autogenS3DatasetBlob.getComponents() != null) {
-          for (AutogenS3DatasetComponentBlob componentBlob :
-              autogenS3DatasetBlob.getComponents()) {
-            final String componentHash = computeSHA(componentBlob);
-            componentHashes.put(componentHash, componentBlob);
-          }
-          blobHash = computeSHAS3Dataset(componentHashes);
-          if (!blobHashes.contains(blobHash)) {
-            blobHashes.add(blobHash);
-            for (Map.Entry<String, AutogenS3DatasetComponentBlob> component :
-                componentHashes.entrySet()) {
-              if (!blobHashes.contains(component.getKey())) {
-                blobHashes.add(component.getKey());
-                S3DatasetComponentBlobEntity s3DatasetComponentBlobEntity =
-                    new S3DatasetComponentBlobEntity(
-                        component.getKey(), blobHash, component.getValue().toProto().build());
-                session.saveOrUpdate(s3DatasetComponentBlobEntity);
-              }
+        for (AutogenS3DatasetComponentBlob componentBlob :
+            AutogenS3DatasetBlob.fromProto(s3).getComponents()) {
+          final String componentHash = computeSHA(componentBlob);
+          componentHashes.put(componentHash, componentBlob);
+        }
+        blobHash = computeSHAS3Dataset(componentHashes);
+        if (!blobHashes.contains(blobHash)) {
+          blobHashes.add(blobHash);
+          for (Map.Entry<String, AutogenS3DatasetComponentBlob> component :
+              componentHashes.entrySet()) {
+            if (!blobHashes.contains(component.getKey())) {
+              blobHashes.add(component.getKey());
+              S3DatasetComponentBlobEntity s3DatasetComponentBlobEntity =
+                  new S3DatasetComponentBlobEntity(
+                      component.getKey(), blobHash, component.getValue().toProto().build());
+              session.saveOrUpdate(s3DatasetComponentBlobEntity);
             }
           }
-        } else {
-          blobHash = null;
         }
         break;
       case PATH:
@@ -78,39 +73,33 @@ public class DatasetContainer extends BlobContainer {
       default:
         throw new ModelDBException("Unknown blob type", Code.INTERNAL);
     }
-    if (blobHash != null) {
-      rootTree.push(locationList, blobHash, blobType);
-    }
+    rootTree.push(locationList, blobHash, blobType);
   }
 
   static String saveBlob(Session session, PathDatasetBlob path, Set<String> blobHashes)
       throws NoSuchAlgorithmException {
     // sorted
     Map<String, AutogenPathDatasetComponentBlob> componentHashes = new LinkedHashMap<>();
-    AutogenPathDatasetBlob autogenPathDatasetBlob = AutogenPathDatasetBlob.fromProto(path);
-    if (autogenPathDatasetBlob != null && autogenPathDatasetBlob.getComponents() != null) {
-      for (AutogenPathDatasetComponentBlob componentBlob :
-          autogenPathDatasetBlob.getComponents()) {
-        final String componentHash = computeSHA(componentBlob);
-        componentHashes.put(componentHash, componentBlob);
-      }
-      String blobHash = computeSHAPathDataset(componentHashes);
-      if (!blobHashes.contains(blobHash)) {
-        blobHashes.add(blobHash);
-        for (Map.Entry<String, AutogenPathDatasetComponentBlob> component :
-            componentHashes.entrySet()) {
-          if (!blobHashes.contains(component.getKey())) {
-            blobHashes.add(component.getKey());
-            PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
-                new PathDatasetComponentBlobEntity(
-                    component.getKey(), blobHash, component.getValue().toProto().build());
-            session.saveOrUpdate(pathDatasetComponentBlobEntity);
-          }
+    for (AutogenPathDatasetComponentBlob componentBlob :
+        AutogenPathDatasetBlob.fromProto(path).getComponents()) {
+      final String componentHash = computeSHA(componentBlob);
+      componentHashes.put(componentHash, componentBlob);
+    }
+    String blobHash = computeSHAPathDataset(componentHashes);
+    if (!blobHashes.contains(blobHash)) {
+      blobHashes.add(blobHash);
+      for (Map.Entry<String, AutogenPathDatasetComponentBlob> component :
+          componentHashes.entrySet()) {
+        if (!blobHashes.contains(component.getKey())) {
+          blobHashes.add(component.getKey());
+          PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
+              new PathDatasetComponentBlobEntity(
+                  component.getKey(), blobHash, component.getValue().toProto().build());
+          session.saveOrUpdate(pathDatasetComponentBlobEntity);
         }
       }
-      return blobHash;
     }
-    return null;
+    return blobHash;
   }
 
   private String getBlobType() {

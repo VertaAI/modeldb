@@ -372,9 +372,12 @@ public class ModelDBUtils {
 
   public static List<KeyValueQuery> getKeyValueQueriesByWorkspace(
       RoleService roleService, UserInfo userInfo, String workspaceName) {
-    List<KeyValueQuery> workspaceQueries = new ArrayList<>();
     WorkspaceDTO workspaceDTO = roleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
+    return getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
+  }
 
+  public static List<KeyValueQuery> getKeyValueQueriesByWorkspaceDTO(WorkspaceDTO workspaceDTO) {
+    List<KeyValueQuery> workspaceQueries = new ArrayList<>();
     if (workspaceDTO != null && workspaceDTO.getWorkspaceId() != null) {
       KeyValueQuery workspacePredicates =
           KeyValueQuery.newBuilder()
