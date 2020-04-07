@@ -464,7 +464,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         if (workspacePredicates.size() > 0) {
           Predicate privateWorkspacePredicate =
               criteriaBuilder.equal(
-                  repositoryEntityRoot.get(ModelDBConstants.WORKSPACE),
+                  repositoryEntityRoot.get(ModelDBConstants.WORKSPACE_ID),
                   workspacePredicates.get(0).getValue().getStringValue());
           Predicate privateWorkspaceTypePredicate =
               criteriaBuilder.equal(
