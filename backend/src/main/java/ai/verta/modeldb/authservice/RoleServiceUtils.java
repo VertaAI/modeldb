@@ -1178,11 +1178,7 @@ public class RoleServiceUtils implements RoleService {
           return;
       }
       String roleBindingName =
-          buildRoleBindingName(
-              roleName,
-              resourceId,
-              collaboratorUser,
-              resourceTypes.name());
+          buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
       RoleBinding roleBinding = getRoleBindingByName(roleBindingName);
       if (roleBinding != null && !roleBinding.getId().isEmpty()) {
         deleteRoleBinding(roleBinding.getId());
@@ -1221,11 +1217,7 @@ public class RoleServiceUtils implements RoleService {
         default:
           return;
       }
-      createRoleBinding(
-          admin,
-          collaboratorUser,
-          resourceId,
-          resourceType);
+      createRoleBinding(admin, collaboratorUser, resourceId, resourceType);
     }
   }
 }

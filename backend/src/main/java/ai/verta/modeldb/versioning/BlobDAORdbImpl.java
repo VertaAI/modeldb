@@ -536,8 +536,8 @@ public class BlobDAORdbImpl implements BlobDAO {
         request.getCommitShaA(),
         request.getCommitShaB());
 
-Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
-new HashMap<String, Map.Entry<BlobExpanded, String>>();
+    Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
+        new HashMap<String, Map.Entry<BlobExpanded, String>>();
     Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitB =
         new HashMap<String, Map.Entry<BlobExpanded, String>>();
     Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapParentCommit =
@@ -657,11 +657,10 @@ new HashMap<String, Map.Entry<BlobExpanded, String>>();
                 .setMessage(mergeMessage)
                 .setCommitSha(commitSha)
                 .build();
-        RepositoryEntity repositoryEntity =	              
-                repositoryDAO.getRepositoryById(writeSession, request.getRepositoryId());
+        RepositoryEntity repositoryEntity =
+            repositoryDAO.getRepositoryById(writeSession, request.getRepositoryId());
         CommitEntity commitEntity =
-            new CommitEntity(
-            		repositoryEntity, parentCommits, internalCommit, rootSha);
+            new CommitEntity(repositoryEntity, parentCommits, internalCommit, rootSha);
         writeSession.saveOrUpdate(commitEntity);
         writeSession.getTransaction().commit();
         return MergeRepositoryCommitsRequest.Response.newBuilder()
