@@ -60,7 +60,8 @@ public class DatasetTest {
 
   private ManagedChannel channel = null;
   private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannel = null;
+  private ManagedChannel authServiceChannelClient1 = null;
+  private ManagedChannel authServiceChannelClient2 = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -123,8 +124,11 @@ public class DatasetTest {
     }
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannel.isShutdown()) {
-        authServiceChannel.shutdownNow();
+      if (!authServiceChannelClient1.isShutdown()) {
+        authServiceChannelClient1.shutdownNow();
+      }
+      if (!authServiceChannelClient2.isShutdown()) {
+        authServiceChannelClient2.shutdownNow();
       }
     }
   }
@@ -136,10 +140,15 @@ public class DatasetTest {
     client2Channel =
         grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannel =
+      authServiceChannelClient1 =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+      authServiceChannelClient2 =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();
     }
   }
@@ -415,7 +424,7 @@ public class DatasetTest {
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(client2Channel);
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
       AddCollaboratorRequest addCollaboratorRequest =
           CollaboratorTest.addCollaboratorRequestDataset(
               dataset,
@@ -500,7 +509,7 @@ public class DatasetTest {
         DatasetServiceGrpc.newBlockingStub(client2Channel);
 
     UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-        UACServiceGrpc.newBlockingStub(authServiceChannel);
+        UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
     GetUser getUserRequest =
         GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
     // Get the user info by vertaId form the AuthService
@@ -527,7 +536,7 @@ public class DatasetTest {
         dataset.getName());
 
     CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(client2Channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
     AddCollaboratorRequest addCollaboratorRequest =
         CollaboratorTest.addCollaboratorRequestDataset(
             dataset,

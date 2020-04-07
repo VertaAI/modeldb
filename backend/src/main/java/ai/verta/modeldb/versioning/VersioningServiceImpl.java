@@ -116,7 +116,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         }
 
         roleService.validateEntityUserWithUserInfo(
-           ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
+            ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
         UserInfo userInfo = authService.getCurrentLoginUserInfo();
         SetRepository.Builder requestBuilder = request.toBuilder();
         if (userInfo != null) {
