@@ -162,13 +162,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           ModelDBServiceResourceTypes.DATASET,
           datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC),
           ModelDBConstants.ROLE_DATASET_READ_ONLY);
-      switch (workspaceType) {
-        case ORGANIZATION:
-          break;
-        case USER:
-        default:
-          break;
-      }
     }
   }
 
@@ -258,15 +251,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       WorkspaceType workspaceType,
       String datasetId,
       DatasetVisibility datasetVisibility) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      switch (workspaceType) {
-        case ORGANIZATION:
-          break;
-        case USER:
-        default:
-          break;
-      }
-    }
     roleService.deleteWorkspaceRoleBindings(
         workspaceId,
         workspaceType,

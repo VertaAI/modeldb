@@ -37,6 +37,14 @@ public class AutogenCommandLineEnvironmentDiffGen
       obj.setB(Utils.removeEmpty(ret));
     }
     if (r.nextBoolean()) {
+      int size = r.nextInt(0, 10);
+      List<String> ret = new ArrayList(size);
+      for (int i = 0; i < size; i++) {
+        ret.add(new StringGenerator().generate(r, status));
+      }
+      obj.setC(Utils.removeEmpty(ret));
+    }
+    if (r.nextBoolean()) {
       obj.setStatus(
           Utils.removeEmpty(gen().type(AutogenDiffStatusEnumDiffStatus.class).generate(r, status)));
     }

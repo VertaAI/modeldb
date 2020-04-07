@@ -17,6 +17,7 @@ import ai.verta.swagger.client.objects._
 case class VersioningHyperparameterConfigDiff (
   A: Option[VersioningHyperparameterConfigBlob] = None,
   B: Option[VersioningHyperparameterConfigBlob] = None,
+  C: Option[VersioningHyperparameterConfigBlob] = None,
   status: Option[DiffStatusEnumDiffStatus] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningHyperparameterConfigDiff.toJson(this)
@@ -28,6 +29,7 @@ object VersioningHyperparameterConfigDiff {
       List[Option[JField]](
         obj.A.map(x => JField("A", ((x: VersioningHyperparameterConfigBlob) => VersioningHyperparameterConfigBlob.toJson(x))(x))),
         obj.B.map(x => JField("B", ((x: VersioningHyperparameterConfigBlob) => VersioningHyperparameterConfigBlob.toJson(x))(x))),
+        obj.C.map(x => JField("C", ((x: VersioningHyperparameterConfigBlob) => VersioningHyperparameterConfigBlob.toJson(x))(x))),
         obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -44,6 +46,7 @@ object VersioningHyperparameterConfigDiff {
           // TODO: handle required
           A = fieldsMap.get("A").map(VersioningHyperparameterConfigBlob.fromJson),
           B = fieldsMap.get("B").map(VersioningHyperparameterConfigBlob.fromJson),
+          C = fieldsMap.get("C").map(VersioningHyperparameterConfigBlob.fromJson),
           status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)
         )
       }

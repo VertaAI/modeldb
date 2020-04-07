@@ -14,11 +14,13 @@ import java.util.function.Function;
 public class AutogenHyperparameterSetConfigDiff implements ProtoType {
   private AutogenHyperparameterSetConfigBlob A;
   private AutogenHyperparameterSetConfigBlob B;
+  private AutogenHyperparameterSetConfigBlob C;
   private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenHyperparameterSetConfigDiff() {
     this.A = null;
     this.B = null;
+    this.C = null;
     this.Status = null;
   }
 
@@ -27,6 +29,9 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
       return false;
     }
     if (this.B != null && !this.B.equals(null)) {
+      return false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -50,6 +55,11 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
       sb.append("\"B\": " + B);
       first = false;
     }
+    if (this.C != null && !this.C.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"C\": " + C);
+      first = false;
+    }
     if (this.Status != null && !this.Status.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Status\": " + Status);
@@ -68,6 +78,9 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
     }
     if (this.B != null && !this.B.equals(null)) {
       sb.append("::B::").append(B);
+    }
+    if (this.C != null && !this.C.equals(null)) {
+      sb.append("::C::").append(C);
     }
     if (this.Status != null && !this.Status.equals(null)) {
       sb.append("::Status::").append(Status);
@@ -103,6 +116,15 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
       }
     }
     {
+      Function3<AutogenHyperparameterSetConfigBlob, AutogenHyperparameterSetConfigBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.C != null || other.C != null) {
+        if (this.C == null && other.C != null) return false;
+        if (this.C != null && other.C == null) return false;
+        if (!f.apply(this.C, other.C)) return false;
+      }
+    }
+    {
       Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Status != null || other.Status != null) {
@@ -116,7 +138,7 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.A, this.B, this.Status);
+    return Objects.hash(this.A, this.B, this.C, this.Status);
   }
 
   public AutogenHyperparameterSetConfigDiff setA(AutogenHyperparameterSetConfigBlob value) {
@@ -135,6 +157,15 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
 
   public AutogenHyperparameterSetConfigBlob getB() {
     return this.B;
+  }
+
+  public AutogenHyperparameterSetConfigDiff setC(AutogenHyperparameterSetConfigBlob value) {
+    this.C = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenHyperparameterSetConfigBlob getC() {
+    return this.C;
   }
 
   public AutogenHyperparameterSetConfigDiff setStatus(AutogenDiffStatusEnumDiffStatus value) {
@@ -170,6 +201,13 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
     {
       Function<
               ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
+              AutogenHyperparameterSetConfigBlob>
+          f = x -> AutogenHyperparameterSetConfigBlob.fromProto(blob.getC());
+      obj.setC(f.apply(blob));
+    }
+    {
+      Function<
+              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
               AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
@@ -201,6 +239,16 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
       }
     }
     {
+      if (this.C != null && !this.C.equals(null)) {
+        Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.Builder, Void> f =
+            x -> {
+              builder.setC(this.C.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
       if (this.Status != null && !this.Status.equals(null)) {
         Function<ai.verta.modeldb.versioning.HyperparameterSetConfigDiff.Builder, Void> f =
             x -> {
@@ -221,6 +269,7 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenHyperparameterSetConfigBlob(this.A);
     visitor.preVisitDeepAutogenHyperparameterSetConfigBlob(this.B);
+    visitor.preVisitDeepAutogenHyperparameterSetConfigBlob(this.C);
     visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -232,6 +281,7 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
   public AutogenHyperparameterSetConfigDiff postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setA(visitor.postVisitDeepAutogenHyperparameterSetConfigBlob(this.A));
     this.setB(visitor.postVisitDeepAutogenHyperparameterSetConfigBlob(this.B));
+    this.setC(visitor.postVisitDeepAutogenHyperparameterSetConfigBlob(this.C));
     this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }

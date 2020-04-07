@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.versioning',
   syntax='proto3',
   serialized_options=b'P\001ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning',
-  serialized_pb=b'\n,protos/public/modeldb/versioning/Enums.proto\x12\x1b\x61i.verta.modeldb.versioning\"Q\n\x0e\x44iffStatusEnum\"?\n\nDiffStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x41\x44\x44\x45\x44\x10\x01\x12\x0b\n\x07\x44\x45LETED\x10\x02\x12\x0c\n\x08MODIFIED\x10\x03\x42MP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
+  serialized_pb=b'\n,protos/public/modeldb/versioning/Enums.proto\x12\x1b\x61i.verta.modeldb.versioning\"a\n\x0e\x44iffStatusEnum\"O\n\nDiffStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x41\x44\x44\x45\x44\x10\x01\x12\x0b\n\x07\x44\x45LETED\x10\x02\x12\x0c\n\x08MODIFIED\x10\x03\x12\x0e\n\nCONFLICTED\x10\x04\x42MP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
 )
 
 
@@ -45,11 +45,15 @@ _DIFFSTATUSENUM_DIFFSTATUS = _descriptor.EnumDescriptor(
       name='MODIFIED', index=3, number=3,
       serialized_options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CONFLICTED', index=4, number=4,
+      serialized_options=None,
+      type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=95,
-  serialized_end=158,
+  serialized_end=174,
 )
 _sym_db.RegisterEnumDescriptor(_DIFFSTATUSENUM_DIFFSTATUS)
 
@@ -75,7 +79,7 @@ _DIFFSTATUSENUM = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=77,
-  serialized_end=158,
+  serialized_end=174,
 )
 
 _DIFFSTATUSENUM_DIFFSTATUS.containing_type = _DIFFSTATUSENUM

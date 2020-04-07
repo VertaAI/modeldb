@@ -17,6 +17,7 @@ import ai.verta.swagger.client.objects._
 case class VersioningVersionEnvironmentDiff (
   A: Option[VersioningVersionEnvironmentBlob] = None,
   B: Option[VersioningVersionEnvironmentBlob] = None,
+  C: Option[VersioningVersionEnvironmentBlob] = None,
   status: Option[DiffStatusEnumDiffStatus] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningVersionEnvironmentDiff.toJson(this)
@@ -28,6 +29,7 @@ object VersioningVersionEnvironmentDiff {
       List[Option[JField]](
         obj.A.map(x => JField("A", ((x: VersioningVersionEnvironmentBlob) => VersioningVersionEnvironmentBlob.toJson(x))(x))),
         obj.B.map(x => JField("B", ((x: VersioningVersionEnvironmentBlob) => VersioningVersionEnvironmentBlob.toJson(x))(x))),
+        obj.C.map(x => JField("C", ((x: VersioningVersionEnvironmentBlob) => VersioningVersionEnvironmentBlob.toJson(x))(x))),
         obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -44,6 +46,7 @@ object VersioningVersionEnvironmentDiff {
           // TODO: handle required
           A = fieldsMap.get("A").map(VersioningVersionEnvironmentBlob.fromJson),
           B = fieldsMap.get("B").map(VersioningVersionEnvironmentBlob.fromJson),
+          C = fieldsMap.get("C").map(VersioningVersionEnvironmentBlob.fromJson),
           status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)
         )
       }

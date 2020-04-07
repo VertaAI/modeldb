@@ -1,6 +1,7 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
+import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ProjectVisibility;
@@ -17,6 +18,7 @@ import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -30,13 +32,17 @@ import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -457,73 +463,91 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public ListRepositoriesRequest.Response listRepositories(
       ListRepositoriesRequest request, UserInfo currentLoginUserInfo) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      WorkspaceDTO workspaceDTO =
-          verifyAndGetWorkspaceDTO(
-              RepositoryIdentification.newBuilder()
-                  .setNamedId(
-                      RepositoryNamedIdentification.newBuilder()
-                          .setWorkspaceName(request.getWorkspaceName()))
-                  .build(),
-              false);
-      String query_prefix =
-          workspaceDTO.getWorkspaceId() == null
-              ? GET_REPOSITORY_PREFIX_HQL_OSS
-              : GET_REPOSITORY_PREFIX_HQL;
-      Query query =
-          ModelDBHibernateUtil.getWorkspaceEntityQuery(
-              session,
-              SHORT_NAME,
-              query_prefix,
-              "repositoryName",
-              null,
-              ModelDBConstants.WORKSPACE_ID,
-              workspaceDTO.getWorkspaceId(),
-              workspaceDTO.getWorkspaceType(),
-              false,
-              Collections.singletonList(
-                  ModelDBConstants.DATE_UPDATED + " " + ModelDBConstants.ORDER_DESC));
-      int pageLimit = request.getPagination().getPageLimit();
-      if (request.hasPagination()) {
-        query.setFirstResult((request.getPagination().getPageNumber() - 1) * pageLimit);
-        query.setMaxResults(pageLimit);
-      }
-      List repoList = query.list();
-      ListRepositoriesRequest.Response.Builder builder =
-          ListRepositoriesRequest.Response.newBuilder();
-      query_prefix =
-          workspaceDTO.getWorkspaceId() == null
-              ? GET_REPOSITORY_COUNT_PREFIX_HQL_OSS
-              : GET_REPOSITORY_COUNT_PREFIX_HQL;
-      query =
-          ModelDBHibernateUtil.getWorkspaceEntityQuery(
-              session,
-              SHORT_NAME,
-              query_prefix,
-              "repositoryName",
-              null,
-              ModelDBConstants.WORKSPACE_ID,
-              workspaceDTO.getWorkspaceId(),
-              workspaceDTO.getWorkspaceType(),
-              false,
-              null);
-      Map<String, RepositoryEntity> result = new LinkedHashMap<>();
-      for (Object repoObj : repoList) {
-        RepositoryEntity repositoryEntity = (RepositoryEntity) repoObj;
-        result.put(repositoryEntity.getId().toString(), repositoryEntity);
-      }
       List<String> accessibleResourceIds =
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
               ProjectVisibility.PRIVATE,
               ModelDBServiceResourceTypes.REPOSITORY,
-              new ArrayList<>(result.keySet()));
-      result.keySet().retainAll(accessibleResourceIds);
-      result
-          .values()
-          .forEach(repositoryEntity -> builder.addRepositories(repositoryEntity.toProto()));
-      final Long value = (Long) query.uniqueResult();
-      builder.setTotalRecords(value);
+              Collections.emptyList());
+
+      if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
+        LOGGER.debug("Accessible Repository Ids not found, size 0");
+        return ListRepositoriesRequest.Response.newBuilder().setTotalRecords(0).build();
+      }
+
+      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      // Using FROM and JOIN
+      CriteriaQuery<RepositoryEntity> criteriaQuery =
+          criteriaBuilder.createQuery(RepositoryEntity.class);
+      Root<RepositoryEntity> repositoryEntityRoot = criteriaQuery.from(RepositoryEntity.class);
+      repositoryEntityRoot.alias(SHORT_NAME);
+      List<Predicate> finalPredicatesList = new ArrayList<>();
+
+      if (!request.getWorkspaceName().isEmpty()) {
+        WorkspaceDTO workspaceDTO =
+            verifyAndGetWorkspaceDTO(
+                RepositoryIdentification.newBuilder()
+                    .setNamedId(
+                        RepositoryNamedIdentification.newBuilder()
+                            .setWorkspaceName(request.getWorkspaceName()))
+                    .build(),
+                false);
+        List<KeyValueQuery> workspacePredicates =
+            ModelDBUtils.getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
+        if (workspacePredicates.size() > 0) {
+          Predicate privateWorkspacePredicate =
+              criteriaBuilder.equal(
+                  repositoryEntityRoot.get(ModelDBConstants.WORKSPACE_ID),
+                  workspacePredicates.get(0).getValue().getStringValue());
+          Predicate privateWorkspaceTypePredicate =
+              criteriaBuilder.equal(
+                  repositoryEntityRoot.get(ModelDBConstants.WORKSPACE_TYPE),
+                  workspacePredicates.get(1).getValue().getNumberValue());
+          Predicate privatePredicate =
+              criteriaBuilder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
+
+          finalPredicatesList.add(privatePredicate);
+        }
+      }
+
+      if (!accessibleResourceIds.isEmpty()) {
+        Expression<String> exp = repositoryEntityRoot.get(ModelDBConstants.ID);
+        Predicate predicate2 = exp.in(accessibleResourceIds);
+        finalPredicatesList.add(predicate2);
+      }
+
+      Order orderBy = criteriaBuilder.desc(repositoryEntityRoot.get(ModelDBConstants.DATE_UPDATED));
+
+      Predicate[] predicateArr = new Predicate[finalPredicatesList.size()];
+      for (int index = 0; index < finalPredicatesList.size(); index++) {
+        predicateArr[index] = finalPredicatesList.get(index);
+      }
+
+      Predicate predicateWhereCause = criteriaBuilder.and(predicateArr);
+      criteriaQuery.select(repositoryEntityRoot);
+      criteriaQuery.where(predicateWhereCause);
+      criteriaQuery.orderBy(orderBy);
+
+      Query query = session.createQuery(criteriaQuery);
+      LOGGER.debug("Repository final query : {}", query.getQueryString());
+
+      if (request.hasPagination()) {
+        // Calculate number of documents to skip
+        int pageLimit = request.getPagination().getPageLimit();
+        query.setFirstResult((request.getPagination().getPageNumber() - 1) * pageLimit);
+        query.setMaxResults(pageLimit);
+      }
+
+      List<RepositoryEntity> repositoryEntities = query.list();
+      ListRepositoriesRequest.Response.Builder builder =
+          ListRepositoriesRequest.Response.newBuilder();
+
+      repositoryEntities.forEach(
+          repositoryEntity -> builder.addRepositories(repositoryEntity.toProto()));
+
+      long totalRecords = RdbmsUtils.count(session, repositoryEntityRoot, criteriaQuery);
+      builder.setTotalRecords(totalRecords);
       return builder.build();
     } catch (ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);

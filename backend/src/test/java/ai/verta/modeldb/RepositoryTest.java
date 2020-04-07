@@ -401,7 +401,7 @@ public class RepositoryTest {
       Assert.assertEquals(
           "Repository count not match with expected repository count",
           2,
-          listRepositoriesResponse.getRepositoriesCount());
+          listRepositoriesResponse.getTotalRecords());
       Assert.assertEquals(
           "Repository name not match with expected repository name",
           NAME_2,
@@ -417,6 +417,10 @@ public class RepositoryTest {
               .build();
       listRepositoriesResponse =
           versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          2,
+          listRepositoriesResponse.getTotalRecords());
       Assert.assertEquals(
           "Repository count not match with expected repository count",
           1,
