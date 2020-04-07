@@ -182,6 +182,9 @@ public class ExperimentRunEntity {
   @LazyCollection(LazyCollectionOption.FALSE)
   private List<VersioningModeldbEntityMapping> versioned_inputs = new ArrayList<>();
 
+  @Column(name = "isDeleted")
+  private boolean isDeleted;
+
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
@@ -418,6 +421,14 @@ public class ExperimentRunEntity {
 
   public void setVersioned_inputs(List<VersioningModeldbEntityMapping> versioned_inputs) {
     this.versioned_inputs = versioned_inputs;
+  }
+
+  public boolean isDeleted() {
+    return isDeleted;
+  }
+
+  public void setDeleted(boolean deleted) {
+    isDeleted = deleted;
   }
 
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {

@@ -133,7 +133,76 @@
         </createIndex>
     </changeSet>
 
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
+    <include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
+    <include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
+
+    <changeSet id="13-isDeleted-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="isDeleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="isDeleted" type="boolean"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="14-isDeleted-experiment" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment" columnName="isDeleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment">
+            <column name="isDeleted" type="boolean"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="15-isDeleted-experiment-run" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment_run" columnName="isDeleted"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment_run">
+            <column name="isDeleted" type="boolean"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_pr_isDeleted_index">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="pr_isDeleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="pr_isDeleted"
+                     tableName="project">
+            <column name="isDeleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_ex_isDeleted_index">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="ex_isDeleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="ex_isDeleted"
+                     tableName="experiment">
+            <column name="isDeleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_exr_isDeleted_index">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="exr_isDeleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="exr_isDeleted"
+                     tableName="experiment_run">
+            <column name="isDeleted"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

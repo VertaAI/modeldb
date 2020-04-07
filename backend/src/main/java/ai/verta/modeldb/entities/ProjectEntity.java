@@ -126,6 +126,9 @@ public class ProjectEntity {
   @Column(name = "workspace_type")
   private Integer workspace_type;
 
+  @Column(name = "isDeleted")
+  private boolean isDeleted;
+
   public String getId() {
     return id;
   }
@@ -280,6 +283,14 @@ public class ProjectEntity {
 
   public void setWorkspace_type(Integer workspace_type) {
     this.workspace_type = workspace_type;
+  }
+
+  public boolean isDeleted() {
+    return isDeleted;
+  }
+
+  public void setDeleted(boolean deleted) {
+    isDeleted = deleted;
   }
 
   public Project getProtoObject() throws InvalidProtocolBufferException {
