@@ -138,7 +138,12 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  void deleteWorkspaceRoleBindings(String workspace_id, WorkspaceType forNumber, String valueOf, String roleRepositoryAdmin, ModelDBServiceResourceTypes repository);
+  void deleteWorkspaceRoleBindings(
+      String workspace_id,
+      WorkspaceType forNumber,
+      String valueOf,
+      String roleRepositoryAdmin,
+      ModelDBServiceResourceTypes repository);
 
   void createWorkspaceRoleBinding(String workspace_id, WorkspaceType forNumber, String valueOf, String roleRepositoryAdmin, ModelDBServiceResourceTypes repository);
 }

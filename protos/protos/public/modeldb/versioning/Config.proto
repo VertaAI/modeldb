@@ -52,10 +52,12 @@ message HyperparameterSetConfigDiff {
     DiffStatusEnum.DiffStatus status = 1;
     HyperparameterSetConfigBlob A = 2;
     HyperparameterSetConfigBlob B = 3;
+    HyperparameterSetConfigBlob C = 4;
 }
 
 message HyperparameterConfigDiff {
     DiffStatusEnum.DiffStatus status = 1;
     HyperparameterConfigBlob A = 2;
     HyperparameterConfigBlob B = 3;
+    HyperparameterConfigBlob C = 4;
 }

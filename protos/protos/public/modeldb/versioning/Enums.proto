@@ -11,5 +11,6 @@ message DiffStatusEnum {
         ADDED = 1;
         DELETED = 2;
         MODIFIED = 3;
+        CONFLICTED = 4;
     }
 }
