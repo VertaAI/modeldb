@@ -202,9 +202,11 @@ public class RepositoryTest {
       }
     }
     try {
-      versioningServiceBlockingStubClient2.updateRepository(SetRepository.newBuilder().setId(
-          RepositoryIdentification.newBuilder().setRepoId(id)).setRepository(
-          Repository.newBuilder().setName("new_name")).build());
+      versioningServiceBlockingStubClient2.updateRepository(
+          SetRepository.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .setRepository(Repository.newBuilder().setName("new_name"))
+              .build());
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
         Assert.fail();
       }
@@ -212,8 +214,10 @@ public class RepositoryTest {
       assertEquals(Code.PERMISSION_DENIED, e.getStatus().getCode());
     }
     try {
-      versioningServiceBlockingStubClient2.getRepository(GetRepositoryRequest.newBuilder().setId(
-          RepositoryIdentification.newBuilder().setRepoId(id)).build());
+      versioningServiceBlockingStubClient2.getRepository(
+          GetRepositoryRequest.newBuilder()
+              .setId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build());
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
         Assert.fail();
       }
@@ -397,7 +401,7 @@ public class RepositoryTest {
       Assert.assertEquals(
           "Repository count not match with expected repository count",
           2,
-          listRepositoriesResponse.getRepositoriesCount());
+          listRepositoriesResponse.getTotalRecords());
       Assert.assertEquals(
           "Repository name not match with expected repository name",
           NAME_2,
@@ -413,6 +417,10 @@ public class RepositoryTest {
               .build();
       listRepositoriesResponse =
           versioningServiceBlockingStub.listRepositories(listRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          2,
+          listRepositoriesResponse.getTotalRecords());
       Assert.assertEquals(
           "Repository count not match with expected repository count",
           1,

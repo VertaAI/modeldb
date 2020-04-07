@@ -21,6 +21,7 @@ import ai.verta.modeldb.versioning.ComputeRepositoryDiffRequest;
 import ai.verta.modeldb.versioning.ConfigDiff;
 import ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
+import ai.verta.modeldb.versioning.DeleteBranchRequest;
 import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
@@ -468,6 +469,15 @@ public class DiffTest {
     } else {
       blobDiff3 = result.get("modeldb#blob#march#blob.json" + DiffStatus.MODIFIED);
       Assert.assertNotNull(blobDiff3);
+    }
+
+    for (String branch : new String[] {branchA, branchB}) {
+      DeleteBranchRequest deleteBranchRequest =
+          DeleteBranchRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setBranch(branch)
+              .build();
+      versioningServiceBlockingStub.deleteBranch(deleteBranchRequest);
     }
 
     for (Commit commit : new Commit[] {commitB, commitA}) {
@@ -934,6 +944,15 @@ public class DiffTest {
     } else {
       blobDiff3 = result.get("modeldb#blob#march#blob.json" + DiffStatus.MODIFIED);
       Assert.assertNotNull(blobDiff3);
+    }
+
+    for (String branch : new String[] {branchA, branchB}) {
+      DeleteBranchRequest deleteBranchRequest =
+          DeleteBranchRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setBranch(branch)
+              .build();
+      versioningServiceBlockingStub.deleteBranch(deleteBranchRequest);
     }
 
     for (Commit commit : new Commit[] {commitB, commitA}) {

@@ -830,8 +830,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           break;
       }
     }
-    roleService.deleteWorkspaceRoleBindings(workspaceId, workspaceType, projectId,
-        ModelDBConstants.ROLE_PROJECT_ADMIN, ModelDBServiceResourceTypes.PROJECT);
+    roleService.deleteWorkspaceRoleBindings(
+        workspaceId,
+        workspaceType,
+        projectId,
+        ModelDBConstants.ROLE_PROJECT_ADMIN,
+        ModelDBServiceResourceTypes.PROJECT);
   }
 
   @Override
