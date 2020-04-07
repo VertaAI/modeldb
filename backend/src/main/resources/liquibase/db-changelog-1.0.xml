@@ -144,7 +144,7 @@
             </not>
         </preConditions>
         <addColumn tableName="project">
-            <column name="isDeleted" type="boolean"/>
+            <column name="isDeleted" type="boolean" defaultValueBoolean="false"/>
         </addColumn>
     </changeSet>
 
@@ -155,7 +155,7 @@
             </not>
         </preConditions>
         <addColumn tableName="experiment">
-            <column name="isDeleted" type="boolean"/>
+            <column name="isDeleted" type="boolean" defaultValueBoolean="false"/>
         </addColumn>
     </changeSet>
 
@@ -166,7 +166,7 @@
             </not>
         </preConditions>
         <addColumn tableName="experiment_run">
-            <column name="isDeleted" type="boolean"/>
+            <column name="isDeleted" type="boolean" defaultValueBoolean="false"/>
         </addColumn>
     </changeSet>
 

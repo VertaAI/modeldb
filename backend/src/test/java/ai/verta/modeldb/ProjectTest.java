@@ -2889,6 +2889,9 @@ public class ProjectTest {
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
 
+      //TODO: Fix test cases
+      Thread.sleep(2000);
+
       // Start cross-checking of deleted the project all data from DB from here.
       try {
         GetProjectById getProject = GetProjectById.newBuilder().setId(project.getId()).build();
@@ -3115,7 +3118,7 @@ public class ProjectTest {
         }
       }
 
-    } catch (StatusRuntimeException e) {
+    } catch (StatusRuntimeException | InterruptedException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
       fail();

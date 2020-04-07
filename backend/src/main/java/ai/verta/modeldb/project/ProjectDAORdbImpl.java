@@ -17,6 +17,7 @@ import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
@@ -57,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -69,6 +71,8 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import static ai.verta.modeldb.authservice.AuthServiceChannel.isMigrationUtilsCall;
 
 public class ProjectDAORdbImpl implements ProjectDAO {
 
@@ -855,7 +859,38 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<ProjectEntity> projectEntities = getProjectEntityByBatchIds(session, projectIds);
+      Transaction transaction = session.beginTransaction();
+      Query updateProject = session.createQuery("UPDATE " + ProjectEntity.class.getSimpleName() + " pr SET pr.isDeleted = true WHERE pr.id IN (:ids)");
+      updateProject.setParameterList("ids", projectIds);
+      updateProject.executeUpdate();
+
+      Query updateExperiment = session.createQuery("UPDATE " + ExperimentEntity.class.getSimpleName() + " ex SET ex.isDeleted = true WHERE ex.project_id IN (:ids)");
+      updateExperiment.setParameterList("ids", projectIds);
+      updateExperiment.executeUpdate();
+
+      Query query = session.createQuery("UPDATE " + ExperimentRunEntity.class.getSimpleName() + " exr SET exr.isDeleted = true WHERE exr.project_id IN (:ids)");
+      query.setParameterList("ids", projectIds);
+      query.executeUpdate();
+      transaction.commit();
+    }
+    CompletableFuture.supplyAsync(
+                    () -> {
+                      int loopBreakCount = 0;
+                      isMigrationUtilsCall = true;
+                      deleteEntitiesInBackground(loopBreakCount, projectIds, allowedProjectIds);
+                      isMigrationUtilsCall = false;
+                      return true;
+                    });
+    LOGGER.debug("Project deleted successfully");
+    return true;
+  }
+
+  private void deleteEntitiesInBackground(int loopBreakCount, List<String> projectIds, List<String> allowedProjectIds) {
+    LOGGER.debug("Project and its children deletion start in background : try = {}", loopBreakCount + 1);
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Query query = session.createQuery(GET_PROJECT_BY_IDS_HQL + " OR p.isDeleted = true");
+      query.setParameterList("ids", projectIds);
+      List<ProjectEntity> projectEntities = query.list();
 
       deleteExperimentsWithPagination(session, allowedProjectIds);
 
@@ -871,8 +906,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       // Remove roleBindings by accessible projects
       deleteRoleBindingsOfAccessibleProjects(projectEntities);
       transaction.commit();
-      LOGGER.debug("Project deleted successfully");
-      return true;
+      LOGGER.debug("Project and its children deletion finish in background");
+    } catch (Exception ex){
+      LOGGER.warn("Error in deleteEntitiesInBackground()", ex);
+      if (loopBreakCount < 5){
+        loopBreakCount++;
+        deleteEntitiesInBackground(loopBreakCount, projectIds, allowedProjectIds);
+      }
     }
   }
 
