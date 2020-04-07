@@ -97,6 +97,11 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public boolean deleteRoleBindings(List<String> roleBindingNames) {
+    return true;
+  }
+
+  @Override
   public List<GetCollaboratorResponse> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
@@ -156,6 +161,14 @@ public class PublicRoleServiceUtils implements RoleService {
       String resourceId,
       String resourceOwnerId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
+
+  @Override
+  public List<String> getResourceRoleBindings(
+      String resourceId,
+      String resourceOwnerId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return Collections.emptyList();
+  }
 
   @Override
   public RoleBinding getRoleBindingByName(String roleBindingName) {
@@ -242,6 +255,16 @@ public class PublicRoleServiceUtils implements RoleService {
       String valueOf,
       String roleRepositoryAdmin,
       ModelDBServiceResourceTypes repository) {}
+
+  @Override
+  public String getWorkspaceRoleBindings(
+      String workspace_id,
+      WorkspaceType forNumber,
+      String valueOf,
+      String roleRepositoryAdmin,
+      ModelDBServiceResourceTypes repository) {
+    return null;
+  }
 
   @Override
   public String buildAdminRoleBindingName(

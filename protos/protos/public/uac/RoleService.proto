@@ -249,6 +249,14 @@ message DeleteRoleBinding {
     };
 };
 
+message DeleteRoleBindings {
+    repeated string roleBindingNames = 1;
+
+    message Response {
+        bool status = 1;
+    };
+};
+
 service RoleService {
     rpc getRoleById (GetRoleById) returns (GetRoleById.Response) {
         option (google.api.http) = {
@@ -301,6 +309,12 @@ service RoleService {
     rpc deleteRoleBinding (DeleteRoleBinding) returns (DeleteRoleBinding.Response) {
         option (google.api.http) = {
             post : "/v1/role/deleteRoleBinding"
+            body : "*"
+        };
+    };
+    rpc deleteRoleBindings (DeleteRoleBindings) returns (DeleteRoleBindings.Response) {
+        option (google.api.http) = {
+            post : "/v1/role/deleteRoleBindings"
             body : "*"
         };
     };
