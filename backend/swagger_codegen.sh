@@ -343,6 +343,7 @@ import com.pholser.junit.quickcheck.When;
 import com.pholser.junit.quickcheck.generator.Fields;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 import java.util.HashSet;
+
 import org.junit.runner.RunWith;
 
 import java.util.regex.Pattern;
@@ -363,8 +364,13 @@ public class DiffAndMerge {
         assertEquals(newB, diffedB);
 
         // Reapplying the diff should not change the result
-        diffedB = DiffMerger.mergeBlob(diffedB, d, new HashSet<String>());
-        assertEquals(newB, diffedB);
+        HashSet<String> conflictSet = new HashSet<String>();
+        diffedB = DiffMerger.mergeBlob(diffedB, d, conflictSet);
+        if( newA == null || newB == null) {
+          assertEquals(newB, diffedB);
+        } else{
+          assertFalse(conflictSet.isEmpty());
+        }
     }
 
 EOF
@@ -385,9 +391,14 @@ do
         ${type}Blob diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(newA, d, new HashSet<String>());
         assertEquals(newB, diffedB);
 
+		HashSet<String> conflictSet = new HashSet<String>();
         // Reapplying the diff should not change the result
-        diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(diffedB, d, new HashSet<String>());
-        assertEquals(newB, diffedB);
+        diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(diffedB, d, conflictSet);
+        if( newA == null || newB == null) {
+          assertEquals(newB, diffedB);
+        } else{
+          assertFalse(conflictSet.isEmpty());
+        }
     }
 
 EOF
