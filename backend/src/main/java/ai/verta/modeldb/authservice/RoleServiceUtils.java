@@ -750,80 +750,80 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private Map<ModelDBServiceActions, Set<CollaboratorBase>> getCollaborators(
-          AuthServiceChannel authServiceChannel,
-          String resourceOwnerId,
-          String resourceId,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          List<Action> modelDBServiceActionsList,
-          Metadata requestHeaders) {
+      AuthServiceChannel authServiceChannel,
+      String resourceOwnerId,
+      String resourceId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      List<Action> modelDBServiceActionsList,
+      Metadata requestHeaders) {
     GetAllowedEntitiesWithActions getAllowedEntitiesRequest =
-            GetAllowedEntitiesWithActions.newBuilder()
-                    .addAllActions(modelDBServiceActionsList)
-                    .addResources(
-                            Resources.newBuilder()
-                                    .addResourceIds(resourceId)
-                                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                                    .setResourceType(
-                                            ResourceType.newBuilder()
-                                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                                    .build())
-                    .build();
+        GetAllowedEntitiesWithActions.newBuilder()
+            .addAllActions(modelDBServiceActionsList)
+            .addResources(
+                Resources.newBuilder()
+                    .addResourceIds(resourceId)
+                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                    .build())
+            .build();
     LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
     GetAllowedEntitiesWithActions.Response getAllowedEntitiesResponse =
-            authServiceChannel
-                    .getAuthzServiceBlockingStub(requestHeaders)
-                    .getAllowedEntitiesWithActions(getAllowedEntitiesRequest);
+        authServiceChannel
+            .getAuthzServiceBlockingStub(requestHeaders)
+            .getAllowedEntitiesWithActions(getAllowedEntitiesRequest);
     LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
     LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedEntitiesResponse);
 
     Map<ModelDBServiceActions, Set<CollaboratorBase>> collaboratorsActionMap = new HashMap<>();
     if (getAllowedEntitiesResponse.getEntitiesWithActionsCount() != 0) {
       for (GetAllowedEntitiesWithActionsResponse entitiesWithActionsResponse :
-              getAllowedEntitiesResponse.getEntitiesWithActionsList()) {
+          getAllowedEntitiesResponse.getEntitiesWithActionsList()) {
         Set<CollaboratorBase> collaborators = new HashSet<>();
         for (Entities entities : entitiesWithActionsResponse.getEntitiesList()) {
           entities.getUserIdsList().stream()
-                  .filter(id -> !id.equals(resourceOwnerId))
-                  .forEach(id -> collaborators.add(new CollaboratorUser(authService, id)));
+              .filter(id -> !id.equals(resourceOwnerId))
+              .forEach(id -> collaborators.add(new CollaboratorUser(authService, id)));
           entities
-                  .getTeamIdsList()
-                  .forEach(
-                          teamId -> {
-                            try {
-                              CollaboratorTeam collaboratorTeam = new CollaboratorTeam(teamId);
-                              collaborators.add(collaboratorTeam);
-                            } catch (StatusRuntimeException ex) {
-                              if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-                                LOGGER.warn(
-                                        "Current user is not a member of the team : "
-                                                + teamId
-                                                + ", "
-                                                + ex.getMessage(),
-                                        ex);
-                              }
-                            }
-                          });
+              .getTeamIdsList()
+              .forEach(
+                  teamId -> {
+                    try {
+                      CollaboratorTeam collaboratorTeam = new CollaboratorTeam(teamId);
+                      collaborators.add(collaboratorTeam);
+                    } catch (StatusRuntimeException ex) {
+                      if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+                        LOGGER.warn(
+                            "Current user is not a member of the team : "
+                                + teamId
+                                + ", "
+                                + ex.getMessage(),
+                            ex);
+                      }
+                    }
+                  });
           entities
-                  .getOrgIdsList()
-                  .forEach(
-                          orgId -> {
-                            try {
-                              CollaboratorOrg collaboratorOrg = new CollaboratorOrg(orgId);
-                              collaborators.add(collaboratorOrg);
-                            } catch (StatusRuntimeException ex) {
-                              if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-                                LOGGER.warn(
-                                        "Current user is not a member of the organization : "
-                                                + orgId
-                                                + ", "
-                                                + ex.getMessage(),
-                                        ex);
-                              }
-                            }
-                          });
+              .getOrgIdsList()
+              .forEach(
+                  orgId -> {
+                    try {
+                      CollaboratorOrg collaboratorOrg = new CollaboratorOrg(orgId);
+                      collaborators.add(collaboratorOrg);
+                    } catch (StatusRuntimeException ex) {
+                      if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+                        LOGGER.warn(
+                            "Current user is not a member of the organization : "
+                                + orgId
+                                + ", "
+                                + ex.getMessage(),
+                            ex);
+                      }
+                    }
+                  });
         }
         collaboratorsActionMap.put(
-                entitiesWithActionsResponse.getActions().getModeldbServiceAction(), collaborators);
+            entitiesWithActionsResponse.getActions().getModeldbServiceAction(), collaborators);
       }
     }
 
