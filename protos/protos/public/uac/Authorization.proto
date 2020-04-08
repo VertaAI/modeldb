@@ -29,20 +29,6 @@ message GetAllowedEntities {
     };
 };
 
-message GetAllowedEntitiesWithActions {
-    repeated Action actions = 1;
-    repeated Resources resources = 2;
-
-    message Response {
-        repeated GetAllowedEntitiesWithActionsResponse entitiesWithActions = 1;
-    };
-};
-
-message GetAllowedEntitiesWithActionsResponse {
-    repeated Entities entities = 1;
-    Action actions = 2;
-}
-
 // Same as above, but lists the resources on which actions can be performed by entities
 message GetAllowedResources {
     repeated Entities entities = 1;
@@ -96,12 +82,6 @@ service AuthzService {
     rpc getAllowedEntities (GetAllowedEntities) returns (GetAllowedEntities.Response) {
         option (google.api.http) = {
             post : "/v1/authz/getAllowedEntities"
-            body : "*"
-        };
-    };
-    rpc getAllowedEntitiesWithActions (GetAllowedEntitiesWithActions) returns (GetAllowedEntitiesWithActions.Response) {
-        option (google.api.http) = {
-            post : "/v1/authz/getAllowedEntitiesWithActions"
             body : "*"
         };
     };
