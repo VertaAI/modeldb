@@ -40,6 +40,7 @@ class Path(_dataset._Dataset):
     def __init__(self, paths):
         if isinstance(paths, six.string_types):
             paths = [paths]
+        paths = map(os.path.expanduser, paths)
 
         super(Path, self).__init__()
 

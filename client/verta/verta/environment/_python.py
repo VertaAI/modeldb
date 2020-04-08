@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import copy
+import os
 import sys
 
 from ..external import six
@@ -210,6 +211,7 @@ class Python(_environment._Environment):
             Requirement specifiers.
 
         """
+        filepath = os.path.expanduser(filepath)
         with open(filepath, 'r') as f:
             return _pip_requirements_utils.clean_reqs_file_lines(f.readlines())
 
