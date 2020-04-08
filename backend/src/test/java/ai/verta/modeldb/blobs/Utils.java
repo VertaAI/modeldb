@@ -207,14 +207,22 @@ public class Utils {
     Map<String, AutogenPythonRequirementEnvironmentBlob> blobMap = new HashMap<>();
     if (b.getConstraints() != null) {
       for (AutogenPythonRequirementEnvironmentBlob blob : b.getConstraints()) {
-        blobMap.put(blob.getLibrary(), blob);
+        blobMap.put(
+            blob.getLibrary() == null
+                ? ""
+                : blob.getLibrary() + blob.getConstraint() == null ? "" : blob.getConstraint(),
+            blob);
       }
       b.setConstraints(new LinkedList<AutogenPythonRequirementEnvironmentBlob>(blobMap.values()));
     }
     if (b.getRequirements() != null) {
       blobMap = new HashMap<>();
       for (AutogenPythonRequirementEnvironmentBlob blob : b.getRequirements()) {
-        blobMap.put(blob.getLibrary(), blob);
+        blobMap.put(
+            blob.getLibrary() == null
+                ? ""
+                : blob.getLibrary() + blob.getConstraint() == null ? "" : blob.getConstraint(),
+            blob);
       }
       b.setRequirements(new LinkedList<AutogenPythonRequirementEnvironmentBlob>(blobMap.values()));
     }

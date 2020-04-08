@@ -452,12 +452,8 @@ public class DiffMerger {
                     d,
                     AutogenPythonEnvironmentBlob::getConstraints,
                     AutogenPythonEnvironmentDiff::getConstraints,
-                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
-                    x ->
-                        Utils.either(
-                            x.getA(),
-                            x.getB(),
-                            AutogenPythonRequirementEnvironmentBlob::getLibrary),
+                    e -> e.getLibrary() + e.getConstraint(),
+                    x -> Utils.either(x.getA(), x.getB(), e -> e.getLibrary() + e.getConstraint()),
                     AutogenPythonRequirementEnvironmentDiff::getStatus,
                     AutogenPythonRequirementEnvironmentDiff::getA,
                     AutogenPythonRequirementEnvironmentDiff::getB,
@@ -469,12 +465,8 @@ public class DiffMerger {
                     d,
                     AutogenPythonEnvironmentBlob::getRequirements,
                     AutogenPythonEnvironmentDiff::getRequirements,
-                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
-                    x ->
-                        Utils.either(
-                            x.getA(),
-                            x.getB(),
-                            AutogenPythonRequirementEnvironmentBlob::getLibrary),
+                    e -> e.getLibrary() + e.getConstraint(),
+                    x -> Utils.either(x.getA(), x.getB(), e -> e.getLibrary() + e.getConstraint()),
                     AutogenPythonRequirementEnvironmentDiff::getStatus,
                     AutogenPythonRequirementEnvironmentDiff::getA,
                     AutogenPythonRequirementEnvironmentDiff::getB,
