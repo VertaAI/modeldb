@@ -27,6 +27,7 @@ import ai.verta.swagger.client.objects._
 
 case class UacOrganization (
   created_timestamp: Option[] = None,
+  default_repo_collaborator_type: Option[CollaboratorTypeEnumCollaboratorType] = None,
   description: Option[String] = None,
   global_can_deploy: Option[TernaryEnumTernary] = None,
   global_collaborator_type: Option[CollaboratorTypeEnumCollaboratorType] = None,
@@ -44,6 +45,7 @@ object UacOrganization {
     new JObject(
       List[Option[JField]](
         obj.created_timestamp.map(x => JField("created_timestamp", (x))),
+        obj.default_repo_collaborator_type.map(x => JField("default_repo_collaborator_type", ((x: CollaboratorTypeEnumCollaboratorType) => CollaboratorTypeEnumCollaboratorType.toJson(x))(x))),
         obj.description.map(x => JField("description", JString(x))),
         obj.global_can_deploy.map(x => JField("global_can_deploy", ((x: TernaryEnumTernary) => TernaryEnumTernary.toJson(x))(x))),
         obj.global_collaborator_type.map(x => JField("global_collaborator_type", ((x: CollaboratorTypeEnumCollaboratorType) => CollaboratorTypeEnumCollaboratorType.toJson(x))(x))),
@@ -66,6 +68,7 @@ object UacOrganization {
         UacOrganization(
           // TODO: handle required
           created_timestamp = fieldsMap.get("created_timestamp").map(),
+          default_repo_collaborator_type = fieldsMap.get("default_repo_collaborator_type").map(CollaboratorTypeEnumCollaboratorType.fromJson),
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
           global_can_deploy = fieldsMap.get("global_can_deploy").map(TernaryEnumTernary.fromJson),
           global_collaborator_type = fieldsMap.get("global_collaborator_type").map(CollaboratorTypeEnumCollaboratorType.fromJson),
