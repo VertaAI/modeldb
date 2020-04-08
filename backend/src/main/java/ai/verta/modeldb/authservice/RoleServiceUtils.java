@@ -577,6 +577,12 @@ public class RoleServiceUtils implements RoleService {
           resourceId,
           collaborator,
           ModelDBServiceResourceTypes.DATASET.name());
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
+      return buildRoleBindingName(
+          ModelDBConstants.ROLE_REPOSITORY_READ_ONLY,
+          resourceId,
+          collaborator,
+          ModelDBServiceResourceTypes.REPOSITORY.name());
     } else {
       return ModelDBConstants.EMPTY_STRING;
     }
@@ -599,6 +605,12 @@ public class RoleServiceUtils implements RoleService {
           resourceId,
           collaborator,
           ModelDBServiceResourceTypes.DATASET.name());
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
+      return buildRoleBindingName(
+          ModelDBConstants.ROLE_REPOSITORY_READ_WRITE,
+          resourceId,
+          collaborator,
+          ModelDBServiceResourceTypes.REPOSITORY.name());
     } else {
       return ModelDBConstants.EMPTY_STRING;
     }
@@ -1268,11 +1280,32 @@ public class RoleServiceUtils implements RoleService {
       WorkspaceType workspaceType,
       String resourceId,
       String roleName,
-      ModelDBServiceResourceTypes resourceTypes) {
+      ModelDBServiceResourceTypes resourceTypes,
+      boolean orgScopedPublic) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       CollaboratorUser collaboratorUser;
       switch (workspaceType) {
         case ORGANIZATION:
+          if (orgScopedPublic) {
+            String globalSharingRoleName =
+                new StringBuilder()
+                    .append("O_")
+                    .append(workspaceId)
+                    .append("_GLOBAL_SHARING")
+                    .toString();
+
+            String globalSharingRoleBindingName =
+                buildRoleBindingName(
+                    globalSharingRoleName,
+                    resourceId,
+                    new CollaboratorOrg(workspaceId),
+                    resourceTypes.name());
+            RoleBinding globalSharingRoleBinding =
+                getRoleBindingByName(globalSharingRoleBindingName);
+            if (globalSharingRoleBinding != null && !globalSharingRoleBinding.getId().isEmpty()) {
+              deleteRoleBinding(globalSharingRoleBinding.getId());
+            }
+          }
           Organization org = (Organization) getOrgById(workspaceId);
           collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
           break;
@@ -1292,16 +1325,75 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public String getWorkspaceRoleBindings(
+  public void createWorkspaceRoleBinding(
+      String workspaceId,
+      WorkspaceType workspaceType,
+      String resourceId,
+      String roleAdminName,
+      ModelDBServiceResourceTypes resourceType,
+      boolean orgScopedPublic) {
+    if (workspaceId != null && !workspaceId.isEmpty()) {
+      Role admin = getRoleByName(roleAdminName, null);
+      final CollaboratorUser collaboratorUser;
+      switch (workspaceType) {
+        case ORGANIZATION:
+          if (orgScopedPublic) {
+            String globalSharingRoleName =
+                new StringBuilder()
+                    .append("O_")
+                    .append(workspaceId)
+                    .append("_GLOBAL_SHARING")
+                    .toString();
+            Role globalSharingRole =
+                getRoleByName(
+                    globalSharingRoleName, RoleScope.newBuilder().setOrgId(workspaceId).build());
+            createRoleBinding(
+                globalSharingRole, new CollaboratorOrg(workspaceId), resourceId, resourceType);
+          }
+          Organization org = (Organization) getOrgById(workspaceId);
+          collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
+          break;
+        case USER:
+          collaboratorUser = new CollaboratorUser(authService, workspaceId);
+          break;
+        default:
+          return;
+      }
+      createRoleBinding(admin, collaboratorUser, resourceId, resourceType);
+    }
+  }
+
+  @Override
+  public List<String> getWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceType workspaceType,
       String resourceId,
       String roleName,
-      ModelDBServiceResourceTypes resourceTypes) {
+      ModelDBServiceResourceTypes resourceTypes,
+      boolean orgScopedPublic) {
+    List<String> workspaceRoleBindingList = new ArrayList<>();
     if (workspaceId != null && !workspaceId.isEmpty()) {
       CollaboratorUser collaboratorUser;
       switch (workspaceType) {
         case ORGANIZATION:
+          if (orgScopedPublic) {
+            String globalSharingRoleName =
+                new StringBuilder()
+                    .append("O_")
+                    .append(workspaceId)
+                    .append("_GLOBAL_SHARING")
+                    .toString();
+
+            String globalSharingRoleBindingName =
+                buildRoleBindingName(
+                    globalSharingRoleName,
+                    resourceId,
+                    new CollaboratorOrg(workspaceId),
+                    resourceTypes.name());
+            if (globalSharingRoleBindingName != null) {
+              workspaceRoleBindingList.add(globalSharingRoleBindingName);
+            }
+          }
           Organization org = (Organization) getOrgById(workspaceId);
           collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
           break;
@@ -1311,8 +1403,12 @@ public class RoleServiceUtils implements RoleService {
         default:
           return null;
       }
-      return buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
+      String roleBindingName =
+          buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
+      if (roleBindingName != null) {
+        workspaceRoleBindingList.add(roleBindingName);
+      }
     }
-    return null;
+    return workspaceRoleBindingList;
   }
 }

@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPythonRequirementEnvironmentBlob implements ProtoType {
   private String Constraint;
@@ -60,20 +64,15 @@ public class AutogenPythonRequirementEnvironmentBlob implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenPythonRequirementEnvironmentBlob");
-    if (this.Constraint != null && !this.Constraint.equals("")) {
-      sb.append("::Constraint::").append(Constraint);
-    }
-    if (this.Library != null && !this.Library.equals("")) {
-      sb.append("::Library::").append(Library);
-    }
-    if (this.Version != null && !this.Version.equals(null)) {
-      sb.append("::Version::").append(Version);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -110,11 +109,6 @@ public class AutogenPythonRequirementEnvironmentBlob implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.Constraint, this.Library, this.Version);
   }
 
   public AutogenPythonRequirementEnvironmentBlob setConstraint(String value) {
