@@ -342,6 +342,8 @@ import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.When;
 import com.pholser.junit.quickcheck.generator.Fields;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import java.util.HashSet;
+
 import org.junit.runner.RunWith;
 
 import java.util.regex.Pattern;
@@ -358,12 +360,15 @@ public class DiffAndMerge {
         AutogenBlobDiff d = DiffComputer.computeBlobDiff(newA, newB);
 
         // Applying the diff on top of the original A should get original B
-        AutogenBlob diffedB = DiffMerger.mergeBlob(newA, d);
+        AutogenBlob diffedB = DiffMerger.mergeBlob(newA, d, new HashSet<String>());
         assertEquals(newB, diffedB);
 
         // Reapplying the diff should not change the result
-        diffedB = DiffMerger.mergeBlob(diffedB, d);
-        assertEquals(newB, diffedB);
+        HashSet<String> conflictSet = new HashSet<String>();
+        diffedB = DiffMerger.mergeBlob(diffedB, d, conflictSet);
+        if (conflictSet.isEmpty()) {
+          assertEquals(newB, diffedB);
+        }
     }
 
 EOF
@@ -381,12 +386,15 @@ do
         ${type}Diff d = DiffComputer.compute$(echo $type | sed 's,Autogen,,')Diff(newA, newB);
 
         // Applying the diff on top of the original A should get original B
-        ${type}Blob diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(newA, d);
+        ${type}Blob diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(newA, d, new HashSet<String>());
         assertEquals(newB, diffedB);
 
+        HashSet<String> conflictSet = new HashSet<String>();
         // Reapplying the diff should not change the result
-        diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(diffedB, d);
-        assertEquals(newB, diffedB);
+        diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(diffedB, d, conflictSet);
+        if (conflictSet.isEmpty()) {
+          assertEquals(newB, diffedB);
+        }
     }
 
 EOF
