@@ -280,7 +280,7 @@ for f in $(find $TARGET -type f | grep '\(Blob\|Diff\).java$' | sort)
 do
     type=$(basename $f | sed 's,\.java$,,')
     cat >> $TEST_FILE <<EOF
-    @Property public void equality(${type} b) {
+    @Property public void equality${type}(${type} b) {
         assertTrue(b.equals(b));
     }
 
@@ -317,7 +317,7 @@ for f in $(find $TARGET -type f | grep '\(Blob\|Diff\).java$' | sort)
 do
     type=$(basename $f | sed 's,\.java$,,')
     cat >> $TEST_FILE <<EOF
-    @Property public void protoEquality(${type} b) throws ModelDBException {
+    @Property public void protoEquality${type}(${type} b) throws ModelDBException {
         ${type} newb = enforceOneof(b);
         ${type} other = newb == null ? null : ${type}.fromProto(newb.toProto().build());
         assertEquals(newb, other);

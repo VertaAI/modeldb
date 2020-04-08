@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenHyperparameterValuesConfigBlob implements ProtoType {
   private Float FloatValue;
@@ -60,20 +64,15 @@ public class AutogenHyperparameterValuesConfigBlob implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenHyperparameterValuesConfigBlob");
-    if (this.FloatValue != null && !this.FloatValue.equals(0.f)) {
-      sb.append("::FloatValue::").append(FloatValue);
-    }
-    if (this.IntValue != null && !this.IntValue.equals(0l)) {
-      sb.append("::IntValue::").append(IntValue);
-    }
-    if (this.StringValue != null && !this.StringValue.equals("")) {
-      sb.append("::StringValue::").append(StringValue);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -109,11 +108,6 @@ public class AutogenHyperparameterValuesConfigBlob implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.FloatValue, this.IntValue, this.StringValue);
   }
 
   public AutogenHyperparameterValuesConfigBlob setFloatValue(Float value) {

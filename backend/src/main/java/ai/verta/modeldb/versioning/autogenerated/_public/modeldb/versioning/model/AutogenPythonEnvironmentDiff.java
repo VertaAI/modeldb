@@ -8,10 +8,14 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPythonEnvironmentDiff implements ProtoType {
   private List<AutogenPythonRequirementEnvironmentDiff> Constraints;
@@ -66,22 +70,15 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenPythonEnvironmentDiff");
-    if (this.Constraints != null && !this.Constraints.equals(null) && !this.Constraints.isEmpty()) {
-      sb.append("::Constraints::").append(Constraints);
-    }
-    if (this.Requirements != null
-        && !this.Requirements.equals(null)
-        && !this.Requirements.isEmpty()) {
-      sb.append("::Requirements::").append(Requirements);
-    }
-    if (this.Version != null && !this.Version.equals(null)) {
-      sb.append("::Version::").append(Version);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -154,11 +151,6 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.Constraints, this.Requirements, this.Version);
   }
 
   public AutogenPythonEnvironmentDiff setConstraints(

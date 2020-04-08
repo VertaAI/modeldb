@@ -141,7 +141,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -219,7 +219,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -271,7 +271,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -312,7 +312,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -354,7 +354,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -406,7 +406,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -453,7 +453,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -536,7 +536,7 @@ public class CollaboratorTest {
     LOGGER.info("Get Collaborator Negative test start................................");
 
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     GetCollaborator getCollaboratorRequest = GetCollaborator.newBuilder().build();
 
     try {
@@ -557,7 +557,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -618,7 +618,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
     // Create project
@@ -681,7 +681,7 @@ public class CollaboratorTest {
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
@@ -721,7 +721,7 @@ public class CollaboratorTest {
     LOGGER.info("Get Dataset Collaborator test start................................");
 
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
 
@@ -808,7 +808,7 @@ public class CollaboratorTest {
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
@@ -871,7 +871,7 @@ public class CollaboratorTest {
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     List<String> datasetIds = new ArrayList<>();
     for (int index = 0; index < 5; index++) {
@@ -926,7 +926,7 @@ public class CollaboratorTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ProjectTest projectTest = new ProjectTest();
 

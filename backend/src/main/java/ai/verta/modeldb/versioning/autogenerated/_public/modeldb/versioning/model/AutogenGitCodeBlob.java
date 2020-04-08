@@ -8,8 +8,12 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenGitCodeBlob implements ProtoType {
   private String Branch;
@@ -80,26 +84,15 @@ public class AutogenGitCodeBlob implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenGitCodeBlob");
-    if (this.Branch != null && !this.Branch.equals("")) {
-      sb.append("::Branch::").append(Branch);
-    }
-    if (this.Hash != null && !this.Hash.equals("")) {
-      sb.append("::Hash::").append(Hash);
-    }
-    if (this.IsDirty != null && !this.IsDirty.equals(false)) {
-      sb.append("::IsDirty::").append(IsDirty);
-    }
-    if (this.Repo != null && !this.Repo.equals("")) {
-      sb.append("::Repo::").append(Repo);
-    }
-    if (this.Tag != null && !this.Tag.equals("")) {
-      sb.append("::Tag::").append(Tag);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -151,11 +144,6 @@ public class AutogenGitCodeBlob implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.Branch, this.Hash, this.IsDirty, this.Repo, this.Tag);
   }
 
   public AutogenGitCodeBlob setBranch(String value) {

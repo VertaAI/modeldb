@@ -20,7 +20,6 @@ import org.junit.runners.Suite;
   CollaboratorTest.class,
   CommentTest.class,
   HydratedServiceTest.class,
-  HydratedServiceOrgTeamTest.class,
   DatasetTest.class,
   DatasetVersionTest.class,
   ModelDBUtilsTest.class,

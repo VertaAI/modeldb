@@ -38,6 +38,7 @@ import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -78,6 +79,7 @@ public class ExperimentRunTest {
 
   private ManagedChannel channel = null;
   private ManagedChannel client2Channel = null;
+  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -138,6 +140,9 @@ public class ExperimentRunTest {
     if (!client2Channel.isShutdown()) {
       client2Channel.shutdownNow();
     }
+    if (!authServiceChannel.isShutdown()) {
+      authServiceChannel.shutdownNow();
+    }
   }
 
   @Before
@@ -146,6 +151,13 @@ public class ExperimentRunTest {
     channel = grpcCleanup.register(client1ChannelBuilder.maxInboundMessageSize(1024).build());
     client2Channel =
         grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      authServiceChannel =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+    }
   }
 
   private void checkEqualsAssert(StatusRuntimeException e) {
@@ -8768,7 +8780,7 @@ public class ExperimentRunTest {
     ExperimentRunServiceBlockingStub experimentRunServiceStub =
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
         ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
