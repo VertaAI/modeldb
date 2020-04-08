@@ -322,6 +322,7 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
     """
     if isinstance(paths, six.string_types):
         paths = [paths]
+    paths = list(map(os.path.expanduser, paths))
 
     if isinstance(extensions, six.string_types):
         extensions = [extensions]

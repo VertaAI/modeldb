@@ -704,7 +704,7 @@ class PathDatasetVersionInfo(object):
 
 class FilesystemDatasetVersionInfo(PathDatasetVersionInfo):
     def __init__(self, path):
-        self.base_path = os.path.abspath(path)
+        self.base_path = os.path.abspath(os.path.expanduser(path))
         super(FilesystemDatasetVersionInfo, self).__init__()
         self.location_type = _DatasetVersionService.PathLocationTypeEnum.LOCAL_FILE_SYSTEM
         self.dataset_part_infos = self.get_dataset_part_infos()
