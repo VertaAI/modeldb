@@ -7,6 +7,7 @@ import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.versioning.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
+import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
 import ai.verta.swagger._public.modeldb.versioning.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
@@ -19,6 +20,7 @@ case class VersioningRepository (
   id: Option[] = None,
   name: Option[String] = None,
   owner: Option[String] = None,
+  repository_visibility: Option[RepositoryVisibilityEnumRepositoryVisibility] = None,
   workspace_id: Option[String] = None,
   workspace_type: Option[WorkspaceTypeEnumWorkspaceType] = None
 ) extends BaseSwagger {
@@ -34,6 +36,7 @@ object VersioningRepository {
         obj.id.map(x => JField("id", (x))),
         obj.name.map(x => JField("name", JString(x))),
         obj.owner.map(x => JField("owner", JString(x))),
+        obj.repository_visibility.map(x => JField("repository_visibility", ((x: RepositoryVisibilityEnumRepositoryVisibility) => RepositoryVisibilityEnumRepositoryVisibility.toJson(x))(x))),
         obj.workspace_id.map(x => JField("workspace_id", JString(x))),
         obj.workspace_type.map(x => JField("workspace_type", ((x: WorkspaceTypeEnumWorkspaceType) => WorkspaceTypeEnumWorkspaceType.toJson(x))(x)))
       ).flatMap(x => x match {
@@ -54,6 +57,7 @@ object VersioningRepository {
           id = fieldsMap.get("id").map(),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
           owner = fieldsMap.get("owner").map(JsonConverter.fromJsonString),
+          repository_visibility = fieldsMap.get("repository_visibility").map(RepositoryVisibilityEnumRepositoryVisibility.fromJson),
           workspace_id = fieldsMap.get("workspace_id").map(JsonConverter.fromJsonString),
           workspace_type = fieldsMap.get("workspace_type").map(WorkspaceTypeEnumWorkspaceType.fromJson)
         )

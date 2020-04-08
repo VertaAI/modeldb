@@ -7,6 +7,7 @@ import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.versioning.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
+import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
 import ai.verta.swagger._public.modeldb.versioning.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._

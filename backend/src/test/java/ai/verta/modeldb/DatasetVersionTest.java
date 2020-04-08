@@ -19,6 +19,7 @@ import ai.verta.uac.CollaboratorServiceGrpc;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -56,6 +57,7 @@ public class DatasetVersionTest {
 
   private ManagedChannel channel = null;
   private ManagedChannel client2Channel = null;
+  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -116,6 +118,9 @@ public class DatasetVersionTest {
     if (!client2Channel.isShutdown()) {
       client2Channel.shutdownNow();
     }
+    if (!authServiceChannel.isShutdown()) {
+      authServiceChannel.shutdownNow();
+    }
   }
 
   @Before
@@ -124,6 +129,13 @@ public class DatasetVersionTest {
     channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
     client2Channel =
         grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      authServiceChannel =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+    }
   }
 
   public CreateDatasetVersion getDatasetVersionRequest(String datasetId) {
@@ -2156,7 +2168,7 @@ public class DatasetVersionTest {
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
     CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(channel);
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStubClient2 =
         DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
 

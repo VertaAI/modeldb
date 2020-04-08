@@ -8,10 +8,14 @@ import ai.verta.modeldb.versioning.blob.diff.Function3;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import com.pholser.junit.quickcheck.generator.*;
 import com.pholser.junit.quickcheck.random.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.commons.codec.binary.Hex;
 
 public class AutogenCommandLineEnvironmentDiff implements ProtoType {
   private List<String> A;
@@ -72,23 +76,15 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
   }
 
   // TODO: actually hash
-  public String getSHA() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AutogenCommandLineEnvironmentDiff");
-    if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
-      sb.append("::A::").append(A);
-    }
-    if (this.B != null && !this.B.equals(null) && !this.B.isEmpty()) {
-      sb.append("::B::").append(B);
-    }
-    if (this.C != null && !this.C.equals(null) && !this.C.isEmpty()) {
-      sb.append("::C::").append(C);
-    }
-    if (this.Status != null && !this.Status.equals(null)) {
-      sb.append("::Status::").append(Status);
-    }
+  public String getSHA() throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = digest.digest(this.toString().getBytes(StandardCharsets.UTF_8));
+    return new String(new Hex().encode(hash));
+  }
 
-    return sb.toString();
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.toString());
   }
 
   // TODO: not consider order on lists
@@ -163,11 +159,6 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
       }
     }
     return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.A, this.B, this.C, this.Status);
   }
 
   public AutogenCommandLineEnvironmentDiff setA(List<String> value) {
