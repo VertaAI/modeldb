@@ -1372,7 +1372,8 @@ public class RoleServiceUtils implements RoleService {
       String resourceId,
       String roleName,
       ModelDBServiceResourceTypes resourceTypes,
-      boolean orgScopedPublic) {
+      boolean orgScopedPublic,
+      String globalSharing) {
     List<String> workspaceRoleBindingList = new ArrayList<>();
     if (workspaceId != null && !workspaceId.isEmpty()) {
       CollaboratorUser collaboratorUser;

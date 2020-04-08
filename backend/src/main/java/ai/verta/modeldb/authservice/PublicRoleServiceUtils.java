@@ -275,7 +275,8 @@ public class PublicRoleServiceUtils implements RoleService {
       String valueOf,
       String roleRepositoryAdmin,
       ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic) {
+      boolean orgScopedPublic,
+      String globalSharing) {
     return Collections.emptyList();
   }
 
