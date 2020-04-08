@@ -19,6 +19,15 @@ class AuthorizationApi(client: HttpClient, val basePath: String = "/v1") {
 
   def getAllowedEntities(body: UacGetAllowedEntities)(implicit ec: ExecutionContext): Try[UacGetAllowedEntitiesResponse] = Await.result(getAllowedEntitiesAsync(body), Duration.Inf)
 
+  def getAllowedEntitiesWithActionsAsync(body: UacGetAllowedEntitiesWithActions)(implicit ec: ExecutionContext): Future[Try[UacGetAllowedEntitiesWithActionsResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[UacGetAllowedEntitiesWithActions, UacGetAllowedEntitiesWithActionsResponse]("POST", basePath + s"/authz/getAllowedEntitiesWithActions", __query, body, UacGetAllowedEntitiesWithActionsResponse.fromJson)
+  }
+
+  def getAllowedEntitiesWithActions(body: UacGetAllowedEntitiesWithActions)(implicit ec: ExecutionContext): Try[UacGetAllowedEntitiesWithActionsResponse] = Await.result(getAllowedEntitiesWithActionsAsync(body), Duration.Inf)
+
   def getAllowedResourcesAsync(body: UacGetAllowedResources)(implicit ec: ExecutionContext): Future[Try[UacGetAllowedResourcesResponse]] = {
     val __query = Map[String,String](
     )

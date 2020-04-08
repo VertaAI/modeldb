@@ -43,6 +43,38 @@
         ]
       }
     },
+    "/authz/getAllowedEntitiesWithActions": {
+      "post": {
+        "operationId": "getAllowedEntitiesWithActions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedEntitiesWithActionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedEntitiesWithActions"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
     "/authz/getAllowedResources": {
       "post": {
         "operationId": "getAllowedResources",
@@ -463,6 +495,37 @@
           "items": {
             "$ref": "#/definitions/uacEntities"
           }
+        }
+      }
+    },
+    "uacGetAllowedEntitiesWithActions": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResources"
+          }
+        }
+      }
+    },
+    "uacGetAllowedEntitiesWithActionsResponse": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacEntities"
+          }
+        },
+        "actions": {
+          "$ref": "#/definitions/uacAction"
         }
       }
     },
