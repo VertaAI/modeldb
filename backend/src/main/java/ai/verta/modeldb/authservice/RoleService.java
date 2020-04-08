@@ -165,9 +165,9 @@ public interface RoleService {
 
   List<String> getWorkspaceRoleBindings(
       String workspace_id,
-      WorkspaceType forNumber,
-      String valueOf,
-      String roleRepositoryAdmin,
-      ModelDBServiceResourceTypes repository,
+      WorkspaceType workspaceType,
+      String resourceId,
+      String adminRole,
+      ModelDBServiceResourceTypes resourceType,
       boolean orgScopedPublic);
 }

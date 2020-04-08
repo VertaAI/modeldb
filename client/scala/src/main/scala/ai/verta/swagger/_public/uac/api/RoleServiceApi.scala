@@ -28,6 +28,15 @@ class RoleServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def deleteRoleBinding(body: UacDeleteRoleBinding)(implicit ec: ExecutionContext): Try[UacDeleteRoleBindingResponse] = Await.result(deleteRoleBindingAsync(body), Duration.Inf)
 
+  def deleteRoleBindingsAsync(body: UacDeleteRoleBindings)(implicit ec: ExecutionContext): Future[Try[UacDeleteRoleBindingsResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[UacDeleteRoleBindings, UacDeleteRoleBindingsResponse]("POST", basePath + s"/role/deleteRoleBindings", __query, body, UacDeleteRoleBindingsResponse.fromJson)
+  }
+
+  def deleteRoleBindings(body: UacDeleteRoleBindings)(implicit ec: ExecutionContext): Try[UacDeleteRoleBindingsResponse] = Await.result(deleteRoleBindingsAsync(body), Duration.Inf)
+
   def getBindingRoleByIdAsync(id: String)(implicit ec: ExecutionContext): Future[Try[UacGetRoleBindingByIdResponse]] = {
     val __query = Map[String,String](
       "id" -> client.toQuery(id)

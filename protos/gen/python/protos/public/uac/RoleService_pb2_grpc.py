@@ -64,6 +64,11 @@ class RoleServiceStub(object):
         request_serializer=protos_dot_public_dot_uac_dot_RoleService__pb2.DeleteRoleBinding.SerializeToString,
         response_deserializer=protos_dot_public_dot_uac_dot_RoleService__pb2.DeleteRoleBinding.Response.FromString,
         )
+    self.deleteRoleBindings = channel.unary_unary(
+        '/ai.verta.uac.RoleService/deleteRoleBindings',
+        request_serializer=protos_dot_public_dot_uac_dot_RoleService__pb2.DeleteRoleBindings.SerializeToString,
+        response_deserializer=protos_dot_public_dot_uac_dot_RoleService__pb2.DeleteRoleBindings.Response.FromString,
+        )
 
 
 class RoleServiceServicer(object):
@@ -140,6 +145,13 @@ class RoleServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def deleteRoleBindings(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_RoleServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -192,6 +204,11 @@ def add_RoleServiceServicer_to_server(servicer, server):
           servicer.deleteRoleBinding,
           request_deserializer=protos_dot_public_dot_uac_dot_RoleService__pb2.DeleteRoleBinding.FromString,
           response_serializer=protos_dot_public_dot_uac_dot_RoleService__pb2.DeleteRoleBinding.Response.SerializeToString,
+      ),
+      'deleteRoleBindings': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteRoleBindings,
+          request_deserializer=protos_dot_public_dot_uac_dot_RoleService__pb2.DeleteRoleBindings.FromString,
+          response_serializer=protos_dot_public_dot_uac_dot_RoleService__pb2.DeleteRoleBindings.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
