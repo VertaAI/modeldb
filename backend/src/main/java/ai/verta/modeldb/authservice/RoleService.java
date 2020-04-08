@@ -143,7 +143,14 @@ public interface RoleService {
       WorkspaceType forNumber,
       String valueOf,
       String roleRepositoryAdmin,
-      ModelDBServiceResourceTypes repository);
+      ModelDBServiceResourceTypes repository,
+      boolean orgScopedPublic);
 
-  void createWorkspaceRoleBinding(String workspace_id, WorkspaceType forNumber, String valueOf, String roleRepositoryAdmin, ModelDBServiceResourceTypes repository);
+  void createWorkspaceRoleBinding(
+      String workspace_id,
+      WorkspaceType forNumber,
+      String valueOf,
+      String roleRepositoryAdmin,
+      ModelDBServiceResourceTypes repository,
+      boolean orgScopedPublic);
 }

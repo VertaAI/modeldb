@@ -330,4 +330,9 @@
 		</sql>
 		<dropTable tableName="folder_element_temp"/>
 	</changeSet>
+	<changeSet id="add-visibility-column-to-repository" author="lezhevg">
+		<addColumn tableName="repository">
+			<column name="repository_visibility" type="int4"/>
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>

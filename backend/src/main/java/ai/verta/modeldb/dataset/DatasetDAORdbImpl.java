@@ -154,11 +154,18 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       String datasetId,
       DatasetVisibility datasetVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspaceRoleBinding(workspaceId, workspaceType, datasetId, ModelDBConstants.ROLE_DATASET_ADMIN, ModelDBServiceResourceTypes.DATASET);
-      Role datasetRead = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_READ_ONLY, null);
+      roleService.createWorkspaceRoleBinding(
+          workspaceId,
+          workspaceType,
+          datasetId,
+          ModelDBConstants.ROLE_DATASET_ADMIN,
+          ModelDBServiceResourceTypes.DATASET,
+          false);
       switch (workspaceType) {
         case ORGANIZATION:
           if (datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC)) {
+            Role datasetRead =
+                roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_READ_ONLY, null);
             roleService.createRoleBinding(
                 datasetRead,
                 new CollaboratorOrg(workspaceId),
@@ -286,7 +293,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         workspaceType,
         datasetId,
         ModelDBConstants.ROLE_DATASET_ADMIN,
-        ModelDBServiceResourceTypes.DATASET);
+        ModelDBServiceResourceTypes.DATASET,
+        false);
   }
 
   public void deleteDatasetVersionsByDatasetIDs(Session session, List<String> datasetIds) {

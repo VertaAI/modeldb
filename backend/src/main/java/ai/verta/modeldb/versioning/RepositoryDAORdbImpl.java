@@ -1,5 +1,6 @@
 package ai.verta.modeldb.versioning;
 
+import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -19,6 +20,7 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.GetRepositoryRequest.Response;
+import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
@@ -323,7 +325,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             new RepositoryEntity(
                 request.getRepository().getName(),
                 workspaceDTO,
-                request.getRepository().getOwner());
+                request.getRepository().getOwner(),
+                request.getRepository().getRepositoryVisibility());
       } else {
         repository = getRepositoryById(session, request.getId(), true);
         ModelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -350,8 +353,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         roleService.createWorkspaceRoleBinding(
             repository.getWorkspace_id(),
             WorkspaceType.forNumber(repository.getWorkspace_type()),
-            String.valueOf(repository.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-            ModelDBServiceResourceTypes.REPOSITORY);
+            String.valueOf(repository.getId()),
+            ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+            ModelDBServiceResourceTypes.REPOSITORY,
+            request.getRepository().getRepositoryVisibility() != null
+                && request
+                    .getRepository()
+                    .getRepositoryVisibility()
+                    .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC));
       }
       session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
@@ -382,7 +391,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
           String.valueOf(repositoryEntity.getId()),
           ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-          ModelDBServiceResourceTypes.REPOSITORY);
+          ModelDBServiceResourceTypes.REPOSITORY,
+          repositoryEntity
+              .getRepositoryVisibility()
+              .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE));
     }
   }
 

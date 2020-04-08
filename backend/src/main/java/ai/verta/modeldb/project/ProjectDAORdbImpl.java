@@ -40,7 +40,6 @@ import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -244,39 +243,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       String projectId,
       ProjectVisibility projectVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspaceRoleBinding(workspaceId, workspaceType, projectId, ModelDBConstants.ROLE_PROJECT_ADMIN, ModelDBServiceResourceTypes.PROJECT);
-      switch (workspaceType) {
-        case ORGANIZATION:
-          if (projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC)) {
-            String globalSharingRoleName =
-                new StringBuilder()
-                    .append("O_")
-                    .append(workspaceId)
-                    .append("_GLOBAL_SHARING")
-                    .toString();
-            try {
-              Role globalSharingRole =
-                  roleService.getRoleByName(
-                      globalSharingRoleName, RoleScope.newBuilder().setOrgId(workspaceId).build());
-              roleService.createRoleBinding(
-                  globalSharingRole,
-                  new CollaboratorOrg(workspaceId),
-                  projectId,
-                  ModelDBServiceResourceTypes.PROJECT);
-            } catch (StatusRuntimeException ex) {
-              if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-                // DO NOTHING if the role does not exist
-                LOGGER.warn(ex.getMessage());
-              } else {
-                throw ex;
-              }
-            }
-          }
-          break;
-        case USER:
-        default:
-          break;
-      }
+      roleService.createWorkspaceRoleBinding(
+          workspaceId,
+          workspaceType,
+          projectId,
+          ModelDBConstants.ROLE_PROJECT_ADMIN,
+          ModelDBServiceResourceTypes.PROJECT,
+          projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC));
     }
   }
 
@@ -788,41 +761,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       WorkspaceType workspaceType,
       String projectId,
       ProjectVisibility projectVisibility) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      switch (workspaceType) {
-        case ORGANIZATION:
-          if (projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC)) {
-            String globalSharingRoleName =
-                new StringBuilder()
-                    .append("O_")
-                    .append(workspaceId)
-                    .append("_GLOBAL_SHARING")
-                    .toString();
-
-            String globalSharingRoleBindingName =
-                roleService.buildRoleBindingName(
-                    globalSharingRoleName,
-                    projectId,
-                    new CollaboratorOrg(workspaceId),
-                    ModelDBServiceResourceTypes.PROJECT.name());
-            RoleBinding globalSharingRoleBinding =
-                roleService.getRoleBindingByName(globalSharingRoleBindingName);
-            if (globalSharingRoleBinding != null && !globalSharingRoleBinding.getId().isEmpty()) {
-              roleService.deleteRoleBinding(globalSharingRoleBinding.getId());
-            }
-          }
-          break;
-        case USER:
-        default:
-          break;
-      }
-    }
     roleService.deleteWorkspaceRoleBindings(
         workspaceId,
         workspaceType,
         projectId,
         ModelDBConstants.ROLE_PROJECT_ADMIN,
-        ModelDBServiceResourceTypes.PROJECT);
+        ModelDBServiceResourceTypes.PROJECT,
+        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC));
   }
 
   @Override
