@@ -117,7 +117,7 @@ public class RepositoryEntity {
             .setWorkspaceId(this.workspace_id)
             .setWorkspaceTypeValue(this.workspace_type);
     if (repositoryVisibility != null) {
-       builder.setRepositoryVisibilityValue(repositoryVisibility);
+      builder.setRepositoryVisibilityValue(repositoryVisibility);
     }
     if (owner != null) {
       builder.setOwner(owner);
