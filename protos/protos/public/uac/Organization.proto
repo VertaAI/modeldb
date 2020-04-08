@@ -19,6 +19,7 @@ message Organization {
 
     common.CollaboratorTypeEnum.CollaboratorType global_collaborator_type = 8;
     common.TernaryEnum.Ternary global_can_deploy = 9;
+    common.CollaboratorTypeEnum.CollaboratorType default_repo_collaborator_type = 10;
 }
 
 message GetOrganizationById {

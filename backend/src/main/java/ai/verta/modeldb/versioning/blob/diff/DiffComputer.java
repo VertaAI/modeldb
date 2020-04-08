@@ -305,14 +305,14 @@ public class DiffComputer {
                     a,
                     b,
                     AutogenPythonEnvironmentBlob::getConstraints,
-                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
+                    e -> e.getLibrary() + e.getConstraint(),
                     DiffComputer::computePythonRequirementEnvironmentDiff))
             .setRequirements(
                 computeListDiff(
                     a,
                     b,
                     AutogenPythonEnvironmentBlob::getRequirements,
-                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
+                    e -> e.getLibrary() + e.getConstraint(),
                     DiffComputer::computePythonRequirementEnvironmentDiff)));
   }
 

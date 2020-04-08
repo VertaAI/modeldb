@@ -151,7 +151,8 @@ public interface RoleService {
       String valueOf,
       String roleRepositoryAdmin,
       ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic);
+      boolean orgScopedPublic,
+      String globalSharing);
 
   void createWorkspaceRoleBinding(
       String workspace_id,
@@ -159,7 +160,8 @@ public interface RoleService {
       String valueOf,
       String roleRepositoryAdmin,
       ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic);
+      boolean orgScopedPublic,
+      String globalSharing);
 
   List<String> getWorkspaceRoleBindings(
       String workspace_id,

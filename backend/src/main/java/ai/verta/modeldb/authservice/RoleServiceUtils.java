@@ -1281,7 +1281,8 @@ public class RoleServiceUtils implements RoleService {
       String resourceId,
       String roleName,
       ModelDBServiceResourceTypes resourceTypes,
-      boolean orgScopedPublic) {
+      boolean orgScopedPublic,
+      String globalSharing) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       CollaboratorUser collaboratorUser;
       switch (workspaceType) {
@@ -1291,7 +1292,7 @@ public class RoleServiceUtils implements RoleService {
                 new StringBuilder()
                     .append("O_")
                     .append(workspaceId)
-                    .append("_GLOBAL_SHARING")
+                    .append(globalSharing)
                     .toString();
 
             String globalSharingRoleBindingName =
@@ -1331,7 +1332,8 @@ public class RoleServiceUtils implements RoleService {
       String resourceId,
       String roleAdminName,
       ModelDBServiceResourceTypes resourceType,
-      boolean orgScopedPublic) {
+      boolean orgScopedPublic,
+      String globalSharing) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       Role admin = getRoleByName(roleAdminName, null);
       final CollaboratorUser collaboratorUser;
@@ -1342,7 +1344,7 @@ public class RoleServiceUtils implements RoleService {
                 new StringBuilder()
                     .append("O_")
                     .append(workspaceId)
-                    .append("_GLOBAL_SHARING")
+                    .append(globalSharing)
                     .toString();
             Role globalSharingRole =
                 getRoleByName(

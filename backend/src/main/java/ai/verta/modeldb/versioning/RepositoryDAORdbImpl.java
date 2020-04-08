@@ -53,6 +53,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private static final String GET_REPOSITORY_BY_IDS_QUERY =
       "From RepositoryEntity ent where ent.id IN (:ids)";
   private static final Logger LOGGER = LogManager.getLogger(RepositoryDAORdbImpl.class);
+  private static final String GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private final AuthService authService;
   private final RoleService roleService;
 
@@ -360,7 +361,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 && request
                     .getRepository()
                     .getRepositoryVisibility()
-                    .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC));
+                    .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC),
+            GLOBAL_SHARING);
       }
       session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
@@ -394,7 +396,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           ModelDBServiceResourceTypes.REPOSITORY,
           repositoryEntity
               .getRepositoryVisibility()
-              .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE));
+              .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
+          GLOBAL_SHARING);
     }
   }
 
