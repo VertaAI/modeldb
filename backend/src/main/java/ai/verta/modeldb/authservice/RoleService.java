@@ -169,6 +169,5 @@ public interface RoleService {
       String resourceId,
       String adminRole,
       ModelDBServiceResourceTypes resourceType,
-      boolean orgScopedPublic,
-      String globalSharing);
+      boolean orgScopedPublic);
 }
