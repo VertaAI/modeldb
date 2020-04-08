@@ -242,7 +242,8 @@ public class PublicRoleServiceUtils implements RoleService {
       String valueOf,
       String roleRepositoryAdmin,
       ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic) {}
+      boolean orgScopedPublic,
+      String globalSharing) {}
 
   @Override
   public void createWorkspaceRoleBinding(
@@ -251,7 +252,8 @@ public class PublicRoleServiceUtils implements RoleService {
       String valueOf,
       String roleRepositoryAdmin,
       ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic) {}
+      boolean orgScopedPublic,
+      String globalSharing) {}
 
   @Override
   public String buildAdminRoleBindingName(

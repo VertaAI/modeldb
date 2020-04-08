@@ -249,7 +249,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           projectId,
           ModelDBConstants.ROLE_PROJECT_ADMIN,
           ModelDBServiceResourceTypes.PROJECT,
-          projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC));
+          projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+          null);
     }
   }
 
@@ -767,7 +768,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         projectId,
         ModelDBConstants.ROLE_PROJECT_ADMIN,
         ModelDBServiceResourceTypes.PROJECT,
-        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC));
+        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+        null);
   }
 
   @Override
