@@ -149,6 +149,20 @@ class TestCommit:
         for commit in master.log():
             assert commit.id == commit_ids.pop()
 
+    def test_merge_conflict(self, repository):
+        branch_a = repository.get_commit(branch="master")
+        branch_a.branch("a")
+        branch_a.update("env", verta.environment.Python(["verta==1"]))
+        branch_a.save("a")
+
+        branch_b = repository.get_commit(branch="master")
+        branch_b.branch("b")
+        branch_b.update("env", verta.environment.Python(["verta==2"]))
+        branch_b.save("b")
+
+        with pytest.raises(RuntimeError):
+            branch_b.merge(branch_a)
+
     def test_log_to_run(self, experiment_run, commit):
         blob1 = verta.dataset.Path(__file__)
         blob2 = verta.environment.Python()
