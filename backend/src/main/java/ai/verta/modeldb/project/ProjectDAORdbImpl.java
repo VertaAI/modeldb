@@ -641,7 +641,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return newProject;
   }
 
-  private void deleteExperimentsWithPagination(Session session, List<String> projectIds) {
+  private void deleteExperimentsWithPagination(
+      Session session, List<String> projectIds, List<String> roleBindingNames) {
     int lowerBound = 0;
     final int pagesize = 100;
     Long count = getExperimentCount(projectIds);
@@ -664,9 +665,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 experimentEntity.getId(),
                 experimentEntity.getOwner(),
                 ModelDBServiceResourceTypes.EXPERIMENT.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
+        if (ownerRoleBindingName != null) {
+          roleBindingNames.add(ownerRoleBindingName);
         }
       }
       transaction.commit();
@@ -674,7 +674,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
-  private void deleteExperimentRunsWithPagination(Session session, List<String> projectIds) {
+  private void deleteExperimentRunsWithPagination(
+      Session session, List<String> projectIds, List<String> roleBindingNames) {
     int lowerBound = 0;
     final int pagesize = 100;
     Long count = getExperimentRunCount(projectIds);
@@ -699,9 +700,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 experimentRunEntity.getId(),
                 experimentRunEntity.getOwner(),
                 ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
+        if (ownerRoleBindingName != null) {
+          roleBindingNames.add(ownerRoleBindingName);
         }
       }
       // Delete the ExperimentRUn comments
@@ -714,8 +714,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
-  private void deleteRoleBindingsOfAccessibleProjects(List<ProjectEntity> allowedProjects)
-      throws InvalidProtocolBufferException {
+  private void getRoleBindingsOfAccessibleProjects(
+      List<ProjectEntity> allowedProjects, List<String> roleBindingNames) {
     UserInfo unsignedUser = authService.getUnsignedUser();
     for (ProjectEntity project : allowedProjects) {
       String projectId = project.getId();
@@ -725,9 +725,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               projectId,
               project.getOwner(),
               ModelDBServiceResourceTypes.PROJECT.name());
-      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-        roleService.deleteRoleBinding(roleBinding.getId());
+      if (ownerRoleBindingName != null) {
+        roleBindingNames.add(ownerRoleBindingName);
       }
 
       if (project.getProject_visibility() == ProjectVisibility.PUBLIC.getNumber()) {
@@ -737,32 +736,33 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 projectId,
                 authService.getVertaIdFromUserInfo(unsignedUser),
                 ModelDBServiceResourceTypes.PROJECT.name());
-        RoleBinding publicReadRoleBinding =
-            roleService.getRoleBindingByName(publicReadRoleBindingName);
-        if (publicReadRoleBinding != null && !publicReadRoleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(publicReadRoleBinding.getId());
+        if (publicReadRoleBindingName != null) {
+          roleBindingNames.add(publicReadRoleBindingName);
         }
       }
 
       // Remove all project collaborators
-      roleService.removeResourceRoleBindings(
-          projectId, project.getOwner(), ModelDBServiceResourceTypes.PROJECT);
+      roleBindingNames.addAll(
+          roleService.getResourceRoleBindings(
+              projectId, project.getOwner(), ModelDBServiceResourceTypes.PROJECT));
 
       // Delete workspace based roleBindings
-      deleteWorkspaceRoleBindings(
-          project.getWorkspace(),
-          WorkspaceType.forNumber(project.getWorkspace_type()),
-          project.getId(),
-          ProjectVisibility.forNumber(project.getProject_visibility()));
+      List<String> workspaceRoleBindingNames =
+          getWorkspaceRoleBindings(
+              project.getWorkspace(),
+              WorkspaceType.forNumber(project.getWorkspace_type()),
+              project.getId(),
+              ProjectVisibility.forNumber(project.getProject_visibility()));
+      roleBindingNames.addAll(workspaceRoleBindingNames);
     }
   }
 
-  private void deleteWorkspaceRoleBindings(
+  private List<String> getWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceType workspaceType,
       String projectId,
       ProjectVisibility projectVisibility) {
-    roleService.deleteWorkspaceRoleBindings(
+    return roleService.getWorkspaceRoleBindings(
         workspaceId,
         workspaceType,
         projectId,
@@ -788,13 +788,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throw StatusProto.toStatusRuntimeException(status);
     }
 
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<ProjectEntity> projectEntities = getProjectEntityByBatchIds(session, projectIds);
 
-      deleteExperimentsWithPagination(session, allowedProjectIds);
+      deleteExperimentsWithPagination(session, allowedProjectIds, roleBindingNames);
 
       // Delete the ExperimentRunEntity object
-      deleteExperimentRunsWithPagination(session, allowedProjectIds);
+      deleteExperimentRunsWithPagination(session, allowedProjectIds, roleBindingNames);
 
       Transaction transaction = session.beginTransaction();
       for (String projectId : allowedProjectIds) {
@@ -802,9 +803,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         session.delete(projectObj);
       }
 
-      // Remove roleBindings by accessible projects
-      deleteRoleBindingsOfAccessibleProjects(projectEntities);
+      // Get roleBindings by accessible projects
+      getRoleBindingsOfAccessibleProjects(projectEntities, roleBindingNames);
       transaction.commit();
+
+      // Remove all role bindings
+      roleService.deleteRoleBindings(roleBindingNames);
+
       LOGGER.debug("Project deleted successfully");
       return true;
     }
@@ -1362,11 +1367,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
-      deleteWorkspaceRoleBindings(
-          projectEntity.getWorkspace(),
-          WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
-          projectId,
-          ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
+      List<String> roleBindingNames =
+          getWorkspaceRoleBindings(
+              projectEntity.getWorkspace(),
+              WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
+              projectId,
+              ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
+      roleService.deleteRoleBindings(roleBindingNames);
       createWorkspaceRoleBinding(
           workspaceDTO.getWorkspaceId(),
           workspaceDTO.getWorkspaceType(),

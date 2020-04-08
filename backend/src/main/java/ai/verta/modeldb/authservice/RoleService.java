@@ -47,6 +47,8 @@ public interface RoleService {
 
   boolean deleteRoleBinding(String roleBindingId);
 
+  boolean deleteRoleBindings(List<String> roleBindingNames);
+
   List<GetCollaboratorResponse> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
@@ -87,6 +89,11 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   void removeResourceRoleBindings(
+      String resourceId,
+      String resourceOwnerId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  List<String> getResourceRoleBindings(
       String resourceId,
       String resourceOwnerId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
@@ -155,4 +162,12 @@ public interface RoleService {
       ModelDBServiceResourceTypes repository,
       boolean orgScopedPublic,
       String globalSharing);
+
+  List<String> getWorkspaceRoleBindings(
+      String workspace_id,
+      WorkspaceType forNumber,
+      String valueOf,
+      String roleRepositoryAdmin,
+      ModelDBServiceResourceTypes repository,
+      boolean orgScopedPublic);
 }
