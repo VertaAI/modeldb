@@ -968,6 +968,7 @@ class _ModelDBEntity(object):
                 except OSError:  # script not found
                     print("unable to find code file; skipping")
         else:
+            exec_path = os.path.expanduser(exec_path)
             if not os.path.isfile(exec_path):
                 raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
 
@@ -1981,6 +1982,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         if isinstance(artifact, six.string_types):
+            os.path.expanduser(artifact)
             artifact = open(artifact, 'rb')
 
         if hasattr(artifact, 'read') and method is not None:  # already a verta-produced stream
@@ -3406,6 +3408,7 @@ class ExperimentRun(_ModelDBEntity):
         if isinstance(paths, six.string_types):
             paths = [paths]
         if paths is not None:
+            paths = list(map(os.path.expanduser, paths))
             paths = list(map(os.path.abspath, paths))
 
         # collect local sys paths
