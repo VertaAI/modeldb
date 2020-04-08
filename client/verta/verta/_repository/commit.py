@@ -629,8 +629,42 @@ class Commit(object):
                 other.branch_name or other.id[:7],
                 self.branch_name or self.id[:7],
             )
+            # TODO: use this if back end supports it
 
-        self.apply_diff(other.diff_from(self.get_common_parent(other)), message=message, other_parents=[other.id])
+        msg = _VersioningService.MergeRepositoryCommitsRequest()
+        if other.branch_name is not None:
+            msg.branch_a = other.branch_name
+        else:
+            msg.commit_sha_a = other.id
+        if self.branch_name is not None:
+            msg.branch_b = self.branch_name
+        else:
+            msg.commit_sha_b = self.id
+
+        data = _utils.proto_to_json(msg)
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/merge".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+        )
+        response = _utils.make_request("POST", endpoint, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+
+        # raise for conflict
+        if response_msg.conflicts:
+            raise RuntimeError(
+                "merge conflict;"
+                " resolution is not currently supported through the Client;"
+                " please create a new Commit with the updated blobs"
+            )
+
+        new_commit = self._repo.get_commit(id=response_msg.commit.commit_sha)
+        if self.branch_name is not None:
+            # update branch to merge commit
+            new_commit.branch(self.branch_name)
+
+        self.__dict__ = new_commit.__dict__
 
 
 def blob_msg_to_object(blob_msg):
