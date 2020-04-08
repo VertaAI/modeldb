@@ -667,10 +667,13 @@ class Commit(object):
                 " please create a new Commit with the updated blobs"
             )
 
-        new_commit = self._repo.get_commit(id=response_msg.commit.commit_sha)
+        commit_id = response_msg.commit.commit_sha
         if self.branch_name is not None:
             # update branch to merge commit
-            new_commit.branch(self.branch_name)
+            set_branch(self._conn, self._repo.id, commit_id, self.branch_name)
+            new_commit = self._repo.get_commit(branch=self.branch_name)
+        else:
+            new_commit = self._repo.get_commit(id=commit_id)
 
         self.__dict__ = new_commit.__dict__
 

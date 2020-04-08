@@ -149,13 +149,11 @@ class TestCommit:
             assert commit.id == commit_ids.pop()
 
     def test_merge_conflict(self, repository):
-        branch_a = repository.get_commit(branch="master")
-        branch_a.branch("a")
+        branch_a = repository.get_commit(branch="master").new_branch("a")
         branch_a.update("env", verta.environment.Python(["verta==1"]))
         branch_a.save("a")
 
-        branch_b = repository.get_commit(branch="master")
-        branch_b.branch("b")
+        branch_b = repository.get_commit(branch="master").new_branch("b")
         branch_b.update("env", verta.environment.Python(["verta==2"]))
         branch_b.save("b")
 
