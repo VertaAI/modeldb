@@ -19,6 +19,8 @@ import ai.verta.uac.DeleteRoleBinding;
 import ai.verta.uac.DeleteRoleBindings;
 import ai.verta.uac.Entities;
 import ai.verta.uac.GetAllowedEntities;
+import ai.verta.uac.GetAllowedEntitiesWithActions;
+import ai.verta.uac.GetAllowedEntitiesWithActionsResponse;
 import ai.verta.uac.GetAllowedResources;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.GetOrganizationById;
@@ -51,7 +53,9 @@ import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -745,6 +749,87 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
+  private Map<ModelDBServiceActions, Set<CollaboratorBase>> getCollaborators(
+          AuthServiceChannel authServiceChannel,
+          String resourceOwnerId,
+          String resourceId,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          List<Action> modelDBServiceActionsList,
+          Metadata requestHeaders) {
+    GetAllowedEntitiesWithActions getAllowedEntitiesRequest =
+            GetAllowedEntitiesWithActions.newBuilder()
+                    .addAllActions(modelDBServiceActionsList)
+                    .addResources(
+                            Resources.newBuilder()
+                                    .addResourceIds(resourceId)
+                                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                                    .setResourceType(
+                                            ResourceType.newBuilder()
+                                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                                    .build())
+                    .build();
+    LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+    GetAllowedEntitiesWithActions.Response getAllowedEntitiesResponse =
+            authServiceChannel
+                    .getAuthzServiceBlockingStub(requestHeaders)
+                    .getAllowedEntitiesWithActions(getAllowedEntitiesRequest);
+    LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+    LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedEntitiesResponse);
+
+    Map<ModelDBServiceActions, Set<CollaboratorBase>> collaboratorsActionMap = new HashMap<>();
+    if (getAllowedEntitiesResponse.getEntitiesWithActionsCount() != 0) {
+      for (GetAllowedEntitiesWithActionsResponse entitiesWithActionsResponse :
+              getAllowedEntitiesResponse.getEntitiesWithActionsList()) {
+        Set<CollaboratorBase> collaborators = new HashSet<>();
+        for (Entities entities : entitiesWithActionsResponse.getEntitiesList()) {
+          entities.getUserIdsList().stream()
+                  .filter(id -> !id.equals(resourceOwnerId))
+                  .forEach(id -> collaborators.add(new CollaboratorUser(authService, id)));
+          entities
+                  .getTeamIdsList()
+                  .forEach(
+                          teamId -> {
+                            try {
+                              CollaboratorTeam collaboratorTeam = new CollaboratorTeam(teamId);
+                              collaborators.add(collaboratorTeam);
+                            } catch (StatusRuntimeException ex) {
+                              if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+                                LOGGER.warn(
+                                        "Current user is not a member of the team : "
+                                                + teamId
+                                                + ", "
+                                                + ex.getMessage(),
+                                        ex);
+                              }
+                            }
+                          });
+          entities
+                  .getOrgIdsList()
+                  .forEach(
+                          orgId -> {
+                            try {
+                              CollaboratorOrg collaboratorOrg = new CollaboratorOrg(orgId);
+                              collaborators.add(collaboratorOrg);
+                            } catch (StatusRuntimeException ex) {
+                              if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+                                LOGGER.warn(
+                                        "Current user is not a member of the organization : "
+                                                + orgId
+                                                + ", "
+                                                + ex.getMessage(),
+                                        ex);
+                              }
+                            }
+                          });
+        }
+        collaboratorsActionMap.put(
+                entitiesWithActionsResponse.getActions().getModeldbServiceAction(), collaborators);
+      }
+    }
+
+    return collaboratorsActionMap;
+  }
+
   @Override
   public List<String> getResourceRoleBindings(
       String resourceId,
@@ -753,51 +838,33 @@ public class RoleServiceUtils implements RoleService {
     List<String> roleBindingNames = new ArrayList<>();
 
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-
       Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
-      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.READ,
-                      requestHeaders));
+      Map<ModelDBServiceActions, Set<CollaboratorBase>> allCollaboratorsMap =
+          getCollaborators(
+              authServiceChannel,
+              resourceOwnerId,
+              resourceId,
+              modelDBServiceResourceTypes,
+              Arrays.asList(
+                  Action.newBuilder()
+                      .setModeldbServiceAction(ModelDBServiceActions.READ)
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .build(),
+                  Action.newBuilder()
+                      .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .build(),
+                  Action.newBuilder()
+                      .setModeldbServiceAction(ModelDBServiceActions.DEPLOY)
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .build()),
+              requestHeaders);
 
-      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.UPDATE,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.DEPLOY,
-                      requestHeaders));
-
-      CompletableFuture<Void> collaboratorCombineFuture =
-          CompletableFuture.allOf(
-              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
-
-      // Wait for all task complete
-      collaboratorCombineFuture.get();
-
-      Set<CollaboratorBase> readCollaborators = readOnlyCollaboratorsFuture.get();
-      Set<CollaboratorBase> readWriteCollaborators = readWriteCollaboratorsFuture.get();
-      Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
+      Set<CollaboratorBase> readCollaborators = allCollaboratorsMap.get(ModelDBServiceActions.READ);
+      Set<CollaboratorBase> readWriteCollaborators =
+          allCollaboratorsMap.get(ModelDBServiceActions.UPDATE);
+      Set<CollaboratorBase> deployCollaborators =
+          allCollaboratorsMap.get(ModelDBServiceActions.DEPLOY);
 
       Set<CollaboratorBase> finalCollaborators = new HashSet<>();
       finalCollaborators.addAll(readCollaborators);
@@ -839,10 +906,6 @@ public class RoleServiceUtils implements RoleService {
         throw StatusProto.toStatusRuntimeException(status);
       }
       throw ex;
-    } catch (InterruptedException | ExecutionException ex) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
     }
     return roleBindingNames;
   }
