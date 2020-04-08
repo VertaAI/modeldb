@@ -37,6 +37,7 @@ from .external.six.moves import cPickle as pickle  # pylint: disable=import-erro
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from ._internal_utils import _artifact_utils
+from ._internal_utils import _config_utils
 from ._internal_utils import _git_utils
 from ._internal_utils import _pip_requirements_utils
 from ._internal_utils import _utils
@@ -267,8 +268,7 @@ class Client(object):
         return res
 
     def _find_config(self, prefix, recursive=False):
-        f = ('verta_config.yaml', 'verta_config.json')
-        for ff in f:
+        for ff in _config_utils.CONFIG_FILENAMES:
             if os.path.isfile(prefix + ff):
                 return prefix + ff
         if recursive:
