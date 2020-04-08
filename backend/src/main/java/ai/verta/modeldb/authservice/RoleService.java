@@ -144,4 +144,6 @@ public interface RoleService {
       String valueOf,
       String roleRepositoryAdmin,
       ModelDBServiceResourceTypes repository);
+
+  void createWorkspaceRoleBinding(String workspace_id, WorkspaceType forNumber, String valueOf, String roleRepositoryAdmin, ModelDBServiceResourceTypes repository);
 }

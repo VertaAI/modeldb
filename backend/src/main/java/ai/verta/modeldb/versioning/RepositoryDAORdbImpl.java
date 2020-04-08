@@ -254,6 +254,21 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       LOGGER.error(e);
       throw new ModelDBException("Unexpected error", e);
     }
+    try {
+      if (checkWrite) {
+        roleService.validateEntityUserWithUserInfo(
+            ModelDBServiceResourceTypes.REPOSITORY,
+            repository.getId().toString(),
+            ModelDBServiceActions.UPDATE);
+      }
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.REPOSITORY,
+          repository.getId().toString(),
+          ModelDBServiceActions.READ);
+    } catch (InvalidProtocolBufferException e) {
+      LOGGER.error(e);
+      throw new ModelDBException("Unexpected error", e);
+    }
     return repository;
   }
 
@@ -331,6 +346,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             ownerRole,
             new CollaboratorUser(authService, userInfo),
             String.valueOf(repository.getId()),
+            ModelDBServiceResourceTypes.REPOSITORY);
+        roleService.createWorkspaceRoleBinding(
+            repository.getWorkspace_id(),
+            WorkspaceType.forNumber(repository.getWorkspace_type()),
+            String.valueOf(repository.getId()), ModelDBConstants.ROLE_REPOSITORY_ADMIN,
             ModelDBServiceResourceTypes.REPOSITORY);
       }
       session.getTransaction().commit();

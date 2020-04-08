@@ -189,12 +189,6 @@ public class BlobDAORdbImpl implements BlobDAO {
           }
         }
       }
-    } catch (Throwable throwable) {
-      if (throwable instanceof ModelDBException) {
-        throw (ModelDBException) throwable;
-      }
-      LOGGER.warn(throwable);
-      throw new ModelDBException("Unknown error", Status.Code.INTERNAL);
     }
     throw new ModelDBException(
         "Unexpected logic issue found when fetching blobs", Status.Code.UNKNOWN);

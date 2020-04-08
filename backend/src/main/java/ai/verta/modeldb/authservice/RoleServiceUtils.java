@@ -548,6 +548,12 @@ public class RoleServiceUtils implements RoleService {
           resourceId,
           collaborator,
           ModelDBServiceResourceTypes.DATASET.name());
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
+      return buildRoleBindingName(
+          ModelDBConstants.ROLE_REPOSITORY_READ_ONLY,
+          resourceId,
+          collaborator,
+          ModelDBServiceResourceTypes.REPOSITORY.name());
     } else {
       return ModelDBConstants.EMPTY_STRING;
     }
@@ -570,6 +576,12 @@ public class RoleServiceUtils implements RoleService {
           resourceId,
           collaborator,
           ModelDBServiceResourceTypes.DATASET.name());
+    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
+      return buildRoleBindingName(
+          ModelDBConstants.ROLE_REPOSITORY_READ_WRITE,
+          resourceId,
+          collaborator,
+          ModelDBServiceResourceTypes.REPOSITORY.name());
     } else {
       return ModelDBConstants.EMPTY_STRING;
     }
@@ -1158,5 +1170,31 @@ public class RoleServiceUtils implements RoleService {
         deleteRoleBinding(roleBinding.getId());
       }
     }
+  }
+
+  @Override
+  public void createWorkspaceRoleBinding(String workspaceId, WorkspaceType workspaceType,
+      String resourceId, String roleAdminName, ModelDBServiceResourceTypes resourceType) {
+    if (workspaceId != null && !workspaceId.isEmpty()) {
+      Role admin = getRoleByName(roleAdminName, null);
+      final CollaboratorUser collaboratorUser;
+      switch (workspaceType) {
+        case ORGANIZATION:
+          Organization org = (Organization) getOrgById(workspaceId);
+          collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
+          break;
+        case USER:
+          collaboratorUser = new CollaboratorUser(authService, workspaceId);
+          break;
+        default:
+          return;
+      }
+      createRoleBinding(
+          admin,
+          collaboratorUser,
+          resourceId,
+          resourceType);
+    }
+
   }
 }
