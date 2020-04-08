@@ -280,7 +280,7 @@ for f in $(find $TARGET -type f | grep '\(Blob\|Diff\).java$' | sort)
 do
     type=$(basename $f | sed 's,\.java$,,')
     cat >> $TEST_FILE <<EOF
-    @Property public void equality(${type} b) {
+    @Property public void equality${type}(${type} b) {
         assertTrue(b.equals(b));
     }
 
@@ -317,7 +317,7 @@ for f in $(find $TARGET -type f | grep '\(Blob\|Diff\).java$' | sort)
 do
     type=$(basename $f | sed 's,\.java$,,')
     cat >> $TEST_FILE <<EOF
-    @Property public void protoEquality(${type} b) throws ModelDBException {
+    @Property public void protoEquality${type}(${type} b) throws ModelDBException {
         ${type} newb = enforceOneof(b);
         ${type} other = newb == null ? null : ${type}.fromProto(newb.toProto().build());
         assertEquals(newb, other);
@@ -366,10 +366,8 @@ public class DiffAndMerge {
         // Reapplying the diff should not change the result
         HashSet<String> conflictSet = new HashSet<String>();
         diffedB = DiffMerger.mergeBlob(diffedB, d, conflictSet);
-        if( newA == null || newB == null) {
+        if (conflictSet.isEmpty()) {
           assertEquals(newB, diffedB);
-        } else{
-          assertFalse(conflictSet.isEmpty());
         }
     }
 
@@ -391,13 +389,11 @@ do
         ${type}Blob diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(newA, d, new HashSet<String>());
         assertEquals(newB, diffedB);
 
-		HashSet<String> conflictSet = new HashSet<String>();
+        HashSet<String> conflictSet = new HashSet<String>();
         // Reapplying the diff should not change the result
         diffedB = DiffMerger.merge$(echo $type | sed 's,Autogen,,')(diffedB, d, conflictSet);
-        if( newA == null || newB == null) {
+        if (conflictSet.isEmpty()) {
           assertEquals(newB, diffedB);
-        } else{
-          assertFalse(conflictSet.isEmpty());
         }
     }
 
