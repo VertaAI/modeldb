@@ -530,11 +530,13 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryDAO repositoryDAO, MergeRepositoryCommitsRequest request)
       throws ModelDBException, NoSuchAlgorithmException {
     // validating request
+    LOGGER.debug("Validating MergeRepositoryCommitsRequest");
     validateDiffMergeRequest(
         request.getBranchA(),
         request.getBranchB(),
         request.getCommitShaA(),
         request.getCommitShaB());
+    LOGGER.debug("MergeRepositoryCommitsRequest validated");
 
     Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitA =
         new HashMap<String, Map.Entry<BlobExpanded, String>>();
@@ -548,14 +550,15 @@ public class BlobDAORdbImpl implements BlobDAO {
     CommitEntity internalCommitB = null;
     CommitEntity parentCommit;
     Commit parentCommitProto;
+    String branchOrCommitA = null;
+    String branchOrCommitB = null;
     try (Session readSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity =
           repositoryDAO.getRepositoryById(readSession, request.getRepositoryId());
 
-      String errorNameA = null;
-      String errorNameB = null;
       if (!request.getBranchA().isEmpty()) {
-        errorNameA = request.getBranchA();
+        LOGGER.debug("Branch A found in request");
+        branchOrCommitA = request.getBranchA();
         BranchEntity branchAEntity =
             repositoryDAO.getBranchEntity(
                 readSession, repositoryEntity.getId(), request.getBranchA());
@@ -563,7 +566,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
 
       if (!request.getBranchB().isEmpty()) {
-        errorNameB = request.getBranchB();
+        LOGGER.debug("Branch B found in request");
+        branchOrCommitB = request.getBranchB();
         BranchEntity branchBEntity =
             repositoryDAO.getBranchEntity(
                 readSession, repositoryEntity.getId(), request.getBranchB());
@@ -571,23 +575,25 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
 
       if (!request.getCommitShaA().isEmpty()) {
-        errorNameA = request.getCommitShaA();
+        LOGGER.debug("Commit A found in request");
+        branchOrCommitA = request.getCommitShaA().substring(0, 7);
         internalCommitA = readSession.get(CommitEntity.class, request.getCommitShaA());
       }
 
       if (!request.getCommitShaB().isEmpty()) {
-        errorNameB = request.getCommitShaB();
+        LOGGER.debug("Commit B found in request");
+        branchOrCommitB = request.getCommitShaB().substring(0, 7);
         internalCommitB = readSession.get(CommitEntity.class, request.getCommitShaB());
       }
 
       if (internalCommitA == null) {
         throw new ModelDBException(
-            "No such commit OR branch found : " + errorNameA, Status.Code.NOT_FOUND);
+            "No such commit OR branch found : " + branchOrCommitA, Status.Code.NOT_FOUND);
       }
 
       if (internalCommitB == null) {
         throw new ModelDBException(
-            "No such commit OR branch found : " + errorNameB, Status.Code.NOT_FOUND);
+            "No such commit OR branch found : " + branchOrCommitB, Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
@@ -604,7 +610,9 @@ public class BlobDAORdbImpl implements BlobDAO {
             Status.Code.NOT_FOUND);
       }
 
-      parentCommit = getCommonParent(readSession, request.getCommitShaA(), request.getCommitShaB());
+      parentCommit =
+          getCommonParent(
+              readSession, internalCommitA.getCommit_hash(), internalCommitB.getCommit_hash());
       parentCommitProto = parentCommit.toCommitProto();
       locationBlobsMapCommitA =
           getCommitBlobMapWithHash(readSession, internalCommitA.getRootSha(), new ArrayList<>());
@@ -634,15 +642,12 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (conflictLocationMap.isEmpty()) {
         final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
         long timeCreated = new Date().getTime();
-        List<String> parentSHAs = Arrays.asList(request.getCommitShaA(), request.getCommitShaB());
-        List<CommitEntity> parentCommits = Arrays.asList(internalCommitA, internalCommitB);
+        List<String> parentSHAs =
+            Arrays.asList(internalCommitB.getCommit_hash(), internalCommitA.getCommit_hash());
+        List<CommitEntity> parentCommits = Arrays.asList(internalCommitB, internalCommitA);
         String mergeMessage = request.getContent().getMessage();
         if (mergeMessage.isEmpty()) {
-          mergeMessage =
-              "Merge "
-                  + request.getCommitShaA().substring(0, 7)
-                  + " into "
-                  + request.getCommitShaB().substring(0, 7);
+          mergeMessage = "Merge " + branchOrCommitA + " into " + branchOrCommitB;
         }
         UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
         String author = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
@@ -741,6 +746,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   private CommitEntity getCommonParent(Session session, String commitA, String commitB)
       throws ModelDBException {
+    LOGGER.debug("Branch B found in request");
     List<CommitEntity> parentCommitA = VersioningUtils.getParentCommits(session, commitA);
     List<CommitEntity> parentCommitB = VersioningUtils.getParentCommits(session, commitB);
 
