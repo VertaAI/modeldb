@@ -632,13 +632,45 @@ class Commit(object):
         elif self._repo.id != other._repo.id:
             raise ValueError("Commit and `other` must belong to the same Repository")
 
-        if message is None:
-            message = "Merge {} into {}".format(
-                other.branch_name or other.id[:7],
-                self.branch_name or self.id[:7],
+        msg = _VersioningService.MergeRepositoryCommitsRequest()
+        if self.branch_name is not None:
+            msg.branch_b = self.branch_name
+        else:
+            msg.commit_sha_b = self.id
+        if other.branch_name is not None:
+            msg.branch_a = other.branch_name
+        else:
+            msg.commit_sha_a = other.id
+        if message is not None:
+            msg.content.message = message
+
+        data = _utils.proto_to_json(msg)
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/merge".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+        )
+        response = _utils.make_request("POST", endpoint, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+
+        # raise for conflict
+        if response_msg.conflicts:
+            raise RuntimeError(
+                "merge conflict;"
+                " resolution is not currently supported through the Client;"
+                " please create a new Commit with the updated blobs"
             )
 
-        self.apply_diff(other.diff_from(self.get_common_parent(other)), message=message, other_parents=[other.id])
+        commit_id = response_msg.commit.commit_sha
+        if self.branch_name is not None:
+            # update branch to merge commit
+            set_branch(self._conn, self._repo.id, commit_id, self.branch_name)
+            new_commit = self._repo.get_commit(branch=self.branch_name)
+        else:
+            new_commit = self._repo.get_commit(id=commit_id)
+
+        self.__dict__ = new_commit.__dict__
 
 
 def blob_msg_to_object(blob_msg):
