@@ -632,13 +632,6 @@ class Commit(object):
         elif self._repo.id != other._repo.id:
             raise ValueError("Commit and `other` must belong to the same Repository")
 
-        if message is None:
-            message = "Merge {} into {}".format(
-                other.branch_name or other.id[:7],
-                self.branch_name or self.id[:7],
-            )
-            # TODO: use this if back end supports it
-
         msg = _VersioningService.MergeRepositoryCommitsRequest()
         if other.branch_name is not None:
             msg.branch_a = other.branch_name
@@ -648,6 +641,8 @@ class Commit(object):
             msg.branch_b = self.branch_name
         else:
             msg.commit_sha_b = self.id
+        if message is not None:
+            msg.content.message = message
 
         data = _utils.proto_to_json(msg)
         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/merge".format(
