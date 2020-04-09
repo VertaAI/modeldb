@@ -116,26 +116,16 @@ class TestClient:
                         f,
                     )
 
-                client = verta.Client()
+                client = verta.Client(connect=False)
                 conn = client._conn
 
                 assert conn.socket == HOST
                 assert conn.auth['Grpc-Metadata-email'] == EMAIL
                 assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
 
-                try:
-                    assert client.set_experiment_run()
-                    assert client.proj.name == PROJECT_NAME
-                    assert client.expt.name == EXPERIMENT_NAME
-                finally:
-                    if client.proj is not None:
-                        utils.delete_project(client.proj.id, conn)
-
-                dataset = client.set_dataset()
-                try:
-                    assert dataset.name == DATASET_NAME
-                finally:
-                    utils.delete_datasets([dataset.id], conn)
+                assert client._set_from_config_if_none(None, "project") == PROJECT_NAME
+                assert client._set_from_config_if_none(None, "experiment") == EXPERIMENT_NAME
+                assert client._set_from_config_if_none(None, "dataset") == DATASET_NAME
 
             finally:
                 if os.path.exists(CONFIG_FILENAME):
