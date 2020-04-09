@@ -332,13 +332,15 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-
         response_msg = _utils.json_to_proto(response.json(), proto_message.Response)
-        new_commit = self._repo.get_commit(id=response_msg.commit.commit_sha)
 
+        commit_id = response_msg.commit.commit_sha
         if self.branch_name is not None:
             # update branch to child commit
-            new_commit.branch(self.branch_name)
+            set_branch(self._conn, self._repo.id, commit_id, self.branch_name)
+            new_commit = self._repo.get_commit(branch=self.branch_name)
+        else:
+            new_commit = self._repo.get_commit(id=commit_id)
 
         self.__dict__ = new_commit.__dict__
 
@@ -398,35 +400,41 @@ class Commit(object):
         for c in commits:
             yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == self.id else None)
 
-    def branch(self, branch):
+    def new_branch(self, branch):
         """
-        Assigns a branch to this Commit.
+        Creates a branch at this Commit and returns the checked-out branch.
+
+        If `branch` already exists, it will be moved to this Commit.
 
         Parameters
         ----------
         branch : str
             Branch name.
 
+        Returns
+        -------
+        commit : :class:`Commit`
+            This Commit as the head of `branch`.
+
         Raises
         ------
         RuntimeError
             If this Commit has not yet been saved.
 
+        Exammples
+        ---------
+        .. code-block:: python
+
+            master = repo.get_commit(branch="master")
+            dev = master.new_branch("development")
+
         """
         if self.id is None:
             raise RuntimeError("Commit must be saved before it can be attached to a branch")
 
-        data = self.id
-        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/branches/{}".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self._repo.id,
-            branch,
-        )
-        response = _utils.make_request("PUT", endpoint, self._conn, json=data)
-        _utils.raise_for_http_error(response)
+        set_branch(self._conn, self._repo.id, self.id, branch)
 
-        self.branch_name = branch
+        return self._repo.get_commit(branch=branch)
 
     def diff_from(self, reference=None):
         """
@@ -713,5 +721,19 @@ def path_to_location(path):
 
     return path.split('/')
 
+
 def location_to_path(location):
     return '/'.join(location)
+
+
+def set_branch(conn, repo_id, commit_id, branch):
+    """Sets `branch` to Commit `commit_id`."""
+    data = commit_id
+    endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/branches/{}".format(
+        conn.scheme,
+        conn.socket,
+        repo_id,
+        branch,
+    )
+    response = _utils.make_request("PUT", endpoint, conn, json=data)
+    _utils.raise_for_http_error(response)

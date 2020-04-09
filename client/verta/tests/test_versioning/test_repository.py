@@ -132,8 +132,7 @@ class TestCommit:
 
         commit_ids = [master.id]
 
-        branch = repository.get_commit(branch="master")
-        branch.branch("branch")
+        branch = repository.get_commit(branch="master").new_branch("branch")
 
         master.update("a", verta.environment.Python(["a==1"]))
         master.save("a")
@@ -190,7 +189,7 @@ class TestBranch:
         commit = repository.get_commit()
         commit.update(path, blob)
         commit.save(message="banana")
-        commit.branch(branch)
+        commit = commit.new_branch(branch)
 
         assert repository.get_commit(branch=branch).id == commit.id
 
@@ -211,8 +210,8 @@ class TestBranch:
         commit2.update(path2, blob2)
         commit2.save(message="banana")
 
-        commit1.branch(branch)
-        commit2.branch(branch)
+        commit1 = commit1.new_branch(branch)
+        commit2 = commit2.new_branch(branch)
 
         assert repository.get_commit(branch=branch).id == commit2.id
 
@@ -229,7 +228,7 @@ class TestBranch:
         commit.save(message="banana")
         original_id = commit.id
 
-        commit.branch(branch)
+        commit = commit.new_branch(branch)
 
         commit.update(path2, blob2)
         commit.save(message="banana")

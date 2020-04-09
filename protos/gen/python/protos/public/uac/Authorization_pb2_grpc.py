@@ -24,6 +24,11 @@ class AuthzServiceStub(object):
         request_serializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedEntities.SerializeToString,
         response_deserializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedEntities.Response.FromString,
         )
+    self.getAllowedEntitiesWithActions = channel.unary_unary(
+        '/ai.verta.uac.AuthzService/getAllowedEntitiesWithActions',
+        request_serializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedEntitiesWithActions.SerializeToString,
+        response_deserializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedEntitiesWithActions.Response.FromString,
+        )
     self.getAllowedResources = channel.unary_unary(
         '/ai.verta.uac.AuthzService/getAllowedResources',
         request_serializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedResources.SerializeToString,
@@ -68,6 +73,13 @@ class AuthzServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getAllowedEntities(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getAllowedEntitiesWithActions(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -128,6 +140,11 @@ def add_AuthzServiceServicer_to_server(servicer, server):
           servicer.getAllowedEntities,
           request_deserializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedEntities.FromString,
           response_serializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedEntities.Response.SerializeToString,
+      ),
+      'getAllowedEntitiesWithActions': grpc.unary_unary_rpc_method_handler(
+          servicer.getAllowedEntitiesWithActions,
+          request_deserializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedEntitiesWithActions.FromString,
+          response_serializer=protos_dot_public_dot_uac_dot_Authorization__pb2.GetAllowedEntitiesWithActions.Response.SerializeToString,
       ),
       'getAllowedResources': grpc.unary_unary_rpc_method_handler(
           servicer.getAllowedResources,

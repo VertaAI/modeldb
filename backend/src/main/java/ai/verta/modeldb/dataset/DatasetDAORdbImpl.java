@@ -59,6 +59,7 @@ import org.hibernate.query.Query;
 public class DatasetDAORdbImpl implements DatasetDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetDAORdbImpl.class);
+  private static final String GLOBAL_SHARING = "_GLOBAL_SHARING";
   private final AuthService authService;
   private final RoleService roleService;
 
@@ -154,31 +155,27 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       String datasetId,
       DatasetVisibility datasetVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      Role datasetAdmin = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_ADMIN, null);
-      Role datasetRead = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_READ_ONLY, null);
+      roleService.createWorkspaceRoleBinding(
+          workspaceId,
+          workspaceType,
+          datasetId,
+          ModelDBConstants.ROLE_DATASET_ADMIN,
+          ModelDBServiceResourceTypes.DATASET,
+          false,
+          GLOBAL_SHARING);
       switch (workspaceType) {
         case ORGANIZATION:
-          Organization org = (Organization) roleService.getOrgById(workspaceId);
-          roleService.createRoleBinding(
-              datasetAdmin,
-              new CollaboratorUser(authService, org.getOwnerId()),
-              datasetId,
-              ModelDBServiceResourceTypes.DATASET);
           if (datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC)) {
+            Role datasetRead =
+                roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_READ_ONLY, null);
             roleService.createRoleBinding(
                 datasetRead,
-                new CollaboratorOrg(org.getId()),
+                new CollaboratorOrg(workspaceId),
                 datasetId,
                 ModelDBServiceResourceTypes.DATASET);
           }
           break;
         case USER:
-          roleService.createRoleBinding(
-              datasetAdmin,
-              new CollaboratorUser(authService, workspaceId),
-              datasetId,
-              ModelDBServiceResourceTypes.DATASET);
-          break;
         default:
           break;
       }
@@ -298,7 +295,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         workspaceType,
         datasetId,
         ModelDBConstants.ROLE_DATASET_ADMIN,
-        ModelDBServiceResourceTypes.DATASET);
+        ModelDBServiceResourceTypes.DATASET,
+        false,
+        GLOBAL_SHARING);
   }
 
   public void deleteDatasetVersionsByDatasetIDs(Session session, List<String> datasetIds) {

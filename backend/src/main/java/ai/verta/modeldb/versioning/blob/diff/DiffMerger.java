@@ -104,6 +104,7 @@ public class DiffMerger {
   public static <T, T2> T mergeLast(
       T a,
       T2 d,
+      Function<T2, T> getA,
       Function<T2, T> getB,
       Function<T2, AutogenDiffStatusEnumDiffStatus> getStatus,
       Function<T, String> hasherA,
@@ -115,8 +116,9 @@ public class DiffMerger {
     AutogenDiffStatusEnumDiffStatus status = getStatus.apply(d);
     if (status.Status == DiffStatusEnum.DiffStatus.ADDED
         || status.Status == DiffStatusEnum.DiffStatus.MODIFIED) {
+      T dA = getA.apply(d);
       T dB = getB.apply(d);
-      if (a != null && !a.equals(dB) && hasherA != null) {
+      if (a != null && !(a.equals(dB) || a.equals(dA)) && hasherA != null) {
         conflictKeys.add(hasherA.apply(a));
         return null;
       }
@@ -198,6 +200,7 @@ public class DiffMerger {
         mergeLast(
             a,
             d,
+            x -> d.getA(),
             x -> d.getB(),
             AutogenGitCodeDiff::getStatus,
             AutogenGitCodeBlob::getRepo,
@@ -422,6 +425,7 @@ public class DiffMerger {
         mergeLast(
             a,
             d,
+            AutogenCommandLineEnvironmentDiff::getA,
             AutogenCommandLineEnvironmentDiff::getB,
             AutogenCommandLineEnvironmentDiff::getStatus,
             List::toString,
@@ -448,12 +452,8 @@ public class DiffMerger {
                     d,
                     AutogenPythonEnvironmentBlob::getConstraints,
                     AutogenPythonEnvironmentDiff::getConstraints,
-                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
-                    x ->
-                        Utils.either(
-                            x.getA(),
-                            x.getB(),
-                            AutogenPythonRequirementEnvironmentBlob::getLibrary),
+                    e -> e.getLibrary() + e.getConstraint(),
+                    x -> Utils.either(x.getA(), x.getB(), e -> e.getLibrary() + e.getConstraint()),
                     AutogenPythonRequirementEnvironmentDiff::getStatus,
                     AutogenPythonRequirementEnvironmentDiff::getA,
                     AutogenPythonRequirementEnvironmentDiff::getB,
@@ -465,12 +465,8 @@ public class DiffMerger {
                     d,
                     AutogenPythonEnvironmentBlob::getRequirements,
                     AutogenPythonEnvironmentDiff::getRequirements,
-                    AutogenPythonRequirementEnvironmentBlob::getLibrary,
-                    x ->
-                        Utils.either(
-                            x.getA(),
-                            x.getB(),
-                            AutogenPythonRequirementEnvironmentBlob::getLibrary),
+                    e -> e.getLibrary() + e.getConstraint(),
+                    x -> Utils.either(x.getA(), x.getB(), e -> e.getLibrary() + e.getConstraint()),
                     AutogenPythonRequirementEnvironmentDiff::getStatus,
                     AutogenPythonRequirementEnvironmentDiff::getA,
                     AutogenPythonRequirementEnvironmentDiff::getB,
@@ -489,9 +485,10 @@ public class DiffMerger {
         mergeLast(
             a,
             d,
+            AutogenVersionEnvironmentDiff::getA,
             AutogenVersionEnvironmentDiff::getB,
             AutogenVersionEnvironmentDiff::getStatus,
-            null,
+            AutogenVersionEnvironmentBlob::toString,
             conflictKeys));
   }
 
@@ -513,6 +510,7 @@ public class DiffMerger {
         mergeLast(
             a,
             d,
+            AutogenDockerEnvironmentDiff::getA,
             AutogenDockerEnvironmentDiff::getB,
             AutogenDockerEnvironmentDiff::getStatus,
             AutogenDockerEnvironmentBlob::getRepository,

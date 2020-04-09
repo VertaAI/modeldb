@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities.versioning;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
+import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.modeldb.versioning.SetRepository;
 import java.util.Date;
 import java.util.HashSet;
@@ -19,12 +20,20 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "repository")
 public class RepositoryEntity {
+
   public RepositoryEntity() {}
 
-  public RepositoryEntity(String name, WorkspaceDTO workspaceDTO, String owner) {
+  public RepositoryEntity(
+      String name,
+      WorkspaceDTO workspaceDTO,
+      String owner,
+      RepositoryVisibility repositoryVisibility) {
     this.name = name;
     this.date_created = new Date().getTime();
     this.date_updated = new Date().getTime();
+    if (repositoryVisibility != null) {
+      this.repositoryVisibility = repositoryVisibility.getNumber();
+    }
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();
       this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
@@ -62,6 +71,9 @@ public class RepositoryEntity {
 
   @Column(name = "owner")
   private String owner;
+
+  @Column(name = "repository_visibility")
+  private Integer repositoryVisibility = null;
 
   public Long getId() {
     return id;
@@ -104,6 +116,9 @@ public class RepositoryEntity {
             .setDateUpdated(this.date_updated)
             .setWorkspaceId(this.workspace_id)
             .setWorkspaceTypeValue(this.workspace_type);
+    if (repositoryVisibility != null) {
+      builder.setRepositoryVisibilityValue(repositoryVisibility);
+    }
     if (owner != null) {
       builder.setOwner(owner);
     }
@@ -113,9 +128,14 @@ public class RepositoryEntity {
   public void update(SetRepository request) {
     this.name = request.getRepository().getName();
     this.date_updated = new Date().getTime();
+    this.repositoryVisibility = request.getRepository().getRepositoryVisibilityValue();
   }
 
   public String getOwner() {
     return owner;
+  }
+
+  public Integer getRepositoryVisibility() {
+    return repositoryVisibility;
   }
 }

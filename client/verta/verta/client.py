@@ -37,6 +37,7 @@ from .external.six.moves import cPickle as pickle  # pylint: disable=import-erro
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from ._internal_utils import _artifact_utils
+from ._internal_utils import _config_utils
 from ._internal_utils import _git_utils
 from ._internal_utils import _pip_requirements_utils
 from ._internal_utils import _utils
@@ -267,8 +268,7 @@ class Client(object):
         return res
 
     def _find_config(self, prefix, recursive=False):
-        f = ('verta_config.yaml', 'verta_config.json')
-        for ff in f:
+        for ff in _config_utils.CONFIG_FILENAMES:
             if os.path.isfile(prefix + ff):
                 return prefix + ff
         if recursive:
@@ -968,6 +968,7 @@ class _ModelDBEntity(object):
                 except OSError:  # script not found
                     print("unable to find code file; skipping")
         else:
+            exec_path = os.path.expanduser(exec_path)
             if not os.path.isfile(exec_path):
                 raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
 
@@ -1981,6 +1982,7 @@ class ExperimentRun(_ModelDBEntity):
 
         """
         if isinstance(artifact, six.string_types):
+            os.path.expanduser(artifact)
             artifact = open(artifact, 'rb')
 
         if hasattr(artifact, 'read') and method is not None:  # already a verta-produced stream
@@ -3406,6 +3408,7 @@ class ExperimentRun(_ModelDBEntity):
         if isinstance(paths, six.string_types):
             paths = [paths]
         if paths is not None:
+            paths = list(map(os.path.expanduser, paths))
             paths = list(map(os.path.abspath, paths))
 
         # collect local sys paths

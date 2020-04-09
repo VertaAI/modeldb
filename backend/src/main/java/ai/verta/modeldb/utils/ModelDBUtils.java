@@ -448,7 +448,12 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
-        LOGGER.error("Exception occurred:", e);
+        LOGGER.error("Exception occurred: {}", e.getMessage());
+        StackTraceElement[] stack = e.getStackTrace();
+        int maxLines = (stack.length > 4) ? 5 : stack.length;
+        for (int n = 0; n < maxLines; n++) {
+          LOGGER.error(stack[n].toString());
+        }
         status =
             Status.newBuilder()
                 .setCode(Code.INTERNAL_VALUE)

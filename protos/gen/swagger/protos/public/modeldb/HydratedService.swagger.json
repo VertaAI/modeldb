@@ -2349,6 +2349,9 @@
         },
         "global_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "default_repo_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         }
       }
     },

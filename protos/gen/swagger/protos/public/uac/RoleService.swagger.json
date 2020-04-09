@@ -75,6 +75,38 @@
         ]
       }
     },
+    "/role/deleteRoleBindings": {
+      "post": {
+        "operationId": "deleteRoleBindings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacDeleteRoleBindingsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacDeleteRoleBindings"
+            }
+          }
+        ],
+        "tags": [
+          "RoleService"
+        ]
+      }
+    },
     "/role/getRoleBindingById": {
       "get": {
         "operationId": "getBindingRoleById",
@@ -513,6 +545,26 @@
       }
     },
     "uacDeleteRoleBindingResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacDeleteRoleBindings": {
+      "type": "object",
+      "properties": {
+        "roleBindingNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacDeleteRoleBindingsResponse": {
       "type": "object",
       "properties": {
         "status": {

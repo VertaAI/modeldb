@@ -53,6 +53,7 @@ class Notebook(_code._Code):
         super(Notebook, self).__init__()
 
         if notebook_path is not None:
+            notebook_path = os.path.expanduser(notebook_path)
             self._msg.notebook.path.CopyFrom(_path.Path(notebook_path)._msg.path.components[0])
             try:
                 self._git_blob = _git.Git()
