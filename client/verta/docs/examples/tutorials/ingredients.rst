@@ -117,8 +117,7 @@ as the base for a new branch to build on:
 
 .. code-block:: python
 
-    env = repo.get_commit(branch="master")
-    env.branch("environment")
+    env = repo.get_commit(branch="master").new_branch("environment")
     print(env)
     # Commit 643d8873e74f7fc3a73ce4404e4a80b56df43ad24365a6e0819d17ffab57e620 (Branch: environment)
     # Date: 2020-03-19 18:15:15
