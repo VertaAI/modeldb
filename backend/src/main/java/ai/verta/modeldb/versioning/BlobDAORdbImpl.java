@@ -576,13 +576,13 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (!request.getCommitShaA().isEmpty()) {
         LOGGER.debug("Commit A found in request");
-        branchOrCommitA = request.getCommitShaA();
+        branchOrCommitA = request.getCommitShaA().substring(0, 7);
         internalCommitA = readSession.get(CommitEntity.class, request.getCommitShaA());
       }
 
       if (!request.getCommitShaB().isEmpty()) {
-        LOGGER.debug("Branch B found in request");
-        branchOrCommitB = request.getCommitShaB();
+        LOGGER.debug("Commit B found in request");
+        branchOrCommitB = request.getCommitShaB().substring(0, 7);
         internalCommitB = readSession.get(CommitEntity.class, request.getCommitShaB());
       }
 
@@ -642,23 +642,12 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (conflictLocationMap.isEmpty()) {
         final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
         long timeCreated = new Date().getTime();
-        List<String> parentSHAs = Arrays.asList(internalCommitA.getCommit_hash(), internalCommitB.getCommit_hash());
-        List<CommitEntity> parentCommits = Arrays.asList(internalCommitA, internalCommitB);
+        List<String> parentSHAs =
+            Arrays.asList(internalCommitB.getCommit_hash(), internalCommitA.getCommit_hash());
+        List<CommitEntity> parentCommits = Arrays.asList(internalCommitB, internalCommitA);
         String mergeMessage = request.getContent().getMessage();
         if (mergeMessage.isEmpty()) {
-          if (branchOrCommitA.length() > 7) {
-            mergeMessage =
-                    "Merge "
-                            + branchOrCommitA.substring(0, 7)
-                            + " into "
-                            + branchOrCommitA.substring(0, 7);
-          } else {
-            mergeMessage =
-                    "Merge "
-                            + branchOrCommitA
-                            + " into "
-                            + branchOrCommitA;
-          }
+          mergeMessage = "Merge " + branchOrCommitA + " into " + branchOrCommitB;
         }
         UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
         String author = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
