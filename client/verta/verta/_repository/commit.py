@@ -633,14 +633,14 @@ class Commit(object):
             raise ValueError("Commit and `other` must belong to the same Repository")
 
         msg = _VersioningService.MergeRepositoryCommitsRequest()
-        if other.branch_name is not None:
-            msg.branch_a = other.branch_name
-        else:
-            msg.commit_sha_a = other.id
         if self.branch_name is not None:
             msg.branch_b = self.branch_name
         else:
             msg.commit_sha_b = self.id
+        if other.branch_name is not None:
+            msg.branch_a = other.branch_name
+        else:
+            msg.commit_sha_a = other.id
         if message is not None:
             msg.content.message = message
 
