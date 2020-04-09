@@ -125,7 +125,6 @@ class Client(object):
             dev_key = os.environ['VERTA_DEV_KEY']
             print("set developer key from environment")
         dev_key = self._set_from_config_if_none(dev_key, "dev_key")
-        host = self._set_from_config_if_none(host, "host")
 
         scheme = auth = None
         if email is None and dev_key is None:
@@ -144,6 +143,10 @@ class Client(object):
             os.environ['VERTA_DEV_KEY'] = dev_key
         else:
             raise ValueError("`email` and `dev_key` must be provided together")
+
+        host = self._set_from_config_if_none(host, "host")
+        if host is None:
+            raise ValueError("`host` must be provided")
 
         back_end_url = urlparse(host)
         socket = back_end_url.netloc + back_end_url.path.rstrip('/')
