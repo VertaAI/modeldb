@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class BlobDAORdbImpl implements BlobDAO {
@@ -688,6 +689,89 @@ public class BlobDAORdbImpl implements BlobDAO {
             .addAllConflicts(blobDiffList)
             .build();
       }
+    }
+  }
+
+  @Override
+  public RevertRepositoryCommitsRequest.Response revertCommit(
+      RepositoryDAO repositoryDAO, RevertRepositoryCommitsRequest request)
+      throws ModelDBException, NoSuchAlgorithmException {
+    // validating request
+    LOGGER.debug("Validating RevertRepositoryCommitsRequest");
+    if (request.getCommitShaA().isEmpty()) {
+      throw new ModelDBException(
+          "Revert Commit not found in the request", Status.Code.INVALID_ARGUMENT);
+    }
+    LOGGER.debug("RevertRepositoryCommitsRequest validated");
+
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+      RepositoryEntity repositoryEntity =
+          repositoryDAO.getRepositoryById(session, request.getRepositoryId());
+
+      if (!VersioningUtils.commitRepositoryMappingExists(
+          session, request.getCommitShaA(), repositoryEntity.getId())) {
+        throw new ModelDBException(
+            "No such commit found in the repository : " + request.getCommitShaA(),
+            Status.Code.NOT_FOUND);
+      }
+
+      CommitEntity internalCommitA = session.get(CommitEntity.class, request.getCommitShaA());
+
+      CommitEntity parentCommit = null;
+      for (CommitEntity parentCommits : internalCommitA.getParent_commits()) {
+        if (parentCommit == null
+            || parentCommit.getDate_created() < parentCommits.getDate_created()) {
+          parentCommit = parentCommits;
+        }
+      }
+
+      if (parentCommit == null) {
+        throw new ModelDBException(
+            "No parent found for commit : " + request.getCommitShaA(), Status.Code.NOT_FOUND);
+      }
+
+      long timeCreated = new Date().getTime();
+
+      Commit requestCommit;
+      if (request.hasContent()) {
+        requestCommit = request.getContent();
+      } else {
+        requestCommit =
+            Commit.newBuilder()
+                .setMessage(VersioningUtils.revertCommitMessage(internalCommitA.getMessage()))
+                .setDateCreated(timeCreated)
+                .setAuthor(
+                    authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()))
+                .addParentShas(internalCommitA.getCommit_hash())
+                .build();
+      }
+
+      final String commitSha =
+          VersioningUtils.generateCommitSHA(
+              requestCommit.getParentShasList(),
+              requestCommit.getMessage(),
+              timeCreated,
+              requestCommit.getAuthor(),
+              parentCommit.getRootSha());
+      Commit internalCommit =
+          Commit.newBuilder()
+              .setDateCreated(requestCommit.getDateCreated())
+              .setAuthor(requestCommit.getAuthor())
+              .setMessage(requestCommit.getMessage())
+              .setCommitSha(commitSha)
+              .build();
+      CommitEntity commitEntity =
+          new CommitEntity(
+              repositoryEntity,
+              Collections.singletonList(internalCommitA),
+              internalCommit,
+              parentCommit.getRootSha());
+      session.saveOrUpdate(commitEntity);
+      transaction.commit();
+      return RevertRepositoryCommitsRequest.Response.newBuilder()
+          .setCommit(commitEntity.toCommitProto())
+          .build();
     }
   }
 

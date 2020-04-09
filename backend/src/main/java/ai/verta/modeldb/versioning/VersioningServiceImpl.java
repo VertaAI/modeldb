@@ -464,6 +464,25 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   }
 
   @Override
+  public void revertRepositoryCommits(
+      RevertRepositoryCommitsRequest request,
+      StreamObserver<RevertRepositoryCommitsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try {
+      try (RequestLatencyResource latencyResource =
+          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+        RevertRepositoryCommitsRequest.Response mergeResponse =
+            blobDAO.revertCommit(repositoryDAO, request);
+        responseObserver.onNext(mergeResponse);
+        responseObserver.onCompleted();
+      }
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, RevertRepositoryCommitsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
   public void listBranches(
       ListBranchesRequest request, StreamObserver<ListBranchesRequest.Response> responseObserver) {
     QPSCountResource.inc();

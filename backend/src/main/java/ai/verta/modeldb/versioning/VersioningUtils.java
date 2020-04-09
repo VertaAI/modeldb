@@ -92,4 +92,8 @@ public class VersioningUtils {
 
     return FileHasher.getSha(sb.toString());
   }
+
+  public static String revertCommitMessage(String revertCommitMessage) {
+    return "Revert \"" + revertCommitMessage + "\"";
+  }
 }
