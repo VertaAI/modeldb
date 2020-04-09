@@ -1,10 +1,5 @@
 import pytest
 
-pytest.skip(
-    "pandas v1.X introduces np.bool_ somewhere, which isn't supported by model API (VR-3283)",
-    allow_module_level=True
-)
-
 import six
 
 import numbers
