@@ -1,6 +1,7 @@
 import pytest
 
 import json
+import sys
 
 np = pytest.importorskip("numpy")
 pd = pytest.importorskip("pandas")
@@ -16,6 +17,7 @@ pandas_skip_reason = "pandas v1.X introduces np.bool_ somewhere, which isn't sup
 
 # Verify that, given a sample created from an api, the same api can be inferred
 @hypothesis.given(api_and_values)
+@pytest.mark.skipif(sys.version_info.major == 2, reason="test is flaky")
 def test_modelapi_and_values(api_and_values):
     api, values = api_and_values
     assert len(values) > 0
