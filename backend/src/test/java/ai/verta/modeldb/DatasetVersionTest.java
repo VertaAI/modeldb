@@ -118,8 +118,10 @@ public class DatasetVersionTest {
     if (!client2Channel.isShutdown()) {
       client2Channel.shutdownNow();
     }
-    if (!authServiceChannel.isShutdown()) {
-      authServiceChannel.shutdownNow();
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (!authServiceChannel.isShutdown()) {
+        authServiceChannel.shutdownNow();
+      }
     }
   }
 
@@ -2167,8 +2169,6 @@ public class DatasetVersionTest {
         DatasetVersionServiceGrpc.newBlockingStub(channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStubClient2 =
         DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
 
@@ -2186,6 +2186,9 @@ public class DatasetVersionTest {
               authClientInterceptor.getClient2Email(),
               CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
               "Please refer shared dataset for your invention");
+
+      CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
           collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
@@ -2220,6 +2223,8 @@ public class DatasetVersionTest {
         DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       try {
         datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
       } catch (StatusRuntimeException e) {
