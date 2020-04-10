@@ -874,43 +874,6 @@
         ]
       }
     },
-    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/revert": {
-      "post": {
-        "operationId": "RevertRepositoryCommits2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/versioningRevertRepositoryCommitsRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "repository_id.repo_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "commit_sha",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "VersioningService"
-        ]
-      }
-    },
     "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs": {
       "get": {
         "summary": "Getting ExperimentRuns linked to a commit",
@@ -968,6 +931,51 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_to_revert_sha}/revert": {
+      "post": {
+        "operationId": "RevertRepositoryCommits2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningRevertRepositoryCommitsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "commit_to_revert_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningRevertRepositoryCommitsRequest"
+            }
           }
         ],
         "tags": [
@@ -2157,48 +2165,6 @@
         ]
       }
     },
-    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/revert": {
-      "post": {
-        "operationId": "RevertRepositoryCommits",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/versioningRevertRepositoryCommitsRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "repository_id.named_id.workspace_name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "repository_id.named_id.name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "commit_sha",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "VersioningService"
-        ]
-      }
-    },
     "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runs": {
       "get": {
         "summary": "Getting ExperimentRuns linked to a commit",
@@ -2256,6 +2222,56 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_to_revert_sha}/revert": {
+      "post": {
+        "operationId": "RevertRepositoryCommits",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningRevertRepositoryCommitsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commit_to_revert_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningRevertRepositoryCommitsRequest"
+            }
           }
         ],
         "tags": [
@@ -3913,6 +3929,23 @@
         }
       },
       "title": "CRUD for repositories"
+    },
+    "versioningRevertRepositoryCommitsRequest": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "$ref": "#/definitions/versioningRepositoryIdentification"
+        },
+        "commit_to_revert_sha": {
+          "type": "string"
+        },
+        "base_commit_sha": {
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/definitions/versioningCommit"
+        }
+      }
     },
     "versioningRevertRepositoryCommitsRequestResponse": {
       "type": "object",
