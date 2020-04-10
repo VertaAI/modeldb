@@ -1,6 +1,7 @@
 import pytest
 
 import json
+import sys
 
 pytest.importorskip("numpy")
 pytest.importorskip("pandas")
@@ -13,6 +14,7 @@ from value_generator import api_and_values, series_api_and_values, dataframe_api
 
 # Verify that, given a sample created from an api, the same api can be inferred
 @hypothesis.given(api_and_values)
+@pytest.mark.skipif(sys.version_info.major == 2, reason="test is flaky")
 def test_modelapi_and_values(api_and_values):
     api, values = api_and_values
     assert len(values) > 0
