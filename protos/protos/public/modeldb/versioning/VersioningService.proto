@@ -412,6 +412,16 @@ message MergeRepositoryCommitsRequest {
     }
 }
 
+message RevertRepositoryCommitsRequest {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha_a = 2;//commit to revert
+    Commit content = 4;
+
+    message Response {
+        Commit commit = 1;
+    }
+}
+
 service VersioningService {
     // CRUD for repositories
     rpc ListRepositories(ListRepositoriesRequest) returns (ListRepositoriesRequest.Response) {
@@ -609,6 +619,15 @@ service VersioningService {
             additional_bindings {
                 post: "/v1/versioning/repositories/{repository_id.repo_id}/merge"
                 body: "*"
+            }
+        };
+    };
+
+    rpc RevertRepositoryCommits(RevertRepositoryCommitsRequest) returns (RevertRepositoryCommitsRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/revert"
+            additional_bindings {
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/revert"
             }
         };
     };
