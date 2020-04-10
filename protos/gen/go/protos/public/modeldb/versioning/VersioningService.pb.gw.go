@@ -3811,6 +3811,210 @@ func local_request_VersioningService_MergeRepositoryCommits_1(ctx context.Contex
 }
 
 var (
+	filter_VersioningService_RevertRepositoryCommits_0 = &utilities.DoubleArray{Encoding: map[string]int{"repository_id": 0, "named_id": 1, "workspace_name": 2, "name": 3, "commit_sha": 4}, Base: []int{1, 3, 1, 1, 4, 4, 0, 3, 0, 0}, Check: []int{0, 1, 2, 3, 2, 1, 4, 5, 8, 6}}
+)
+
+func request_VersioningService_RevertRepositoryCommits_0(ctx context.Context, marshaler runtime.Marshaler, client VersioningServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RevertRepositoryCommitsRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["repository_id.named_id.workspace_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repository_id.named_id.workspace_name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "repository_id.named_id.workspace_name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repository_id.named_id.workspace_name", err)
+	}
+
+	val, ok = pathParams["repository_id.named_id.name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repository_id.named_id.name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "repository_id.named_id.name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repository_id.named_id.name", err)
+	}
+
+	val, ok = pathParams["commit_sha"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "commit_sha")
+	}
+
+	protoReq.CommitSha, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commit_sha", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_VersioningService_RevertRepositoryCommits_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.RevertRepositoryCommits(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_VersioningService_RevertRepositoryCommits_0(ctx context.Context, marshaler runtime.Marshaler, server VersioningServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RevertRepositoryCommitsRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["repository_id.named_id.workspace_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repository_id.named_id.workspace_name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "repository_id.named_id.workspace_name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repository_id.named_id.workspace_name", err)
+	}
+
+	val, ok = pathParams["repository_id.named_id.name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repository_id.named_id.name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "repository_id.named_id.name", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repository_id.named_id.name", err)
+	}
+
+	val, ok = pathParams["commit_sha"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "commit_sha")
+	}
+
+	protoReq.CommitSha, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commit_sha", err)
+	}
+
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_VersioningService_RevertRepositoryCommits_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.RevertRepositoryCommits(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_VersioningService_RevertRepositoryCommits_1 = &utilities.DoubleArray{Encoding: map[string]int{"repository_id": 0, "repo_id": 1, "commit_sha": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 1, 3, 4}}
+)
+
+func request_VersioningService_RevertRepositoryCommits_1(ctx context.Context, marshaler runtime.Marshaler, client VersioningServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RevertRepositoryCommitsRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["repository_id.repo_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repository_id.repo_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "repository_id.repo_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repository_id.repo_id", err)
+	}
+
+	val, ok = pathParams["commit_sha"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "commit_sha")
+	}
+
+	protoReq.CommitSha, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commit_sha", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_VersioningService_RevertRepositoryCommits_1); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.RevertRepositoryCommits(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_VersioningService_RevertRepositoryCommits_1(ctx context.Context, marshaler runtime.Marshaler, server VersioningServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RevertRepositoryCommitsRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["repository_id.repo_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "repository_id.repo_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "repository_id.repo_id", val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "repository_id.repo_id", err)
+	}
+
+	val, ok = pathParams["commit_sha"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "commit_sha")
+	}
+
+	protoReq.CommitSha, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commit_sha", err)
+	}
+
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_VersioningService_RevertRepositoryCommits_1); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.RevertRepositoryCommits(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
 	filter_VersioningService_ListTags_0 = &utilities.DoubleArray{Encoding: map[string]int{"repository_id": 0, "named_id": 1, "workspace_name": 2, "name": 3}, Base: []int{1, 3, 1, 1, 3, 0, 3, 0}, Check: []int{0, 1, 2, 3, 2, 4, 5, 7}}
 )
 
@@ -5439,6 +5643,46 @@ func RegisterVersioningServiceHandlerServer(ctx context.Context, mux *runtime.Se
 
 	})
 
+	mux.Handle("POST", pattern_VersioningService_RevertRepositoryCommits_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_VersioningService_RevertRepositoryCommits_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_VersioningService_RevertRepositoryCommits_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_VersioningService_RevertRepositoryCommits_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_VersioningService_RevertRepositoryCommits_1(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_VersioningService_RevertRepositoryCommits_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_VersioningService_ListTags_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -6460,6 +6704,46 @@ func RegisterVersioningServiceHandlerClient(ctx context.Context, mux *runtime.Se
 
 	})
 
+	mux.Handle("POST", pattern_VersioningService_RevertRepositoryCommits_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_VersioningService_RevertRepositoryCommits_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_VersioningService_RevertRepositoryCommits_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_VersioningService_RevertRepositoryCommits_1, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_VersioningService_RevertRepositoryCommits_1(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_VersioningService_RevertRepositoryCommits_1(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_VersioningService_ListTags_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -6706,6 +6990,10 @@ var (
 
 	pattern_VersioningService_MergeRepositoryCommits_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "merge"}, "", runtime.AssumeColonVerbOpt(true)))
 
+	pattern_VersioningService_RevertRepositoryCommits_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "commits", "commit_sha", "revert"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_VersioningService_RevertRepositoryCommits_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "commits", "commit_sha", "revert"}, "", runtime.AssumeColonVerbOpt(true)))
+
 	pattern_VersioningService_ListTags_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "versioning", "workspaces", "repository_id.named_id.workspace_name", "repositories", "repository_id.named_id.name", "tags"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_VersioningService_ListTags_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "versioning", "repositories", "repository_id.repo_id", "tags"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -6805,6 +7093,10 @@ var (
 	forward_VersioningService_MergeRepositoryCommits_0 = runtime.ForwardResponseMessage
 
 	forward_VersioningService_MergeRepositoryCommits_1 = runtime.ForwardResponseMessage
+
+	forward_VersioningService_RevertRepositoryCommits_0 = runtime.ForwardResponseMessage
+
+	forward_VersioningService_RevertRepositoryCommits_1 = runtime.ForwardResponseMessage
 
 	forward_VersioningService_ListTags_0 = runtime.ForwardResponseMessage
 

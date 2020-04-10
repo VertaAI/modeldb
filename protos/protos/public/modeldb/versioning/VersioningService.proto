@@ -414,7 +414,7 @@ message MergeRepositoryCommitsRequest {
 
 message RevertRepositoryCommitsRequest {
     RepositoryIdentification repository_id = 1;
-    string commit_sha_a = 2;//commit to revert
+    string commit_sha = 2;//commit to revert
     Commit content = 4;
 
     message Response {
