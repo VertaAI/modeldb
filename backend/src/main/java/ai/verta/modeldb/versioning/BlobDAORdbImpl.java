@@ -553,9 +553,9 @@ public class BlobDAORdbImpl implements BlobDAO {
     Commit parentCommitProto;
     String branchOrCommitA = null;
     String branchOrCommitB = null;
+    RepositoryEntity repositoryEntity = null;
     try (Session readSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(readSession, request.getRepositoryId());
+      repositoryEntity = repositoryDAO.getRepositoryById(readSession, request.getRepositoryId());
 
       if (!request.getBranchA().isEmpty()) {
         LOGGER.debug("Branch A found in request");
@@ -641,32 +641,22 @@ public class BlobDAORdbImpl implements BlobDAO {
               conflictLocationMap);
 
       if (conflictLocationMap.isEmpty()) {
-        final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
-        long timeCreated = new Date().getTime();
+        String mergeMessage = request.getContent().getMessage();
         List<String> parentSHAs =
             Arrays.asList(internalCommitB.getCommit_hash(), internalCommitA.getCommit_hash());
         List<CommitEntity> parentCommits = Arrays.asList(internalCommitB, internalCommitA);
-        String mergeMessage = request.getContent().getMessage();
         if (mergeMessage.isEmpty()) {
           mergeMessage = "Merge " + branchOrCommitA + " into " + branchOrCommitB;
         }
-        UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-        String author = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
-        final String commitSha =
-            VersioningUtils.generateCommitSHA(
-                parentSHAs, mergeMessage, timeCreated, author, rootSha);
 
-        Commit internalCommit =
-            Commit.newBuilder()
-                .setDateCreated(timeCreated)
-                .setAuthor(author)
-                .setMessage(mergeMessage)
-                .setCommitSha(commitSha)
-                .build();
-        RepositoryEntity repositoryEntity =
-            repositoryDAO.getRepositoryById(writeSession, request.getRepositoryId());
         CommitEntity commitEntity =
-            new CommitEntity(repositoryEntity, parentCommits, internalCommit, rootSha);
+            getCommitEntityObj(
+                writeSession,
+                repositoryEntity,
+                parentSHAs,
+                parentCommits,
+                blobContainerList,
+                mergeMessage);
         writeSession.saveOrUpdate(commitEntity);
         writeSession.getTransaction().commit();
         return MergeRepositoryCommitsRequest.Response.newBuilder()
@@ -692,81 +682,129 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
   }
 
+  private CommitEntity getCommitEntityObj(
+      Session writeSession,
+      RepositoryEntity repositoryEntity,
+      List<String> parentSHAs,
+      List<CommitEntity> parentCommits,
+      List<BlobContainer> blobContainerList,
+      String commitMessage)
+      throws NoSuchAlgorithmException, ModelDBException {
+    final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
+    long timeCreated = new Date().getTime();
+
+    UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+    String author = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
+    final String commitSha =
+        VersioningUtils.generateCommitSHA(parentSHAs, commitMessage, timeCreated, author, rootSha);
+
+    Commit internalCommit =
+        Commit.newBuilder()
+            .setDateCreated(timeCreated)
+            .setAuthor(author)
+            .setMessage(commitMessage)
+            .setCommitSha(commitSha)
+            .build();
+    return new CommitEntity(repositoryEntity, parentCommits, internalCommit, rootSha);
+  }
+
   @Override
   public RevertRepositoryCommitsRequest.Response revertCommit(
       RepositoryDAO repositoryDAO, RevertRepositoryCommitsRequest request)
       throws ModelDBException, NoSuchAlgorithmException {
     // validating request
     LOGGER.debug("Validating RevertRepositoryCommitsRequest");
-    if (request.getCommitShaA().isEmpty()) {
+    if (request.getCommitToRevertSha().isEmpty()) {
       throw new ModelDBException(
-          "Revert Commit not found in the request", Status.Code.INVALID_ARGUMENT);
+          "Revert Commit SHA not found in the request", Status.Code.INVALID_ARGUMENT);
+    }
+    if (request.getBaseCommitSha().isEmpty()) {
+      throw new ModelDBException(
+          "Revert Base Commit SHA not found in the request", Status.Code.INVALID_ARGUMENT);
     }
     LOGGER.debug("RevertRepositoryCommitsRequest validated");
 
+    List<BlobContainer> blobContainerList;
+    RepositoryEntity repositoryEntity;
+    CommitEntity baseCommitEntity;
+    CommitEntity commitToRevertShaEntity;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(session, request.getRepositoryId());
+      repositoryEntity = repositoryDAO.getRepositoryById(session, request.getRepositoryId());
 
       if (!VersioningUtils.commitRepositoryMappingExists(
-          session, request.getCommitShaA(), repositoryEntity.getId())) {
+          session, request.getCommitToRevertSha(), repositoryEntity.getId())) {
         throw new ModelDBException(
-            "No such commit found in the repository : " + request.getCommitShaA(),
+            "No such revert commit found in the repository : " + request.getCommitToRevertSha(),
             Status.Code.NOT_FOUND);
       }
 
-      CommitEntity internalCommitA = session.get(CommitEntity.class, request.getCommitShaA());
-
-      CommitEntity parentCommit = null;
-      for (CommitEntity parentCommits : internalCommitA.getParent_commits()) {
-        if (parentCommit == null
-            || parentCommit.getDate_created() < parentCommits.getDate_created()) {
-          parentCommit = parentCommits;
-        }
-      }
-
-      if (parentCommit == null) {
+      if (!VersioningUtils.commitRepositoryMappingExists(
+          session, request.getBaseCommitSha(), repositoryEntity.getId())) {
         throw new ModelDBException(
-            "No parent found for commit : " + request.getCommitShaA(), Status.Code.NOT_FOUND);
+            "No such base commit found in the repository : " + request.getCommitToRevertSha(),
+            Status.Code.NOT_FOUND);
       }
 
-      long timeCreated = new Date().getTime();
+      commitToRevertShaEntity = session.get(CommitEntity.class, request.getCommitToRevertSha());
+      baseCommitEntity = session.get(CommitEntity.class, request.getBaseCommitSha());
 
-      Commit requestCommit;
-      if (request.hasContent()) {
-        requestCommit = request.getContent();
-      } else {
-        requestCommit =
-            Commit.newBuilder()
-                .setMessage(VersioningUtils.revertCommitMessage(internalCommitA.getMessage()))
-                .setDateCreated(timeCreated)
-                .setAuthor(
-                    authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()))
-                .addParentShas(internalCommitA.getCommit_hash())
-                .build();
+      if (commitToRevertShaEntity.getParent_commits() == null
+          || commitToRevertShaEntity.getParent_commits().isEmpty()) {
+        throw new ModelDBException(
+            "No parent found for commit : " + request.getCommitToRevertSha(),
+            Status.Code.NOT_FOUND);
+      }
+      CommitEntity firstParentOfCommitToRevert =
+          new ArrayList<>(commitToRevertShaEntity.getParent_commits()).get(0);
+
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapFirstParentCommit =
+          getCommitBlobMapWithHash(
+              session, firstParentOfCommitToRevert.getRootSha(), new ArrayList<>());
+
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapBaseCommit =
+          getCommitBlobMapWithHash(session, baseCommitEntity.getRootSha(), new ArrayList<>());
+
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitToRevert =
+          getCommitBlobMapWithHash(
+              session, commitToRevertShaEntity.getRootSha(), new ArrayList<>());
+
+      List<ai.verta.modeldb.versioning.BlobDiff> commitToRevertShaBlobDiff =
+          computeDiffFromCommitMaps(
+                  locationBlobsMapCommitToRevert, locationBlobsMapFirstParentCommit)
+              .getDiffsList();
+      Map<String, BlobExpanded> locationBlobsMapBaseCommitSimple =
+          convertToLocationBlobMap(locationBlobsMapBaseCommit);
+
+      blobContainerList =
+          getBlobContainers(
+              commitToRevertShaBlobDiff.stream()
+                  .map(AutogenBlobDiff::fromProto)
+                  .collect(Collectors.toList()),
+              locationBlobsMapBaseCommitSimple,
+              new LinkedHashMap<>());
+    }
+
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+      List<String> parentSHAs = Collections.singletonList(request.getBaseCommitSha());
+      List<CommitEntity> parentCommits = Collections.singletonList(baseCommitEntity);
+      String revertMessage = request.getContent().getMessage();
+      if (revertMessage.isEmpty()) {
+        revertMessage =
+            "Revert "
+                + commitToRevertShaEntity.getCommit_hash().substring(0, 7)
+                + " to "
+                + baseCommitEntity.getCommit_hash().substring(0, 7);
       }
 
-      final String commitSha =
-          VersioningUtils.generateCommitSHA(
-              requestCommit.getParentShasList(),
-              requestCommit.getMessage(),
-              timeCreated,
-              requestCommit.getAuthor(),
-              parentCommit.getRootSha());
-      Commit internalCommit =
-          Commit.newBuilder()
-              .setDateCreated(requestCommit.getDateCreated())
-              .setAuthor(requestCommit.getAuthor())
-              .setMessage(requestCommit.getMessage())
-              .setCommitSha(commitSha)
-              .build();
       CommitEntity commitEntity =
-          new CommitEntity(
+          getCommitEntityObj(
+              session,
               repositoryEntity,
-              Collections.singletonList(internalCommitA),
-              internalCommit,
-              parentCommit.getRootSha());
+              parentSHAs,
+              parentCommits,
+              blobContainerList,
+              revertMessage);
       session.saveOrUpdate(commitEntity);
       transaction.commit();
       return RevertRepositoryCommitsRequest.Response.newBuilder()
