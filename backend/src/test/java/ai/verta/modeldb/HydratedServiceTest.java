@@ -169,8 +169,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -260,6 +258,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
@@ -320,8 +320,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -402,6 +400,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
           UACServiceGrpc.newBlockingStub(authServiceChannel);
       GetUser getUserRequest =
@@ -489,8 +489,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -667,6 +665,8 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       // Create two collaborator for above project
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
@@ -781,8 +781,6 @@ public class HydratedServiceTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
     CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
         CommentServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
         HydratedServiceGrpc.newBlockingStub(channel);
 
@@ -861,6 +859,8 @@ public class HydratedServiceTest {
     // Create two collaborator for above project
     // For Collaborator1
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
