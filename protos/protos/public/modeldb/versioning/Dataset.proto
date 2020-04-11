@@ -6,6 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "protos/public/modeldb/versioning/Enums.proto";
+import "protos/public/modeldb/CommonService.proto";
 
 message DatasetBlob {
     oneof content {
@@ -21,6 +22,9 @@ message PathDatasetComponentBlob {
 
     string sha256 = 4;
     string md5 = 5;
+
+    string version_id = 6;
+    VersionIDTypeEnum.VersionIDType version_type = 7;
 }
 
 message PathDatasetBlob {
