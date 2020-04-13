@@ -24,6 +24,8 @@ public class DatasetPartInfoEntity {
     setSize(datasetPartInfo.getSize());
     setChecksum(datasetPartInfo.getChecksum());
     setLast_modified_at_source(datasetPartInfo.getLastModifiedAtSource());
+    this.version_id = datasetPartInfo.getVersionId();
+    this.version_type = datasetPartInfo.getVersionTypeValue();
 
     if (entity instanceof PathDatasetVersionInfoEntity) {
       setPathDatasetVersionInfoEntity(entity);
@@ -58,6 +60,12 @@ public class DatasetPartInfoEntity {
   @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JoinColumn(name = "path_dataset_version_info_id")
   private PathDatasetVersionInfoEntity pathDatasetVersionInfoEntity;
+
+  @Column(name = "version_id")
+  private String version_id;
+
+  @Column(name = "version_type")
+  private Integer version_type;
 
   public Long getId() {
     return id;
@@ -114,6 +122,8 @@ public class DatasetPartInfoEntity {
         .setSize(getSize())
         .setChecksum(getChecksum())
         .setLastModifiedAtSource(getLast_modified_at_source())
+        .setVersionId(this.version_id)
+        .setVersionTypeValue(this.version_type)
         .build();
   }
 }
