@@ -128,11 +128,3 @@ message WorkspaceTypeEnum {
         USER = 2;
     }
 }
-
-message VersionID {
-    oneof version_id {
-        string string_version = 1;
-        int64 int_version = 2;
-        float float_version = 3;
-    }
-}

@@ -22,8 +22,6 @@ message PathDatasetComponentBlob {
 
     string sha256 = 4;
     string md5 = 5;
-
-    VersionID version_id = 6;
 }
 
 message PathDatasetBlob {
