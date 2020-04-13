@@ -12,6 +12,7 @@ ModelDB (Versioning and Metadata)
 * `Versioning a Model and Logging Metadata <tutorials/workflow.html>`_
 * `Versioning Data <tutorials/dataset.html>`_
 * `Querying Metadata Querying <tutorials/querying.html>`_
+* `Handling Merge Conflicts <tutorials/merge.html>`_
 
 Deployment and Release
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -43,6 +44,7 @@ Core Verta functionality
     Model Versioning <tutorials/workflow>
     Data Versioning <tutorials/dataset>
     Metadata Querying <tutorials/querying>
+    Merge Conflicts <tutorials/merge>
     Class Models <tutorials/class>
     Web App <tutorials/webapp>
     Workspaces <tutorials/workspaces>
