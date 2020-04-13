@@ -45,6 +45,7 @@ import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
+import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -1885,7 +1886,7 @@ public class CommitTest {
     Commit revertedCommit1 = revertCommitResponse.getCommit();
     assertEquals(
         "Revert message not match with expected message",
-        "Revert \"" + commitB.getCommitSha() + " to " + commitB.getCommitSha() + "\"",
+        VersioningUtils.revertCommitMessage(commitB.getCommitSha(), commitB.getCommitSha()),
         revertedCommit1.getMessage());
 
     ListCommitBlobsRequest listCommitBlobsRequest =
@@ -1917,7 +1918,7 @@ public class CommitTest {
     Commit revertedCommit2 = revertCommitResponse.getCommit();
     assertEquals(
         "Revert message not match with expected message",
-        "Revert \"" + commitC.getCommitSha() + " to " + commitA.getCommitSha() + "\"",
+        VersioningUtils.revertCommitMessage(commitC.getCommitSha(), commitA.getCommitSha()),
         revertedCommit2.getMessage());
 
     listCommitBlobsRequest =

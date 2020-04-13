@@ -727,7 +727,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     List<BlobContainer> blobContainerList;
     RepositoryEntity repositoryEntity;
     CommitEntity baseCommitEntity;
-    CommitEntity commitToRevertShaEntity;
+    CommitEntity commitToRevertEntity;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       repositoryEntity = repositoryDAO.getRepositoryById(session, request.getRepositoryId());
 
@@ -745,17 +745,16 @@ public class BlobDAORdbImpl implements BlobDAO {
             Status.Code.NOT_FOUND);
       }
 
-      commitToRevertShaEntity = session.get(CommitEntity.class, request.getCommitToRevertSha());
+      commitToRevertEntity = session.get(CommitEntity.class, request.getCommitToRevertSha());
       baseCommitEntity = session.get(CommitEntity.class, request.getBaseCommitSha());
 
-      if (commitToRevertShaEntity.getParent_commits() == null
-          || commitToRevertShaEntity.getParent_commits().isEmpty()) {
+      if (commitToRevertEntity.getParent_commits() == null
+          || commitToRevertEntity.getParent_commits().isEmpty()) {
         throw new ModelDBException(
-            "No parent found for commit : " + request.getCommitToRevertSha(),
-            Status.Code.NOT_FOUND);
+            "No parent found for commit : " + request.getCommitToRevertSha(), Status.Code.INTERNAL);
       }
       CommitEntity firstParentOfCommitToRevert =
-          new ArrayList<>(commitToRevertShaEntity.getParent_commits()).get(0);
+          new ArrayList<>(commitToRevertEntity.getParent_commits()).get(0);
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapFirstParentCommit =
           getCommitBlobMapWithHash(
@@ -765,8 +764,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           getCommitBlobMapWithHash(session, baseCommitEntity.getRootSha(), new ArrayList<>());
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobsMapCommitToRevert =
-          getCommitBlobMapWithHash(
-              session, commitToRevertShaEntity.getRootSha(), new ArrayList<>());
+          getCommitBlobMapWithHash(session, commitToRevertEntity.getRootSha(), new ArrayList<>());
 
       List<ai.verta.modeldb.versioning.BlobDiff> commitToRevertShaBlobDiff =
           computeDiffFromCommitMaps(
@@ -791,10 +789,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       String revertMessage = request.getContent().getMessage();
       if (revertMessage.isEmpty()) {
         revertMessage =
-            "Revert "
-                + commitToRevertShaEntity.getCommit_hash().substring(0, 7)
-                + " to "
-                + baseCommitEntity.getCommit_hash().substring(0, 7);
+            VersioningUtils.revertCommitMessage(
+                commitToRevertEntity.getCommit_hash(), baseCommitEntity.getCommit_hash());
       }
 
       CommitEntity commitEntity =
