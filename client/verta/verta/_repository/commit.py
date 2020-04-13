@@ -152,6 +152,21 @@ class Commit(object):
         self._parent_ids = [self.id]
         self._commit_json['commit_sha'] = ""
 
+    def _become_saved_child(self, child_id):
+        """
+        This method is for when a child commit is created in the back end from `self`, and `self`
+        and its branch need to be updated to become that newly-created commit.
+
+        """
+        if self.branch_name is not None:
+            # update branch to child commit
+            set_branch(self._conn, self._repo.id, child_id, self.branch_name)
+            new_commit = self._repo.get_commit(branch=self.branch_name)
+        else:
+            new_commit = self._repo.get_commit(id=child_id)
+
+        self.__dict__ = new_commit.__dict__
+
     def _to_create_msg(self, commit_message):
         self._lazy_load_blobs()
 
@@ -334,15 +349,7 @@ class Commit(object):
         _utils.raise_for_http_error(response)
         response_msg = _utils.json_to_proto(response.json(), proto_message.Response)
 
-        commit_id = response_msg.commit.commit_sha
-        if self.branch_name is not None:
-            # update branch to child commit
-            set_branch(self._conn, self._repo.id, commit_id, self.branch_name)
-            new_commit = self._repo.get_commit(branch=self.branch_name)
-        else:
-            new_commit = self._repo.get_commit(id=commit_id)
-
-        self.__dict__ = new_commit.__dict__
+        self._become_saved_child(response_msg.commit.commit_sha)
 
     def tag(self, tag):
         """
@@ -565,15 +572,7 @@ class Commit(object):
         _utils.raise_for_http_error(response)
         response_msg = _utils.json_to_proto(response.json(), msg.Response)
 
-        commit_id = response_msg.commit.commit_sha
-        if self.branch_name is not None:
-            # update branch to revert commit
-            set_branch(self._conn, self._repo.id, commit_id, self.branch_name)
-            new_commit = self._repo.get_commit(branch=self.branch_name)
-        else:
-            new_commit = self._repo.get_commit(id=commit_id)
-
-        self.__dict__ = new_commit.__dict__
+        self._become_saved_child(response_msg.commit.commit_sha)
 
     def _to_heap_element(self):
         date_created = int(self._commit_json['date_created'])  # protobuf uint64 is str, so cast to int
@@ -684,15 +683,7 @@ class Commit(object):
                 " please create a new Commit with the updated blobs"
             )
 
-        commit_id = response_msg.commit.commit_sha
-        if self.branch_name is not None:
-            # update branch to merge commit
-            set_branch(self._conn, self._repo.id, commit_id, self.branch_name)
-            new_commit = self._repo.get_commit(branch=self.branch_name)
-        else:
-            new_commit = self._repo.get_commit(id=commit_id)
-
-        self.__dict__ = new_commit.__dict__
+        self._become_saved_child(response_msg.commit.commit_sha)
 
 
 def blob_msg_to_object(blob_msg):
