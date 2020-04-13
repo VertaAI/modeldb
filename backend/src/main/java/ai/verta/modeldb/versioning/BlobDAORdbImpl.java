@@ -788,9 +788,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<CommitEntity> parentCommits = Collections.singletonList(baseCommitEntity);
       String revertMessage = request.getContent().getMessage();
       if (revertMessage.isEmpty()) {
-        revertMessage =
-            VersioningUtils.revertCommitMessage(
-                commitToRevertEntity.getCommit_hash(), baseCommitEntity.getCommit_hash());
+        revertMessage = VersioningUtils.revertCommitMessage(commitToRevertEntity.toCommitProto());
       }
 
       CommitEntity commitEntity =

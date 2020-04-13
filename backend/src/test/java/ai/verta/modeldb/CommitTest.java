@@ -1886,7 +1886,7 @@ public class CommitTest {
     Commit revertedCommit1 = revertCommitResponse.getCommit();
     assertEquals(
         "Revert message not match with expected message",
-        VersioningUtils.revertCommitMessage(commitB.getCommitSha(), commitB.getCommitSha()),
+        VersioningUtils.revertCommitMessage(commitB),
         revertedCommit1.getMessage());
 
     ListCommitBlobsRequest listCommitBlobsRequest =
@@ -1918,7 +1918,7 @@ public class CommitTest {
     Commit revertedCommit2 = revertCommitResponse.getCommit();
     assertEquals(
         "Revert message not match with expected message",
-        VersioningUtils.revertCommitMessage(commitC.getCommitSha(), commitA.getCommitSha()),
+        VersioningUtils.revertCommitMessage(commitC),
         revertedCommit2.getMessage());
 
     listCommitBlobsRequest =
