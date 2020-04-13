@@ -91,6 +91,14 @@ class TestClient:
 
     @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
     def test_config_file(self):
+        self.test_config_file_with_type(connect = False)
+
+    @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
+    def test_config_file_connect(self):
+        self.test_config_file_with_type(connect = True)
+        
+    @pytest.mark.skip("util function")
+    def test_config_file_with_type(self, connect):
         PROJECT_NAME = verta._internal_utils._utils.generate_default_name()
         DATASET_NAME = verta._internal_utils._utils.generate_default_name()
         EXPERIMENT_NAME = verta._internal_utils._utils.generate_default_name()
@@ -116,16 +124,30 @@ class TestClient:
                         f,
                     )
 
-                client = verta.Client(connect=False)
+                client = verta.Client(_connect=connect)
                 conn = client._conn
 
                 assert conn.socket == HOST
                 assert conn.auth['Grpc-Metadata-email'] == EMAIL
                 assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
 
-                assert client._set_from_config_if_none(None, "project") == PROJECT_NAME
-                assert client._set_from_config_if_none(None, "experiment") == EXPERIMENT_NAME
-                assert client._set_from_config_if_none(None, "dataset") == DATASET_NAME
+                if connect:
+                    try:
+                        assert client.set_experiment_run()
+                        assert client.proj.name == PROJECT_NAME
+                        assert client.expt.name == EXPERIMENT_NAME
+                    finally:
+                        if client.proj is not None:
+                            utils.delete_project(client.proj.id, conn)
+                    dataset = client.set_dataset()
+                    try:
+                        assert dataset.name == DATASET_NAME
+                    finally:
+                        utils.delete_datasets([dataset.id], conn)
+                else:
+                    assert client._set_from_config_if_none(None, "project") == PROJECT_NAME
+                    assert client._set_from_config_if_none(None, "experiment") == EXPERIMENT_NAME
+                    assert client._set_from_config_if_none(None, "dataset") == DATASET_NAME
 
             finally:
                 if os.path.exists(CONFIG_FILENAME):

@@ -160,7 +160,7 @@ class Client(object):
 
         # verify connection
         conn = _utils.Connection(scheme, socket, auth, max_retries, ignore_conn_err)
-        if (connect):
+        if _connect:
             try:
                 response = _utils.make_request("GET",
                                                "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
