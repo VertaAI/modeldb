@@ -112,7 +112,8 @@ class Client(object):
         Currently active Project.
     expt : :class:`Experiment` or None
         Currently active Experiment.
-    connect : connect to server (False for unit tests)
+    _connect : str, default True
+        Whether to connect to server (``False`` for unit tests).
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
