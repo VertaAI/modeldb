@@ -78,7 +78,7 @@ class Commit(object):
             contents = "<no contents>"
 
         components = [self.__repr__(), 'Contents:', contents]
-        return '\n'.join(components)
+        print('\n'.join(components))
 
     def __repr__(self):
         branch_and_tag = ' '.join((
