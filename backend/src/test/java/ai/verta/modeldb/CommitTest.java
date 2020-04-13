@@ -40,10 +40,12 @@ import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.RevertRepositoryCommitsRequest;
 import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
+import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -250,7 +252,7 @@ public class CommitTest {
             .setContinuous(
                 ContinuousHyperparameterSetConfigBlob.newBuilder()
                     .setIntervalBegin(
-                        HyperparameterValuesConfigBlob.newBuilder().setIntValue(0).build())
+                        HyperparameterValuesConfigBlob.newBuilder().setIntValue(1).build())
                     .setIntervalStep(
                         HyperparameterValuesConfigBlob.newBuilder().setIntValue(1).build())
                     .setIntervalEnd(
@@ -1828,5 +1830,134 @@ public class CommitTest {
     Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Branch test end................................");
+  }
+
+  @Test
+  public void revertCommitTest() throws ModelDBException {
+    LOGGER.info("Revert commit test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateCommitRequest createCommitRequestCommitA =
+        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequestCommitA);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit commitA = commitResponse.getCommit();
+
+    CreateCommitRequest createCommitRequestCommitB =
+        getCreateCommitRequest(id, 112, commitA, Blob.ContentCase.DATASET);
+    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequestCommitB);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit commitB = commitResponse.getCommit();
+
+    CreateCommitRequest createCommitRequestCommitC =
+        getCreateCommitRequest(id, 113, commitB, Blob.ContentCase.DATASET);
+    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequestCommitC);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit commitC = commitResponse.getCommit();
+
+    CreateCommitRequest createCommitRequestCommitD =
+        getCreateCommitRequest(id, 114, commitC, Blob.ContentCase.CONFIG);
+    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequestCommitD);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit commitD = commitResponse.getCommit();
+
+    RevertRepositoryCommitsRequest revertRepositoryCommitsRequest =
+        RevertRepositoryCommitsRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitToRevertSha(commitB.getCommitSha())
+            .setBaseCommitSha(commitB.getCommitSha())
+            .build();
+    RevertRepositoryCommitsRequest.Response revertCommitResponse =
+        versioningServiceBlockingStub.revertRepositoryCommits(revertRepositoryCommitsRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit revertedCommit1 = revertCommitResponse.getCommit();
+    assertEquals(
+        "Revert message not match with expected message",
+        VersioningUtils.revertCommitMessage(commitB),
+        revertedCommit1.getMessage());
+
+    ListCommitBlobsRequest listCommitBlobsRequest =
+        ListCommitBlobsRequest.newBuilder()
+            .setCommitSha(revertedCommit1.getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .build();
+
+    ListCommitBlobsRequest.Response listCommitBlobsResponse =
+        versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        createCommitRequestCommitB.getBlobsCount(),
+        listCommitBlobsResponse.getBlobsCount());
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        createCommitRequestCommitB.getBlobsList(),
+        listCommitBlobsResponse.getBlobsList());
+
+    revertRepositoryCommitsRequest =
+        RevertRepositoryCommitsRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitToRevertSha(commitC.getCommitSha())
+            .setBaseCommitSha(commitA.getCommitSha())
+            .build();
+    revertCommitResponse =
+        versioningServiceBlockingStub.revertRepositoryCommits(revertRepositoryCommitsRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit revertedCommit2 = revertCommitResponse.getCommit();
+    assertEquals(
+        "Revert message not match with expected message",
+        VersioningUtils.revertCommitMessage(commitC),
+        revertedCommit2.getMessage());
+
+    listCommitBlobsRequest =
+        ListCommitBlobsRequest.newBuilder()
+            .setCommitSha(revertedCommit2.getCommitSha())
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .build();
+
+    listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        createCommitRequestCommitA.getBlobsCount(),
+        listCommitBlobsResponse.getBlobsCount());
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        2,
+        listCommitBlobsResponse.getBlobs(0).getBlob().getConfig().getHyperparameterSetCount());
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        2,
+        listCommitBlobsResponse.getBlobs(0).getBlob().getConfig().getHyperparametersCount());
+
+    for (Commit deleteCommit :
+        new Commit[] {revertedCommit2, revertedCommit1, commitD, commitC, commitB, commitA}) {
+      DeleteCommitRequest deleteCommitRequest =
+          DeleteCommitRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setCommitSha(deleteCommit.getCommitSha())
+              .build();
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+    }
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+    LOGGER.info("Revert commit test end................................");
   }
 }

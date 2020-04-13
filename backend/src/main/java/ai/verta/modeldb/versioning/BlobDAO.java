@@ -37,4 +37,8 @@ public interface BlobDAO {
   MergeRepositoryCommitsRequest.Response mergeCommit(
       RepositoryDAO repositoryDAO, MergeRepositoryCommitsRequest request)
       throws ModelDBException, NoSuchAlgorithmException;
+
+  RevertRepositoryCommitsRequest.Response revertCommit(
+      RepositoryDAO repositoryDAO, RevertRepositoryCommitsRequest request)
+      throws ModelDBException, NoSuchAlgorithmException;
 }
