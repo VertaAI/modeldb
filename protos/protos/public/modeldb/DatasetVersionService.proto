@@ -77,8 +77,6 @@ message DatasetPartInfo {
     uint64 size = 2;
     string checksum = 3;
     uint64 last_modified_at_source =4;
-    string version_id = 5;
-    VersionIDTypeEnum.VersionIDType version_type = 6;
 }
 
 message CreateDatasetVersion {

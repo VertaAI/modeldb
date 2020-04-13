@@ -129,10 +129,10 @@ message WorkspaceTypeEnum {
     }
 }
 
-message VersionIDTypeEnum {
-    enum VersionIDType {
-        UNKNOWN = 0;// default
-        S3 = 1; // version id is captured from s3 and can be used for data retrival
-        CUSTOM = 2; //Catch all currently
+message VersionID {
+    oneof version_id {
+        string string_version = 1;
+        int64 int_version = 2;
+        float float_version = 3;
     }
 }

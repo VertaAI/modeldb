@@ -23,8 +23,7 @@ message PathDatasetComponentBlob {
     string sha256 = 4;
     string md5 = 5;
 
-    string version_id = 6;
-    VersionIDTypeEnum.VersionIDType version_type = 7;
+    VersionID version_id = 6;
 }
 
 message PathDatasetBlob {
@@ -33,6 +32,7 @@ message PathDatasetBlob {
 
 message S3DatasetComponentBlob {
     PathDatasetComponentBlob path = 1;
+    string s3_version_id = 2; //if s3 bucket versioning is enabled, this captures the version id
 }
 
 message S3DatasetBlob {
