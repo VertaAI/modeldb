@@ -2801,8 +2801,6 @@ public class ProjectTest {
           ExperimentRunServiceGrpc.newBlockingStub(channel);
       CommentServiceBlockingStub commentServiceBlockingStub =
           CommentServiceGrpc.newBlockingStub(channel);
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
 
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt");
@@ -2874,6 +2872,8 @@ public class ProjectTest {
       // Create two collaborator for above project
       // For Collaborator1
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2943,6 +2943,8 @@ public class ProjectTest {
 
       // Start cross-checking for project collaborator
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
         GetCollaborator getCollaboratorRequest =
             GetCollaborator.newBuilder().setEntityId(project.getId()).build();
         try {
@@ -3028,6 +3030,8 @@ public class ProjectTest {
         // Create two collaborator for above project
         // For Collaborator1
         if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          CollaboratorServiceBlockingStub collaboratorServiceStub =
+              CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                   project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -3103,6 +3107,8 @@ public class ProjectTest {
           GetCollaborator getCollaboratorRequest =
               GetCollaborator.newBuilder().setEntityId(project.getId()).build();
           try {
+            CollaboratorServiceBlockingStub collaboratorServiceStub =
+                CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
             GetCollaborator.Response getCollaboratorResponse =
                 collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
             LOGGER.info(

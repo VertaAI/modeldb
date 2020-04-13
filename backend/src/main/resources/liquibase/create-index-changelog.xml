@@ -634,4 +634,56 @@
             <column name="kv_key"/>
         </createIndex>
     </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_name_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_name_project_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_name_project_id"
+                     tableName="experiment">
+            <column name="name"/>
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_name_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_name_project_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_name_project_id"
+                     tableName="experiment_run">
+            <column name="name"/>
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_id_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_id_project_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_id_project_id"
+                     tableName="experiment_run">
+            <column name="id"/>
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_project_id_experiment_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_project_id_experiment_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_project_id_experiment_id"
+                     tableName="experiment_run">
+            <column name="project_id"/>
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

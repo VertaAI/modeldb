@@ -140,8 +140,10 @@ public class ExperimentRunTest {
     if (!client2Channel.isShutdown()) {
       client2Channel.shutdownNow();
     }
-    if (!authServiceChannel.isShutdown()) {
-      authServiceChannel.shutdownNow();
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (!authServiceChannel.isShutdown()) {
+        authServiceChannel.shutdownNow();
+      }
     }
   }
 
@@ -8779,8 +8781,6 @@ public class ExperimentRunTest {
         ExperimentServiceGrpc.newBlockingStub(channel);
     ExperimentRunServiceBlockingStub experimentRunServiceStub =
         ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
     ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
         ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
@@ -8794,6 +8794,8 @@ public class ExperimentRunTest {
     LOGGER.info("Project created successfully");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project, CollaboratorType.READ_ONLY, authClientInterceptor);
@@ -8835,6 +8837,8 @@ public class ExperimentRunTest {
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
+      CollaboratorServiceBlockingStub collaboratorServiceStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(

@@ -114,6 +114,11 @@ class VersioningServiceStub(object):
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.SerializeToString,
         response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.Response.FromString,
         )
+    self.RevertRepositoryCommits = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/RevertRepositoryCommits',
+        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.RevertRepositoryCommitsRequest.SerializeToString,
+        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.RevertRepositoryCommitsRequest.Response.FromString,
+        )
     self.ListTags = channel.unary_unary(
         '/ai.verta.modeldb.versioning.VersioningService/ListTags',
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.ListTagsRequest.SerializeToString,
@@ -280,6 +285,13 @@ class VersioningServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def RevertRepositoryCommits(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def ListTags(self, request, context):
     """CRUD for tags
     """
@@ -410,6 +422,11 @@ def add_VersioningServiceServicer_to_server(servicer, server):
           servicer.MergeRepositoryCommits,
           request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.FromString,
           response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.MergeRepositoryCommitsRequest.Response.SerializeToString,
+      ),
+      'RevertRepositoryCommits': grpc.unary_unary_rpc_method_handler(
+          servicer.RevertRepositoryCommits,
+          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.RevertRepositoryCommitsRequest.FromString,
+          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.RevertRepositoryCommitsRequest.Response.SerializeToString,
       ),
       'ListTags': grpc.unary_unary_rpc_method_handler(
           servicer.ListTags,

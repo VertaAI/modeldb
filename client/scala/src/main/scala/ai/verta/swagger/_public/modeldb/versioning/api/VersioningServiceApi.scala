@@ -580,6 +580,29 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def MergeRepositoryCommits2(repository_id_repo_id: , body: VersioningMergeRepositoryCommitsRequest)(implicit ec: ExecutionContext): Try[VersioningMergeRepositoryCommitsRequestResponse] = Await.result(MergeRepositoryCommits2Async(repository_id_repo_id, body), Duration.Inf)
 
+  def RevertRepositoryCommitsAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, commit_to_revert_sha: String, body: VersioningRevertRepositoryCommitsRequest)(implicit ec: ExecutionContext): Future[Try[VersioningRevertRepositoryCommitsRequestResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (repository_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_workspace_name\"")
+    if (repository_id_named_id_name == null) throw new Exception("Missing required parameter \"repository_id_named_id_name\"")
+    if (commit_to_revert_sha == null) throw new Exception("Missing required parameter \"commit_to_revert_sha\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningRevertRepositoryCommitsRequest, VersioningRevertRepositoryCommitsRequestResponse]("POST", basePath + s"/versioning/workspaces/$repository_id_named_id_workspace_name/repositories/$repository_id_named_id_name/commits/$commit_to_revert_sha/revert", __query, body, VersioningRevertRepositoryCommitsRequestResponse.fromJson)
+  }
+
+  def RevertRepositoryCommits(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, commit_to_revert_sha: String, body: VersioningRevertRepositoryCommitsRequest)(implicit ec: ExecutionContext): Try[VersioningRevertRepositoryCommitsRequestResponse] = Await.result(RevertRepositoryCommitsAsync(repository_id_named_id_workspace_name, repository_id_named_id_name, commit_to_revert_sha, body), Duration.Inf)
+
+  def RevertRepositoryCommits2Async(repository_id_repo_id: , commit_to_revert_sha: String, body: VersioningRevertRepositoryCommitsRequest)(implicit ec: ExecutionContext): Future[Try[VersioningRevertRepositoryCommitsRequestResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (repository_id_repo_id == null) throw new Exception("Missing required parameter \"repository_id_repo_id\"")
+    if (commit_to_revert_sha == null) throw new Exception("Missing required parameter \"commit_to_revert_sha\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningRevertRepositoryCommitsRequest, VersioningRevertRepositoryCommitsRequestResponse]("POST", basePath + s"/versioning/repositories/$repository_id_repo_id/commits/$commit_to_revert_sha/revert", __query, body, VersioningRevertRepositoryCommitsRequestResponse.fromJson)
+  }
+
+  def RevertRepositoryCommits2(repository_id_repo_id: , commit_to_revert_sha: String, body: VersioningRevertRepositoryCommitsRequest)(implicit ec: ExecutionContext): Try[VersioningRevertRepositoryCommitsRequestResponse] = Await.result(RevertRepositoryCommits2Async(repository_id_repo_id, commit_to_revert_sha, body), Duration.Inf)
+
   def SetBranchAsync(repository_id_named_id_workspace_name: String, repository_id_named_id_name: String, branch: String, body: String)(implicit ec: ExecutionContext): Future[Try[VersioningSetBranchRequestResponse]] = {
     val __query = Map[String,String](
     )
