@@ -161,22 +161,22 @@ class Client(object):
         # verify connection
         conn = _utils.Connection(scheme, socket, auth, max_retries, ignore_conn_err)
         if (connect):
-          try:
-              response = _utils.make_request("GET",
-                                             "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
-                                             conn)
-          except requests.ConnectionError:
-              six.raise_from(requests.ConnectionError("connection failed; please check `host` and `port`"),
-                             None)
+            try:
+                response = _utils.make_request("GET",
+                                               "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
+                                               conn)
+            except requests.ConnectionError:
+                six.raise_from(requests.ConnectionError("connection failed; please check `host` and `port`"),
+                               None)
 
-          def is_unauthorized(response): return response.status_code == 401
+            def is_unauthorized(response): return response.status_code == 401
 
-          if is_unauthorized(response):
-              auth_error_msg = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`"
-              six.raise_from(requests.HTTPError(auth_error_msg), None)
+            if is_unauthorized(response):
+                auth_error_msg = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`"
+                six.raise_from(requests.HTTPError(auth_error_msg), None)
 
-          _utils.raise_for_http_error(response)
-          print("connection successfully established")
+            _utils.raise_for_http_error(response)
+            print("connection successfully established")
 
         self._conn = conn
         self._conf = _utils.Configuration(use_git, debug)
