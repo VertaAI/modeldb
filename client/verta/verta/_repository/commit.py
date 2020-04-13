@@ -548,10 +548,32 @@ class Commit(object):
         elif self._repo.id != other._repo.id:
             raise ValueError("Commit and `other` must belong to the same Repository")
 
-        if message is None:
-            message = "Revert {}".format(other.id[:7])
+        msg = _VersioningService.RevertRepositoryCommitsRequest()
+        msg.base_commit_sha = self.id
+        msg.commit_to_revert_sha = other.id
+        if message is not None:
+            msg.content.message = message
 
-        self.apply_diff(other.get_revert_diff(), message)
+        data = _utils.proto_to_json(msg)
+        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/revert".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._repo.id,
+            msg.commit_to_revert_sha,
+        )
+        response = _utils.make_request("POST", endpoint, self._conn, json=data)
+        _utils.raise_for_http_error(response)
+        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+
+        commit_id = response_msg.commit.commit_sha
+        if self.branch_name is not None:
+            # update branch to revert commit
+            set_branch(self._conn, self._repo.id, commit_id, self.branch_name)
+            new_commit = self._repo.get_commit(branch=self.branch_name)
+        else:
+            new_commit = self._repo.get_commit(id=commit_id)
+
+        self.__dict__ = new_commit.__dict__
 
     def _to_heap_element(self):
         date_created = int(self._commit_json['date_created'])  # protobuf uint64 is str, so cast to int
