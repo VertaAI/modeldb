@@ -117,7 +117,7 @@ class Client(object):
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
-                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, connect=True):
+                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, _connect=True):
         self._load_config()
         if email is None and 'VERTA_EMAIL' in os.environ:
             email = os.environ['VERTA_EMAIL']
