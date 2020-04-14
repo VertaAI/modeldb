@@ -162,8 +162,7 @@ public class EnvironmentContainer extends BlobContainer {
     return FileHasher.getSha(sb.toString());
   }
 
-  private String computeSHA(PythonEnvironmentBlob blob)
-      throws NoSuchAlgorithmException {
+  private String computeSHA(PythonEnvironmentBlob blob) throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
     final VersionEnvironmentBlob version = blob.getVersion();
     sb.append("python:");

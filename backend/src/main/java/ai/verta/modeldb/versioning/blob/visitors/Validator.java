@@ -193,6 +193,9 @@ public class Validator extends Visitor {
   @Override
   public AutogenPythonEnvironmentBlob postVisitAutogenPythonEnvironmentBlob(
       AutogenPythonEnvironmentBlob blob) throws ModelDBException {
+    if (blob.getVersion() == null) {
+      throw new ModelDBException("Unknown version", Code.INVALID_ARGUMENT);
+    }
     if (blob.getRequirements() != null) {
       Set<AutogenPythonRequirementEnvironmentBlob> pythonRequirementHash =
           new HashSet<>(blob.getRequirements());
@@ -216,6 +219,9 @@ public class Validator extends Visitor {
     if (blob.getLibrary().isEmpty()) {
       throw new ModelDBException(
           "Requirement or constraint library name should not be empty", Code.INVALID_ARGUMENT);
+    }
+    if (blob.getVersion() == null) {
+      throw new ModelDBException("Unknown version", Code.INVALID_ARGUMENT);
     }
     return blob;
   }
