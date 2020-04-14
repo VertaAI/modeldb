@@ -274,10 +274,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
       for (Map.Entry<String, Location> locationBlobKeyMap :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
-        if (!locationBlobMap.containsKey(
-            String.join("#", locationBlobKeyMap.getValue().getLocationList()))) {
+        String locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
+        if (!locationBlobMap.containsKey(locationKey)) {
           throw new ModelDBException(
-              "Location list for key '"
+              "Blob Location '"
+                  + locationBlobKeyMap.getValue().getLocationList()
+                  + "' for key '"
                   + locationBlobKeyMap.getKey()
                   + "' not found in commit blobs",
               io.grpc.Status.Code.INVALID_ARGUMENT);
