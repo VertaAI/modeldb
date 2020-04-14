@@ -133,51 +133,18 @@
         </createIndex>
     </changeSet>
 
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
+    <include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
+    <include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 
-    <changeSet id="13-add_dataset_part_info_version_id" author="anandJ">
+    <changeSet id="13-add_s3_dataset_component_blob_s3_version_id" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
-                <columnExists tableName="dataset_part_info" columnName="version_id"/>
+                <columnExists tableName="s3_dataset_component_blob" columnName="s3_version_id"/>
             </not>
         </preConditions>
-        <addColumn tableName="dataset_part_info">
-            <column name="version_id" type="varchar(255)"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="14-add_dataset_part_info_version_type" author="anandJ">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="dataset_part_info" columnName="version_type"/>
-            </not>
-        </preConditions>
-        <addColumn tableName="dataset_part_info">
-            <column name="version_type" type="int"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="15-add_path_dataset_component_blob_version_id" author="anandJ">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="path_dataset_component_blob" columnName="version_id"/>
-            </not>
-        </preConditions>
-        <addColumn tableName="path_dataset_component_blob">
-            <column name="version_id" type="varchar(255)"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="16-add_path_dataset_component_blob_version_type" author="anandJ">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="path_dataset_component_blob" columnName="version_type"/>
-            </not>
-        </preConditions>
-        <addColumn tableName="path_dataset_component_blob">
-            <column name="version_type" type="int"/>
+        <addColumn tableName="s3_dataset_component_blob">
+            <column name="s3_version_id" type="varchar(255)"/>
         </addColumn>
     </changeSet>
 </databaseChangeLog>
