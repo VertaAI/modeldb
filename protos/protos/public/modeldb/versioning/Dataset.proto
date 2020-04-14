@@ -29,6 +29,7 @@ message PathDatasetBlob {
 
 message S3DatasetComponentBlob {
     PathDatasetComponentBlob path = 1;
+    string s3_version_id = 2; //if s3 bucket versioning is enabled, this captures the version id
 }
 
 message S3DatasetBlob {
