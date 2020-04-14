@@ -2,7 +2,7 @@ Handling Merge Conflicts
 ========================
 
 At the moment, the Client does not yet fully support resolving merge conflicts. To handle them, it
-is recommended to pick out the desired items from the conflicting Commits and add them to the your
+is recommended to pick out the desired items from the conflicting Commits and add them to your
 currently-active branch.
 
 Resolution
@@ -18,8 +18,8 @@ The Client will let you know when ModelDB can't perform the merge on its own.
     #     please create a new Commit with the updated blobs
     #     see https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions
 
-We'll make a quick stop to the Web App to check what items are in conflict: in this case, it's the
-version of the ``verta`` Python package.
+We can refer to the Web App and check what items are in conflict: in this case, it's the version of
+the ``verta`` Python package.
 
 .. image:: /_static/gifs/tutorial-merge-1.gif
     :width: 400px
@@ -33,7 +33,7 @@ Knowing that, we can select the version that we want and manually update our com
     master.update(path, development.get(path))
 
 If the commits we're trying to merge in have other changes we'd want, remember to add those as well
-before saving!
+before saving.
 
 .. code-block:: python
 
