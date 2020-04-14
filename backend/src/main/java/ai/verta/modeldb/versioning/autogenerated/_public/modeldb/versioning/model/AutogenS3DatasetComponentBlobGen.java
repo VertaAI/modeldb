@@ -23,6 +23,9 @@ public class AutogenS3DatasetComponentBlobGen extends Generator<AutogenS3Dataset
       obj.setPath(
           Utils.removeEmpty(gen().type(AutogenPathDatasetComponentBlob.class).generate(r, status)));
     }
+    if (r.nextBoolean()) {
+      obj.setS3VersionId(Utils.removeEmpty(new StringGenerator().generate(r, status)));
+    }
     return obj;
   }
 }
