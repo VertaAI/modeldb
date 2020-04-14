@@ -136,4 +136,15 @@
 	<include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
 	<include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
+
+    <changeSet id="vmem-add-column-versioning-blob-type" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="versioning_modeldb_entity_mapping" columnName="versioning_blob_type"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="versioning_modeldb_entity_mapping">
+            <column name="versioning_blob_type" type="int"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -1385,21 +1385,29 @@ public class RdbmsUtils {
   }
 
   public static List<VersioningModeldbEntityMapping> getVersioningMappingFromVersioningInput(
-      VersioningEntry versioningEntry, Object entity) throws InvalidProtocolBufferException {
+      VersioningEntry versioningEntry, Map<String, Integer> blobTypesByLocationMap, Object entity)
+      throws InvalidProtocolBufferException {
     List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = new ArrayList<>();
     if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
       versioningModeldbEntityMappings.add(
           new VersioningModeldbEntityMapping(
-              versioningEntry.getRepositoryId(), versioningEntry.getCommit(), null, null, entity));
+              versioningEntry.getRepositoryId(),
+              versioningEntry.getCommit(),
+              null,
+              null,
+              null,
+              entity));
     } else {
       for (Map.Entry<String, Location> locationEntry :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
+        String locationKey = String.join("#", locationEntry.getValue().getLocationList());
         versioningModeldbEntityMappings.add(
             new VersioningModeldbEntityMapping(
                 versioningEntry.getRepositoryId(),
                 versioningEntry.getCommit(),
                 locationEntry.getKey(),
                 ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()),
+                blobTypesByLocationMap.get(locationKey),
                 entity));
       }
     }

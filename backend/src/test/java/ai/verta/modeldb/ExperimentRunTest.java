@@ -9452,7 +9452,7 @@ public class ExperimentRunTest {
                     .build())
             .addBlobs(
                 BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
                     .addLocation("test-1")
                     .addLocation("test1.json")
                     .build())
