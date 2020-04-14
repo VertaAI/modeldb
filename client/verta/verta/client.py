@@ -96,6 +96,8 @@ class Client(object):
         Whether to use a local Git repository for certain operations such as Code Versioning.
     debug : bool, default False
         Whether to print extra verbose information to aid in debugging.
+    _connect : str, default True
+        Whether to connect to server (``False`` for unit tests).
 
     Attributes
     ----------
@@ -112,8 +114,6 @@ class Client(object):
         Currently active Project.
     expt : :class:`Experiment` or None
         Currently active Experiment.
-    _connect : str, default True
-        Whether to connect to server (``False`` for unit tests).
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,

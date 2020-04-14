@@ -91,14 +91,13 @@ class TestClient:
 
     @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
     def test_config_file(self):
-        self.test_config_file_with_type(connect = False)
+        self.config_file_with_type_util(connect = False)
 
     @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
     def test_config_file_connect(self):
-        self.test_config_file_with_type(connect = True)
+        self.config_file_with_type_util(connect = True)
         
-    @pytest.mark.skip("util function")
-    def test_config_file_with_type(self, connect):
+    def config_file_with_type_util(self, connect):
         PROJECT_NAME = verta._internal_utils._utils.generate_default_name()
         DATASET_NAME = verta._internal_utils._utils.generate_default_name()
         EXPERIMENT_NAME = verta._internal_utils._utils.generate_default_name()
@@ -154,7 +153,6 @@ class TestClient:
                     os.remove(CONFIG_FILENAME)
         finally:
             os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = EMAIL, DEV_KEY
-
 
 class TestEntities:
     def test_cache(self, client, strs):
