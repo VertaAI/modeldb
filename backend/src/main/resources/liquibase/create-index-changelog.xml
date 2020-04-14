@@ -686,4 +686,16 @@
             <column name="experiment_id"/>
         </createIndex>
     </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_project_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_project_id"
+                     tableName="experiment">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
