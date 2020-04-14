@@ -6,13 +6,17 @@ export type IDatasetBlob = IPathDatasetBlob | IS3DatasetBlob;
 export interface IPathDatasetBlob {
   type: 'path';
   category: 'dataset';
-  components: IPathDatasetComponentBlob[];
+  data: {
+    components: IPathDatasetComponentBlob[];
+  };
 }
 
 export interface IS3DatasetBlob {
   category: 'dataset';
   type: 's3';
-  components: IS3DatasetComponentBlob[];
+  data: {
+    components: IS3DatasetComponentBlob[];
+  };
 }
 export interface IS3DatasetComponentBlob {
   path: IPathDatasetComponentBlob;

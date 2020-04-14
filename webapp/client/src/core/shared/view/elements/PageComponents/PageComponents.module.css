@@ -2,15 +2,14 @@
   height: 100%;
   width: 100%;
   background-color: var(--bg-color3);
-  padding: 31px 30px 30px 30px;
+  padding: 19px 17px;
 }
 
 .pageHeader {
   display: flex;
   align-items: center;
-  padding-bottom: 13px;
   color: var(--main-text-color1);
-  border-bottom: 1px solid #888888;
+  border-bottom: 1px solid var(--main-text-color3);
 }
 .pageHeader_withoutSeparator {
   border-bottom: none;
@@ -19,11 +18,13 @@
   font-weight: 500;
   margin: 0;
 }
-.pageHeader__title_size_medium {
+.pageHeader_size_medium {
   font-size: 21px;
+  padding-bottom: 18px;
 }
-.pageHeader__title_size_small {
+.pageHeader_size_small {
   font-size: 16px;
+  padding-bottom: 13px;
 }
 .pageHeader__rightContent {
   margin-left: auto;

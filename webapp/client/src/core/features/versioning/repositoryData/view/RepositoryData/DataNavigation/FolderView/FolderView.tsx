@@ -7,19 +7,20 @@ import {
   IFolder,
   IFolderElement,
   IHydratedCommit,
-  IFullDataLocationComponents,
+  IFullCommitComponentLocationComponents,
   emptyFolder,
 } from 'core/shared/models/Versioning/RepositoryData';
-import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
 import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
 
 import CurrentCommitInfo from './CurrentCommitInfo/CurrentCommitInfo';
 import FolderElement from './FolderElement/FolderElement';
-import NavigationItem from './NavigationItem/NavigationItem';
 import styles from './FolderView.module.css';
+import NavigationItem from './NavigationItem/NavigationItem';
+import { IWorkspace } from 'models/Workspace';
 
 interface ILocalProps {
-  fullDataLocationComponents: IFullDataLocationComponents;
+  fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
   repositoryName: IRepository['name'];
   commit: IHydratedCommit;
   data: IFolder;
@@ -27,7 +28,7 @@ interface ILocalProps {
 
 const FolderView: React.FC<ILocalProps> = ({
   commit,
-  fullDataLocationComponents,
+  fullCommitComponentLocationComponents,
   repositoryName,
   data,
 }: ILocalProps) => {
@@ -40,6 +41,11 @@ const FolderView: React.FC<ILocalProps> = ({
   return (
     <DataBox withPadding={false}>
       <div className={styles.root}>
+        <div className={styles.titles}>
+          <div className={styles.title}>Content</div>
+          <div className={styles.title}>Change description</div>
+          <div className={styles.title}>Time of change</div>
+        </div>
         <CurrentCommitInfo repositoryName={repositoryName} data={commit} />
         {R.equals(data, emptyFolder) ? (
           <div className={styles.placeholder}>
@@ -49,7 +55,9 @@ const FolderView: React.FC<ILocalProps> = ({
           orderedFolderElements.map(folderElement => (
             <FolderElement
               repositoryName={repositoryName}
-              fullDataLocationComponents={fullDataLocationComponents}
+              fullCommitComponentLocationComponents={
+                fullCommitComponentLocationComponents
+              }
               data={folderElement}
               key={folderElement.name}
             />
@@ -62,16 +70,19 @@ const FolderView: React.FC<ILocalProps> = ({
 
 const UpTree = React.memo(
   ({
-    fullDataLocationComponents,
+    fullCommitComponentLocationComponents,
     repositoryName,
+    currentWorkspaceName,
   }: {
-    fullDataLocationComponents: IFullDataLocationComponents;
+    fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
     repositoryName: IRepository['name'];
+    currentWorkspaceName: IWorkspace['name'];
   }) => (
     <NavigationItem
       to={RouteHelpers.goBack({
-        ...fullDataLocationComponents,
+        ...fullCommitComponentLocationComponents,
         repositoryName,
+        workspaceName: currentWorkspaceName,
       })}
       name=".."
     />

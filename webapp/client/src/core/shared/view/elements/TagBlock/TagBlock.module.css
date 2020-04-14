@@ -21,12 +21,13 @@
   background-color: var(--vgreen-lighter);
   opacity: 0.95;
   display: inline-block;
-  height: 20px;
+  min-height: 20px;
   line-height: 20px;
   padding: 0px 7px;
   position: relative;
   -webkit-transition: color 0.05s;
   cursor: move;
+  word-break: break-all;
 }
 .tag_draggable:hover {
   background-color: var(--vgreen-lightest) !important;
@@ -43,8 +44,9 @@
   background-color: var(--vgreen-lighter);
   opacity: 0.95;
   display: inline-block;
-  height: 20px;
+  min-height: 20px;
   line-height: 20px;
   padding: 0px 7px 3px 7px;
   position: relative;
+  word-break: break-all;
 }

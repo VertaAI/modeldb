@@ -1,6 +1,16 @@
+.titles {
+  display: grid;
+  grid-template-columns: 38% auto max-content;
+  padding: 0 var(--horizontal-padding) 10px;
+  color: var(--main-text-color3);
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--main-text-color3);
+}
+
 .toParent {
   padding: 8px 0;
-  padding-left: 16px;
+  padding-left: var(--horizontal-padding);
   border-bottom: 1px solid #eaecef;
   align-items: center;
   text-decoration: none;

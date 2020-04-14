@@ -29,7 +29,9 @@ const BlobDataBox = ({
 }) => {
   return (
     <div className={styles.root}>
-      <BlobTitle title={title} />
+      <div className={styles.title}>
+        <BlobTitle title={title} />
+      </div>
       <div className={styles.content}>{children}</div>
     </div>
   );
@@ -44,12 +46,16 @@ const MultipleBlobDataBox = ({
 }) => {
   return (
     <div className={styles.root}>
-      <BlobTitle title={title} />
+      <div className={styles.title}>
+        <BlobTitle title={title} />
+      </div>
       <div className={styles.boxes}>
         {React.Children.toArray(children)
           .filter(Boolean)
-          .map(child => (
-            <div className={styles.blobBox}>{child}</div>
+          .map((child, i) => (
+            <div className={styles.blobBox} key={i}>
+              {child}
+            </div>
           ))}
       </div>
     </div>

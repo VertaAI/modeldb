@@ -70,4 +70,12 @@ export default createReducer<
       action.payload.repositoryId,
       state.repositories || []
     ),
+  }))
+  .handleAction(actions.updateRepository, (state, action) => ({
+    ...state,
+    repositories: updateById(
+      _ => action.payload,
+      action.payload.id,
+      state.repositories || []
+    ),
   }));

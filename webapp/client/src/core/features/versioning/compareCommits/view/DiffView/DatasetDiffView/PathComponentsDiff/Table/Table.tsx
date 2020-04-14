@@ -1,20 +1,24 @@
 import { Column, DataTypeProvider } from '@devexpress/dx-react-grid';
 import { Table as DevExpessTable } from '@devexpress/dx-react-grid-material-ui';
 import Paper from '@material-ui/core/Paper';
-import cn from 'classnames';
 import React from 'react';
 
+import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
+import PathSize from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/PathSize/PathSize';
 import {
   Table as TablePlugin,
   Grid,
   TableHeaderRow,
   TableWrapper,
 } from 'core/shared/view/elements/Table/Plugins';
-import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import { formatBytes } from 'core/shared/utils/mapperConverters';
 
+import {
+  IObjectToObjectWithDiffColor,
+  getCssDiffColor,
+} from '../../../../model';
 import styles from './Table.module.css';
-import { IObjectToObjectWithDiffColor, DiffColor } from '../../../../model';
+import withProps from 'core/shared/utils/react/withProps';
+import { makeGenericCell } from 'core/shared/view/elements/Table/Templates/Cell/Cell';
 
 interface ILocalProps {
   rows: IRow[];
@@ -22,12 +26,12 @@ interface ILocalProps {
 
 export type IRow = IObjectToObjectWithDiffColor<IPathDatasetComponentBlob>;
 
-enum ColumnName {
-  path = 'path',
-  size = 'size',
-  md5 = 'md5',
-  lastModifiedAtSource = 'lastModifiedAtSource',
-  sha256 = 'sha256',
+const ColumnName: { [K in keyof IPathDatasetComponentBlob]: K } = {
+  path: 'path',
+  size: 'size',
+  md5: 'md5',
+  lastModifiedAtSource: 'lastModifiedAtSource',
+  sha256: 'sha256',
 }
 
 const columns: Column[] = [
@@ -45,12 +49,14 @@ const tableColumnExtensions: DevExpessTable.ColumnExtension[] = [
   { columnName: ColumnName.sha256 },
 ];
 
-const getCeilClassname = (diffColor: DiffColor) => {
-  return cn(styles.elem, {
-    [styles.redDiff]: diffColor === 'red',
-    [styles.greenDiff]: diffColor === 'green',
-  });
-};
+const DiffCell = withProps(makeGenericCell<IRow, keyof typeof ColumnName>())({
+  getStyle: (column, row) => {
+    return row[column.name]
+      ? { backgroundColor: getCssDiffColor(row[column.name].diffColor) }
+      : undefined;
+  },
+  getDataType: (column) => column.name,
+});
 
 const Table: React.FC<ILocalProps> = ({ rows }) => {
   return (
@@ -61,34 +67,19 @@ const Table: React.FC<ILocalProps> = ({ rows }) => {
             <ColumnProvider
               type={ColumnName.path}
               render={({ row }) => (
-                <div
-                  className={getCeilClassname(row.path.diffColor)}
-                  title={row.path.value}
-                  data-test="path"
-                >
+                <div title={row.path.value} data-test="path">
                   {row.path.value}
                 </div>
               )}
             />
             <ColumnProvider
               type={ColumnName.size}
-              render={({ row }) => (
-                <div
-                  className={getCeilClassname(row.size.diffColor)}
-                  title={String(row.size.value)}
-                >
-                  {formatBytes(row.size.value)}
-                </div>
-              )}
+              render={({ row }) => <PathSize size={row.size.value} />}
             />
             <ColumnProvider
               type={ColumnName.md5}
               render={({ row }) => (
-                <div
-                  className={getCeilClassname(row.md5.diffColor)}
-                  title={row.md5.value}
-                  data-test="md5"
-                >
+                <div title={row.md5.value} data-test="md5">
                   {row.md5.value}
                 </div>
               )}
@@ -96,12 +87,7 @@ const Table: React.FC<ILocalProps> = ({ rows }) => {
             <ColumnProvider
               type={ColumnName.lastModifiedAtSource}
               render={({ row }) => (
-                <div
-                  className={getCeilClassname(
-                    row.lastModifiedAtSource.diffColor
-                  )}
-                  title={String(row.lastModifiedAtSource.value)}
-                >
+                <div title={String(row.lastModifiedAtSource.value)}>
                   {row.lastModifiedAtSource.value.toLocaleDateString() +
                     ' ' +
                     row.lastModifiedAtSource.value.toLocaleTimeString()}
@@ -111,16 +97,15 @@ const Table: React.FC<ILocalProps> = ({ rows }) => {
             <ColumnProvider
               type={ColumnName.sha256}
               render={({ row }) => (
-                <div
-                  className={getCeilClassname(row.sha256.diffColor)}
-                  data-test="sha256"
-                  title={row.sha256.value}
-                >
+                <div data-test="sha256" title={row.sha256.value}>
                   {row.sha256.value}
                 </div>
               )}
             />
-            <TablePlugin columnExtensions={tableColumnExtensions} />
+            <TablePlugin
+              columnExtensions={tableColumnExtensions}
+              cellComponent={DiffCell}
+            />
             <TableHeaderRow />
           </Grid>
         </TableWrapper>

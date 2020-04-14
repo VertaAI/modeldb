@@ -1,14 +1,18 @@
 import User, { CurrentUser } from 'models/User';
 import * as Workspace from 'models/Workspace';
 
-export interface IRepository extends Workspace.IEntityWithShortWorkspace {
+export interface IRepository
+  extends Workspace.IEntityWithShortWorkspace {
   id: string;
   name: string;
   dateCreated: Date;
   dateUpdated: Date;
   labels: Label[];
   owner: User;
+  visibility: RepositoryVisibility;
 }
+
+export type RepositoryVisibility = 'private' | 'public' | 'organizationPublic';
 
 export type Label = string;
 

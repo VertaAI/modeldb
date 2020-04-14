@@ -8,8 +8,8 @@ export const selectUserWorkspace = (
 ): Workspace.IUserWorkspace => {
   return {
     type: 'user',
-    name: 'personal' as Workspace.IUserWorkspace['name'],
-    id: 'id' as Workspace.IUserWorkspace['id'],
+    name: 'kirill_gulyaev' as any,
+    id: '1068' as any,
   };
 };
 export const selectWorkspaces = (
@@ -28,6 +28,8 @@ export const selectCurrentWorkspaceName = (state: IApplicationState) => {
 export const selectCurrentWorkspace = (state: IApplicationState) => {
   const shortWorkspace = state.workspaces.data.currentWorkspace;
   const workspaces = selectWorkspaces(state);
+
+  console.log(workspaces);
 
   if (!shortWorkspace) {
     return workspaces.user;

@@ -7,7 +7,7 @@
   border-radius: 2px;
 }
 .theme_dark {
-  border-color: #777777;
+  border-color: var(--main-text-color2);
 }
 
 .with_icon.input {
@@ -34,7 +34,7 @@
 }
 
 .theme_light .field::placeholder {
-  color: #888888;
+  color: var(--main-text-color3);
 }
 .theme_dark .field::placeholder {
   font-weight: 500;
@@ -59,7 +59,7 @@
   color: var(--fr-color5);
 }
 .theme_dark .icon {
-  color: #777777;
+  color: var(--main-text-color3);
 }
 
 .disabled {

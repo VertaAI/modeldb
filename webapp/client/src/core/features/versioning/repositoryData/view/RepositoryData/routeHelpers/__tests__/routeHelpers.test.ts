@@ -1,12 +1,12 @@
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
-  IFullDataLocationComponents,
+  IFullCommitComponentLocationComponents,
   CommitPointerHelpers,
   defaultCommitPointer,
 } from 'core/shared/models/Versioning/RepositoryData';
-import routes, { GetRouteParams } from 'routes';
 import { repositories } from 'core/shared/utils/tests/mocks/Versioning/repositoriesMocks';
+import routes, { GetRouteParams } from 'routes';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
 import * as RouteHelpers from '../index';
@@ -22,150 +22,21 @@ const repositoryDataParams: GetRouteParams<typeof routes.repositoryData> = {
   workspaceName: currentWorkspace.name,
 };
 
-const getRedirectPath = (options: RouteHelpers.Options) => {
-  delete (global as any).window.location;
-  (global as any).window = Object.create(window);
-  (global as any).window.location = {
-    pathname: routes.repositoryData.getRedirectPath({
-      repositoryName: repository.name,
-      workspaceName: userWorkspacesWithCurrentUser.user.name,
-    }),
-  };
-  return RouteHelpers.getRedirectPath(options);
-};
-
 describe('(feature repositoryData) routeHelpers', () => {
-  describe('getRedirectPath', () => {
-    describe('repository root (${repositoryDataRoute}|${repositoryDataRoute}/folder/:commitPointer)', () => {
-      describe('${repositoryDataRoute}/data', () => {
-        it('should redirect to the root of repository data page when commit points is default branch and data location is not', () => {
-          const res = getRedirectPath({
-            ...repositoryDataParams,
-            location: DataLocation.makeRoot(),
-            commitPointer: defaultCommitPointer,
-            type: null,
-          });
-
-          expect(res).toEqual(
-            routes.repositoryData.getRedirectPath(repositoryDataParams)
-          );
-        });
-      });
-
-      describe('${repositoryDataRoute}/data/folder/:commitPointer', () => {
-        it('should redirect to the `${repositoryDataRoute}/folder/:commitPointer` when there are tag and data location is not', () => {
-          const res = getRedirectPath({
-            ...repositoryDataParams,
-            location: DataLocation.makeRoot(),
-            commitPointer: CommitPointerHelpers.makeFromTag('tag'),
-            type: null,
-          });
-
-          expect(res).toEqual(
-            `${routes.repositoryData.getRedirectPath(
-              repositoryDataParams
-            )}/folder/tag`
-          );
-        });
-
-        it('should redirect to the `${repositoryDataRoute}/folder/:commitPointer` when there are branch and data location is not', () => {
-          const res = getRedirectPath({
-            ...repositoryDataParams,
-            location: DataLocation.makeRoot(),
-            commitPointer: CommitPointerHelpers.makeFromBranch('branch'),
-            type: null,
-          });
-
-          expect(res).toEqual(
-            `${routes.repositoryData.getRedirectPath(
-              repositoryDataParams
-            )}/folder/branch`
-          );
-        });
-      });
-    });
-
-    describe('in a folder or a blob (`${repositoryDataRoute}/:dataType/:commitPointer/:location`)', () => {
-      it('should redirect to `${repositoryDataRoute}/folder/:commit-pointer/:location` for default branch and location', () => {
-        const locationPathname = 'subfolder/subfolder2';
-        const res = getRedirectPath({
-          ...repositoryDataParams,
-          location: DataLocation.makeFromPathname(locationPathname),
-          commitPointer: defaultCommitPointer,
-          type: 'folder',
-        });
-
-        expect(res).toEqual(
-          `${routes.repositoryData.getRedirectPath(
-            repositoryDataParams
-          )}/folder/${defaultCommitPointer.value}/${locationPathname}`
-        );
-      });
-
-      it('should redirect to `${repositoryDataRoute}/folder/:commit-pointer/:location` for tag and location', () => {
-        const locationPathname = 'subfolder/subfolder2';
-        const res = getRedirectPath({
-          ...repositoryDataParams,
-          location: DataLocation.makeFromPathname(locationPathname),
-          commitPointer: CommitPointerHelpers.makeFromTag('tag'),
-          type: 'folder',
-        });
-
-        expect(res).toEqual(
-          `${routes.repositoryData.getRedirectPath(
-            repositoryDataParams
-          )}/folder/tag/${locationPathname}`
-        );
-      });
-
-      it('should redirect to `${repositoryDataRoute}/folder/:commit-pointer/:location` for non default branch and location', () => {
-        const locationPathname = 'subfolder/subfolder2';
-        const res = getRedirectPath({
-          ...repositoryDataParams,
-          location: DataLocation.makeFromPathname(locationPathname),
-          commitPointer: CommitPointerHelpers.makeFromBranch('branch'),
-          type: 'folder',
-        });
-
-        expect(res).toEqual(
-          `${routes.repositoryData.getRedirectPath(
-            repositoryDataParams
-          )}/folder/branch/${locationPathname}`
-        );
-      });
-    });
-
-    it('should redirect to `${repositoryDataRoute}` when location is not empty and data type is empty', () => {
-      const res = getRedirectPath({
-        ...repositoryDataParams,
-        location: DataLocation.makeFromNames([
-          'folder' as any,
-          'subfolder' as any,
-        ]),
-        commitPointer: defaultCommitPointer,
-        type: null,
-      });
-
-      expect(res).toEqual(
-        routes.repositoryData.getRedirectPath(repositoryDataParams)
-      );
-    });
-  });
-
-  describe('parseFullDataLocationComponentsFromPathname', () => {
+  describe('parseFullCommitComponentLocationComponentsFromPathname', () => {
     describe('repository root (${repositoryDataRoute}|${repositoryDataRoute}/folder/:commitPointer)', () => {
       it('should set commit pointer to default branch when URL doesn`t have a commit pointer', () => {
         const pathname = routes.repositoryData.getRedirectPath(
           repositoryDataParams
         );
 
-        const expected: IFullDataLocationComponents = {
-          location: DataLocation.makeRoot(),
+        const expected: IFullCommitComponentLocationComponents = {
+          location: CommitComponentLocation.makeRoot(),
           commitPointer: defaultCommitPointer,
           type: 'folder',
         };
         expect(
-          RouteHelpers.parseFullDataLocationComponentsFromPathname({
+          RouteHelpers.parseFullCommitComponentLocationComponentsFromPathname({
             pathname,
             tags: ['tag'],
             branches: ['branch'],
@@ -181,13 +52,13 @@ describe('(feature repositoryData) routeHelpers', () => {
           repositoryDataParams
         )}/folder/${targetTag}`;
 
-        const expected: IFullDataLocationComponents = {
-          location: DataLocation.makeRoot(),
+        const expected: IFullCommitComponentLocationComponents = {
+          location: CommitComponentLocation.makeRoot(),
           commitPointer: CommitPointerHelpers.makeFromTag(targetTag),
           type: 'folder',
         };
         expect(
-          RouteHelpers.parseFullDataLocationComponentsFromPathname({
+          RouteHelpers.parseFullCommitComponentLocationComponentsFromPathname({
             pathname,
             tags,
             branches: [],
@@ -203,13 +74,13 @@ describe('(feature repositoryData) routeHelpers', () => {
           repositoryDataParams
         )}/folder/${targetBranch}`;
 
-        const expected: IFullDataLocationComponents = {
-          location: DataLocation.makeRoot(),
+        const expected: IFullCommitComponentLocationComponents = {
+          location: CommitComponentLocation.makeRoot(),
           commitPointer: CommitPointerHelpers.makeFromBranch(targetBranch),
           type: 'folder',
         };
         expect(
-          RouteHelpers.parseFullDataLocationComponentsFromPathname({
+          RouteHelpers.parseFullCommitComponentLocationComponentsFromPathname({
             pathname,
             branches,
             tags: ['zcv'],
@@ -222,15 +93,15 @@ describe('(feature repositoryData) routeHelpers', () => {
           repositoryDataParams
         )}/folder/306ed233429fe6398f759d84a00097a68f7cabaae53b7c90f862e0d1c77914de`;
 
-        const expected: IFullDataLocationComponents = {
-          location: DataLocation.makeRoot(),
+        const expected: IFullCommitComponentLocationComponents = {
+          location: CommitComponentLocation.makeRoot(),
           commitPointer: CommitPointerHelpers.makeFromCommitSha(
             '306ed233429fe6398f759d84a00097a68f7cabaae53b7c90f862e0d1c77914de'
           ),
           type: 'folder',
         };
         expect(
-          RouteHelpers.parseFullDataLocationComponentsFromPathname({
+          RouteHelpers.parseFullCommitComponentLocationComponentsFromPathname({
             pathname,
             branches: ['branch-1', 'branch-2'],
             tags: ['tag-1', 'tag-2'],
@@ -249,13 +120,13 @@ describe('(feature repositoryData) routeHelpers', () => {
           repositoryDataParams
         )}/folder/${targetTag}/${location}`;
 
-        const expected: IFullDataLocationComponents = {
-          location: DataLocation.makeFromPathname(location),
+        const expected: IFullCommitComponentLocationComponents = {
+          location: CommitComponentLocation.makeFromPathname(location),
           commitPointer: CommitPointerHelpers.makeFromTag(targetTag),
           type: 'folder',
         };
         expect(
-          RouteHelpers.parseFullDataLocationComponentsFromPathname({
+          RouteHelpers.parseFullCommitComponentLocationComponentsFromPathname({
             pathname,
             tags,
             branches: [],
@@ -271,14 +142,14 @@ describe('(feature repositoryData) routeHelpers', () => {
           repositoryDataParams
         )}/folder/${targetBranch}/${location}`;
 
-        const expected: IFullDataLocationComponents = {
-          location: DataLocation.makeFromPathname(location),
+        const expected: IFullCommitComponentLocationComponents = {
+          location: CommitComponentLocation.makeFromPathname(location),
           commitPointer: CommitPointerHelpers.makeFromBranch('branch'),
           type: 'folder',
         };
 
         expect(
-          RouteHelpers.parseFullDataLocationComponentsFromPathname({
+          RouteHelpers.parseFullCommitComponentLocationComponentsFromPathname({
             pathname,
             branches,
             tags: [],

@@ -7,6 +7,7 @@ import {
   ICommit,
   Branch,
   CommitPointer,
+  IMergeCommitsError,
 } from 'core/shared/models/Versioning/RepositoryData';
 import { convertServerCommitToClient } from 'core/services/serverModel/Versioning/RepositoryData/converters';
 
@@ -61,6 +62,12 @@ export default class CompareCommitsService extends BaseDataService {
         commit_sha_b: commitBSha,
       },
     });
+
+    if ('conflicts' in response.data) {
+      const error: IMergeCommitsError = { type: 'mergeCommitsError' };
+      throw error;
+    }
+
     const newCommit = convertServerCommitToClient(response.data.commit);
 
     if (base.type === 'branch') {

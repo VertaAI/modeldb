@@ -30,6 +30,8 @@ export const convertPathDatasetBlob = (serverPath: any): IPathDatasetBlob => {
   return {
     category: 'dataset',
     type: 'path',
-    components: serverPath.components.map(convertServerDatasetPathComponent),
+    data: {
+      components: serverPath.components.map(convertServerDatasetPathComponent),
+    },
   };
 };

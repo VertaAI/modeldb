@@ -5,11 +5,7 @@ import { useHistory } from 'react-router';
 import { Dispatch, bindActionCreators } from 'redux';
 import routes from 'routes';
 
-import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
-import {
-  CompareCommits,
-  selectors as compareCommitsSelectors,
-} from 'core/features/versioning/compareCommits';
+import { CompareCommits } from 'core/features/versioning/compareCommits';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   CommitPointer,
@@ -19,14 +15,16 @@ import {
 } from 'core/shared/models/Versioning/RepositoryData';
 import BranchesAndTagsList from 'core/shared/view/domain/Versioning/RepositoryData/BranchesAndTagsList/BranchesAndTagsList';
 import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
-import Preloader from 'core/shared/view/elements/Preloader/Preloader';
-import { IApplicationState } from 'store/store';
-import Button from 'core/shared/view/elements/Button/Button';
-import { toastCommunicationError } from 'core/shared/view/elements/Notification/Notification';
 import { Icon } from 'core/shared/view/elements/Icon/Icon';
+import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
+import Preloader from 'core/shared/view/elements/Preloader/Preloader';
+import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
+import { IApplicationState } from 'store/store';
+import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
 
 import { actions, selectors } from '../../store';
 import styles from './CompareChanges.module.css';
+import { useMergeCommitsButton } from './MergeCommitsButton/MergeCommitsButton';
 
 interface ILocalProps {
   repository: IRepository;
@@ -40,16 +38,13 @@ interface ILocalProps {
 const mapStateToProps = (state: IApplicationState) => ({
   loadingCommitPointersCommits: selectors.selectCommunications(state)
     .loadingCommitPointersCommits,
-  mergingCommits: selectors.selectCommunications(state).mergingCommits,
   commitPointersCommits: selectors.selectCommitPointersCommits(state),
-  diffs: compareCommitsSelectors.selectDiff(state),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return bindActionCreators(
     {
       loadCommitPointersCommits: actions.loadCommitPointersCommits,
-      mergeCommits: actions.mergeCommits,
     },
     dispatch
   );
@@ -69,9 +64,6 @@ const CompareChanges = (props: AllProps) => {
     commitPointersCommits,
     loadCommitPointersCommits,
     loadingCommitPointersCommits,
-    mergingCommits,
-    mergeCommits,
-    diffs,
   } = props;
 
   const commitPointerA = CommitPointerHelpers.makeCommitPointerFromString(
@@ -108,91 +100,85 @@ const CompareChanges = (props: AllProps) => {
     );
   };
 
-  React.useEffect(() => {
-    if (mergingCommits.error) {
-      toastCommunicationError(mergingCommits.error as any);
-    }
-  }, [mergingCommits.error]);
+  const { MergeCommitsButton, mergingCommits } = useMergeCommitsButton();
 
   return (
-    <div className={styles.root}>
+    <PageCard>
+      <PageHeader
+        title={repository.name}
+        withoutSeparator={true}
+        rightContent={<RepositoryNavigation />}
+      />
       <DefaultMatchRemoteDataWithReloading
         communication={loadingCommitPointersCommits}
         data={commitPointersCommits}
       >
-        {(loadedCommitPointersCommits, reloadingCommitPointersCommits) => (
-          <div
-            className={cn({
-              [styles.reloading]:
-                reloadingCommitPointersCommits.isRequesting ||
-                mergingCommits.isRequesting,
-            })}
-          >
-            {reloadingCommitPointersCommits.isRequesting && (
-              <div className={styles.reloadingPreloader}>
-                <Preloader variant="dots" />
+        {(loadedCommitPointersCommits, reloadingCommitPointersCommits) => {
+          return (
+            <div
+              className={cn({
+                [styles.reloading]:
+                  reloadingCommitPointersCommits.isRequesting ||
+                  mergingCommits.isRequesting,
+              })}
+            >
+              {reloadingCommitPointersCommits.isRequesting && (
+                <div className={styles.reloadingPreloader}>
+                  <Preloader variant="dots" />
+                </div>
+              )}
+              <div className={styles.comparingInfo}>
+                <div className={styles.commitPointer}>
+                  <BranchesAndTagsList
+                    commitPointer={commitPointerA}
+                    branches={branches}
+                    tags={tags}
+                    valueLabel="Base"
+                    onChangeCommitPointer={makeOnChangeCommitPointer('A')}
+                    dataTest="commit-pointer-a"
+                  />
+                </div>
+                &nbsp;
+                <Icon type="arrow-left" />
+                &nbsp;
+                <div className={styles.commitPointer}>
+                  <BranchesAndTagsList
+                    commitPointer={commitPointerB}
+                    branches={branches}
+                    tags={tags}
+                    valueLabel="Compare"
+                    onChangeCommitPointer={makeOnChangeCommitPointer('B')}
+                    dataTest="commit-pointer-b"
+                  />
+                </div>
+                <MergeCommitsButton
+                  base={commitPointerA}
+                  commitPointersCommits={loadedCommitPointersCommits}
+                  repository={repository}
+                >
+                  {button =>
+                    button ? <div className={styles.merge}>{button}</div> : null
+                  }
+                </MergeCommitsButton>
               </div>
-            )}
-            <div className={styles.comparingInfo}>
-              <div className={styles.commitPointer}>
-                <BranchesAndTagsList
-                  commitPointer={commitPointerA}
-                  branches={branches}
-                  tags={tags}
-                  valueLabel="Base"
-                  onChangeCommitPointer={makeOnChangeCommitPointer('A')}
+              {reloadingCommitPointersCommits.error ? (
+                <InlineCommunicationError
+                  error={reloadingCommitPointersCommits.error}
                 />
-              </div>
-              &nbsp;
-              <Icon type="arrow-left" />
-              &nbsp;
-              <div className={styles.commitPointer}>
-                <BranchesAndTagsList
-                  commitPointer={commitPointerB}
-                  branches={branches}
-                  tags={tags}
-                  valueLabel="Compare"
-                  onChangeCommitPointer={makeOnChangeCommitPointer('B')}
-                />
-              </div>
-              {diffs && diffs.length > 0 && (
-                <div className={styles.merge}>
-                  <Button
-                    size="small"
-                    onClick={() =>
-                      mergeCommits({
-                        repositoryId: repository.id,
-                        repositoryName: repository.name,
-                        base: commitPointerA,
-                        commitASha:
-                          loadedCommitPointersCommits.commitPointerA.sha,
-                        commitBSha:
-                          loadedCommitPointersCommits.commitPointerB.sha,
-                      })
-                    }
-                  >
-                    Merge
-                  </Button>
+              ) : (
+                <div className={styles.compareCommits}>
+                  <CompareCommits
+                    repository={repository}
+                    commitASha={loadedCommitPointersCommits.commitPointerA.sha}
+                    commitBSha={loadedCommitPointersCommits.commitPointerB.sha}
+                  />
                 </div>
               )}
             </div>
-            {reloadingCommitPointersCommits.error ? (
-              <InlineCommunicationError
-                error={reloadingCommitPointersCommits.error}
-              />
-            ) : (
-              <div className={styles.compareCommits}>
-                <CompareCommits
-                  repository={repository}
-                  commitASha={loadedCommitPointersCommits.commitPointerA.sha}
-                  commitBSha={loadedCommitPointersCommits.commitPointerB.sha}
-                />
-              </div>
-            )}
-          </div>
-        )}
+          );
+        }}
       </DefaultMatchRemoteDataWithReloading>
-    </div>
+    </PageCard>
   );
 };
 

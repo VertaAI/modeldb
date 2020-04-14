@@ -42,6 +42,7 @@ export default function makeThunkApiRequest<
       error: FailurePayload extends { error: AppError<any> }
         ? FailurePayload['error']
         : never;
+      rawError: Error;
     }) => FailurePayload
   ) => {
     return makeCommunicationThunk(

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useHistory } from 'react-router';
 
 import groupCommitsByDatesInDescOrder from 'core/features/versioning/commitsHistory/helpers/groupCommitsByDatesInDescOrder';
 import { ICommitHistorySettings } from 'core/features/versioning/commitsHistory/store/types';
@@ -8,9 +7,11 @@ import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
 import Placeholder from 'core/shared/view/elements/Placeholder/Placeholder';
 
-import Breadcrumbs from './Breadcrumbs/Breadcrumbs';
+import CommitsHistoryBreadcrumbs from './CommitsHistoryBreadcrumbs/CommitsHistoryBreadcrumbs';
 import styles from './CommitsHistoryView.module.css';
 import GroupedCommitsByDate from './GroupedCommitsByDate/GroupedCommitsByDate';
+import { PageHeader } from 'core/shared/view/elements/PageComponents';
+import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
 
 interface ILocalProps {
   repository: IRepository;
@@ -25,12 +26,20 @@ const CommitsHistoryView = ({
   settings,
   commitsWithPagination,
 }: AllProps) => {
-  const history = useHistory();
-
   return (
     <div className={styles.root}>
+      <PageHeader
+        title={`History for ${repository.name}`}
+        withoutSeparator={true}
+        rightContent={
+          <RepositoryNavigation />
+        }
+      />
       <div className={styles.breadcrumbs}>
-        <Breadcrumbs repositoryName={repository.name} settings={settings} />
+        <CommitsHistoryBreadcrumbs
+          repositoryName={repository.name}
+          settings={settings}
+        />
       </div>
       {commitsWithPagination.data.length > 0 ? (
         <div>

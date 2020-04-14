@@ -10,6 +10,7 @@ import {
   IServerElementDiff,
   convertServerElementDiffToClient,
   convertServerBlobDiffToClient,
+  convertNullableServerElementDiffToClient,
 } from '../ServerDiff';
 import { convertServerDatasetPathComponent } from '../../RepositoryData/Blob/DatasetBlob';
 import { IServerPathDatasetComponentBlobDiff } from '../convertServerDatasetDiff';
@@ -41,18 +42,14 @@ export const convertServerCodeDiff = (
         convertData: () => {
           const serverNotebook = serverCodeDiff.code.notebook!;
           return {
-            git: serverNotebook.git_repo
-              ? convertServerElementDiffToClient(
-                  convertServerGitBlob,
-                  serverNotebook.git_repo
-                )
-              : undefined,
-            path: serverNotebook.path
-              ? convertServerElementDiffToClient(
-                  convertServerDatasetPathComponent,
-                  serverNotebook.path
-                )
-              : undefined,
+            git: convertNullableServerElementDiffToClient(
+              convertServerGitBlob,
+              serverNotebook.git_repo
+            ),
+            path: convertNullableServerElementDiffToClient(
+              convertServerDatasetPathComponent,
+              serverNotebook.path
+            ),
           };
         },
         category: 'code',

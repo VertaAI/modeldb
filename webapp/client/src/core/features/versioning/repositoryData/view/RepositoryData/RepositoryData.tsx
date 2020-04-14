@@ -1,5 +1,4 @@
 import cn from 'classnames';
-import * as R from 'ramda';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { useLocation } from 'react-router';
@@ -11,8 +10,8 @@ import {
   CommitTag,
   Branch,
 } from 'core/shared/models/Versioning/RepositoryData';
-import { initialCommunication } from 'core/shared/utils/redux/communication';
 import InlineCommunicationError from 'core/shared/view/elements/Errors/InlineCommunicationError/InlineCommunicationError';
+import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import { IApplicationState } from 'store/store';
 
@@ -22,7 +21,6 @@ import styles from './RepositoryData.module.css';
 import * as RouteHelpers from './routeHelpers';
 import Toolbar from './Toolbar/Toolbar';
 import withLoadingRequiredData from './WithLoadingRequiredData/WithLoadingRequiredData';
-import InlineErrorView from 'core/shared/view/elements/Errors/InlineErrorView/InlineErrorView';
 
 interface ILocalProps {
   repository: IRepository;
@@ -32,16 +30,16 @@ interface ILocalProps {
 }
 
 const mapStateToProps = (state: IApplicationState) => ({
-  commitWithData: selectors.selectCommitWithData(state),
-  loadingCommitWithData: selectors.selectCommunications(state)
-    .loadingCommitWithData,
+  commitWithComponent: selectors.selectCommitWithComponent(state),
+  loadingCommitWithComponent: selectors.selectCommunications(state)
+    .loadingCommitWithComponent,
   commitPointer: selectors.selectCommitPointer(state),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return bindActionCreators(
     {
-      loadCommitWithData: actions.loadCommitWithData,
+      loadCommitWithComponent: actions.loadCommitWithComponent,
       changeCommitPointer: actions.changeCommitPointer,
       resetFeatureState: actions.resetFeatureState,
     },
@@ -57,9 +55,9 @@ const RepositoryData = (props: AllProps) => {
   const {
     onShowNotFoundError,
     repository,
-    loadCommitWithData,
-    loadingCommitWithData,
-    commitWithData,
+    loadCommitWithComponent,
+    loadingCommitWithComponent,
+    commitWithComponent,
 
     changeCommitPointer,
     commitPointer,
@@ -69,7 +67,7 @@ const RepositoryData = (props: AllProps) => {
   } = props;
 
   const { pathname } = useLocation();
-  const fullDataLocationComponents = RouteHelpers.parseFullDataLocationComponentsFromPathname(
+  const fullCommitComponentLocationComponents = RouteHelpers.parseFullCommitComponentLocationComponentsFromPathname(
     {
       tags,
       branches,
@@ -78,15 +76,16 @@ const RepositoryData = (props: AllProps) => {
   );
   React.useEffect(() => {
     if (
-      fullDataLocationComponents.commitPointer.value !== commitPointer.value
+      fullCommitComponentLocationComponents.commitPointer.value !==
+      commitPointer.value
     ) {
-      changeCommitPointer(fullDataLocationComponents.commitPointer);
+      changeCommitPointer(fullCommitComponentLocationComponents.commitPointer);
     }
-  }, [fullDataLocationComponents.commitPointer]);
+  }, [fullCommitComponentLocationComponents.commitPointer]);
   React.useEffect(() => {
-    loadCommitWithData({
+    loadCommitWithComponent({
       repositoryId: repository.id,
-      fullDataLocationComponents,
+      fullCommitComponentLocationComponents,
     });
   }, [pathname]);
 
@@ -97,67 +96,56 @@ const RepositoryData = (props: AllProps) => {
   }, []);
 
   React.useEffect(() => {
-    if (isHttpNotFoundError(loadingCommitWithData.error)) {
-      onShowNotFoundError(loadingCommitWithData.error);
+    if (isHttpNotFoundError(loadingCommitWithComponent.error)) {
+      onShowNotFoundError(loadingCommitWithComponent.error);
     }
-  }, [loadingCommitWithData.error]);
+  }, [loadingCommitWithComponent.error]);
 
   return (
-    <div className={styles.root} data-test="repository-data">
-      {(() => {
-        if (
-          !commitWithData &&
-          (R.equals(loadingCommitWithData, initialCommunication) ||
-            loadingCommitWithData.isRequesting)
-        ) {
-          return (
-            <div>
+    <DefaultMatchRemoteDataWithReloading
+      communication={loadingCommitWithComponent}
+      data={commitWithComponent}
+    >
+      {(loadedCommitWithComponent, reloadingCommunication) => (
+        <div
+          className={cn({
+            [styles.refresh]: reloadingCommunication.isRequesting,
+          })}
+          data-test="repository-data-content"
+        >
+          {reloadingCommunication.isRequesting && (
+            <div
+              className={styles.refreshPreloader}
+              data-test="refresh-preloader"
+            >
               <Preloader variant="dots" />
             </div>
-          );
-        }
-        if (!commitWithData && loadingCommitWithData.error) {
-          return (
-            <InlineCommunicationError error={loadingCommitWithData.error} />
-          );
-        }
-        if (!commitWithData) {
-          return <InlineErrorView error="Something went wrong!" />;
-        }
-
-        return (
-          <div
-            className={cn({
-              [styles.refresh]: loadingCommitWithData.isRequesting,
-            })}
-          >
-            {loadingCommitWithData.isRequesting && (
-              <div className={styles.refreshPreloader}>
-                <Preloader variant="dots" />
-              </div>
-            )}
-            <div className={styles.toolbar}>
-              <Toolbar
-                fullDataLocationComponents={fullDataLocationComponents}
+          )}
+          <div className={styles.toolbar}>
+            <Toolbar
+              fullCommitComponentLocationComponents={
+                fullCommitComponentLocationComponents
+              }
+              repository={repository}
+            />
+          </div>
+          {!reloadingCommunication.error ? (
+            <div className={styles.navigation}>
+              <DataNavigation
                 repository={repository}
+                fullCommitComponentLocationComponents={
+                  fullCommitComponentLocationComponents
+                }
+                commit={loadedCommitWithComponent.commit}
+                component={loadedCommitWithComponent.component}
               />
             </div>
-            {!loadingCommitWithData.error ? (
-              <div className={styles.navigation}>
-                <DataNavigation
-                  repository={repository}
-                  fullDataLocationComponents={fullDataLocationComponents}
-                  commit={commitWithData.commit}
-                  data={commitWithData.data}
-                />
-              </div>
-            ) : (
-              <InlineCommunicationError error={loadingCommitWithData.error} />
-            )}
-          </div>
-        );
-      })()}
-    </div>
+          ) : (
+            <InlineCommunicationError error={reloadingCommunication.error} />
+          )}
+        </div>
+      )}
+    </DefaultMatchRemoteDataWithReloading>
   );
 };
 
