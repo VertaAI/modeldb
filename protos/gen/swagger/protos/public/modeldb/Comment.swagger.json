@@ -150,7 +150,8 @@
         "GITHUB",
         "BITBUCKET",
         "GOOGLE",
-        "VERTA"
+        "VERTA",
+        "SAML"
       ],
       "default": "UNKNOWN"
     },
