@@ -3971,6 +3971,9 @@
       "properties": {
         "path": {
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "s3_version_id": {
+          "type": "string"
         }
       }
     },
