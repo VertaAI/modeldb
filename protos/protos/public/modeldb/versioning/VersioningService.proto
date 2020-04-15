@@ -8,11 +8,6 @@ option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "protos/public/modeldb/CommonService.proto";
 import "protos/public/modeldb/ExperimentRunService.proto";
-import "protos/public/modeldb/versioning/Code.proto";
-import "protos/public/modeldb/versioning/Config.proto";
-import "protos/public/modeldb/versioning/Dataset.proto";
-import "protos/public/modeldb/versioning/Enums.proto";
-import "protos/public/modeldb/versioning/Environment.proto";
 
 // Base commit for the versioning system
 // DO NOT USE TO COMPUTE SHA
@@ -54,22 +49,6 @@ message Folder {
     repeated FolderElement blobs = 1;
     // Subfolders
     repeated FolderElement sub_folders = 2;
-}
-
-message Blob {
-    oneof content {
-        DatasetBlob dataset = 2;// Blob of the type dataset
-        EnvironmentBlob environment = 3;
-        CodeBlob code = 4;
-        ConfigBlob config = 5;
-    }
-}
-
-message BlobExpanded {
-    // List of folder names, with the last element being the name of the blob
-    // Each element goes one level deeper. So ["foo", "bar"] represents the same as /foo/bar
-    repeated string location = 1;
-    Blob blob = 2;
 }
 
 message BlobDiff {

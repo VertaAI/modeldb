@@ -7,6 +7,11 @@ option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 import "protos/public/common/CommonService.proto";
+import "protos/public/modeldb/versioning/Code.proto";
+import "protos/public/modeldb/versioning/Config.proto";
+import "protos/public/modeldb/versioning/Dataset.proto";
+import "protos/public/modeldb/versioning/Enums.proto";
+import "protos/public/modeldb/versioning/Environment.proto";
 
 message ArtifactTypeEnum{
     enum ArtifactType {
@@ -127,4 +132,20 @@ message WorkspaceTypeEnum {
         ORGANIZATION = 1;
         USER = 2;
     }
+}
+
+message Blob {
+    oneof content {
+        versioning.DatasetBlob dataset = 2;// Blob of the type dataset
+        versioning.EnvironmentBlob environment = 3;
+        versioning.CodeBlob code = 4;
+        versioning.ConfigBlob config = 5;
+    }
+}
+
+message BlobExpanded {
+    // List of folder names, with the last element being the name of the blob
+    // Each element goes one level deeper. So ["foo", "bar"] represents the same as /foo/bar
+    repeated string location = 1;
+    Blob blob = 2;
 }
