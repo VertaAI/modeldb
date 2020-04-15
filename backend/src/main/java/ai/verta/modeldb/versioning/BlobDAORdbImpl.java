@@ -101,9 +101,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                   InternalFolderElementEntity entity = (InternalFolderElementEntity) d;
                   Folder.Builder folder = Folder.newBuilder();
                   FolderElement.Builder folderElement =
-                      FolderElement.newBuilder()
-                          .setElementName(entity.getElement_name())
-                          .setCreatedByCommit(commitSha);
+                      FolderElement.newBuilder().setElementName(entity.getElement_name());
 
                   if (entity.getElement_type().equals(TREE)) {
                     folder.addSubFolders(folderElement);

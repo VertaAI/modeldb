@@ -46,9 +46,6 @@ message InternalFolder {
 message FolderElement {
     // Name of the element inside the folder.
     string element_name = 2;
-
-    // SHA of the commit which created this element.
-    string created_by_commit = 3;
 }
 
 // DO NOT USE TO COMPUTE SHA
