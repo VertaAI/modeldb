@@ -34,9 +34,11 @@ import ai.verta.modeldb.entities.ObservationEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CommitDAO;
@@ -61,6 +63,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -250,8 +253,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private Map<String, Integer> validateVersioningEntity(
-      Session session, VersioningEntry versioningEntry) throws ModelDBException {
+  private void validateVersioningEntityAndUpdateExperimentRun(
+      Session session, ExperimentRunEntity experimentRunObj, VersioningEntry versioningEntry)
+      throws ModelDBException, InvalidProtocolBufferException {
     String errorMessage = null;
     if (versioningEntry.getRepositoryId() == 0L) {
       errorMessage = "Repository Id not found in VersioningEntry";
@@ -273,6 +277,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
       Map<String, BlobExpanded> locationBlobMap =
           blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
+      List<KeyValue> hyperparameterConfigBlobKeyValue = new LinkedList<>();
       for (Map.Entry<String, Location> locationBlobKeyMap :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
         String locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
@@ -285,11 +290,49 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   + "' not found in commit blobs",
               io.grpc.Status.Code.INVALID_ARGUMENT);
         }
-        blobTypesByLocationMap.put(
-            locationKey, locationBlobMap.get(locationKey).getBlob().getContentCase().getNumber());
+        Blob blob = locationBlobMap.get(locationKey).getBlob();
+        blobTypesByLocationMap.put(locationKey, blob.getContentCase().getNumber());
+
+        if (blob.hasConfig() && !blob.getConfig().getHyperparametersList().isEmpty()) {
+          blob.getConfig()
+              .getHyperparametersList()
+              .forEach(
+                  hyperparameterConfigBlob -> {
+                    Value.Builder valueBuilder = Value.newBuilder();
+                    switch (hyperparameterConfigBlob.getValue().getValueCase()) {
+                      case INT_VALUE:
+                        valueBuilder.setNumberValue(
+                            hyperparameterConfigBlob.getValue().getIntValue());
+                        break;
+                      case FLOAT_VALUE:
+                        valueBuilder.setNumberValue(
+                            hyperparameterConfigBlob.getValue().getFloatValue());
+                        break;
+                      case STRING_VALUE:
+                        valueBuilder.setStringValue(
+                            hyperparameterConfigBlob.getValue().getStringValue());
+                        break;
+                    }
+                    KeyValue keyValue =
+                        KeyValue.newBuilder()
+                            .setKey(hyperparameterConfigBlob.getName())
+                            .setValue(valueBuilder.build())
+                            .build();
+                    hyperparameterConfigBlobKeyValue.add(keyValue);
+                  });
+        }
+      }
+
+      if (!hyperparameterConfigBlobKeyValue.isEmpty()) {
+        experimentRunObj.setKeyValueMapping(
+            RdbmsUtils.convertKeyValuesFromKeyValueEntityList(
+                this, ModelDBConstants.HYPERPARAMETERS, hyperparameterConfigBlobKeyValue));
       }
     }
-    return blobTypesByLocationMap;
+    List<VersioningModeldbEntityMapping> versioningInputs =
+        RdbmsUtils.getVersioningMappingFromVersioningInput(
+            versioningEntry, blobTypesByLocationMap, experimentRunObj);
+    experimentRunObj.setVersioned_inputs(versioningInputs);
   }
 
   @Override
@@ -300,11 +343,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
-        Map<String, Integer> blobTypesByLocationMap =
-            validateVersioningEntity(session, experimentRun.getVersionedInputs());
-        experimentRunObj.setVersioned_inputs(
-            RdbmsUtils.getVersioningMappingFromVersioningInput(
-                experimentRun.getVersionedInputs(), blobTypesByLocationMap, experimentRunObj));
+        validateVersioningEntityAndUpdateExperimentRun(
+            session, experimentRunObj, experimentRun.getVersionedInputs());
       }
       session.saveOrUpdate(experimentRunObj);
 
@@ -1643,12 +1683,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       VersioningEntry versioningEntry = request.getVersionedInputs();
-      Map<String, Integer> blobTypesByLocationMap =
-          validateVersioningEntity(session, versioningEntry);
       ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
-      runEntity.setVersioned_inputs(
-          RdbmsUtils.getVersioningMappingFromVersioningInput(
-              versioningEntry, blobTypesByLocationMap, runEntity));
+      validateVersioningEntityAndUpdateExperimentRun(session, runEntity, versioningEntry);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       session.saveOrUpdate(runEntity);
