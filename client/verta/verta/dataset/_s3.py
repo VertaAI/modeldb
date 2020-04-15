@@ -95,8 +95,9 @@ class S3(_dataset._Dataset):
         # TODO: handle prefixes
         if key is None:
             # TODO: handle `bucket_name` not found
-            for obj in s3.list_objects(Bucket=bucket_name)['Contents']:
-                yield cls._get_s3_obj_metadata(obj, bucket_name, obj['Key'])
+            for obj in s3.list_object_versions(Bucket=bucket_name)['Versions']:
+                if obj['IsLatest']:
+                    yield cls._get_s3_obj_metadata(obj, bucket_name, obj['Key'])
         else:
             # TODO: handle `key` not found
             obj = s3.head_object(Bucket=bucket_name, Key=key)
@@ -110,5 +111,7 @@ class S3(_dataset._Dataset):
         msg.path.size = obj.get('Size') or obj['ContentLength']
         msg.path.last_modified_at_source = _utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified']))
         msg.path.md5 = obj['ETag'].strip('"')
+        if obj.get('VersionId', 'null') != 'null':
+            msg.s3_version_id = obj['VersionId']
 
         return msg
