@@ -32,8 +32,10 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -56,6 +58,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -65,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -250,7 +254,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private Map<String, Integer> validateVersioningEntity(
+  private Map<String, Map.Entry<BlobExpanded, String>> validateVersioningEntity(
       Session session, VersioningEntry versioningEntry) throws ModelDBException {
     String errorMessage = null;
     if (versioningEntry.getRepositoryId() == 0L) {
@@ -269,14 +273,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             session,
             versioningEntry.getCommit(),
             (session1) -> repositoryDAO.getRepositoryById(session, repositoryIdentification));
-    Map<String, Integer> blobTypesByLocationMap = new HashMap<>();
+    Map<String, Map.Entry<BlobExpanded, String>> requestedLocationBlobWithHashMap = new HashMap<>();
     if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
-      Map<String, BlobExpanded> locationBlobMap =
-          blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
+          blobDAO.getCommitBlobMapWithHash(session, commitEntity.getRootSha(), new ArrayList<>());
       for (Map.Entry<String, Location> locationBlobKeyMap :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
         String locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
-        if (!locationBlobMap.containsKey(locationKey)) {
+        if (!locationBlobWithHashMap.containsKey(locationKey)) {
           throw new ModelDBException(
               "Blob Location '"
                   + locationBlobKeyMap.getValue().getLocationList()
@@ -285,26 +289,25 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   + "' not found in commit blobs",
               io.grpc.Status.Code.INVALID_ARGUMENT);
         }
-        blobTypesByLocationMap.put(
-            locationKey, locationBlobMap.get(locationKey).getBlob().getContentCase().getNumber());
+        requestedLocationBlobWithHashMap.put(locationKey, locationBlobWithHashMap.get(locationKey));
       }
     }
-    return blobTypesByLocationMap;
+    return requestedLocationBlobWithHashMap;
   }
 
   @Override
   public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
-        Map<String, Integer> blobTypesByLocationMap =
+        Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
             validateVersioningEntity(session, experimentRun.getVersionedInputs());
         experimentRunObj.setVersioned_inputs(
             RdbmsUtils.getVersioningMappingFromVersioningInput(
-                experimentRun.getVersionedInputs(), blobTypesByLocationMap, experimentRunObj));
+                experimentRun.getVersionedInputs(), locationBlobWithHashMap, experimentRunObj));
       }
       session.saveOrUpdate(experimentRunObj);
 
@@ -1288,6 +1291,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.trace("Converted from Hibernate to proto");
       }
 
+      List<KeyValueQuery> predicateQueryParam =
+          queryParameters.getPredicatesList().stream()
+              .filter(
+                  keyValueQuery ->
+                      keyValueQuery.getKey().contains(ModelDBConstants.HYPERPARAMETERS))
+              .collect(Collectors.toList());
+
+      if (!predicateQueryParam.isEmpty()) {
+        Map<String, HyperparameterElementConfigBlobEntity> configBlobEntityMap = new HashMap<>();
+        List<String> blobHash = new ArrayList<>();
+        for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+          blobHash.addAll(
+              experimentRunEntity.getVersioned_inputs().stream()
+                  .map(VersioningModeldbEntityMapping::getBlob_hash)
+                  .collect(Collectors.toList()));
+        }
+      }
+
       Set<String> experimentRunIdsSet = new HashSet<>();
       List<ExperimentRun> experimentRuns = new ArrayList<>();
       for (ExperimentRun experimentRun : experimentRunList) {
@@ -1639,16 +1660,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       VersioningEntry versioningEntry = request.getVersionedInputs();
-      Map<String, Integer> blobTypesByLocationMap =
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           validateVersioningEntity(session, versioningEntry);
       ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
       runEntity.setVersioned_inputs(
           RdbmsUtils.getVersioningMappingFromVersioningInput(
-              versioningEntry, blobTypesByLocationMap, runEntity));
+              versioningEntry, locationBlobWithHashMap, runEntity));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       session.saveOrUpdate(runEntity);

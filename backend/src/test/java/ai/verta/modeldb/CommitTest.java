@@ -390,7 +390,7 @@ public class CommitTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit1 = commitResponse.getCommit();
     createCommitRequest =
-        getCreateCommitRequest(id, 123, commitResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(id, 123, commitResponse.getCommit(), Blob.ContentCase.CONFIG);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit2 = commitResponse.getCommit();
     createCommitRequest =

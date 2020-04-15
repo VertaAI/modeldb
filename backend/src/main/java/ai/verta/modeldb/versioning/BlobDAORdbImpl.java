@@ -292,7 +292,8 @@ public class BlobDAORdbImpl implements BlobDAO {
                 Entry::getKey, stringEntryEntry -> stringEntryEntry.getValue().getKey()));
   }
 
-  Map<String, Map.Entry<BlobExpanded, String>> getCommitBlobMapWithHash(
+  @Override
+  public Map<String, Map.Entry<BlobExpanded, String>> getCommitBlobMapWithHash(
       Session session, String folderHash, List<String> locationList) throws ModelDBException {
 
     String parentLocation = locationList.size() == 0 ? null : locationList.get(0);

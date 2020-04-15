@@ -158,6 +158,17 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="vmem-add-column-config_blob_hash" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="versioning_modeldb_entity_mapping" columnName="config_blob_hash"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="versioning_modeldb_entity_mapping">
+            <column name="blob_hash" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
     <!-- take a below line to the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>
