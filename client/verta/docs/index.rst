@@ -10,7 +10,7 @@ and access the API reference.
 
     Verta <verta>
     Quickstart <quickstart>
-    Examples & Tutorials <examples>
+    Tutorials & Examples <examples>
     API Reference <api_reference>
     Support & Community <support>
     Resources <learn>

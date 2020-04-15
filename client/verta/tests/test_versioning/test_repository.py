@@ -160,6 +160,30 @@ class TestCommit:
         with pytest.raises(RuntimeError):
             branch_b.merge(branch_a)
 
+    def test_revert(self, repository):
+        blob1 = verta.environment.Python(["verta==1"])
+        blob2 = verta.environment.Python(["verta==2"])
+        loc1 = "loc1"
+        loc2 = "loc2"
+
+        commit = repository.get_commit(branch="master")
+
+        commit.update(loc1, blob1)
+        commit.save("1")
+        commit_to_revert_id = commit.id
+
+        commit.update(loc2, blob2)
+        commit.save("2")
+
+        commit_to_revert = repository.get_commit(id=commit_to_revert_id)
+        commit.revert(commit_to_revert)
+
+        # blob1 removed
+        with pytest.raises(LookupError):
+            commit.get(loc1)
+        # blob2 still present
+        assert commit.get(loc2)
+
     def test_log_to_run(self, experiment_run, commit):
         blob1 = verta.dataset.Path(__file__)
         blob2 = verta.environment.Python()

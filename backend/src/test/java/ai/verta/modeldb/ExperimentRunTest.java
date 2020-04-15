@@ -9440,6 +9440,13 @@ public class ExperimentRunTest {
             .setDateCreated(111)
             .addParentShas(getBranchResponse.getCommit().getCommitSha())
             .build();
+
+    Location location1 = Location.newBuilder().addLocation("dataset").addLocation("train").build();
+    Location location2 =
+        Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
+    Location location3 =
+        Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
+
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9447,20 +9454,17 @@ public class ExperimentRunTest {
             .addBlobs(
                 BlobExpanded.newBuilder()
                     .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                    .addLocation("dataset")
-                    .addLocation("train")
+                    .addAllLocation(location1.getLocationList())
                     .build())
             .addBlobs(
                 BlobExpanded.newBuilder()
                     .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
-                    .addLocation("test-1")
-                    .addLocation("test1.json")
+                    .addAllLocation(location2.getLocationList())
                     .build())
             .addBlobs(
                 BlobExpanded.newBuilder()
                     .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                    .addLocation("test-2")
-                    .addLocation("test2.json")
+                    .addAllLocation(location3.getLocationList())
                     .build())
             .build();
     CreateCommitRequest.Response commitResponse =
@@ -9484,7 +9488,6 @@ public class ExperimentRunTest {
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun-1");
     Map<String, Location> locationMap = new HashMap<>();
-    Location location1 = Location.newBuilder().addLocation("dataset").addLocation("train").build();
     locationMap.put("location-2", location1);
     createExperimentRunRequest =
         createExperimentRunRequest
@@ -9501,8 +9504,6 @@ public class ExperimentRunTest {
     ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun1 created successfully");
 
-    Location location2 =
-        Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
@@ -9519,8 +9520,6 @@ public class ExperimentRunTest {
     ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun2 created successfully");
 
-    Location location3 =
-        Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
@@ -9574,6 +9573,26 @@ public class ExperimentRunTest {
         "ExperimentRun not match with expected ExperimentRun",
         experimentRun3,
         listBlobExperimentRunsResponse.getRuns(1));
+
+    Location location4 = Location.newBuilder().addLocation("test-2").build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setName("ExperimentRun-4")
+            .setVersionedInputs(
+                createExperimentRunRequest
+                    .getVersionedInputs()
+                    .toBuilder()
+                    .putKeyLocationMap("PQR", location4)
+                    .build())
+            .build();
+    try {
+      experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()

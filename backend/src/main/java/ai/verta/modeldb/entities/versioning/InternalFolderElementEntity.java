@@ -1,6 +1,5 @@
 package ai.verta.modeldb.entities.versioning;
 
-import ai.verta.modeldb.versioning.FolderElement;
 import ai.verta.modeldb.versioning.InternalFolderElement;
 import java.io.Serializable;
 import javax.persistence.Column;
@@ -57,12 +56,5 @@ public class InternalFolderElementEntity implements Serializable {
 
   public String getElement_name() {
     return element_name;
-  }
-
-  public FolderElement toProto() {
-    return FolderElement.newBuilder()
-        .setCreatedByCommit(this.element_sha)
-        .setElementName(this.element_name)
-        .build();
   }
 }
