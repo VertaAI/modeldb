@@ -133,7 +133,18 @@
         </createIndex>
     </changeSet>
 
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
-	<include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
+    <include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
+    <include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
+
+    <changeSet id="13-add_s3_dataset_component_blob_s3_version_id" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="s3_dataset_component_blob" columnName="s3_version_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="s3_dataset_component_blob">
+            <column name="s3_version_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

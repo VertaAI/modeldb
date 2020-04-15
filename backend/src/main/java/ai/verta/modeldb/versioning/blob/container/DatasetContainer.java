@@ -139,7 +139,10 @@ public class DatasetContainer extends BlobContainer {
   private String computeSHA(AutogenS3DatasetComponentBlob s3componentBlob)
       throws NoSuchAlgorithmException {
     StringBuilder sb = new StringBuilder();
-    sb.append(":s3:").append(computeSHA(s3componentBlob.getPath()));
+    sb.append(":s3:")
+        .append(computeSHA(s3componentBlob.getPath()))
+        .append(":s3_version_id:")
+        .append(s3componentBlob.getS3VersionId());
     return FileHasher.getSha(sb.toString());
   }
 
