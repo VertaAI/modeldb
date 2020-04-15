@@ -15,20 +15,16 @@ import "google/api/annotations.proto";
   it's to up to the user to ensure that things are configured correctly.
 */
 
-// We can have multiple types being recorded in the lineage system. These are the types that we allow.
-message LineageEntryEnum {
-    enum LineageEntryType {
-        UNKNOWN = 0; // Type 0 should always cause an error
-        EXPERIMENT_RUN = 1;
-        DATASET_VERSION = 2;
-    }
-};
+message VersioningLineageEntry {
+    uint64 repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+ }
 
 message LineageEntry {
-    LineageEntryEnum.LineageEntryType type = 1;
     oneof description {
-        // External ID of the item for the given type, if compatible
-        string external_id = 2;
+        string experiment_run = 1;
+        VersioningLineageEntry blob = 2;
     };
 }
 
@@ -39,18 +35,27 @@ message LineageEntryBatch {
 
 // Add every item of "input" as a parent of every item on "output".
 message AddLineage {
-    repeated LineageEntry input = 1;
-    repeated LineageEntry output = 2;
+    // If not provided, a new ID will be created
+    uint64 id = 1;
+
+    // An output can be associated with at most one lineage entry. That is the same as saying
+    // something can't be created by two separated paths.
+    // We also associated all inputs with all outputs. If the user wants more fine-grained control,
+    // they can create multiple entries.
+    repeated LineageEntry input = 2;
+    repeated LineageEntry output = 3;
+
 
     message Response {
-        bool status = 1;
+        uint64 id = 1;
     }
 }
 
 // Delete every item of "input" as a parent of every item on "output".
 message DeleteLineage {
-    repeated LineageEntry input = 1;
-    repeated LineageEntry output = 2;
+    uint64 id = 1; // Required
+    repeated LineageEntry input = 2;
+    repeated LineageEntry output = 3;
 
     message Response {
         bool status = 1;
