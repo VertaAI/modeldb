@@ -3,3 +3,4 @@ data/
 artifact-store/
 .DS_Store
 .ipynb
+.vscode
