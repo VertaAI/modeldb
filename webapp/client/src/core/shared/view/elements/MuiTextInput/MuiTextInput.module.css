@@ -14,6 +14,11 @@
 .root.size_small :global .MuiOutlinedInput-input {
   padding: 8.5px 14px;
 }
+.root.size_extraSmall :global .MuiOutlinedInput-input {
+  padding: 5.5px 11px;
+  font-size: 14px;
+  height: auto;
+}
 .root :global .MuiInputLabel-outlined {
   transform: translate(14px, 100%);
   z-index: 0;

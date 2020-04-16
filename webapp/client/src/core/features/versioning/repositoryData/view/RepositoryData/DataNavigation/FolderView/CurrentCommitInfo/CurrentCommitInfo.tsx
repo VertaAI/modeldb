@@ -22,28 +22,34 @@ const CurrentCommitInfo = (props: ILocalProps) => {
   } = props;
   return (
     <div className={styles.root}>
-      <div className={styles.author}>
-        <Avatar
-          username={author.username}
-          sizeInPx={24}
-          picture={author.picture}
-        />
-        <div className={styles.author__username}>{author.username}</div>
+      <div className={styles.row}>
+        <span className={styles.author__text}>Last change done by</span>
       </div>
-      <div className={styles.message} title={message}>
-        {message}
-      </div>
-      <div className={styles.dateCreated}>
-        Latest commit{' '}
-        <Link
-          to={routes.repositoryCommit.getRedirectPathWithCurrentWorkspace({
-            commitSha: sha,
-            repositoryName,
-          })}
-        >
-          <ShortenedSHA sha={sha} />
-        </Link>{' '}
-        {moment(dateCreated).fromNow()}
+      <div className={styles.row}>
+        <div className={styles.author}>
+          <Avatar
+            username={author.username}
+            sizeInPx={28}
+            picture={author.picture}
+          />
+          <div className={styles.author__username}>{author.username}</div>
+        </div>
+        <div className={styles.message} title={message}>
+          {message}
+        </div>
+        <div className={styles.dateCreated}>
+          Latest commit{' '}
+          <Link
+            className={styles.commitSha}
+            to={routes.repositoryCommit.getRedirectPathWithCurrentWorkspace({
+              commitSha: sha,
+              repositoryName,
+            })}
+          >
+            <ShortenedSHA sha={sha} />
+          </Link>{' '}
+          {moment(dateCreated).fromNow()}
+        </div>
       </div>
     </div>
   );

@@ -15,10 +15,3 @@
 .greenDiff {
   background-color: greenDiff;
 }
-
-.root td,
-th {
-  padding-top: 6px !important;
-  padding-bottom: 6px !important;
-  vertical-align: middle;
-}

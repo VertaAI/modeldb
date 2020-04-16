@@ -63,7 +63,7 @@ class Breadcrumbs extends React.Component<AllProps, ILocalState> {
             <div key={i}>
               <Link
                 className={cn(styles.breadcrumb_item, {
-                  [styles.breadcrumb_item_active]: item.isActive,
+                  [styles.breadcrumb_item_active]: items.length - 1 === i,
                 })}
                 to={item.redirectPath}
               >

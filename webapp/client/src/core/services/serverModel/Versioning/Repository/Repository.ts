@@ -6,4 +6,5 @@ export interface IServerRepository extends IServerEntityWithWorkspace {
   date_created: string;
   date_updated: string;
   owner: string;
+  repository_visibility?: 'PRIVATE' | 'PUBLIC' | 'ORG_SCOPED_PUBLIC';
 }

@@ -1,5 +1,5 @@
 .root {
-  color: var(--main-color2);
+  color: var(--link-color);
   display: inline-flex;
   align-items: center;
   text-decoration: none;
@@ -10,4 +10,5 @@
 }
 
 .icon {
+  color: var(--link-color);
 }

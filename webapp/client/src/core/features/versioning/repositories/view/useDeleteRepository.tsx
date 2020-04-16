@@ -24,7 +24,7 @@ const useDeleteRepository = (props: { repository: IRepository }) => {
 
   React.useEffect(() => {
     if (deletingRepository.error) {
-      toastCommunicationError(deletingRepository.error as any);
+      toastCommunicationError(deletingRepository.error);
     }
   }, [deletingRepository.error]);
   React.useEffect(() => {
@@ -33,11 +33,12 @@ const useDeleteRepository = (props: { repository: IRepository }) => {
     };
   }, []);
 
-  const deleteRepositoryButton =
+  const deleteRepositoryButton = 
     <DeleteFAI
       confirmText="Are you sure?"
       onDelete={() => dispatch(actions.deleteRepository({ id: repository.id }))}
     />;
+
   return {
     deleteRepositoryButton,
     isDeletingRepository: deletingRepository.isRequesting,

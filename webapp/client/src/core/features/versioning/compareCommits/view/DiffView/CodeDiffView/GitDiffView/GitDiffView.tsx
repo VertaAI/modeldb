@@ -13,8 +13,10 @@ import TagProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/Ta
 import RepoProp from 'core/shared/view/domain/Versioning/Blob/CodeBlob/GitBlob/RepoProp/RepoProp';
 import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
-import { IComparedCommitsInfo, getCssDiffColor } from '../../../model';
-import makeComparePropertiesTable from '../../shared/ComparePropertiesTable/ComparePropertiesTable';
+import { IComparedCommitsInfo } from '../../../model';
+import makeComparePropertiesTable, {
+  makeHighlightCellBackground,
+} from '../../shared/ComparePropertiesTable/ComparePropertiesTable';
 
 interface ILocalProps {
   diff: IGitCodeDiff['data'];
@@ -22,6 +24,9 @@ interface ILocalProps {
 }
 
 const tableComponents = makeComparePropertiesTable<IGitCodeBlob['data']>();
+const highlightCellBackground = makeHighlightCellBackground<
+  IGitCodeBlob['data']
+>();
 
 const GitDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
   const { A, B } = getABData(diff);
@@ -40,32 +45,28 @@ const GitDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
       >
         <tableComponents.PropDefinition
           title="Hash"
-          render={({ data, type }) => {
+          type="hash"
+          getCellStyle={highlightCellBackground(({ data }) =>
+            Boolean(data.commitHash && diffBlobProperties.commitHash)
+          )}
+          render={({ data }) => {
             return data && data.commitHash ? (
               <HashProp
                 commitHash={data.commitHash}
                 remoteRepoUrl={data.remoteRepoUrl}
-                rootStyles={
-                  diffBlobProperties.commitHash
-                    ? { backgroundColor: getCssDiffColor(type) }
-                    : {}
-                }
               />
             ) : null;
           }}
         />
         <tableComponents.PropDefinition
           title="Dirty"
-          render={({ data, type }) => {
+          type="dirty"
+          getCellStyle={highlightCellBackground(
+            ({ data }) => !R.isNil(data.isDirty) && diffBlobProperties.isDirty
+          )}
+          render={({ data }) => {
             return data && !R.isNil(data.isDirty) ? (
-              <span
-                data-test="git-dirty"
-                style={
-                  diffBlobProperties.isDirty
-                    ? { backgroundColor: getCssDiffColor(type) }
-                    : {}
-                }
-              >
+              <span data-test="git-dirty">
                 {data.isDirty ? 'TRUE' : 'FALSE'}
               </span>
             ) : null;
@@ -73,48 +74,40 @@ const GitDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
         />
         <tableComponents.PropDefinition
           title="Branch"
-          render={({ data, type }) => {
+          type="branch"
+          getCellStyle={highlightCellBackground(({ data }) =>
+            Boolean(data.branch && diffBlobProperties.branch)
+          )}
+          render={({ data }) => {
             return data && data.branch ? (
               <BranchProp
                 branch={data.branch}
                 remoteRepoUrl={data.remoteRepoUrl}
-                rootStyles={
-                  diffBlobProperties.branch
-                    ? { backgroundColor: getCssDiffColor(type) }
-                    : {}
-                }
               />
             ) : null;
           }}
         />
         <tableComponents.PropDefinition
           title="Tag"
-          render={({ data, type }) => {
+          type="tag"
+          getCellStyle={highlightCellBackground(({ data }) =>
+            Boolean(data.tag && diffBlobProperties.tag)
+          )}
+          render={({ data }) => {
             return data && data.tag ? (
-              <TagProp
-                remoteRepoUrl={data.remoteRepoUrl}
-                tag={data.tag}
-                rootStyles={
-                  diffBlobProperties.tag
-                    ? { backgroundColor: getCssDiffColor(type) }
-                    : {}
-                }
-              />
+              <TagProp remoteRepoUrl={data.remoteRepoUrl} tag={data.tag} />
             ) : null;
           }}
         />
         <tableComponents.PropDefinition
           title="Repo"
-          render={({ data, type }) => {
+          type="repo"
+          getCellStyle={highlightCellBackground(({ data }) =>
+            Boolean(data.remoteRepoUrl && diffBlobProperties.remoteRepoUrl)
+          )}
+          render={({ data }) => {
             return data && data.remoteRepoUrl ? (
-              <RepoProp
-                remoteRepoUrl={data.remoteRepoUrl}
-                rootStyles={
-                  diffBlobProperties.remoteRepoUrl
-                    ? { backgroundColor: getCssDiffColor(type) }
-                    : {}
-                }
-              />
+              <RepoProp remoteRepoUrl={data.remoteRepoUrl} />
             ) : null;
           }}
         />

@@ -16,13 +16,13 @@
   font-size: 14px;
   font-weight: 400;
   text-decoration: none;
-  color: #777777;
+  color: var(--main-text-color2);
   outline: none;
 }
 .breadcrumb_item:hover {
   color: var(--main-text-color1);
 }
 .breadcrumb_item_active {
-  font-weight: 400;
+  font-weight: 500;
   color: var(--main-text-color1);
 }

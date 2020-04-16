@@ -8,7 +8,7 @@ import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { IApplicationState } from 'store/store';
 import { PageHeader } from 'core/shared/view/elements/PageComponents';
 import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import ExperimentRunsInfo from 'core/shared/view/domain/Versioning/ExperimentRunsInfo/ExperimentRunsInfo';
 
 import styles from './ExperimentRuns.module.css';
@@ -17,7 +17,7 @@ import { selectors, actions } from '../../../../../store';
 interface ILocalProps {
   repositoryId: IRepository['id'];
   commitSha: ICommit['sha'];
-  location: DataLocation.DataLocation;
+  location: CommitComponentLocation.CommitComponentLocation;
 }
 
 const mapStateToProps = (state: IApplicationState) => {

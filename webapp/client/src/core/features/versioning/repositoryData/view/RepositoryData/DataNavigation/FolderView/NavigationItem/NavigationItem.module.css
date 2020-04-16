@@ -1,40 +1,37 @@
 .root {
   display: grid;
   padding: 8px 0;
-  padding-left: 16px;
-  grid-template-columns: 17px auto;
-  grid-column-gap: 7px;
-  border-bottom: 1px solid #eaecef;
+  padding-left: var(--horizontal-padding);
+  grid-template-columns: 24px auto;
+  grid-column-gap: 9px;
+  border-bottom: 1px solid var(--border-color1);
   align-items: center;
 }
 .root:hover {
   background-color: #f6f8fa;
 }
-.root:first-child {
-  border-top: none;
-}
-.root:last-child {
-  border-bottom: none;
-}
 
 .iconWrapper {
   display: flex;
+  justify-content: center;
   align-items: center;
 }
 
 .icon {
-  font-size: 19px;
+  color: var(--main-text-color3);
+  font-size: 22px;
 }
 
 .name {
   font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .name__link {
-  color: black;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--link-color);
+  font-weight: 500;
   cursor: pointer;
   text-decoration: none;
 }

@@ -5,10 +5,9 @@ import {
   ComparedCommitType,
   elementDiffMakers,
 } from 'core/shared/models/Versioning/Blob/Diff';
-import { findByDataTestAttribute } from 'core/shared/utils/tests/react/helpers';
 
 import GitDiffView from '../GitDiffView';
-import { diffColors } from '../../../shared/styles';
+import { getCommitColumnInfo } from '../../../shared/ComparePropertiesTable/__tests__/helpers';
 
 const comparedCommitsInfo: React.ComponentProps<
   typeof GitDiffView
@@ -33,28 +32,8 @@ const getDisplayedProperties = (
   type: ComparedCommitType,
   component: ReactWrapper
 ) => {
-  const commibColumn = component
-    .find('tbody')
-    .find('tr')
-    .first()
-    .find('td')
-    .at(type === 'A' ? 1 : 2);
-  const gitHash = findByDataTestAttribute('git-hash', commibColumn);
   return {
-    hash:
-      gitHash.length > 0
-        ? {
-            value: gitHash.text(),
-            diffColor:
-              gitHash.prop('data-root-styles').backgroundColor ===
-              diffColors.green
-                ? 'green'
-                : gitHash.prop('data-root-styles').backgroundColor ===
-                  diffColors.red
-                ? 'red'
-                : undefined,
-          }
-        : { value: undefined, diffColor: undefined },
+    hash: getCommitColumnInfo(type, 'hash', (column) => column.text() || undefined, component),
   };
 };
 
@@ -73,10 +52,10 @@ describe('(compareCommits feature) GitDiffView', () => {
     const component = makeComponent({ diff: addedDiff });
 
     expect(getDisplayedProperties('A', component)).toMatchObject({
-      hash: { value: undefined, diffColor: undefined },
+      hash: { content: undefined, diffColor: undefined },
     });
     expect(getDisplayedProperties('B', component)).toMatchObject({
-      hash: { value: '#', diffColor: 'green' },
+      hash: { content: '#', diffColor: 'green' },
     });
   });
 
@@ -94,10 +73,10 @@ describe('(compareCommits feature) GitDiffView', () => {
     const component = makeComponent({ diff: deletedDiff });
 
     expect(getDisplayedProperties('A', component)).toMatchObject({
-      hash: { value: '#', diffColor: 'red' },
+      hash: { content: '#', diffColor: 'red' },
     });
     expect(getDisplayedProperties('B', component)).toMatchObject({
-      hash: { value: undefined, diffColor: undefined },
+      hash: { content: undefined, diffColor: undefined },
     });
   });
 
@@ -127,10 +106,10 @@ describe('(compareCommits feature) GitDiffView', () => {
     const component = makeComponent({ diff: modifiedDiff });
 
     expect(getDisplayedProperties('A', component)).toMatchObject({
-      hash: { value: '#', diffColor: 'red' },
+      hash: { content: '#', diffColor: 'red' },
     });
     expect(getDisplayedProperties('B', component)).toMatchObject({
-      hash: { value: '######', diffColor: 'green' },
+      hash: { content: '######', diffColor: 'green' },
     });
   });
 });

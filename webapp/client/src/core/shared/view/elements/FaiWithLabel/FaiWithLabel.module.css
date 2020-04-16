@@ -60,6 +60,7 @@
 }
 
 .label {
+  width: 90px;
   pointer-events: none;
   position: absolute;
   left: 50%;
