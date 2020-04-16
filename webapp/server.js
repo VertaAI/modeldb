@@ -86,6 +86,21 @@ if (process.env.DEPLOYED === 'yes') {
     }
   );
 
+  const graphql_proxy = proxy({
+    target: process.env.GQL_ADDRESS,
+    pathRewrite: {'^/api/v1/graphql/' : '/'},
+    // logLevel: "debug",
+    changeOrigin: false,
+    ws: true,
+  })
+  app.use(
+    '/api/v1/graphql/*',
+    [disableCache, hostnameApiSwitch, printer],
+    (req, res, next) => {
+      return graphql_proxy(req, res, next);
+    }
+  );
+
   app.use(express.static('client/build'));
 
   // Any left over is sent to index
