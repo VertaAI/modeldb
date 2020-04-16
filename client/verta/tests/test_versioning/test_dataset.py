@@ -60,13 +60,31 @@ class TestS3:
 
         assert len(multiple_dataset._msg.s3.components) == len(bucket_dataset._msg.s3.components)
 
-    @pytest.mark.skip("Not yet implemented.")
     def test_versioned_bucket(self):
-        pass
+        s3 = pytest.importorskip("boto3").client('s3')
+        S3_PATH = verta.dataset.S3._S3_PATH
+
+        bucket = "verta-versioned-bucket"
+
+        # collect latest versions of objects
+        version_ids = {
+            S3_PATH.format(bucket, obj['Key']): obj['VersionId']
+            for obj in
+            s3.list_object_versions(Bucket=bucket)['Versions']
+            if obj['IsLatest']
+        }
+        for path, version_id in version_ids.items():
+            if version_id == "null":
+                # S3 returns "null" in its API, but we handle that as empty string
+                version_ids[path] = ""
+
+        dataset = verta.dataset.S3("s3://{}".format(bucket))
+
+        for component in dataset._msg.s3.components:
+            assert component.s3_version_id == version_ids[component.path.path]
 
     def test_versioned_object(self):
-        boto3 = pytest.importorskip("boto3")
-        s3 = boto3.client('s3')
+        s3 = pytest.importorskip("boto3").client('s3')
 
         bucket = "verta-versioned-bucket"
         key = "data/census-train.csv"
@@ -77,7 +95,6 @@ class TestS3:
         dataset = verta.dataset.S3("s3://{}/{}".format(bucket, key))
 
         assert len(dataset._msg.s3.components) == 1
-
         assert dataset._msg.s3.components[0].version_id == latest_version_id
 
     @pytest.mark.skip("Not yet implemented.")
