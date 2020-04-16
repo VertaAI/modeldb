@@ -32,10 +32,10 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -43,6 +43,7 @@ import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
+import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
@@ -64,6 +65,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1279,46 +1281,36 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       LOGGER.trace("Final query generated");
-      List<ExperimentRun> experimentRunList = new ArrayList<>();
       List<ExperimentRunEntity> experimentRunEntities = query.list();
       LOGGER.debug("Final experimentRuns list size : {}", experimentRunEntities.size());
+      List<ExperimentRun> experimentRuns = new ArrayList<>();
       if (!experimentRunEntities.isEmpty()) {
 
         LOGGER.trace("Converting from Hibernate to proto");
-        experimentRunList =
+        List<ExperimentRun> experimentRunList =
             RdbmsUtils.convertExperimentRunsFromExperimentRunEntityList(experimentRunEntities);
         LOGGER.trace("experimentRunList {}", experimentRunList);
         LOGGER.trace("Converted from Hibernate to proto");
-      }
 
-      List<KeyValueQuery> predicateQueryParam =
-          queryParameters.getPredicatesList().stream()
-              .filter(
-                  keyValueQuery ->
-                      keyValueQuery.getKey().contains(ModelDBConstants.HYPERPARAMETERS))
-              .collect(Collectors.toList());
+        Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
+            getExperimentRunHyperparameterConfigBlobMap(session, experimentRunEntities);
 
-      if (!predicateQueryParam.isEmpty()) {
-        Map<String, HyperparameterElementConfigBlobEntity> configBlobEntityMap = new HashMap<>();
-        List<String> blobHash = new ArrayList<>();
-        for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-          blobHash.addAll(
-              experimentRunEntity.getVersioned_inputs().stream()
-                  .map(VersioningModeldbEntityMapping::getBlob_hash)
-                  .collect(Collectors.toList()));
-        }
-      }
-
-      Set<String> experimentRunIdsSet = new HashSet<>();
-      List<ExperimentRun> experimentRuns = new ArrayList<>();
-      for (ExperimentRun experimentRun : experimentRunList) {
-        if (!experimentRunIdsSet.contains(experimentRun.getId())) {
-          experimentRunIdsSet.add(experimentRun.getId());
-          if (queryParameters.getIdsOnly()) {
-            experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
-            experimentRuns.add(experimentRun);
-          } else {
-            experimentRuns.add(experimentRun);
+        Set<String> experimentRunIdsSet = new HashSet<>();
+        for (ExperimentRun experimentRun : experimentRunList) {
+          experimentRun =
+              experimentRun
+                  .toBuilder()
+                  .addAllHyperparameters(
+                      expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
+                  .build();
+          if (!experimentRunIdsSet.contains(experimentRun.getId())) {
+            experimentRunIdsSet.add(experimentRun.getId());
+            if (queryParameters.getIdsOnly()) {
+              experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
+              experimentRuns.add(experimentRun);
+            } else {
+              experimentRuns.add(experimentRun);
+            }
           }
         }
       }
@@ -1331,6 +1323,63 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunPaginationDTO.setTotalRecords(totalRecords);
       return experimentRunPaginationDTO;
     }
+  }
+
+  private Map<String, List<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
+      Session session, List<ExperimentRunEntity> experimentRunEntities) {
+
+    String queryBuilder =
+        "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb LEFT JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
+    Query query = session.createQuery(queryBuilder);
+    query.setParameter("hyperparameterType", ConfigBlobEntity.HYPERPARAMETER);
+    query.setParameterList(
+        "expRunIds",
+        experimentRunEntities.stream()
+            .map(ExperimentRunEntity::getId)
+            .collect(Collectors.toList()));
+    LOGGER.debug(
+        "Final experimentRuns hyperparameter config blob final query : {}", query.getQueryString());
+    List<Object[]> configBlobEntities = query.list();
+    LOGGER.debug(
+        "Final experimentRuns hyperparameter config list size : {}", configBlobEntities.size());
+    Map<String, List<KeyValue>> hyperparametersMap = new LinkedHashMap<>();
+    if (!configBlobEntities.isEmpty()) {
+      configBlobEntities.forEach(
+          objects -> {
+            String expRunId = (String) objects[0];
+            ConfigBlobEntity configBlobEntity = (ConfigBlobEntity) objects[1];
+            if (configBlobEntity.getHyperparameter_type() == ConfigBlobEntity.HYPERPARAMETER) {
+              HyperparameterElementConfigBlobEntity hyperElementConfigBlobEntity =
+                  configBlobEntity.getHyperparameterElementConfigBlobEntity();
+              HyperparameterValuesConfigBlob valuesConfigBlob =
+                  hyperElementConfigBlobEntity.toProto();
+              Value.Builder valueBuilder = Value.newBuilder();
+              switch (valuesConfigBlob.getValueCase()) {
+                case INT_VALUE:
+                  valueBuilder.setNumberValue(valuesConfigBlob.getIntValue());
+                  break;
+                case FLOAT_VALUE:
+                  valueBuilder.setNumberValue(valuesConfigBlob.getFloatValue());
+                  break;
+                case STRING_VALUE:
+                  valueBuilder.setStringValue(valuesConfigBlob.getStringValue());
+                  break;
+              }
+              KeyValue hyperparameter =
+                  KeyValue.newBuilder()
+                      .setKey(hyperElementConfigBlobEntity.getName())
+                      .setValue(valueBuilder.build())
+                      .build();
+              List<KeyValue> hyperparameterList = hyperparametersMap.get(expRunId);
+              if (hyperparameterList == null) {
+                hyperparameterList = new ArrayList<>();
+              }
+              hyperparameterList.add(hyperparameter);
+              hyperparametersMap.put(expRunId, hyperparameterList);
+            }
+          });
+    }
+    return hyperparametersMap;
   }
 
   @Override

@@ -68,6 +68,10 @@ public class ConfigBlobEntity implements Serializable {
     return hyperparameter_type;
   }
 
+  public HyperparameterElementConfigBlobEntity getHyperparameterElementConfigBlobEntity() {
+    return hyperparameterElementConfigBlobEntity;
+  }
+
   public String getComponentBlobHash() {
     if (hyperparameter_type == HYPERPARAMETER_SET) {
       return hyperparameterSetConfigBlobEntity.getBlobHash();

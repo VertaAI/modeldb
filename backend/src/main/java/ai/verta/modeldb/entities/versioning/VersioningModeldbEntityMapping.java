@@ -2,7 +2,6 @@ package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -51,19 +50,6 @@ public class VersioningModeldbEntityMapping implements Serializable {
 
     if (blobHash != null) {
       this.blob_hash = blobHash;
-      /*BlobContainer blobContainer = BlobContainer.create(blobExpanded);
-      if (blobContainer instanceof ConfigContainer) {
-        ConfigContainer configContainer = (ConfigContainer) blobContainer;
-        List<ConfigBlobEntity> allHyperparameterBlobEntities = configContainer.fetchHyperparameterBlobEntities();
-        System.out.println("test");
-      } else {
-        Status status =
-                Status.newBuilder()
-                        .setCode(Code.INTERNAL_VALUE)
-                        .setMessage("Invalid blob type found")
-                        .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }*/
     }
   }
 
@@ -82,7 +68,6 @@ public class VersioningModeldbEntityMapping implements Serializable {
   @Column(name = "versioning_location", columnDefinition = "TEXT")
   private String versioning_location;
 
-  @Id
   @Column(name = "versioning_blob_type")
   private Integer versioning_blob_type;
 
@@ -97,10 +82,6 @@ public class VersioningModeldbEntityMapping implements Serializable {
 
   @Column(name = "blob_hash")
   private String blob_hash;
-
-  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  @JoinColumn(name = "config_blob_hash")
-  private ConfigBlobEntity configBlobEntity;
 
   public Long getRepository_id() {
     return repository_id;

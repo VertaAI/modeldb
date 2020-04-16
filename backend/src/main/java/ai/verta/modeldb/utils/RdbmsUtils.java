@@ -1193,7 +1193,9 @@ public class RdbmsUtils {
             break;
           case ModelDBConstants.HYPERPARAMETERS:
             LOGGER.debug("switch case : Hyperparameters");
-            Root<KeyValueEntity> hyperparameterEntityRoot = subquery.from(KeyValueEntity.class);
+            Subquery<String> subqueryMDB = criteriaQuery.subquery(String.class);
+            // TODO: create a new query here and union it with versioning stuff
+            Root<KeyValueEntity> hyperparameterEntityRoot = subqueryMDB.from(KeyValueEntity.class);
             hyperparameterEntityRoot.alias(
                 entityName + "_" + ModelDBConstants.HYPERPARAMETER_ALIAS + index);
             List<Predicate> hyperparameterValuePredicates =
@@ -1203,19 +1205,19 @@ public class RdbmsUtils {
                     ModelDBConstants.HYPERPARAMETERS,
                     names[names.length - 1],
                     predicate);
-
-            subquery.select(hyperparameterEntityRoot.get(entityName).get(ModelDBConstants.ID));
+            subqueryMDB.select(hyperparameterEntityRoot.get(entityName).get(ModelDBConstants.ID));
             Predicate[] hyperparameterPredicatesOne =
                 new Predicate[hyperparameterValuePredicates.size()];
             for (int indexJ = 0; indexJ < hyperparameterValuePredicates.size(); indexJ++) {
               hyperparameterPredicatesOne[indexJ] = hyperparameterValuePredicates.get(indexJ);
             }
-            subquery.where(builder.and(hyperparameterPredicatesOne));
-
+            subqueryMDB.where(builder.and(hyperparameterPredicatesOne));
+            // This subquery should become one part of union
             Predicate[] predicatesArr = new Predicate[2];
             Predicate oldHyperparameterPredicate =
-                getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
+                getPredicateFromSubquery(builder, entityRootPath, operator, subqueryMDB);
             predicatesArr[0] = oldHyperparameterPredicate;
+            Subquery<String> subqueryVersion = criteriaQuery.subquery(String.class);
             // Hyperparameter from new design
             Predicate newHyperparameterPredicate =
                 getVersionedInputHyperparameterPredicate(
@@ -1227,9 +1229,8 @@ public class RdbmsUtils {
                     predicate,
                     names,
                     operator,
-                    subquery);
+                    subqueryVersion);
             predicatesArr[1] = newHyperparameterPredicate;
-
             keyValuePredicates[index] = builder.or(predicatesArr);
             break;
           case ModelDBConstants.METRICS:
@@ -1457,7 +1458,7 @@ public class RdbmsUtils {
         getPredicateFromSubquery(
             builder, versioningEntityRoot, operator, configSubquery, "blob_hash");
     subquery.where(builder.and(versionedInputSHAPredicate));
-
+    subquery.select(versioningEntityRoot.get(entityName).get(ModelDBConstants.ID));
     return getPredicateFromSubquery(builder, entityRootPath, operator, subquery);
   }
 

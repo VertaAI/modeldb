@@ -18,7 +18,6 @@ import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,16 +27,18 @@ import org.hibernate.Session;
 public class ConfigContainer extends BlobContainer {
 
   private final ConfigBlob config;
-  private List<ConfigBlobEntity> hyperparameterBlobEntities = new LinkedList<>();
-  private List<ConfigBlobEntity> hyperparameterSetBlobEntities = new LinkedList<>();
 
   public ConfigContainer(BlobExpanded blobExpanded) {
     super(blobExpanded);
     config = blobExpanded.getBlob().getConfig();
   }
 
-  String saveORFetch(Session session, Set<String> blobHashes)
-      throws ModelDBException, NoSuchAlgorithmException {
+  @Override
+  public void process(
+      Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
+      throws NoSuchAlgorithmException, ModelDBException {
+    List<ConfigBlobEntity> hyperparameterBlobEntities = new LinkedList<>();
+    List<ConfigBlobEntity> hyperparameterSetBlobEntities = new LinkedList<>();
     Map<String, HyperparameterSetConfigBlobEntity> setConfigEntities = new HashMap<>();
     Map<String, HyperparameterElementConfigBlobEntity> valueEntities = new HashMap<>();
     int index = 0;
@@ -138,26 +139,15 @@ public class ConfigContainer extends BlobContainer {
       hyperparameterBlobEntities.forEach(
           configBlobEntity -> {
             configBlobEntity.setBlobHash(result);
-            if (session != null) {
-              session.saveOrUpdate(configBlobEntity);
-            }
+            session.saveOrUpdate(configBlobEntity);
           });
       hyperparameterSetBlobEntities.forEach(
           configBlobEntity -> {
             configBlobEntity.setBlobHash(result);
-            if (session != null) {
-              session.saveOrUpdate(configBlobEntity);
-            }
+            session.saveOrUpdate(configBlobEntity);
           });
     }
-    return result;
-  }
 
-  @Override
-  public void process(
-      Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
-      throws NoSuchAlgorithmException, ModelDBException {
-    String result = saveORFetch(session, blobHashes);
     rootTree.push(getLocationList(), result, CONFIG_BLOB);
   }
 
@@ -188,9 +178,7 @@ public class ConfigContainer extends BlobContainer {
               hyperparameterSetBlobHash, hyperparameterSetConfigBlob);
       setConfigEntities.put(hyperparameterSetBlobHash, hyperparameterSetConfigBlobEntity);
       if (!blobHashes.contains(hyperparameterSetBlobHash)) {
-        if (session != null) {
-          session.saveOrUpdate(hyperparameterSetConfigBlobEntity);
-        }
+        session.saveOrUpdate(hyperparameterSetConfigBlobEntity);
         blobHashes.add(hyperparameterSetBlobHash);
       }
     }
@@ -243,9 +231,7 @@ public class ConfigContainer extends BlobContainer {
               blobHash, null, name, hyperparameterValuesConfigBlob);
       valueEntities.put(blobHash, entity);
       if (!blobHashes.contains(blobHash)) {
-        if (session != null) {
-          session.saveOrUpdate(entity);
-        }
+        session.saveOrUpdate(entity);
         blobHashes.add(blobHash);
       }
     }
@@ -264,14 +250,5 @@ public class ConfigContainer extends BlobContainer {
       default:
         throw new ModelDBException("Unexpected wrong type", Code.INTERNAL);
     }
-  }
-
-  public List<ConfigBlobEntity> fetchHyperparameterBlobEntities()
-      throws NoSuchAlgorithmException, ModelDBException {
-    saveORFetch(null, new HashSet<>());
-    List<ConfigBlobEntity> allHyperparameterBlobEntities = new LinkedList<>();
-    allHyperparameterBlobEntities.addAll(hyperparameterBlobEntities);
-    allHyperparameterBlobEntities.addAll(hyperparameterSetBlobEntities);
-    return allHyperparameterBlobEntities;
   }
 }
