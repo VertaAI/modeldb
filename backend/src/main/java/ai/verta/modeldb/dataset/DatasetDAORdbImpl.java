@@ -531,7 +531,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         sortBy = ModelDBConstants.TIME_UPDATED;
       }
 
-      Order orderBy =
+      Order[] orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(
               sortBy, queryParameters.getAscending(), builder, datasetRoot, entityName);
 

@@ -1252,7 +1252,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         finalPredicatesList.addAll(queryPredicatesList);
       }
 
-      Order orderBy =
+      Order[] orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(
               queryParameters.getSortKey(),
               queryParameters.getAscending(),

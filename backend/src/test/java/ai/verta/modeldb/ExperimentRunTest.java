@@ -10008,7 +10008,7 @@ public class ExperimentRunTest {
     LOGGER.info("ExperimentRun created successfully");
 
     Value hyperparameterFilter = Value.newBuilder().setNumberValue(0.0001).build();
-    KeyValueQuery CGTE0_0001 =
+    KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey("hyperparameters.train")
             .setValue(hyperparameterFilter)
@@ -10019,9 +10019,10 @@ public class ExperimentRunTest {
     FindExperimentRuns findExperimentRuns =
         FindExperimentRuns.newBuilder()
             .setProjectId(project.getId())
-            .addPredicates(CGTE0_0001)
+            .addPredicates(keyValueQuery)
             .setAscending(false)
             .setIdsOnly(false)
+                //.setSortKey("hyperparameters.train")
             .build();
 
     FindExperimentRuns.Response response =

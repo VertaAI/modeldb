@@ -1184,7 +1184,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         finalPredicatesList.addAll(queryPredicatesList);
       }
 
-      Order orderBy =
+      Order[] orderByArr =
           RdbmsUtils.getOrderBasedOnSortKey(
               queryParameters.getSortKey(),
               queryParameters.getAscending(),
@@ -1200,7 +1200,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Predicate predicateWhereCause = builder.and(predicateArr);
       criteriaQuery.select(projectRoot);
       criteriaQuery.where(predicateWhereCause);
-      criteriaQuery.orderBy(orderBy);
+      criteriaQuery.orderBy(orderByArr);
 
       Query query = session.createQuery(criteriaQuery);
       LOGGER.debug("Projects final query : {}", query.getQueryString());

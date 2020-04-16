@@ -340,7 +340,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         sortBy = ModelDBConstants.TIME_UPDATED;
       }
 
-      Order orderBy =
+      Order[] orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(
               sortBy, queryParameters.getAscending(), builder, datasetVersionRoot, entityName);
 
