@@ -2,7 +2,6 @@ package dataloaders
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -20,34 +19,36 @@ const teamLoaderKey teamLoaderKeyType = "teamloader"
 func TeamDataloaderMiddleware(conn *connections.Connections) func(httprouter.Handle) httprouter.Handle {
 	return func(next httprouter.Handle) httprouter.Handle {
 		return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-			teamloaderConfig := TeamLoaderConfig{
-				MaxBatch: 100,
-				Wait:     1 * time.Millisecond,
-				Fetch: func(reqs []string) ([]*ai_verta_uac.Team, []error) {
-					errors := make([]error, len(reqs))
+			if conn.HasUac() {
+				teamloaderConfig := TeamLoaderConfig{
+					MaxBatch: 100,
+					Wait:     1 * time.Millisecond,
+					Fetch: func(reqs []string) ([]*ai_verta_uac.Team, []error) {
+						errors := make([]error, len(reqs))
 
-					teams := make([]*ai_verta_uac.Team, len(reqs))
-					var waitgroup sync.WaitGroup
-					waitgroup.Add(len(reqs))
-					for i, req := range reqs {
-						go func(i int, req string) {
-							res, err := conn.Team.GetTeamById(
-								r.Context(),
-								&ai_verta_uac.GetTeamById{TeamId: req},
-							)
-							teams[i] = res.GetTeam()
-							errors[i] = err
-							waitgroup.Done()
-						}(i, req)
-					}
-					waitgroup.Wait()
+						teams := make([]*ai_verta_uac.Team, len(reqs))
+						var waitgroup sync.WaitGroup
+						waitgroup.Add(len(reqs))
+						for i, req := range reqs {
+							go func(i int, req string) {
+								res, err := conn.Team.GetTeamById(
+									r.Context(),
+									&ai_verta_uac.GetTeamById{TeamId: req},
+								)
+								teams[i] = res.GetTeam()
+								errors[i] = err
+								waitgroup.Done()
+							}(i, req)
+						}
+						waitgroup.Wait()
 
-					return teams, errors
-				},
+						return teams, errors
+					},
+				}
+
+				ctx := context.WithValue(r.Context(), teamLoaderKey, NewTeamLoader(teamloaderConfig))
+				r = r.WithContext(ctx)
 			}
-
-			ctx := context.WithValue(r.Context(), teamLoaderKey, NewTeamLoader(teamloaderConfig))
-			r = r.WithContext(ctx)
 			next(w, r, ps)
 		}
 	}
@@ -56,7 +57,7 @@ func TeamDataloaderMiddleware(conn *connections.Connections) func(httprouter.Han
 func GetTeamById(ctx context.Context, id string) (*uac.Team, error) {
 	teamLoader, teamLoaderOk := ctx.Value(teamLoaderKey).(*TeamLoader)
 	if !teamLoaderOk {
-		return nil, fmt.Errorf("failed to get team loader from context")
+		return &uac.Team{}, nil
 	}
 
 	return teamLoader.Load(id)
