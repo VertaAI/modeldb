@@ -1,0 +1,58 @@
+# .gqlgen.yml example
+#
+# Refer to https://gqlgen.com/config/
+# for detailed .gqlgen.yml documentation.
+
+schema:
+- schema.graphql
+exec:
+  filename: generated.go
+model:
+  filename: models_gen.go
+models:
+  Project:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Project
+  Experiment:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Experiment
+  ExperimentRun:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.ExperimentRun
+  Artifact:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Artifact
+  Feature:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Feature
+  Observation:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb.Observation
+  RepositoryTag:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.RepositoryTag
+  RepositoryBranch:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.RepositoryBranch
+  # CommitFolder:
+  CommitBlob:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.CommitBlob
+  NamedCommitFolder:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.NamedCommitFolder
+  NamedCommitBlob:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.NamedCommitBlob
+  NetworkCommitColor:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.NetworkCommitColor
+  Repository:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning.Repository
+  Commit:
+    # model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning.Commit
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.Commit
+  User:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac.UserInfo
+  Team:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac.Team
+  Organization:
+    model: github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac.Organization
+  UserCollaborator:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.UserCollaborator
+  TeamCollaborator:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.TeamCollaborator
+  Workspace:
+    model: github.com/VertaAI/modeldb/backend/graphql/internal/schema/models.Workspace
+
+resolver:
+  filename: resolver.go
+  type: Resolver

@@ -1,0 +1,37 @@
+type Feature {
+  name: String
+}
+
+type ExperimentRun {
+  id: ID!
+  projectId: String!
+  project: Project!
+  experimentId: String!
+  experiment: Experiment!
+  name: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+
+  attributes: [KeyValue!]!
+  tags: [String!]!
+  hyperparameters: [KeyValue!]!
+  artifacts: [Artifact!]!
+  datasets: [Artifact!]!
+  metrics: [KeyValue!]!
+  observations: [Observation!]!
+  features: [Feature!]!
+  jobId: String
+  owner: User!
+  codeVersion: String
+}
+
+type ExperimentRuns {
+  runs: [ExperimentRun!]!
+  next: String
+  pagination: PaginationResponse!
+}
+
+input ExperimentRunsQuery {
+  pagination: PaginationQuery
+}

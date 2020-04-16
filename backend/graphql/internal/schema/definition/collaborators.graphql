@@ -1,0 +1,19 @@
+enum AccessType {
+  OWNER
+  READ_ONLY
+  READ_WRITE
+}
+
+type UserCollaborator {
+  user: User!
+  type: AccessType!
+  canDeploy: Boolean!
+}
+
+type TeamCollaborator {
+  team: Team!
+  type: AccessType!
+  canDeploy: Boolean!
+}
+
+union Collaborator = UserCollaborator | TeamCollaborator
