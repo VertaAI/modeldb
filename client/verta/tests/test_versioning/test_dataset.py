@@ -95,7 +95,7 @@ class TestS3:
         dataset = verta.dataset.S3("s3://{}/{}".format(bucket, key))
 
         assert len(dataset._msg.s3.components) == 1
-        assert dataset._msg.s3.components[0].version_id == latest_version_id
+        assert dataset._msg.s3.components[0].s3_version_id == latest_version_id
 
     @pytest.mark.skip("Not yet implemented.")
     def test_versioned_object_by_id(self):
