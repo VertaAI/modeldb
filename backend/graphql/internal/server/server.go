@@ -48,11 +48,16 @@ func NewServer(logger *zap.Logger) *http.Server {
 		),
 	)
 
+	query := os.Getenv("QUERY_PATH")
+	if query == "" {
+		query = "/query"
+	}
+
 	router.Handle(
 		"GET",
 		"/playground",
 		func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-			handler.Playground("GraphQL", "/query")(w, r)
+			handler.Playground("GraphQL", query)(w, r)
 		},
 	)
 
