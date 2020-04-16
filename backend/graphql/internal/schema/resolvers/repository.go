@@ -54,46 +54,56 @@ func (r *repositoryResolver) Owner(ctx context.Context, obj *versioning.Reposito
 }
 
 func (r *repositoryResolver) Collaborators(ctx context.Context, obj *versioning.Repository) ([]schema.Collaborator, error) {
-	return getConvertedCollaborators(r.Resolver, ctx, r.id(obj), func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error) {
-		return r.Connections.Collaborator.GetRepositoryCollaborators(ctx, in, opts...)
-	})
+	if r.Connections.HasUac() {
+		return getConvertedCollaborators(r.Resolver, ctx, r.id(obj), func(ctx context.Context, in *uac.GetCollaborator, opts ...grpc.CallOption) (*uac.GetCollaborator_Response, error) {
+			return r.Connections.Collaborator.GetRepositoryCollaborators(ctx, in, opts...)
+		})
+	}
+	return []schema.Collaborator{}, nil
 }
 func (r *repositoryResolver) AllowedActions(ctx context.Context, obj *versioning.Repository) (*schema.AllowedActions, error) {
-	id := r.id(obj)
-	res, err := r.Connections.Authorization.GetSelfAllowedActionsBatch(ctx, &uac.GetSelfAllowedActionsBatch{
-		Resources: &uac.Resources{
-			Service:     uac.ServiceEnum_MODELDB_SERVICE,
-			ResourceIds: []string{id},
-			ResourceType: &uac.ResourceType{
-				Resource: &uac.ResourceType_ModeldbServiceResourceType{
-					ModeldbServiceResourceType: uac.ModelResourceEnum_REPOSITORY,
+	if r.Connections.HasUac() {
+		id := r.id(obj)
+		res, err := r.Connections.Authorization.GetSelfAllowedActionsBatch(ctx, &uac.GetSelfAllowedActionsBatch{
+			Resources: &uac.Resources{
+				Service:     uac.ServiceEnum_MODELDB_SERVICE,
+				ResourceIds: []string{id},
+				ResourceType: &uac.ResourceType{
+					Resource: &uac.ResourceType_ModeldbServiceResourceType{
+						ModeldbServiceResourceType: uac.ModelResourceEnum_REPOSITORY,
+					},
 				},
 			},
-		},
-	})
-	if err != nil {
-		r.Logger.Error("failed to get allowed actions", zap.Error(err))
-		return nil, err
-	}
+		})
+		if err != nil {
+			r.Logger.Error("failed to get allowed actions", zap.Error(err))
+			return nil, err
+		}
 
-	var ret schema.AllowedActions
+		var ret schema.AllowedActions
 
-	if actions, ok := res.GetActions()[id]; ok {
-		for _, act := range actions.GetActions() {
-			switch act.GetModeldbServiceAction() {
-			case uac.ModelDBActionEnum_CREATE:
-				ret.Create = true
-			case uac.ModelDBActionEnum_DELETE:
-				ret.Delete = true
-			case uac.ModelDBActionEnum_UPDATE:
-				ret.Update = true
-			case uac.ModelDBActionEnum_DEPLOY:
-				ret.Deploy = true
+		if actions, ok := res.GetActions()[id]; ok {
+			for _, act := range actions.GetActions() {
+				switch act.GetModeldbServiceAction() {
+				case uac.ModelDBActionEnum_CREATE:
+					ret.Create = true
+				case uac.ModelDBActionEnum_DELETE:
+					ret.Delete = true
+				case uac.ModelDBActionEnum_UPDATE:
+					ret.Update = true
+				case uac.ModelDBActionEnum_DEPLOY:
+					ret.Deploy = true
+				}
 			}
 		}
-	}
 
-	return &ret, nil
+		return &ret, nil
+	}
+	return &schema.AllowedActions{
+		Create: true,
+		Update: true,
+		Delete: true,
+	}, nil
 }
 func (r *repositoryResolver) Tags(ctx context.Context, obj *versioning.Repository) ([]*models.RepositoryTag, error) {
 	res, err := r.Connections.Versioning.ListTags(ctx, &versioning.ListTagsRequest{

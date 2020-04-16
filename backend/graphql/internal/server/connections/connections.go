@@ -30,6 +30,10 @@ type Connections struct {
 	Authorization ai_verta_uac.AuthzServiceClient
 }
 
+func (c *Connections) HasUac() bool {
+	return c.uac != nil
+}
+
 func NewConnections(logger *zap.Logger) (*Connections, error) {
 	mdbAddress := os.Getenv("MDB_ADDRESS")
 	if mdbAddress == "" {

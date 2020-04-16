@@ -14,36 +14,45 @@ import (
 type queryResolver struct{ *Resolver }
 
 func (r *queryResolver) Self(ctx context.Context) (*ai_verta_uac.UserInfo, error) {
-	res, err := r.Connections.UAC.GetCurrentUser(ctx, &ai_verta_uac.Empty{})
-	if err != nil {
-		r.Logger.Error("failed to get self", zap.Error(err))
-		return nil, err
+	if r.Connections.HasUac() {
+		res, err := r.Connections.UAC.GetCurrentUser(ctx, &ai_verta_uac.Empty{})
+		if err != nil {
+			r.Logger.Error("failed to get self", zap.Error(err))
+			return nil, err
+		}
+		return res, nil
 	}
-	return res, nil
+	return nil, nil
 }
 
 func (r *queryResolver) Organizations(ctx context.Context) ([]*ai_verta_uac.Organization, error) {
-	res, err := r.Connections.Organization.ListMyOrganizations(
-		ctx,
-		&ai_verta_uac.ListMyOrganizations{},
-	)
-	if err != nil {
-		r.Logger.Error("failed to get organizations", zap.Error(err))
-		return nil, err
+	if r.Connections.HasUac() {
+		res, err := r.Connections.Organization.ListMyOrganizations(
+			ctx,
+			&ai_verta_uac.ListMyOrganizations{},
+		)
+		if err != nil {
+			r.Logger.Error("failed to get organizations", zap.Error(err))
+			return nil, err
+		}
+		return res.GetOrganizations(), nil
 	}
-	return res.GetOrganizations(), nil
+	return []*ai_verta_uac.Organization{}, nil
 }
 
 func (r *queryResolver) Teams(ctx context.Context) ([]*ai_verta_uac.Team, error) {
-	res, err := r.Connections.Team.ListMyTeams(
-		ctx,
-		&ai_verta_uac.ListMyTeams{},
-	)
-	if err != nil {
-		r.Logger.Error("failed to get teams", zap.Error(err))
-		return nil, err
+	if r.Connections.HasUac() {
+		res, err := r.Connections.Team.ListMyTeams(
+			ctx,
+			&ai_verta_uac.ListMyTeams{},
+		)
+		if err != nil {
+			r.Logger.Error("failed to get teams", zap.Error(err))
+			return nil, err
+		}
+		return res.GetTeams(), nil
 	}
-	return res.GetTeams(), nil
+	return []*ai_verta_uac.Team{}, nil
 }
 
 func (r *queryResolver) Project(ctx context.Context, id string) (*ai_verta_modeldb.Project, error) {
