@@ -60,6 +60,7 @@ class TestS3:
 
         assert len(multiple_dataset._msg.s3.components) == len(bucket_dataset._msg.s3.components)
 
+    @pytest.mark.skip("Not yet implemented.")
     def test_versioned_bucket(self):
         pass
 
@@ -79,6 +80,7 @@ class TestS3:
 
         assert dataset._msg.s3.components[0].version_id == latest_version_id
 
+    @pytest.mark.skip("Not yet implemented.")
     def test_versioned_object_by_id(self):
         pass
 
