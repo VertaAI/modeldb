@@ -108,7 +108,7 @@ class S3(_dataset._Dataset):
         # pylint: disable=no-member
         msg = _DatasetService.S3DatasetComponentBlob()
         msg.path.path = cls._S3_PATH.format(bucket_name, key)
-        msg.path.size = obj.get('Size') or obj['ContentLength']
+        msg.path.size = obj.get('Size') or obj.get('ContentLength') or 0
         msg.path.last_modified_at_source = _utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified']))
         msg.path.md5 = obj['ETag'].strip('"')
         if obj.get('VersionId', 'null') != 'null':
