@@ -60,6 +60,28 @@ class TestS3:
 
         assert len(multiple_dataset._msg.s3.components) == len(bucket_dataset._msg.s3.components)
 
+    def test_versioned_bucket(self):
+        pass
+
+    def test_versioned_object(self):
+        boto3 = pytest.importorskip("boto3")
+        s3 = boto3.client('s3')
+
+        bucket = "verta-versioned-bucket"
+        key = "data/census-train.csv"
+
+        obj = s3.head_object(Bucket=bucket, Key=key)
+        latest_version_id = obj['VersionId']
+
+        dataset = verta.dataset.S3("s3://{}/{}".format(bucket, key))
+
+        assert len(dataset._msg.s3.components) == 1
+
+        assert dataset._msg.s3.components[0].version_id == latest_version_id
+
+    def test_versioned_object_by_id(self):
+        pass
+
     def test_repr(self):
         """Tests that __repr__() executes without error"""
         pytest.importorskip("boto3")
