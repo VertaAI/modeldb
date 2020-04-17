@@ -184,17 +184,21 @@ public class CommitTest {
         .build();
   }
 
-  private static PathDatasetBlob getPathDatasetBlob() {
+  private static PathDatasetBlob getPathDatasetBlob(String name) {
     return PathDatasetBlob.newBuilder()
         .addComponents(
-            getPathDatasetComponentBlob("/protos/proto/public/versioning/versioning.proto"))
+            getPathDatasetComponentBlob("/protos/proto/public/versioning/versioning.proto" + name))
         .build();
   }
 
   static Blob getBlob(Blob.ContentCase contentCase) throws ModelDBException {
+    return getBlob(contentCase, "");
+  }
+
+  static Blob getBlob(Blob.ContentCase contentCase, String name) throws ModelDBException {
     switch (contentCase) {
       case DATASET:
-        DatasetBlob datasetBlob = DatasetBlob.newBuilder().setPath(getPathDatasetBlob()).build();
+        DatasetBlob datasetBlob = DatasetBlob.newBuilder().setPath(getPathDatasetBlob(name)).build();
         return Blob.newBuilder().setDataset(datasetBlob).build();
       case CODE:
         break;
@@ -265,6 +269,12 @@ public class CommitTest {
   public static CreateCommitRequest getCreateCommitRequest(
       Long repoId, long commitTime, Commit parentCommit, Blob.ContentCase contentCase)
       throws ModelDBException {
+    return getCreateCommitRequest(repoId, commitTime, parentCommit, contentCase, "");
+  }
+
+  public static CreateCommitRequest getCreateCommitRequest(
+      Long repoId, long commitTime, Commit parentCommit, Blob.ContentCase contentCase, String name)
+      throws ModelDBException {
 
     Commit commit =
         Commit.newBuilder()
@@ -277,7 +287,7 @@ public class CommitTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
             .setCommit(commit)
             .addBlobs(
-                BlobExpanded.newBuilder().setBlob(getBlob(contentCase)).addLocation("/").build())
+                BlobExpanded.newBuilder().setBlob(getBlob(contentCase, name)).addLocation("/").build())
             .build();
 
     return createCommitRequest;

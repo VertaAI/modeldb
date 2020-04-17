@@ -1,14 +1,13 @@
 package ai.verta.modeldb;
 
+import static ai.verta.modeldb.CommitTest.getCreateCommitRequest;
 import static ai.verta.modeldb.ExperimentTest.getCreateExperimentRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
-import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
-import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.AuthService;
@@ -18,6 +17,14 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.Blob;
+import ai.verta.modeldb.versioning.CreateCommitRequest;
+import ai.verta.modeldb.versioning.DeleteCommitRequest;
+import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.GetBranchRequest;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.VersioningServiceGrpc;
+import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.Status.Code;
@@ -53,9 +60,8 @@ public class LineageTest {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageTest.class);
   private static final LineageEntry.Builder NOT_EXISTENT_DATASET =
-      LineageEntry.newBuilder()
-          .setType(LineageEntryType.DATASET_VERSION)
-          .setExternalId("id_not_existent_dataset");
+      LineageEntry.newBuilder().setBlob(VersioningLineageEntry.newBuilder().setCommitSha("asdf")
+      .addLocation("tt").setRepositoryId(0));
   /**
    * This rule manages automatic graceful shutdown for the registered servers and channels at the
    * end of test.
@@ -70,7 +76,7 @@ public class LineageTest {
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private LineageServiceBlockingStub lineageServiceStub;
 
-  private DatasetVersionServiceBlockingStub datasetVersionServiceStub;
+  private VersioningServiceBlockingStub versioningServiceBlockingStub;
   private ExperimentRunTest experimentRunTest;
   private DatasetVersionTest datasetVersionTest;
   private ProjectServiceBlockingStub projectServiceStub;
@@ -138,145 +144,159 @@ public class LineageTest {
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
+    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
   }
 
   @Test
-  public void createAndDeleteLineageNegativeTest() {
-    List<String> experimentIds = new ArrayList<>();
-    List<ExperimentRun> experimentRunList = new ArrayList<>();
-    List<DatasetVersion> datasetVersionList = new ArrayList<>();
-    // Create project
-    Project project = getProject(projectServiceStub);
+  public void createAndDeleteLineageNegativeTest() throws ModelDBException {
 
-    // Create experiment of above project
-    Experiment experiment = getExperiment(experimentIds, experimentServiceStub, project);
-
-    ExperimentRun experimentRun =
-        getExperimentRun(
-            experimentRunList,
-            experimentRunTest,
-            experimentRunServiceStub,
-            project,
-            experiment,
-            "name1");
-    final LineageEntry.Builder inputOutputExp =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
-    DatasetTest datasetTest = new DatasetTest();
-
-    DatasetVersion datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name");
-    final LineageEntry.Builder inputDataset =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
-
-    datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name1");
-    final LineageEntry.Builder inputDataset2 =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
+    long repositoryId = RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     try {
-      AddLineage.Builder addLineage =
-          AddLineage.newBuilder()
-              .addInput(inputDataset)
-              .addInput(LineageEntry.newBuilder().setType(LineageEntryType.DATASET_VERSION))
-              .addOutput(inputOutputExp);
-      try {
-        Assert.assertFalse(lineageServiceStub.addLineage(addLineage.build()).getStatus());
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
-        Assert.assertNotNull(status.getDescription());
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("external"));
-        Assert.assertThat(status.getDescription().toLowerCase(), CoreMatchers.containsString("id"));
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("empty"));
-      }
+      GetBranchRequest getBranchRequest =
+          GetBranchRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId).build())
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .build();
+      GetBranchRequest.Response getBranchResponse =
+          versioningServiceBlockingStub.getBranch(getBranchRequest);
 
-      addLineage =
-          AddLineage.newBuilder()
-              .addInput(inputDataset)
-              .addInput(inputDataset2)
-              .addOutput(
-                  LineageEntry.newBuilder()
-                      .setType(LineageEntryType.UNKNOWN)
-                      .setExternalId("id_input_output_exp"));
-      try {
-        Assert.assertFalse(lineageServiceStub.addLineage(addLineage.build()).getStatus());
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
-        Assert.assertNotNull(status.getDescription());
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("unknown"));
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("type"));
-      }
+      CreateCommitRequest createCommitRequest =
+          getCreateCommitRequest(repositoryId, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET,
+              "name");
 
-      addLineage =
-          AddLineage.newBuilder()
-              .addInput(NOT_EXISTENT_DATASET)
-              .addInput(inputDataset2)
-              .addOutput(inputOutputExp);
-      try {
-        Assert.assertFalse(lineageServiceStub.addLineage(addLineage.build()).getStatus());
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
-        Assert.assertNotNull(status.getDescription());
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("external"));
-        Assert.assertThat(status.getDescription().toLowerCase(), CoreMatchers.containsString("id"));
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("not"));
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("exists"));
-      }
+      CreateCommitRequest.Response commitResponse =
+          versioningServiceBlockingStub.createCommit(createCommitRequest);
+      String commit1Sha = commitResponse.getCommit().getCommitSha();
 
-      addLineage =
-          AddLineage.newBuilder()
-              .addInput(inputDataset2)
-              .addInput(inputDataset2)
-              .addOutput(inputOutputExp);
+      createCommitRequest =
+          getCreateCommitRequest(repositoryId, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET,
+              "name2");
+
+      commitResponse =
+          versioningServiceBlockingStub.createCommit(createCommitRequest);
+      String commit2Sha = commitResponse.getCommit().getCommitSha();
       try {
-        Assert.assertFalse(lineageServiceStub.addLineage(addLineage.build()).getStatus());
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
-        Assert.assertNotNull(status.getDescription());
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("non-unique"));
-        Assert.assertThat(
-            status.getDescription().toLowerCase(), CoreMatchers.containsString("ids"));
+
+        List<String> experimentIds = new ArrayList<>();
+        List<ExperimentRun> experimentRunList = new ArrayList<>();
+        // Create project
+        Project project = getProject(projectServiceStub);
+
+        // Create experiment of above project
+        Experiment experiment = getExperiment(experimentIds, experimentServiceStub, project);
+
+        ExperimentRun experimentRun =
+            getExperimentRun(
+                experimentRunList,
+                experimentRunTest,
+                experimentRunServiceStub,
+                project,
+                experiment,
+                "name1");
+        final LineageEntry.Builder inputOutputExp =
+            LineageEntry.newBuilder()
+                .setExperimentRun(experimentRun.getId());
+
+        final LineageEntry.Builder inputDataset =
+            LineageEntry.newBuilder().setBlob(
+                VersioningLineageEntry.newBuilder().setRepositoryId(repositoryId)
+                    .setCommitSha(commit1Sha).addLocation("/"));
+
+        final LineageEntry.Builder inputDataset2 =
+            LineageEntry.newBuilder().setBlob(
+                VersioningLineageEntry.newBuilder().setRepositoryId(repositoryId)
+                    .setCommitSha(commit2Sha).addLocation("/"));
+        try {
+          AddLineage.Builder addLineage =
+              AddLineage.newBuilder()
+                  .addInput(inputDataset)
+                  .addInput(LineageEntry.newBuilder())
+                  .addOutput(inputOutputExp);
+          try {
+            lineageServiceStub.addLineage(addLineage.build());
+            fail();
+          } catch (StatusRuntimeException e) {
+            Status status = Status.fromThrowable(e);
+            Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
+            Assert.assertNotNull(status.getDescription());
+            Assert.assertThat(
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("external"));
+            Assert
+                .assertThat(status.getDescription().toLowerCase(),
+                    CoreMatchers.containsString("id"));
+            Assert.assertThat(
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("empty"));
+          }
+
+          addLineage =
+              AddLineage.newBuilder()
+                  .addInput(NOT_EXISTENT_DATASET)
+                  .addInput(inputDataset2)
+                  .addOutput(inputOutputExp);
+          try {
+            lineageServiceStub.addLineage(addLineage.build());
+            fail();
+          } catch (StatusRuntimeException e) {
+            Status status = Status.fromThrowable(e);
+            Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
+            Assert.assertNotNull(status.getDescription());
+            Assert.assertThat(
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("external"));
+            Assert
+                .assertThat(status.getDescription().toLowerCase(),
+                    CoreMatchers.containsString("id"));
+            Assert.assertThat(
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("not"));
+            Assert.assertThat(
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("exists"));
+          }
+
+          addLineage =
+              AddLineage.newBuilder()
+                  .addInput(inputDataset2)
+                  .addInput(inputDataset2)
+                  .addOutput(inputOutputExp);
+          try {
+            lineageServiceStub.addLineage(addLineage.build());
+            fail();
+          } catch (StatusRuntimeException e) {
+            Status status = Status.fromThrowable(e);
+            Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
+            Assert.assertNotNull(status.getDescription());
+            Assert.assertThat(
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("non-unique"));
+            Assert.assertThat(
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("ids"));
+          }
+        } finally {
+          deleteAll(project);
+        }
+      } finally {
+        DeleteCommitRequest deleteCommitRequest =
+            DeleteCommitRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId).build())
+                .setCommitSha(commit1Sha)
+                .build();
+        versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+        deleteCommitRequest =
+            DeleteCommitRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId).build())
+                .setCommitSha(commit2Sha)
+                .build();
+        versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
       }
     } finally {
-      deleteAll(datasetVersionList, project);
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
     }
   }
 
   @Test
-  public void createAndDeleteLineageTest() {
+  public void createAndDeleteLineageTest() throws ModelDBException {
     LOGGER.info("Create and delete Lineage test start................................");
 
     List<String> experimentIds = new ArrayList<>();
@@ -299,8 +319,7 @@ public class LineageTest {
             "name1");
     final LineageEntry.Builder inputOutputExp =
         LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
+            .setExperimentRun(experimentRun.getId());
 
     experimentRun =
         getExperimentRun(
@@ -312,8 +331,7 @@ public class LineageTest {
             "name2");
     final LineageEntry.Builder inputExp =
         LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
+            .setExperimentRun(experimentRun.getId());
 
     experimentRun =
         getExperimentRun(
@@ -325,49 +343,56 @@ public class LineageTest {
             "name3");
     final LineageEntry.Builder outputExp =
         LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
+            .setExperimentRun(experimentRun.getId());
 
-    DatasetTest datasetTest = new DatasetTest();
+    long repositoryId = RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    try {
+      GetBranchRequest getBranchRequest =
+          GetBranchRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId).build())
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .build();
+      GetBranchRequest.Response getBranchResponse =
+          versioningServiceBlockingStub.getBranch(getBranchRequest);
 
-    DatasetVersion datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name");
+      CreateCommitRequest createCommitRequest =
+          getCreateCommitRequest(repositoryId, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET,
+              "name");
+
+      CreateCommitRequest.Response commitResponse =
+          versioningServiceBlockingStub.createCommit(createCommitRequest);
+      String commit1Sha = commitResponse.getCommit().getCommitSha();
+
+      createCommitRequest =
+          getCreateCommitRequest(repositoryId, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET,
+              "name2");
+
+      commitResponse =
+          versioningServiceBlockingStub.createCommit(createCommitRequest);
+      String commit2Sha = commitResponse.getCommit().getCommitSha();
+
+      createCommitRequest =
+          getCreateCommitRequest(repositoryId, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET,
+              "name3");
+
+      commitResponse =
+          versioningServiceBlockingStub.createCommit(createCommitRequest);
+      String commit3Sha = commitResponse.getCommit().getCommitSha();
+      try {
     final LineageEntry.Builder inputDataset =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
+        LineageEntry.newBuilder().setBlob(
+            VersioningLineageEntry.newBuilder().setRepositoryId(repositoryId)
+                .setCommitSha(commit1Sha).addLocation("/"));
 
-    datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name1");
     final LineageEntry.Builder inputDataset2 =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
+        LineageEntry.newBuilder().setBlob(
+            VersioningLineageEntry.newBuilder().setRepositoryId(repositoryId)
+                .setCommitSha(commit2Sha).addLocation("/"));
 
-    datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name2");
     final LineageEntry.Builder outputDataset =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
+        LineageEntry.newBuilder().setBlob(
+            VersioningLineageEntry.newBuilder().setRepositoryId(repositoryId)
+                .setCommitSha(commit3Sha).addLocation("/"));
     try {
       check(
           Arrays.asList(inputExp, NOT_EXISTENT_DATASET),
@@ -379,7 +404,7 @@ public class LineageTest {
               .addInput(inputDataset)
               .addInput(inputDataset2)
               .addOutput(inputOutputExp);
-      Assert.assertTrue(lineageServiceStub.addLineage(addLineage.build()).getStatus());
+      lineageServiceStub.addLineage(addLineage.build());
 
       check(
           Arrays.asList(
@@ -398,7 +423,7 @@ public class LineageTest {
               .addOutput(outputExp)
               .addInput(inputExp)
               .addInput(inputOutputExp);
-      Assert.assertTrue(lineageServiceStub.addLineage(addLineage.build()).getStatus());
+      lineageServiceStub.addLineage(addLineage.build());
 
       check(
           Arrays.asList(
@@ -465,29 +490,35 @@ public class LineageTest {
       e.printStackTrace();
       fail();
     } finally {
-      deleteAll(datasetVersionList, project);
+      deleteAll(project);
+    }
+      } finally {
+        DeleteCommitRequest deleteCommitRequest =
+            DeleteCommitRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId).build())
+                .setCommitSha(commit1Sha)
+                .build();
+        versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+        deleteCommitRequest =
+            DeleteCommitRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId).build())
+                .setCommitSha(commit2Sha)
+                .build();
+        versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+      }
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
     }
 
     LOGGER.info("Create and delete Lineage test stop................................");
   }
 
-  private void deleteAll(List<DatasetVersion> datasetVersionList, Project project) {
-    for (DatasetVersion datasetVersion1 : datasetVersionList) {
-      DeleteDatasetVersion deleteDatasetVersionRequest =
-          DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
-      DeleteDatasetVersion.Response deleteDatasetVersionResponse =
-          datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
-      LOGGER.info("DeleteDatasetVersion deleted successfully");
-      LOGGER.info(deleteDatasetVersionResponse.toString());
-
-      DeleteDataset deleteDataset =
-          DeleteDataset.newBuilder().setId(datasetVersion1.getDatasetId()).build();
-      DeleteDataset.Response deleteDatasetResponse =
-          datasetServiceStub.deleteDataset(deleteDataset);
-      LOGGER.info("Dataset deleted successfully");
-      LOGGER.info(deleteDatasetResponse.toString());
-    }
-
+  private void deleteAll(Project project) {
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -517,32 +548,6 @@ public class LineageTest {
     Project project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
     return project;
-  }
-
-  private DatasetVersion getDatasetVersion(
-      List<DatasetVersion> datasetVersionList,
-      DatasetVersionTest datasetVersionTest,
-      DatasetVersionServiceBlockingStub datasetVersionServiceStub,
-      DatasetTest datasetTest,
-      DatasetServiceBlockingStub datasetServiceStub,
-      String name) {
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv" + name);
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
-    Dataset dataset = createDatasetResponse.getDataset();
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-    CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
-    CreateDatasetVersion.Response createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    datasetVersionList.add(datasetVersion);
-    return datasetVersion;
   }
 
   private ExperimentRun getExperimentRun(
@@ -579,9 +584,14 @@ public class LineageTest {
   }
 
   private static int compare(LineageEntry o1, LineageEntry o2) {
-    final int i = o1.getExternalId().compareTo(o2.getExternalId());
+    final int i = o1.getDescriptionCase().compareTo(o2.getDescriptionCase());
     if (i == 0) {
-      return o1.getType().compareTo(o2.getType());
+      switch (o1.getDescriptionCase()) {
+        case EXPERIMENT_RUN:
+          return o1.getExperimentRun().compareTo(o2.getExperimentRun());
+        case BLOB:
+          return Integer.compare(o1.getBlob().hashCode(), o2.getBlob().hashCode());
+      }
     }
     return i;
   }
