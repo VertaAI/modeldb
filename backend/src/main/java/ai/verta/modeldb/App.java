@@ -446,7 +446,7 @@ public class App implements ApplicationContextAware {
             datasetVersionDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
     serverBuilder.addService(
-        new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
+        new LineageServiceImpl(lineageDAO, experimentRunDAO, repositoryDAO, commitDAO, blobDAO));
     LOGGER.trace("Lineage serviceImpl initialized");
 
     serverBuilder.addService(

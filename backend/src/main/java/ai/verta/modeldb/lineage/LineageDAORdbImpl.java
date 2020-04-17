@@ -8,11 +8,16 @@ import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntry;
 import ai.verta.modeldb.LineageEntryBatch;
-import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
+import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.VersioningLineageEntry;
 import ai.verta.modeldb.entities.LineageEntity;
+import ai.verta.modeldb.entities.LineageIdEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,31 +35,46 @@ public class LineageDAORdbImpl implements LineageDAO {
   public LineageDAORdbImpl() {}
 
   @Override
-  public Response addLineage(AddLineage addLineage, IsExistsPredicate isExistsPredicate)
-      throws ModelDBException {
+  public Response addLineage(AddLineage addLineage, ExistsCheckConsumer existsCheckConsumer)
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
+      Long id;
+      LineageIdEntity lineageIdEntity;
+      if (addLineage.getId() != 0) {
+        id = addLineage.getId();
+        lineageIdEntity = session.get(LineageIdEntity.class, addLineage.getId());
+      } else {
+        id = null;
+        lineageIdEntity = null;
+      }
+      if (lineageIdEntity == null) {
+        lineageIdEntity = new LineageIdEntity(id);
+        session.save(lineageIdEntity);
+      }
       validate(addLineage.getInputList(), addLineage.getOutputList());
-      validateExistence(
-          addLineage.getInputList(), addLineage.getOutputList(), isExistsPredicate, session);
+      List<LineageEntry> lineageEntries = new LinkedList<>(addLineage.getInputList());
+      lineageEntries.addAll(addLineage.getOutputList());
+      existsCheckConsumer.test(session, lineageEntries);
       for (LineageEntry input : addLineage.getInputList()) {
         for (LineageEntry output : addLineage.getOutputList()) {
-          addLineage(session, input, output);
+          addLineage(session, input, output, id);
         }
       }
       session.getTransaction().commit();
+      return AddLineage.Response.newBuilder().setId(lineageIdEntity.getId()).build();
     }
-    return AddLineage.Response.newBuilder().setStatus(true).build();
   }
 
   @Override
-  public DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage) throws ModelDBException {
+  public DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage)
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
       for (LineageEntry input : deleteLineage.getInputList()) {
         for (LineageEntry output : deleteLineage.getOutputList()) {
-          deleteLineage(session, input, output);
+          deleteLineage(session, input, output, deleteLineage.getId());
         }
       }
       session.getTransaction().commit();
@@ -69,9 +89,9 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void validate(List<LineageEntry> list) throws ModelDBException {
-    Set<String> ids = new HashSet<>();
+    Set<LineageEntry> ids = new HashSet<>();
     for (LineageEntry input : list) {
-      ids.add(input.getExternalId());
+      ids.add(input);
       validate(input);
     }
     if (ids.size() != list.size()) {
@@ -80,13 +100,27 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void validate(LineageEntry lineageEntry) throws ModelDBException {
-    String message;
-    if (lineageEntry.getType() == LineageEntryType.UNKNOWN) {
-      message = "Unknown lineage type";
-    } else if (lineageEntry.getExternalId().isEmpty()) {
-      message = "External id is empty";
+    final String message;
+    switch (lineageEntry.getDescriptionCase()) {
+      case BLOB:
+        VersioningLineageEntry blob = lineageEntry.getBlob();
+        if (blob.getCommitSha().isEmpty()) {
+          message = "Commit sha is empty";
+        } else if (blob.getLocationCount() == 0) {
+          message = "Location is empty";
+        } else {
+          message = null;
+        }
+        break;
+      case EXPERIMENT_RUN:
+    if (lineageEntry.getExperimentRun().isEmpty()) {
+      message = "Experiment run id is empty";
     } else {
       message = null;
+    }
+    break;
+      default:
+        message = "Unknown lineage type";
     }
     if (message != null) {
       LOGGER.warn(message);
@@ -94,37 +128,9 @@ public class LineageDAORdbImpl implements LineageDAO {
     }
   }
 
-  private void validateExistence(
-      List<LineageEntry> inputList,
-      List<LineageEntry> outputList,
-      IsExistsPredicate isExistsPredicate,
-      Session session)
-      throws ModelDBException {
-    validateExistence(inputList, isExistsPredicate, session);
-    validateExistence(outputList, isExistsPredicate, session);
-  }
-
-  private void validateExistence(
-      List<LineageEntry> list, IsExistsPredicate isExistsPredicate, Session session)
-      throws ModelDBException {
-    for (LineageEntry input : list) {
-      validateExistence(input, isExistsPredicate, session);
-    }
-  }
-
-  private void validateExistence(
-      LineageEntry lineageEntry, IsExistsPredicate isExistsResourcePredicate, Session session)
-      throws ModelDBException {
-    if (!isExistsResourcePredicate.test(
-        session, lineageEntry.getExternalId(), lineageEntry.getType())) {
-      final String message = "External resource with a specified id does not exists";
-      LOGGER.warn(message);
-      throw new ModelDBException(message, Code.INVALID_ARGUMENT);
-    }
-  }
-
   @Override
-  public FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs) throws ModelDBException {
+  public FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs)
+      throws ModelDBException, InvalidProtocolBufferException {
     FindAllInputs.Response.Builder response = FindAllInputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       for (LineageEntry output : findAllInputs.getItemsList()) {
@@ -138,7 +144,7 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public FindAllOutputs.Response findAllOutputs(FindAllOutputs findAllOutputs)
-      throws ModelDBException {
+      throws ModelDBException, InvalidProtocolBufferException {
     FindAllOutputs.Response.Builder response = FindAllOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       for (LineageEntry input : findAllOutputs.getItemsList()) {
@@ -152,7 +158,8 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public FindAllInputsOutputs.Response findAllInputsOutputs(
-      FindAllInputsOutputs findAllInputsOutputs) throws ModelDBException {
+      FindAllInputsOutputs findAllInputsOutputs)
+      throws ModelDBException, InvalidProtocolBufferException {
     FindAllInputsOutputs.Response.Builder response = FindAllInputsOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       for (LineageEntry inputoutput : findAllInputsOutputs.getItemsList()) {
@@ -166,69 +173,75 @@ public class LineageDAORdbImpl implements LineageDAO {
     return response.build();
   }
 
-  private void deleteLineage(Session session, LineageEntry input, LineageEntry output) {
+  private void deleteLineage(Session session, LineageEntry input, LineageEntry output, long id)
+      throws InvalidProtocolBufferException, ModelDBException {
     getExisting(session, input, output).ifPresent(session::delete);
   }
 
-  private void addLineage(Session session, LineageEntry input, LineageEntry output) {
-    saveOrUpdate(session, input, output);
+  private void addLineage(Session session, LineageEntry input, LineageEntry output,
+      Long id) throws InvalidProtocolBufferException {
+    saveOrUpdate(session, input, output, id);
   }
 
-  private void saveOrUpdate(Session session, LineageEntry input, LineageEntry output) {
-    session.saveOrUpdate(new LineageEntity(input, output));
+  private void saveOrUpdate(Session session, LineageEntry input, LineageEntry output,
+      Long id) throws InvalidProtocolBufferException {
+    session.saveOrUpdate(new LineageEntity(id, input, output));
   }
 
   private Optional<LineageEntity> getExisting(
-      Session session, LineageEntry input, LineageEntry output) {
+      Session session, LineageEntry input, LineageEntry output)
+      throws InvalidProtocolBufferException, ModelDBException {
     Query query =
         session.createQuery(
-            "from LineageEntity where inputExternalId = '"
-                + input.getExternalId()
-                + "' and inputType = '"
-                + input.getTypeValue()
-                + "' and outputExternalId = '"
-                + output.getExternalId()
-                + "' and outputType = '"
-                + output.getTypeValue()
-                + "'");
+            "from LineageEntity where " + formQuery(input, "input") + " and " + formQuery(output, "output"));
     return Optional.ofNullable((LineageEntity) query.uniqueResult());
   }
 
-  private List<LineageEntry> getOutputsByInput(Session session, LineageEntry input) {
+  private String formQuery(LineageEntry lineageEntry, String type)
+      throws InvalidProtocolBufferException, ModelDBException {
+    String result = type + "Type = '" + lineageEntry.getDescriptionCase().getNumber() + "' and ";
+    switch (lineageEntry.getDescriptionCase()) {
+      case EXPERIMENT_RUN:
+        return result + type + "ExperimentId = '" + lineageEntry.getExperimentRun() + "'";
+      case BLOB:
+        VersioningLineageEntry blob = lineageEntry.getBlob();
+        return result + type + "RepositoryId = '" + blob.getRepositoryId() +
+            "' and " + type + "CommitSha = '" + blob.getCommitSha() +
+            "' and " + type + "Location = '" + ModelDBUtils
+            .getStringFromProtoObject(Location.newBuilder().addAllLocation(blob.getLocationList()));
+    }
+    throw new ModelDBException("Unknown lineage type", Code.INTERNAL);
+  }
+
+  private List<LineageEntry> getOutputsByInput(Session session, LineageEntry input)
+      throws InvalidProtocolBufferException, ModelDBException {
     Query query =
         session.createQuery(
-            "from LineageEntity where inputExternalId = '"
-                + input.getExternalId()
-                + "' and inputType = '"
-                + input.getTypeValue()
-                + "'");
+            "from LineageEntity where " + formQuery(input, "input"));
     List<LineageEntry> result = new LinkedList<>();
     for (Object r : query.getResultList()) {
       LineageEntity lineageEntity = (LineageEntity) r;
       result.add(
           LineageEntry.newBuilder()
-              .setTypeValue(lineageEntity.getOutputType())
-              .setExternalId(lineageEntity.getOutputExternalId())
+              .setExperimentRun(lineageEntity.getOutputExperimentId())
+              .setBlob(lineageEntity.getOutputBlob())
               .build());
     }
     return result;
   }
 
-  private List<LineageEntry> getInputsByOutput(Session session, LineageEntry output) {
+  private List<LineageEntry> getInputsByOutput(Session session, LineageEntry output)
+      throws InvalidProtocolBufferException, ModelDBException {
     Query query =
         session.createQuery(
-            "from LineageEntity where outputExternalId = '"
-                + output.getExternalId()
-                + "' and outputType = '"
-                + output.getTypeValue()
-                + "'");
+            "from LineageEntity where " + formQuery(output, "output"));
     List<LineageEntry> result = new LinkedList<>();
     for (Object r : query.getResultList()) {
       LineageEntity lineageEntity = (LineageEntity) r;
       result.add(
           LineageEntry.newBuilder()
-              .setTypeValue(lineageEntity.getInputType())
-              .setExternalId(lineageEntity.getInputExternalId())
+              .setExperimentRun(lineageEntity.getInputExperimentId())
+              .setBlob(lineageEntity.getInputBlob())
               .build());
     }
     return result;

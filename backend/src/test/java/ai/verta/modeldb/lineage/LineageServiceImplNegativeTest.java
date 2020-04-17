@@ -8,7 +8,7 @@ import ai.verta.modeldb.FindAllInputs;
 import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntry;
-import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
+import ai.verta.modeldb.VersioningLineageEntry;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.hamcrest.CoreMatchers;
@@ -35,7 +35,7 @@ public class LineageServiceImplNegativeTest {
 
   @Before
   public void before() {
-    sut = new LineageServiceImpl(lineageDAO, null, null);
+    sut = new LineageServiceImpl(lineageDAO, null, null, null, null);
   }
 
   @Test
@@ -54,8 +54,7 @@ public class LineageServiceImplNegativeTest {
         AddLineage.newBuilder()
             .addInput(
                 LineageEntry.newBuilder()
-                    .setExternalId("123")
-                    .setType(LineageEntryType.DATASET_VERSION))
+                    .setBlob(VersioningLineageEntry.newBuilder().setRepositoryId(123).setCommitSha("sha").addLocation("/")).build())
             .build(),
         addLineageObserver);
     statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
@@ -69,8 +68,7 @@ public class LineageServiceImplNegativeTest {
         AddLineage.newBuilder()
             .addOutput(
                 LineageEntry.newBuilder()
-                    .setExternalId("123")
-                    .setType(LineageEntryType.DATASET_VERSION))
+                    .setBlob(VersioningLineageEntry.newBuilder().setRepositoryId(123).setCommitSha("sha").addLocation("/")).build())
             .build(),
         addLineageObserver);
     statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
@@ -97,8 +95,7 @@ public class LineageServiceImplNegativeTest {
         DeleteLineage.newBuilder()
             .addInput(
                 LineageEntry.newBuilder()
-                    .setExternalId("123")
-                    .setType(LineageEntryType.DATASET_VERSION))
+                    .setBlob(VersioningLineageEntry.newBuilder().setRepositoryId(123).setCommitSha("sha").addLocation("/")).build())
             .build(),
         deleteLineageObserver);
     statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
@@ -112,8 +109,7 @@ public class LineageServiceImplNegativeTest {
         DeleteLineage.newBuilder()
             .addOutput(
                 LineageEntry.newBuilder()
-                    .setExternalId("123")
-                    .setType(LineageEntryType.DATASET_VERSION))
+                    .setBlob(VersioningLineageEntry.newBuilder().setRepositoryId(123).setCommitSha("sha").addLocation("/")).build())
             .build(),
         deleteLineageObserver);
     statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();

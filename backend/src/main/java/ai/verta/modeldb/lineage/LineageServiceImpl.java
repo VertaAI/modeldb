@@ -5,17 +5,33 @@ import ai.verta.modeldb.DeleteLineage;
 import ai.verta.modeldb.FindAllInputs;
 import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
-import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
+import ai.verta.modeldb.LineageEntry;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
+import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
+import ai.verta.modeldb.VersioningLineageEntry;
+import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
+import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -24,16 +40,22 @@ public class LineageServiceImpl extends LineageServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageServiceImpl.class);
   private final ExperimentRunDAO experimentDAO;
-  private final DatasetVersionDAO datasetVersionDAO;
-  private LineageDAO lineageDAO;
+  private final RepositoryDAO repositoryDAO;
+  private final CommitDAO commitDAO;
+  private final LineageDAO lineageDAO;
+  private final BlobDAO blobDAO;
 
   public LineageServiceImpl(
       LineageDAO lineageDAO,
       ExperimentRunDAO experimentRunDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      BlobDAO blobDAO) {
     this.lineageDAO = lineageDAO;
     this.experimentDAO = experimentRunDAO;
-    this.datasetVersionDAO = datasetVersionDAO;
+    this.repositoryDAO = repositoryDAO;
+    this.commitDAO = commitDAO;
+    this.blobDAO = blobDAO;
   }
 
   @Override
@@ -51,7 +73,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        AddLineage.Response response = lineageDAO.addLineage(request, this::isResourceExists);
+        AddLineage.Response response = lineageDAO.addLineage(request, this::checkResourcesExists);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -144,15 +166,49 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     }
   }
 
-  private boolean isResourceExists(Session session, String id, LineageEntryType type)
-      throws ModelDBException {
-    switch (type) {
-      case EXPERIMENT_RUN:
-        return experimentDAO.isExperimentRunExists(session, id);
-      case DATASET_VERSION:
-        return datasetVersionDAO.isDatasetVersionExists(session, id);
-      default:
-        throw new ModelDBException("Unexpected type", Code.INTERNAL);
+  private void checkResourcesExists(Session session, List<LineageEntry> lineageEntries)
+      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+    Set<String> experimentRuns = new HashSet<>();
+    Map<Long, Map.Entry<RepositoryEntity, Map<String, Set<String>>>> blobs = new HashMap<>();
+    for (LineageEntry lineageEntry: lineageEntries) {
+      switch (lineageEntry.getDescriptionCase()) {
+        case EXPERIMENT_RUN:
+          String experimentRun = lineageEntry.getExperimentRun();
+          if (!experimentRuns.contains(experimentRun)) {
+            boolean result = experimentDAO.isExperimentRunExists(session, experimentRun);
+            if (!result) {
+              throw new ModelDBException("Experiment run doesn't exist");
+            }
+            experimentRuns.add(experimentRun);
+          }
+        case BLOB:
+          VersioningLineageEntry blob = lineageEntry.getBlob();
+          long repositoryId = blob.getRepositoryId();
+          RepositoryEntity repo;
+          Map<String, Set<String>> result;
+          if (!blobs.containsKey(repositoryId)) {
+            repo = repositoryDAO.getRepositoryById(session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
+            result = blobs.put(repositoryId, new AbstractMap.SimpleEntry<>(repo, new HashMap<>())).getValue();
+          } else {
+            Entry<RepositoryEntity, Map<String, Set<String>>> entityMapEntry = blobs.get(repositoryId);
+            repo = entityMapEntry.getKey();
+            result = entityMapEntry.getValue();
+          }
+          String commitSha = blob.getCommitSha();
+          Set<String> blobResult;
+          if (!result.containsKey(commitSha)) {
+            CommitEntity commitEntity = commitDAO
+                .getCommitEntity(session, commitSha, session1 -> repo);
+            blobResult = result.put(commitSha, new HashSet<>());
+          } else {
+            blobResult = result.get(commitSha);
+          }
+          if (!blobResult.contains(ModelDBUtils.getStringFromProtoObject(Location.newBuilder().addAllLocation(blob.getLocationList())))) {
+            blobDAO.getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
+          }
+        default:
+          throw new ModelDBException("Unexpected type", Code.INTERNAL);
+      }
     }
   }
 }

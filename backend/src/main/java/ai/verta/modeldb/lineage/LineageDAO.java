@@ -6,6 +6,8 @@ import ai.verta.modeldb.FindAllInputs;
 import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.ModelDBException;
+import com.google.protobuf.InvalidProtocolBufferException;
+import java.security.NoSuchAlgorithmException;
 
 public interface LineageDAO {
 
@@ -16,8 +18,8 @@ public interface LineageDAO {
    * @return {@link AddLineage.Response} : status
    * @throws ModelDBException wrong data format
    */
-  AddLineage.Response addLineage(AddLineage addLineage, IsExistsPredicate isExistsPredicate)
-      throws ModelDBException;
+  AddLineage.Response addLineage(AddLineage addLineage, ExistsCheckConsumer existsCheckConsumer)
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 
   /**
    * Delete a Lineage.
@@ -26,7 +28,8 @@ public interface LineageDAO {
    * @return {@link DeleteLineage.Response} : status
    * @throws ModelDBException wrong data format
    */
-  DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage) throws ModelDBException;
+  DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage)
+      throws ModelDBException, InvalidProtocolBufferException;
 
   /**
    * Find all inputs of specified Lineages.
@@ -35,7 +38,8 @@ public interface LineageDAO {
    * @return {@link FindAllInputs.Response} : status
    * @throws ModelDBException wrong data format
    */
-  FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs) throws ModelDBException;
+  FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs)
+      throws ModelDBException, InvalidProtocolBufferException;
 
   /**
    * Find all outputs of specified Lineages.
@@ -44,7 +48,8 @@ public interface LineageDAO {
    * @return {@link FindAllOutputs.Response} : status
    * @throws ModelDBException wrong data format
    */
-  FindAllOutputs.Response findAllOutputs(FindAllOutputs findAllOutputs) throws ModelDBException;
+  FindAllOutputs.Response findAllOutputs(FindAllOutputs findAllOutputs)
+      throws ModelDBException, InvalidProtocolBufferException;
 
   /**
    * Find all inputs and outputs of specified Lineages.
@@ -54,5 +59,5 @@ public interface LineageDAO {
    * @throws ModelDBException wrong data format
    */
   FindAllInputsOutputs.Response findAllInputsOutputs(FindAllInputsOutputs findAllInputsOutputs)
-      throws ModelDBException;
+      throws ModelDBException, InvalidProtocolBufferException;
 }

@@ -1238,4 +1238,48 @@
                                  referencedColumnNames="id"
                                  referencedTableName="keyvalue"/>
     </changeSet>
+
+    <changeSet author="lineage" id="new_lineage">
+        <createTable tableName="lineage_id">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+    <createTable tableName="lineage_versioning">
+        <column name="id" type="int8" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="input_experiment_id" type="varchar(256)">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="input_repository_id" type="int8">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="input_commit_sha" type="varchar(256)">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="input_location" type="varchar(256)">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="input_type" type="int4">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="output_experiment_id" type="varchar(256)">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="output_repository_id" type="int8">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="output_commit_sha" type="varchar(256)">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="output_location" type="varchar(256)">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+        <column name="output_type" type="int4">
+            <constraints primaryKey="true" nullable="true"/>
+        </column>
+    </createTable>
+    </changeSet>
+
 </databaseChangeLog>
