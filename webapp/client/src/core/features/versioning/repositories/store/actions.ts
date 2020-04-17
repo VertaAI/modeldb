@@ -7,6 +7,7 @@ import {
   IRepository,
   IRepositoryNamedIdentification,
   Label,
+  RepositoryVisibility,
 } from 'core/shared/models/Versioning/Repository';
 import { IWorkspace } from 'models/Workspace';
 import routes from 'routes';
@@ -22,7 +23,9 @@ export const createRepository = Actions.makeThunkApiRequest(
   '@@repositories/CREATE_REPOSITORY_RESET'
 )<
   {
-    repositorySettings: { name: IRepository['name'] };
+    repositorySettings: {
+      name: IRepository['name'];
+    };
     workspaceName: IWorkspace['name'];
   },
   IRepository,
@@ -31,6 +34,10 @@ export const createRepository = Actions.makeThunkApiRequest(
   async ({ payload, dependencies: { ServiceFactory } }) =>
     await ServiceFactory.getRepositoriesService().createRepository(payload)
 );
+
+export const updateRepository = createAction(
+  '@@repositories/UPDATE_REPOSITORY'
+)<IRepository>();
 
 export const loadRepositories = Actions.makeThunkApiRequest(
   '@@repositories/LOAD_REPOSITORIES_REQUEST',

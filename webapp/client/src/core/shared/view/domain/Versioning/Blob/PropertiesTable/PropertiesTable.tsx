@@ -11,6 +11,8 @@ import {
   TableWrapper,
 } from 'core/shared/view/elements/Table/Plugins';
 
+import styles from './PropertiesTable.module.css';
+
 interface ILocalProps<T> {
   data: T;
   children: any;
@@ -67,7 +69,8 @@ class Table<T> extends React.Component<ILocalProps<T>, IState> {
     const { columns, tableColumnExtensions } = this.state;
     const propDefinitions: IPropDefinition<T>[] = this.getPropDefinitions();
     return (
-      <Paper>
+      <div className={styles.root}>
+        <Paper>
         <TableWrapper isHeightByContent={true}>
           <Grid rows={propDefinitions} columns={columns}>
             <DataTypeProvider
@@ -78,7 +81,8 @@ class Table<T> extends React.Component<ILocalProps<T>, IState> {
             <TableHeaderRow />
           </Grid>
         </TableWrapper>
-      </Paper>
+        </Paper>
+      </div>
     );
   }
 
@@ -100,7 +104,7 @@ class Table<T> extends React.Component<ILocalProps<T>, IState> {
   }) {
     switch (column.name) {
       case ColumnNames.property: {
-        return <span>{propDefinition.title}</span>;
+        return <span className={styles.title}>{propDefinition.title}</span>;
       }
       case ColumnNames.value: {
         const renderProps: IPropDefinitionRenderProps<T> = {

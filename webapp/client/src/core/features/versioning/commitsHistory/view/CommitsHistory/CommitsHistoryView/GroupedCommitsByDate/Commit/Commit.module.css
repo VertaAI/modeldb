@@ -1,6 +1,7 @@
 .root {
   display: flex;
-  padding: 8px 10px;
+  flex-direction: column;
+  padding: 8px 13px;
   border-bottom: 1px solid #eaecef;
 }
 .root:last-child {
@@ -12,12 +13,12 @@
 
 .info {
   display: flex;
-  justify-content: center;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .message {
-  margin-bottom: 5px;
+  margin-bottom: 9px;
   font-size: 14px;
   font-weight: 500;
   color: #444d56;
@@ -26,7 +27,7 @@
 .meta {
   display: flex;
   align-items: center;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .author {
@@ -35,31 +36,54 @@
 }
 .author__username {
   margin-left: 5px;
-  color: #586069;
-  font-weight: 500;
+  color: var(--main-text-color1);
 }
 
 .date {
   margin-left: 5px;
-  color: #586069;
+  color: var(--main-text-color3);
 }
 
 .actions {
   display: flex;
+  align-items: center;
   margin-left: auto;
 }
-.actions__group {
-  margin-right: 10px;
-}
-.actions__group:last-child {
-  margin-right: 0;
+
+.commitShaWithCopy {
+  display: grid;
+  grid-template-columns: 70% 30%;
+  height: 29px;
+  width: 117px;
+  border: 1px solid #aaaaaa;
+  border-radius: 2px;
+  background-color: #ffffff;
 }
 
-.action {
-  font-size: 13px !important;
-  height: 38px !important;
+.commitShaWithCopy__item {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.action__icon {
+.commitShaWithCopy__item:first-child {
+  border-right: 1px solid #ebebeb;
+}
+
+.commitSha {
   font-size: 14px;
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.icon {
+  font-size: 20px;
+  color: #514eb5;
+}
+
+.viewCommitComponents {
+  display: inline-block;
+  margin-left: 15px;
 }

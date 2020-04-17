@@ -1,4 +1,4 @@
 .clearInput {
-  color: #888888;
+  color: var(--main-text-color2);
   cursor: pointer;
 }

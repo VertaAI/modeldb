@@ -2,8 +2,9 @@ import { IRepository, Label } from 'core/shared/models/Versioning/Repository';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
 import { convertServerShortWorkspaceToClient } from 'services/serverModel/Workspace/converters';
 
-import User from 'models/User';
 import { IServerRepository } from './Repository';
+import matchType from 'core/shared/utils/matchType';
+import User from 'models/User';
 
 export const convertServerRepositoryToClient = ({
   serverRepository,
@@ -26,5 +27,18 @@ export const convertServerRepositoryToClient = ({
     dateUpdated,
     labels,
     owner,
-  };
+    visibility: serverRepository.repository_visibility
+      ? matchType<
+          Required<IServerRepository>['repository_visibility'],
+          IRepository['visibility']
+        >(
+          {
+            ORG_SCOPED_PUBLIC: () => 'organizationPublic',
+            PRIVATE: () => 'private',
+            PUBLIC: () => 'public',
+          },
+          serverRepository.repository_visibility
+        )
+      : 'private',
+  }
 };

@@ -38,13 +38,12 @@ export const PageHeader = React.memo(
     <div
       className={cn(styles.pageHeader, {
         [styles.pageHeader_withoutSeparator]: withoutSeparator,
+        [styles.pageHeader_size_medium]: size === 'medium',
+        [styles.pageHeader_size_small]: size === 'small',
       })}
     >
       <div
-        className={cn(styles.pageHeader__title, {
-          [styles.pageHeader__title_size_medium]: size === 'medium',
-          [styles.pageHeader__title_size_small]: size === 'small',
-        })}
+        className={cn(styles.pageHeader__title)}
       >
         {title}
       </div>

@@ -6,8 +6,8 @@ import * as actions from '../actions';
 import { IRepositoryDataState } from '../types';
 
 export default combineReducers<IRepositoryDataState['communications']>({
-  loadingCommitWithData: makeCommunicationReducerFromResetableAsyncAction(
-    actions.loadCommitWithData
+  loadingCommitWithComponent: makeCommunicationReducerFromResetableAsyncAction(
+    actions.loadCommitWithComponent
   ),
   loadingCurrentBlobExperimentRuns: makeCommunicationReducerFromResetableAsyncAction(
     actions.loadCurrentBlobExperimentRuns

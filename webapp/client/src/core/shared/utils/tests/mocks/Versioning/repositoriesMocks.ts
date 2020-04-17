@@ -12,5 +12,6 @@ export const repositories: IRepository[] = [
     shortWorkspace: userWorkspacesWithCurrentUser.user,
     labels: [],
     owner: currentUser,
+    visibility: 'private',
   },
 ];

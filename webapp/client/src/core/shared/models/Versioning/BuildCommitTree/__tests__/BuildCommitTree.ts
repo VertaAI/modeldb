@@ -1,4 +1,4 @@
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import {
   IFolder,
   ISubFolderElement,
@@ -20,7 +20,7 @@ describe('commitTreeBuilder', () => {
     ]);
 
     expect(root.elements['folder-deep-1'].location).toEqual(
-      DataLocation.makeFromNames(['folder-deep-1' as any])
+      CommitComponentLocation.makeFromNames(['folder-deep-1' as any])
     );
     const rootFolder: IFolder = {
       type: 'folder',
@@ -66,7 +66,7 @@ describe('commitTreeBuilder', () => {
     expect(
       root.elements['folder-deep-1'].elements['folder-deep-2'].location
     ).toEqual(
-      DataLocation.makeFromNames([
+      CommitComponentLocation.makeFromNames([
         'folder-deep-1' as any,
         'folder-deep-2' as any,
       ])

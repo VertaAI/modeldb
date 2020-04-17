@@ -90,9 +90,11 @@ export const convertServerBlobDataToClient = ({
           return {
             category: 'dataset',
             type: 'path',
-            components: serverBlobData.components.map(
-              convertServerDatasetPathComponent
-            ),
+            data: {
+              components: serverBlobData.components.map(
+                convertServerDatasetPathComponent
+              ),
+            },
           };
         }
 
@@ -100,9 +102,11 @@ export const convertServerBlobDataToClient = ({
           return {
             category: 'dataset',
             type: 's3',
-            components: serverBlobData.components.map(
-              convertServerDatasetS3Component
-            ),
+            data: {
+              components: serverBlobData.components.map(
+                convertServerDatasetS3Component
+              ),
+            },
           };
         }
 

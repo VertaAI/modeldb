@@ -6,9 +6,10 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { selectors } from 'core/features/versioning/repositories';
 import { RepositoryData } from 'core/features/versioning/repositoryData';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
-import { PageCard } from 'core/shared/view/elements/PageComponents';
+import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import { AuthorizedLayout } from 'pages/authorized/shared/AuthorizedLayout';
 import { IApplicationState } from 'store/store';
+import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';
 
@@ -57,6 +58,12 @@ const RepositoryPage = (props: AllProps) => {
   ) : (
     <RepositoryDetailsPagesLayout repository={props.repository}>
       <PageCard>
+        <PageHeader
+          title={props.repository.name}
+          size="medium"
+          withoutSeparator={true}
+          rightContent={<RepositoryNavigation />}
+        />
         <RepositoryData
           onShowNotFoundError={onShowNotFoundError}
           repository={props.repository}

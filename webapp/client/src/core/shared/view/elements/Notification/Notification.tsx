@@ -2,7 +2,6 @@ import * as React from 'react';
 import { toast } from 'react-toastify';
 
 import { AppError, isHttpError } from 'core/shared/models/Error';
-import { ICommunication } from 'core/shared/utils/redux/communication';
 
 import { communicationErrorToString } from '../Errors/InlineCommunicationError/InlineCommunicationError';
 
@@ -19,16 +18,17 @@ export const toastError = (content: React.ReactNode) => {
   toast(<span>{content}</span>, { type: 'error', autoClose: false });
 };
 
-function toastCommunicationError<T extends AppError<B>, B extends string>(
+export function toastCommunicationError<
+  T extends AppError<any>,
+  B extends string
+>(
   communicationError: T,
   options?: {
-    customErrorMessageByType: Record<B, string>;
-  }
-): void;
-function toastCommunicationError<T extends AppError<B>, B extends undefined>(
-  communicationError: T,
-  options?: {
-    customErrorMessageByType: Record<string, string>;
+    customErrorMessageByType: T extends AppError<infer ErrorType>
+      ? ErrorType extends B
+        ? Record<B, string>
+        : never
+      : never;
   }
 ) {
   const errorMessage =
@@ -40,4 +40,3 @@ function toastCommunicationError<T extends AppError<B>, B extends undefined>(
       : communicationErrorToString(communicationError);
   return toastError(errorMessage);
 }
-export { toastCommunicationError };

@@ -11,6 +11,7 @@ import {
   IServerElementDiff,
   convertServerElementDiffToClient,
   convertServerBlobDiffToClient,
+  convertNullableServerArrayDiffToClient,
 } from '../ServerDiff';
 
 export const convertServerConfigDiff = (
@@ -21,35 +22,24 @@ export const convertServerConfigDiff = (
     IConfigBlobDiff
   >(
     {
-      convertData: ({ config }) => convertServerConfigDiffData(config),
+      convertData: ({ config }) => {
+        const res: IConfigBlobDiffData = {
+          hyperparameterSet: convertNullableServerArrayDiffToClient(
+            convertConfigHyperparameterSetItem,
+            config.hyperparameter_set
+          ),
+          hyperparameters: convertNullableServerArrayDiffToClient(
+            convertCongifHyperparameter,
+            config.hyperparameters
+          ),
+        };
+        return res;
+      },
       category: 'config',
       type: 'config',
     },
     serverDiff
   );
-};
-
-export const convertServerConfigDiffData = (
-  serverConfig: IServerConfigHyperparameterDiff['config']
-): IConfigBlobDiffData => {
-  return {
-    hyperparameterSet:
-      serverConfig.hyperparameter_set &&
-      serverConfig.hyperparameter_set.map(serverHypSetItem => {
-        return convertServerElementDiffToClient(
-          convertConfigHyperparameterSetItem,
-          serverHypSetItem
-        );
-      }),
-    hyperparameters:
-      serverConfig.hyperparameters &&
-      serverConfig.hyperparameters.map(serverHyp => {
-        return convertServerElementDiffToClient(
-          convertCongifHyperparameter,
-          serverHyp
-        );
-      }),
-  };
 };
 
 export type IServerConfigHyperparameterDiff = IServerBlobDiff<{

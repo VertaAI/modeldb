@@ -1,0 +1,40 @@
+.root {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.breadcrumb {
+  font-size: 14px;
+  font-weight: 400;
+  text-decoration: none;
+  color: var(--main-text-color2);
+  outline: none;
+  position: relative;
+  padding: 0 10px;
+}
+.breadcrumb:first-child {
+  padding-left: 0;
+}
+
+.breadcrumbLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.breadcrumb:not(:last-child)::before {
+  display: inline;
+  position: absolute;
+  content: '/';
+  right: -3px;
+  font-weight: 500;
+}
+
+.breadcrumb:hover {
+  color: var(--main-text-color1);
+}
+
+.breadcrumb:last-child {
+  color: var(--main-text-color1);
+  font-weight: 500;
+}
