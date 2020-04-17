@@ -1297,7 +1297,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.trace("experimentRunList {}", experimentRunList);
         LOGGER.trace("Converted from Hibernate to proto");
 
-        List<String> expRunIds = experimentRunEntities.stream()
+        List<String> expRunIds =
+            experimentRunEntities.stream()
                 .map(ExperimentRunEntity::getId)
                 .collect(Collectors.toList());
         Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
@@ -1305,13 +1306,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
         Set<String> experimentRunIdsSet = new HashSet<>();
         for (ExperimentRun experimentRun : experimentRunList) {
-          if (!expRunHyperparameterConfigBlobMap.isEmpty()) {
+          if (!expRunHyperparameterConfigBlobMap.isEmpty()
+              && expRunHyperparameterConfigBlobMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                    experimentRun
-                            .toBuilder()
-                            .addAllHyperparameters(
-                                    expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
-                            .build();
+                experimentRun
+                    .toBuilder()
+                    .addAllHyperparameters(
+                        expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
+                    .build();
           }
           if (!experimentRunIdsSet.contains(experimentRun.getId())) {
             experimentRunIdsSet.add(experimentRun.getId());
