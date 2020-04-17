@@ -13,11 +13,15 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "versioning_modeldb_entity_mapping")
 public class VersioningModeldbEntityMapping implements Serializable {
   private VersioningModeldbEntityMapping() {}
+
+  private static final Logger LOGGER = LogManager.getLogger(VersioningModeldbEntityMapping.class);
 
   public VersioningModeldbEntityMapping(
       Long repositoryId,
@@ -25,6 +29,7 @@ public class VersioningModeldbEntityMapping implements Serializable {
       String versioningKey,
       String versioningLocation,
       Integer versioningBlobType,
+      String blobHash,
       Object entity) {
     this.repository_id = repositoryId;
     this.commit = commit;
@@ -36,12 +41,17 @@ public class VersioningModeldbEntityMapping implements Serializable {
     if (entity instanceof ExperimentRunEntity) {
       this.experimentRunEntity = (ExperimentRunEntity) entity;
     } else {
+      LOGGER.warn("Expected ExperimentRunEntity found {}", entity.getClass());
       Status status =
           Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
+              .setCode(Code.INTERNAL_VALUE)
               .setMessage("Invalid ModelDB entity found")
               .build();
       throw StatusProto.toStatusRuntimeException(status);
+    }
+
+    if (blobHash != null) {
+      this.blob_hash = blobHash;
     }
   }
 
@@ -72,6 +82,9 @@ public class VersioningModeldbEntityMapping implements Serializable {
   @Column(name = "entity_type", length = 50)
   private String entity_type;
 
+  @Column(name = "blob_hash")
+  private String blob_hash;
+
   public Long getRepository_id() {
     return repository_id;
   }
@@ -86,5 +99,9 @@ public class VersioningModeldbEntityMapping implements Serializable {
 
   public String getVersioning_location() {
     return versioning_location;
+  }
+
+  public String getBlob_hash() {
+    return blob_hash;
   }
 }

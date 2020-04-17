@@ -20,6 +20,7 @@ import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
@@ -35,7 +36,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException;
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
   /**
    * Delete the ExperimentRun from database using experimentRunId.
@@ -472,7 +473,7 @@ public interface ExperimentRunDAO {
       throws InvalidProtocolBufferException;
 
   LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
-      throws InvalidProtocolBufferException, ModelDBException;
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
   void deleteLogVersionedInputs(Session session, Long repoId, String commitHash);
 

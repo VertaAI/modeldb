@@ -32,6 +32,8 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.config.ConfigBlobEntity;
+import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -41,6 +43,7 @@ import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
+import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
@@ -61,10 +64,12 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -250,7 +255,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private Map<String, Integer> validateVersioningEntity(
+  /**
+   * @param session : hibernate session
+   * @param versioningEntry : versioningEntry
+   * @return returns a map from location to an Entry of BlobExpanded and sha
+   * @throws ModelDBException ModelDBException
+   */
+  private Map<String, Map.Entry<BlobExpanded, String>> validateVersioningEntity(
       Session session, VersioningEntry versioningEntry) throws ModelDBException {
     String errorMessage = null;
     if (versioningEntry.getRepositoryId() == 0L) {
@@ -269,14 +280,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             session,
             versioningEntry.getCommit(),
             (session1) -> repositoryDAO.getRepositoryById(session, repositoryIdentification));
-    Map<String, Integer> blobTypesByLocationMap = new HashMap<>();
+    Map<String, Map.Entry<BlobExpanded, String>> requestedLocationBlobWithHashMap = new HashMap<>();
     if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
-      Map<String, BlobExpanded> locationBlobMap =
-          blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
+          blobDAO.getCommitBlobMapWithHash(session, commitEntity.getRootSha(), new ArrayList<>());
       for (Map.Entry<String, Location> locationBlobKeyMap :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
         String locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
-        if (!locationBlobMap.containsKey(locationKey)) {
+        if (!locationBlobWithHashMap.containsKey(locationKey)) {
           throw new ModelDBException(
               "Blob Location '"
                   + locationBlobKeyMap.getValue().getLocationList()
@@ -285,11 +296,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   + "' not found in commit blobs",
               io.grpc.Status.Code.INVALID_ARGUMENT);
         }
-        blobTypesByLocationMap.put(
-            locationKey, locationBlobMap.get(locationKey).getBlob().getContentCase().getNumber());
+        requestedLocationBlobWithHashMap.put(locationKey, locationBlobWithHashMap.get(locationKey));
       }
     }
-    return blobTypesByLocationMap;
+    return requestedLocationBlobWithHashMap;
   }
 
   @Override
@@ -300,11 +310,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
-        Map<String, Integer> blobTypesByLocationMap =
+        Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
             validateVersioningEntity(session, experimentRun.getVersionedInputs());
         experimentRunObj.setVersioned_inputs(
             RdbmsUtils.getVersioningMappingFromVersioningInput(
-                experimentRun.getVersionedInputs(), blobTypesByLocationMap, experimentRunObj));
+                experimentRun.getVersionedInputs(), locationBlobWithHashMap, experimentRunObj));
       }
       session.saveOrUpdate(experimentRunObj);
 
@@ -1276,28 +1286,43 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       LOGGER.trace("Final query generated");
-      List<ExperimentRun> experimentRunList = new ArrayList<>();
       List<ExperimentRunEntity> experimentRunEntities = query.list();
       LOGGER.debug("Final experimentRuns list size : {}", experimentRunEntities.size());
+      List<ExperimentRun> experimentRuns = new ArrayList<>();
       if (!experimentRunEntities.isEmpty()) {
 
         LOGGER.trace("Converting from Hibernate to proto");
-        experimentRunList =
+        List<ExperimentRun> experimentRunList =
             RdbmsUtils.convertExperimentRunsFromExperimentRunEntityList(experimentRunEntities);
         LOGGER.trace("experimentRunList {}", experimentRunList);
         LOGGER.trace("Converted from Hibernate to proto");
-      }
 
-      Set<String> experimentRunIdsSet = new HashSet<>();
-      List<ExperimentRun> experimentRuns = new ArrayList<>();
-      for (ExperimentRun experimentRun : experimentRunList) {
-        if (!experimentRunIdsSet.contains(experimentRun.getId())) {
-          experimentRunIdsSet.add(experimentRun.getId());
-          if (queryParameters.getIdsOnly()) {
-            experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
-            experimentRuns.add(experimentRun);
-          } else {
-            experimentRuns.add(experimentRun);
+        List<String> expRunIds =
+            experimentRunEntities.stream()
+                .map(ExperimentRunEntity::getId)
+                .collect(Collectors.toList());
+        Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
+            getExperimentRunHyperparameterConfigBlobMap(session, expRunIds);
+
+        Set<String> experimentRunIdsSet = new HashSet<>();
+        for (ExperimentRun experimentRun : experimentRunList) {
+          if (!expRunHyperparameterConfigBlobMap.isEmpty()
+              && expRunHyperparameterConfigBlobMap.containsKey(experimentRun.getId())) {
+            experimentRun =
+                experimentRun
+                    .toBuilder()
+                    .addAllHyperparameters(
+                        expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
+                    .build();
+          }
+          if (!experimentRunIdsSet.contains(experimentRun.getId())) {
+            experimentRunIdsSet.add(experimentRun.getId());
+            if (queryParameters.getIdsOnly()) {
+              experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
+              experimentRuns.add(experimentRun);
+            } else {
+              experimentRuns.add(experimentRun);
+            }
           }
         }
       }
@@ -1310,6 +1335,59 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunPaginationDTO.setTotalRecords(totalRecords);
       return experimentRunPaginationDTO;
     }
+  }
+
+  private Map<String, List<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
+      Session session, List<String> expRunIds) {
+
+    String queryBuilder =
+        "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
+    Query query = session.createQuery(queryBuilder);
+    query.setParameter("hyperparameterType", ConfigBlobEntity.HYPERPARAMETER);
+    query.setParameterList("expRunIds", expRunIds);
+    LOGGER.debug(
+        "Final experimentRuns hyperparameter config blob final query : {}", query.getQueryString());
+    List<Object[]> configBlobEntities = query.list();
+    LOGGER.debug(
+        "Final experimentRuns hyperparameter config list size : {}", configBlobEntities.size());
+    Map<String, List<KeyValue>> hyperparametersMap = new LinkedHashMap<>();
+    if (!configBlobEntities.isEmpty()) {
+      configBlobEntities.forEach(
+          objects -> {
+            String expRunId = (String) objects[0];
+            ConfigBlobEntity configBlobEntity = (ConfigBlobEntity) objects[1];
+            if (configBlobEntity.getHyperparameter_type() == ConfigBlobEntity.HYPERPARAMETER) {
+              HyperparameterElementConfigBlobEntity hyperElementConfigBlobEntity =
+                  configBlobEntity.getHyperparameterElementConfigBlobEntity();
+              HyperparameterValuesConfigBlob valuesConfigBlob =
+                  hyperElementConfigBlobEntity.toProto();
+              Value.Builder valueBuilder = Value.newBuilder();
+              switch (valuesConfigBlob.getValueCase()) {
+                case INT_VALUE:
+                  valueBuilder.setNumberValue(valuesConfigBlob.getIntValue());
+                  break;
+                case FLOAT_VALUE:
+                  valueBuilder.setNumberValue(valuesConfigBlob.getFloatValue());
+                  break;
+                case STRING_VALUE:
+                  valueBuilder.setStringValue(valuesConfigBlob.getStringValue());
+                  break;
+              }
+              KeyValue hyperparameter =
+                  KeyValue.newBuilder()
+                      .setKey(hyperElementConfigBlobEntity.getName())
+                      .setValue(valueBuilder.build())
+                      .build();
+              List<KeyValue> hyperparameterList = hyperparametersMap.get(expRunId);
+              if (hyperparameterList == null) {
+                hyperparameterList = new ArrayList<>();
+              }
+              hyperparameterList.add(hyperparameter);
+              hyperparametersMap.put(expRunId, hyperparameterList);
+            }
+          });
+    }
+    return hyperparametersMap;
   }
 
   @Override
@@ -1643,12 +1721,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       VersioningEntry versioningEntry = request.getVersionedInputs();
-      Map<String, Integer> blobTypesByLocationMap =
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           validateVersioningEntity(session, versioningEntry);
       ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
       runEntity.setVersioned_inputs(
           RdbmsUtils.getVersioningMappingFromVersioningInput(
-              versioningEntry, blobTypesByLocationMap, runEntity));
+              versioningEntry, locationBlobWithHashMap, runEntity));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       session.saveOrUpdate(runEntity);
