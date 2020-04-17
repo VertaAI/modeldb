@@ -97,9 +97,27 @@ class TestS3:
         assert len(dataset._msg.s3.components) == 1
         assert dataset._msg.s3.components[0].s3_version_id == latest_version_id
 
-    @pytest.mark.skip("Not yet implemented.")
     def test_versioned_object_by_id(self):
-        pass
+        s3 = pytest.importorskip("boto3").client('s3')
+
+        bucket = "verta-versioned-bucket"
+        key = "data/census-train.csv"
+
+        # pick a version that's not the latest
+        version_ids = [
+            obj['VersionId']
+            for obj in
+            s3.list_object_versions(Bucket=bucket)['Versions']
+            if not obj['IsLatest']
+            and obj['Key'] == key
+        ]
+        version_id = version_ids[0]
+
+        s3_loc = verta.dataset._s3._S3Location(bucket, key, version_id)
+        dataset = verta.dataset.S3(s3_loc)
+
+        assert len(dataset._msg.s3.components) == 1
+        assert dataset._msg.s3.components[0].s3_version_id == version_id
 
     def test_repr(self):
         """Tests that __repr__() executes without error"""

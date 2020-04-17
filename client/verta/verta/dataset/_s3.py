@@ -39,18 +39,29 @@ class S3(_dataset._Dataset):
     _S3_PATH = "s3://{}/{}"
 
     def __init__(self, paths):
-        if isinstance(paths, six.string_types):
+        if isinstance(paths, (six.string_types, _S3Location)):
             paths = [paths]
 
         super(S3, self).__init__()
 
         obj_paths_to_metadata = dict()  # prevent duplicate objects
         for path in paths:
-            bucket_name, key = self._parse_s3_url(path)
+            # convert paths to _S3Location
+            if isinstance(path, six.string_types):
+                bucket_name, key = self._parse_s3_url(path)
+                s3_loc = _S3Location(bucket_name, key)
+            elif isinstance(path, _S3Location):
+                s3_loc = path
+            else:
+                raise TypeError(
+                    "`paths` must contain either str or _S3Location,"
+                    " not {} ({})".format(type(path), path)
+                )
+
             obj_paths_to_metadata.update({
                 obj_metadata.path.path: obj_metadata
                 for obj_metadata
-                in self._get_s3_metadata(bucket_name, key)
+                in self._get_s3_loc_metadata(s3_loc)
             })
 
         s3_metadata = six.viewvalues(obj_paths_to_metadata)
@@ -84,7 +95,7 @@ class S3(_dataset._Dataset):
         return bucket_name, key
 
     @classmethod
-    def _get_s3_metadata(cls, bucket_name, key=None):
+    def _get_s3_loc_metadata(cls, s3_loc):
         try:
             import boto3
         except ImportError:
@@ -93,15 +104,19 @@ class S3(_dataset._Dataset):
         s3 = boto3.client('s3')
 
         # TODO: handle prefixes
-        if key is None:
+        if s3_loc.key is None:
             # TODO: handle `bucket_name` not found
-            for obj in s3.list_object_versions(Bucket=bucket_name)['Versions']:
+            for obj in s3.list_object_versions(Bucket=s3_loc.bucket)['Versions']:
                 if obj['IsLatest']:
-                    yield cls._get_s3_obj_metadata(obj, bucket_name, obj['Key'])
+                    yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, obj['Key'])
         else:
             # TODO: handle `key` not found
-            obj = s3.head_object(Bucket=bucket_name, Key=key)
-            yield cls._get_s3_obj_metadata(obj, bucket_name, key)
+            if s3_loc.version_id is not None:
+                # TODO: handle `version_id` not found
+                obj = s3.head_object(Bucket=s3_loc.bucket, Key=s3_loc.key, VersionId=s3_loc.version_id)
+            else:
+                obj = s3.head_object(Bucket=s3_loc.bucket, Key=s3_loc.key)
+            yield cls._get_s3_obj_metadata(obj, s3_loc.bucket, s3_loc.key)
 
     @classmethod
     def _get_s3_obj_metadata(cls, obj, bucket_name, key):
@@ -115,3 +130,13 @@ class S3(_dataset._Dataset):
             msg.s3_version_id = obj['VersionId']
 
         return msg
+
+
+class _S3Location(object):
+    def __init__(self, bucket, key=None, version_id=None):
+        if (version_id is not None) and (key is None):
+            raise ValueError("`version_id` can only be provided if `key` is specified")
+
+        self.bucket = bucket
+        self.key = key
+        self.version_id = version_id
