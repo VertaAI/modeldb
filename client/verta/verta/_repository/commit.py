@@ -428,8 +428,8 @@ class Commit(object):
         RuntimeError
             If this Commit has not yet been saved.
 
-        Exammples
-        ---------
+        Examples
+        --------
         .. code-block:: python
 
             master = repo.get_commit(branch="master")
