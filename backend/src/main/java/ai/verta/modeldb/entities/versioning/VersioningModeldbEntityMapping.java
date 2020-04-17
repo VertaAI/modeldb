@@ -24,12 +24,14 @@ public class VersioningModeldbEntityMapping implements Serializable {
       String commit,
       String versioningKey,
       String versioningLocation,
+      Integer versioningBlobType,
       Object entity) {
     this.repository_id = repositoryId;
     this.commit = commit;
     this.versioning_key = versioningKey;
     this.versioning_location = versioningLocation;
     this.entity_type = entity.getClass().getSimpleName();
+    this.versioning_blob_type = versioningBlobType;
 
     if (entity instanceof ExperimentRunEntity) {
       this.experimentRunEntity = (ExperimentRunEntity) entity;
@@ -57,6 +59,9 @@ public class VersioningModeldbEntityMapping implements Serializable {
 
   @Column(name = "versioning_location", columnDefinition = "TEXT")
   private String versioning_location;
+
+  @Column(name = "versioning_blob_type")
+  private Integer versioning_blob_type;
 
   @Id
   @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

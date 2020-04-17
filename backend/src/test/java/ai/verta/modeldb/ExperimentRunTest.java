@@ -9458,7 +9458,7 @@ public class ExperimentRunTest {
                     .build())
             .addBlobs(
                 BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
                     .addAllLocation(location2.getLocationList())
                     .build())
             .addBlobs(

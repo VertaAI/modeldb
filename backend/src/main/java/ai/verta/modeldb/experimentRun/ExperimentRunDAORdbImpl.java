@@ -250,8 +250,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private void validateVersioningEntity(Session session, VersioningEntry versioningEntry)
-      throws ModelDBException {
+  private Map<String, Integer> validateVersioningEntity(
+      Session session, VersioningEntry versioningEntry) throws ModelDBException {
     String errorMessage = null;
     if (versioningEntry.getRepositoryId() == 0L) {
       errorMessage = "Repository Id not found in VersioningEntry";
@@ -269,6 +269,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             session,
             versioningEntry.getCommit(),
             (session1) -> repositoryDAO.getRepositoryById(session, repositoryIdentification));
+    Map<String, Integer> blobTypesByLocationMap = new HashMap<>();
     if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
       Map<String, BlobExpanded> locationBlobMap =
           blobDAO.getCommitBlobMap(session, commitEntity.getRootSha(), new ArrayList<>());
@@ -284,8 +285,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   + "' not found in commit blobs",
               io.grpc.Status.Code.INVALID_ARGUMENT);
         }
+        blobTypesByLocationMap.put(
+            locationKey, locationBlobMap.get(locationKey).getBlob().getContentCase().getNumber());
       }
     }
+    return blobTypesByLocationMap;
   }
 
   @Override
@@ -294,10 +298,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
       Transaction transaction = session.beginTransaction();
-      if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
-        validateVersioningEntity(session, experimentRun.getVersionedInputs());
-      }
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
+      if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
+        Map<String, Integer> blobTypesByLocationMap =
+            validateVersioningEntity(session, experimentRun.getVersionedInputs());
+        experimentRunObj.setVersioned_inputs(
+            RdbmsUtils.getVersioningMappingFromVersioningInput(
+                experimentRun.getVersionedInputs(), blobTypesByLocationMap, experimentRunObj));
+      }
       session.saveOrUpdate(experimentRunObj);
 
       Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
@@ -1635,10 +1643,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       VersioningEntry versioningEntry = request.getVersionedInputs();
-      validateVersioningEntity(session, versioningEntry);
+      Map<String, Integer> blobTypesByLocationMap =
+          validateVersioningEntity(session, versioningEntry);
       ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
       runEntity.setVersioned_inputs(
-          RdbmsUtils.getVersioningMappingFromVersioningInput(versioningEntry, runEntity));
+          RdbmsUtils.getVersioningMappingFromVersioningInput(
+              versioningEntry, blobTypesByLocationMap, runEntity));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       session.saveOrUpdate(runEntity);
