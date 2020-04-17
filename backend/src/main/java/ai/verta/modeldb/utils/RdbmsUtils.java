@@ -760,7 +760,7 @@ public class RdbmsUtils {
    *     field name like attributes, artifacts, tags, metrics etc.
    * @return {@link Order} : return hibernate order base on the parameters
    */
-  public static Order[] getOrderBasedOnSortKey(
+  public static Order getOrderBasedOnSortKey(
       String sortBy,
       Boolean isAscending,
       CriteriaBuilder builder,
@@ -770,11 +770,11 @@ public class RdbmsUtils {
       sortBy = ModelDBConstants.DATE_UPDATED;
     }
 
-    List<Expression<?>> orderByExpressionList = new ArrayList<>();
+    Order orderBy;
 
     String[] keys = sortBy.split("\\.");
     root.get(ModelDBConstants.ID);
-    //Expression<?> orderByExpression;
+    Expression<?> orderByExpression;
     switch (keys[0]) {
       case ModelDBConstants.ARTIFACTS:
         LOGGER.debug("switch case : Artifacts");
@@ -792,7 +792,7 @@ public class RdbmsUtils {
                 builder.equal(
                     artifactEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
-        orderByExpressionList.add(artifactEntityJoin.get(ModelDBConstants.PATH));
+        orderByExpression = artifactEntityJoin.get(ModelDBConstants.PATH);
         break;
       case ModelDBConstants.DATASETS:
         LOGGER.debug("switch case : Datasets");
@@ -808,7 +808,7 @@ public class RdbmsUtils {
                     datasetEntityJoin.get(ModelDBConstants.FEILD_TYPE), ModelDBConstants.DATASETS),
                 builder.equal(datasetEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
-        orderByExpressionList.add(datasetEntityJoin.get(ModelDBConstants.PATH));
+        orderByExpression = datasetEntityJoin.get(ModelDBConstants.PATH);
         break;
       case ModelDBConstants.ATTRIBUTES:
         LOGGER.debug("switch case : Attributes");
@@ -826,7 +826,7 @@ public class RdbmsUtils {
                 builder.equal(
                     attributeEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
-        orderByExpressionList.add(attributeEntityJoin.get(ModelDBConstants.VALUE));
+        orderByExpression = attributeEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.HYPERPARAMETERS:
         LOGGER.debug("switch case : Hyperparameters");
@@ -844,47 +844,7 @@ public class RdbmsUtils {
                 builder.equal(
                     hyperparameterEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
-        orderByExpressionList.add(hyperparameterEntityJoin.get(ModelDBConstants.VALUE));
-
-        Join<ExperimentRunEntity, VersioningModeldbEntityMapping> versionedInputEntityJoin =
-                root.join(ModelDBConstants.VERSIONED_INPUTS, JoinType.LEFT);
-        versionedInputEntityJoin.alias(parentFieldName + "_versionedInput");
-        versionedInputEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                versionedInputEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID))));
-
-        Join<VersioningModeldbEntityMapping, ConfigBlobEntity> configBlobEntityJoinJoin =
-                versionedInputEntityJoin.join("blob_hash", JoinType.LEFT);
-        configBlobEntityJoinJoin.alias(parentFieldName + "_versionedInput_config");
-
-
-        configBlobEntityJoinJoin.on(
-                builder.and(
-                        builder.equal(
-                                configBlobEntityJoinJoin.get("blob_hash"),
-                                versionedInputEntityJoin.get("blob_hash")),
-                        builder.equal(
-                                configBlobEntityJoinJoin.get("hyperparameter_type"),
-                                ConfigBlobEntity.HYPERPARAMETER)
-                        ));
-        Join<ConfigBlobEntity, HyperparameterElementConfigBlobEntity> configBlobEntityJoin =
-                configBlobEntityJoinJoin.join("hyperparameterElementConfigBlobEntity", JoinType.LEFT);
-        configBlobEntityJoin.alias(parentFieldName + "_versionedInput_hyper_config");
-        configBlobEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                configBlobEntityJoin.get("blob_hash"),
-                                configBlobEntityJoinJoin.get("blob_hash")),
-                        builder.equal(
-                                configBlobEntityJoin.get(ModelDBConstants.NAME),
-                                keys[keys.length - 1])
-                        ));
-
-        orderByExpressionList.add(configBlobEntityJoin.get("int_value"));
-        orderByExpressionList.add(configBlobEntityJoin.get("float_value"));
-        orderByExpressionList.add(configBlobEntityJoin.get("string_value"));
+        orderByExpression = hyperparameterEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.METRICS:
         LOGGER.debug("switch case : Metrics");
@@ -900,7 +860,7 @@ public class RdbmsUtils {
                     metricsEntityJoin.get(ModelDBConstants.FEILD_TYPE), ModelDBConstants.METRICS),
                 builder.equal(metricsEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
-        orderByExpressionList.add(metricsEntityJoin.get(ModelDBConstants.VALUE));
+        orderByExpression = metricsEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.OBSERVATIONS:
         LOGGER.debug("switch case : Observation");
@@ -965,7 +925,7 @@ public class RdbmsUtils {
                   builder.equal(
                       observationEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
-          orderByExpressionList.add(observationEntityJoin.get(keys[1]));
+          orderByExpression = observationEntityJoin.get(keys[1]);
         }
         break;
       case ModelDBConstants.FEATURES:
@@ -979,7 +939,7 @@ public class RdbmsUtils {
                     featureEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
                     root.get(ModelDBConstants.ID))));
 
-        orderByExpressionList.add(featureEntityJoin.get(ModelDBConstants.NAME));
+        orderByExpression = featureEntityJoin.get(ModelDBConstants.NAME);
         break;
       case ModelDBConstants.TAGS:
         LOGGER.debug("switch case : tags");
@@ -992,19 +952,14 @@ public class RdbmsUtils {
                     tagsEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
                     root.get(ModelDBConstants.ID))));
 
-        orderByExpressionList.add(tagsEntityJoin.get(ModelDBConstants.TAGS));
+        orderByExpression = tagsEntityJoin.get(ModelDBConstants.TAGS);
         break;
       default:
-        orderByExpressionList.add(root.get(sortBy));
+        orderByExpression = root.get(sortBy);
     }
+    orderBy = isAscending ? builder.asc(orderByExpression) : builder.desc(orderByExpression);
 
-    Order[] orderByArr = new Order[orderByExpressionList.size()];
-    for (int index = 0; index < orderByExpressionList.size(); index++) {
-      Expression<?> orderByExpression = orderByExpressionList.get(index);
-      orderByArr[index] = isAscending ? builder.asc(orderByExpression) : builder.desc(orderByExpression);
-    }
-
-    return orderByArr;
+    return orderBy;
   }
 
   /**

@@ -421,7 +421,6 @@ public class ModelDBUtils {
 
   public static <T extends GeneratedMessageV3> void observeError(
       StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
-    e.printStackTrace();
     Status status;
     Exception statusRuntimeException;
     if (e instanceof StatusRuntimeException) {
