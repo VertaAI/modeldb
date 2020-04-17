@@ -133,7 +133,7 @@ class S3(_dataset._Dataset):
         msg.path.size = obj.get('Size') or obj.get('ContentLength') or 0
         msg.path.last_modified_at_source = _utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified']))
         msg.path.md5 = obj['ETag'].strip('"')
-        if obj.get('VersionId', 'null') != 'null':
+        if obj.get('VersionId', 'null') != 'null':  # S3's API returns 'null' when there's no version ID
             msg.s3_version_id = obj['VersionId']
 
         return msg
