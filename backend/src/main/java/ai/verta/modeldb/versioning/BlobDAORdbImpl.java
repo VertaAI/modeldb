@@ -688,7 +688,12 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<BlobContainer> blobContainerList,
       String commitMessage)
       throws NoSuchAlgorithmException, ModelDBException {
-    final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
+    String rootSha;
+    if (blobContainerList != null && !blobContainerList.isEmpty()) {
+      rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
+    } else {
+      rootSha = FileHasher.getSha(new String());
+    }
     long timeCreated = new Date().getTime();
 
     UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
