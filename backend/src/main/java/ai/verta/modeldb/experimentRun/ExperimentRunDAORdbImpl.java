@@ -1297,17 +1297,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.trace("experimentRunList {}", experimentRunList);
         LOGGER.trace("Converted from Hibernate to proto");
 
+        List<String> expRunIds = experimentRunEntities.stream()
+                .map(ExperimentRunEntity::getId)
+                .collect(Collectors.toList());
         Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
-            getExperimentRunHyperparameterConfigBlobMap(session, experimentRunEntities);
+            getExperimentRunHyperparameterConfigBlobMap(session, expRunIds);
 
         Set<String> experimentRunIdsSet = new HashSet<>();
         for (ExperimentRun experimentRun : experimentRunList) {
-          experimentRun =
-              experimentRun
-                  .toBuilder()
-                  .addAllHyperparameters(
-                      expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
-                  .build();
+          if (!expRunHyperparameterConfigBlobMap.isEmpty()) {
+            experimentRun =
+                    experimentRun
+                            .toBuilder()
+                            .addAllHyperparameters(
+                                    expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
+                            .build();
+          }
           if (!experimentRunIdsSet.contains(experimentRun.getId())) {
             experimentRunIdsSet.add(experimentRun.getId());
             if (queryParameters.getIdsOnly()) {
@@ -1331,17 +1336,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private Map<String, List<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
-      Session session, List<ExperimentRunEntity> experimentRunEntities) {
+      Session session, List<String> expRunIds) {
 
     String queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
     Query query = session.createQuery(queryBuilder);
     query.setParameter("hyperparameterType", ConfigBlobEntity.HYPERPARAMETER);
-    query.setParameterList(
-        "expRunIds",
-        experimentRunEntities.stream()
-            .map(ExperimentRunEntity::getId)
-            .collect(Collectors.toList()));
+    query.setParameterList("expRunIds", expRunIds);
     LOGGER.debug(
         "Final experimentRuns hyperparameter config blob final query : {}", query.getQueryString());
     List<Object[]> configBlobEntities = query.list();
