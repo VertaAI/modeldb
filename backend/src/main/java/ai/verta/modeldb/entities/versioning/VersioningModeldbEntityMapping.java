@@ -1,12 +1,10 @@
 package ai.verta.modeldb.entities.versioning;
 
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.Serializable;
-import java.security.NoSuchAlgorithmException;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,11 +13,15 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "versioning_modeldb_entity_mapping")
 public class VersioningModeldbEntityMapping implements Serializable {
   private VersioningModeldbEntityMapping() {}
+
+  private static final Logger LOGGER = LogManager.getLogger(VersioningModeldbEntityMapping.class);
 
   public VersioningModeldbEntityMapping(
       Long repositoryId,
@@ -28,8 +30,7 @@ public class VersioningModeldbEntityMapping implements Serializable {
       String versioningLocation,
       Integer versioningBlobType,
       String blobHash,
-      Object entity)
-      throws ModelDBException, NoSuchAlgorithmException {
+      Object entity) {
     this.repository_id = repositoryId;
     this.commit = commit;
     this.versioning_key = versioningKey;
@@ -40,6 +41,7 @@ public class VersioningModeldbEntityMapping implements Serializable {
     if (entity instanceof ExperimentRunEntity) {
       this.experimentRunEntity = (ExperimentRunEntity) entity;
     } else {
+      LOGGER.warn("Expected ExperimentRunEntity found {}", entity.getClass());
       Status status =
           Status.newBuilder()
               .setCode(Code.INTERNAL_VALUE)

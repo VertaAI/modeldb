@@ -16,7 +16,6 @@ import ai.verta.modeldb.Job;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.OperatorEnum.Operator;
 import ai.verta.modeldb.PathDatasetVersionInfo;
@@ -58,7 +57,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1489,7 +1487,7 @@ public class RdbmsUtils {
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
       Object entity)
-      throws InvalidProtocolBufferException, NoSuchAlgorithmException, ModelDBException {
+      throws InvalidProtocolBufferException {
     List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = new ArrayList<>();
     if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
       versioningModeldbEntityMappings.add(

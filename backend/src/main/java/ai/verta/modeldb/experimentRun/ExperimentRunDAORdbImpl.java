@@ -59,7 +59,6 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -256,6 +255,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
+  /**
+   *
+   * @param session : hibernate session
+   * @param versioningEntry : versioningEntry
+   * @return returns a map from location to an Entry of BlobExpanded and sha
+   * @throws ModelDBException ModelDBException
+   */
   private Map<String, Map.Entry<BlobExpanded, String>> validateVersioningEntity(
       Session session, VersioningEntry versioningEntry) throws ModelDBException {
     String errorMessage = null;
@@ -299,7 +305,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experimentRun, true);
       Transaction transaction = session.beginTransaction();
@@ -1709,7 +1715,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
-      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       VersioningEntry versioningEntry = request.getVersionedInputs();
