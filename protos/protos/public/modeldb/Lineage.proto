@@ -66,9 +66,13 @@ message LineageEntryBatchRequest {
 }
 
 // Returns the ID of the lineage entry and the set of items corresponding to that entry
-message LineageEntryBatchResponse {
+message LineageEntryBatchResponseSingle {
     uint64 id = 1;
     repeated LineageEntry items = 2;
+}
+
+message LineageEntryBatchResponse {
+    repeated LineageEntryBatchResponseSingle items = 1;
 }
 
 // For each item provided, list its inputs.
