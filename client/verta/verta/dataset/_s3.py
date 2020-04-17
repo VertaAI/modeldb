@@ -17,7 +17,7 @@ class S3(_dataset._Dataset):
     Captures metadata about S3 objects.
 
     If your S3 object requires additional information to identify it, such as its version ID, you
-    can use :meth:`S3.location` to do so.
+    can use :meth:`S3.location`.
 
     Parameters
     ----------
