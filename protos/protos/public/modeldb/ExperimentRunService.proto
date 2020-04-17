@@ -41,7 +41,7 @@ message ExperimentRun {
     string job_id = 28;
     string owner = 29;
     VersioningEntry versioned_inputs = 30;
-    map<string, versioning.CodeBlob> cole_blob_version = 31;
+    map<string, versioning.CodeBlob> code_blob_version = 31;
 }
 
 message VersioningEntry {
