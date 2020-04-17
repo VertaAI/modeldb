@@ -34,6 +34,7 @@ import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.ListCommitBlobsRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
+import ai.verta.modeldb.versioning.NotebookCodeBlob;
 import ai.verta.modeldb.versioning.Pagination;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
@@ -191,13 +192,14 @@ public class CommitTest {
         .build();
   }
 
-  static Blob getBlob(Blob.ContentCase contentCase) throws ModelDBException {
+  static Blob getBlob(Blob.ContentCase contentCase)
+      throws ModelDBException, NoSuchAlgorithmException {
     switch (contentCase) {
       case DATASET:
         DatasetBlob datasetBlob = DatasetBlob.newBuilder().setPath(getPathDatasetBlob()).build();
         return Blob.newBuilder().setDataset(datasetBlob).build();
       case CODE:
-        break;
+        return getCodeBlobFromPath("abc");
       case ENVIRONMENT:
         break;
       case CONFIG:
@@ -282,7 +284,7 @@ public class CommitTest {
 
   public static CreateCommitRequest getCreateCommitRequest(
       Long repoId, long commitTime, Commit parentCommit, Blob.ContentCase contentCase)
-      throws ModelDBException {
+      throws ModelDBException, NoSuchAlgorithmException {
 
     Commit commit =
         Commit.newBuilder()
@@ -332,7 +334,7 @@ public class CommitTest {
   }
 
   @Test
-  public void createDeleteCommitTest() throws ModelDBException {
+  public void createDeleteCommitTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Create & Delete of commit test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
@@ -386,7 +388,7 @@ public class CommitTest {
   }
 
   @Test
-  public void listCommitsTest() throws ModelDBException {
+  public void listCommitsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("List of commits test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
@@ -518,7 +520,7 @@ public class CommitTest {
   }
 
   @Test
-  public void getCommitsTest() throws ModelDBException {
+  public void getCommitsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Get commits test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
@@ -569,7 +571,7 @@ public class CommitTest {
   }
 
   @Test
-  public void configHyperparameterTest() throws ModelDBException {
+  public void configHyperparameterTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Hyperparameter config test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
@@ -748,18 +750,27 @@ public class CommitTest {
   }
 
   static Blob getCodeBlobFromPath(String branch) throws NoSuchAlgorithmException {
+    GitCodeBlob gitCodeBlob =
+        GitCodeBlob.newBuilder()
+            .setBranch(branch)
+            .setRepo(RepositoryTest.NAME)
+            .setHash(FileHasher.getSha(""))
+            .setIsDirty(false)
+            .setTag("Tag-" + Calendar.getInstance().getTimeInMillis())
+            .build();
+    String path = "/protos/proto/public/versioning/versioning.proto";
+    NotebookCodeBlob notebookCodeBlob =
+        NotebookCodeBlob.newBuilder()
+            .setGitRepo(gitCodeBlob)
+            .setPath(
+                PathDatasetComponentBlob.newBuilder()
+                    .setPath(path)
+                    .setSize(2)
+                    .setLastModifiedAtSource(time)
+                    .build())
+            .build();
     return Blob.newBuilder()
-        .setCode(
-            CodeBlob.newBuilder()
-                .setGit(
-                    GitCodeBlob.newBuilder()
-                        .setBranch(branch)
-                        .setRepo(RepositoryTest.NAME)
-                        .setHash(FileHasher.getSha(""))
-                        .setIsDirty(false)
-                        .setTag("Tag-" + Calendar.getInstance().getTimeInMillis())
-                        .build())
-                .build())
+        .setCode(CodeBlob.newBuilder().setNotebook(notebookCodeBlob).build())
         .build();
   }
 
@@ -1641,7 +1652,8 @@ public class CommitTest {
    * @throws ModelDBException modelDBException
    */
   @Test
-  public void createDeleteCommitWithParentCommitExistsTest() throws ModelDBException {
+  public void createDeleteCommitWithParentCommitExistsTest()
+      throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Check parent commits exists of commit test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
@@ -1700,7 +1712,8 @@ public class CommitTest {
    * @throws ModelDBException modelDBException
    */
   @Test
-  public void checkRepoUpdatedTimeWithCreateDeleteCommitTest() throws ModelDBException {
+  public void checkRepoUpdatedTimeWithCreateDeleteCommitTest()
+      throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info(
         "Check repo updated time with Create & Delete of commit test start................................");
 
@@ -1776,7 +1789,8 @@ public class CommitTest {
   }
 
   @Test
-  public void deleteCommitHasHeadOfTwoBranchesTest() throws ModelDBException {
+  public void deleteCommitHasHeadOfTwoBranchesTest()
+      throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("branch test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
@@ -1851,7 +1865,7 @@ public class CommitTest {
   }
 
   @Test
-  public void revertCommitTest() throws ModelDBException {
+  public void revertCommitTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Revert commit test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =

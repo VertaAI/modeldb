@@ -421,6 +421,7 @@ public class ModelDBUtils {
 
   public static <T extends GeneratedMessageV3> void observeError(
       StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
+    e.printStackTrace();
     Status status;
     Exception statusRuntimeException;
     if (e instanceof StatusRuntimeException) {
@@ -490,5 +491,9 @@ public class ModelDBUtils {
               .build();
       throw StatusProto.toStatusRuntimeException(status);
     }
+  }
+
+  public static String getLocationWithSlashOperator(List<String> locations) {
+    return String.join("/", locations);
   }
 }
