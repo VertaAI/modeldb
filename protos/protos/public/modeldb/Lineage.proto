@@ -28,11 +28,6 @@ message LineageEntry {
     };
 }
 
-// Represent a set of lineage items, essentially an array so that it can be embedded on other proto messages.
-message LineageEntryBatch {
-    repeated LineageEntry items = 1;
-}
-
 // Add every item of "input" as a parent of every item on "output".
 message AddLineage {
     // If not provided, a new ID will be created
@@ -62,16 +57,30 @@ message DeleteLineage {
     }
 }
 
+// Represent a set of lineage items, essentially an array so that it can be embedded on other proto messages.
+message LineageEntryBatchRequest {
+    oneof identifier {
+        uint64 id = 1;
+        LineageEntry entry = 2;
+    }
+}
+
+// Returns the ID of the lineage entry and the set of items corresponding to that entry
+message LineageEntryBatchResponse {
+    uint64 id = 1;
+    repeated LineageEntry items = 2;
+}
+
 // For each item provided, list its inputs.
 // This operation is batched by default. If "items" contains N elements,
 // then Response.inputs will contain N elements, where each element
 // is the set of inputs for the corresponding i-th item provided in the
 // request.
 message FindAllInputs {
-    repeated LineageEntry items = 1;
+    repeated LineageEntryBatchRequest items = 1;
 
     message Response {
-        repeated LineageEntryBatch inputs = 1;
+        repeated LineageEntryBatchResponse inputs = 1;
     }
 }
 
@@ -81,10 +90,10 @@ message FindAllInputs {
 // is the set of outputs for the corresponding i-th item provided in the
 // request.
 message FindAllOutputs {
-    repeated LineageEntry items = 1;
+    repeated LineageEntryBatchRequest items = 1;
 
     message Response {
-        repeated LineageEntryBatch outputs = 1;
+        repeated LineageEntryBatchResponse outputs = 1;
     }
 }
 
@@ -94,11 +103,11 @@ message FindAllOutputs {
 // is the set of inputs and outputs for the corresponding i-th item provided in the
 // request.
 message FindAllInputsOutputs {
-    repeated LineageEntry items = 1;
+    repeated LineageEntryBatchRequest items = 1;
 
     message Response {
-        repeated LineageEntryBatch inputs = 1;
-        repeated LineageEntryBatch outputs = 2;
+        repeated LineageEntryBatchResponse inputs = 1;
+        repeated LineageEntryBatchResponse outputs = 2;
     }
 }
 
