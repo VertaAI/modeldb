@@ -102,6 +102,7 @@ class TestS3:
 
         bucket = "verta-versioned-bucket"
         key = "data/census-train.csv"
+        s3_url = "s3://{}/{}".format(bucket, key)
 
         # pick a version that's not the latest
         version_ids = [
@@ -113,7 +114,7 @@ class TestS3:
         ]
         version_id = version_ids[0]
 
-        s3_loc = verta.dataset._s3.S3Location(bucket, key, version_id)
+        s3_loc = verta.dataset._s3.S3Location(s3_url, version_id)
         dataset = verta.dataset.S3(s3_loc)
 
         assert len(dataset._msg.s3.components) == 1

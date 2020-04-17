@@ -38,7 +38,7 @@ class S3(_dataset._Dataset):
             "s3://verta-starter",
         ])
         dataset3 = S3([
-            S3.location("verta-starter", "census-train.csv",
+            S3.location("s3://verta-starter/census-train.csv",
                         version_id="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
         ])
 
@@ -55,8 +55,7 @@ class S3(_dataset._Dataset):
         for path in paths:
             # convert paths to S3Location
             if isinstance(path, six.string_types):
-                bucket_name, key = self._parse_s3_url(path)
-                s3_loc = S3Location(bucket_name, key)
+                s3_loc = S3Location(path)
             elif isinstance(path, S3Location):
                 s3_loc = path
             else:
@@ -84,22 +83,6 @@ class S3(_dataset._Dataset):
             lines.extend(self._path_component_to_repr_lines(component.path))
 
         return "\n    ".join(lines)
-
-    @staticmethod
-    def _parse_s3_url(path):
-        url_components = urlparse(path, allow_fragments=False)
-        if url_components.scheme != 's3':
-            raise ValueError("`path` \"{}\" must be either \"s3://<bucket-name>\""
-                             " or \"s3://<bucket-name>/<key>\"".format(path))
-
-        bucket_name = url_components.netloc
-        key = url_components.path
-        if key.startswith('/'):
-            key = key[1:]
-        if key == "":
-            key = None
-
-        return bucket_name, key
 
     @classmethod
     def _get_s3_loc_metadata(cls, s3_loc):
@@ -139,16 +122,14 @@ class S3(_dataset._Dataset):
         return msg
 
     @staticmethod
-    def location(bucket, key=None, version_id=None):
+    def location(path, version_id=None):
         """
         Returns an object describing an S3 location that can be passed into a new :class:`S3`.
 
         Parameters
         ----------
-        bucket : str
-            Name of an S3 bucket.
-        key : str, optional
-            Key of an S3 object within `bucket`.
+        path : str
+            S3 URL of the form ``"s3://<bucket-name>"`` or ``"s3://<bucket-name>/<key>"``.
         version_id : str, optional
             ID of an S3 object version.
 
@@ -160,17 +141,37 @@ class S3(_dataset._Dataset):
         Raises
         ------
         ValueError
-            If `version_id` is provided but `key` is not.
+            If `version_id` is provided but `path` represents a bucket rather than a single object.
 
         """
-        return S3Location(bucket, key, version_id)
+        return S3Location(path, version_id)
 
 
 class S3Location(object):
-    def __init__(self, bucket, key=None, version_id=None):
+    def __init__(self, path, version_id=None):
+        bucket, key = self._parse_s3_url(path)
         if (version_id is not None) and (key is None):
-            raise ValueError("`version_id` can only be provided if `key` is specified")
+            raise ValueError(
+                "`version_id` can only be provided if"
+                " `path` specifies a single S3 object"
+            )
 
         self.bucket = bucket
         self.key = key
         self.version_id = version_id
+
+    @staticmethod
+    def _parse_s3_url(path):
+        url_components = urlparse(path, allow_fragments=False)
+        if url_components.scheme != 's3':
+            raise ValueError("`path` \"{}\" must be either \"s3://<bucket-name>\""
+                             " or \"s3://<bucket-name>/<key>\"".format(path))
+
+        bucket_name = url_components.netloc
+        key = url_components.path
+        if key.startswith('/'):
+            key = key[1:]
+        if key == "":
+            key = None
+
+        return bucket_name, key
