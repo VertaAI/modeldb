@@ -16,11 +16,14 @@ class S3(_dataset._Dataset):
     """
     Captures metadata about S3 objects.
 
+    If your S3 object requires additional information to identify it, such as its version ID, you
+    can use :meth:`S3.location` to do so.
+
     Parameters
     ----------
-    paths : list of str
-        List of S3 object URLs of the form "s3://<bucket-name>/<key>" or bucket URLs of the form
-        "s3://<bucket-name>".
+    paths : list
+        List of S3 URLs of the form ``"s3://<bucket-name>/<key>"`` or objects returned by
+        :meth:`S3.location`.
 
     Examples
     --------
@@ -34,27 +37,31 @@ class S3(_dataset._Dataset):
         dataset2 = S3([
             "s3://verta-starter",
         ])
+        dataset3 = S3([
+            S3.location("verta-starter", "census-train.csv",
+                        version_id="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
+        ])
 
     """
     _S3_PATH = "s3://{}/{}"
 
     def __init__(self, paths):
-        if isinstance(paths, (six.string_types, _S3Location)):
+        if isinstance(paths, (six.string_types, S3Location)):
             paths = [paths]
 
         super(S3, self).__init__()
 
         obj_paths_to_metadata = dict()  # prevent duplicate objects
         for path in paths:
-            # convert paths to _S3Location
+            # convert paths to S3Location
             if isinstance(path, six.string_types):
                 bucket_name, key = self._parse_s3_url(path)
-                s3_loc = _S3Location(bucket_name, key)
-            elif isinstance(path, _S3Location):
+                s3_loc = S3Location(bucket_name, key)
+            elif isinstance(path, S3Location):
                 s3_loc = path
             else:
                 raise TypeError(
-                    "`paths` must contain either str or _S3Location,"
+                    "`paths` must contain either str or S3Location,"
                     " not {} ({})".format(type(path), path)
                 )
 
@@ -131,8 +138,35 @@ class S3(_dataset._Dataset):
 
         return msg
 
+    @staticmethod
+    def location(bucket, key=None, version_id=None):
+        """
+        Returns an object describing an S3 location that can be passed into a new :class:`S3`.
 
-class _S3Location(object):
+        Parameters
+        ----------
+        bucket : str
+            Name of an S3 bucket.
+        key : str, optional
+            Key of an S3 object within `bucket`.
+        version_id : str, optional
+            ID of an S3 object version.
+
+        Returns
+        -------
+        :class:`S3Location`
+            A location in S3.
+
+        Raises
+        ------
+        ValueError
+            If `version_id` is provided but `key` is not.
+
+        """
+        return S3Location(bucket, key, version_id)
+
+
+class S3Location(object):
     def __init__(self, bucket, key=None, version_id=None):
         if (version_id is not None) and (key is None):
             raise ValueError("`version_id` can only be provided if `key` is specified")
