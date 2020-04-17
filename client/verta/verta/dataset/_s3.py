@@ -22,8 +22,8 @@ class S3(_dataset._Dataset):
     Parameters
     ----------
     paths : list
-        List of S3 URLs of the form ``"s3://<bucket-name>/<key>"`` or objects returned by
-        :meth:`S3.location`.
+        List of S3 URLs of the form ``"s3://<bucket-name>"`` or ``"s3://<bucket-name>/<key>"``, or
+        objects returned by :meth:`S3.location`.
 
     Examples
     --------
