@@ -9899,6 +9899,9 @@ public class ExperimentRunTest {
         Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
     Location location3 =
         Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
+    Location location4 =
+        Location.newBuilder().addLocation("test-location-4").addLocation("test4.json").build();
+
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9917,6 +9920,11 @@ public class ExperimentRunTest {
                 BlobExpanded.newBuilder()
                     .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
                     .addAllLocation(location3.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getHyperparameterConfigBlob())
+                    .addAllLocation(location4.getLocationList())
                     .build())
             .build();
     CreateCommitRequest.Response commitResponse =
@@ -9991,8 +9999,19 @@ public class ExperimentRunTest {
         getCreateExperimentRunRequestSimple(
             project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
     hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+    Map<String, Location> locationMap2 = new HashMap<>();
+    locationMap2.put("location-4", location4);
     createExperimentRunRequest =
-        createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
+        createExperimentRunRequest
+            .toBuilder()
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getCommitSha())
+                    .putAllKeyLocationMap(locationMap2)
+                    .build())
+            .addHyperparameters(hyperparameter1)
+            .build();
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     LOGGER.info("ExperimentRun created successfully");

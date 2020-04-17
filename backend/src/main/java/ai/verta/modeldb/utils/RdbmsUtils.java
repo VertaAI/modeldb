@@ -1192,7 +1192,6 @@ public class RdbmsUtils {
           case ModelDBConstants.HYPERPARAMETERS:
             LOGGER.debug("switch case : Hyperparameters");
             Subquery<String> subqueryMDB = criteriaQuery.subquery(String.class);
-            // TODO: create a new query here and union it with versioning stuff
             Root<KeyValueEntity> hyperparameterEntityRoot = subqueryMDB.from(KeyValueEntity.class);
             hyperparameterEntityRoot.alias(
                 entityName + "_" + ModelDBConstants.HYPERPARAMETER_ALIAS + index);

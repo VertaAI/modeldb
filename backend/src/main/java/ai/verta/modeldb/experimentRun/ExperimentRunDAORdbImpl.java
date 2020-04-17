@@ -256,7 +256,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   /**
-   *
    * @param session : hibernate session
    * @param versioningEntry : versioningEntry
    * @return returns a map from location to an Entry of BlobExpanded and sha
@@ -1335,7 +1334,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Session session, List<ExperimentRunEntity> experimentRunEntities) {
 
     String queryBuilder =
-        "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb LEFT JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
+        "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
     Query query = session.createQuery(queryBuilder);
     query.setParameter("hyperparameterType", ConfigBlobEntity.HYPERPARAMETER);
     query.setParameterList(
