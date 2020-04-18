@@ -57,6 +57,7 @@ message PathDatasetDiff {
 message S3DatasetComponentDiff {
     PathDatasetComponentDiff path = 1;
     S3VersionIdDiff s3_version_id = 2;
+    DiffStatusEnum.DiffStatus status = 3;
 }
 
 message S3VersionIdDiff {
