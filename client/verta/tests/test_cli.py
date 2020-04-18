@@ -24,7 +24,7 @@ class TestInit:
 class TestRemote:
     def test_add(self):
         # TODO: create a new repo and use it
-        name = "banana"
+        name = "origin"
         url = "https://www.verta.ai/"
 
         runner = CliRunner()
@@ -41,7 +41,7 @@ class TestRemote:
 
     def test_add_existing_error(self):
         # TODO: create a new repo and use it
-        name = "banana"
+        name = "origin"
         url = "https://www.verta.ai/"
 
         runner = CliRunner()
@@ -55,7 +55,7 @@ class TestRemote:
 
     def test_use(self):
         # TODO: create a new repo and use it
-        name = "banana"
+        name = "origin"
         url = "https://www.verta.ai/"
 
         runner = CliRunner()
@@ -69,7 +69,7 @@ class TestRemote:
                 assert config['current-remote'] == name
 
     def test_use_nonexisting_error(self):
-        name = "banana"
+        name = "origin"
 
         runner = CliRunner()
         with runner.isolated_filesystem():
