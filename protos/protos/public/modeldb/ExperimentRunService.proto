@@ -7,6 +7,7 @@ option java_multiple_files = true;
 
 import "protos/public/common/CommonService.proto";
 import "protos/public/modeldb/CommonService.proto";
+import "protos/public/modeldb/versioning/Code.proto";
 import "google/api/annotations.proto";
 // import "google/protobuf/struct.proto";
 
@@ -40,6 +41,7 @@ message ExperimentRun {
     string job_id = 28;
     string owner = 29;
     VersioningEntry versioned_inputs = 30;
+    map<string, versioning.CodeBlob> code_blob_version = 31;
 }
 
 message VersioningEntry {
