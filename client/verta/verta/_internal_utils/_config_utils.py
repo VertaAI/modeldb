@@ -34,8 +34,6 @@ def read_config():
         Merged contents of all accessible config files.
 
     """
-    # TODO: unify with Client's config methods
-
     config = {}
     for filepath in reversed(find_config_files()):
         merge(config, load(filepath))
@@ -54,7 +52,6 @@ def write_config():
         Contents of the nearest config file.
 
     """
-    # TODO: unify with Client's config methods
     config_filepath = find_closest_config_file()
 
     config = load(config_filepath)
