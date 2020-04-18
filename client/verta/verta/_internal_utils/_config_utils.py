@@ -107,6 +107,23 @@ def get_possible_config_file_dirs():
     return dirpaths
 
 
+def find_closest_config_file():
+    """
+    Returns the location of the closest Verta config file.
+
+    Returns
+    -------
+    config_filepath: str or None
+        Path to config file.
+
+    """
+    for dirpath in get_possible_config_file_dirs():
+        # TODO: raise error if YAML and JSON in same dir
+        filepaths = CONFIG_FILENAMES.intersection(os.listdir(dirpath))
+        if filepaths:
+            return os.path.join(dirpath, filepaths.pop())
+    return None
+
 def find_config_files():
     """
     Returns the locations of accessible Verta config files.
@@ -117,13 +134,13 @@ def find_config_files():
         Paths to config files, with the closest to the current directory being first.
 
     """
-    config_filepaths = []
+    filepaths = []
     for dirpath in get_possible_config_file_dirs():
         # TODO: raise error if YAML and JSON in same dir
-        config_filepaths.extend(
+        filepaths.extend(
             os.path.join(dirpath, config_filename)
             for config_filename
             in CONFIG_FILENAMES.intersection(os.listdir(dirpath))
         )
 
-    return config_filepaths
+    return filepaths
