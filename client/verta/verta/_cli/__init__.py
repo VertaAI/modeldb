@@ -15,8 +15,6 @@ from . import blob
 @click.group()
 def cli():
     """ModelDB versioning CLI for snapshotting and tracking model ingredients."""
-    # TODO: load config and pass content (or None) to subcommands
-    # TODO: pass pointer to closest config file for writing
     pass
 
 
