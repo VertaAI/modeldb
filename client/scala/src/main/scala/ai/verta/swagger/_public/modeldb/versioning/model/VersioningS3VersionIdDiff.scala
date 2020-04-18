@@ -15,9 +15,9 @@ import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class VersioningS3VersionIdDiff (
-  A: Option[List[String]] = None,
-  B: Option[List[String]] = None,
-  C: Option[List[String]] = None,
+  A: Option[String] = None,
+  B: Option[String] = None,
+  C: Option[String] = None,
   status: Option[DiffStatusEnumDiffStatus] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningS3VersionIdDiff.toJson(this)
@@ -27,9 +27,9 @@ object VersioningS3VersionIdDiff {
   def toJson(obj: VersioningS3VersionIdDiff): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.A.map(x => JField("A", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.B.map(x => JField("B", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.C.map(x => JField("C", ((x: List[String]) => JArray(x.map(JString)))(x))),
+        obj.A.map(x => JField("A", JString(x))),
+        obj.B.map(x => JField("B", JString(x))),
+        obj.C.map(x => JField("C", JString(x))),
         obj.status.map(x => JField("status", ((x: DiffStatusEnumDiffStatus) => DiffStatusEnumDiffStatus.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -44,9 +44,9 @@ object VersioningS3VersionIdDiff {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningS3VersionIdDiff(
           // TODO: handle required
-          A = fieldsMap.get("A").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          B = fieldsMap.get("B").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          C = fieldsMap.get("C").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          A = fieldsMap.get("A").map(JsonConverter.fromJsonString),
+          B = fieldsMap.get("B").map(JsonConverter.fromJsonString),
+          C = fieldsMap.get("C").map(JsonConverter.fromJsonString),
           status = fieldsMap.get("status").map(DiffStatusEnumDiffStatus.fromJson)
         )
       }

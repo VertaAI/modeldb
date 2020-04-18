@@ -61,9 +61,9 @@ message S3DatasetComponentDiff {
 
 message S3VersionIdDiff {
     DiffStatusEnum.DiffStatus status = 1;
-    repeated string A = 2;
-    repeated string B = 3;
-    repeated string C = 4;
+    string A = 2;
+    string B = 3;
+    string C = 4;
 }
 
 message S3DatasetDiff {

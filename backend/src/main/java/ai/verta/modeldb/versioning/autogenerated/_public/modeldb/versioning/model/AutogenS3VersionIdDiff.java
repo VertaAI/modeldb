@@ -13,31 +13,29 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenS3VersionIdDiff implements ProtoType {
-  private List<String> A;
-  private List<String> B;
-  private List<String> C;
+  private String A;
+  private String B;
+  private String C;
   private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenS3VersionIdDiff() {
-    this.A = null;
-    this.B = null;
-    this.C = null;
+    this.A = "";
+    this.B = "";
+    this.C = "";
     this.Status = null;
   }
 
   public Boolean isEmpty() {
-    if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
+    if (this.A != null && !this.A.equals("")) {
       return false;
     }
-    if (this.B != null && !this.B.equals(null) && !this.B.isEmpty()) {
+    if (this.B != null && !this.B.equals("")) {
       return false;
     }
-    if (this.C != null && !this.C.equals(null) && !this.C.isEmpty()) {
+    if (this.C != null && !this.C.equals("")) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -51,19 +49,19 @@ public class AutogenS3VersionIdDiff implements ProtoType {
     StringBuilder sb = new StringBuilder();
     sb.append("{\"class\": \"AutogenS3VersionIdDiff\", \"fields\": {");
     boolean first = true;
-    if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
+    if (this.A != null && !this.A.equals("")) {
       if (!first) sb.append(", ");
-      sb.append("\"A\": " + A);
+      sb.append("\"A\": " + "\"" + A + "\"");
       first = false;
     }
-    if (this.B != null && !this.B.equals(null) && !this.B.isEmpty()) {
+    if (this.B != null && !this.B.equals("")) {
       if (!first) sb.append(", ");
-      sb.append("\"B\": " + B);
+      sb.append("\"B\": " + "\"" + B + "\"");
       first = false;
     }
-    if (this.C != null && !this.C.equals(null) && !this.C.isEmpty()) {
+    if (this.C != null && !this.C.equals("")) {
       if (!first) sb.append(", ");
-      sb.append("\"C\": " + C);
+      sb.append("\"C\": " + "\"" + C + "\"");
       first = false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -96,17 +94,7 @@ public class AutogenS3VersionIdDiff implements ProtoType {
     AutogenS3VersionIdDiff other = (AutogenS3VersionIdDiff) o;
 
     {
-      Function3<List<String>, List<String>, Boolean> f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<String, String, Boolean> f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.A != null || other.A != null) {
         if (this.A == null && other.A != null) return false;
         if (this.A != null && other.A == null) return false;
@@ -114,17 +102,7 @@ public class AutogenS3VersionIdDiff implements ProtoType {
       }
     }
     {
-      Function3<List<String>, List<String>, Boolean> f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<String, String, Boolean> f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.B != null || other.B != null) {
         if (this.B == null && other.B != null) return false;
         if (this.B != null && other.B == null) return false;
@@ -132,17 +110,7 @@ public class AutogenS3VersionIdDiff implements ProtoType {
       }
     }
     {
-      Function3<List<String>, List<String>, Boolean> f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<String, String, Boolean> f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+      Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.C != null || other.C != null) {
         if (this.C == null && other.C != null) return false;
         if (this.C != null && other.C == null) return false;
@@ -161,30 +129,30 @@ public class AutogenS3VersionIdDiff implements ProtoType {
     return true;
   }
 
-  public AutogenS3VersionIdDiff setA(List<String> value) {
+  public AutogenS3VersionIdDiff setA(String value) {
     this.A = Utils.removeEmpty(value);
     return this;
   }
 
-  public List<String> getA() {
+  public String getA() {
     return this.A;
   }
 
-  public AutogenS3VersionIdDiff setB(List<String> value) {
+  public AutogenS3VersionIdDiff setB(String value) {
     this.B = Utils.removeEmpty(value);
     return this;
   }
 
-  public List<String> getB() {
+  public String getB() {
     return this.B;
   }
 
-  public AutogenS3VersionIdDiff setC(List<String> value) {
+  public AutogenS3VersionIdDiff setC(String value) {
     this.C = Utils.removeEmpty(value);
     return this;
   }
 
-  public List<String> getC() {
+  public String getC() {
     return this.C;
   }
 
@@ -204,15 +172,15 @@ public class AutogenS3VersionIdDiff implements ProtoType {
 
     AutogenS3VersionIdDiff obj = new AutogenS3VersionIdDiff();
     {
-      Function<ai.verta.modeldb.versioning.S3VersionIdDiff, List<String>> f = x -> blob.getAList();
+      Function<ai.verta.modeldb.versioning.S3VersionIdDiff, String> f = x -> (blob.getA());
       obj.setA(f.apply(blob));
     }
     {
-      Function<ai.verta.modeldb.versioning.S3VersionIdDiff, List<String>> f = x -> blob.getBList();
+      Function<ai.verta.modeldb.versioning.S3VersionIdDiff, String> f = x -> (blob.getB());
       obj.setB(f.apply(blob));
     }
     {
-      Function<ai.verta.modeldb.versioning.S3VersionIdDiff, List<String>> f = x -> blob.getCList();
+      Function<ai.verta.modeldb.versioning.S3VersionIdDiff, String> f = x -> (blob.getC());
       obj.setC(f.apply(blob));
     }
     {
@@ -227,30 +195,30 @@ public class AutogenS3VersionIdDiff implements ProtoType {
     ai.verta.modeldb.versioning.S3VersionIdDiff.Builder builder =
         ai.verta.modeldb.versioning.S3VersionIdDiff.newBuilder();
     {
-      if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
+      if (this.A != null && !this.A.equals("")) {
         Function<ai.verta.modeldb.versioning.S3VersionIdDiff.Builder, Void> f =
             x -> {
-              builder.addAllA(this.A);
+              builder.setA(this.A);
               return null;
             };
         f.apply(builder);
       }
     }
     {
-      if (this.B != null && !this.B.equals(null) && !this.B.isEmpty()) {
+      if (this.B != null && !this.B.equals("")) {
         Function<ai.verta.modeldb.versioning.S3VersionIdDiff.Builder, Void> f =
             x -> {
-              builder.addAllB(this.B);
+              builder.setB(this.B);
               return null;
             };
         f.apply(builder);
       }
     }
     {
-      if (this.C != null && !this.C.equals(null) && !this.C.isEmpty()) {
+      if (this.C != null && !this.C.equals("")) {
         Function<ai.verta.modeldb.versioning.S3VersionIdDiff.Builder, Void> f =
             x -> {
-              builder.addAllC(this.C);
+              builder.setC(this.C);
               return null;
             };
         f.apply(builder);
@@ -275,12 +243,9 @@ public class AutogenS3VersionIdDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepListOfString(this.A);
-
-    visitor.preVisitDeepListOfString(this.B);
-
-    visitor.preVisitDeepListOfString(this.C);
-
+    visitor.preVisitDeepString(this.A);
+    visitor.preVisitDeepString(this.B);
+    visitor.preVisitDeepString(this.C);
     visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -289,12 +254,9 @@ public class AutogenS3VersionIdDiff implements ProtoType {
   }
 
   public AutogenS3VersionIdDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setA(visitor.postVisitDeepListOfString(this.A));
-
-    this.setB(visitor.postVisitDeepListOfString(this.B));
-
-    this.setC(visitor.postVisitDeepListOfString(this.C));
-
+    this.setA(visitor.postVisitDeepString(this.A));
+    this.setB(visitor.postVisitDeepString(this.B));
+    this.setC(visitor.postVisitDeepString(this.C));
     this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }

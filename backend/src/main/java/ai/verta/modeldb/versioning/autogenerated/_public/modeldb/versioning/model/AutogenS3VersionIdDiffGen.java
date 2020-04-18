@@ -20,28 +20,13 @@ public class AutogenS3VersionIdDiffGen extends Generator<AutogenS3VersionIdDiff>
 
     AutogenS3VersionIdDiff obj = new AutogenS3VersionIdDiff();
     if (r.nextBoolean()) {
-      int size = r.nextInt(0, 10);
-      List<String> ret = new ArrayList(size);
-      for (int i = 0; i < size; i++) {
-        ret.add(new StringGenerator().generate(r, status));
-      }
-      obj.setA(Utils.removeEmpty(ret));
+      obj.setA(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
-      int size = r.nextInt(0, 10);
-      List<String> ret = new ArrayList(size);
-      for (int i = 0; i < size; i++) {
-        ret.add(new StringGenerator().generate(r, status));
-      }
-      obj.setB(Utils.removeEmpty(ret));
+      obj.setB(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
-      int size = r.nextInt(0, 10);
-      List<String> ret = new ArrayList(size);
-      for (int i = 0; i < size; i++) {
-        ret.add(new StringGenerator().generate(r, status));
-      }
-      obj.setC(Utils.removeEmpty(ret));
+      obj.setC(Utils.removeEmpty(new StringGenerator().generate(r, status)));
     }
     if (r.nextBoolean()) {
       obj.setStatus(
