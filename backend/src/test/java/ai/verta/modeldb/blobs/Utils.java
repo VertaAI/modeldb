@@ -233,6 +233,7 @@ public class Utils {
     if (b == null) return b;
     Map<String, AutogenS3DatasetComponentBlob> blobMap = new HashMap<>();
     for (AutogenS3DatasetComponentBlob blob : b.getComponents()) {
+      if (blob.getPath() == null) continue;
       blobMap.put(blob.getPath().getPath(), blob);
     }
     b.setComponents(new LinkedList<AutogenS3DatasetComponentBlob>(blobMap.values()));

@@ -17,13 +17,18 @@ import org.apache.commons.codec.binary.Hex;
 
 public class AutogenS3DatasetComponentDiff implements ProtoType {
   private AutogenPathDatasetComponentDiff Path;
+  private AutogenS3VersionIdDiff S3VersionId;
 
   public AutogenS3DatasetComponentDiff() {
     this.Path = null;
+    this.S3VersionId = null;
   }
 
   public Boolean isEmpty() {
     if (this.Path != null && !this.Path.equals(null)) {
+      return false;
+    }
+    if (this.S3VersionId != null && !this.S3VersionId.equals(null)) {
       return false;
     }
     return true;
@@ -37,6 +42,11 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     if (this.Path != null && !this.Path.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Path\": " + Path);
+      first = false;
+    }
+    if (this.S3VersionId != null && !this.S3VersionId.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"S3VersionId\": " + S3VersionId);
       first = false;
     }
     sb.append("}}");
@@ -72,6 +82,14 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
         if (!f.apply(this.Path, other.Path)) return false;
       }
     }
+    {
+      Function3<AutogenS3VersionIdDiff, AutogenS3VersionIdDiff, Boolean> f = (x, y) -> x.equals(y);
+      if (this.S3VersionId != null || other.S3VersionId != null) {
+        if (this.S3VersionId == null && other.S3VersionId != null) return false;
+        if (this.S3VersionId != null && other.S3VersionId == null) return false;
+        if (!f.apply(this.S3VersionId, other.S3VersionId)) return false;
+      }
+    }
     return true;
   }
 
@@ -82,6 +100,15 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
 
   public AutogenPathDatasetComponentDiff getPath() {
     return this.Path;
+  }
+
+  public AutogenS3DatasetComponentDiff setS3VersionId(AutogenS3VersionIdDiff value) {
+    this.S3VersionId = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenS3VersionIdDiff getS3VersionId() {
+    return this.S3VersionId;
   }
 
   public static AutogenS3DatasetComponentDiff fromProto(
@@ -95,6 +122,11 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
       Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenPathDatasetComponentDiff>
           f = x -> AutogenPathDatasetComponentDiff.fromProto(blob.getPath());
       obj.setPath(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenS3VersionIdDiff> f =
+          x -> AutogenS3VersionIdDiff.fromProto(blob.getS3VersionId());
+      obj.setS3VersionId(f.apply(blob));
     }
     return obj;
   }
@@ -112,6 +144,16 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
         f.apply(builder);
       }
     }
+    {
+      if (this.S3VersionId != null && !this.S3VersionId.equals(null)) {
+        Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder, Void> f =
+            x -> {
+              builder.setS3VersionId(this.S3VersionId.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -122,6 +164,7 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenPathDatasetComponentDiff(this.Path);
+    visitor.preVisitDeepAutogenS3VersionIdDiff(this.S3VersionId);
   }
 
   public AutogenS3DatasetComponentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -130,6 +173,7 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
 
   public AutogenS3DatasetComponentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setPath(visitor.postVisitDeepAutogenPathDatasetComponentDiff(this.Path));
+    this.setS3VersionId(visitor.postVisitDeepAutogenS3VersionIdDiff(this.S3VersionId));
     return this.postVisitShallow(visitor);
   }
 }
