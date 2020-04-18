@@ -19,3 +19,26 @@ class TestInit:
             result = runner.invoke(cli, ['init'])
             assert not result.exception
             assert result.output.startswith("found existing config file ")
+
+
+class TestRemote:
+    def test_add(self):
+        # TODO: create a new repo and use it
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(cli, ['init'])
+
+            result = runner.invoke(cli, ['remote', 'add', 'banana', 'https://www.verta.ai/'])
+            assert not result.exception
+            # TODO: assert remote added
+
+    def test_use(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(cli, ['init'])
+            runner.invoke(cli, ['remote', 'add', 'banana', 'https://www.verta.ai/'])
+
+            result = runner.invoke(cli, ['remote', 'use', 'banana'])
+            assert not result.exception
+            # TODO: assert remote is current
