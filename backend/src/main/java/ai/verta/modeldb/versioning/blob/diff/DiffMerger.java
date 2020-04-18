@@ -323,47 +323,76 @@ public class DiffMerger {
     return d.getB();
   }
 
+  public static AutogenS3DatasetComponentBlob mergeS3DatasetComponent(
+	      AutogenS3DatasetComponentBlob a,
+	      AutogenS3DatasetComponentDiff d,
+	      HashSet<String> conflictKeys) {
+	    return d.g;
+	  }
   public static AutogenS3DatasetBlob mergeS3Dataset(
       AutogenS3DatasetBlob a, AutogenS3DatasetDiff d, HashSet<String> conflictKeys) {
     return Utils.removeEmpty(
         new AutogenS3DatasetBlob()
             .setComponents(
-                mergeList(
-                    a,
-                    d,
-                    AutogenS3DatasetBlob::getComponents,
-                    AutogenS3DatasetDiff::getComponents,
-                    x ->
-                        Utils.getOrNull(
-                            Utils.getOrNull(x, AutogenS3DatasetComponentBlob::getPath),
-                            AutogenPathDatasetComponentBlob::getPath),
-                    x ->
-                        Utils.either(
-                            Utils.getOrNull(
-                                Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                AutogenPathDatasetComponentDiff::getA),
-                            Utils.getOrNull(
-                                Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                AutogenPathDatasetComponentDiff::getB),
-                            AutogenPathDatasetComponentBlob::getPath),
-                    x ->
-                        Utils.getOrNull(
-                            Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                            AutogenPathDatasetComponentDiff::getStatus),
-                    x ->
-                        new AutogenS3DatasetComponentBlob()
-                            .setPath(
-                                Utils.getOrNull(
-                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                    AutogenPathDatasetComponentDiff::getA)),
-                    x ->
-                        new AutogenS3DatasetComponentBlob()
-                            .setPath(
-                                Utils.getOrNull(
-                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                    AutogenPathDatasetComponentDiff::getB)),
-                    null,
-                    conflictKeys)));
+            		mergeList(a, d, AutogenS3DatasetBlob::getComponents, AutogenS3DatasetDiff::getComponents, 
+x -> Utils.getOrNull(Utils.getOrNull(x,AutogenS3DatasetComponentBlob::getPath), AutogenPathDatasetComponentBlob::getPath) + Utils.getOrNull(x,AutogenS3DatasetComponentBlob::getS3VersionId),
+x ->
+Utils.either(
+  Utils.getOrNull(
+      Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+      AutogenPathDatasetComponentDiff::getA),
+  Utils.getOrNull(
+      Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+      AutogenPathDatasetComponentDiff::getB),
+  AutogenPathDatasetComponentBlob::getPath) + Utils.either(
+		  Utils.getOrNull(Utils.getOrNull(x,AutogenS3DatasetComponentDiff::getS3VersionId),AutogenS3VersionIdDiff::getA), Utils.getOrNull(Utils.getOrNull(x,AutogenS3DatasetComponentDiff::getS3VersionId),AutogenS3VersionIdDiff::getB), s->s)
+, 
+
+
+x ->
+      Utils.getOrNull(x, AutogenS3DatasetComponentDiff::get),
+      AutogenPathDatasetComponentDiff::getStatus)
+, null, null, null, conflictKeys)
+            		//merge(a, d, AutogenS3DatasetBlob::getComponents, AutogenS3DatasetDiff::getComponents, DiffMerger::mergeS3DatasetComponent, conflictKeys)
+                 
+//                mergeList(
+//                    a,
+//                    d,
+//                    AutogenS3DatasetBlob::getComponents,
+//                    AutogenS3DatasetDiff::getComponents,
+//                    x ->
+//                        Utils.getOrNull(
+//                            Utils.getOrNull(x, AutogenS3DatasetComponentBlob::getPath),
+//                            AutogenPathDatasetComponentBlob::getPath),
+//                    x ->
+//                        Utils.either(
+//                            Utils.getOrNull(
+//                                Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+//                                AutogenPathDatasetComponentDiff::getA),
+//                            Utils.getOrNull(
+//                                Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+//                                AutogenPathDatasetComponentDiff::getB),
+//                            AutogenPathDatasetComponentBlob::getPath),
+//                    x ->
+//                        Utils.getOrNull(
+//                            Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+//                            AutogenPathDatasetComponentDiff::getStatus),
+//                    x ->
+//                        new AutogenS3DatasetComponentBlob()
+//                            .setPath(
+//                                Utils.getOrNull(
+//                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+//                                    AutogenPathDatasetComponentDiff::getA)),
+//                    x ->
+//                        new AutogenS3DatasetComponentBlob()
+//                            .setPath(
+//                                Utils.getOrNull(
+//                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
+//                                    AutogenPathDatasetComponentDiff::getB)),
+//                    null,
+//                    conflictKeys)
+            		)
+            		);
   }
 
   /*
