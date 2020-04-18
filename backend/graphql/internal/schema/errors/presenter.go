@@ -50,6 +50,12 @@ func Presenter(ctx context.Context, e error) *gqlerror.Error {
 		if code == codes.Unauthenticated {
 			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Unauthenticated")
 		}
+		if code == codes.AlreadyExists {
+			if grpcStatus.Message() != "" {
+				return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Already exists: "+grpcStatus.Message())
+			}
+			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Already exists")
+		}
 		if grpcStatus.Message() != "" {
 			return gqlerror.ErrorPathf(graphql.GetResolverContext(ctx).Path(), "Unknown server error, please report: "+grpcStatus.Err().Error())
 		}

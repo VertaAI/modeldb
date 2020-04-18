@@ -74,8 +74,9 @@ func (r *commitResolver) GetLocation(ctx context.Context, obj *models.Commit, lo
 			return nil, err
 		}
 		return &models.CommitBlob{
-			Content: buffer.String(),
-			Commit:  obj,
+			Content:  buffer.String(),
+			Commit:   obj,
+			Location: location,
 		}, nil
 	} else {
 		r.Logger.Error("unknown type for location", zap.Any("content", res))
@@ -125,6 +126,7 @@ func (r *commitResolver) Runs(ctx context.Context, obj *models.Commit, query *sc
 			RepoId: obj.Repository.GetId(),
 		},
 		Pagination: pagination,
+		CommitSha:  obj.Commit.GetCommitSha(),
 	})
 	if err != nil {
 		r.Logger.Error("failed to load experiment runs", zap.Error(err))
@@ -229,6 +231,8 @@ func (r *commitBlobResolver) Runs(ctx context.Context, obj *models.CommitBlob, q
 			RepoId: obj.Commit.Repository.GetId(),
 		},
 		Pagination: pagination,
+		CommitSha:  obj.Commit.Commit.GetCommitSha(),
+		Location:   obj.Location,
 	})
 	if err != nil {
 		r.Logger.Error("failed to load experiment runs", zap.Error(err))

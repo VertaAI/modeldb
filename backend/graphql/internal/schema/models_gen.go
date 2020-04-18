@@ -85,6 +85,12 @@ type FloatKeyValue struct {
 
 func (FloatKeyValue) IsKeyValue() {}
 
+type MergeResult struct {
+	Commit     *models.Commit `json:"commit"`
+	CommonBase *models.Commit `json:"commonBase"`
+	Conflicts  []string       `json:"conflicts"`
+}
+
 type NetworkBranchColor struct {
 	Branch      string `json:"branch"`
 	Color       int    `json:"color"`
@@ -308,5 +314,48 @@ func (e *ProjectVisibility) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ProjectVisibility) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Visibility string
+
+const (
+	VisibilityPrivate         Visibility = "PRIVATE"
+	VisibilityPublic          Visibility = "PUBLIC"
+	VisibilityOrgScopedPublic Visibility = "ORG_SCOPED_PUBLIC"
+)
+
+var AllVisibility = []Visibility{
+	VisibilityPrivate,
+	VisibilityPublic,
+	VisibilityOrgScopedPublic,
+}
+
+func (e Visibility) IsValid() bool {
+	switch e {
+	case VisibilityPrivate, VisibilityPublic, VisibilityOrgScopedPublic:
+		return true
+	}
+	return false
+}
+
+func (e Visibility) String() string {
+	return string(e)
+}
+
+func (e *Visibility) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Visibility(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Visibility", str)
+	}
+	return nil
+}
+
+func (e Visibility) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

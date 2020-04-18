@@ -98,10 +98,19 @@ func (r *workspaceResolver) Repository(ctx context.Context, obj *models.Workspac
 	return res.GetRepository(), nil
 }
 
-func (r *workspaceResolver) CreateRepository(ctx context.Context, obj *models.Workspace, name string) (*versioning.Repository, error) {
+func (r *workspaceResolver) CreateRepository(ctx context.Context, obj *models.Workspace, name string, visibility schema.Visibility) (*versioning.Repository, error) {
 	if !isMutation(ctx) {
 		r.Logger.Error(errors.CreateOutsideMutation.Error())
 		return nil, errors.CreateOutsideMutation
+	}
+	repoVisibility := versioning.RepositoryVisibilityEnum_PRIVATE
+	switch visibility {
+	case schema.VisibilityPrivate:
+		repoVisibility = versioning.RepositoryVisibilityEnum_PRIVATE
+	case schema.VisibilityOrgScopedPublic:
+		repoVisibility = versioning.RepositoryVisibilityEnum_ORG_SCOPED_PUBLIC
+	case schema.VisibilityPublic:
+		repoVisibility = versioning.RepositoryVisibilityEnum_PUBLIC
 	}
 	res, err := r.Connections.Versioning.CreateRepository(ctx, &versioning.SetRepository{
 		Id: &versioning.RepositoryIdentification{
@@ -109,6 +118,10 @@ func (r *workspaceResolver) CreateRepository(ctx context.Context, obj *models.Wo
 				Name:          name,
 				WorkspaceName: obj.Name,
 			},
+		},
+		Repository: &versioning.Repository{
+			Name:                 name,
+			RepositoryVisibility: repoVisibility,
 		},
 	})
 	if err != nil {

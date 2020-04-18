@@ -25,7 +25,7 @@ type Repository {
     delete: Boolean!
     addLabels(labels: [String!]!): Repository!
     deleteLabels(labels: [String!]!): Repository!
-    merge(a: CommitReference!, b: CommitReference!, message: String): Commit
+    merge(a: CommitReference!, b: CommitReference!, message: String): MergeResult!
 }
 
 input CommitReference {
@@ -52,4 +52,10 @@ type RepositoryTag {
 type RepositoryBranch {
   name: String!
   commit: Commit!
+}
+
+type MergeResult {
+  commit: Commit
+  commonBase: Commit
+  conflicts: [String!]
 }

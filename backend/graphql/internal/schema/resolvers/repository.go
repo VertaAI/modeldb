@@ -333,7 +333,7 @@ func (r *repositoryResolver) DeleteLabels(ctx context.Context, obj *versioning.R
 
 	return r.Resolver.Query().Repository(ctx, r.id(obj))
 }
-func (r *repositoryResolver) Merge(ctx context.Context, obj *versioning.Repository, a schema.CommitReference, b schema.CommitReference, message *string) (*models.Commit, error) {
+func (r *repositoryResolver) Merge(ctx context.Context, obj *versioning.Repository, a schema.CommitReference, b schema.CommitReference, message *string) (*schema.MergeResult, error) {
 	if !isMutation(ctx) {
 		r.Logger.Error(errors.MergeOutsideMutation.Error())
 		return nil, errors.MergeOutsideMutation
@@ -367,9 +367,36 @@ func (r *repositoryResolver) Merge(ctx context.Context, obj *versioning.Reposito
 		return nil, err
 	}
 
-	return &models.Commit{
-		Commit:     res.GetCommit(),
-		Repository: obj,
+	var resultCommit, baseCommit *models.Commit
+	var conflicts []string
+	if res.GetCommit() != nil {
+		resultCommit = &models.Commit{
+			Commit:     res.GetCommit(),
+			Repository: obj,
+		}
+	}
+	if res.GetCommonBase() != nil {
+		baseCommit = &models.Commit{
+			Commit:     res.GetCommonBase(),
+			Repository: obj,
+		}
+	}
+	if len(res.GetConflicts()) > 0 {
+		conflicts = make([]string, len(res.GetConflicts()))
+		for i, diff := range res.GetConflicts() {
+			buffer := &bytes.Buffer{}
+			if err := (&jsonpb.Marshaler{OrigName: true}).Marshal(buffer, diff); err != nil {
+				r.Logger.Error("failed to serialize diff", zap.Error(err))
+				return nil, err
+			}
+			conflicts[i] = buffer.String()
+		}
+	}
+
+	return &schema.MergeResult{
+		Commit:     resultCommit,
+		CommonBase: baseCommit,
+		Conflicts:  conflicts,
 	}, nil
 }
 

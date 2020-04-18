@@ -173,6 +173,12 @@ type ComplexityRoot struct {
 		Value func(childComplexity int) int
 	}
 
+	MergeResult struct {
+		Commit     func(childComplexity int) int
+		CommonBase func(childComplexity int) int
+		Conflicts  func(childComplexity int) int
+	}
+
 	Mutation struct {
 		AddProjectTag          func(childComplexity int, id string, tag string) int
 		AddRunTag              func(childComplexity int, id string, tag string) int
@@ -352,7 +358,7 @@ type ComplexityRoot struct {
 	}
 
 	Workspace struct {
-		CreateRepository func(childComplexity int, name string) int
+		CreateRepository func(childComplexity int, name string, visibility Visibility) int
 		Name             func(childComplexity int) int
 		Projects         func(childComplexity int, next *string, query *ProjectsQuery) int
 		Repositories     func(childComplexity int, next *string, query *RepositoriesQuery) int
@@ -478,7 +484,7 @@ type RepositoryResolver interface {
 	Delete(ctx context.Context, obj *versioning.Repository) (bool, error)
 	AddLabels(ctx context.Context, obj *versioning.Repository, labels []string) (*versioning.Repository, error)
 	DeleteLabels(ctx context.Context, obj *versioning.Repository, labels []string) (*versioning.Repository, error)
-	Merge(ctx context.Context, obj *versioning.Repository, a CommitReference, b CommitReference, message *string) (*models.Commit, error)
+	Merge(ctx context.Context, obj *versioning.Repository, a CommitReference, b CommitReference, message *string) (*MergeResult, error)
 }
 type RepositoryBranchResolver interface {
 	Commit(ctx context.Context, obj *models.RepositoryBranch) (*models.Commit, error)
@@ -515,7 +521,7 @@ type WorkspaceResolver interface {
 	Projects(ctx context.Context, obj *models.Workspace, next *string, query *ProjectsQuery) (*Projects, error)
 	Repositories(ctx context.Context, obj *models.Workspace, next *string, query *RepositoriesQuery) (*Repositories, error)
 	Repository(ctx context.Context, obj *models.Workspace, name string) (*versioning.Repository, error)
-	CreateRepository(ctx context.Context, obj *models.Workspace, name string) (*versioning.Repository, error)
+	CreateRepository(ctx context.Context, obj *models.Workspace, name string, visibility Visibility) (*versioning.Repository, error)
 }
 
 type executableSchema struct {
@@ -1024,6 +1030,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FloatKeyValue.Value(childComplexity), true
+
+	case "MergeResult.commit":
+		if e.complexity.MergeResult.Commit == nil {
+			break
+		}
+
+		return e.complexity.MergeResult.Commit(childComplexity), true
+
+	case "MergeResult.commonBase":
+		if e.complexity.MergeResult.CommonBase == nil {
+			break
+		}
+
+		return e.complexity.MergeResult.CommonBase(childComplexity), true
+
+	case "MergeResult.conflicts":
+		if e.complexity.MergeResult.Conflicts == nil {
+			break
+		}
+
+		return e.complexity.MergeResult.Conflicts(childComplexity), true
 
 	case "Mutation.addProjectTag":
 		if e.complexity.Mutation.AddProjectTag == nil {
@@ -1985,7 +2012,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Workspace.CreateRepository(childComplexity, args["name"].(string)), true
+		return e.complexity.Workspace.CreateRepository(childComplexity, args["name"].(string), args["visibility"].(Visibility)), true
 
 	case "Workspace.name":
 		if e.complexity.Workspace.Name == nil {
@@ -2396,7 +2423,7 @@ type Repository {
     delete: Boolean!
     addLabels(labels: [String!]!): Repository!
     deleteLabels(labels: [String!]!): Repository!
-    merge(a: CommitReference!, b: CommitReference!, message: String): Commit
+    merge(a: CommitReference!, b: CommitReference!, message: String): MergeResult!
 }
 
 input CommitReference {
@@ -2424,6 +2451,12 @@ type RepositoryBranch {
   name: String!
   commit: Commit!
 }
+
+type MergeResult {
+  commit: Commit
+  commonBase: Commit
+  conflicts: [String!]
+}
 scalar Date
 type Team {
     id: ID!
@@ -2443,6 +2476,11 @@ type User {
   picture: String
   username: String!
 }
+enum Visibility {
+  PRIVATE
+  PUBLIC
+  ORG_SCOPED_PUBLIC
+}
 type Workspace {
   name: String!
 
@@ -2450,7 +2488,7 @@ type Workspace {
 
   repositories(next: String, query: RepositoriesQuery): Repositories!
   repository(name: String!): Repository
-  createRepository(name: String!): Repository
+  createRepository(name: String!, visibility: Visibility!): Repository
 }
 `},
 )
@@ -3102,6 +3140,14 @@ func (ec *executionContext) field_Workspace_createRepository_args(ctx context.Co
 		}
 	}
 	args["name"] = arg0
+	var arg1 Visibility
+	if tmp, ok := rawArgs["visibility"]; ok {
+		arg1, err = ec.unmarshalNVisibility2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐVisibility(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["visibility"] = arg1
 	return args, nil
 }
 
@@ -5657,6 +5703,108 @@ func (ec *executionContext) _FloatKeyValue_value(ctx context.Context, field grap
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MergeResult_commit(ctx context.Context, field graphql.CollectedField, obj *MergeResult) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "MergeResult",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Commit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Commit)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOCommit2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚋmodelsᚐCommit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MergeResult_commonBase(ctx context.Context, field graphql.CollectedField, obj *MergeResult) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "MergeResult",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommonBase, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Commit)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOCommit2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚋmodelsᚐCommit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MergeResult_conflicts(ctx context.Context, field graphql.CollectedField, obj *MergeResult) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "MergeResult",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Conflicts, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_editRunDescription(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -9135,12 +9283,15 @@ func (ec *executionContext) _Repository_merge(ctx context.Context, field graphql
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.Commit)
+	res := resTmp.(*MergeResult)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOCommit2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚋmodelsᚐCommit(ctx, field.Selections, res)
+	return ec.marshalNMergeResult2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐMergeResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _RepositoryBranch_name(ctx context.Context, field graphql.CollectedField, obj *models.RepositoryBranch) (ret graphql.Marshaler) {
@@ -10291,7 +10442,7 @@ func (ec *executionContext) _Workspace_createRepository(ctx context.Context, fie
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Workspace().CreateRepository(rctx, obj, args["name"].(string))
+		return ec.resolvers.Workspace().CreateRepository(rctx, obj, args["name"].(string), args["visibility"].(Visibility))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12481,6 +12632,34 @@ func (ec *executionContext) _FloatKeyValue(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var mergeResultImplementors = []string{"MergeResult"}
+
+func (ec *executionContext) _MergeResult(ctx context.Context, sel ast.SelectionSet, obj *MergeResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, mergeResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MergeResult")
+		case "commit":
+			out.Values[i] = ec._MergeResult_commit(ctx, field, obj)
+		case "commonBase":
+			out.Values[i] = ec._MergeResult_commonBase(ctx, field, obj)
+		case "conflicts":
+			out.Values[i] = ec._MergeResult_conflicts(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -13569,6 +13748,9 @@ func (ec *executionContext) _Repository(ctx context.Context, sel ast.SelectionSe
 					}
 				}()
 				res = ec._Repository_merge(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		default:
@@ -14862,6 +15044,20 @@ func (ec *executionContext) marshalNKeyValue2ᚕgithubᚗcomᚋVertaAIᚋmodeldb
 	return ret
 }
 
+func (ec *executionContext) marshalNMergeResult2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐMergeResult(ctx context.Context, sel ast.SelectionSet, v MergeResult) graphql.Marshaler {
+	return ec._MergeResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMergeResult2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐMergeResult(ctx context.Context, sel ast.SelectionSet, v *MergeResult) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._MergeResult(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNNamedCommitBlob2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚋmodelsᚐNamedCommitBlob(ctx context.Context, sel ast.SelectionSet, v models.NamedCommitBlob) graphql.Marshaler {
 	return ec._NamedCommitBlob(ctx, sel, &v)
 }
@@ -15589,6 +15785,15 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋVertaAIᚋmodeldbᚋp
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNVisibility2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐVisibility(ctx context.Context, v interface{}) (Visibility, error) {
+	var res Visibility
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNVisibility2githubᚗcomᚋVertaAIᚋmodeldbᚋbackendᚋgraphqlᚋinternalᚋschemaᚐVisibility(ctx context.Context, sel ast.SelectionSet, v Visibility) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

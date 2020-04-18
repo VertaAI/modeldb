@@ -20,8 +20,9 @@ type NamedCommitBlob struct {
 }
 
 type CommitBlob struct {
-	Commit  *Commit
-	Content string
+	Commit   *Commit
+	Location []string
+	Content  string
 }
 
 func (CommitBlob) IsCommitElement() {}
