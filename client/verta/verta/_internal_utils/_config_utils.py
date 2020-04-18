@@ -78,3 +78,38 @@ def create_empty_config_file(dirpath):
         yaml.dump({}, f)
 
     return config_filepath
+
+
+def find_config_files():
+    """
+    Returns the locations of accessible Verta config files.
+
+    Config files are searched for in the following locations, in order:
+
+    * current directory
+    * parent directories until the root
+    * ``$HOME/.verta/``
+
+    Returns
+    -------
+    config_filepaths : list of str
+        Paths to config files, with the closest to the current directory being first.
+
+    """
+    dirs_to_search = []
+    cur_dir = os.getcwd()
+    while cur_dir:
+        dirs_to_search.append(cur_dir)
+        cur_dir = os.path.dirname(cur_dir)
+    dirs_to_search.append(os.path.expanduser("~/.verta"))
+
+    config_filepaths = []
+    for dirpath in dirs_to_search:
+        # TODO: raise error if YAML and JSON in same dir
+        config_filepaths.extend(
+            os.path.join(dirpath, config_filename)
+            for config_filename
+            in CONFIG_FILENAMES.intersection(os.listdir(dirpath))
+        )
+
+    return config_filepaths
