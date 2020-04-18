@@ -27,6 +27,10 @@ public class AutogenS3DatasetComponentDiffGen extends Generator<AutogenS3Dataset
       obj.setS3VersionId(
           Utils.removeEmpty(gen().type(AutogenS3VersionIdDiff.class).generate(r, status)));
     }
+    if (r.nextBoolean()) {
+      obj.setStatus(
+          Utils.removeEmpty(gen().type(AutogenDiffStatusEnumDiffStatus.class).generate(r, status)));
+    }
     return obj;
   }
 }

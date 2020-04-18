@@ -244,7 +244,8 @@ public class DiffComputer {
                     a,
                     b,
                     AutogenS3DatasetComponentBlob::getS3VersionId,
-                    DiffComputer::computeS3VersionIdDiff)));
+                    DiffComputer::computeS3VersionIdDiff))
+            .setStatus(getStatus(a, b)));
   }
 
   public static AutogenS3VersionIdDiff computeS3VersionIdDiff(String a, String b) {

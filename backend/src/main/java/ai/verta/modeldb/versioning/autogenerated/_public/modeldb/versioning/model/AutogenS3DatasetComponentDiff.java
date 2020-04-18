@@ -18,10 +18,12 @@ import org.apache.commons.codec.binary.Hex;
 public class AutogenS3DatasetComponentDiff implements ProtoType {
   private AutogenPathDatasetComponentDiff Path;
   private AutogenS3VersionIdDiff S3VersionId;
+  private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenS3DatasetComponentDiff() {
     this.Path = null;
     this.S3VersionId = null;
+    this.Status = null;
   }
 
   public Boolean isEmpty() {
@@ -29,6 +31,9 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
       return false;
     }
     if (this.S3VersionId != null && !this.S3VersionId.equals(null)) {
+      return false;
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
       return false;
     }
     return true;
@@ -47,6 +52,11 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     if (this.S3VersionId != null && !this.S3VersionId.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"S3VersionId\": " + S3VersionId);
+      first = false;
+    }
+    if (this.Status != null && !this.Status.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Status\": " + Status);
       first = false;
     }
     sb.append("}}");
@@ -90,6 +100,15 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
         if (!f.apply(this.S3VersionId, other.S3VersionId)) return false;
       }
     }
+    {
+      Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.Status != null || other.Status != null) {
+        if (this.Status == null && other.Status != null) return false;
+        if (this.Status != null && other.Status == null) return false;
+        if (!f.apply(this.Status, other.Status)) return false;
+      }
+    }
     return true;
   }
 
@@ -111,6 +130,15 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     return this.S3VersionId;
   }
 
+  public AutogenS3DatasetComponentDiff setStatus(AutogenDiffStatusEnumDiffStatus value) {
+    this.Status = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenDiffStatusEnumDiffStatus getStatus() {
+    return this.Status;
+  }
+
   public static AutogenS3DatasetComponentDiff fromProto(
       ai.verta.modeldb.versioning.S3DatasetComponentDiff blob) {
     if (blob == null) {
@@ -127,6 +155,11 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
       Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenS3VersionIdDiff> f =
           x -> AutogenS3VersionIdDiff.fromProto(blob.getS3VersionId());
       obj.setS3VersionId(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenDiffStatusEnumDiffStatus>
+          f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
+      obj.setStatus(f.apply(blob));
     }
     return obj;
   }
@@ -154,6 +187,16 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
         f.apply(builder);
       }
     }
+    {
+      if (this.Status != null && !this.Status.equals(null)) {
+        Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder, Void> f =
+            x -> {
+              builder.setStatus(this.Status.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
     return builder;
   }
 
@@ -165,6 +208,7 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenPathDatasetComponentDiff(this.Path);
     visitor.preVisitDeepAutogenS3VersionIdDiff(this.S3VersionId);
+    visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
   public AutogenS3DatasetComponentDiff postVisitShallow(Visitor visitor) throws ModelDBException {
@@ -174,6 +218,7 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
   public AutogenS3DatasetComponentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setPath(visitor.postVisitDeepAutogenPathDatasetComponentDiff(this.Path));
     this.setS3VersionId(visitor.postVisitDeepAutogenS3VersionIdDiff(this.S3VersionId));
+    this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }
 }

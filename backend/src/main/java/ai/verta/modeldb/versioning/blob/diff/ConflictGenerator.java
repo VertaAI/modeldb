@@ -469,7 +469,8 @@ public class ConflictGenerator {
                               AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
                           .setA(mapA.get(key).getS3VersionId())
                           .setB(mapB.get(key).getS3VersionId())
-                          .setC(mapC.get(key).getS3VersionId()))));
+                          .setC(mapC.get(key).getS3VersionId()))
+                  .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))));
     }
     return retList;
   }
