@@ -166,3 +166,33 @@ def find_config_files():
         )
 
     return filepaths
+
+
+def merge(accum, other):
+    """
+    Merges `other` into `accum` in place.
+
+    This function will encounter bugs if values at the same location are of different types, so it
+    should only be called after the configs have been validated against the protobuf spec.
+
+    Parameters
+    ----------
+    accum : dict
+        Config (or field, if being called recursively) being accumulated.
+    other : dict
+        Incoming config (or field, if being called recursively).
+
+    Notes
+    -----
+    Adapted from https://stackoverflow.com/a/20666342/8651995.
+
+    """
+    for key, value in other.items():
+        if isinstance(value, dict):
+            node = accum.setdefault(key, {})
+            merge(node, value)
+        elif isinstance(value, list):
+            node = accum.set_default(key, [])
+            node.extend(value)
+        else:
+            accum[key] = value
