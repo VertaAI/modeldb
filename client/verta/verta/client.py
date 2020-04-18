@@ -30,7 +30,6 @@ from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 from ._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 from ._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
-from ._protos.public.client import Config_pb2 as _ConfigProtos
 
 from .external import six
 from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
@@ -262,11 +261,7 @@ class Client(object):
             stream = open(config_file, 'r')
             self._config = yaml.load(stream, Loader=yaml.FullLoader)
             # validate config against proto spec
-            _utils.json_to_proto(
-                self._config,
-                _ConfigProtos.Config,
-                ignore_unknown_fields=False,
-            )
+            _config_utils.validate(self._config)
         else:
             self._config = {}
 

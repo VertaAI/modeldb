@@ -6,6 +6,10 @@ import os
 
 import yaml
 
+from .._protos.public.client import Config_pb2 as _ConfigProtos
+
+from . import _utils
+
 
 # TODO: make this a named tuple, if it would help readability
 CONFIG_YAML_FILENAME = "verta_config.yaml"
@@ -66,6 +70,8 @@ def load(config_filepath):
             config = yaml.safe_load(f)
         else:  # JSON
             config = json.load(f)
+
+    validate(config)
 
     return config
 
@@ -167,6 +173,14 @@ def find_config_files():
         )
 
     return filepaths
+
+
+def validate(config):
+    """Validates `config` against the protobuf spec."""
+    _utils.json_to_proto(
+        config, _ConfigProtos.Config,
+        ignore_unknown_fields=True,  # TODO: reset to False when protos are impl
+    )
 
 
 def merge(accum, other):
