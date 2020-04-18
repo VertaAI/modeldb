@@ -1,7 +1,5 @@
 import os
 
-import yaml
-
 import pytest
 from click.testing import CliRunner
 from verta._cli import cli
