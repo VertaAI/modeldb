@@ -41,6 +41,20 @@ class TestRemote:
                 assert remote['url'] == url
                 assert remote['branch'] == "master"
 
+    def test_add_existing_error(self):
+        # TODO: create a new repo and use it
+        name = "banana"
+        url = "https://www.verta.ai/"
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(cli, ['init'])
+            runner.invoke(cli, ['remote', 'add', name, url])
+
+            result = runner.invoke(cli, ['remote', 'add', name, url])
+            assert result.exception
+            assert " already exists" in result.output
+
     def test_use(self):
         # TODO: create a new repo and use it
         name = "banana"
@@ -55,3 +69,14 @@ class TestRemote:
             assert not result.exception
             with _config_utils.read_config() as config:
                 assert config['current-remote'] == name
+
+    def test_use_nonexisting_error(self):
+        name = "banana"
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(cli, ['init'])
+
+            result = runner.invoke(cli, ['remote', 'use', name])
+            assert result.exception
+            assert "no such remote: " in result.output
