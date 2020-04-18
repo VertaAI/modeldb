@@ -11,5 +11,5 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /graphql ./backend/graphql
 
 FROM scratch
 COPY --from=builder /graphql /app/bin/graphql
-EXPOSE 8080
+EXPOSE 4000
 ENTRYPOINT ["/app/bin/graphql"]
