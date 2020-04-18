@@ -19,13 +19,22 @@ CONFIG_FILENAMES = {
 @contextlib.contextmanager
 def read_config():
     """
-    Yields the merged contents of all recursively-found config files.
+    Yields the merged contents of all accessible config files.
+
+    Even though this context does nothing on exit, it's still useful for scopes where
+    :func:`write_config` is also being used, to help make sure the contents aren't being mixed up.
+
+    Yields
+    ------
+    config : dict
+        Merged contents of all accessible config files.
 
     """
     # TODO: unify with Client's config methods
-    # TODO: recursively search for and merge config files
-    with open(CONFIG_YAML_FILENAME, 'r') as f:
-        config = yaml.safe_load(f)
+
+    config = {}
+    for filepath in reversed(find_config_files()):
+        merge(config, load(filepath))
 
     yield config
 
@@ -35,25 +44,38 @@ def write_config():
     """
     Updates the nearest config file.
 
+    Yields
+    ------
+    config : dict
+        Contents of the nearest config file.
+
     """
     # TODO: unify with Client's config methods
-    # TODO: recursively search for nearest config file
-    config_filepath = CONFIG_YAML_FILENAME
+    config_filepath = find_closest_config_file()
 
-    if config_filepath.endswith('.yaml'):
-        load = yaml.safe_load
-        dump = yaml.safe_dump
-    else:  # JSON
-        load = json.load
-        dump = json.dump
-
-    with open(config_filepath, 'r') as f:
-        config = load(f)
+    config = load(config_filepath)
 
     yield config
 
+    dump(config, config_filepath)
+
+
+def load(config_filepath):
+    with open(config_filepath, 'r') as f:
+        if config_filepath.endswith('.yaml'):
+            config = yaml.safe_load(f)
+        else:  # JSON
+            config = json.load(f)
+
+    return config
+
+
+def dump(config, config_filepath):
     with open(config_filepath, 'w') as f:
-        dump(config, f)
+        if config_filepath.endswith('.yaml'):
+            yaml.safe_dump(config, f)
+        else:  # JSON
+            json.dump(config, f)
 
 
 def create_empty_config_file(dirpath):
