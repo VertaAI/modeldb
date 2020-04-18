@@ -39,6 +39,26 @@ class TestRemote:
                 assert remote['url'] == url
                 assert remote['branch'] == "master"
 
+    def test_add_and_use_if_only(self):
+        # TODO: create a new repo and use it
+        name1 = "origin"
+        url1 = "https://www.verta.ai/"
+        name2 = "upstream"
+        url2 = "https://www.verta.ai/"
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(cli, ['init'])
+
+            runner.invoke(cli, ['remote', 'add', name1, url1])
+            with _config_utils.read_config() as config:
+                assert config['current-remote'] == name1
+
+            runner.invoke(cli, ['remote', 'add', name2, url2])
+            with _config_utils.read_config() as config:
+                # unchanged; still name1
+                assert config['current-remote'] == name1
+
     def test_add_existing_error(self):
         # TODO: create a new repo and use it
         name = "origin"
@@ -55,18 +75,21 @@ class TestRemote:
 
     def test_use(self):
         # TODO: create a new repo and use it
-        name = "origin"
-        url = "https://www.verta.ai/"
+        name1 = "origin"
+        url1 = "https://www.verta.ai/"
+        name2 = "upstream"
+        url2 = "https://www.verta.ai/"
 
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(cli, ['init'])
-            runner.invoke(cli, ['remote', 'add', name, url])
+            runner.invoke(cli, ['remote', 'add', name1, url1])
+            runner.invoke(cli, ['remote', 'add', name2, url2])
 
-            result = runner.invoke(cli, ['remote', 'use', name])
+            result = runner.invoke(cli, ['remote', 'use', name2])
             assert not result.exception
             with _config_utils.read_config() as config:
-                assert config['current-remote'] == name
+                assert config['current-remote'] == name2
 
     def test_use_nonexisting_error(self):
         name = "origin"

@@ -14,19 +14,26 @@ def remote():
 @remote.command()
 @click.argument('name')
 @click.argument('url')
-def add(name, url):
+@click.pass_context
+def add(ctx, name, url):
     """Add a remote repository."""
     # TODO: validate `url`
 
     with _config_utils.read_config() as config:
-        if name in config.get('remotes', {}):
+        remotes = config.get('remotes', {})
+        if name in remotes:
             raise click.BadParameter("remote '{}' already exists".format(name))
+
+        num_other_remotes = len(remotes)
 
     with _config_utils.write_config() as config:
         config.setdefault('remotes', {})[name] = {
             'url': url,
             'branch': "master",
         }
+
+    if num_other_remotes == 0:
+        ctx.invoke(use, name=name)
 
 
 @remote.command()
