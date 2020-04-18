@@ -1992,4 +1992,62 @@ public class CommitTest {
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Revert commit test end................................");
   }
+
+  @Test
+  public void revertToMasterCommitNoBlobTest() throws ModelDBException {
+    LOGGER.info("Revert commit test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateCommitRequest createCommitRequestCommitA =
+        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
+
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequestCommitA);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit commitA = commitResponse.getCommit();
+
+    RevertRepositoryCommitsRequest revertRepositoryCommitsRequest =
+        RevertRepositoryCommitsRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitToRevertSha(commitA.getCommitSha())
+            .setBaseCommitSha(getBranchResponse.getCommit().getCommitSha())
+            .build();
+    RevertRepositoryCommitsRequest.Response revertCommitResponse =
+        versioningServiceBlockingStub.revertRepositoryCommits(revertRepositoryCommitsRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
+    Commit revertedCommit1 = revertCommitResponse.getCommit();
+    assertEquals(
+        "Revert message not match with expected message",
+        VersioningUtils.revertCommitMessage(commitA),
+        revertedCommit1.getMessage());
+
+    for (Commit deleteCommit : new Commit[] {revertedCommit1, commitA}) {
+      DeleteCommitRequest deleteCommitRequest =
+          DeleteCommitRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setCommitSha(deleteCommit.getCommitSha())
+              .build();
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+    }
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+    LOGGER.info("Revert commit test end................................");
+  }
 }
