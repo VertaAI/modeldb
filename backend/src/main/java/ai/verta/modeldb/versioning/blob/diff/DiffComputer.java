@@ -239,22 +239,21 @@ public class DiffComputer {
                     b,
                     AutogenS3DatasetComponentBlob::getPath,
                     DiffComputer::computePathDatasetComponentDiff))
-        //            .setS3VersionId(
-        //            		computeDiff(
-        //            				a,
-        //            				b,
-        //            				AutogenS3DatasetComponentBlob::getS3VersionId,
-        //            				DiffComputer::computeS3VersionIdDiff))
-        );
+            .setS3VersionId(
+                computeDiff(
+                    a,
+                    b,
+                    AutogenS3DatasetComponentBlob::getS3VersionId,
+                    DiffComputer::computeS3VersionIdDiff)));
   }
 
-  //  public static AutogenS3VersionIdDiff computeS3VersionIdDiff(
-  //	      String a, String b) {
-  //	    if (a == null && b == null) return null;
-  //	    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
-  //	    return Utils.removeEmpty(
-  //	        new AutogenS3VersionIdDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
-  //	  }
+  public static AutogenS3VersionIdDiff computeS3VersionIdDiff(String a, String b) {
+    if (a == null && b == null) return null;
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    return Utils.removeEmpty(
+        new AutogenS3VersionIdDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+  }
+
   public static AutogenEnvironmentDiff computeEnvironmentDiff(
       AutogenEnvironmentBlob a, AutogenEnvironmentBlob b) {
     if (a == null && b == null) return null;
