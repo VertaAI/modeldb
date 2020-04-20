@@ -432,7 +432,7 @@ message FindRepositories {
     //string sort_key = 9;
 
     message Response {
-        repeated Repository repository = 1;
+        repeated Repository repositories = 1;
         int64 total_records = 2;
     }
 }
