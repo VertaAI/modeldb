@@ -1310,6 +1310,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
             getExperimentRunHyperparameterConfigBlobMap(session, expRunIds);
 
+        // Map<experimentRunID, Map<LocationString, CodeBlob>> : Map from experimentRunID to Map of
+        // LocationString to CodeBlob
         Map<String, Map<String, CodeBlob>> expRunCodeBlobMap =
             getExperimentRunCodeBlobMap(session, expRunIds);
 
