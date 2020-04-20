@@ -225,7 +225,7 @@ public class DiffComputer {
                     a,
                     b,
                     AutogenS3DatasetBlob::getComponents,
-                    x -> x.getPath().getPath() + x.getS3VersionId(),
+                    x -> x.getPath().getPath(),
                     DiffComputer::computeS3DatasetComponentDiff)));
   }
 

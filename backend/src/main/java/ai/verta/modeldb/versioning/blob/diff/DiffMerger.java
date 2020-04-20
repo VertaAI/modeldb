@@ -335,16 +335,13 @@ public class DiffMerger {
                     AutogenS3DatasetDiff::getComponents,
                     x ->
                         Utils.getOrNull(
-                                Utils.getOrNull(x, AutogenS3DatasetComponentBlob::getPath),
-                                AutogenPathDatasetComponentBlob::getPath)
-                            + Utils.getOrNull(x, AutogenS3DatasetComponentBlob::getS3VersionId),
+                            Utils.getOrNull(x, AutogenS3DatasetComponentBlob::getPath),
+                            AutogenPathDatasetComponentBlob::getPath),
                     x ->
                         Utils.getOrNull(
-                                Utils.either(
-                                    x.getA(), x.getB(), AutogenS3DatasetComponentBlob::getPath),
-                                AutogenPathDatasetComponentBlob::getPath)
-                            + Utils.either(
-                                x.getA(), x.getB(), AutogenS3DatasetComponentBlob::getS3VersionId),
+                            Utils.either(
+                                x.getA(), x.getB(), AutogenS3DatasetComponentBlob::getPath),
+                            AutogenPathDatasetComponentBlob::getPath),
                     x -> Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getStatus),
                     x ->
                         new AutogenS3DatasetComponentBlob()
