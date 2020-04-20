@@ -32,6 +32,33 @@ Release Notes
      <>`__
 
 
+v0.14.3 (2020-04-20)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `replace commit.branch() with commit.new_branch()
+  <https://github.com/VertaAI/modeldb/pull/494>`__
+
+New Features
+^^^^^^^^^^^^
+- `enable passing in ~ as part of filepaths
+  <https://github.com/VertaAI/modeldb/pull/493>`__
+- `enable setting host from $VERTA_HOST
+  <https://github.com/VertaAI/modeldb/pull/537>`__
+- `capture versioning information from S3
+  <https://github.com/VertaAI/modeldb/pull/526>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `add click as a dependency in preparation for CLI development
+  <https://github.com/VertaAI/modeldb/pull/482>`__
+- `use back end for commit merges
+  <https://github.com/VertaAI/modeldb/pull/485>`__
+- `use back end for commit reverts
+  <https://github.com/VertaAI/modeldb/pull/510>`__
+
+
 v0.14.2 (2020-04-01)
 --------------------
 
