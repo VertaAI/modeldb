@@ -423,13 +423,13 @@ message FindRepositories {
     repeated string repo_names = 2;
     string workspace_name = 3;
     repeated KeyValueQuery predicates = 4;
-    bool ids_only = 5; // whether to return full experiment runs or ids only
 
     //For pagination
     int32 page_number = 6;
     int32 page_limit = 7;
-    bool ascending = 8;
-    string sort_key = 9;
+    //In future requirement
+    //bool ascending = 8;
+    //string sort_key = 9;
 
     message Response {
         repeated Repository repository = 1;
@@ -447,8 +447,9 @@ message FindRepositoriesBlobs {
     //For pagination
     int32 page_number = 6;
     int32 page_limit = 7;
-    bool ascending = 8;
-    string sort_key = 9;
+    //In future requirement
+    //bool ascending = 8;
+    //string sort_key = 9;
 
     message Response {
         repeated BlobExpanded blobs = 1;
