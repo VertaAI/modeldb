@@ -1,4 +1,4 @@
-package ai.verta.modeldb.entities;
+package ai.verta.modeldb.entities.lineage;
 
 import ai.verta.modeldb.LineageEntry;
 import ai.verta.modeldb.LineageEntry.DescriptionCase;
@@ -21,17 +21,6 @@ public class LineageEntity implements Serializable {
 
   public LineageEntity(Long id, LineageEntry input, LineageEntry output)
       throws InvalidProtocolBufferException {
-    inputType = input.getDescriptionCase().getNumber();
-    switch (input.getDescriptionCase()) {
-      case EXPERIMENT_RUN:
-        inputExperimentId = input.getExperimentRun();
-        break;
-      case BLOB:
-        VersioningLineageEntry blob = input.getBlob();
-        inputRepositoryId = blob.getRepositoryId();
-        inputCommitSha = blob.getCommitSha();
-        inputLocation = ModelDBUtils.getStringFromProtoObject(Location.newBuilder().addAllLocation(blob.getLocationList()));
-    }
     outputType = output.getDescriptionCase().getNumber();
     switch (output.getDescriptionCase()) {
       case EXPERIMENT_RUN:

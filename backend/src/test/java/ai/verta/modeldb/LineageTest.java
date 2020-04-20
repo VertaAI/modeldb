@@ -567,8 +567,8 @@ public class LineageTest {
     return experimentRun1;
   }
 
-  private static LineageEntryBatch formatToBatch(List<LineageEntry.Builder> x) {
-    LineageEntryBatch.Builder batch = LineageEntryBatch.newBuilder();
+  private static LineageEntryBatchResponse formatToBatch(List<LineageEntry.Builder> x) {
+    LineageEntryBatchResponse.Builder batch = LineageEntryBatchResponse.newBuilder();
     if (x != null) {
       batch.addAllItems(
           x.stream().map(LineageEntry.Builder::build).sorted(LineageTest::compare)::iterator);

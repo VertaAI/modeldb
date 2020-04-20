@@ -1,4 +1,4 @@
-package ai.verta.modeldb.entities;
+package ai.verta.modeldb.entities.lineage;
 
 import java.io.Serializable;
 import javax.persistence.Entity;
@@ -6,15 +6,16 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "lineage_id")
-public class LineageIdEntity implements Serializable {
+@Table(name = "lineage_elemennt")
+public class ElementEntity implements Serializable {
 
-  public LineageIdEntity() {}
+  public ElementEntity() {}
 
-  public LineageIdEntity(Long id) {
+  public ElementEntity(Long id) {
     this.id = id;
   }
 
+  // Autoincrement
   @Id
   Long id;
 
