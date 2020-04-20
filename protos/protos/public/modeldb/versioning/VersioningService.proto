@@ -396,7 +396,7 @@ message MergeRepositoryCommitsRequest {
     //for a or b only one of commit or branch should be populated
     string branch_a = 5;
     string branch_b =6;
-
+    bool isDryRun = 7;
 
     message Response {
         Commit commit = 1;
@@ -415,6 +415,40 @@ message RevertRepositoryCommitsRequest {
 
     message Response {
         Commit commit = 1;
+    }
+}
+
+message FindRepositories {
+    repeated RepositoryIdentification repository_id = 1;
+    repeated KeyValueQuery predicates = 2;
+    bool ids_only = 3; // whether to return full experiment runs or ids only
+
+    //For pagination
+    int32 page_number = 4;
+    int32 page_limit = 5;
+    bool ascending = 6;
+    string sort_key = 7;
+
+    message Response {
+        repeated Repository repository = 1;
+        int64 total_records = 2;
+    }
+}
+
+message FindRepositoriesBlobs {
+    repeated RepositoryIdentification repository_id = 1;
+    repeated string location_prefix = 2;
+    int32 blob_type = 3;
+
+    //For pagination
+    int32 page_number = 4;
+    int32 page_limit = 5;
+    bool ascending = 6;
+    string sort_key = 7;
+
+    message Response {
+        repeated BlobExpanded blobs = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -669,4 +703,18 @@ service VersioningService {
             }
         };
     }
+
+    rpc findRepositories(FindRepositories) returns (FindRepositories.Response){
+        option (google.api.http) = {
+            post: "/v1/versioning/findRepositories"
+            body: "*"
+        };
+    };
+
+    rpc findRepositoriesBlobs(FindRepositoriesBlobs) returns (FindRepositoriesBlobs.Response){
+        option (google.api.http) = {
+            post: "/v1/versioning/findRepositoriesBlobs"
+            body: "*"
+        };
+    };
 }
