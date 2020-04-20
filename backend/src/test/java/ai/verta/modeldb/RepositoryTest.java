@@ -2,15 +2,23 @@ package ai.verta.modeldb;
 
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.metadata.AddLabelsRequest;
+import ai.verta.modeldb.metadata.DeleteLabelsRequest;
+import ai.verta.modeldb.metadata.IDTypeEnum;
+import ai.verta.modeldb.metadata.IdentificationType;
+import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.FindRepositories;
 import ai.verta.modeldb.versioning.GetRepositoryRequest;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest;
 import ai.verta.modeldb.versioning.Pagination;
@@ -21,6 +29,7 @@ import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
+import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -430,6 +439,159 @@ public class RepositoryTest {
           NAME_2,
           listRepositoriesResponse.getRepositories(0).getName());
     } finally {
+      for (long repoId : repoIds) {
+        DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+                .build();
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+        Assert.assertTrue(deleteResult.getStatus());
+      }
+    }
+
+    LOGGER.info("List repository test end................................");
+  }
+
+  @Test
+  public void findRepositoryTest() {
+    LOGGER.info("List repository test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+    MetadataServiceGrpc.MetadataServiceBlockingStub serviceBlockingStub =
+        MetadataServiceGrpc.newBlockingStub(channel);
+
+    long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
+    long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
+    Long[] repoIds = new Long[2];
+    repoIds[0] = repoId1;
+    repoIds[1] = repoId2;
+    IdentificationType id1 =
+        IdentificationType.newBuilder()
+            .setIdType(IDTypeEnum.IDType.VERSIONING_REPOSITORY)
+            .setIntId(repoId1)
+            .build();
+    try {
+      AddLabelsRequest addLabelsRequest1 =
+          AddLabelsRequest.newBuilder()
+              .setId(id1)
+              .addLabels("Backend")
+              .addLabels("Frontend")
+              .build();
+      AddLabelsRequest.Response addLabelsResponse1 =
+          serviceBlockingStub.addLabels(addLabelsRequest1);
+      assertTrue("Labels not persist successfully", addLabelsResponse1.getStatus());
+
+      FindRepositories findRepositoriesRequest = FindRepositories.newBuilder().build();
+      FindRepositories.Response findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          2,
+          findRepositoriesResponse.getTotalRecords());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME_2,
+          findRepositoriesResponse.getRepositories(0).getName());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME,
+          findRepositoriesResponse.getRepositories(1).getName());
+
+      findRepositoriesRequest =
+          FindRepositories.newBuilder().setPageLimit(1).setPageNumber(1).build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          2,
+          findRepositoriesResponse.getTotalRecords());
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          1,
+          findRepositoriesResponse.getRepositoriesCount());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME_2,
+          findRepositoriesResponse.getRepositories(0).getName());
+
+      findRepositoriesRequest = FindRepositories.newBuilder().addRepoIds(repoId1).build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          1,
+          findRepositoriesResponse.getTotalRecords());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME,
+          findRepositoriesResponse.getRepositories(0).getName());
+
+      findRepositoriesRequest = FindRepositories.newBuilder().addRepoNames(NAME_2).build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          1,
+          findRepositoriesResponse.getTotalRecords());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME_2,
+          findRepositoriesResponse.getRepositories(0).getName());
+
+      findRepositoriesRequest =
+          FindRepositories.newBuilder()
+              .addPredicates(
+                  KeyValueQuery.newBuilder()
+                      .setKey("name")
+                      .setValue(Value.newBuilder().setStringValue(NAME_2).build())
+                      .setValueType(ValueTypeEnum.ValueType.STRING)
+                      .setOperator(OperatorEnum.Operator.NOT_CONTAIN)
+                      .build())
+              .build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          1,
+          findRepositoriesResponse.getTotalRecords());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME,
+          findRepositoriesResponse.getRepositories(0).getName());
+
+      findRepositoriesRequest =
+          FindRepositories.newBuilder()
+              .addPredicates(
+                  KeyValueQuery.newBuilder()
+                      .setKey(ModelDBConstants.LABEL)
+                      .setValue(Value.newBuilder().setStringValue("Backend").build())
+                      .setOperator(OperatorEnum.Operator.EQ)
+                      .setValueType(ValueTypeEnum.ValueType.STRING)
+                      .build())
+              .build();
+      findRepositoriesResponse =
+          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+      Assert.assertEquals(
+          "Repository count not match with expected repository count",
+          1,
+          findRepositoriesResponse.getTotalRecords());
+      Assert.assertEquals(
+          "Repository name not match with expected repository name",
+          NAME,
+          findRepositoriesResponse.getRepositories(0).getName());
+    } finally {
+      DeleteLabelsRequest deleteLabelsRequest =
+          DeleteLabelsRequest.newBuilder()
+              .setId(id1)
+              .addLabels("Backend")
+              .addLabels("Frontend")
+              .build();
+      DeleteLabelsRequest.Response deleteLabelsResponse =
+          serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+      assertTrue(deleteLabelsResponse.getStatus());
+
       for (long repoId : repoIds) {
         DeleteRepositoryRequest deleteRepository =
             DeleteRepositoryRequest.newBuilder()

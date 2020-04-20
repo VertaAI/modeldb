@@ -208,6 +208,7 @@ public interface ModelDBConstants {
   String ENTITY_HASH = "entity_hash";
   String ENTITY_TYPE = "entity_type";
   String LABEL = "label";
+  String LABELS = "labels";
   String BRANCH = "branch";
   String BRANCH_NOT_FOUND = "Branch not found ";
   String COMMIT_NOT_FOUND = "Commit not found ";

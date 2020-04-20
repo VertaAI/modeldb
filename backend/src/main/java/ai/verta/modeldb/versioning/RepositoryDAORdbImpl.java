@@ -835,4 +835,35 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .build();
     }
   }
+
+  @Override
+  public FindRepositories.Response findRepositories(FindRepositories request)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      WorkspaceDTO workspaceDTO =
+          roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());
+      FindRepositoriesQuery findRepositoriesQuery =
+          new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(session, workspaceDTO)
+              .setRepoIds(request.getRepoIdsList())
+              .setRepoNames(request.getRepoNamesList())
+              .setPredicates(request.getPredicatesList())
+              .setPageLimit(request.getPageLimit())
+              .setPageNumber(request.getPageNumber())
+              .build();
+      List<RepositoryEntity> repositoryEntities =
+          findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
+      Long totalRecords =
+          (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
+
+      return FindRepositories.Response.newBuilder()
+          .addAllRepositories(
+              repositoryEntities.stream()
+                  .map(RepositoryEntity::toProto)
+                  .collect(Collectors.toList()))
+          .setTotalRecords(totalRecords)
+          .build();
+    }
+  }
 }
