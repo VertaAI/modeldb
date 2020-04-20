@@ -7,6 +7,7 @@ import os
 import random
 import shutil
 import string
+import tempfile
 
 import requests
 
@@ -218,6 +219,15 @@ def output_path():
             break
     else:
         raise RuntimeError("dirpath length exceeded 1024")
+    shutil.rmtree(dirpath)
+
+
+@pytest.fixture
+def tempdir():
+    dirpath = tempfile.mkdtemp()
+
+    yield dirpath
+
     shutil.rmtree(dirpath)
 
 
