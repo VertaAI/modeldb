@@ -32,20 +32,26 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
+import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
+import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
+import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
+import ai.verta.modeldb.versioning.NotebookCodeBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -1304,6 +1310,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
             getExperimentRunHyperparameterConfigBlobMap(session, expRunIds);
 
+        // Map<experimentRunID, Map<LocationString, CodeBlob>> : Map from experimentRunID to Map of
+        // LocationString to CodeBlob
+        Map<String, Map<String, CodeBlob>> expRunCodeBlobMap =
+            getExperimentRunCodeBlobMap(session, expRunIds);
+
         Set<String> experimentRunIdsSet = new HashSet<>();
         for (ExperimentRun experimentRun : experimentRunList) {
           if (!expRunHyperparameterConfigBlobMap.isEmpty()
@@ -1313,6 +1324,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                     .toBuilder()
                     .addAllHyperparameters(
                         expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
+                    .build();
+          }
+          if (!expRunCodeBlobMap.isEmpty()
+              && expRunCodeBlobMap.containsKey(experimentRun.getId())) {
+            experimentRun =
+                experimentRun
+                    .toBuilder()
+                    .putAllCodeBlobVersion(expRunCodeBlobMap.get(experimentRun.getId()))
                     .build();
           }
           if (!experimentRunIdsSet.contains(experimentRun.getId())) {
@@ -1388,6 +1407,70 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           });
     }
     return hyperparametersMap;
+  }
+
+  /**
+   * @param session : session
+   * @param expRunIds : ExperimentRun ids
+   * @return {@link Map<String, Map<String, CodeBlob>>} : Map from experimentRunID to Map of
+   *     LocationString to CodeBlob
+   * @throws InvalidProtocolBufferException invalidProtocolBufferException
+   */
+  private Map<String, Map<String, CodeBlob>> getExperimentRunCodeBlobMap(
+      Session session, List<String> expRunIds) throws InvalidProtocolBufferException {
+    String queryBuilder =
+        "SELECT vme.experimentRunEntity.id, vme.versioning_location, gcb, ncb, pdcb "
+            + " From VersioningModeldbEntityMapping vme LEFT JOIN GitCodeBlobEntity gcb ON vme.blob_hash = gcb.blob_hash "
+            + " LEFT JOIN NotebookCodeBlobEntity ncb ON vme.blob_hash = ncb.blob_hash "
+            + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
+            + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds)";
+    Query query = session.createQuery(queryBuilder);
+    query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
+    query.setParameterList("expRunIds", expRunIds);
+    LOGGER.debug("Final experimentRuns code config blob final query : {}", query.getQueryString());
+    List<Object[]> codeBlobEntities = query.list();
+    LOGGER.debug("Final experimentRuns code config list size : {}", codeBlobEntities.size());
+
+    // Map<experimentRunID, Map<LocationString, CodeBlob>> : Map from experimentRunID to Map of
+    // LocationString to CodeBlob
+    Map<String, Map<String, CodeBlob>> expRunCodeBlobMap = new LinkedHashMap<>();
+    if (!codeBlobEntities.isEmpty()) {
+      for (Object[] objects : codeBlobEntities) {
+        String expRunId = (String) objects[0];
+        String versioningLocation = (String) objects[1];
+        GitCodeBlobEntity gitBlobEntity = (GitCodeBlobEntity) objects[2];
+        NotebookCodeBlobEntity notebookCodeBlobEntity = (NotebookCodeBlobEntity) objects[3];
+        PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
+            (PathDatasetComponentBlobEntity) objects[4];
+
+        CodeBlob.Builder codeBlobBuilder = CodeBlob.newBuilder();
+        if (gitBlobEntity != null) {
+          codeBlobBuilder.setGit(gitBlobEntity.toProto());
+        }
+        if (notebookCodeBlobEntity != null) {
+          NotebookCodeBlob.Builder notebookCodeBlobBuilder = NotebookCodeBlob.newBuilder();
+          if (notebookCodeBlobEntity.getGitCodeBlobEntity() != null) {
+            notebookCodeBlobBuilder.setGitRepo(
+                notebookCodeBlobEntity.getGitCodeBlobEntity().toProto());
+          }
+          if (pathDatasetComponentBlobEntity != null) {
+            notebookCodeBlobBuilder.setPath(pathDatasetComponentBlobEntity.toProto());
+          }
+          codeBlobBuilder.setNotebook(notebookCodeBlobBuilder.build());
+        }
+        Map<String, CodeBlob> codeBlobMap = expRunCodeBlobMap.get(expRunId);
+        if (codeBlobMap == null) {
+          codeBlobMap = new LinkedHashMap<>();
+        }
+        Location.Builder locationBuilder = Location.newBuilder();
+        ModelDBUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
+        codeBlobMap.put(
+            ModelDBUtils.getLocationWithSlashOperator(locationBuilder.getLocationList()),
+            codeBlobBuilder.build());
+        expRunCodeBlobMap.put(expRunId, codeBlobMap);
+      }
+    }
+    return expRunCodeBlobMap;
   }
 
   @Override

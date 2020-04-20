@@ -491,4 +491,8 @@ public class ModelDBUtils {
       throw StatusProto.toStatusRuntimeException(status);
     }
   }
+
+  public static String getLocationWithSlashOperator(List<String> locations) {
+    return String.join("/", locations);
+  }
 }
