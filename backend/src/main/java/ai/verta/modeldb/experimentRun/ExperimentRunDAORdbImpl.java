@@ -1329,7 +1329,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             experimentRun =
                 experimentRun
                     .toBuilder()
-                    .putAllColeBlobVersion(expRunCodeBlobMap.get(experimentRun.getId()))
+                    .putAllCodeBlobVersion(expRunCodeBlobMap.get(experimentRun.getId()))
                     .build();
           }
           if (!experimentRunIdsSet.contains(experimentRun.getId())) {
@@ -1407,6 +1407,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     return hyperparametersMap;
   }
 
+  /**
+   * @param session : session
+   * @param expRunIds : ExperimentRun ids
+   * @return {@link Map<String, Map<String, CodeBlob>>} : Map from experimentRunID to Map of
+   *     LocationString to CodeBlob
+   * @throws InvalidProtocolBufferException invalidProtocolBufferException
+   */
   private Map<String, Map<String, CodeBlob>> getExperimentRunCodeBlobMap(
       Session session, List<String> expRunIds) throws InvalidProtocolBufferException {
     String queryBuilder =
@@ -1421,6 +1428,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     LOGGER.debug("Final experimentRuns code config blob final query : {}", query.getQueryString());
     List<Object[]> codeBlobEntities = query.list();
     LOGGER.debug("Final experimentRuns code config list size : {}", codeBlobEntities.size());
+
+    // Map<experimentRunID, Map<LocationString, CodeBlob>> : Map from experimentRunID to Map of
+    // LocationString to CodeBlob
     Map<String, Map<String, CodeBlob>> expRunCodeBlobMap = new LinkedHashMap<>();
     if (!codeBlobEntities.isEmpty()) {
       for (Object[] objects : codeBlobEntities) {
