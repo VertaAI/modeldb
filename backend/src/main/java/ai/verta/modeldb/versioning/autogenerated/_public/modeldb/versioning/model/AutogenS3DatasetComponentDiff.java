@@ -16,21 +16,26 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenS3DatasetComponentDiff implements ProtoType {
-  private AutogenPathDatasetComponentDiff Path;
-  private AutogenS3VersionIdDiff S3VersionId;
+  private AutogenS3DatasetComponentBlob A;
+  private AutogenS3DatasetComponentBlob B;
+  private AutogenS3DatasetComponentBlob C;
   private AutogenDiffStatusEnumDiffStatus Status;
 
   public AutogenS3DatasetComponentDiff() {
-    this.Path = null;
-    this.S3VersionId = null;
+    this.A = null;
+    this.B = null;
+    this.C = null;
     this.Status = null;
   }
 
   public Boolean isEmpty() {
-    if (this.Path != null && !this.Path.equals(null)) {
+    if (this.A != null && !this.A.equals(null)) {
       return false;
     }
-    if (this.S3VersionId != null && !this.S3VersionId.equals(null)) {
+    if (this.B != null && !this.B.equals(null)) {
+      return false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
       return false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -44,14 +49,19 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     StringBuilder sb = new StringBuilder();
     sb.append("{\"class\": \"AutogenS3DatasetComponentDiff\", \"fields\": {");
     boolean first = true;
-    if (this.Path != null && !this.Path.equals(null)) {
+    if (this.A != null && !this.A.equals(null)) {
       if (!first) sb.append(", ");
-      sb.append("\"Path\": " + Path);
+      sb.append("\"A\": " + A);
       first = false;
     }
-    if (this.S3VersionId != null && !this.S3VersionId.equals(null)) {
+    if (this.B != null && !this.B.equals(null)) {
       if (!first) sb.append(", ");
-      sb.append("\"S3VersionId\": " + S3VersionId);
+      sb.append("\"B\": " + B);
+      first = false;
+    }
+    if (this.C != null && !this.C.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"C\": " + C);
       first = false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
@@ -84,20 +94,30 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     AutogenS3DatasetComponentDiff other = (AutogenS3DatasetComponentDiff) o;
 
     {
-      Function3<AutogenPathDatasetComponentDiff, AutogenPathDatasetComponentDiff, Boolean> f =
+      Function3<AutogenS3DatasetComponentBlob, AutogenS3DatasetComponentBlob, Boolean> f =
           (x, y) -> x.equals(y);
-      if (this.Path != null || other.Path != null) {
-        if (this.Path == null && other.Path != null) return false;
-        if (this.Path != null && other.Path == null) return false;
-        if (!f.apply(this.Path, other.Path)) return false;
+      if (this.A != null || other.A != null) {
+        if (this.A == null && other.A != null) return false;
+        if (this.A != null && other.A == null) return false;
+        if (!f.apply(this.A, other.A)) return false;
       }
     }
     {
-      Function3<AutogenS3VersionIdDiff, AutogenS3VersionIdDiff, Boolean> f = (x, y) -> x.equals(y);
-      if (this.S3VersionId != null || other.S3VersionId != null) {
-        if (this.S3VersionId == null && other.S3VersionId != null) return false;
-        if (this.S3VersionId != null && other.S3VersionId == null) return false;
-        if (!f.apply(this.S3VersionId, other.S3VersionId)) return false;
+      Function3<AutogenS3DatasetComponentBlob, AutogenS3DatasetComponentBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.B != null || other.B != null) {
+        if (this.B == null && other.B != null) return false;
+        if (this.B != null && other.B == null) return false;
+        if (!f.apply(this.B, other.B)) return false;
+      }
+    }
+    {
+      Function3<AutogenS3DatasetComponentBlob, AutogenS3DatasetComponentBlob, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.C != null || other.C != null) {
+        if (this.C == null && other.C != null) return false;
+        if (this.C != null && other.C == null) return false;
+        if (!f.apply(this.C, other.C)) return false;
       }
     }
     {
@@ -112,22 +132,31 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     return true;
   }
 
-  public AutogenS3DatasetComponentDiff setPath(AutogenPathDatasetComponentDiff value) {
-    this.Path = Utils.removeEmpty(value);
+  public AutogenS3DatasetComponentDiff setA(AutogenS3DatasetComponentBlob value) {
+    this.A = Utils.removeEmpty(value);
     return this;
   }
 
-  public AutogenPathDatasetComponentDiff getPath() {
-    return this.Path;
+  public AutogenS3DatasetComponentBlob getA() {
+    return this.A;
   }
 
-  public AutogenS3DatasetComponentDiff setS3VersionId(AutogenS3VersionIdDiff value) {
-    this.S3VersionId = Utils.removeEmpty(value);
+  public AutogenS3DatasetComponentDiff setB(AutogenS3DatasetComponentBlob value) {
+    this.B = Utils.removeEmpty(value);
     return this;
   }
 
-  public AutogenS3VersionIdDiff getS3VersionId() {
-    return this.S3VersionId;
+  public AutogenS3DatasetComponentBlob getB() {
+    return this.B;
+  }
+
+  public AutogenS3DatasetComponentDiff setC(AutogenS3DatasetComponentBlob value) {
+    this.C = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenS3DatasetComponentBlob getC() {
+    return this.C;
   }
 
   public AutogenS3DatasetComponentDiff setStatus(AutogenDiffStatusEnumDiffStatus value) {
@@ -147,14 +176,19 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
 
     AutogenS3DatasetComponentDiff obj = new AutogenS3DatasetComponentDiff();
     {
-      Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenPathDatasetComponentDiff>
-          f = x -> AutogenPathDatasetComponentDiff.fromProto(blob.getPath());
-      obj.setPath(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenS3DatasetComponentBlob>
+          f = x -> AutogenS3DatasetComponentBlob.fromProto(blob.getA());
+      obj.setA(f.apply(blob));
     }
     {
-      Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenS3VersionIdDiff> f =
-          x -> AutogenS3VersionIdDiff.fromProto(blob.getS3VersionId());
-      obj.setS3VersionId(f.apply(blob));
+      Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenS3DatasetComponentBlob>
+          f = x -> AutogenS3DatasetComponentBlob.fromProto(blob.getB());
+      obj.setB(f.apply(blob));
+    }
+    {
+      Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenS3DatasetComponentBlob>
+          f = x -> AutogenS3DatasetComponentBlob.fromProto(blob.getC());
+      obj.setC(f.apply(blob));
     }
     {
       Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff, AutogenDiffStatusEnumDiffStatus>
@@ -168,20 +202,30 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
     ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder builder =
         ai.verta.modeldb.versioning.S3DatasetComponentDiff.newBuilder();
     {
-      if (this.Path != null && !this.Path.equals(null)) {
+      if (this.A != null && !this.A.equals(null)) {
         Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder, Void> f =
             x -> {
-              builder.setPath(this.Path.toProto());
+              builder.setA(this.A.toProto());
               return null;
             };
         f.apply(builder);
       }
     }
     {
-      if (this.S3VersionId != null && !this.S3VersionId.equals(null)) {
+      if (this.B != null && !this.B.equals(null)) {
         Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder, Void> f =
             x -> {
-              builder.setS3VersionId(this.S3VersionId.toProto());
+              builder.setB(this.B.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.C != null && !this.C.equals(null)) {
+        Function<ai.verta.modeldb.versioning.S3DatasetComponentDiff.Builder, Void> f =
+            x -> {
+              builder.setC(this.C.toProto());
               return null;
             };
         f.apply(builder);
@@ -206,8 +250,9 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
 
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
-    visitor.preVisitDeepAutogenPathDatasetComponentDiff(this.Path);
-    visitor.preVisitDeepAutogenS3VersionIdDiff(this.S3VersionId);
+    visitor.preVisitDeepAutogenS3DatasetComponentBlob(this.A);
+    visitor.preVisitDeepAutogenS3DatasetComponentBlob(this.B);
+    visitor.preVisitDeepAutogenS3DatasetComponentBlob(this.C);
     visitor.preVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status);
   }
 
@@ -216,8 +261,9 @@ public class AutogenS3DatasetComponentDiff implements ProtoType {
   }
 
   public AutogenS3DatasetComponentDiff postVisitDeep(Visitor visitor) throws ModelDBException {
-    this.setPath(visitor.postVisitDeepAutogenPathDatasetComponentDiff(this.Path));
-    this.setS3VersionId(visitor.postVisitDeepAutogenS3VersionIdDiff(this.S3VersionId));
+    this.setA(visitor.postVisitDeepAutogenS3DatasetComponentBlob(this.A));
+    this.setB(visitor.postVisitDeepAutogenS3DatasetComponentBlob(this.B));
+    this.setC(visitor.postVisitDeepAutogenS3DatasetComponentBlob(this.C));
     this.setStatus(visitor.postVisitDeepAutogenDiffStatusEnumDiffStatus(this.Status));
     return this.postVisitShallow(visitor);
   }

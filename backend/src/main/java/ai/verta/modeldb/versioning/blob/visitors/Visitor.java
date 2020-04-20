@@ -1997,58 +1997,6 @@ public class Visitor {
     return null;
   }
 
-  public void preVisitListOfAutogenS3VersionIdDiff(List<AutogenS3VersionIdDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (AutogenS3VersionIdDiff val : lst) {
-      preVisitAutogenS3VersionIdDiff(val);
-    }
-  }
-
-  public void preVisitDeepListOfAutogenS3VersionIdDiff(List<AutogenS3VersionIdDiff> lst)
-      throws ModelDBException {
-    if (lst == null) return;
-    for (AutogenS3VersionIdDiff val : lst) {
-      preVisitDeepAutogenS3VersionIdDiff(val);
-    }
-  }
-
-  public List<AutogenS3VersionIdDiff> postVisitListOfAutogenS3VersionIdDiff(
-      List<AutogenS3VersionIdDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<AutogenS3VersionIdDiff> collect = new ArrayList<>(lst.size());
-    for (AutogenS3VersionIdDiff val : lst) {
-      collect.add(postVisitAutogenS3VersionIdDiff(val));
-    }
-    return collect;
-  }
-
-  public List<AutogenS3VersionIdDiff> postVisitDeepListOfAutogenS3VersionIdDiff(
-      List<AutogenS3VersionIdDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
-    final List<AutogenS3VersionIdDiff> collect = new ArrayList<>(lst.size());
-    for (AutogenS3VersionIdDiff val : lst) {
-      collect.add(postVisitDeepAutogenS3VersionIdDiff(val));
-    }
-    return collect;
-  }
-
-  public void preVisitAutogenS3VersionIdDiff(AutogenS3VersionIdDiff blob) throws ModelDBException {}
-
-  public void preVisitDeepAutogenS3VersionIdDiff(AutogenS3VersionIdDiff blob)
-      throws ModelDBException {}
-
-  public AutogenS3VersionIdDiff postVisitAutogenS3VersionIdDiff(AutogenS3VersionIdDiff blob)
-      throws ModelDBException {
-    return blob;
-  }
-
-  public AutogenS3VersionIdDiff postVisitDeepAutogenS3VersionIdDiff(AutogenS3VersionIdDiff blob)
-      throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
-    return null;
-  }
-
   public void preVisitListOfAutogenVersionEnvironmentBlob(List<AutogenVersionEnvironmentBlob> lst)
       throws ModelDBException {
     if (lst == null) return;
@@ -2623,9 +2571,6 @@ public class Visitor {
     }
     if (b instanceof AutogenS3DatasetDiff) {
       return Utils.removeEmpty((T) postVisitDeepAutogenS3DatasetDiff((AutogenS3DatasetDiff) b));
-    }
-    if (b instanceof AutogenS3VersionIdDiff) {
-      return Utils.removeEmpty((T) postVisitDeepAutogenS3VersionIdDiff((AutogenS3VersionIdDiff) b));
     }
     if (b instanceof AutogenVersionEnvironmentBlob) {
       return Utils.removeEmpty(

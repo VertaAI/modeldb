@@ -6,7 +6,9 @@ import ai.verta.modeldb.versioning.blob.diff.ProtoType;
 import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Utils {
   public static <T extends ProtoType> T enforceOneof(T b) throws ModelDBException {
@@ -238,5 +240,21 @@ public class Utils {
     }
     b.setComponents(new LinkedList<AutogenS3DatasetComponentBlob>(blobMap.values()));
     return b;
+  }
+
+  public static <T> T removeEmpty(T obj) {
+    if (obj instanceof ProtoType) {
+      if (((ProtoType) obj).isEmpty()) return null;
+    } else if (obj instanceof List) {
+      Object ret =
+          ((List) obj)
+              .stream()
+                  .map(x -> removeEmpty(x))
+                  .filter(x -> x != null)
+                  .collect(Collectors.toList());
+      if (((List) ret).isEmpty()) return null;
+      return (T) ret;
+    }
+    return obj;
   }
 }

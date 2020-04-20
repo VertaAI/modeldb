@@ -225,34 +225,16 @@ public class DiffComputer {
                     a,
                     b,
                     AutogenS3DatasetBlob::getComponents,
-                    x -> x.getPath().getPath(),
+                    x -> x.getPath().getPath() + x.getS3VersionId(),
                     DiffComputer::computeS3DatasetComponentDiff)));
   }
 
   public static AutogenS3DatasetComponentDiff computeS3DatasetComponentDiff(
       AutogenS3DatasetComponentBlob a, AutogenS3DatasetComponentBlob b) {
-    return Utils.removeEmpty(
-        new AutogenS3DatasetComponentDiff()
-            .setPath(
-                computeDiff(
-                    a,
-                    b,
-                    AutogenS3DatasetComponentBlob::getPath,
-                    DiffComputer::computePathDatasetComponentDiff))
-            .setS3VersionId(
-                computeDiff(
-                    a,
-                    b,
-                    AutogenS3DatasetComponentBlob::getS3VersionId,
-                    DiffComputer::computeS3VersionIdDiff))
-            .setStatus(getStatus(a, b)));
-  }
-
-  public static AutogenS3VersionIdDiff computeS3VersionIdDiff(String a, String b) {
     if (a == null && b == null) return null;
     if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new AutogenS3VersionIdDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+        new AutogenS3DatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static AutogenEnvironmentDiff computeEnvironmentDiff(

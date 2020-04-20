@@ -323,6 +323,20 @@ public class DiffMerger {
     return d.getB();
   }
 
+  /*
+  *   public static <B, D, F extends ProtoType, DF> List<F> mergeList(
+     B a,
+     D d,
+     Function<B, List<F>> getterA,
+     Function<D, List<DF>> getterD,
+     Function<F, String> hasherA,
+     Function<DF, String> hasherD,
+     Function<DF, AutogenDiffStatusEnumDiffStatus> status,
+     Function<DF, F> getA,
+     Function<DF, F> getB,
+     Function3<Set<F>, DF, F> merger,
+     HashSet<String> conflictKeys)
+  */
   public static AutogenS3DatasetBlob mergeS3Dataset(
       AutogenS3DatasetBlob a, AutogenS3DatasetDiff d, HashSet<String> conflictKeys) {
     return Utils.removeEmpty(
@@ -339,48 +353,44 @@ public class DiffMerger {
                                 AutogenPathDatasetComponentBlob::getPath)
                             + Utils.getOrNull(x, AutogenS3DatasetComponentBlob::getS3VersionId),
                     x ->
-                        Utils.either(
-                                Utils.getOrNull(
-                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                    AutogenPathDatasetComponentDiff::getA),
-                                Utils.getOrNull(
-                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                    AutogenPathDatasetComponentDiff::getB),
+                        Utils.getOrNull(
+                                Utils.either(
+                                    x.getA(), x.getB(), AutogenS3DatasetComponentBlob::getPath),
                                 AutogenPathDatasetComponentBlob::getPath)
                             + Utils.either(
-                                Utils.getOrNull(
-                                    Utils.getOrNull(
-                                        x, AutogenS3DatasetComponentDiff::getS3VersionId),
-                                    AutogenS3VersionIdDiff::getA),
-                                Utils.getOrNull(
-                                    Utils.getOrNull(
-                                        x, AutogenS3DatasetComponentDiff::getS3VersionId),
-                                    AutogenS3VersionIdDiff::getB),
-                                s -> s),
-                    null,
+                                x.getA(), x.getB(), AutogenS3DatasetComponentBlob::getS3VersionId),
+                    x -> Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getStatus),
                     x ->
                         new AutogenS3DatasetComponentBlob()
                             .setPath(
                                 Utils.getOrNull(
-                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                    AutogenPathDatasetComponentDiff::getA)),
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getA),
+                                    AutogenS3DatasetComponentBlob::getPath))
+                            .setS3VersionId(
+                                Utils.getOrNull(
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getA),
+                                    AutogenS3DatasetComponentBlob::getS3VersionId)),
                     x ->
                         new AutogenS3DatasetComponentBlob()
                             .setPath(
                                 Utils.getOrNull(
-                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                    AutogenPathDatasetComponentDiff::getB)),
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getB),
+                                    AutogenS3DatasetComponentBlob::getPath))
+                            .setS3VersionId(
+                                Utils.getOrNull(
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getB),
+                                    AutogenS3DatasetComponentBlob::getS3VersionId)),
                     null,
                     conflictKeys)));
   }
 
-  private static AutogenS3DatasetComponentBlob mergeS3DatasetComponent(
-      AutogenS3DatasetComponentBlob a,
-      AutogenS3DatasetComponentDiff d,
-      HashSet<String> conflictKeys) {
-    // TODO Auto-generated method stub
-    return null;
-  }
+  //  private static AutogenS3DatasetComponentBlob mergeS3DatasetComponent(
+  //      AutogenS3DatasetComponentBlob a,
+  //      AutogenS3DatasetComponentDiff d,
+  //      HashSet<String> conflictKeys) {
+  //    // TODO Auto-generated method stub
+  //    return null;
+  //  }
   /*
   public static S3DatasetComponentBlob mergeS3DatasetComponent(
       Set<S3DatasetComponentBlob> a, S3DatasetComponentDiff d) {

@@ -3954,14 +3954,17 @@
     "versioningS3DatasetComponentDiff": {
       "type": "object",
       "properties": {
-        "path": {
-          "$ref": "#/definitions/versioningPathDatasetComponentDiff"
-        },
-        "s3_version_id": {
-          "$ref": "#/definitions/versioningS3VersionIdDiff"
-        },
         "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
+        "A": {
+          "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+        },
+        "B": {
+          "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+        },
+        "C": {
+          "$ref": "#/definitions/versioningS3DatasetComponentBlob"
         }
       }
     },
@@ -3973,23 +3976,6 @@
           "items": {
             "$ref": "#/definitions/versioningS3DatasetComponentDiff"
           }
-        }
-      }
-    },
-    "versioningS3VersionIdDiff": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
-        },
-        "A": {
-          "type": "string"
-        },
-        "B": {
-          "type": "string"
-        },
-        "C": {
-          "type": "string"
         }
       }
     },

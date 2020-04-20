@@ -349,15 +349,6 @@ public class BlobProtoEquality {
   }
 
   @Property
-  public void protoEqualityAutogenS3VersionIdDiff(AutogenS3VersionIdDiff b)
-      throws ModelDBException {
-    AutogenS3VersionIdDiff newb = enforceOneof(b);
-    AutogenS3VersionIdDiff other =
-        newb == null ? null : AutogenS3VersionIdDiff.fromProto(newb.toProto().build());
-    assertEquals(newb, other);
-  }
-
-  @Property
   public void protoEqualityAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob b)
       throws ModelDBException {
     AutogenVersionEnvironmentBlob newb = enforceOneof(b);

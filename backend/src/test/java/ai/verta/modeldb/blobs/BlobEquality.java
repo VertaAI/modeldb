@@ -206,11 +206,6 @@ public class BlobEquality {
   }
 
   @Property
-  public void equalityAutogenS3VersionIdDiff(AutogenS3VersionIdDiff b) {
-    assertTrue(b.equals(b));
-  }
-
-  @Property
   public void equalityAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob b) {
     assertTrue(b.equals(b));
   }
