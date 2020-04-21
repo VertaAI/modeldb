@@ -1034,17 +1034,6 @@
             "type": "string"
           },
           {
-            "name": "location_prefix",
-            "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
             "name": "replace_a_with_common_ancestor",
             "description": "Replace commit_a with the nearest common ancestor of commit_a and commit_b.",
             "in": "query",
@@ -2330,17 +2319,6 @@
             "type": "string"
           },
           {
-            "name": "location_prefix",
-            "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
             "name": "replace_a_with_common_ancestor",
             "description": "Replace commit_a with the nearest common ancestor of commit_a and commit_b.",
             "in": "query",
@@ -3379,10 +3357,6 @@
         "element_name": {
           "type": "string",
           "description": "Name of the element inside the folder."
-        },
-        "created_by_commit": {
-          "type": "string",
-          "description": "SHA of the commit which created this element."
         }
       },
       "title": "DO NOT USE TO COMPUTE SHA"
@@ -3980,8 +3954,17 @@
     "versioningS3DatasetComponentDiff": {
       "type": "object",
       "properties": {
-        "path": {
-          "$ref": "#/definitions/versioningPathDatasetComponentDiff"
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
+        "A": {
+          "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+        },
+        "B": {
+          "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+        },
+        "C": {
+          "$ref": "#/definitions/versioningS3DatasetComponentBlob"
         }
       }
     },
