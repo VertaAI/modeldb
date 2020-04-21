@@ -30,26 +30,27 @@ public class LineageEntity implements Serializable {
         VersioningLineageEntry blob = output.getBlob();
         outputRepositoryId = blob.getRepositoryId();
         outputCommitSha = blob.getCommitSha();
-        outputLocation = ModelDBUtils.getStringFromProtoObject(Location.newBuilder().addAllLocation(blob.getLocationList()));
+        outputLocation =
+            ModelDBUtils.getStringFromProtoObject(
+                Location.newBuilder().addAllLocation(blob.getLocationList()));
     }
     this.id = id;
   }
 
-  @Id
-  Long id;
+  @Id Long id;
 
   @Id
   @Column(name = "input_experiment_id")
   private String inputExperimentId;
-  
+
   @Id
   @Column(name = "input_repository_id")
   Long inputRepositoryId;
-  
+
   @Id
   @Column(name = "input_commit_sha")
   String inputCommitSha;
-  
+
   @Id
   @Column(name = "input_location")
   String inputLocation;
@@ -73,7 +74,7 @@ public class LineageEntity implements Serializable {
   @Id
   @Column(name = "output_location")
   String outputLocation;
-  
+
   @Id
   @Column(name = "output_type")
   private Integer outputType;
@@ -127,32 +128,44 @@ public class LineageEntity implements Serializable {
       return false;
     }
     LineageEntity that = (LineageEntity) o;
-    return Objects.equals(id, that.id) &&
-        Objects.equals(inputExperimentId, that.inputExperimentId) &&
-        Objects.equals(inputRepositoryId, that.inputRepositoryId) &&
-        Objects.equals(inputCommitSha, that.inputCommitSha) &&
-        Objects.equals(inputLocation, that.inputLocation) &&
-        Objects.equals(inputType, that.inputType) &&
-        Objects.equals(outputExperimentId, that.outputExperimentId) &&
-        Objects.equals(outputRepositoryId, that.outputRepositoryId) &&
-        Objects.equals(outputCommitSha, that.outputCommitSha) &&
-        Objects.equals(outputLocation, that.outputLocation) &&
-        Objects.equals(outputType, that.outputType);
+    return Objects.equals(id, that.id)
+        && Objects.equals(inputExperimentId, that.inputExperimentId)
+        && Objects.equals(inputRepositoryId, that.inputRepositoryId)
+        && Objects.equals(inputCommitSha, that.inputCommitSha)
+        && Objects.equals(inputLocation, that.inputLocation)
+        && Objects.equals(inputType, that.inputType)
+        && Objects.equals(outputExperimentId, that.outputExperimentId)
+        && Objects.equals(outputRepositoryId, that.outputRepositoryId)
+        && Objects.equals(outputCommitSha, that.outputCommitSha)
+        && Objects.equals(outputLocation, that.outputLocation)
+        && Objects.equals(outputType, that.outputType);
   }
 
   @Override
   public int hashCode() {
-    return Objects
-        .hash(id, inputExperimentId, inputRepositoryId, inputCommitSha, inputLocation, inputType,
-            outputExperimentId, outputRepositoryId, outputCommitSha, outputLocation, outputType);
+    return Objects.hash(
+        id,
+        inputExperimentId,
+        inputRepositoryId,
+        inputCommitSha,
+        inputLocation,
+        inputType,
+        outputExperimentId,
+        outputRepositoryId,
+        outputCommitSha,
+        outputLocation,
+        outputType);
   }
 
   public VersioningLineageEntry getInputBlob() throws InvalidProtocolBufferException {
     if (inputType == DescriptionCase.BLOB.getNumber()) {
       Location.Builder builder = Location.newBuilder();
       ModelDBUtils.getProtoObjectFromString(getInputLocation(), builder);
-      return VersioningLineageEntry.newBuilder().setRepositoryId(getInputRepositoryId())
-          .setCommitSha(getInputCommitSha()).addAllLocation(builder.getLocationList()).build();
+      return VersioningLineageEntry.newBuilder()
+          .setRepositoryId(getInputRepositoryId())
+          .setCommitSha(getInputCommitSha())
+          .addAllLocation(builder.getLocationList())
+          .build();
     }
     return null;
   }
@@ -161,8 +174,11 @@ public class LineageEntity implements Serializable {
     if (outputType == DescriptionCase.BLOB.getNumber()) {
       Location.Builder builder = Location.newBuilder();
       ModelDBUtils.getProtoObjectFromString(getOutputLocation(), builder);
-      return VersioningLineageEntry.newBuilder().setRepositoryId(getOutputRepositoryId())
-          .setCommitSha(getOutputCommitSha()).addAllLocation(builder.getLocationList()).build();
+      return VersioningLineageEntry.newBuilder()
+          .setRepositoryId(getOutputRepositoryId())
+          .setCommitSha(getOutputCommitSha())
+          .addAllLocation(builder.getLocationList())
+          .build();
     }
     return null;
   }

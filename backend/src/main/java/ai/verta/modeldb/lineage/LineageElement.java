@@ -13,13 +13,14 @@ public abstract class LineageElement {
       throws InvalidProtocolBufferException, ModelDBException {
     switch (lineageEntry.getDescriptionCase()) {
       case EXPERIMENT_RUN:
-        return new ExperimentRunElement(
-            lineageEntry.getExperimentRun());
+        return new ExperimentRunElement(lineageEntry.getExperimentRun());
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
-        return new VersioningBlobElement(blob.getRepositoryId(),
-            blob.getCommitSha(), ModelDBUtils.getStringFromProtoObject(
-            Location.newBuilder().addAllLocation(blob.getLocationList())));
+        return new VersioningBlobElement(
+            blob.getRepositoryId(),
+            blob.getCommitSha(),
+            ModelDBUtils.getStringFromProtoObject(
+                Location.newBuilder().addAllLocation(blob.getLocationList())));
       default:
         throw new ModelDBException("Unknown lineage type");
     }
@@ -28,4 +29,6 @@ public abstract class LineageElement {
   abstract String getInputExperimentId(ConnectionEntity value);
 
   abstract VersioningLineageEntry getInputBlob(ConnectionEntity value);
+
+  public abstract LineageEntry toProto();
 }

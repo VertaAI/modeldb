@@ -25,9 +25,9 @@ public class VersioningBlobElement extends LineageElement {
       return false;
     }
     VersioningBlobElement that = (VersioningBlobElement) o;
-    return Objects.equals(location, that.location) &&
-        Objects.equals(commitSha, that.commitSha) &&
-        Objects.equals(repositoryId, that.repositoryId);
+    return Objects.equals(location, that.location)
+        && Objects.equals(commitSha, that.commitSha)
+        && Objects.equals(repositoryId, that.repositoryId);
   }
 
   @Override

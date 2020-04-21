@@ -54,7 +54,12 @@ public class LineageServiceImplNegativeTest {
         AddLineage.newBuilder()
             .addInput(
                 LineageEntry.newBuilder()
-                    .setBlob(VersioningLineageEntry.newBuilder().setRepositoryId(123).setCommitSha("sha").addLocation("/")).build())
+                    .setBlob(
+                        VersioningLineageEntry.newBuilder()
+                            .setRepositoryId(123)
+                            .setCommitSha("sha")
+                            .addLocation("/"))
+                    .build())
             .build(),
         addLineageObserver);
     statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
@@ -68,7 +73,12 @@ public class LineageServiceImplNegativeTest {
         AddLineage.newBuilder()
             .addOutput(
                 LineageEntry.newBuilder()
-                    .setBlob(VersioningLineageEntry.newBuilder().setRepositoryId(123).setCommitSha("sha").addLocation("/")).build())
+                    .setBlob(
+                        VersioningLineageEntry.newBuilder()
+                            .setRepositoryId(123)
+                            .setCommitSha("sha")
+                            .addLocation("/"))
+                    .build())
             .build(),
         addLineageObserver);
     statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
@@ -95,7 +105,12 @@ public class LineageServiceImplNegativeTest {
         DeleteLineage.newBuilder()
             .addInput(
                 LineageEntry.newBuilder()
-                    .setBlob(VersioningLineageEntry.newBuilder().setRepositoryId(123).setCommitSha("sha").addLocation("/")).build())
+                    .setBlob(
+                        VersioningLineageEntry.newBuilder()
+                            .setRepositoryId(123)
+                            .setCommitSha("sha")
+                            .addLocation("/"))
+                    .build())
             .build(),
         deleteLineageObserver);
     statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
@@ -109,7 +124,12 @@ public class LineageServiceImplNegativeTest {
         DeleteLineage.newBuilder()
             .addOutput(
                 LineageEntry.newBuilder()
-                    .setBlob(VersioningLineageEntry.newBuilder().setRepositoryId(123).setCommitSha("sha").addLocation("/")).build())
+                    .setBlob(
+                        VersioningLineageEntry.newBuilder()
+                            .setRepositoryId(123)
+                            .setCommitSha("sha")
+                            .addLocation("/"))
+                    .build())
             .build(),
         deleteLineageObserver);
     statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();

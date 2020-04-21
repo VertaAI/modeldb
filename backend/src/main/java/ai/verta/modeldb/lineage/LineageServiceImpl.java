@@ -170,7 +170,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     Set<String> experimentRuns = new HashSet<>();
     Map<Long, Map.Entry<RepositoryEntity, Map<String, Set<String>>>> blobs = new HashMap<>();
-    for (LineageEntry lineageEntry: lineageEntries) {
+    for (LineageEntry lineageEntry : lineageEntries) {
       switch (lineageEntry.getDescriptionCase()) {
         case EXPERIMENT_RUN:
           String experimentRun = lineageEntry.getExperimentRun();
@@ -187,23 +187,31 @@ public class LineageServiceImpl extends LineageServiceImplBase {
           RepositoryEntity repo;
           Map<String, Set<String>> result;
           if (!blobs.containsKey(repositoryId)) {
-            repo = repositoryDAO.getRepositoryById(session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
-            result = blobs.put(repositoryId, new AbstractMap.SimpleEntry<>(repo, new HashMap<>())).getValue();
+            repo =
+                repositoryDAO.getRepositoryById(
+                    session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
+            result =
+                blobs
+                    .put(repositoryId, new AbstractMap.SimpleEntry<>(repo, new HashMap<>()))
+                    .getValue();
           } else {
-            Entry<RepositoryEntity, Map<String, Set<String>>> entityMapEntry = blobs.get(repositoryId);
+            Entry<RepositoryEntity, Map<String, Set<String>>> entityMapEntry =
+                blobs.get(repositoryId);
             repo = entityMapEntry.getKey();
             result = entityMapEntry.getValue();
           }
           String commitSha = blob.getCommitSha();
           Set<String> blobResult;
           if (!result.containsKey(commitSha)) {
-            CommitEntity commitEntity = commitDAO
-                .getCommitEntity(session, commitSha, session1 -> repo);
+            CommitEntity commitEntity =
+                commitDAO.getCommitEntity(session, commitSha, session1 -> repo);
             blobResult = result.put(commitSha, new HashSet<>());
           } else {
             blobResult = result.get(commitSha);
           }
-          if (!blobResult.contains(ModelDBUtils.getStringFromProtoObject(Location.newBuilder().addAllLocation(blob.getLocationList())))) {
+          if (!blobResult.contains(
+              ModelDBUtils.getStringFromProtoObject(
+                  Location.newBuilder().addAllLocation(blob.getLocationList())))) {
             blobDAO.getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
           }
         default:

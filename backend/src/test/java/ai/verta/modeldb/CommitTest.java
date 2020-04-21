@@ -198,7 +198,8 @@ public class CommitTest {
   static Blob getBlob(Blob.ContentCase contentCase, String name) throws ModelDBException {
     switch (contentCase) {
       case DATASET:
-        DatasetBlob datasetBlob = DatasetBlob.newBuilder().setPath(getPathDatasetBlob(name)).build();
+        DatasetBlob datasetBlob =
+            DatasetBlob.newBuilder().setPath(getPathDatasetBlob(name)).build();
         return Blob.newBuilder().setDataset(datasetBlob).build();
       case CODE:
         break;
@@ -287,7 +288,10 @@ public class CommitTest {
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
             .setCommit(commit)
             .addBlobs(
-                BlobExpanded.newBuilder().setBlob(getBlob(contentCase, name)).addLocation("/").build())
+                BlobExpanded.newBuilder()
+                    .setBlob(getBlob(contentCase, name))
+                    .addLocation("/")
+                    .build())
             .build();
 
     return createCommitRequest;

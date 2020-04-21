@@ -16,8 +16,7 @@ public class ElementEntity implements Serializable {
   }
 
   // Autoincrement
-  @Id
-  Long id;
+  @Id Long id;
 
   public Long getId() {
     return id;

@@ -11,12 +11,12 @@ import org.hibernate.Session;
 @Entity
 @Table(name = "lineage_connection")
 public class ConnectionEntity {
-  static public final int CONNECTION_TYPE_ANY = 0;
-  static public final int CONNECTION_TYPE_INPUT = 1;
-  static public final int CONNECTION_TYPE_OUTPUT = 2;
+  public static final int CONNECTION_TYPE_ANY = 0;
+  public static final int CONNECTION_TYPE_INPUT = 1;
+  public static final int CONNECTION_TYPE_OUTPUT = 2;
 
-  static public final int ENTITY_TYPE_EXPERIMENT_RUN = 1;
-  static public final int ENTITY_TYPE_VERSIONING_BLOB = 2;
+  public static final int ENTITY_TYPE_EXPERIMENT_RUN = 1;
+  public static final int ENTITY_TYPE_VERSIONING_BLOB = 2;
 
   @Id
   @Column(name = "element_id")
@@ -34,12 +34,15 @@ public class ConnectionEntity {
   @Column(name = "entity_type")
   private Integer entityType;
 
-  public ConnectionEntity(Long id, Long entityId, Integer connectionType,
-      Integer entityType) {
+  public ConnectionEntity(Long id, Long entityId, Integer connectionType, Integer entityType) {
     this.id = id;
     this.entityId = entityId;
     this.connectionType = connectionType;
     this.entityType = entityType;
+  }
+
+  public Long getId() {
+    return id;
   }
 
   public Integer getConnectionType() {
@@ -60,8 +63,8 @@ public class ConnectionEntity {
         ExperimentRunEntity experimentRunEntity = session.get(ExperimentRunEntity.class, entityId);
         return experimentRunEntity.getElement();
       case ENTITY_TYPE_VERSIONING_BLOB:
-        VersioningBlobEntity versioningBlobEntity = session
-            .get(VersioningBlobEntity.class, entityId);
+        VersioningBlobEntity versioningBlobEntity =
+            session.get(VersioningBlobEntity.class, entityId);
         return versioningBlobEntity.getElement();
       default:
         throw new ModelDBException("Unknown entity type");
