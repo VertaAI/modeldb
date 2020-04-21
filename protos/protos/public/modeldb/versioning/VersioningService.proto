@@ -450,6 +450,7 @@ message FindRepositoriesBlobs {
     string workspace_name = 2;
     repeated string location_prefix = 3;
     BlobType blob_type = 4;
+    repeated string commit_hash = 5;
 
     //For pagination
     int32 page_number = 6;
