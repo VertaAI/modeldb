@@ -22,7 +22,8 @@ import ai.verta.modeldb.entities.FeatureEntity;
 import ai.verta.modeldb.entities.GitSnapshotEntity;
 import ai.verta.modeldb.entities.JobEntity;
 import ai.verta.modeldb.entities.KeyValueEntity;
-import ai.verta.modeldb.entities.lineage.LineageEntity;
+import ai.verta.modeldb.entities.lineage.ConnectionEntity;
+import ai.verta.modeldb.entities.lineage.LineageElementEntity;
 import ai.verta.modeldb.entities.ObservationEntity;
 import ai.verta.modeldb.entities.PathDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
@@ -44,6 +45,8 @@ import ai.verta.modeldb.entities.environment.EnvironmentCommandLineEntity;
 import ai.verta.modeldb.entities.environment.EnvironmentVariablesEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentRequirementBlobEntity;
+import ai.verta.modeldb.entities.lineage.LineageExperimentRunEntity;
+import ai.verta.modeldb.entities.lineage.LineageVersioningBlobEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
@@ -131,7 +134,10 @@ public class ModelDBHibernateUtil {
     UserCommentEntity.class,
     ArtifactStoreMapping.class,
     AttributeEntity.class,
-    LineageEntity.class,
+    ConnectionEntity.class,
+    LineageExperimentRunEntity.class,
+    LineageVersioningBlobEntity.class,
+    LineageElementEntity.class,
     RepositoryEntity.class,
     CommitEntity.class,
     LabelsMappingEntity.class,

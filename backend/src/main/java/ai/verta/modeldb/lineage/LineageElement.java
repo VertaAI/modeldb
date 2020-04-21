@@ -4,7 +4,6 @@ import ai.verta.modeldb.LineageEntry;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
-import ai.verta.modeldb.entities.lineage.ConnectionEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -25,10 +24,6 @@ public abstract class LineageElement {
         throw new ModelDBException("Unknown lineage type");
     }
   }
-
-  abstract String getInputExperimentId(ConnectionEntity value);
-
-  abstract VersioningLineageEntry getInputBlob(ConnectionEntity value);
 
   public abstract LineageEntry toProto();
 }

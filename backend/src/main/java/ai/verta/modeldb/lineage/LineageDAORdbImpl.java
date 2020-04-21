@@ -20,9 +20,9 @@ import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
 import ai.verta.modeldb.entities.lineage.ConnectionEntity;
-import ai.verta.modeldb.entities.lineage.ElementEntity;
-import ai.verta.modeldb.entities.lineage.ExperimentRunEntity;
-import ai.verta.modeldb.entities.lineage.VersioningBlobEntity;
+import ai.verta.modeldb.entities.lineage.LineageElementEntity;
+import ai.verta.modeldb.entities.lineage.LineageExperimentRunEntity;
+import ai.verta.modeldb.entities.lineage.LineageVersioningBlobEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -55,29 +55,31 @@ public class LineageDAORdbImpl implements LineageDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       Long id;
-      ElementEntity elementEntity;
+      LineageElementEntity lineageElementEntity;
       if (addLineage.getId() != 0) {
         id = addLineage.getId();
-        elementEntity = session.get(ElementEntity.class, addLineage.getId());
+        lineageElementEntity = session.get(LineageElementEntity.class, addLineage.getId());
       } else {
         id = null;
-        elementEntity = null;
+        lineageElementEntity = null;
       }
-      if (elementEntity == null) {
-        elementEntity = new ElementEntity(id);
-        session.save(elementEntity);
+      if (lineageElementEntity == null) {
+        lineageElementEntity = new LineageElementEntity(id);
+        session.save(lineageElementEntity);
+        id = lineageElementEntity.getId();
       }
       validate(addLineage.getInputList(), addLineage.getOutputList());
       List<LineageEntry> lineageEntries = new LinkedList<>(addLineage.getInputList());
       lineageEntries.addAll(addLineage.getOutputList());
       existsCheckConsumer.test(session, lineageEntries);
       for (LineageEntry input : addLineage.getInputList()) {
-        for (LineageEntry output : addLineage.getOutputList()) {
-          addLineage(session, input, output, id);
-        }
+        addLineage(session, input, id, CONNECTION_TYPE_INPUT);
+      }
+      for (LineageEntry output : addLineage.getOutputList()) {
+        addLineage(session, output, id, CONNECTION_TYPE_OUTPUT);
       }
       session.getTransaction().commit();
-      return AddLineage.Response.newBuilder().setId(elementEntity.getId()).build();
+      return AddLineage.Response.newBuilder().setId(lineageElementEntity.getId()).build();
     }
   }
 
@@ -88,6 +90,9 @@ public class LineageDAORdbImpl implements LineageDAO {
       session.beginTransaction();
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
       long id = deleteLineage.getId();
+      if (id == 0) {
+        throw new ModelDBException("Id not specified", Code.INVALID_ARGUMENT);
+      }
       List connectionEntitiesById = getConnectionEntitiesById(session, id);
       Map.Entry<Map<LineageElement, ConnectionEntity>, Map<LineageElement, ConnectionEntity>>
           inputOutputs = getInputOutputs(session, connectionEntitiesById);
@@ -100,8 +105,8 @@ public class LineageDAORdbImpl implements LineageDAO {
         deleteLineage(session, output, outputInDatabase);
       }
       if (inputInDatabase.isEmpty() || outputInDatabase.isEmpty()) {
-        ElementEntity elementEntity = session.get(ElementEntity.class, id);
-        session.remove(elementEntity);
+        LineageElementEntity lineageElementEntity = session.get(LineageElementEntity.class, id);
+        session.remove(lineageElementEntity);
       }
       session.getTransaction().commit();
     }
@@ -157,14 +162,16 @@ public class LineageDAORdbImpl implements LineageDAO {
       case EXPERIMENT_RUN:
         queryString =
             "from "
-                + ExperimentRunEntity.class.getSimpleName()
+                + LineageExperimentRunEntity.class.getSimpleName()
                 + " where experimentRunId = '"
                 + lineageEntry.getExperimentRun()
                 + "'";
-        List experimentRunEntityList = session.createQuery(queryString).list();
+        Query query = session.createQuery(queryString);
+        List experimentRunEntityList = query.list();
         for (Object entity : experimentRunEntityList) {
-          ExperimentRunEntity experimentRunEntity = (ExperimentRunEntity) entity;
-          elements.add(experimentRunEntity.getId());
+          LineageExperimentRunEntity lineageExperimentRunEntity =
+              (LineageExperimentRunEntity) entity;
+          elements.add(lineageExperimentRunEntity.getId());
         }
         entityType = ENTITY_TYPE_EXPERIMENT_RUN;
         break;
@@ -172,7 +179,7 @@ public class LineageDAORdbImpl implements LineageDAO {
         VersioningLineageEntry blob = lineageEntry.getBlob();
         queryString =
             "from "
-                + VersioningBlobEntity.class.getSimpleName()
+                + LineageVersioningBlobEntity.class.getSimpleName()
                 + " where repositoryId = '"
                 + blob.getRepositoryId()
                 + "' and commitSha = '"
@@ -183,8 +190,9 @@ public class LineageDAORdbImpl implements LineageDAO {
                 + "'";
         List versioningBlobEntityList = session.createQuery(queryString).list();
         for (Object entity : versioningBlobEntityList) {
-          VersioningBlobEntity versioningBlobEntity = (VersioningBlobEntity) entity;
-          elements.add(versioningBlobEntity.getId());
+          LineageVersioningBlobEntity lineageVersioningBlobEntity =
+              (LineageVersioningBlobEntity) entity;
+          elements.add(lineageVersioningBlobEntity.getId());
         }
         entityType = ENTITY_TYPE_VERSIONING_BLOB;
         break;
@@ -339,14 +347,19 @@ public class LineageDAORdbImpl implements LineageDAO {
     FindAllInputsOutputs.Response.Builder response = FindAllInputsOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllInputsOutputs.getItemsList();
-      for (LineageEntry inputoutput : findAllInputsOutputs.getItemsList()) {
+      for (LineageEntryBatchRequest inputoutput : itemList) {
         validate(inputoutput);
-        final List<LineageEntry> inputs = getInputsByOutput(session, inputoutput);
-        final List<LineageEntry> outputs = getOutputsByInput(session, inputoutput);
-        response.addInputs(LineageEntryBatch.newBuilder().addAllItems(inputs));
-        response.addOutputs(LineageEntryBatch.newBuilder().addAllItems(outputs).build());
+        response
+            .addInputs(
+                LineageEntryBatchResponse.newBuilder()
+                    .addAllItems(getInputsByOutput(session, inputoutput))
+                    .build())
+            .addOutputs(
+                LineageEntryBatchResponse.newBuilder()
+                    .addAllItems(getOutputsByInput(session, inputoutput))
+                    .build());
       }
-    }*/
+    }
     return response.build();
   }
 
@@ -358,78 +371,49 @@ public class LineageDAORdbImpl implements LineageDAO {
     if (connectionEntity != null) {
       switch (connectionEntity.getEntityType()) {
         case ENTITY_TYPE_EXPERIMENT_RUN:
-          session.delete(session.get(ExperimentRunEntity.class, connectionEntity.getEntityId()));
+          session.delete(
+              session.get(LineageExperimentRunEntity.class, connectionEntity.getEntityId()));
           break;
         case ENTITY_TYPE_VERSIONING_BLOB:
-          session.delete(session.get(VersioningBlobEntity.class, connectionEntity.getEntityId()));
+          session.delete(
+              session.get(LineageVersioningBlobEntity.class, connectionEntity.getEntityId()));
           break;
         default:
           throw new ModelDBException("Unknown connection type");
       }
       session.delete(connectionEntity);
-      entityIds.entrySet().remove(key);
+      entityIds.keySet().remove(key);
     }
   }
 
-  private void addLineage(Session session, LineageEntry input, LineageEntry output, Long id)
-      throws InvalidProtocolBufferException, ModelDBException {
-    saveOrUpdate(session, input, id, CONNECTION_TYPE_INPUT);
-    saveOrUpdate(session, output, id, CONNECTION_TYPE_OUTPUT);
-  }
-
-  private void saveOrUpdate(Session session, LineageEntry lineageEntry, Long id, int connectionType)
+  private void addLineage(Session session, LineageEntry lineageEntry, Long id, int connectionType)
       throws ModelDBException, InvalidProtocolBufferException {
     Long entityId;
     int entityType;
     switch (lineageEntry.getDescriptionCase()) {
       case EXPERIMENT_RUN:
-        ExperimentRunEntity experimentRun =
-            new ExperimentRunEntity(lineageEntry.getExperimentRun());
+        LineageExperimentRunEntity experimentRun =
+            new LineageExperimentRunEntity(lineageEntry.getExperimentRun());
         session.saveOrUpdate(experimentRun);
         entityId = experimentRun.getId();
         entityType = ENTITY_TYPE_EXPERIMENT_RUN;
         break;
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
-        VersioningBlobEntity versioningBlobEntity =
-            new VersioningBlobEntity(
+        LineageVersioningBlobEntity lineageVersioningBlobEntity =
+            new LineageVersioningBlobEntity(
                 blob.getRepositoryId(),
                 blob.getCommitSha(),
                 ModelDBUtils.getStringFromProtoObject(
                     Location.newBuilder().addAllLocation(blob.getLocationList())));
-        session.saveOrUpdate(versioningBlobEntity);
-        entityId = versioningBlobEntity.getId();
+        session.saveOrUpdate(lineageVersioningBlobEntity);
+        entityId = lineageVersioningBlobEntity.getId();
         entityType = ENTITY_TYPE_VERSIONING_BLOB;
         break;
       default:
         throw new ModelDBException("Unknown lineage type");
     }
     session.saveOrUpdate(new ConnectionEntity(id, entityId, connectionType, entityType));
-  }
-
-  private String formQuery(LineageEntry lineageEntry, int type)
-      throws InvalidProtocolBufferException, ModelDBException {
-    String result = "connectionType = " + type + " and ";
-    switch (lineageEntry.getDescriptionCase()) {
-      case EXPERIMENT_RUN:
-        return result + type + "ExperimentId = '" + lineageEntry.getExperimentRun() + "'";
-      case BLOB:
-        VersioningLineageEntry blob = lineageEntry.getBlob();
-        return result
-            + type
-            + "RepositoryId = '"
-            + blob.getRepositoryId()
-            + "' and "
-            + type
-            + "CommitSha = '"
-            + blob.getCommitSha()
-            + "' and "
-            + type
-            + "Location = '"
-            + ModelDBUtils.getStringFromProtoObject(
-                Location.newBuilder().addAllLocation(blob.getLocationList()));
-    }
-    throw new ModelDBException("Unknown lineage type", Code.INTERNAL);
   }
 
   private List<LineageEntryBatchResponseSingle> getOutputsByInput(
@@ -443,7 +427,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       throws InvalidProtocolBufferException, ModelDBException {
     return getInputOrOutput(session, output, CONNECTION_TYPE_INPUT);
   }
-  
+
   private List<LineageEntryBatchResponseSingle> getInputOrOutput(
       Session session, LineageEntryBatchRequest sideB, int connectionType)
       throws InvalidProtocolBufferException, ModelDBException {
@@ -451,8 +435,7 @@ public class LineageDAORdbImpl implements LineageDAO {
     switch (sideB.getIdentifierCase()) {
       case ID:
         List connectionEntitiesById =
-            getConnectionEntitiesByIdAndConnectionType(
-                session, sideB.getId(), connectionType);
+            getConnectionEntitiesByIdAndConnectionType(session, sideB.getId(), connectionType);
         sideAInDatabase =
             Collections.singletonMap(
                 sideB.getId(),

@@ -5,6 +5,7 @@ import static ai.verta.modeldb.ExperimentTest.getCreateExperimentRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import ai.verta.modeldb.AddLineage.Response;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
@@ -230,11 +231,11 @@ public class LineageTest {
             Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
             Assert.assertNotNull(status.getDescription());
             Assert.assertThat(
-                status.getDescription().toLowerCase(), CoreMatchers.containsString("external"));
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("unknown"));
             Assert.assertThat(
-                status.getDescription().toLowerCase(), CoreMatchers.containsString("id"));
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("lineage"));
             Assert.assertThat(
-                status.getDescription().toLowerCase(), CoreMatchers.containsString("empty"));
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("type"));
           }
 
           addLineage =
@@ -247,16 +248,16 @@ public class LineageTest {
             fail();
           } catch (StatusRuntimeException e) {
             Status status = Status.fromThrowable(e);
-            Assert.assertEquals(Code.INVALID_ARGUMENT, status.getCode());
+            Assert.assertEquals(Code.NOT_FOUND, status.getCode());
             Assert.assertNotNull(status.getDescription());
             Assert.assertThat(
-                status.getDescription().toLowerCase(), CoreMatchers.containsString("external"));
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("couldn't"));
             Assert.assertThat(
                 status.getDescription().toLowerCase(), CoreMatchers.containsString("id"));
             Assert.assertThat(
-                status.getDescription().toLowerCase(), CoreMatchers.containsString("not"));
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("find"));
             Assert.assertThat(
-                status.getDescription().toLowerCase(), CoreMatchers.containsString("exists"));
+                status.getDescription().toLowerCase(), CoreMatchers.containsString("repository"));
           }
 
           addLineage =
@@ -420,7 +421,7 @@ public class LineageTest {
                   .addInput(inputDataset)
                   .addInput(inputDataset2)
                   .addOutput(inputOutputExp);
-          lineageServiceStub.addLineage(addLineage.build());
+          Response result = lineageServiceStub.addLineage(addLineage.build());
 
           check(
               Arrays.asList(
@@ -434,7 +435,7 @@ public class LineageTest {
                   null));
 
           addLineage =
-              AddLineage.newBuilder()
+              AddLineage.newBuilder().setId(result.getId())
                   .addOutput(outputDataset)
                   .addOutput(outputExp)
                   .addInput(inputExp)
@@ -461,6 +462,7 @@ public class LineageTest {
 
           DeleteLineage.Builder deleteLineage =
               DeleteLineage.newBuilder()
+                  .setId(result.getId())
                   .addInput(inputExp)
                   .addOutput(outputDataset)
                   .addOutput(outputExp);
@@ -486,6 +488,7 @@ public class LineageTest {
 
           deleteLineage =
               DeleteLineage.newBuilder()
+                  .setId(result.getId())
                   .addInput(inputExp)
                   .addInput(inputDataset)
                   .addInput(inputDataset2)

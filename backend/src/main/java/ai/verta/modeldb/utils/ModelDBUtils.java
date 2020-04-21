@@ -63,6 +63,7 @@ import org.yaml.snakeyaml.Yaml;
 public class ModelDBUtils {
 
   private static final Logger LOGGER = LogManager.getLogger(ModelDBUtils.class);
+  private static final int STACKTRACE_LENGTH = 4;
 
   private ModelDBUtils() {}
 
@@ -448,11 +449,19 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
-        LOGGER.error("Exception occurred: {}", e.getMessage());
         StackTraceElement[] stack = e.getStackTrace();
-        int maxLines = (stack.length > 4) ? 5 : stack.length;
-        for (int n = 0; n < maxLines; n++) {
-          LOGGER.error(stack[n].toString());
+        LOGGER.error("Stacktrace with {} elements for {}", stack.length, e.getMessage());
+        int n = 0;
+        boolean isLongStack = stack.length > STACKTRACE_LENGTH;
+        if (isLongStack) {
+          for (; n < STACKTRACE_LENGTH + 1; ++n) {
+            LOGGER.warn("{}: {}", n, stack[n].toString());
+          }
+        }
+        for (; n < stack.length; ++n) {
+          if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
+            LOGGER.warn("{}: {}", n, stack[n].toString());
+          }
         }
         status =
             Status.newBuilder()

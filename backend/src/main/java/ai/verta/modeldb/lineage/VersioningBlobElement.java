@@ -1,10 +1,23 @@
 package ai.verta.modeldb.lineage;
 
+import ai.verta.modeldb.CreateJob;
+import ai.verta.modeldb.LineageEntry;
+import ai.verta.modeldb.Location;
 import ai.verta.modeldb.VersioningLineageEntry;
+import ai.verta.modeldb.VersioningLineageEntry.Builder;
 import ai.verta.modeldb.entities.lineage.ConnectionEntity;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.grpc.protobuf.StatusProto;
 import java.util.Objects;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class VersioningBlobElement extends LineageElement {
+  private static final Logger LOGGER = LogManager.getLogger(VersioningBlobElement.class);
 
   private final String location;
   private final String commitSha;
@@ -36,12 +49,27 @@ public class VersioningBlobElement extends LineageElement {
   }
 
   @Override
-  String getInputExperimentId(ConnectionEntity value) {
-    return null;
-  }
-
-  @Override
-  VersioningLineageEntry getInputBlob(ConnectionEntity value) {
-    return null;
+  public LineageEntry toProto() {
+    Location.Builder builder = Location.newBuilder();
+    try {
+      ModelDBUtils.getProtoObjectFromString(location, builder);
+    } catch (InvalidProtocolBufferException e) {
+      String errorMessage = "Unexpected location convertion from the database error";
+      LOGGER.error(errorMessage);
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.INTERNAL_VALUE)
+              .setMessage(errorMessage)
+              .addDetails(Any.pack(LineageEntry.getDefaultInstance()))
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    return LineageEntry.newBuilder()
+        .setBlob(
+            VersioningLineageEntry.newBuilder()
+                .setRepositoryId(repositoryId)
+                .setCommitSha(commitSha)
+                .addAllLocation(builder.getLocationList()))
+        .build();
   }
 }

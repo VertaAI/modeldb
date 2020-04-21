@@ -181,6 +181,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
             }
             experimentRuns.add(experimentRun);
           }
+          break;
         case BLOB:
           VersioningLineageEntry blob = lineageEntry.getBlob();
           long repositoryId = blob.getRepositoryId();
@@ -190,10 +191,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
             repo =
                 repositoryDAO.getRepositoryById(
                     session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
-            result =
-                blobs
-                    .put(repositoryId, new AbstractMap.SimpleEntry<>(repo, new HashMap<>()))
-                    .getValue();
+            blobs.put(repositoryId, new AbstractMap.SimpleEntry<>(repo, new HashMap<>()));
+            result = blobs.get(repositoryId).getValue();
           } else {
             Entry<RepositoryEntity, Map<String, Set<String>>> entityMapEntry =
                 blobs.get(repositoryId);
@@ -203,17 +202,18 @@ public class LineageServiceImpl extends LineageServiceImplBase {
           String commitSha = blob.getCommitSha();
           Set<String> blobResult;
           if (!result.containsKey(commitSha)) {
-            CommitEntity commitEntity =
-                commitDAO.getCommitEntity(session, commitSha, session1 -> repo);
-            blobResult = result.put(commitSha, new HashSet<>());
-          } else {
-            blobResult = result.get(commitSha);
+            commitDAO.getCommitEntity(session, commitSha, session1 -> repo);
+            result.put(commitSha, new HashSet<>());
           }
-          if (!blobResult.contains(
+          blobResult = result.get(commitSha);
+          String stringFromProtoObject =
               ModelDBUtils.getStringFromProtoObject(
-                  Location.newBuilder().addAllLocation(blob.getLocationList())))) {
+                  Location.newBuilder().addAllLocation(blob.getLocationList()));
+          if (!blobResult.contains(stringFromProtoObject)) {
             blobDAO.getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
+            blobResult.add(stringFromProtoObject);
           }
+          break;
         default:
           throw new ModelDBException("Unexpected type", Code.INTERNAL);
       }

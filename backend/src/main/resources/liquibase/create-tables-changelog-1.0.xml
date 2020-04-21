@@ -1239,47 +1239,69 @@
                                  referencedTableName="keyvalue"/>
     </changeSet>
 
-    <changeSet author="lineage" id="new_lineage">
-        <createTable tableName="lineage_id">
+    <changeSet author="lezhevg" id="new_lineage_id">
+        <createTable tableName="lineage_element">
             <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
-    <createTable tableName="lineage_versioning">
-        <column name="id" type="int8" autoIncrement="true">
-            <constraints primaryKey="true" nullable="false"/>
-        </column>
-        <column name="input_experiment_id" type="varchar(256)">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="input_repository_id" type="int8">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="input_commit_sha" type="varchar(256)">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="input_location" type="varchar(256)">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="input_type" type="int4">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="output_experiment_id" type="varchar(256)">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="output_repository_id" type="int8">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="output_commit_sha" type="varchar(256)">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="output_location" type="varchar(256)">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-        <column name="output_type" type="int4">
-            <constraints primaryKey="true" nullable="true"/>
-        </column>
-    </createTable>
+    </changeSet>
+    <changeSet author="lezhevg" id="new_lineage_connection_entity">
+        <createTable tableName="lineage_connection">
+            <column name="element_id" type="int8">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_id" type="int8">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="connection_type" type="int4">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_type" type="int4">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="lezhevg" id="new_lineage_versioning_blob_entity">
+        <createTable tableName="lineage_versioning_blob">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="repository_id" type="int8">
+                <constraints nullable="true"/>
+            </column>
+            <column name="commit_sha" type="varchar(256)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="location" type="varchar(256)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="lezhevg" id="new_lineage_experiment_run_entity">
+        <createTable tableName="lineage_experiment_run">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="experiment_run_id" type="varchar(256)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="indexes-on-lineage" author="lezhevg">
+        <createIndex indexName="lineage_versioning_blob_index"
+          tableName="lineage_versioning_blob" unique="false">
+            <column name="repository_id" type="int8">
+            </column>
+            <column name="commit_sha" type="varchar(256)">
+            </column>
+            <column name="location" type="varchar(256)">
+            </column>
+        </createIndex>
+        <createIndex indexName="lineage_experiment_run_index"
+          tableName="lineage_experiment_run" unique="false">
+            <column name="experiment_run_id" type="varchar(256)"/>
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>
