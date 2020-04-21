@@ -8,6 +8,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetVersionedInput;
+import ai.verta.modeldb.GitSnapshot;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.LogVersionedInput;
@@ -48,10 +49,11 @@ import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
+import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
-import ai.verta.modeldb.versioning.NotebookCodeBlob;
+import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -1310,10 +1312,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
             getExperimentRunHyperparameterConfigBlobMap(session, expRunIds);
 
-        // Map<experimentRunID, Map<LocationString, CodeBlob>> : Map from experimentRunID to Map of
+        // Map<experimentRunID, Map<LocationString, CodeVersion>> : Map from experimentRunID to Map
+        // of
         // LocationString to CodeBlob
-        Map<String, Map<String, CodeBlob>> expRunCodeBlobMap =
-            getExperimentRunCodeBlobMap(session, expRunIds);
+        Map<String, Map<String, CodeVersion>> expRunCodeVersionMap =
+            getExperimentRunCodeVersionMap(session, expRunIds);
 
         Set<String> experimentRunIdsSet = new HashSet<>();
         for (ExperimentRun experimentRun : experimentRunList) {
@@ -1326,12 +1329,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                         expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
                     .build();
           }
-          if (!expRunCodeBlobMap.isEmpty()
-              && expRunCodeBlobMap.containsKey(experimentRun.getId())) {
+          if (!expRunCodeVersionMap.isEmpty()
+              && expRunCodeVersionMap.containsKey(experimentRun.getId())) {
             experimentRun =
                 experimentRun
                     .toBuilder()
-                    .putAllCodeBlobVersion(expRunCodeBlobMap.get(experimentRun.getId()))
+                    .putAllCodeVersionFromBlob(expRunCodeVersionMap.get(experimentRun.getId()))
                     .build();
           }
           if (!experimentRunIdsSet.contains(experimentRun.getId())) {
@@ -1413,10 +1416,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
    * @param session : session
    * @param expRunIds : ExperimentRun ids
    * @return {@link Map<String, Map<String, CodeBlob>>} : Map from experimentRunID to Map of
-   *     LocationString to CodeBlob
+   *     LocationString to CodeVersion
    * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
-  private Map<String, Map<String, CodeBlob>> getExperimentRunCodeBlobMap(
+  private Map<String, Map<String, CodeVersion>> getExperimentRunCodeVersionMap(
       Session session, List<String> expRunIds) throws InvalidProtocolBufferException {
     String queryBuilder =
         "SELECT vme.experimentRunEntity.id, vme.versioning_location, gcb, ncb, pdcb "
@@ -1431,9 +1434,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     List<Object[]> codeBlobEntities = query.list();
     LOGGER.debug("Final experimentRuns code config list size : {}", codeBlobEntities.size());
 
-    // Map<experimentRunID, Map<LocationString, CodeBlob>> : Map from experimentRunID to Map of
-    // LocationString to CodeBlob
-    Map<String, Map<String, CodeBlob>> expRunCodeBlobMap = new LinkedHashMap<>();
+    // Map<experimentRunID, Map<LocationString, CodeVersion>> : Map from experimentRunID to Map of
+    // LocationString to CodeVersion
+    Map<String, Map<String, CodeVersion>> expRunCodeBlobMap = new LinkedHashMap<>();
     if (!codeBlobEntities.isEmpty()) {
       for (Object[] objects : codeBlobEntities) {
         String expRunId = (String) objects[0];
@@ -1443,22 +1446,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
             (PathDatasetComponentBlobEntity) objects[4];
 
-        CodeBlob.Builder codeBlobBuilder = CodeBlob.newBuilder();
-        if (gitBlobEntity != null) {
-          codeBlobBuilder.setGit(gitBlobEntity.toProto());
+        CodeVersion.Builder codeVersionBuilder = CodeVersion.newBuilder();
+        if (notebookCodeBlobEntity != null && pathDatasetComponentBlobEntity != null) {
+          convertGitBlobToGitSnapshot(
+              codeVersionBuilder,
+              notebookCodeBlobEntity.getGitCodeBlobEntity().toProto(),
+              pathDatasetComponentBlobEntity.toProto());
+        } else if (gitBlobEntity != null) {
+          convertGitBlobToGitSnapshot(codeVersionBuilder, gitBlobEntity.toProto(), null);
         }
-        if (notebookCodeBlobEntity != null) {
-          NotebookCodeBlob.Builder notebookCodeBlobBuilder = NotebookCodeBlob.newBuilder();
-          if (notebookCodeBlobEntity.getGitCodeBlobEntity() != null) {
-            notebookCodeBlobBuilder.setGitRepo(
-                notebookCodeBlobEntity.getGitCodeBlobEntity().toProto());
-          }
-          if (pathDatasetComponentBlobEntity != null) {
-            notebookCodeBlobBuilder.setPath(pathDatasetComponentBlobEntity.toProto());
-          }
-          codeBlobBuilder.setNotebook(notebookCodeBlobBuilder.build());
-        }
-        Map<String, CodeBlob> codeBlobMap = expRunCodeBlobMap.get(expRunId);
+        Map<String, CodeVersion> codeBlobMap = expRunCodeBlobMap.get(expRunId);
         if (codeBlobMap == null) {
           codeBlobMap = new LinkedHashMap<>();
         }
@@ -1466,11 +1463,29 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         ModelDBUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
         codeBlobMap.put(
             ModelDBUtils.getLocationWithSlashOperator(locationBuilder.getLocationList()),
-            codeBlobBuilder.build());
+            codeVersionBuilder.build());
         expRunCodeBlobMap.put(expRunId, codeBlobMap);
       }
     }
     return expRunCodeBlobMap;
+  }
+
+  private void convertGitBlobToGitSnapshot(
+      CodeVersion.Builder codeVersionBuilder,
+      GitCodeBlob codeBlob,
+      PathDatasetComponentBlob pathComponentBlob) {
+    GitSnapshot.Builder gitSnapShot = GitSnapshot.newBuilder();
+    if (codeBlob != null) {
+      gitSnapShot
+          .setRepo(codeBlob.getRepo())
+          .setHash(codeBlob.getHash())
+          .setIsDirtyValue(codeBlob.getIsDirty() ? 1 : 2)
+          .build();
+    }
+    if (pathComponentBlob != null) {
+      gitSnapShot.addFilepaths(pathComponentBlob.getPath());
+    }
+    codeVersionBuilder.setGitSnapshot(gitSnapShot);
   }
 
   @Override

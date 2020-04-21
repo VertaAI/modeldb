@@ -1194,10 +1194,10 @@
         "versioned_inputs": {
           "$ref": "#/definitions/modeldbVersioningEntry"
         },
-        "code_blob_version": {
+        "code_version_from_blob": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/versioningCodeBlob"
+            "$ref": "#/definitions/modeldbCodeVersion"
           }
         }
       },
@@ -1556,71 +1556,6 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
-        }
-      }
-    },
-    "versioningCodeBlob": {
-      "type": "object",
-      "properties": {
-        "git": {
-          "$ref": "#/definitions/versioningGitCodeBlob"
-        },
-        "notebook": {
-          "$ref": "#/definitions/versioningNotebookCodeBlob"
-        }
-      }
-    },
-    "versioningGitCodeBlob": {
-      "type": "object",
-      "properties": {
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "branch": {
-          "type": "string"
-        },
-        "tag": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
-    },
-    "versioningNotebookCodeBlob": {
-      "type": "object",
-      "properties": {
-        "path": {
-          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
-        },
-        "git_repo": {
-          "$ref": "#/definitions/versioningGitCodeBlob"
-        }
-      }
-    },
-    "versioningPathDatasetComponentBlob": {
-      "type": "object",
-      "properties": {
-        "path": {
-          "type": "string"
-        },
-        "size": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "last_modified_at_source": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "sha256": {
-          "type": "string"
-        },
-        "md5": {
-          "type": "string"
         }
       }
     },

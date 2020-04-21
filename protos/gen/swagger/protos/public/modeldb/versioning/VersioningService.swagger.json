@@ -2841,10 +2841,10 @@
         "versioned_inputs": {
           "$ref": "#/definitions/modeldbVersioningEntry"
         },
-        "code_blob_version": {
+        "code_version_from_blob": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/versioningCodeBlob"
+            "$ref": "#/definitions/modeldbCodeVersion"
           }
         }
       },
