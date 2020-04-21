@@ -397,6 +397,7 @@ message MergeRepositoryCommitsRequest {
     string branch_a = 5;
     string branch_b =6;
 
+    bool is_dry_run = 7;
 
     message Response {
         Commit commit = 1;

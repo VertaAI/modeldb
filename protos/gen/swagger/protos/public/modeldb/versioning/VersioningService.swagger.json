@@ -2840,6 +2840,12 @@
         },
         "versioned_inputs": {
           "$ref": "#/definitions/modeldbVersioningEntry"
+        },
+        "code_blob_version": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/versioningCodeBlob"
+          }
         }
       },
       "title": "ExperimentRun Entity"
@@ -3658,6 +3664,10 @@
         },
         "branch_b": {
           "type": "string"
+        },
+        "is_dry_run": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

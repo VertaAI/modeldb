@@ -1994,7 +1994,7 @@ public class CommitTest {
   }
 
   @Test
-  public void revertToMasterCommitNoBlobTest() throws ModelDBException {
+  public void revertToMasterCommitNoBlobTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Revert commit test start................................");
 
     VersioningServiceBlockingStub versioningServiceBlockingStub =
