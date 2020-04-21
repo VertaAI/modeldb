@@ -19,6 +19,7 @@ import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.GetCommitComponentRequest.Response;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -210,7 +211,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
               ModelDBUtils.getStringFromProtoObject(
                   Location.newBuilder().addAllLocation(blob.getLocationList()));
           if (!blobResult.contains(stringFromProtoObject)) {
-            blobDAO.getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
+            Response commitComponent = blobDAO
+                .getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
             blobResult.add(stringFromProtoObject);
           }
           break;

@@ -446,7 +446,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       case ENTRY:
         sideAInDatabase =
             getConnectionEntitiesByEntryAndConnectionType(
-                session, sideB.getEntry(), CONNECTION_TYPE_INPUT);
+                session, sideB.getEntry(), connectionType);
         break;
       default:
         throw new ModelDBException("Unknown id type");
