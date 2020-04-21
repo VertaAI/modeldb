@@ -33,7 +33,8 @@
 }
 
 .expName_block,
-.timeStamp_block {
+.timeStamp_block,
+.owner_block {
   margin-bottom: 7px;
   line-height: 12px;
   color: var(--text-color5);
@@ -45,7 +46,8 @@
 }
 
 .expName_value,
-.timestamp_value {
+.timestamp_value,
+.owner_value {
   color: #000;
   max-width: 220px;
   line-height: 1.15em;
@@ -56,7 +58,8 @@
   white-space: normal;
 }
 
-.timestamp_value {
+.timestamp_value,
+.owner_value {
   margin-top: 3px;
 }
 

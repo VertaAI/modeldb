@@ -640,6 +640,9 @@ public class BlobDAORdbImpl implements BlobDAO {
               conflictLocationMap);
 
       if (conflictLocationMap.isEmpty()) {
+        if (request.getIsDryRun()) {
+          return MergeRepositoryCommitsRequest.Response.getDefaultInstance();
+        }
         String mergeMessage = request.getContent().getMessage();
         List<String> parentSHAs =
             Arrays.asList(internalCommitB.getCommit_hash(), internalCommitA.getCommit_hash());

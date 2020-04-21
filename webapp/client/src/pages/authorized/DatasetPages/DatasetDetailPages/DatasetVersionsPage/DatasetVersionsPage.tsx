@@ -45,6 +45,7 @@ import { IApplicationState } from 'store/store';
 import DatasetDetailsLayout from '../shared/DatasetDetailsLayout/DatasetDetailsLayout';
 import styles from './DatasetVersionsPage.module.css';
 import DatasetVersionsTable from './DatasetVersionsTable/DatasetVersionsTable';
+import { unknownUser } from 'models/User';
 
 interface IPropsFromState {
   datasetVersions: IDatasetVersion[] | null;
@@ -246,6 +247,10 @@ class DatasetVersionsPage extends React.PureComponent<AllProps, ILocalState> {
                                   : 'Version 1'
                               }
                               dataTest="dataset-version-name"
+                            />
+                            <Parameter
+                              label={'owner'}
+                              value={unknownUser.username}
                             />
                             <Parameter
                               label={'type'}

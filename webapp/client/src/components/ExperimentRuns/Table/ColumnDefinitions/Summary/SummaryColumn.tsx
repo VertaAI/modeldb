@@ -17,6 +17,7 @@ import routes from 'routes';
 
 import { IRow } from '../types';
 import styles from './SummaryColumn.module.css';
+import { unknownUser } from 'models/User';
 
 interface ILocalProps {
   row: IRow;
@@ -60,6 +61,10 @@ class SummaryColumn extends React.PureComponent<AllProps> {
             </div>
           </div>
         </Link>
+        <div className={styles.owner_block}>
+          Owner:
+          <div className={styles.owner_value}>{unknownUser.username}</div>
+        </div>
         <div className={styles.expName_block}>
           Experiment Name:
           <Draggable

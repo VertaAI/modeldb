@@ -1,0 +1,6 @@
+type AllowedActions {
+    create: Boolean!
+    update: Boolean!
+    delete: Boolean!
+    deploy: Boolean!
+}

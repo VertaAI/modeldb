@@ -1531,6 +1531,12 @@
         },
         "versioned_inputs": {
           "$ref": "#/definitions/modeldbVersioningEntry"
+        },
+        "code_version_from_blob": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/modeldbCodeVersion"
+          }
         }
       },
       "title": "ExperimentRun Entity"

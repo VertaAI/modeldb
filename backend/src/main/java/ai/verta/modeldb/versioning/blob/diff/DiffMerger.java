@@ -338,30 +338,31 @@ public class DiffMerger {
                             Utils.getOrNull(x, AutogenS3DatasetComponentBlob::getPath),
                             AutogenPathDatasetComponentBlob::getPath),
                     x ->
-                        Utils.either(
-                            Utils.getOrNull(
-                                Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                AutogenPathDatasetComponentDiff::getA),
-                            Utils.getOrNull(
-                                Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                AutogenPathDatasetComponentDiff::getB),
-                            AutogenPathDatasetComponentBlob::getPath),
-                    x ->
                         Utils.getOrNull(
-                            Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                            AutogenPathDatasetComponentDiff::getStatus),
+                            Utils.either(
+                                x.getA(), x.getB(), AutogenS3DatasetComponentBlob::getPath),
+                            AutogenPathDatasetComponentBlob::getPath),
+                    x -> Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getStatus),
                     x ->
                         new AutogenS3DatasetComponentBlob()
                             .setPath(
                                 Utils.getOrNull(
-                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                    AutogenPathDatasetComponentDiff::getA)),
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getA),
+                                    AutogenS3DatasetComponentBlob::getPath))
+                            .setS3VersionId(
+                                Utils.getOrNull(
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getA),
+                                    AutogenS3DatasetComponentBlob::getS3VersionId)),
                     x ->
                         new AutogenS3DatasetComponentBlob()
                             .setPath(
                                 Utils.getOrNull(
-                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getPath),
-                                    AutogenPathDatasetComponentDiff::getB)),
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getB),
+                                    AutogenS3DatasetComponentBlob::getPath))
+                            .setS3VersionId(
+                                Utils.getOrNull(
+                                    Utils.getOrNull(x, AutogenS3DatasetComponentDiff::getB),
+                                    AutogenS3DatasetComponentBlob::getS3VersionId)),
                     null,
                     conflictKeys)));
   }

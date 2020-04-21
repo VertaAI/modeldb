@@ -55,7 +55,10 @@ message PathDatasetDiff {
 }
 
 message S3DatasetComponentDiff {
-    PathDatasetComponentDiff path = 1;
+    DiffStatusEnum.DiffStatus status = 3;
+    S3DatasetComponentBlob A = 4;
+    S3DatasetComponentBlob B = 5;
+    S3DatasetComponentBlob C = 6;
 }
 
 message S3DatasetDiff {

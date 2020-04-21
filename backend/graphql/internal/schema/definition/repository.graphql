@@ -1,0 +1,61 @@
+type Repository {
+    id: ID!
+    name: String!
+    dateCreated: Date!
+    dateUpdated: Date!
+
+    labels: [String!]!
+    owner: User!
+    collaborators: [Collaborator!]!
+    allowedActions: AllowedActions!
+
+    tags: [RepositoryTag!]!
+    branches: [RepositoryBranch!]!
+
+    commit(id: ID!): Commit
+    tag(name: String!): Commit
+    branch(name: String!): Commit
+    commitByReference(ref: CommitReference!): Commit
+
+    diff(a: CommitReference!, b: CommitReference!): [String!]
+    log(commit: CommitReference!): Commits!
+
+    network: BranchesNetwork!
+
+    delete: Boolean!
+    addLabels(labels: [String!]!): Repository!
+    deleteLabels(labels: [String!]!): Repository!
+    merge(a: CommitReference!, b: CommitReference!, message: String): MergeResult!
+}
+
+input CommitReference {
+  commit: ID
+  tag: String
+  branch: String
+}
+
+type Repositories {
+  repositories: [Repository!]!
+  next: String
+  pagination: PaginationResponse!
+}
+
+input RepositoriesQuery {
+  pagination: PaginationQuery
+}
+
+type RepositoryTag {
+  name: String!
+  commit: Commit!
+}
+
+type RepositoryBranch {
+  name: String!
+  commit: Commit!
+}
+
+type MergeResult {
+  commit: Commit
+  commonBase: Commit
+  conflicts: [String!]
+}

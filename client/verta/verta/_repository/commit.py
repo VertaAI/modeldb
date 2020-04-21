@@ -351,6 +351,7 @@ class Commit(object):
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
+    # TODO: Add ways to retrieve and delete tag
     def tag(self, tag):
         """
         Assigns a tag to this Commit.

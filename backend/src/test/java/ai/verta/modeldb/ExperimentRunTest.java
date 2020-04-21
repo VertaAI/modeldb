@@ -10282,17 +10282,25 @@ public class ExperimentRunTest {
       if (exprRun.getId().equals(experimentRun2.getId())) {
         String locationKey =
             ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-        assertTrue("Code blob should not empty", exprRun.containsColeBlobVersion(locationKey));
+        assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
         assertTrue(
             "Expected code config not found in map",
-            exprRun.getColeBlobVersionOrThrow(locationKey).hasNotebook());
+            !exprRun
+                .getCodeVersionFromBlobOrThrow(locationKey)
+                .getGitSnapshot()
+                .getFilepathsList()
+                .isEmpty());
       } else if (exprRun.getId().equals(experimentRun3.getId())) {
         String locationKey =
             ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-        assertTrue("Code blob should not empty", exprRun.containsColeBlobVersion(locationKey));
+        assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
         assertTrue(
             "Expected code config not found in map",
-            exprRun.getColeBlobVersionOrThrow(locationKey).hasGit());
+            exprRun
+                .getCodeVersionFromBlobOrThrow(locationKey)
+                .getGitSnapshot()
+                .getFilepathsList()
+                .isEmpty());
       }
     }
 
