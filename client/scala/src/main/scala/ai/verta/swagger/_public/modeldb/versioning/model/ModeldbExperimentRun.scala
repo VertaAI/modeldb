@@ -17,6 +17,7 @@ import ai.verta.swagger.client.objects._
 case class ModeldbExperimentRun (
   artifacts: Option[List[ModeldbArtifact]] = None,
   attributes: Option[List[CommonKeyValue]] = None,
+  code_blob_version: Option[Map[String,VersioningCodeBlob]] = None,
   code_version: Option[String] = None,
   code_version_snapshot: Option[ModeldbCodeVersion] = None,
   datasets: Option[List[ModeldbArtifact]] = None,
@@ -48,6 +49,7 @@ object ModeldbExperimentRun {
       List[Option[JField]](
         obj.artifacts.map(x => JField("artifacts", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x))),
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
+        obj.code_blob_version.map(x => JField("code_blob_version", ((x: Map[String,VersioningCodeBlob]) => JObject(x.toList.map(kv => JField(kv._1,((x: VersioningCodeBlob) => VersioningCodeBlob.toJson(x))(kv._2)))))(x))),
         obj.code_version.map(x => JField("code_version", JString(x))),
         obj.code_version_snapshot.map(x => JField("code_version_snapshot", ((x: ModeldbCodeVersion) => ModeldbCodeVersion.toJson(x))(x))),
         obj.datasets.map(x => JField("datasets", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x))),
@@ -84,6 +86,7 @@ object ModeldbExperimentRun {
           // TODO: handle required
           artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          code_blob_version = fieldsMap.get("code_blob_version").map((x: JValue) => x match {case JObject(fields) => fields.map(kv => (kv.name, VersioningCodeBlob.fromJson(kv.value))).toMap; case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           code_version = fieldsMap.get("code_version").map(JsonConverter.fromJsonString),
           code_version_snapshot = fieldsMap.get("code_version_snapshot").map(ModeldbCodeVersion.fromJson),
           datasets = fieldsMap.get("datasets").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
