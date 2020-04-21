@@ -1,0 +1,15 @@
+enum ArtifactType {
+  IMAGE
+  MODEL
+  TENSORBOARD
+  DATA
+  BLOB
+  STRING
+}
+
+type Artifact {
+  key: String!
+  path: String!
+  type: ArtifactType!
+  pathOnly: Boolean!
+}
