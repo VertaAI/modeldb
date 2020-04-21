@@ -396,7 +396,6 @@ message MergeRepositoryCommitsRequest {
     //for a or b only one of commit or branch should be populated
     string branch_a = 5;
     string branch_b =6;
-    bool isDryRun = 7;
 
     message Response {
         Commit commit = 1;
