@@ -9368,8 +9368,8 @@ public class ExperimentRunTest {
         listCommitExperimentRunsResponse.getRuns(0));
     assertEquals(
         "ExperimentRun not match with expected ExperimentRun",
-        experimentRun3,
-        listCommitExperimentRunsResponse.getRuns(2));
+        experimentRun3.getId(),
+        listCommitExperimentRunsResponse.getRuns(2).getId());
 
     listCommitExperimentRunsRequest =
         ListCommitExperimentRunsRequest.newBuilder()
@@ -9402,8 +9402,8 @@ public class ExperimentRunTest {
         listCommitExperimentRunsResponse.getTotalRecords());
     assertEquals(
         "ExperimentRun not match with expected ExperimentRun",
-        experimentRun3,
-        listCommitExperimentRunsResponse.getRuns(0));
+        experimentRun3.getId(),
+        listCommitExperimentRunsResponse.getRuns(0).getId());
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
@@ -9573,8 +9573,8 @@ public class ExperimentRunTest {
         listBlobExperimentRunsResponse.getRuns(0));
     assertEquals(
         "ExperimentRun not match with expected ExperimentRun",
-        experimentRun3,
-        listBlobExperimentRunsResponse.getRuns(2));
+        experimentRun3.getId(),
+        listBlobExperimentRunsResponse.getRuns(2).getId());
 
     listBlobExperimentRunsRequest =
         ListBlobExperimentRunsRequest.newBuilder()
@@ -9590,8 +9590,8 @@ public class ExperimentRunTest {
         listBlobExperimentRunsResponse.getTotalRecords());
     assertEquals(
         "ExperimentRun not match with expected ExperimentRun",
-        experimentRun3,
-        listBlobExperimentRunsResponse.getRuns(1));
+        experimentRun3.getId(),
+        listBlobExperimentRunsResponse.getRuns(1).getId());
 
     Location location4 = Location.newBuilder().addLocation("test-2").build();
     createExperimentRunRequest =
