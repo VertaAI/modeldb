@@ -56,6 +56,7 @@ import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SetParentExperimentRunId;
@@ -396,15 +397,24 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      ExperimentRun experimentRun = experimentRunDAO.getExperimentRun(request.getId());
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.PROJECT,
-          experimentRun.getProjectId(),
-          ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
-      responseObserver.onNext(
-          GetExperimentRunById.Response.newBuilder().setExperimentRun(experimentRun).build());
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          experimentRunDAO.findExperimentRuns(findExperimentRuns);
+      LOGGER.debug(
+          ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
+      GetExperimentRunById.Response.Builder response = GetExperimentRunById.Response.newBuilder();
+      if (experimentRunPaginationDTO.getExperimentRuns() != null
+          && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
+        response.setExperimentRun(experimentRunPaginationDTO.getExperimentRuns().get(0));
+      }
+      responseObserver.onNext(response.build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {

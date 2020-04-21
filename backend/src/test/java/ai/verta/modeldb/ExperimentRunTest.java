@@ -10304,6 +10304,20 @@ public class ExperimentRunTest {
       }
     }
 
+    GetExperimentRunById.Response getHydratedExperimentRunsResponse =
+        experimentRunServiceStub.getExperimentRunById(
+            GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build());
+    ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
+    String locationKey = ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
+    assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+    assertFalse(
+        "Expected code config not found in map",
+        exprRun
+            .getCodeVersionFromBlobOrThrow(locationKey)
+            .getGitSnapshot()
+            .getFilepathsList()
+            .isEmpty());
+
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
