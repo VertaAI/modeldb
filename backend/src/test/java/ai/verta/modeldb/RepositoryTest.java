@@ -498,6 +498,7 @@ public class RepositoryTest {
           "Repository name not match with expected repository name",
           NAME,
           findRepositoriesResponse.getRepositories(1).getName());
+      Repository repo2 = findRepositoriesResponse.getRepositories(0);
 
       findRepositoriesRequest =
           FindRepositories.newBuilder().setPageLimit(1).setPageNumber(1).build();
@@ -526,18 +527,6 @@ public class RepositoryTest {
       Assert.assertEquals(
           "Repository name not match with expected repository name",
           NAME,
-          findRepositoriesResponse.getRepositories(0).getName());
-
-      findRepositoriesRequest = FindRepositories.newBuilder().addRepoNames(NAME_2).build();
-      findRepositoriesResponse =
-          versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
-      Assert.assertEquals(
-          "Repository count not match with expected repository count",
-          1,
-          findRepositoriesResponse.getTotalRecords());
-      Assert.assertEquals(
-          "Repository name not match with expected repository name",
-          NAME_2,
           findRepositoriesResponse.getRepositories(0).getName());
 
       findRepositoriesRequest =
@@ -581,6 +570,50 @@ public class RepositoryTest {
           "Repository name not match with expected repository name",
           NAME,
           findRepositoriesResponse.getRepositories(0).getName());
+
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        findRepositoriesRequest =
+            FindRepositories.newBuilder()
+                .addPredicates(
+                    KeyValueQuery.newBuilder()
+                        .setKey(ModelDBConstants.OWNER)
+                        .setValue(Value.newBuilder().setStringValue(repo2.getOwner()).build())
+                        .setOperator(OperatorEnum.Operator.EQ)
+                        .setValueType(ValueTypeEnum.ValueType.STRING)
+                        .build())
+                .build();
+        findRepositoriesResponse =
+            versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+        Assert.assertEquals(
+            "Repository count not match with expected repository count",
+            2,
+            findRepositoriesResponse.getTotalRecords());
+        Assert.assertEquals(
+            "Repository count not match with expected repository count",
+            2,
+            findRepositoriesResponse.getRepositoriesCount());
+        Assert.assertEquals(
+            "Repository name not match with expected repository name",
+            NAME_2,
+            findRepositoriesResponse.getRepositories(0).getName());
+
+        findRepositoriesRequest =
+            FindRepositories.newBuilder()
+                .addPredicates(
+                    KeyValueQuery.newBuilder()
+                        .setKey(ModelDBConstants.OWNER)
+                        .setValue(Value.newBuilder().setStringValue(repo2.getOwner()).build())
+                        .setOperator(OperatorEnum.Operator.NE)
+                        .setValueType(ValueTypeEnum.ValueType.STRING)
+                        .build())
+                .build();
+        findRepositoriesResponse =
+            versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+        Assert.assertEquals(
+            "Repository count not match with expected repository count",
+            0,
+            findRepositoriesResponse.getTotalRecords());
+      }
     } finally {
       DeleteLabelsRequest deleteLabelsRequest =
           DeleteLabelsRequest.newBuilder()

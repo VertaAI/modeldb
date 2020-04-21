@@ -847,7 +847,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       FindRepositoriesQuery findRepositoriesQuery =
           new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(session, workspaceDTO)
               .setRepoIds(request.getRepoIdsList())
-              .setRepoNames(request.getRepoNamesList())
               .setPredicates(request.getPredicatesList())
               .setPageLimit(request.getPageLimit())
               .setPageNumber(request.getPageNumber())

@@ -54,7 +54,6 @@ public class FindRepositoriesQuery {
 
     // optional parameters
     private List<Long> repoIds;
-    private List<String> repoNames;
     private List<KeyValueQuery> predicates;
     private Integer pageNumber = 0;
     private Integer pageLimit = 0;
@@ -67,14 +66,6 @@ public class FindRepositoriesQuery {
     public FindRepositoriesHQLQueryBuilder setRepoIds(List<Long> repoIds) {
       if (repoIds != null && !repoIds.isEmpty()) {
         this.repoIds = repoIds;
-        this.isNeedToWhereCause = true;
-      }
-      return this;
-    }
-
-    public FindRepositoriesHQLQueryBuilder setRepoNames(List<String> repoNames) {
-      if (repoNames != null && !repoNames.isEmpty()) {
-        this.repoNames = repoNames;
         this.isNeedToWhereCause = true;
       }
       return this;
@@ -225,19 +216,6 @@ public class FindRepositoriesQuery {
         }
         whereClause.append(alias).append(".").append(ModelDBConstants.ID).append(" IN (:repoIds) ");
         parametersMap.put("repoIds", this.repoIds);
-        isNeedOperator = true;
-      }
-
-      if (this.repoNames != null && !this.repoNames.isEmpty()) {
-        if (isNeedOperator) {
-          whereClause.append(" AND ");
-        }
-        whereClause
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.NAME)
-            .append(" IN (:repoNames) ");
-        parametersMap.put("repoNames", this.repoNames);
         isNeedOperator = true;
       }
 
