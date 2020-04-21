@@ -128,7 +128,7 @@ public class Utils {
           }
         };
 
-    return (T) sanitize(v.genericPostVisitDeep(b));
+    return (T) removeEmpty(sanitize(v.genericPostVisitDeep(b)));
   }
 
   private static ProtoType sanitize(ProtoType b) {
@@ -238,6 +238,7 @@ public class Utils {
       if (blob.getPath() == null) continue;
       blobMap.put(blob.getPath().getPath(), blob);
     }
+    if (blobMap.isEmpty()) return null;
     b.setComponents(new LinkedList<AutogenS3DatasetComponentBlob>(blobMap.values()));
     return b;
   }
