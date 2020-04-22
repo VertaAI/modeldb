@@ -572,6 +572,12 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       GetHydratedExperimentRunById.Response.Builder response =
           GetHydratedExperimentRunById.Response.newBuilder();
       if (!hydratedExperimentRuns.isEmpty()) {
+        if (hydratedExperimentRuns.size() > 1) {
+          LOGGER.warn(
+              "Multiple ({}) ExperimentRun found for given ID : {}",
+              hydratedExperimentRuns.size(),
+              request.getId());
+        }
         response.setHydratedExperimentRun(hydratedExperimentRuns.get(0));
       }
       responseObserver.onNext(response.build());
