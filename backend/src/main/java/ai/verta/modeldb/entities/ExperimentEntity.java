@@ -2,6 +2,7 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -27,7 +28,8 @@ public class ExperimentEntity {
 
   public ExperimentEntity() {}
 
-  public ExperimentEntity(Experiment experiment) throws InvalidProtocolBufferException {
+  public ExperimentEntity(Experiment experiment, WorkspaceDTO workspaceDTO)
+      throws InvalidProtocolBufferException {
     setId(experiment.getId());
     setProject_id(experiment.getProjectId());
     setName(experiment.getName());
@@ -47,6 +49,11 @@ public class ExperimentEntity {
       setCode_version_snapshot(
           RdbmsUtils.generateCodeVersionEntity(
               ModelDBConstants.CODE_VERSION, experiment.getCodeVersionSnapshot()));
+    }
+
+    if (workspaceDTO.getWorkspaceId() != null) {
+      this.workspace = workspaceDTO.getWorkspaceId();
+      this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
     }
   }
 
@@ -107,6 +114,12 @@ public class ExperimentEntity {
   @OneToOne(targetEntity = CodeVersionEntity.class, cascade = CascadeType.ALL)
   @OrderBy("id")
   private CodeVersionEntity code_version_snapshot;
+
+  @Column(name = "workspace")
+  private String workspace;
+
+  @Column(name = "workspace_type")
+  private Integer workspace_type;
 
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
 
@@ -232,6 +245,14 @@ public class ExperimentEntity {
       this.attributeMapping = new ArrayList<>();
     }
     this.attributeMapping.addAll(attributeMapping);
+  }
+
+  public String getWorkspace() {
+    return workspace;
+  }
+
+  public Integer getWorkspace_type() {
+    return workspace_type;
   }
 
   public Experiment getProtoObject() throws InvalidProtocolBufferException {

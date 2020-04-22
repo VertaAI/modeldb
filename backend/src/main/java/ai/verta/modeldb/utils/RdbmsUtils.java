@@ -17,6 +17,7 @@ import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.OperatorEnum.Operator;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.Project;
@@ -25,6 +26,9 @@ import ai.verta.modeldb.QueryDatasetVersionInfo;
 import ai.verta.modeldb.QueryParameter;
 import ai.verta.modeldb.RawDatasetVersionInfo;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -51,6 +55,7 @@ import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -105,9 +110,9 @@ public class RdbmsUtils {
     return projects;
   }
 
-  public static ExperimentEntity generateExperimentEntity(Experiment experiment)
-      throws InvalidProtocolBufferException {
-    return new ExperimentEntity(experiment);
+  public static ExperimentEntity generateExperimentEntity(
+      Experiment experiment, WorkspaceDTO workspaceDTO) throws InvalidProtocolBufferException {
+    return new ExperimentEntity(experiment, workspaceDTO);
   }
 
   public static List<Experiment> convertExperimentsFromExperimentEntityList(
@@ -1537,5 +1542,79 @@ public class RdbmsUtils {
       }
     }
     return versioningEntry.build();
+  }
+
+  public static void validateEntityIdInPredicates(
+      String entityName,
+      List<String> accessibleEntityIds,
+      KeyValueQuery predicate,
+      RoleService roleService) {
+    if (predicate.getKey().equals(ModelDBConstants.ID)) {
+      if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
+        Status statusMessage =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE)
+                .build();
+        throw StatusProto.toStatusRuntimeException(statusMessage);
+      }
+      String entityId = predicate.getValue().getStringValue();
+      if ((accessibleEntityIds.isEmpty() || !accessibleEntityIds.contains(entityId))
+          && roleService.IsImplemented()) {
+        Status statusMessage =
+            Status.newBuilder()
+                .setCode(Code.PERMISSION_DENIED_VALUE)
+                .setMessage(
+                    "Access is denied. User is unauthorized for given "
+                        + entityName
+                        + " entity ID : "
+                        + entityId)
+                .build();
+        throw StatusProto.toStatusRuntimeException(statusMessage);
+      }
+    }
+
+    if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
+        || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
+        || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
+      Status statusMessage =
+          Status.newBuilder()
+              .setCode(Code.INVALID_ARGUMENT_VALUE)
+              .setMessage("Workspace name OR type not supported as predicate")
+              .build();
+      throw StatusProto.toStatusRuntimeException(statusMessage);
+    }
+  }
+
+  public static void getWorkspacePredicates(
+      CollaboratorBase host,
+      UserInfo currentLoginUserInfo,
+      CriteriaBuilder builder,
+      Root<?> entityRoot,
+      List<Predicate> finalPredicatesList,
+      String workspaceName,
+      RoleService roleService) {
+    UserInfo userInfo =
+        host != null && host.isUser()
+            ? (UserInfo) host.getCollaboratorMessage()
+            : currentLoginUserInfo;
+    if (userInfo != null) {
+      List<KeyValueQuery> workspacePredicates =
+          ModelDBUtils.getKeyValueQueriesByWorkspace(roleService, userInfo, workspaceName);
+      if (workspacePredicates.size() > 0) {
+        Predicate privateWorkspacePredicate =
+            builder.equal(
+                entityRoot.get(ModelDBConstants.WORKSPACE),
+                workspacePredicates.get(0).getValue().getStringValue());
+        Predicate privateWorkspaceTypePredicate =
+            builder.equal(
+                entityRoot.get(ModelDBConstants.WORKSPACE_TYPE),
+                workspacePredicates.get(1).getValue().getNumberValue());
+        Predicate privatePredicate =
+            builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
+
+        finalPredicatesList.add(privatePredicate);
+      }
+    }
   }
 }
