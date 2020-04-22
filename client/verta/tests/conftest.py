@@ -2,6 +2,7 @@ from __future__ import division
 
 import six
 
+import datetime
 import os
 import random
 import shutil
@@ -250,12 +251,14 @@ def dir_and_files(strs, tmp_path):
 
 @pytest.fixture
 def client(host, port, email, dev_key):
+    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
     client = Client(host, port, email, dev_key, debug=True)
 
     yield client
 
     if client.proj is not None:
         utils.delete_project(client.proj.id, client._conn)
+    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
 
 @pytest.fixture
