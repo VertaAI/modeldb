@@ -264,7 +264,7 @@ def experiment_run(client):
     client.set_experiment()
     
     run = client.set_experiment_run()
-    print("[TEST] Run ID is {}".format(run.id))
+    print("[TEST LOG] Run ID is {}".format(run.id))
     return run
 
 
