@@ -19,6 +19,7 @@ import {
 import styles from './Table.module.css';
 import withProps from 'core/shared/utils/react/withProps';
 import { makeGenericCell } from 'core/shared/view/elements/Table/Templates/Cell/Cell';
+import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
 
 interface ILocalProps {
   rows: IRow[];
@@ -32,7 +33,7 @@ const ColumnName: { [K in keyof IPathDatasetComponentBlob]: K } = {
   md5: 'md5',
   lastModifiedAtSource: 'lastModifiedAtSource',
   sha256: 'sha256',
-}
+};
 
 const columns: Column[] = [
   { name: ColumnName.path, title: 'Path' },
@@ -55,7 +56,7 @@ const DiffCell = withProps(makeGenericCell<IRow, keyof typeof ColumnName>())({
       ? { backgroundColor: getCssDiffColor(row[column.name].diffColor) }
       : undefined;
   },
-  getDataType: (column) => column.name,
+  getDataType: column => column.name,
 });
 
 const Table: React.FC<ILocalProps> = ({ rows }) => {
@@ -67,9 +68,11 @@ const Table: React.FC<ILocalProps> = ({ rows }) => {
             <ColumnProvider
               type={ColumnName.path}
               render={({ row }) => (
-                <div title={row.path.value} data-test="path">
-                  {row.path.value}
-                </div>
+                <TextWithCopyTooltip copyText={row.path.value}>
+                  <span title={row.path.value} data-test="path">
+                    {row.path.value}
+                  </span>
+                </TextWithCopyTooltip>
               )}
             />
             <ColumnProvider
@@ -79,9 +82,14 @@ const Table: React.FC<ILocalProps> = ({ rows }) => {
             <ColumnProvider
               type={ColumnName.md5}
               render={({ row }) => (
-                <div title={row.md5.value} data-test="md5">
-                  {row.md5.value}
-                </div>
+                <TextWithCopyTooltip
+                  copyText={row.md5.value}
+                  withEllipsis={true}
+                >
+                  <span title={row.md5.value} data-test="md5">
+                    {row.md5.value}
+                  </span>
+                </TextWithCopyTooltip>
               )}
             />
             <ColumnProvider
@@ -97,9 +105,14 @@ const Table: React.FC<ILocalProps> = ({ rows }) => {
             <ColumnProvider
               type={ColumnName.sha256}
               render={({ row }) => (
-                <div data-test="sha256" title={row.sha256.value}>
-                  {row.sha256.value}
-                </div>
+                <TextWithCopyTooltip
+                  copyText={row.sha256.value}
+                  withEllipsis={true}
+                >
+                  <span data-test="sha256" title={row.sha256.value}>
+                    {row.sha256.value}
+                  </span>
+                </TextWithCopyTooltip>
               )}
             />
             <TablePlugin

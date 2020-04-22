@@ -1,9 +1,5 @@
 import axios, { AxiosError } from 'axios';
 
-import { MetaDataService } from 'core/services/versioning/metaData';
-import RepositoryDataService from 'core/services/versioning/repositoryData/RepositoryDataService';
-import CompareCommitsService from 'core/services/versioning/compareCommits/CompareCommitsService';
-
 import { RepositoriesDataService } from '../core/services/versioning/repositories';
 import { DatasetsDataService } from './datasets';
 import { DatasetVersionsDataService } from './datasetVersions';
@@ -55,17 +51,5 @@ export default class ServiceFactory {
 
   public static getRepositoriesService() {
     return new RepositoriesDataService();
-  }
-
-  public static getRepositoryDataService() {
-    return new RepositoryDataService();
-  }
-
-  public static getMetaDataService() {
-    return new MetaDataService();
-  }
-
-  public static getCompareCommitsService() {
-    return new CompareCommitsService();
   }
 }

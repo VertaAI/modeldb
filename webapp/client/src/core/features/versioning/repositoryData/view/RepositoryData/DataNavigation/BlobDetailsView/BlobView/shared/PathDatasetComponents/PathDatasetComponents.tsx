@@ -5,6 +5,7 @@ import PathSize from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/PathSi
 
 import styles from './PathDatasetComponents.module.css';
 import Table from './Table/Table';
+import { TextWithCopyTooltip } from 'core/shared/view/elements/TextWithCopyTooltip/TextWithCopyTooltip';
 
 interface ILocalProps {
   data: IPathDatasetComponentBlob[];
@@ -19,9 +20,11 @@ const PathDatasetComponents = (props: ILocalProps) => {
           type="path"
           width={250}
           render={({ path }) => (
-            <span className={styles.elem} title={path}>
-              {path}
-            </span>
+            <TextWithCopyTooltip copyText={path}>
+              <span title={path} data-test="path">
+                {path}
+              </span>
+            </TextWithCopyTooltip>
           )}
         />
         <Table.Column
@@ -52,18 +55,22 @@ const PathDatasetComponents = (props: ILocalProps) => {
           type="md5"
           width={150}
           render={({ md5 }) => (
-            <span className={styles.elem} title={md5}>
-              {md5}
-            </span>
+            <TextWithCopyTooltip copyText={md5} withEllipsis={true}>
+              <span className={styles.elem} title={md5}>
+                {md5}
+              </span>
+            </TextWithCopyTooltip>
           )}
         />
         <Table.Column
           title="SHA256"
           type="sha256"
           render={({ sha256 }) => (
-            <span className={styles.elem} title={sha256}>
-              {sha256}
-            </span>
+            <TextWithCopyTooltip copyText={sha256} withEllipsis={true}>
+              <span className={styles.elem} title={sha256}>
+                {sha256}
+              </span>
+            </TextWithCopyTooltip>
           )}
         />
       </Table>

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useParams } from 'react-router';
 
 import { CompareChanges } from 'core/features/versioning/compareChanges';
-import withLoadingRequiredData from 'core/features/versioning/repositoryData/view/RepositoryData/WithLoadingRequiredData/WithLoadingRequiredData';
+import withLoadingBranchesAndTags from 'core/features/versioning/repositoryData/view/RepositoryData/WithLoadingBranchesAndTags/WithLoadingBranchesAndTags';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import routes, { GetRouteParams } from 'routes';
 
@@ -12,7 +12,7 @@ interface ILocalProps {
   repository: IRepository;
 }
 
-const CompareChangesWithBranchesAndTags = withLoadingRequiredData(
+const CompareChangesWithBranchesAndTags = withLoadingBranchesAndTags(
   CompareChanges
 );
 

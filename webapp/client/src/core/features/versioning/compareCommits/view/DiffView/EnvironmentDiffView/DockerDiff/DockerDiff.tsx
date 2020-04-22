@@ -34,8 +34,12 @@ const DockerDiff = ({
         <tableComponents.PropDefinition
           title="Docker container"
           type="docker"
-          getCellStyle={highlightCellBackground(({ data, comparedCommitType }) =>
-            Boolean(data.data[comparedCommitType] && data.data[comparedCommitType]!.diffColor)
+          getCellStyle={highlightCellBackground(
+            ({ data, comparedCommitType }) =>
+              Boolean(
+                data.data[comparedCommitType] &&
+                  data.data[comparedCommitType]!.diffColor
+              )
           )}
           render={({ data, comparedCommitType: type }) => {
             const docker = data && data.data[type];

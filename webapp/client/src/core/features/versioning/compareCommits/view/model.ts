@@ -43,15 +43,14 @@ export function highlightModifiedProperties<T>(
   highlightedObj: T,
   comparedObj: T
 ): IObjectToObjectWithDiffColor<T> {
-  return mapObjWithKey(
-    (key, value) => {
-      return ({
-        value,
-        diffColor: !R.equals(value, comparedObj[key]) ? getDiffColor(commitType) : 'nothing',
-      });
-    },
-    highlightedObj
-  ) as IObjectToObjectWithDiffColor<T>;
+  return mapObjWithKey((key, value) => {
+    return {
+      value,
+      diffColor: !R.equals(value, comparedObj[key])
+        ? getDiffColor(commitType)
+        : 'nothing',
+    };
+  }, highlightedObj) as IObjectToObjectWithDiffColor<T>;
 }
 
 export const getDiffColor = (type: ComparedCommitType): DiffColor => {

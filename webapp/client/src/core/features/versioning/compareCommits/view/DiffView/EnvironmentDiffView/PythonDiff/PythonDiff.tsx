@@ -39,14 +39,17 @@ const PythonDiff = ({
           title="Python"
           type="python"
           isHidden={diff.data.pythonVersion.isHidden}
-          getCellStyle={highlightCellBackground(({ data, comparedCommitType }) =>
-            Boolean(
-              data.data.pythonVersion[comparedCommitType] &&
-                data.data.pythonVersion[comparedCommitType]!.hightlightedPart === 'full'
-            )
+          getCellStyle={highlightCellBackground(
+            ({ data, comparedCommitType }) =>
+              Boolean(
+                data.data.pythonVersion[comparedCommitType] &&
+                  data.data.pythonVersion[comparedCommitType]!
+                    .hightlightedPart === 'full'
+              )
           )}
           render={({ data, comparedCommitType }) => {
-            const pythonVersion = data && data.data.pythonVersion[comparedCommitType];
+            const pythonVersion =
+              data && data.data.pythonVersion[comparedCommitType];
             return pythonVersion ? (
               <PythonVersion pythonVersion={pythonVersion.data} />
             ) : null;
@@ -56,11 +59,16 @@ const PythonDiff = ({
           title="Requirements"
           type="requirements"
           isHidden={diff.data.requirements.isHidden}
-          getCellStyle={highlightCellBackground(({ data, comparedCommitType }) => {
-            return needHighlightCellBackground(data && data.data.requirements[comparedCommitType]);
-          })}
+          getCellStyle={highlightCellBackground(
+            ({ data, comparedCommitType }) => {
+              return needHighlightCellBackground(
+                data && data.data.requirements[comparedCommitType]
+              );
+            }
+          )}
           render={({ data, comparedCommitType }) => {
-            const requirements = data && data.data.requirements[comparedCommitType];
+            const requirements =
+              data && data.data.requirements[comparedCommitType];
             return requirements
               ? requirements.map((x, i) => (
                   <PythonRequirementEnvironment
@@ -76,11 +84,16 @@ const PythonDiff = ({
           title="Constraints"
           type="constraints"
           isHidden={diff.data.constraints.isHidden}
-          getCellStyle={highlightCellBackground(({ data, comparedCommitType }) => {
-            return needHighlightCellBackground(data && data.data.constraints[comparedCommitType]);
-          })}
+          getCellStyle={highlightCellBackground(
+            ({ data, comparedCommitType }) => {
+              return needHighlightCellBackground(
+                data && data.data.constraints[comparedCommitType]
+              );
+            }
+          )}
           render={({ data, comparedCommitType }) => {
-            const constraints = data && data.data.constraints[comparedCommitType];
+            const constraints =
+              data && data.data.constraints[comparedCommitType];
             return constraints
               ? constraints.map((x, i) => (
                   <PythonRequirementEnvironment

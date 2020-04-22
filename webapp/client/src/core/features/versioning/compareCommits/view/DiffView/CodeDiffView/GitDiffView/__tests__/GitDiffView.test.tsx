@@ -33,7 +33,12 @@ const getDisplayedProperties = (
   component: ReactWrapper
 ) => {
   return {
-    hash: getCommitColumnInfo(type, 'hash', (column) => column.text() || undefined, component),
+    hash: getCommitColumnInfo(
+      type,
+      'hash',
+      column => column.text() || undefined,
+      component
+    ),
   };
 };
 

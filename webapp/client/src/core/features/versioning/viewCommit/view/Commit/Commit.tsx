@@ -1,7 +1,6 @@
 import moment from 'moment';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators, Dispatch } from 'redux';
 
 import { CompareCommits } from 'core/features/versioning/compareCommits';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
@@ -17,12 +16,12 @@ import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataCom
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
-
-import { selectors, actions } from '../../store';
-import styles from './Commit.module.css';
-import ExperimentRuns from './ExperimentRuns/ExperimentRuns';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
 import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
+import AssociatedExperimentRuns from 'core/shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';
+
+import styles from './Commit.module.css';
+import { useCommitDetailsQuery } from '../../store/commitDetails/useCommitDetails';
 
 interface ILocalProps {
   repository: IRepository;
@@ -31,113 +30,83 @@ interface ILocalProps {
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
-    commit: selectors.selectCommit(state),
-    loadingCommit: selectors.selectCommunications(state).loadingCommit,
     currentWorkspaceName: selectCurrentWorkspaceName(state),
   };
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => {
-  return bindActionCreators(
-    {
-      loadCommit: actions.loadCommit,
-    },
-    dispatch
-  );
-};
+type AllProps = ILocalProps & ReturnType<typeof mapStateToProps>;
 
-type AllProps = ILocalProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
-
-const Commit = ({
-  repository,
-  commitSha,
-  loadCommit,
-  commit,
-  loadingCommit,
-  currentWorkspaceName,
-}: AllProps) => {
-  React.useEffect(() => {
-    loadCommit({
-      commitSha,
-      repositoryId: repository.id,
-    });
-  }, [repository.id, commitSha]);
+const Commit = ({ repository, commitSha, currentWorkspaceName }: AllProps) => {
+  const { communication: loadingCommitDetails, data } = useCommitDetailsQuery({
+    repositoryId: repository.id,
+    commitSha: commitSha,
+  });
 
   return (
     <PageCard>
       <PageHeader
         title={repository.name}
-        rightContent={
-          <RepositoryNavigation />
-        }
+        rightContent={<RepositoryNavigation />}
         withoutSeparator={true}
       />
-      <DefaultMatchRemoteData data={commit} communication={loadingCommit}>
-        {loadedCommit => (
+      <DefaultMatchRemoteData data={data} communication={loadingCommitDetails}>
+        {({ commit, diffs, experimentRuns }) => (
           <div className={styles.content}>
+            <div className={styles.browseFiles}>
+              <Button
+                size="small"
+                theme="secondary"
+                to={routes.repositoryDataWithLocation.getRedirectPath({
+                  workspaceName: currentWorkspaceName,
+                  commitPointer: CommitPointerHelpers.makeFromCommitSha(
+                    commit.sha
+                  ),
+                  type: 'folder',
+                  location: CommitComponentLocation.makeRoot(),
+                  repositoryName: repository.name,
+                })}
+              >
+                Browse Files
+              </Button>
+            </div>
             <div className={styles.commit}>
               <div className={styles.commit__header}>
-                <div className={styles.commit__message}>
-                  {loadedCommit.message}
-                </div>
-                <div className={styles.commit__browseFiles}>
-                  <Button
-                    size="small"
-                    theme="secondary"
-                    to={routes.repositoryDataWithLocation.getRedirectPath({
-                      workspaceName: currentWorkspaceName,
-                      commitPointer: CommitPointerHelpers.makeFromCommitSha(
-                        loadedCommit.sha
-                      ),
-                      type: 'folder',
-                      location: CommitComponentLocation.makeRoot(),
-                      repositoryName: repository.name,
-                    })}
-                  >
-                    Browse Files
-                  </Button>
-                </div>
+                <div className={styles.commit__message}>{commit.message}</div>
               </div>
               <div className={styles.commit__meta}>
                 <div className={styles.commit__metaColumn}>
                   <div className={styles.author}>
                     <Avatar
-                      sizeInPx={20}
-                      username={loadedCommit.author.username}
-                      picture={loadedCommit.author.picture}
+                      sizeInPx={28}
+                      username={commit.author.username}
+                      picture={commit.author.picture}
                     />
                     <div className={styles.author__username}>
-                      {loadedCommit.author.username}
+                      {commit.author.username}
                     </div>
                   </div>
                   <div className={styles.date}>
-                    committed {moment(loadedCommit.dateCreated).fromNow()}
+                    committed {moment(commit.dateCreated).fromNow()}
                   </div>
                 </div>
                 <div className={styles.commit__metaColumn}>
                   <div className={styles.shaContainer}>
-                    commit <ShortenedSHA sha={loadedCommit.sha} />
+                    commit <ShortenedSHA sha={commit.sha} />
                   </div>
                 </div>
               </div>
             </div>
             <div className={styles.diff}>
               <CompareCommits
-                repository={repository}
-                commitASha={
-                  loadedCommit.type === 'initial'
-                    ? undefined
-                    : loadedCommit.parentShas[0]
-                }
-                commitBSha={loadedCommit.sha}
+                diffs={diffs}
+                commitASha={commit.parentSha}
+                commitBSha={commit.sha}
               />
             </div>
             <div className={styles.experimentRuns}>
-              <ExperimentRuns
-                commitSha={loadedCommit.sha}
-                repositoryId={repository.id}
+              <AssociatedExperimentRuns
+                data={experimentRuns}
+                workspaceName={currentWorkspaceName}
               />
             </div>
           </div>
@@ -147,7 +116,4 @@ const Commit = ({
   );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Commit);
+export default connect(mapStateToProps)(Commit);

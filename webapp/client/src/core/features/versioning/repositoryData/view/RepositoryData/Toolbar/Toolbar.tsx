@@ -11,18 +11,23 @@ import BranchesAndTagsListContainer from './BranchesAndTagsListContainer/Branche
 import RepositoryBreadcrumbs from './RepositoryBreadcrumbs/RepositoryBreadcrumbs';
 import styles from './Toolbar.module.css';
 
-interface ILocalProps {
+type ILocalProps = {
   fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
   repository: IRepository;
-}
+} & Omit<React.ComponentProps<typeof BranchesAndTagsListContainer>, 'commitPointer'>
 
 const Toolbar: React.FC<ILocalProps> = ({
   repository,
   fullCommitComponentLocationComponents,
+  ...branchesAndTagsListProps
 }) => {
   return (
     <div className={styles.root}>
-      <BranchesAndTagsListContainer repository={repository} />
+      <BranchesAndTagsListContainer
+        repository={repository}
+        {...branchesAndTagsListProps}
+        commitPointer={fullCommitComponentLocationComponents.commitPointer}
+      />
       {!DataLocation.isRoot(fullCommitComponentLocationComponents.location) && (
         <div className={styles.breadcrumbs}>
           <RepositoryBreadcrumbs

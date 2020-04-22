@@ -1,19 +1,8 @@
-import { DataWithPagination } from 'core/shared/models/Pagination';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import {
   IHydratedCommit,
   Branch,
 } from 'core/shared/models/Versioning/RepositoryData';
-import { ICommunication } from 'core/shared/utils/redux/communication';
-
-export interface ICommitsHistoryState {
-  data: {
-    commitsWithPagination: DataWithPagination<IHydratedCommit> | null;
-  };
-  communications: {
-    loadingCommits: ICommunication;
-  };
-}
 
 export interface ICommitHistorySettings {
   branch: Branch;
@@ -21,7 +10,9 @@ export interface ICommitHistorySettings {
   location: CommitComponentLocation.CommitComponentLocation;
 }
 
+export type ICommitView = Pick<IHydratedCommit, 'author' | 'dateCreated' | 'message' | 'sha'>;
+
 export interface IGroupedCommitsByDate {
-  dateCreated: IHydratedCommit['dateCreated'];
-  commits: IHydratedCommit[];
+  dateCreated: ICommitView['dateCreated'];
+  commits: ICommitView[];
 }

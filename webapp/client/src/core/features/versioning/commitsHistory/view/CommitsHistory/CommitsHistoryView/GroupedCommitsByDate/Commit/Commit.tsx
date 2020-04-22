@@ -3,10 +3,10 @@ import * as React from 'react';
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import cn from 'classnames';
+import copy from 'copy-to-clipboard';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
-  IHydratedCommit,
   CommitPointerHelpers,
 } from 'core/shared/models/Versioning/RepositoryData';
 import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
@@ -16,13 +16,13 @@ import routes from 'routes';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
 import Tooltip from 'core/shared/view/elements/Tooltip/Tooltip';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import { ICommitView } from 'core/features/versioning/commitsHistory/store/types';
 
 import styles from './Commit.module.css';
-import copy from 'copy-to-clipboard';
 
 interface ILocalProps {
   repositoryName: IRepository['name'];
-  data: IHydratedCommit;
+  data: ICommitView;
 }
 
 const Commit = (props: ILocalProps) => {
@@ -67,7 +67,10 @@ const Commit = (props: ILocalProps) => {
               </NavLink>
             </Tooltip>
             <Tooltip content="Copy">
-              <div className={styles.commitShaWithCopy__item} onClick={() => copy(data.sha)}>
+              <div
+                className={styles.commitShaWithCopy__item}
+                onClick={() => copy(data.sha)}
+              >
                 <Icon type="copy-to-clipboard" className={styles.icon} />
               </div>
             </Tooltip>

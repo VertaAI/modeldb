@@ -71,16 +71,16 @@ class Table<T> extends React.Component<ILocalProps<T>, IState> {
     return (
       <div className={styles.root}>
         <Paper>
-        <TableWrapper isHeightByContent={true}>
-          <Grid rows={propDefinitions} columns={columns}>
-            <DataTypeProvider
-              formatterComponent={this.ColumnFactory as any}
-              for={columns.map(({ name }) => name)}
-            />
-            <TablePlugin columnExtensions={tableColumnExtensions} />
-            <TableHeaderRow />
-          </Grid>
-        </TableWrapper>
+          <TableWrapper isHeightByContent={true}>
+            <Grid rows={propDefinitions} columns={columns}>
+              <DataTypeProvider
+                formatterComponent={this.ColumnFactory as any}
+                for={columns.map(({ name }) => name)}
+              />
+              <TablePlugin columnExtensions={tableColumnExtensions} />
+              <TableHeaderRow />
+            </Grid>
+          </TableWrapper>
         </Paper>
       </div>
     );

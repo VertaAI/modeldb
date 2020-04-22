@@ -40,11 +40,13 @@ const EnvironmentCommonDetailsDiff = ({
           title="Environment variables"
           isHidden={diff.environmentVariables.isHidden}
           type="envVariables"
-          getCellStyle={highlightCellBackground(({ data, comparedCommitType }) => {
-            const environmentVariables =
-              data && data.environmentVariables[comparedCommitType];
-            return needHighlightCellBackground(environmentVariables);
-          })}
+          getCellStyle={highlightCellBackground(
+            ({ data, comparedCommitType }) => {
+              const environmentVariables =
+                data && data.environmentVariables[comparedCommitType];
+              return needHighlightCellBackground(environmentVariables);
+            }
+          )}
           render={({ data, comparedCommitType }) => {
             const environmentVariables =
               data && data.environmentVariables[comparedCommitType];
@@ -64,8 +66,9 @@ const EnvironmentCommonDetailsDiff = ({
         <tableComponents.PropDefinition
           title="Command Line"
           type="commandLine"
-          getCellStyle={highlightCellBackground(({ data, comparedCommitType }) =>
-            Boolean(data.commandLine[comparedCommitType])
+          getCellStyle={highlightCellBackground(
+            ({ data, comparedCommitType }) =>
+              Boolean(data.commandLine[comparedCommitType])
           )}
           isHidden={diff.commandLine.isHidden}
           render={({ data, comparedCommitType }) => {

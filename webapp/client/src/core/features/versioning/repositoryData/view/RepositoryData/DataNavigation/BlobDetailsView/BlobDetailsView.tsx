@@ -1,37 +1,47 @@
 import * as React from 'react';
+import { connect } from 'react-redux';
 
-import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
 import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
 import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
+import { IBlobView } from 'core/features/versioning/repositoryData/store/types';
+import AssociatedExperimentRuns from 'core/shared/view/domain/Versioning/AssociatedExperimentRuns/AssociatedExperimentRuns';
+import { IApplicationState } from 'store/store';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 import BlobView from './BlobView/BlobView';
 import styles from './BlobDetailsView.module.css';
-import ExperimentRuns from './ExperimentRuns/ExperimentRuns';
 
 interface ILocalProps {
   repository: IRepository;
   commit: IHydratedCommit;
-  blobData: IBlob['data'];
+  blob: IBlobView;
   location: CommitComponentLocation.CommitComponentLocation;
 }
 
-const BlobDetailsView = (props: ILocalProps) => {
+const mapStateToProps = (state: IApplicationState) => {
+  return {
+    workspaceName: selectCurrentWorkspaceName(state),
+  };
+};
+
+type AllProps = ILocalProps & ReturnType<typeof mapStateToProps>;
+
+const BlobDetailsView = (props: AllProps) => {
   return (
     <DataBox withPadding={true}>
       <div className={styles.blob}>
-        <BlobView blobData={props.blobData} />
+        <BlobView blobData={props.blob.data} />
       </div>
       <div className={styles.experimentRuns}>
-        <ExperimentRuns
-          repositoryId={props.repository.id}
-          commitSha={props.commit.sha}
-          location={props.location}
+        <AssociatedExperimentRuns
+          data={props.blob.experimentRuns}
+          workspaceName={props.workspaceName}
         />
       </div>
     </DataBox>
   );
 };
 
-export default BlobDetailsView;
+export default connect(mapStateToProps)(BlobDetailsView);

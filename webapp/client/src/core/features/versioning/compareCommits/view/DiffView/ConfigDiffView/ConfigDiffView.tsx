@@ -18,7 +18,9 @@ import { BlobDataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/Blo
 
 import { IComparedCommitsInfo, getCssDiffColorByCommitType } from '../../model';
 import sortArrayByAnotherArrayKeys from '../shared/sortArrayByAnotherArrayKeys/sortArrayByAnotherArrayKeys';
-import makeComparePropertiesTable, { makeHighlightCellBackground } from '../shared/ComparePropertiesTable/ComparePropertiesTable';
+import makeComparePropertiesTable, {
+  makeHighlightCellBackground,
+} from '../shared/ComparePropertiesTable/ComparePropertiesTable';
 
 interface ILocalProps {
   diff: IConfigBlobDiff;
@@ -71,7 +73,14 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
           isHidden={Boolean(!A.hyperparameters && !B.hyperparameters)}
           getCellStyle={highlightCellBackground(({ data }) => {
             if (data.hyperparameters && data.hyperparameters.length > 0) {
-              return data.hyperparameters.every(({ diffType }) => diffType === 'added') || data.hyperparameters.every(({ diffType }) => diffType === 'deleted');
+              return (
+                data.hyperparameters.every(
+                  ({ diffType }) => diffType === 'added'
+                ) ||
+                data.hyperparameters.every(
+                  ({ diffType }) => diffType === 'deleted'
+                )
+              );
             }
             return false;
           })}
@@ -83,7 +92,11 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
                   (anotherData && anotherData.hyperparameters) || []
                 ).map(h => (
                   <HyperparameterItem
-                    {...getHyperparameterDiffStyles(diff.diffType, h.diffType, type)}
+                    {...getHyperparameterDiffStyles(
+                      diff.diffType,
+                      h.diffType,
+                      type
+                    )}
                     hyperparameter={h.data}
                     key={h.data.name}
                   />
@@ -97,7 +110,14 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
           isHidden={Boolean(!A.hyperparameterSet && !B.hyperparameterSet)}
           getCellStyle={highlightCellBackground(({ data }) => {
             if (data.hyperparameterSet && data.hyperparameterSet.length > 0) {
-              return data.hyperparameterSet.every(({ diffType }) => diffType === 'added') || data.hyperparameterSet.every(({ diffType }) => diffType === 'deleted');
+              return (
+                data.hyperparameterSet.every(
+                  ({ diffType }) => diffType === 'added'
+                ) ||
+                data.hyperparameterSet.every(
+                  ({ diffType }) => diffType === 'deleted'
+                )
+              );
             }
             return false;
           })}
@@ -109,7 +129,11 @@ const ConfigDiffView = ({ diff, comparedCommitsInfo }: ILocalProps) => {
                   (anotherData && anotherData.hyperparameterSet) || []
                 ).map(h => (
                   <HyperparameterSetItem
-                    {...getHyperparameterDiffStyles(diff.diffType, h.diffType, type)}
+                    {...getHyperparameterDiffStyles(
+                      diff.diffType,
+                      h.diffType,
+                      type
+                    )}
                     hyperparameterSetItem={h.data}
                     key={h.data.name}
                   />

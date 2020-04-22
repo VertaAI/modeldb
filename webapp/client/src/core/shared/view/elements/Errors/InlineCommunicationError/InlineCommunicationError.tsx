@@ -7,6 +7,7 @@ import InlineErrorView from '../InlineErrorView/InlineErrorView';
 
 interface ILocalProps {
   error: AppError | Error | string | undefined;
+  withoutErrorCode?: boolean;
   customMessage?: string;
   isNillEntity?: boolean;
 }
@@ -39,10 +40,12 @@ export const getCommunicationErrorTextComponents = ({
   error,
   isNillEntity,
   customMessage,
+  withoutErrorCode = false,
 }: {
   error: AppError | Error | string | undefined;
   customMessage?: string;
   isNillEntity?: boolean;
+  withoutErrorCode?: boolean;
 }) => {
   const message = (() => {
     if (!error && isNillEntity) {
@@ -53,7 +56,7 @@ export const getCommunicationErrorTextComponents = ({
       : normalizeAppErrorMessage(error as any);
   })();
 
-  const errorCode = ((error: any) => {
+  const errorCode = withoutErrorCode ? undefined : ((error: any) => {
     if (!error) {
       return '';
     }

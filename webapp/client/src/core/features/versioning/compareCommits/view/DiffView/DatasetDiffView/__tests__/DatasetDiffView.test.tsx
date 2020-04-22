@@ -23,7 +23,11 @@ const makeComponent = ({ diff }: { diff: IDatasetBlobDiff }) => {
 };
 
 const findDisplayedPaths = (component: ReactWrapper) => {
-  function getColumn<T>(type: string, getContent: (column: ReactWrapper) => T, component: ReactWrapper): { content: undefined | T; diffColor: undefined | DiffColor } {
+  function getColumn<T>(
+    type: string,
+    getContent: (column: ReactWrapper) => T,
+    component: ReactWrapper
+  ): { content: undefined | T; diffColor: undefined | DiffColor } {
     const column = component.find(`[data-type="${type}"]`);
     if (column.length === 0) {
       return { content: undefined, diffColor: undefined };
@@ -31,16 +35,16 @@ const findDisplayedPaths = (component: ReactWrapper) => {
     return {
       content: getContent(column),
       diffColor: getDiffColorFromBackgroundColor(column.prop('style')),
-    }
-  };
+    };
+  }
 
   return component
     .find('tr')
     .slice(1)
     .map(pathRow => {
       return {
-        path: getColumn('path', (column) => column.text(), pathRow),
-        md5: getColumn('md5', (column) => column.text(), pathRow),
+        path: getColumn('path', column => column.text(), pathRow),
+        md5: getColumn('md5', column => column.text(), pathRow),
       };
     });
 };

@@ -1,11 +1,9 @@
 import cn from 'classnames';
 import * as React from 'react';
-import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
-import { Dispatch, bindActionCreators } from 'redux';
 import routes from 'routes';
+import { connect } from 'react-redux';
 
-import { CompareCommits } from 'core/features/versioning/compareCommits';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   CommitPointer,
@@ -19,12 +17,14 @@ import { Icon } from 'core/shared/view/elements/Icon/Icon';
 import DefaultMatchRemoteDataWithReloading from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteDataWithReloading';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
-import { IApplicationState } from 'store/store';
 import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
+import CompareCommits from 'core/features/versioning/compareCommits/view/CompareCommits';
+import { IApplicationState } from 'store/store';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
-import { actions, selectors } from '../../store';
 import styles from './CompareChanges.module.css';
 import { useMergeCommitsButton } from './MergeCommitsButton/MergeCommitsButton';
+import { useCompareChangesMutation } from '../../store/compareChanges/useCompareChanges';
 
 interface ILocalProps {
   repository: IRepository;
@@ -35,24 +35,13 @@ interface ILocalProps {
   branches: RepositoryBranches;
 }
 
-const mapStateToProps = (state: IApplicationState) => ({
-  loadingCommitPointersCommits: selectors.selectCommunications(state)
-    .loadingCommitPointersCommits,
-  commitPointersCommits: selectors.selectCommitPointersCommits(state),
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => {
-  return bindActionCreators(
-    {
-      loadCommitPointersCommits: actions.loadCommitPointersCommits,
-    },
-    dispatch
-  );
+const mapStateToProps = (state: IApplicationState) => {
+  return {
+    workspaceName: selectCurrentWorkspaceName(state),
+  };
 };
 
-type AllProps = ILocalProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
+type AllProps = ILocalProps & ReturnType<typeof mapStateToProps>;
 
 const CompareChanges = (props: AllProps) => {
   const {
@@ -61,9 +50,7 @@ const CompareChanges = (props: AllProps) => {
     repository,
     commitPointerValueA,
     commitPointerValueB,
-    commitPointersCommits,
-    loadCommitPointersCommits,
-    loadingCommitPointersCommits,
+    workspaceName,
   } = props;
 
   const commitPointerA = CommitPointerHelpers.makeCommitPointerFromString(
@@ -75,12 +62,11 @@ const CompareChanges = (props: AllProps) => {
     { branches, tags }
   );
 
-  React.useEffect(() => {
-    loadCommitPointersCommits({
-      repositoryId: repository.id,
-      comparedCommitPointersInfo: { commitPointerA, commitPointerB },
-    });
-  }, [repository.id, commitPointerValueA, commitPointerValueB]);
+  const { communication: loadingData, data } = useCompareChangesMutation({
+    repositoryId: repository.id,
+    commitPointerA,
+    commitPointerB,
+  });
 
   const history = useHistory();
   const makeOnChangeCommitPointer = (type: 'A' | 'B') => (
@@ -100,7 +86,9 @@ const CompareChanges = (props: AllProps) => {
     );
   };
 
-  const { MergeCommitsButton, mergingCommits } = useMergeCommitsButton();
+  const { MergeCommitsButton, mergingCommits } = useMergeCommitsButton({
+    workspaceName,
+  });
 
   return (
     <PageCard>
@@ -110,10 +98,10 @@ const CompareChanges = (props: AllProps) => {
         rightContent={<RepositoryNavigation />}
       />
       <DefaultMatchRemoteDataWithReloading
-        communication={loadingCommitPointersCommits}
-        data={commitPointersCommits}
+        communication={loadingData}
+        data={data}
       >
-        {(loadedCommitPointersCommits, reloadingCommitPointersCommits) => {
+        {({ commits, diffs }, reloadingCommitPointersCommits) => {
           return (
             <div
               className={cn({
@@ -153,8 +141,9 @@ const CompareChanges = (props: AllProps) => {
                 </div>
                 <MergeCommitsButton
                   base={commitPointerA}
-                  commitPointersCommits={loadedCommitPointersCommits}
+                  commitPointersCommits={commits}
                   repository={repository}
+                  diffs={diffs}
                 >
                   {button =>
                     button ? <div className={styles.merge}>{button}</div> : null
@@ -168,9 +157,9 @@ const CompareChanges = (props: AllProps) => {
               ) : (
                 <div className={styles.compareCommits}>
                   <CompareCommits
-                    repository={repository}
-                    commitASha={loadedCommitPointersCommits.commitPointerA.sha}
-                    commitBSha={loadedCommitPointersCommits.commitPointerB.sha}
+                    commitASha={commits.commitPointerA.sha}
+                    commitBSha={commits.commitPointerB.sha}
+                    diffs={diffs}
                   />
                 </div>
               )}
@@ -182,7 +171,4 @@ const CompareChanges = (props: AllProps) => {
   );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CompareChanges);
+export default connect(mapStateToProps)(CompareChanges);

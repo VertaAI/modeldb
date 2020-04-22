@@ -16,7 +16,7 @@ import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitCom
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
 
-import { ShortExperiment } from './Experiment';
+import Experiment, { ShortExperiment } from './Experiment';
 import { Project } from './Project';
 
 @JsonObject('modelRecord')
@@ -72,7 +72,7 @@ export interface IVersionedInputs {
 
 export type LoadExperimentRunErrorType = Common.EntityErrorType;
 
-export interface IExperimentRunInfo {
-  experimentRun: ModelRecord;
-  project: Project;
-}
+export type IExperimentRunInfo = Pick<ModelRecord, 'name' | 'id'> & {
+  experiment: Pick<Experiment, 'name' | 'id'>;
+  project: Pick<Project, 'name' | 'id'>;
+};

@@ -107,42 +107,44 @@ class ComparePropertiesTable<T> extends React.Component<
       ({ isHidden = false }) => isHidden !== true
     );
 
-    const DiffCell = withProps(makeGenericCell<IPropDefinition<any>, string>())({
-      getDataType: (_, row) => row.type,
-      getStyle: (column: { name: string }, row: IPropDefinition<any>) => {
-        switch (column.name) {
-          case ColumnNames.properties: {
-            return undefined;
+    const DiffCell = withProps(makeGenericCell<IPropDefinition<any>, string>())(
+      {
+        getDataType: (_, row) => row.type,
+        getStyle: (column: { name: string }, row: IPropDefinition<any>) => {
+          switch (column.name) {
+            case ColumnNames.properties: {
+              return undefined;
+            }
+            case ColumnNames.A: {
+              const renderProps: IPropDefinitionRenderProps<T> = {
+                comparedCommitType: ColumnNames.A,
+                data: this.props.A ? this.props.A : undefined,
+                anotherData: this.props.B ? this.props.B : undefined,
+              };
+              const target = propDefinitions.find(
+                ({ type }) => type === row.type
+              );
+              return target && row.getCellStyle
+                ? row.getCellStyle(renderProps)
+                : undefined;
+            }
+            case ColumnNames.B: {
+              const renderProps: IPropDefinitionRenderProps<T> = {
+                comparedCommitType: ColumnNames.B,
+                data: this.props.B ? this.props.B : undefined,
+                anotherData: this.props.A ? this.props.A : undefined,
+              };
+              const target = propDefinitions.find(
+                ({ type }) => type === row.type
+              );
+              return target && row.getCellStyle
+                ? row.getCellStyle(renderProps)
+                : undefined;
+            }
           }
-          case ColumnNames.A: {
-            const renderProps: IPropDefinitionRenderProps<T> = {
-              comparedCommitType: ColumnNames.A,
-              data: this.props.A ? this.props.A : undefined,
-              anotherData: this.props.B ? this.props.B : undefined,
-            };
-            const target = propDefinitions.find(
-              ({ type }) => type === row.type
-            );
-            return target && row.getCellStyle
-              ? row.getCellStyle(renderProps)
-              : undefined;
-          }
-          case ColumnNames.B: {
-            const renderProps: IPropDefinitionRenderProps<T> = {
-              comparedCommitType: ColumnNames.B,
-              data: this.props.B ? this.props.B : undefined,
-              anotherData: this.props.A ? this.props.A : undefined,
-            };
-            const target = propDefinitions.find(
-              ({ type }) => type === row.type
-            );
-            return target && row.getCellStyle
-              ? row.getCellStyle(renderProps)
-              : undefined;
-          }
-        }
-      },
-    });
+        },
+      }
+    );
 
     return (
       <Paper>
@@ -205,11 +207,22 @@ class ComparePropertiesTable<T> extends React.Component<
 
 export function makeHighlightCellBackground<T>() {
   function highlightCellBackground(
-    pred: (settings: { data: T; comparedCommitType: ComparedCommitType }) => boolean
+    pred: (settings: {
+      data: T;
+      comparedCommitType: ComparedCommitType;
+    }) => boolean
   ) {
     return (settings: { data?: T; comparedCommitType: ComparedCommitType }) => {
-      return settings.data && pred({ data: settings.data, comparedCommitType: settings.comparedCommitType })
-        ? { backgroundColor: getCssDiffColorByCommitType(settings.comparedCommitType) }
+      return settings.data &&
+        pred({
+          data: settings.data,
+          comparedCommitType: settings.comparedCommitType,
+        })
+        ? {
+            backgroundColor: getCssDiffColorByCommitType(
+              settings.comparedCommitType
+            ),
+          }
         : undefined;
     };
   }

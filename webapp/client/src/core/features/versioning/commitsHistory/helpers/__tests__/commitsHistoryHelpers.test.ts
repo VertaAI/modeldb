@@ -22,7 +22,6 @@ describe('(feature commitsHistory) helpers', () => {
           message: 'blabla',
           sha: 'sha-1',
           type: 'withParent',
-          parentShas: ['adf'],
         },
         {
           author: users[0],
@@ -30,7 +29,6 @@ describe('(feature commitsHistory) helpers', () => {
           message: 'blabla',
           sha: 'sha-2',
           type: 'withParent',
-          parentShas: ['adf'],
         },
         {
           author: users[0],
@@ -38,7 +36,6 @@ describe('(feature commitsHistory) helpers', () => {
           message: 'blabla',
           sha: 'sha-3',
           type: 'withParent',
-          parentShas: ['adf'],
         },
       ];
 

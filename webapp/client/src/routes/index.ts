@@ -184,6 +184,14 @@ const routes = {
         P.param('commitPointerBValue')<CommitPointer['value']>()
       )(),
   }),
+  repositoryNetworkGraph: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>(),
+        'network'
+      )(),
+  }),
 };
 
 export const findAppRouteByPathname = (

@@ -28,10 +28,18 @@ class RepositoryDetailsPagesLayout extends React.Component<AllProps> {
           <PagesTabs
             tabs={[
               {
-                label: 'Data',
+                label: 'Contents',
                 to: routes.repositoryData.getRedirectPathWithCurrentWorkspace({
                   repositoryName: repository.name,
                 }),
+              },
+              {
+                label: 'Network',
+                to: routes.repositoryNetworkGraph.getRedirectPathWithCurrentWorkspace(
+                  {
+                    repositoryName: repository.name,
+                  }
+                ),
               },
               {
                 label: 'Settings',
