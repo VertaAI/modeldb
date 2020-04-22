@@ -845,7 +845,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         return result;
       }
     }
-    throw new ModelDBException("Commit not found", Status.Code.INTERNAL);
+    throw new ModelDBException("Commit not found", Status.Code.NOT_FOUND);
   }
 
   private VersioningLineageEntry getCommit(
