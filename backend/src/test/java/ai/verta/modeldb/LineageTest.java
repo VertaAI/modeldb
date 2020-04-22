@@ -9,6 +9,7 @@ import ai.verta.modeldb.AddLineage.Response;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
+import ai.verta.modeldb.LineageEntryBatchResponseSingle.Builder;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.AuthService;
@@ -37,6 +38,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -414,7 +417,7 @@ public class LineageTest {
           check(
               Arrays.asList(inputExp, NOT_EXISTENT_DATASET),
               Arrays.asList(null, null),
-              Arrays.asList(null, null));
+              Arrays.asList(null, null), 0L);
 
           AddLineage.Builder addLineage =
               AddLineage.newBuilder()
@@ -423,6 +426,7 @@ public class LineageTest {
                   .addOutput(inputOutputExp);
           Response result = lineageServiceStub.addLineage(addLineage.build());
 
+          long id = result.getId();
           check(
               Arrays.asList(
                   inputOutputExp, inputDataset, inputDataset2, inputExp, NOT_EXISTENT_DATASET),
@@ -432,16 +436,17 @@ public class LineageTest {
                   Collections.singletonList(inputOutputExp),
                   Collections.singletonList(inputOutputExp),
                   null,
-                  null));
+                  null), id);
 
+          long oldId = id;
           addLineage =
               AddLineage.newBuilder()
-                  .setId(result.getId())
                   .addOutput(outputDataset)
                   .addOutput(outputExp)
                   .addInput(inputExp)
                   .addInput(inputOutputExp);
-          lineageServiceStub.addLineage(addLineage.build());
+          result = lineageServiceStub.addLineage(addLineage.build());
+          id = result.getId();
 
           check(
               Arrays.asList(
@@ -459,33 +464,31 @@ public class LineageTest {
                   Collections.singletonList(inputOutputExp),
                   Arrays.asList(outputDataset, outputExp),
                   null,
-                  null));
+                  null),
+              Arrays.asList(oldId, id, id, id, id, id), Arrays.asList(id, oldId, oldId, id, id, id), result.getId());
 
           DeleteLineage.Builder deleteLineage =
               DeleteLineage.newBuilder()
-                  .setId(result.getId())
-                  .addInput(inputExp)
-                  .addOutput(outputDataset)
-                  .addOutput(outputExp);
+                  .setId(oldId);
           Assert.assertTrue(lineageServiceStub.deleteLineage(deleteLineage.build()).getStatus());
 
           check(
               Arrays.asList(
                   inputOutputExp, inputDataset, inputDataset2, inputExp, outputDataset, outputExp),
               Arrays.asList(
-                  Arrays.asList(inputDataset, inputDataset2),
                   null,
                   null,
                   null,
-                  Collections.singletonList(inputOutputExp),
-                  Collections.singletonList(inputOutputExp)),
+                  null,
+                  Arrays.asList(inputExp, inputOutputExp),
+                  Arrays.asList(inputExp, inputOutputExp)),
               Arrays.asList(
                   Arrays.asList(outputDataset, outputExp),
-                  Collections.singletonList(inputOutputExp),
-                  Collections.singletonList(inputOutputExp),
                   null,
                   null,
-                  null));
+                  Arrays.asList(outputDataset, outputExp),
+                  null,
+                  null), result.getId());
 
           deleteLineage =
               DeleteLineage.newBuilder()
@@ -503,7 +506,7 @@ public class LineageTest {
               Arrays.asList(
                   inputOutputExp, inputDataset, inputDataset2, inputExp, outputDataset, outputExp),
               Arrays.asList(null, null, null, null, null, null),
-              Arrays.asList(null, null, null, null, null, null));
+              Arrays.asList(null, null, null, null, null, null), result.getId());
         } catch (StatusRuntimeException e) {
           Status status = Status.fromThrowable(e);
           LOGGER.warn(
@@ -590,21 +593,33 @@ public class LineageTest {
     return experimentRun1;
   }
 
-  /*private static LineageEntryBatchResponse formatToBatch(List<LineageEntry.Builder> x) {
+  private static LineageEntryBatchResponse formatToBatch(List<LineageEntry.Builder> x, Long id) {
     LineageEntryBatchResponse.Builder batch = LineageEntryBatchResponse.newBuilder();
+    Builder builder = LineageEntryBatchResponseSingle.newBuilder();
     if (x != null) {
-      batch.addAllItems(
-          x.stream().map(LineageEntry.Builder::build).sorted(LineageTest::compare)::iterator);
+      builder
+          .setId(id)
+          .addAllItems(
+              x.stream().map(LineageEntry.Builder::build).sorted(LineageTest::compare)::iterator);
     }
+    batch.addItems(builder);
     return batch.build();
   }
 
   private static LineageEntryBatchResponse sortFormattedArray(LineageEntryBatchResponse x) {
-    return x.newBuilderForType()
-        .addAllItems(
-            x.getItemsList().stream().sorted(LineageTest::compare).collect(Collectors.toList()))
-        .build();
-  }*/
+    List<LineageEntryBatchResponseSingle> itemsList = x.getItemsList();
+    Builder builder = LineageEntryBatchResponseSingle.newBuilder();
+    if (itemsList.size() != 0) {
+      LineageEntryBatchResponseSingle lineageEntryBatchResponseSingle = itemsList.get(0);
+      builder
+          .setId(lineageEntryBatchResponseSingle.getId())
+          .addAllItems(
+              lineageEntryBatchResponseSingle.getItemsList().stream()
+                  .sorted(LineageTest::compare)
+                  .collect(Collectors.toList()));
+    }
+    return x.newBuilderForType().addItems(builder).build();
+  }
 
   private static int compare(LineageEntry o1, LineageEntry o2) {
     final int i = o1.getDescriptionCase().compareTo(o2.getDescriptionCase());
@@ -622,7 +637,22 @@ public class LineageTest {
   private void check(
       List<LineageEntry.Builder> data,
       List<List<LineageEntry.Builder>> expectedInputs,
-      List<List<LineageEntry.Builder>> expectedOutputs) {
+      List<List<LineageEntry.Builder>> expectedOutputs, List<Long> idsInput0, List<Long> idsOutput0, Long id0) {
+    final List<Long> idsInput;
+    final List<Long> idsOutput;
+    if (idsInput0 == null) {
+      idsInput = new LinkedList<>();
+      idsOutput = new LinkedList<>();
+      for (int i=0; i < expectedInputs.size(); ++i) {
+        idsInput.add(id0);
+        idsOutput.add(id0);
+      }
+    } else {
+      idsInput = idsInput0;
+      idsOutput = idsOutput0;
+    }
+    final Iterator<Long> idsInputIterator = idsInput.iterator();
+    final Iterator<Long> idsOutputIterator = idsOutput.iterator();
 
     List<LineageEntryBatchRequest> iterator =
         data.stream()
@@ -630,27 +660,27 @@ public class LineageTest {
             .collect(Collectors.toList());
     FindAllInputs.Response findAllInputsResult =
         lineageServiceStub.findAllInputs(FindAllInputs.newBuilder().addAllItems(iterator).build());
-    /*List<LineageEntryBatch> expectedInputsWithoutNulls =
-    expectedInputs.stream().map(LineageTest::formatToBatch).collect(Collectors.toList());*/
+    List<LineageEntryBatchResponse> expectedInputsWithoutNulls =
+        expectedInputs.stream().map(x -> formatToBatch(x, idsInputIterator.next())).collect(Collectors.toList());
     final List<LineageEntryBatchResponse> collect =
         findAllInputsResult.getInputsList().stream()
-            // .map(LineageTest::sortFormattedArray)
+            .map(LineageTest::sortFormattedArray)
             .collect(Collectors.toList());
-    // assertEquals(expectedInputsWithoutNulls, collect);
+    assertEquals(expectedInputsWithoutNulls, collect);
     FindAllOutputs.Response findAllOutputsResult =
         lineageServiceStub.findAllOutputs(
             FindAllOutputs.newBuilder().addAllItems(iterator).build());
-    // List<LineageEntryBatch> expectedOutputsWithoutNulls =
-    //    expectedOutputs.stream().map(LineageTest::formatToBatch).collect(Collectors.toList());
-    /*assertEquals(
+    List<LineageEntryBatchResponse> expectedOutputsWithoutNulls =
+        expectedOutputs.stream().map(x -> formatToBatch(x, idsOutputIterator.next())).collect(Collectors.toList());
+    assertEquals(
     expectedOutputsWithoutNulls,
     findAllOutputsResult.getOutputsList().stream()
         .map(LineageTest::sortFormattedArray)
-        .collect(Collectors.toList()));*/
+        .collect(Collectors.toList()));
     FindAllInputsOutputs.Response findAllInputsOutputsResult =
         lineageServiceStub.findAllInputsOutputs(
             FindAllInputsOutputs.newBuilder().addAllItems(iterator).build());
-    /*assertEquals(
+    assertEquals(
         expectedInputsWithoutNulls,
         findAllInputsOutputsResult.getInputsList().stream()
             .map(LineageTest::sortFormattedArray)
@@ -659,6 +689,13 @@ public class LineageTest {
         expectedOutputsWithoutNulls,
         findAllInputsOutputsResult.getOutputsList().stream()
             .map(LineageTest::sortFormattedArray)
-            .collect(Collectors.toList()));*/
+            .collect(Collectors.toList()));
+  }
+
+  private void check(
+      List<LineageEntry.Builder> data,
+      List<List<LineageEntry.Builder>> expectedInputs,
+      List<List<LineageEntry.Builder>> expectedOutputs, long id) {
+    check(data, expectedInputs, expectedOutputs, null, null, id);
   }
 }

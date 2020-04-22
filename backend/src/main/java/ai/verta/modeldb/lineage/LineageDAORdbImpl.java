@@ -89,6 +89,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   public DeleteLineage.Response deleteLineage(
       DeleteLineage deleteLineage, BlobHashInCommitFunction blobHashInCommitFunction)
       throws ModelDBException {
+    boolean status;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
@@ -107,13 +108,22 @@ public class LineageDAORdbImpl implements LineageDAO {
       for (LineageEntry output : deleteLineage.getOutputList()) {
         deleteLineage(session, output, outputInDatabase, blobHashInCommitFunction);
       }
-      if (inputInDatabase.isEmpty() || outputInDatabase.isEmpty()) {
+      status = false;
+      boolean noDataProvided =
+          deleteLineage.getInputCount() == 0 && deleteLineage.getOutputCount() == 0;
+      if (noDataProvided || inputInDatabase.isEmpty() || outputInDatabase.isEmpty()) {
+        Set<ConnectionEntity> values = new HashSet<>(inputInDatabase.values());
+        values.addAll(outputInDatabase.values());
+        values.forEach(connectionEntity -> deleteConnectionEntity(session, connectionEntity));
         LineageElementEntity lineageElementEntity = session.get(LineageElementEntity.class, id);
-        session.remove(lineageElementEntity);
+        if (lineageElementEntity != null) {
+          session.remove(lineageElementEntity);
+          status = true;
+        }
       }
       session.getTransaction().commit();
     }
-    return DeleteLineage.Response.newBuilder().setStatus(true).build();
+    return DeleteLineage.Response.newBuilder().setStatus(status).build();
   }
 
   private Entry<Map<LineageElement, ConnectionEntity>, Map<LineageElement, ConnectionEntity>>
@@ -199,7 +209,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       default:
         throw new ModelDBException("Unknown entry type");
     }
-    List list = getConnectionEntities(session, connectionType, entityId, entityType);
+    List list = getConnectionEntities(session, invert(connectionType), entityId, entityType);
     for (Object entity : list) {
       ConnectionEntity connectionEntity = (ConnectionEntity) entity;
       List connectionEntitiesById =
@@ -430,29 +440,32 @@ public class LineageDAORdbImpl implements LineageDAO {
     LineageElement key = LineageElement.fromProto(session, lineageEntry, blobHashInCommitFunction);
     ConnectionEntity connectionEntity = entityIds.get(key);
     if (connectionEntity != null) {
-      List connectionEntities =
-          getConnectionEntities(
-              session,
-              CONNECTION_TYPE_ANY,
-              connectionEntity.getEntityId(),
-              connectionEntity.getEntityType());
-      if (connectionEntities.size() < 2) {
-        switch (connectionEntity.getEntityType()) {
-          case ENTITY_TYPE_EXPERIMENT_RUN:
-            session.delete(
-                session.get(LineageExperimentRunEntity.class, connectionEntity.getEntityId()));
-            break;
-          case ENTITY_TYPE_VERSIONING_BLOB:
-            session.delete(
-                session.get(LineageVersioningBlobEntity.class, connectionEntity.getEntityId()));
-            break;
-          default:
-            throw new ModelDBException("Unknown connection type");
-        }
-      }
-      session.delete(connectionEntity);
-      entityIds.keySet().remove(key);
+      deleteConnectionEntity(session, connectionEntity);
     }
+    entityIds.keySet().remove(key);
+  }
+
+  private void deleteConnectionEntity(Session session,
+      ConnectionEntity connectionEntity) {
+    List connectionEntities =
+        getConnectionEntities(
+            session,
+            CONNECTION_TYPE_ANY,
+            connectionEntity.getEntityId(),
+            connectionEntity.getEntityType());
+    if (connectionEntities.size() < 2) {
+      switch (connectionEntity.getEntityType()) {
+        case ENTITY_TYPE_EXPERIMENT_RUN:
+          session.delete(
+              session.get(LineageExperimentRunEntity.class, connectionEntity.getEntityId()));
+          break;
+        case ENTITY_TYPE_VERSIONING_BLOB:
+          session.delete(
+              session.get(LineageVersioningBlobEntity.class, connectionEntity.getEntityId()));
+          break;
+      }
+    }
+    session.delete(connectionEntity);
   }
 
   private void addLineage(

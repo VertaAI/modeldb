@@ -90,57 +90,6 @@ public class LineageServiceImplNegativeTest {
   }
 
   @Test
-  public void deleteLineage() {
-    doNothing().when(deleteLineageObserver).onError(captorThrow.capture());
-    sut.deleteLineage(DeleteLineage.newBuilder().build(), deleteLineageObserver);
-    StatusRuntimeException statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
-    String description = statusRuntimeException.getStatus().getDescription();
-    assert description != null;
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("input"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("output"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("not"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("specified"));
-
-    sut.deleteLineage(
-        DeleteLineage.newBuilder()
-            .addInput(
-                LineageEntry.newBuilder()
-                    .setBlob(
-                        VersioningLineageEntry.newBuilder()
-                            .setRepositoryId(123)
-                            .setCommitSha("sha")
-                            .addLocation("/"))
-                    .build())
-            .build(),
-        deleteLineageObserver);
-    statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
-    description = statusRuntimeException.getStatus().getDescription();
-    assert description != null;
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("output"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("not"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("specified"));
-
-    sut.deleteLineage(
-        DeleteLineage.newBuilder()
-            .addOutput(
-                LineageEntry.newBuilder()
-                    .setBlob(
-                        VersioningLineageEntry.newBuilder()
-                            .setRepositoryId(123)
-                            .setCommitSha("sha")
-                            .addLocation("/"))
-                    .build())
-            .build(),
-        deleteLineageObserver);
-    statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
-    description = statusRuntimeException.getStatus().getDescription();
-    assert description != null;
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("input"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("not"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("specified"));
-  }
-
-  @Test
   public void findAllInputs() {
     doNothing().when(findAllInputsObserver).onError(captorThrow.capture());
     sut.findAllInputs(FindAllInputs.newBuilder().build(), findAllInputsObserver);

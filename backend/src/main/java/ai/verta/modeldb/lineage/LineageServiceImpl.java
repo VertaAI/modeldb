@@ -89,15 +89,6 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       DeleteLineage request, StreamObserver<DeleteLineage.Response> responseObserver) {
     QPSCountResource.inc();
     try {
-      if (request.getInputCount() == 0 && request.getOutputCount() == 0) {
-        throw new ModelDBException("Input and output not specified", Code.INVALID_ARGUMENT);
-      } else {
-        if (request.getInputCount() == 0) {
-          throw new ModelDBException("Input not specified", Code.INVALID_ARGUMENT);
-        } else if (request.getOutputCount() == 0) {
-          throw new ModelDBException("Output not specified", Code.INVALID_ARGUMENT);
-        }
-      }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
         DeleteLineage.Response response =
