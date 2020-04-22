@@ -244,7 +244,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private LineageVersioningBlobEntity getLineageVersioningBlobEntity(
-      Session session, long repositoryId, String element_sha, String element_type) {
+      Session session, long repositoryId, String blobSha, String blobType) {
     String queryString;
     Object entity;
     queryString =
@@ -252,10 +252,10 @@ public class LineageDAORdbImpl implements LineageDAO {
             + LineageVersioningBlobEntity.class.getSimpleName()
             + " where repositoryId = '"
             + repositoryId
-            + "' and commitSha = '"
-            + element_sha
-            + "' and location = '"
-            + element_type
+            + "' and blobSha = '"
+            + blobSha
+            + "' and blobType = '"
+            + blobType
             + "'";
     entity = session.createQuery(queryString).uniqueResult();
     return (LineageVersioningBlobEntity) entity;

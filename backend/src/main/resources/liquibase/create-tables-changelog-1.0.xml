@@ -1270,10 +1270,10 @@
             <column name="repository_id" type="int8">
                 <constraints nullable="true"/>
             </column>
-            <column name="commit_sha" type="varchar(256)">
+            <column name="blob_sha" type="varchar(256)">
                 <constraints nullable="true"/>
             </column>
-            <column name="location" type="varchar(256)">
+            <column name="blob_type" type="varchar(256)">
                 <constraints nullable="true"/>
             </column>
         </createTable>
@@ -1293,14 +1293,30 @@
           tableName="lineage_versioning_blob" unique="false">
             <column name="repository_id" type="int8">
             </column>
-            <column name="commit_sha" type="varchar(256)">
+            <column name="blob_sha" type="varchar(256)">
             </column>
-            <column name="location" type="varchar(256)">
+            <column name="blob_type" type="varchar(256)">
             </column>
         </createIndex>
         <createIndex indexName="lineage_experiment_run_index"
           tableName="lineage_experiment_run" unique="false">
             <column name="experiment_run_id" type="varchar(256)"/>
+        </createIndex>
+        <createIndex indexName="lineage_connection_index"
+          tableName="lineage_connection" unique="false">
+            <column name="element_id" type="int8">
+            </column>
+            <column name="connection_type" type="int4">
+            </column>
+        </createIndex>
+        <createIndex indexName="lineage_connection_index2"
+          tableName="lineage_connection" unique="false">
+            <column name="entity_id" type="int8">
+            </column>
+            <column name="connection_type" type="int4">
+            </column>
+            <column name="entity_type" type="int4">
+            </column>
         </createIndex>
     </changeSet>
 

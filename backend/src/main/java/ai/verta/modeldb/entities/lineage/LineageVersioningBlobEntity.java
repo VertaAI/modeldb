@@ -21,18 +21,18 @@ public class LineageVersioningBlobEntity {
   @Column(name = "repository_id")
   private Long repositoryId;
 
-  @Column(name = "commit_sha")
-  private String commitSha;
+  @Column(name = "blob_sha")
+  private String blobSha;
 
-  @Column(name = "location")
-  private String location;
+  @Column(name = "blob_type")
+  private String blobType;
 
   public LineageVersioningBlobEntity() {}
 
-  public LineageVersioningBlobEntity(Long repositoryId, String commitSha, String location) {
+  public LineageVersioningBlobEntity(Long repositoryId, String blobSha, String blobType) {
     this.repositoryId = repositoryId;
-    this.commitSha = commitSha;
-    this.location = location;
+    this.blobSha = blobSha;
+    this.blobType = blobType;
   }
 
   public Long getId() {
@@ -40,6 +40,6 @@ public class LineageVersioningBlobEntity {
   }
 
   public LineageElement getElement() {
-    return new VersioningBlobElement(repositoryId, commitSha, location);
+    return new VersioningBlobElement(repositoryId, blobSha, blobType);
   }
 }
