@@ -553,22 +553,34 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
-
-      ExperimentRun experimentRun = experimentRunDAO.getExperimentRun(request.getId());
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.PROJECT,
-          experimentRun.getProjectId(),
-          ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
+
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          experimentRunDAO.findExperimentRuns(findExperimentRuns);
+      LOGGER.debug(
+          ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
       List<HydratedExperimentRun> hydratedExperimentRuns =
-          getHydratedExperimentRuns(Collections.singletonList(experimentRun));
+          getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
 
-      responseObserver.onNext(
-          GetHydratedExperimentRunById.Response.newBuilder()
-              .setHydratedExperimentRun(hydratedExperimentRuns.get(0))
-              .build());
+      GetHydratedExperimentRunById.Response.Builder response =
+          GetHydratedExperimentRunById.Response.newBuilder();
+      if (!hydratedExperimentRuns.isEmpty()) {
+        if (hydratedExperimentRuns.size() > 1) {
+          LOGGER.warn(
+              "Multiple ({}) ExperimentRun found for given ID : {}",
+              hydratedExperimentRuns.size(),
+              request.getId());
+        }
+        response.setHydratedExperimentRun(hydratedExperimentRuns.get(0));
+      }
+      responseObserver.onNext(response.build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
