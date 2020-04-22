@@ -11,7 +11,7 @@ import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
@@ -74,7 +74,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        AddLineage.Response response = lineageDAO.addLineage(request, this::checkResourcesExists);
+        AddLineage.Response response =
+            lineageDAO.addLineage(request, this::checkResourcesExists, this::getBlobFromCommit);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -99,7 +100,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        DeleteLineage.Response response = lineageDAO.deleteLineage(request);
+        DeleteLineage.Response response =
+            lineageDAO.deleteLineage(request, this::getBlobFromCommit);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -118,7 +120,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllInputs.Response response = lineageDAO.findAllInputs(request);
+        FindAllInputs.Response response =
+            lineageDAO.findAllInputs(request, this::getBlobFromCommit, this::getCommitFromBlob);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -137,7 +140,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllOutputs.Response response = lineageDAO.findAllOutputs(request);
+        FindAllOutputs.Response response =
+            lineageDAO.findAllOutputs(request, this::getBlobFromCommit, this::getCommitFromBlob);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -157,7 +161,9 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllInputsOutputs.Response response = lineageDAO.findAllInputsOutputs(request);
+        FindAllInputsOutputs.Response response =
+            lineageDAO.findAllInputsOutputs(
+                request, this::getBlobFromCommit, this::getCommitFromBlob);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -165,6 +171,34 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, FindAllInputsOutputs.Response.getDefaultInstance());
     }
+  }
+
+  private InternalFolderElementEntity getBlobFromCommit(
+      Session session, VersioningLineageEntry versioningLineageEntry) throws ModelDBException {
+    Entry<Response, InternalFolderElementEntity> result =
+        blobDAO.getCommitComponentWithHash(
+            session1 -> getRepositoryById(session, versioningLineageEntry.getRepositoryId()),
+            versioningLineageEntry.getCommitSha(),
+            versioningLineageEntry.getLocationList());
+    return result.getValue();
+  }
+
+  private RepositoryEntity getRepositoryById(Session session, long repositoryId) {
+    try {
+      return repositoryDAO.getRepositoryById(
+          session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
+    } catch (ModelDBException e) {
+      LOGGER.warn("repository not found {}", e.getMessage());
+      return null;
+    }
+  }
+
+  private VersioningLineageEntry getCommitFromBlob(
+      Session session, VersioningBlobElement versioningBlobElement) throws ModelDBException {
+    return blobDAO.getVersioningEntryByBlob(
+        session,
+        session1 -> getRepositoryById(session, versioningBlobElement.getRepositoryId()),
+        versioningBlobElement);
   }
 
   private void checkResourcesExists(Session session, List<LineageEntry> lineageEntries)
@@ -211,8 +245,14 @@ public class LineageServiceImpl extends LineageServiceImplBase {
               ModelDBUtils.getStringFromProtoObject(
                   Location.newBuilder().addAllLocation(blob.getLocationList()));
           if (!blobResult.contains(stringFromProtoObject)) {
-            Response commitComponent = blobDAO
-                .getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
+            blobDAO.getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
+            Entry<Response, InternalFolderElementEntity> blobHashInfo =
+                blobDAO.getCommitComponentWithHash(
+                    session1 -> repo, commitSha, blob.getLocationList());
+            String elementSha = blobHashInfo.getValue().getElement_sha();
+            if (elementSha == null || elementSha.isEmpty()) {
+              throw new ModelDBException("Wrong blob specified", Code.INVALID_ARGUMENT);
+            }
             blobResult.add(stringFromProtoObject);
           }
           break;

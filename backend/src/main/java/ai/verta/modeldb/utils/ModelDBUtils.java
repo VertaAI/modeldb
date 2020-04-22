@@ -449,26 +449,26 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
-        StackTraceElement[] stack = e.getStackTrace();
-        LOGGER.error("Stacktrace with {} elements for {}", stack.length, e.getMessage());
-        int n = 0;
-        boolean isLongStack = stack.length > STACKTRACE_LENGTH;
-        if (isLongStack) {
-          for (; n < STACKTRACE_LENGTH + 1; ++n) {
-            LOGGER.warn("{}: {}", n, stack[n].toString());
-          }
-        }
-        for (; n < stack.length; ++n) {
-          if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
-            LOGGER.warn("{}: {}", n, stack[n].toString());
-          }
-        }
         status =
             Status.newBuilder()
                 .setCode(Code.INTERNAL_VALUE)
                 .setMessage(ModelDBConstants.INTERNAL_ERROR)
                 .addDetails(Any.pack(defaultInstance))
                 .build();
+      }
+      StackTraceElement[] stack = e.getStackTrace();
+      LOGGER.error("Stacktrace with {} elements for {}", stack.length, e.getMessage());
+      int n = 0;
+      boolean isLongStack = stack.length > STACKTRACE_LENGTH;
+      if (isLongStack) {
+        for (; n < STACKTRACE_LENGTH + 1; ++n) {
+          LOGGER.warn("{}: {}", n, stack[n].toString());
+        }
+      }
+      for (; n < stack.length; ++n) {
+        if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
+          LOGGER.warn("{}: {}", n, stack[n].toString());
+        }
       }
       statusRuntimeException = StatusProto.toStatusRuntimeException(status);
     }

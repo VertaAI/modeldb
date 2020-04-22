@@ -1,10 +1,8 @@
 package ai.verta.modeldb.lineage;
 
 import ai.verta.modeldb.LineageEntry;
-import ai.verta.modeldb.VersioningLineageEntry;
-import ai.verta.modeldb.entities.lineage.ConnectionEntity;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.Objects;
+import org.hibernate.Session;
 
 public class ExperimentRunElement extends LineageElement {
 
@@ -32,7 +30,7 @@ public class ExperimentRunElement extends LineageElement {
   }
 
   @Override
-  public LineageEntry toProto() {
+  public LineageEntry toProto(Session session, CommitInBlobHashFunction commitInBlobHashFunction) {
     return LineageEntry.newBuilder().setExperimentRun(experimentRunId).build();
   }
 }

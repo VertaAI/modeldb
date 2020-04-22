@@ -16,15 +16,14 @@ import ai.verta.modeldb.LineageEntry;
 import ai.verta.modeldb.LineageEntryBatchRequest;
 import ai.verta.modeldb.LineageEntryBatchResponse;
 import ai.verta.modeldb.LineageEntryBatchResponseSingle;
-import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
 import ai.verta.modeldb.entities.lineage.ConnectionEntity;
 import ai.verta.modeldb.entities.lineage.LineageElementEntity;
 import ai.verta.modeldb.entities.lineage.LineageExperimentRunEntity;
 import ai.verta.modeldb.entities.lineage.LineageVersioningBlobEntity;
+import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
@@ -50,7 +49,10 @@ public class LineageDAORdbImpl implements LineageDAO {
   public LineageDAORdbImpl() {}
 
   @Override
-  public Response addLineage(AddLineage addLineage, ExistsCheckConsumer existsCheckConsumer)
+  public Response addLineage(
+      AddLineage addLineage,
+      ExistsCheckConsumer existsCheckConsumer,
+      BlobHashInCommitFunction blobHashInCommitFunction)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
@@ -73,10 +75,10 @@ public class LineageDAORdbImpl implements LineageDAO {
       lineageEntries.addAll(addLineage.getOutputList());
       existsCheckConsumer.test(session, lineageEntries);
       for (LineageEntry input : addLineage.getInputList()) {
-        addLineage(session, input, id, CONNECTION_TYPE_INPUT);
+        addLineage(session, input, id, CONNECTION_TYPE_INPUT, blobHashInCommitFunction);
       }
       for (LineageEntry output : addLineage.getOutputList()) {
-        addLineage(session, output, id, CONNECTION_TYPE_OUTPUT);
+        addLineage(session, output, id, CONNECTION_TYPE_OUTPUT, blobHashInCommitFunction);
       }
       session.getTransaction().commit();
       return AddLineage.Response.newBuilder().setId(lineageElementEntity.getId()).build();
@@ -84,8 +86,9 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   @Override
-  public DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage)
-      throws ModelDBException, InvalidProtocolBufferException {
+  public DeleteLineage.Response deleteLineage(
+      DeleteLineage deleteLineage, BlobHashInCommitFunction blobHashInCommitFunction)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
@@ -99,10 +102,10 @@ public class LineageDAORdbImpl implements LineageDAO {
       Map<LineageElement, ConnectionEntity> inputInDatabase = inputOutputs.getKey();
       Map<LineageElement, ConnectionEntity> outputInDatabase = inputOutputs.getValue();
       for (LineageEntry input : deleteLineage.getInputList()) {
-        deleteLineage(session, input, inputInDatabase);
+        deleteLineage(session, input, inputInDatabase, blobHashInCommitFunction);
       }
       for (LineageEntry output : deleteLineage.getOutputList()) {
-        deleteLineage(session, output, outputInDatabase);
+        deleteLineage(session, output, outputInDatabase, blobHashInCommitFunction);
       }
       if (inputInDatabase.isEmpty() || outputInDatabase.isEmpty()) {
         LineageElementEntity lineageElementEntity = session.get(LineageElementEntity.class, id);
@@ -153,80 +156,113 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private Map<Long, List<LineageEntry>> getConnectionEntitiesByEntryAndConnectionType(
-      Session session, LineageEntry lineageEntry, int connectionType)
-      throws ModelDBException, InvalidProtocolBufferException {
-    String queryString;
-    List<Long> elements = new LinkedList<>();
+      Session session,
+      LineageEntry lineageEntry,
+      int connectionType,
+      BlobHashInCommitFunction blobHashInCommitFunction,
+      CommitInBlobHashFunction commitInBlobHashFunction)
+      throws ModelDBException {
     int entityType;
+    Long entityId;
+    Map<Long, List<LineageEntry>> result = new HashMap<>();
     switch (lineageEntry.getDescriptionCase()) {
       case EXPERIMENT_RUN:
-        queryString =
-            "from "
-                + LineageExperimentRunEntity.class.getSimpleName()
-                + " where experimentRunId = '"
-                + lineageEntry.getExperimentRun()
-                + "'";
-        Query query = session.createQuery(queryString);
-        List experimentRunEntityList = query.list();
-        for (Object entity : experimentRunEntityList) {
-          LineageExperimentRunEntity lineageExperimentRunEntity =
-              (LineageExperimentRunEntity) entity;
-          elements.add(lineageExperimentRunEntity.getId());
+        LineageExperimentRunEntity lineageExperimentRunEntity =
+            getLineageExperimentRunEntity(session, lineageEntry);
+        if (lineageExperimentRunEntity == null) {
+          return result;
         }
+        entityId = lineageExperimentRunEntity.getId();
         entityType = ENTITY_TYPE_EXPERIMENT_RUN;
         break;
       case BLOB:
-        VersioningLineageEntry blob = lineageEntry.getBlob();
-        queryString =
-            "from "
-                + LineageVersioningBlobEntity.class.getSimpleName()
-                + " where repositoryId = '"
-                + blob.getRepositoryId()
-                + "' and commitSha = '"
-                + blob.getCommitSha()
-                + "' and location = '"
-                + ModelDBUtils.getStringFromProtoObject(
-                    Location.newBuilder().addAllLocation(blob.getLocationList()))
-                + "'";
-        List versioningBlobEntityList = session.createQuery(queryString).list();
-        for (Object entity : versioningBlobEntityList) {
-          LineageVersioningBlobEntity lineageVersioningBlobEntity =
-              (LineageVersioningBlobEntity) entity;
-          elements.add(lineageVersioningBlobEntity.getId());
+        LineageVersioningBlobEntity lineageVersioningBlobEntity;
+        try {
+          InternalFolderElementEntity blobHashInCommit =
+              blobHashInCommitFunction.apply(session, lineageEntry.getBlob());
+          lineageVersioningBlobEntity =
+              getLineageVersioningBlobEntity(
+                  session,
+                  lineageEntry.getBlob().getRepositoryId(),
+                  blobHashInCommit.getElement_sha(),
+                  blobHashInCommit.getElement_type());
+        } catch (ModelDBException e) {
+          LOGGER.warn("commit not found: {}", e.getMessage());
+          lineageVersioningBlobEntity = null;
         }
+        if (lineageVersioningBlobEntity == null) {
+          return result;
+        }
+        entityId = lineageVersioningBlobEntity.getId();
         entityType = ENTITY_TYPE_VERSIONING_BLOB;
         break;
       default:
         throw new ModelDBException("Unknown entry type");
     }
-    Map<Long, List<LineageEntry>> result = new HashMap<>();
-    for (Long entry : elements) {
-      queryString =
-          "from "
-              + ConnectionEntity.class.getSimpleName()
-              + " where entityId = "
-              + entry
-              + " and entity_type = "
-              + entityType
-              + " and connectionType = "
-              + invert(connectionType);
-      Query query = session.createQuery(queryString);
-      List list = query.list();
-      for (Object entity : list) {
-        ConnectionEntity connectionEntity = (ConnectionEntity) entity;
-        List connectionEntitiesById =
-            getConnectionEntitiesByIdAndConnectionType(
-                session, connectionEntity.getId(), connectionType);
-        Map<LineageElement, ConnectionEntity> inputOrOutputInDatabase =
-            getInputOrOutput(session, connectionEntitiesById);
-        result.put(
-            connectionEntity.getId(),
-            inputOrOutputInDatabase.keySet().stream()
-                .map(LineageElement::toProto)
-                .collect(Collectors.toList()));
-      }
+    List list = getConnectionEntities(session, connectionType, entityId, entityType);
+    for (Object entity : list) {
+      ConnectionEntity connectionEntity = (ConnectionEntity) entity;
+      List connectionEntitiesById =
+          getConnectionEntitiesByIdAndConnectionType(
+              session, connectionEntity.getId(), connectionType);
+      Map<LineageElement, ConnectionEntity> inputOrOutputInDatabase =
+          getInputOrOutput(session, connectionEntitiesById);
+      result.put(
+          connectionEntity.getId(),
+          inputOrOutputInDatabase.keySet().stream()
+              .map(lineageElement -> lineageElement.toProto(session, commitInBlobHashFunction))
+              .collect(Collectors.toList()));
     }
     return result;
+  }
+
+  private List getConnectionEntities(
+      Session session, int connectionType, Long entityId, int entityType) {
+    String queryString;
+    queryString =
+        "from "
+            + ConnectionEntity.class.getSimpleName()
+            + " where entityId = "
+            + entityId
+            + " and entity_type = "
+            + entityType;
+    if (connectionType != CONNECTION_TYPE_ANY) {
+      queryString += " and connectionType = " + connectionType;
+    }
+    Query query = session.createQuery(queryString);
+    return query.list();
+  }
+
+  private LineageVersioningBlobEntity getLineageVersioningBlobEntity(
+      Session session, long repositoryId, String element_sha, String element_type) {
+    String queryString;
+    Object entity;
+    queryString =
+        "from "
+            + LineageVersioningBlobEntity.class.getSimpleName()
+            + " where repositoryId = '"
+            + repositoryId
+            + "' and commitSha = '"
+            + element_sha
+            + "' and location = '"
+            + element_type
+            + "'";
+    entity = session.createQuery(queryString).uniqueResult();
+    return (LineageVersioningBlobEntity) entity;
+  }
+
+  private LineageExperimentRunEntity getLineageExperimentRunEntity(
+      Session session, LineageEntry lineageEntry) {
+    String queryString;
+    queryString =
+        "from "
+            + LineageExperimentRunEntity.class.getSimpleName()
+            + " where experimentRunId = '"
+            + lineageEntry.getExperimentRun()
+            + "'";
+    Query query = session.createQuery(queryString);
+    Object entity = query.uniqueResult();
+    return (LineageExperimentRunEntity) entity;
   }
 
   private int invert(int connectionType) throws ModelDBException {
@@ -307,8 +343,11 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   @Override
-  public FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs)
-      throws ModelDBException, InvalidProtocolBufferException {
+  public FindAllInputs.Response findAllInputs(
+      FindAllInputs findAllInputs,
+      BlobHashInCommitFunction blobHashInCommitFunction,
+      CommitInBlobHashFunction commitInBlobHashFunction)
+      throws ModelDBException {
     FindAllInputs.Response.Builder response = FindAllInputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllInputs.getItemsList();
@@ -316,7 +355,9 @@ public class LineageDAORdbImpl implements LineageDAO {
         validate(output);
         response.addInputs(
             LineageEntryBatchResponse.newBuilder()
-                .addAllItems(getInputsByOutput(session, output))
+                .addAllItems(
+                    getInputsByOutput(
+                        session, output, blobHashInCommitFunction, commitInBlobHashFunction))
                 .build());
       }
     }
@@ -324,8 +365,11 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   @Override
-  public FindAllOutputs.Response findAllOutputs(FindAllOutputs findAllOutputs)
-      throws ModelDBException, InvalidProtocolBufferException {
+  public FindAllOutputs.Response findAllOutputs(
+      FindAllOutputs findAllOutputs,
+      BlobHashInCommitFunction blobHashInCommitFunction,
+      CommitInBlobHashFunction commitInBlobHashFunction)
+      throws ModelDBException {
     FindAllOutputs.Response.Builder response = FindAllOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllOutputs.getItemsList();
@@ -333,7 +377,9 @@ public class LineageDAORdbImpl implements LineageDAO {
         validate(input);
         response.addOutputs(
             LineageEntryBatchResponse.newBuilder()
-                .addAllItems(getOutputsByInput(session, input))
+                .addAllItems(
+                    getOutputsByInput(
+                        session, input, blobHashInCommitFunction, commitInBlobHashFunction))
                 .build());
       }
     }
@@ -342,8 +388,10 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public FindAllInputsOutputs.Response findAllInputsOutputs(
-      FindAllInputsOutputs findAllInputsOutputs)
-      throws ModelDBException, InvalidProtocolBufferException {
+      FindAllInputsOutputs findAllInputsOutputs,
+      BlobHashInCommitFunction blobHashInCommitFunction,
+      CommitInBlobHashFunction commitInBlobHashFunction)
+      throws ModelDBException {
     FindAllInputsOutputs.Response.Builder response = FindAllInputsOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllInputsOutputs.getItemsList();
@@ -352,11 +400,21 @@ public class LineageDAORdbImpl implements LineageDAO {
         response
             .addInputs(
                 LineageEntryBatchResponse.newBuilder()
-                    .addAllItems(getInputsByOutput(session, inputoutput))
+                    .addAllItems(
+                        getInputsByOutput(
+                            session,
+                            inputoutput,
+                            blobHashInCommitFunction,
+                            commitInBlobHashFunction))
                     .build())
             .addOutputs(
                 LineageEntryBatchResponse.newBuilder()
-                    .addAllItems(getOutputsByInput(session, inputoutput))
+                    .addAllItems(
+                        getOutputsByInput(
+                            session,
+                            inputoutput,
+                            blobHashInCommitFunction,
+                            commitInBlobHashFunction))
                     .build());
       }
     }
@@ -364,73 +422,131 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void deleteLineage(
-      Session session, LineageEntry lineageEntry, Map<LineageElement, ConnectionEntity> entityIds)
-      throws InvalidProtocolBufferException, ModelDBException {
-    LineageElement key = LineageElement.fromProto(lineageEntry);
+      Session session,
+      LineageEntry lineageEntry,
+      Map<LineageElement, ConnectionEntity> entityIds,
+      BlobHashInCommitFunction blobHashInCommitFunction)
+      throws ModelDBException {
+    LineageElement key = LineageElement.fromProto(session, lineageEntry, blobHashInCommitFunction);
     ConnectionEntity connectionEntity = entityIds.get(key);
     if (connectionEntity != null) {
-      switch (connectionEntity.getEntityType()) {
-        case ENTITY_TYPE_EXPERIMENT_RUN:
-          session.delete(
-              session.get(LineageExperimentRunEntity.class, connectionEntity.getEntityId()));
-          break;
-        case ENTITY_TYPE_VERSIONING_BLOB:
-          session.delete(
-              session.get(LineageVersioningBlobEntity.class, connectionEntity.getEntityId()));
-          break;
-        default:
-          throw new ModelDBException("Unknown connection type");
+      List connectionEntities =
+          getConnectionEntities(
+              session,
+              CONNECTION_TYPE_ANY,
+              connectionEntity.getEntityId(),
+              connectionEntity.getEntityType());
+      if (connectionEntities.size() < 2) {
+        switch (connectionEntity.getEntityType()) {
+          case ENTITY_TYPE_EXPERIMENT_RUN:
+            session.delete(
+                session.get(LineageExperimentRunEntity.class, connectionEntity.getEntityId()));
+            break;
+          case ENTITY_TYPE_VERSIONING_BLOB:
+            session.delete(
+                session.get(LineageVersioningBlobEntity.class, connectionEntity.getEntityId()));
+            break;
+          default:
+            throw new ModelDBException("Unknown connection type");
+        }
       }
       session.delete(connectionEntity);
       entityIds.keySet().remove(key);
     }
   }
 
-  private void addLineage(Session session, LineageEntry lineageEntry, Long id, int connectionType)
-      throws ModelDBException, InvalidProtocolBufferException {
-    Long entityId;
-    int entityType;
+  private void addLineage(
+      Session session,
+      LineageEntry lineageEntry,
+      Long id,
+      int connectionType,
+      BlobHashInCommitFunction blobHashInCommitFunction)
+      throws ModelDBException {
+    final Long entityId;
+    final int entityType;
+    final boolean connectionExists;
+
     switch (lineageEntry.getDescriptionCase()) {
       case EXPERIMENT_RUN:
         LineageExperimentRunEntity experimentRun =
-            new LineageExperimentRunEntity(lineageEntry.getExperimentRun());
-        session.saveOrUpdate(experimentRun);
+            getLineageExperimentRunEntity(session, lineageEntry);
+        if (experimentRun == null) {
+          experimentRun = new LineageExperimentRunEntity(lineageEntry.getExperimentRun());
+          session.save(experimentRun);
+          connectionExists = false;
+        } else {
+          connectionExists = true;
+        }
         entityId = experimentRun.getId();
         entityType = ENTITY_TYPE_EXPERIMENT_RUN;
         break;
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
+        InternalFolderElementEntity result = blobHashInCommitFunction.apply(session, blob);
         LineageVersioningBlobEntity lineageVersioningBlobEntity =
-            new LineageVersioningBlobEntity(
-                blob.getRepositoryId(),
-                blob.getCommitSha(),
-                ModelDBUtils.getStringFromProtoObject(
-                    Location.newBuilder().addAllLocation(blob.getLocationList())));
-        session.saveOrUpdate(lineageVersioningBlobEntity);
+            getLineageVersioningBlobEntity(
+                session, blob.getRepositoryId(), result.getElement_sha(), result.getElement_type());
+        if (lineageVersioningBlobEntity == null) {
+          lineageVersioningBlobEntity =
+              new LineageVersioningBlobEntity(
+                  blob.getRepositoryId(), result.getElement_sha(), result.getElement_type());
+          session.save(lineageVersioningBlobEntity);
+          connectionExists = false;
+        } else {
+          connectionExists = true;
+        }
         entityId = lineageVersioningBlobEntity.getId();
         entityType = ENTITY_TYPE_VERSIONING_BLOB;
         break;
       default:
         throw new ModelDBException("Unknown lineage type");
     }
-    session.saveOrUpdate(new ConnectionEntity(id, entityId, connectionType, entityType));
+
+    List connectionEntities =
+        getConnectionEntities(session, invert(connectionType), entityId, entityType);
+    if (connectionExists) {
+      if (connectionType == CONNECTION_TYPE_OUTPUT
+          && !((ConnectionEntity) connectionEntities.get(0)).getId().equals(id)) {
+        throw new ModelDBException(
+            "Specified lineage entry already has an output connection", Code.INVALID_ARGUMENT);
+      }
+    }
+    for (Object entity : connectionEntities) {
+      ConnectionEntity connectionEntity = (ConnectionEntity) entity;
+      if (connectionEntity.getId().equals(id)) {
+        return;
+      }
+    }
+    session.save(new ConnectionEntity(id, entityId, connectionType, entityType));
   }
 
   private List<LineageEntryBatchResponseSingle> getOutputsByInput(
-      Session session, LineageEntryBatchRequest input)
-      throws InvalidProtocolBufferException, ModelDBException {
-    return getInputOrOutput(session, input, CONNECTION_TYPE_OUTPUT);
+      Session session,
+      LineageEntryBatchRequest input,
+      BlobHashInCommitFunction blobHashInCommitFunction,
+      CommitInBlobHashFunction commitInBlobHashFunction)
+      throws ModelDBException {
+    return getInputOrOutput(
+        session, input, CONNECTION_TYPE_OUTPUT, blobHashInCommitFunction, commitInBlobHashFunction);
   }
 
   private List<LineageEntryBatchResponseSingle> getInputsByOutput(
-      Session session, LineageEntryBatchRequest output)
-      throws InvalidProtocolBufferException, ModelDBException {
-    return getInputOrOutput(session, output, CONNECTION_TYPE_INPUT);
+      Session session,
+      LineageEntryBatchRequest output,
+      BlobHashInCommitFunction blobHashInCommitFunction,
+      CommitInBlobHashFunction commitInBlobHashFunction)
+      throws ModelDBException {
+    return getInputOrOutput(
+        session, output, CONNECTION_TYPE_INPUT, blobHashInCommitFunction, commitInBlobHashFunction);
   }
 
   private List<LineageEntryBatchResponseSingle> getInputOrOutput(
-      Session session, LineageEntryBatchRequest sideB, int connectionType)
-      throws InvalidProtocolBufferException, ModelDBException {
+      Session session,
+      LineageEntryBatchRequest sideB,
+      int connectionType,
+      BlobHashInCommitFunction blobHashInCommitFunction,
+      CommitInBlobHashFunction commitInBlobHashFunction)
+      throws ModelDBException {
     Map<Long, List<LineageEntry>> sideAInDatabase;
     switch (sideB.getIdentifierCase()) {
       case ID:
@@ -440,13 +556,18 @@ public class LineageDAORdbImpl implements LineageDAO {
             Collections.singletonMap(
                 sideB.getId(),
                 getInputOrOutput(session, connectionEntitiesById).keySet().stream()
-                    .map(LineageElement::toProto)
+                    .map(
+                        lineageElement -> lineageElement.toProto(session, commitInBlobHashFunction))
                     .collect(Collectors.toList()));
         break;
       case ENTRY:
         sideAInDatabase =
             getConnectionEntitiesByEntryAndConnectionType(
-                session, sideB.getEntry(), connectionType);
+                session,
+                sideB.getEntry(),
+                connectionType,
+                blobHashInCommitFunction,
+                commitInBlobHashFunction);
         break;
       default:
         throw new ModelDBException("Unknown id type");

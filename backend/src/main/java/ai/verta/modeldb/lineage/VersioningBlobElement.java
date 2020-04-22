@@ -1,32 +1,28 @@
 package ai.verta.modeldb.lineage;
 
-import ai.verta.modeldb.CreateJob;
 import ai.verta.modeldb.LineageEntry;
-import ai.verta.modeldb.Location;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
-import ai.verta.modeldb.VersioningLineageEntry.Builder;
-import ai.verta.modeldb.entities.lineage.ConnectionEntity;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
 
 public class VersioningBlobElement extends LineageElement {
   private static final Logger LOGGER = LogManager.getLogger(VersioningBlobElement.class);
 
-  private final String location;
-  private final String commitSha;
   private final Long repositoryId;
+  private final String blobSha;
+  private final String blobType;
 
-  public VersioningBlobElement(Long repositoryId, String commitSha, String location) {
+  public VersioningBlobElement(Long repositoryId, String blobSha, String blobType) {
     this.repositoryId = repositoryId;
-    this.commitSha = commitSha;
-    this.location = location;
+    this.blobSha = blobSha;
+    this.blobType = blobType;
   }
 
   @Override
@@ -38,23 +34,23 @@ public class VersioningBlobElement extends LineageElement {
       return false;
     }
     VersioningBlobElement that = (VersioningBlobElement) o;
-    return Objects.equals(location, that.location)
-        && Objects.equals(commitSha, that.commitSha)
+    return Objects.equals(blobType, that.blobType)
+        && Objects.equals(blobSha, that.blobSha)
         && Objects.equals(repositoryId, that.repositoryId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(location, commitSha, repositoryId);
+    return Objects.hash(blobType, blobSha, repositoryId);
   }
 
   @Override
-  public LineageEntry toProto() {
-    Location.Builder builder = Location.newBuilder();
+  public LineageEntry toProto(Session session, CommitInBlobHashFunction commitInBlobHashFunction) {
+    VersioningLineageEntry result;
     try {
-      ModelDBUtils.getProtoObjectFromString(location, builder);
-    } catch (InvalidProtocolBufferException e) {
-      String errorMessage = "Unexpected location convertion from the database error";
+      result = commitInBlobHashFunction.apply(session, this);
+    } catch (ModelDBException e) {
+      String errorMessage = "Unexpected blob to commit conversion from the database error";
       LOGGER.error(errorMessage);
       Status status =
           Status.newBuilder()
@@ -64,12 +60,18 @@ public class VersioningBlobElement extends LineageElement {
               .build();
       throw StatusProto.toStatusRuntimeException(status);
     }
-    return LineageEntry.newBuilder()
-        .setBlob(
-            VersioningLineageEntry.newBuilder()
-                .setRepositoryId(repositoryId)
-                .setCommitSha(commitSha)
-                .addAllLocation(builder.getLocationList()))
-        .build();
+    return LineageEntry.newBuilder().setBlob(result).build();
+  }
+
+  public Long getRepositoryId() {
+    return repositoryId;
+  }
+
+  public String getBlobSha() {
+    return blobSha;
+  }
+
+  public String getBlobType() {
+    return blobType;
   }
 }

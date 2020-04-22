@@ -435,7 +435,8 @@ public class LineageTest {
                   null));
 
           addLineage =
-              AddLineage.newBuilder().setId(result.getId())
+              AddLineage.newBuilder()
+                  .setId(result.getId())
                   .addOutput(outputDataset)
                   .addOutput(outputExp)
                   .addInput(inputExp)
