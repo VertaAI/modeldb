@@ -46,7 +46,7 @@ public class FindRepositoriesQuery {
     private static final Logger LOGGER =
         LogManager.getLogger(FindRepositoriesHQLQueryBuilder.class);
 
-    boolean isNeedToWhereCause = false;
+    boolean addWhereClause = false;
     final Session session;
     final WorkspaceDTO workspaceDTO;
     String countQueryString;
@@ -66,7 +66,7 @@ public class FindRepositoriesQuery {
     public FindRepositoriesHQLQueryBuilder setRepoIds(List<Long> repoIds) {
       if (repoIds != null && !repoIds.isEmpty()) {
         this.repoIds = repoIds;
-        this.isNeedToWhereCause = true;
+        this.addWhereClause = true;
       }
       return this;
     }
@@ -74,7 +74,7 @@ public class FindRepositoriesQuery {
     public FindRepositoriesHQLQueryBuilder setPredicates(List<KeyValueQuery> predicates) {
       if (predicates != null && !predicates.isEmpty()) {
         this.predicates = predicates;
-        this.isNeedToWhereCause = true;
+        this.addWhereClause = true;
       }
       return this;
     }
@@ -97,7 +97,6 @@ public class FindRepositoriesQuery {
       Query query = session.createQuery(getHQLQueryString());
       setParameterInQuery(query);
 
-      LOGGER.debug("Final find repository query : {}", query.getQueryString());
       if (this.pageNumber != null
           && this.pageLimit != null
           && this.pageNumber != 0
@@ -108,7 +107,7 @@ public class FindRepositoriesQuery {
         query.setMaxResults(this.pageLimit);
       }
 
-      LOGGER.trace("Final query generated");
+      LOGGER.debug("Final find repository query : {}", query.getQueryString());
       return query;
     }
 
@@ -133,31 +132,35 @@ public class FindRepositoriesQuery {
     }
 
     private String getHQLQueryString() {
-      boolean isNeedOperator = false;
+      boolean appendAND = false;
       String alias = " repo";
       StringBuilder queryBuilder =
           new StringBuilder(" FROM ").append(RepositoryEntity.class.getSimpleName()).append(alias);
 
       StringBuilder joinClause = new StringBuilder();
+      Map<String, String> joinAliasMap = new HashMap<>();
       if (this.predicates != null && !this.predicates.isEmpty()) {
         this.predicates.forEach(
             keyValueQuery -> {
               if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {
+                String joinAlias =
+                    keyValueQuery.getKey() + "_alias_" + Calendar.getInstance().getTimeInMillis();
+                joinAliasMap.put(keyValueQuery.getKey(), joinAlias);
                 joinClause
                     .append(" INNER JOIN ")
                     .append(LabelsMappingEntity.class.getSimpleName())
                     .append(" ")
-                    .append(ModelDBConstants.LABELS)
+                    .append(joinAlias)
                     .append(" ON ");
                 joinClause
-                    .append(ModelDBConstants.LABELS)
+                    .append(joinAlias)
                     .append(".id.entity_hash = ")
                     .append(alias)
                     .append(".")
                     .append(ModelDBConstants.ID)
                     .append(" AND ");
                 joinClause
-                    .append(ModelDBConstants.LABELS)
+                    .append(joinAlias)
                     .append(".id.entity_type = ")
                     .append(IDTypeEnum.IDType.VERSIONING_REPOSITORY.getNumber());
               }
@@ -185,38 +188,39 @@ public class FindRepositoriesQuery {
             .append(ModelDBConstants.WORKSPACE_TYPE);
         parametersMap.put(
             ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
-        isNeedOperator = true;
-      } else if (this.isNeedToWhereCause) {
+        appendAND = true;
+      } else if (this.addWhereClause) {
         whereClause.append(" WHERE ");
       }
 
       if (this.predicates != null && !this.predicates.isEmpty()) {
-        if (isNeedOperator) {
+        if (appendAND) {
           whereClause.append(" AND ");
         }
         for (int index = 0; index < this.predicates.size(); index++) {
           KeyValueQuery keyValueQuery = this.predicates.get(index);
           if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {
-            whereClause.append(ModelDBConstants.LABELS).append(".id.label ");
-            setPredicateInQuery(whereClause, keyValueQuery);
+            String joinAlias = joinAliasMap.get(keyValueQuery.getKey());
+            whereClause.append(joinAlias).append(".id.label ");
+            setQueryParameters(whereClause, keyValueQuery, parametersMap);
           } else {
             whereClause.append(alias).append(".").append(keyValueQuery.getKey());
-            setPredicateInQuery(whereClause, keyValueQuery);
+            setQueryParameters(whereClause, keyValueQuery, parametersMap);
           }
           if (index < this.predicates.size() - 1) {
             whereClause.append(" AND ");
           }
         }
-        isNeedOperator = true;
+        appendAND = true;
       }
 
       if (this.repoIds != null && !this.repoIds.isEmpty()) {
-        if (isNeedOperator) {
+        if (appendAND) {
           whereClause.append(" AND ");
         }
         whereClause.append(alias).append(".").append(ModelDBConstants.ID).append(" IN (:repoIds) ");
         parametersMap.put("repoIds", this.repoIds);
-        isNeedOperator = true;
+        appendAND = true;
       }
 
       // Order by clause
@@ -253,13 +257,17 @@ public class FindRepositoriesQuery {
       return finalQueryBuilder.toString();
     }
 
-    private void setPredicateInQuery(StringBuilder queryBuilder, KeyValueQuery keyValueQuery) {
+    private void setQueryParameters(
+        StringBuilder queryBuilder,
+        KeyValueQuery keyValueQuery,
+        Map<String, Object> parametersMap) {
       Value value = keyValueQuery.getValue();
       OperatorEnum.Operator operator = keyValueQuery.getOperator();
       switch (value.getKindCase()) {
         case NUMBER_VALUE:
           LOGGER.debug("Called switch case : number_value");
-          setValueWithOperatorInQuery(queryBuilder, operator, value.getNumberValue());
+          setValueWithOperatorInQuery(
+              queryBuilder, operator, value.getNumberValue(), parametersMap);
           break;
         case STRING_VALUE:
           LOGGER.debug("Called switch case : string_value");
@@ -271,9 +279,11 @@ public class FindRepositoriesQuery {
               setValueWithOperatorInQuery(
                   queryBuilder,
                   operator,
-                  RepositoryVisibility.valueOf(value.getStringValue()).ordinal());
+                  RepositoryVisibility.valueOf(value.getStringValue()).ordinal(),
+                  parametersMap);
             } else {
-              setValueWithOperatorInQuery(queryBuilder, operator, value.getStringValue());
+              setValueWithOperatorInQuery(
+                  queryBuilder, operator, value.getStringValue(), parametersMap);
             }
             break;
           } else {
@@ -286,7 +296,8 @@ public class FindRepositoriesQuery {
           }
         case BOOL_VALUE:
           LOGGER.debug("Called switch case : bool_value");
-          setValueWithOperatorInQuery(queryBuilder, operator, value.getStringValue());
+          setValueWithOperatorInQuery(
+              queryBuilder, operator, value.getStringValue(), parametersMap);
           break;
         default:
           Status invalidValueTypeError =
@@ -300,7 +311,10 @@ public class FindRepositoriesQuery {
     }
 
     private void setValueWithOperatorInQuery(
-        StringBuilder queryBuilder, OperatorEnum.Operator operator, Object value) {
+        StringBuilder queryBuilder,
+        OperatorEnum.Operator operator,
+        Object value,
+        Map<String, Object> parametersMap) {
       long timestamp = Calendar.getInstance().getTimeInMillis();
       String key;
       switch (operator.ordinal()) {
