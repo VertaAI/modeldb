@@ -449,7 +449,7 @@ message FindRepositoriesBlobs {
     repeated uint64 repo_ids = 1; //Repository ids
     string workspace_name = 2; //workspace name
     repeated string location_prefix = 3; //location like: ["dataset","train"]
-    BlobType blob_type = 4;
+    repeated BlobType blob_type = 4;
     repeated string commits = 5; //commit hash list
 
     //For pagination
