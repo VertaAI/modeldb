@@ -2,6 +2,7 @@ package ai.verta.modeldb.versioning;
 
 import static java.util.stream.Collectors.toMap;
 
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
@@ -1061,5 +1062,139 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
     }
     return blobContainerList;
+  }
+
+  private Map<String, Object> getRootShaListByCommitsOrRepos(
+      Session session, FindRepositoriesBlobs request) throws ModelDBException {
+
+    Map<String, Object> parametersMap = new HashMap<>();
+
+    String alias = "cm";
+    StringBuilder rootQueryStringBuilder =
+        new StringBuilder(" FROM ")
+            .append(CommitEntity.class.getSimpleName())
+            .append(" ")
+            .append(alias)
+            .append(" ");
+
+    StringBuilder joinClause = new StringBuilder();
+    joinClause
+        .append(" INNER JOIN ")
+        .append(InternalFolderElementEntity.class.getSimpleName())
+        .append(" folderElm ")
+        .append(" ON ");
+    joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
+
+    StringBuilder whereClause = new StringBuilder();
+    boolean isNeedOperator = false;
+    if (!request.getRepoIdsList().isEmpty()) {
+      whereClause.append(alias).append(".repository.id IN (:repoIds) ");
+      parametersMap.put("repoIds", request.getRepoIdsList());
+      isNeedOperator = true;
+    }
+    if (!request.getCommitsList().isEmpty()) {
+      if (isNeedOperator) {
+        whereClause.append(" AND ");
+      }
+      whereClause.append(alias).append(".commit_hash IN (:commitHashList)");
+      parametersMap.put("commitHashList", request.getCommitsList());
+      isNeedOperator = true;
+    }
+    if (!request.getBlobTypeList().isEmpty()) {
+      if (isNeedOperator) {
+        whereClause.append(" AND ");
+      }
+      whereClause.append("folderElm.element_type IN (:elementTypes)");
+      parametersMap.put("elementTypes", request.getBlobTypeList());
+      isNeedOperator = true;
+    }
+
+    // Order by clause
+    StringBuilder orderClause =
+        new StringBuilder(" ORDER BY ")
+            .append(alias)
+            .append(".")
+            .append(ModelDBConstants.DATE_CREATED)
+            .append(" DESC");
+
+    StringBuilder finalQueryBuilder = new StringBuilder();
+    if (!joinClause.toString().isEmpty()) {
+      finalQueryBuilder.append("SELECT ").append(alias).append(".rootSha ");
+    }
+    finalQueryBuilder.append(rootQueryStringBuilder);
+    finalQueryBuilder.append(joinClause);
+    if (!whereClause.toString().isEmpty()) {
+      finalQueryBuilder.append(" WHERE ").append(whereClause);
+    }
+    finalQueryBuilder.append(orderClause);
+
+    // Build count query
+    StringBuilder countQueryBuilder = new StringBuilder();
+    if (!joinClause.toString().isEmpty()) {
+      countQueryBuilder.append("SELECT COUNT(").append(alias).append(") ");
+    } else {
+      countQueryBuilder.append("SELECT COUNT(*) ");
+    }
+    countQueryBuilder.append(rootQueryStringBuilder);
+    countQueryBuilder.append(joinClause);
+    if (!whereClause.toString().isEmpty()) {
+      countQueryBuilder.append(" WHERE ").append(whereClause);
+    }
+    countQueryBuilder.append(orderClause);
+
+    Query query = session.createQuery(finalQueryBuilder.toString());
+    Query countQuery = session.createQuery(countQueryBuilder.toString());
+    if (!parametersMap.isEmpty()) {
+      parametersMap.forEach(
+          (key, value) -> {
+            if (value instanceof List) {
+              List<Object> objectList = (List<Object>) value;
+              query.setParameterList(key, objectList);
+              countQuery.setParameterList(key, objectList);
+            } else {
+              query.setParameter(key, value);
+              countQuery.setParameter(key, value);
+            }
+          });
+    }
+
+    LOGGER.debug("Final find commit root_sha query : {}", query.getQueryString());
+    if (request.getPageNumber() != 0 && request.getPageLimit() != 0) {
+      // Calculate number of documents to skip
+      int skips = request.getPageLimit() * (request.getPageNumber() - 1);
+      query.setFirstResult(skips);
+      query.setMaxResults(request.getPageLimit());
+    }
+    List<String> resultSet = query.list();
+
+    Map<String, Object> responseMap = new HashMap<>();
+    responseMap.put("result", new HashSet<>(resultSet));
+    responseMap.put("count", countQuery.uniqueResult());
+    return responseMap;
+  }
+
+  @Override
+  public FindRepositoriesBlobs.Response findRepositoriesBlobs(FindRepositoriesBlobs request)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+
+      Map<String, Object> resultSetMap = getRootShaListByCommitsOrRepos(session, request);
+
+      Set<String> rootShaList = (Set<String>) resultSetMap.get("result");
+      Long totalRecords = (Long) resultSetMap.get("count");
+
+      Set<BlobExpanded> blobExpandedSet = new LinkedHashSet<>();
+      for (String rootSha : rootShaList) {
+        Map<String, BlobExpanded> blobExpandedMap =
+            getCommitBlobMap(session, rootSha, request.getLocationPrefixList());
+        blobExpandedSet.addAll(blobExpandedMap.values());
+      }
+
+      return FindRepositoriesBlobs.Response.newBuilder()
+          .addAllBlobs(blobExpandedSet)
+          .setTotalRecords(totalRecords)
+          .build();
+    }
   }
 }

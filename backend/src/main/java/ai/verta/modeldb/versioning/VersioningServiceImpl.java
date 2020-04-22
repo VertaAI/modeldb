@@ -640,4 +640,22 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           responseObserver, e, DeleteTagRequest.Response.getDefaultInstance());
     }
   }
+
+  @Override
+  public void findRepositoriesBlobs(
+      FindRepositoriesBlobs request,
+      StreamObserver<FindRepositoriesBlobs.Response> responseObserver) {
+    QPSCountResource.inc();
+    try {
+      try (RequestLatencyResource latencyResource =
+          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(request);
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+      }
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, FindRepositoriesBlobs.Response.getDefaultInstance());
+    }
+  }
 }

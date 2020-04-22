@@ -24,6 +24,7 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.DockerEnvironmentBlob;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.FileHasher;
+import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GetCommitComponentRequest;
 import ai.verta.modeldb.versioning.GetCommitRequest;
@@ -2049,5 +2050,77 @@ public class CommitTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Revert commit test end................................");
+  }
+
+  @Test
+  public void FindRepositoryBlobsTest() throws ModelDBException, NoSuchAlgorithmException {
+    LOGGER.info("Find repository blobs test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
+    CreateCommitRequest createCommitRequest =
+        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    FindRepositoriesBlobs findRepositoriesBlobs =
+        FindRepositoriesBlobs.newBuilder()
+            .addCommits(commitResponse.getCommit().getCommitSha())
+            .build();
+
+    FindRepositoriesBlobs.Response listCommitBlobsResponse =
+        versioningServiceBlockingStub.findRepositoriesBlobs(findRepositoriesBlobs);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        1,
+        listCommitBlobsResponse.getBlobsCount());
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        2,
+        listCommitBlobsResponse.getBlobs(0).getBlob().getConfig().getHyperparameterSetCount());
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        2,
+        listCommitBlobsResponse.getBlobs(0).getBlob().getConfig().getHyperparametersCount());
+
+    try {
+      DeleteCommitRequest deleteCommitRequest =
+          DeleteCommitRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setCommitSha(getBranchResponse.getCommit().getCommitSha())
+              .build();
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.FAILED_PRECONDITION.getCode(), status.getCode());
+    }
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+            .build();
+    DeleteRepositoryRequest.Response deleteResult =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    Assert.assertTrue(deleteResult.getStatus());
+
+    LOGGER.info("Find repository blobs test end................................");
   }
 }
