@@ -262,7 +262,10 @@ def client(host, port, email, dev_key):
 def experiment_run(client):
     client.set_project()
     client.set_experiment()
-    return client.set_experiment_run()
+    
+    run = client.set_experiment_run()
+    print("[TEST] Run ID is {}".format(run.id))
+    return run
 
 
 @pytest.fixture
