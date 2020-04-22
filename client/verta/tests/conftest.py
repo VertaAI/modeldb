@@ -260,11 +260,12 @@ def client(host, port, email, dev_key):
 
 @pytest.fixture
 def experiment_run(client):
-    client.set_project()
+    proj = client.set_project()
+    print("[TEST LOG] Project ID is {}".format(proj.id))
     client.set_experiment()
-    
     run = client.set_experiment_run()
     print("[TEST LOG] Run ID is {}".format(run.id))
+    
     return run
 
 
