@@ -180,31 +180,6 @@
         </addColumn>
     </changeSet>
 
-    <changeSet id="exp-add-column-workspace" author="anandJ">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="experiment" columnName="workspace"/>
-            </not>
-        </preConditions>
-        <addColumn tableName="experiment">
-            <column name="workspace" type="varchar(255)"/>
-        </addColumn>
-        <addColumn tableName="experiment">
-            <column name="workspace_type" type="int"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="exp-add-column-workspace_type" author="anandJ">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="experiment" columnName="workspace_type"/>
-            </not>
-        </preConditions>
-        <addColumn tableName="experiment">
-            <column name="workspace_type" type="int"/>
-        </addColumn>
-    </changeSet>
-
     <!-- take a below line to the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>

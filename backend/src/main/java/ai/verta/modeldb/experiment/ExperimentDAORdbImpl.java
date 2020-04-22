@@ -17,7 +17,6 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.CommentEntity;
@@ -191,8 +190,10 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   public List<String> getDefaultWorkspaceProjectIDs(
-      ProjectDAO projectDAO, UserInfo currentLoginUserInfo) throws InvalidProtocolBufferException {
-    FindProjects findProjects = FindProjects.newBuilder().setIdsOnly(true).build();
+      ProjectDAO projectDAO, String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException {
+    FindProjects findProjects =
+        FindProjects.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
     ProjectPaginationDTO projectPaginationDTO =
         projectDAO.findProjects(
             findProjects, null, currentLoginUserInfo, ProjectVisibility.PRIVATE);
@@ -265,9 +266,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(experiment, true);
       Transaction transaction = session.beginTransaction();
-
-      WorkspaceDTO workspaceDTO = roleService.getWorkspaceDTOByWorkspaceName(userInfo, null);
-      session.save(RdbmsUtils.generateExperimentEntity(experiment, workspaceDTO));
+      session.save(RdbmsUtils.generateExperimentEntity(experiment));
 
       Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
       roleService.createRoleBinding(
@@ -767,12 +766,11 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
               .build();
       throw StatusProto.toStatusRuntimeException(status);
     }
-    WorkspaceDTO workspaceDTO = roleService.getWorkspaceDTOByWorkspaceName(newOwner, null);
+
     Experiment copyExperiment = copyExperimentAndUpdateDetails(srcExperiment, newProject, newOwner);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      ExperimentEntity experimentObj =
-          RdbmsUtils.generateExperimentEntity(copyExperiment, workspaceDTO);
+      ExperimentEntity experimentObj = RdbmsUtils.generateExperimentEntity(copyExperiment);
       session.saveOrUpdate(experimentObj);
       transaction.commit();
       LOGGER.debug("Experiment copied successfully");
@@ -865,20 +863,14 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       experimentRoot.alias("exp");
       List<Predicate> finalPredicatesList = new ArrayList<>();
 
-      RdbmsUtils.getWorkspacePredicates(
-          null,
-          currentLoginUserInfo,
-          builder,
-          experimentRoot,
-          finalPredicatesList,
-          null,
-          roleService);
-
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
         projectIds.add(queryParameters.getProjectId());
       } else {
-        projectIds.addAll(getDefaultWorkspaceProjectIDs(projectDAO, currentLoginUserInfo));
+        List<String> workspaceProjectIDs =
+            getDefaultWorkspaceProjectIDs(
+                projectDAO, queryParameters.getWorkspaceName(), currentLoginUserInfo);
+        projectIds.addAll(workspaceProjectIDs);
       }
 
       Expression<String> projectExpression = experimentRoot.get(ModelDBConstants.PROJECT_ID);

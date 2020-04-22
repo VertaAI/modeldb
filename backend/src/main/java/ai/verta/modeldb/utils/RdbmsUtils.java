@@ -28,7 +28,6 @@ import ai.verta.modeldb.RawDatasetVersionInfo;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -110,9 +109,9 @@ public class RdbmsUtils {
     return projects;
   }
 
-  public static ExperimentEntity generateExperimentEntity(
-      Experiment experiment, WorkspaceDTO workspaceDTO) throws InvalidProtocolBufferException {
-    return new ExperimentEntity(experiment, workspaceDTO);
+  public static ExperimentEntity generateExperimentEntity(Experiment experiment)
+      throws InvalidProtocolBufferException {
+    return new ExperimentEntity(experiment);
   }
 
   public static List<Experiment> convertExperimentsFromExperimentEntityList(
