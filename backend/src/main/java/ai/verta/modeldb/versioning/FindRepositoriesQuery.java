@@ -140,12 +140,17 @@ public class FindRepositoriesQuery {
       StringBuilder joinClause = new StringBuilder();
       Map<String, String> joinAliasMap = new HashMap<>();
       if (this.predicates != null && !this.predicates.isEmpty()) {
+        final int[] index = {0};
         this.predicates.forEach(
             keyValueQuery -> {
               if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {
                 String joinAlias =
-                    keyValueQuery.getKey() + "_alias_" + Calendar.getInstance().getTimeInMillis();
-                joinAliasMap.put(keyValueQuery.getKey(), joinAlias);
+                    keyValueQuery.getKey()
+                        + "_alias_"
+                        + index[0]
+                        + "_"
+                        + Calendar.getInstance().getTimeInMillis();
+                joinAliasMap.put(keyValueQuery.getKey() + index[0], joinAlias);
                 joinClause
                     .append(" INNER JOIN ")
                     .append(LabelsMappingEntity.class.getSimpleName())
@@ -164,6 +169,7 @@ public class FindRepositoriesQuery {
                     .append(".id.entity_type = ")
                     .append(IDTypeEnum.IDType.VERSIONING_REPOSITORY.getNumber());
               }
+              index[0]++;
             });
       }
 
@@ -200,7 +206,7 @@ public class FindRepositoriesQuery {
         for (int index = 0; index < this.predicates.size(); index++) {
           KeyValueQuery keyValueQuery = this.predicates.get(index);
           if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {
-            String joinAlias = joinAliasMap.get(keyValueQuery.getKey());
+            String joinAlias = joinAliasMap.get(keyValueQuery.getKey() + index);
             whereClause.append(joinAlias).append(".id.label ");
             setQueryParameters(whereClause, keyValueQuery, parametersMap);
           } else {
@@ -315,7 +321,7 @@ public class FindRepositoriesQuery {
         OperatorEnum.Operator operator,
         Object value,
         Map<String, Object> parametersMap) {
-      long timestamp = Calendar.getInstance().getTimeInMillis();
+      long timestamp = Math.round(100.0 * Math.random()) + Calendar.getInstance().getTimeInMillis();
       String key;
       switch (operator.ordinal()) {
         case OperatorEnum.Operator.GT_VALUE:
