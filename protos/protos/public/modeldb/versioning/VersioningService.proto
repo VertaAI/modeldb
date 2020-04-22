@@ -420,9 +420,9 @@ message RevertRepositoryCommitsRequest {
 }
 
 message FindRepositories {
-    repeated uint64 repo_ids = 1;
-    string workspace_name = 2;
-    repeated KeyValueQuery predicates = 3;
+    repeated uint64 repo_ids = 1; //Repository ids
+    string workspace_name = 2; //workspace name
+    repeated KeyValueQuery predicates = 3; //predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}
 
     //For pagination
     int32 page_number = 6;
@@ -446,11 +446,11 @@ enum BlobType {
 }
 
 message FindRepositoriesBlobs {
-    repeated uint64 repo_ids = 1;
-    string workspace_name = 2;
-    repeated string location_prefix = 3;
+    repeated uint64 repo_ids = 1; //Repository ids
+    string workspace_name = 2; //workspace name
+    repeated string location_prefix = 3; //location like: ["dataset","train"]
     BlobType blob_type = 4;
-    repeated string commits = 5;
+    repeated string commits = 5; //commit hash list
 
     //For pagination
     int32 page_number = 6;
