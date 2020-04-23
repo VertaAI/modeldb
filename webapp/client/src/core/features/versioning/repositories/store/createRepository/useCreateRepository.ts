@@ -16,8 +16,8 @@ const CREATE_REPOSITORY = gql`
                 id
             }
         }
-        ${WORKSPACE_FRAGMENT}
     }
+    ${WORKSPACE_FRAGMENT}
 `;
 export const useCreateRepositoryMutation = () => {
   const [runMutation, communication] = useMutation<
