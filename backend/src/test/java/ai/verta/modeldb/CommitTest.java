@@ -283,6 +283,11 @@ public class CommitTest {
             .setDateCreated(commitTime)
             .addParentShas(parentCommit.getCommitSha())
             .build();
+    List<String> locations = new LinkedList<>();
+    locations.add("/");
+    if (!name.isEmpty()) {
+      locations.add(name);
+    }
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -290,7 +295,7 @@ public class CommitTest {
             .addBlobs(
                 BlobExpanded.newBuilder()
                     .setBlob(getBlob(contentCase, name))
-                    .addLocation("/")
+                    .addAllLocation(locations)
                     .build())
             .build();
 
