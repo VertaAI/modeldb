@@ -422,14 +422,13 @@ message RevertRepositoryCommitsRequest {
 //If any of the request parameters are not set then backend will return all the repositories.
 //the query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC
 message FindRepositories {
-    //if repo_ids not present in request then the backend returns all the Repositories.
-    repeated uint64 repo_ids = 1; //(Optional) Repository ids
-    string workspace_name = 2; //(Not Required for OSS) workspace name
-    repeated KeyValueQuery predicates = 3; //(Optional) predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}
+    repeated uint64 repo_ids = 1; //if repo_ids not present in request then the backend returns all the matching repositories, else returns a subsetfrom the list that are in the parameter repo_ids
+    string workspace_name = 2; //If auth service is configured will default to Personal workspace, if authservice is not configured then parameter is ignored
+    repeated KeyValueQuery predicates = 3; //predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}, if absent all the accessible repositories are returned.
 
     //For pagination
-    int32 page_number = 6;//(Optional)
-    int32 page_limit = 7;//(Optional)
+    int32 page_number = 6;//If not present no pagination is applied.
+    int32 page_limit = 7;//If not present no pagination is applied.
     //In future requirement
     //bool ascending = 8;
     //string sort_key = 9;
@@ -448,18 +447,17 @@ enum BlobType {
     CONFIG_BLOB = 4;
 }
 
-//If any of the request parameters are not set then backend will return all the repositories of all blobs.
 message FindRepositoriesBlobs {
-    repeated uint64 repo_ids = 1; //(Optional) Repository ids
-    string workspace_name = 2; //(Not Required for OSS) workspace name
-    //If location_prefix not found in request then backend returns all the blobs based on the other request parameters
-    repeated string location_prefix = 3; //(Optional) location like: ["dataset","train"]
-    repeated BlobType blob_type = 4; //(Optional) Backend consider this field with 'OR' operator in query
-    repeated string commits = 5; //(Optional) commit hash list
+    repeated uint64 repo_ids = 1; //if repo_ids not present in request then the backend returns all the matching repositories blobs, else returns a subsetfrom the list that are in the parameter repo_ids and return those repositories blobs
+    string workspace_name = 2; //If auth service is configured will default to Personal workspace, if authservice is not configured then parameter is ignored
+
+    repeated string location_prefix = 3; //location like: ["dataset","train"], If location_prefix not found in request then backend returns all the blobs from root folder else return matching location_prefix blobs
+    repeated BlobType blob_type = 4; //Backend consider this field with 'OR' operator in query and if it not present then ignore type and return all blob_type results
+    repeated string commits = 5; //if commits not present in request then the backend returns all the matching commits blobs, else returns a subsetfrom the list that are in the parameter commits and return those commits blobs
 
     //For pagination
-    int32 page_number = 6; //(Optional)
-    int32 page_limit = 7; // (Optional)
+    int32 page_number = 6; //If not present no pagination is applied.
+    int32 page_limit = 7; //If not present no pagination is applied.
     //In future requirement
     //bool ascending = 8;
     //string sort_key = 9;
