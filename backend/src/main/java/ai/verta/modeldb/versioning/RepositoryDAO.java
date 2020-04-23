@@ -51,4 +51,6 @@ public interface RepositoryDAO {
 
   ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
       throws ModelDBException;
+
+  FindRepositories.Response findRepositories(FindRepositories request) throws ModelDBException;
 }
