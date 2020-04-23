@@ -158,6 +158,10 @@ class Pages extends React.Component<AllProps> {
               route: routes.repositorySettings,
               Component: RepositoryDetailsPages,
             },
+            {
+              route: routes.repositoryNetworkGraph,
+              Component: RepositoryDetailsPages,
+            },
           ],
           isCurrentWorkspaceExisted
         )}
