@@ -58,5 +58,5 @@ def calculate_float_histogram(data, num_bins=10):
     }
 
 
-class HistogramError(TypeError):
+class HistogramError(TypeError):  # TODO: move to exceptions submodule
     pass
