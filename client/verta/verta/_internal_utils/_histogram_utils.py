@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
 
+def calculate_histogram(data):
+    try:  # binary
+        pass#return calculate_binary_histogram(col)
+    except HistogramError:
+        pass
+
+    try:  # discrete/categorical
+        pass#return calculate_discrete_histogram(col)
+    except HistogramError:
+        pass
+
+    # continuous
+    return calculate_float_histogram(data)
+
 def calculate_binary_histogram(data):
     raise NotImplementedError
 

@@ -3589,22 +3589,7 @@ class ExperimentRun(_ModelDBEntity):
 
         histograms = {'features': {}}
         for colname in train_df:
-            col = train_df[colname]
-            histogram = None
-
-            try:  # binary
-                pass#histogram = _histogram_utils.calculate_binary_histogram(col)
-            except _histogram_utils.HistogramError:
-                pass
-
-            try:  # discrete/categorical
-                pass#histogram = _histogram_utils.calculate_discrete_histogram(col)
-            except _histogram_utils.HistogramError:
-                pass
-
-            # continuous
-            histogram = _histogram_utils.calculate_float_histogram(col)
-
+            histogram = _histogram_utils.calculate_histogram(train_df[colname])
             histograms['features'][colname] = histogram
 
         endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
