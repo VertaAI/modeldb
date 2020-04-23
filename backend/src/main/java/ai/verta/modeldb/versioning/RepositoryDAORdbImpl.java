@@ -395,7 +395,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           ModelDBConstants.ROLE_REPOSITORY_ADMIN,
           ModelDBServiceResourceTypes.REPOSITORY,
           repositoryEntity
-              .getRepositoryVisibility()
+              .getRepository_visibility()
               .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
           GLOBAL_SHARING);
     }

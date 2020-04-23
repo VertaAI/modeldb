@@ -12,6 +12,7 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,6 @@ public class FindRepositoriesQuery {
     private static final Logger LOGGER =
         LogManager.getLogger(FindRepositoriesHQLQueryBuilder.class);
 
-    boolean addWhereClause = false;
     final Session session;
     final WorkspaceDTO workspaceDTO;
     String countQueryString;
@@ -66,7 +66,6 @@ public class FindRepositoriesQuery {
     public FindRepositoriesHQLQueryBuilder setRepoIds(List<Long> repoIds) {
       if (repoIds != null && !repoIds.isEmpty()) {
         this.repoIds = repoIds;
-        this.addWhereClause = true;
       }
       return this;
     }
@@ -74,7 +73,6 @@ public class FindRepositoriesQuery {
     public FindRepositoriesHQLQueryBuilder setPredicates(List<KeyValueQuery> predicates) {
       if (predicates != null && !predicates.isEmpty()) {
         this.predicates = predicates;
-        this.addWhereClause = true;
       }
       return this;
     }
@@ -132,7 +130,6 @@ public class FindRepositoriesQuery {
     }
 
     private String getHQLQueryString() {
-      boolean appendAND = false;
       String alias = " repo";
       StringBuilder queryBuilder =
           new StringBuilder(" FROM ").append(RepositoryEntity.class.getSimpleName()).append(alias);
@@ -157,77 +154,60 @@ public class FindRepositoriesQuery {
                     .append(" ")
                     .append(joinAlias)
                     .append(" ON ");
-                joinClause
-                    .append(joinAlias)
-                    .append(".id.entity_hash = ")
-                    .append(alias)
-                    .append(".")
-                    .append(ModelDBConstants.ID)
-                    .append(" AND ");
-                joinClause
-                    .append(joinAlias)
-                    .append(".id.entity_type = ")
-                    .append(IDTypeEnum.IDType.VERSIONING_REPOSITORY.getNumber());
+                String[] joinCauses = new String[2];
+                joinCauses[0] =
+                    joinAlias + ".id.entity_hash = " + alias + "." + ModelDBConstants.ID;
+                joinCauses[1] =
+                    joinAlias
+                        + ".id.entity_type = "
+                        + IDTypeEnum.IDType.VERSIONING_REPOSITORY.getNumber();
+                setPredicatesWithQueryOperator(joinClause, "AND", joinCauses);
               }
               index[0]++;
             });
       }
 
-      StringBuilder whereClause = new StringBuilder();
+      // StringBuilder whereClause = new StringBuilder();
+      List<String> whereClauseList = new ArrayList<>();
       if (workspaceDTO != null
           && workspaceDTO.getWorkspaceId() != null
           && !workspaceDTO.getWorkspaceId().isEmpty()) {
-        whereClause.append(" WHERE ");
-        whereClause
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.WORKSPACE_ID)
-            .append(" = :")
-            .append(ModelDBConstants.WORKSPACE_ID);
+        whereClauseList.add(
+            alias + "." + ModelDBConstants.WORKSPACE_ID + " = :" + ModelDBConstants.WORKSPACE_ID);
         parametersMap.put(ModelDBConstants.WORKSPACE_ID, workspaceDTO.getWorkspaceId());
-        whereClause
-            .append(" AND ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.WORKSPACE_TYPE)
-            .append(" = :")
-            .append(ModelDBConstants.WORKSPACE_TYPE);
+        whereClauseList.add(
+            alias
+                + "."
+                + ModelDBConstants.WORKSPACE_TYPE
+                + " = :"
+                + ModelDBConstants.WORKSPACE_TYPE);
         parametersMap.put(
             ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
-        appendAND = true;
-      } else if (this.addWhereClause) {
-        whereClause.append(" WHERE ");
       }
 
       if (this.predicates != null && !this.predicates.isEmpty()) {
-        if (appendAND) {
-          whereClause.append(" AND ");
-        }
         for (int index = 0; index < this.predicates.size(); index++) {
           KeyValueQuery keyValueQuery = this.predicates.get(index);
           if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {
             String joinAlias = joinAliasMap.get(keyValueQuery.getKey() + index);
-            whereClause.append(joinAlias).append(".id.label ");
-            setQueryParameters(whereClause, keyValueQuery, parametersMap);
+            StringBuilder joinStringBuilder = new StringBuilder(joinAlias).append(".id.label ");
+            setQueryParameters(joinStringBuilder, keyValueQuery, parametersMap);
+            whereClauseList.add(joinStringBuilder.toString());
           } else {
-            whereClause.append(alias).append(".").append(keyValueQuery.getKey());
-            setQueryParameters(whereClause, keyValueQuery, parametersMap);
-          }
-          if (index < this.predicates.size() - 1) {
-            whereClause.append(" AND ");
+            StringBuilder predicateStringBuilder = new StringBuilder();
+            predicateStringBuilder.append(alias).append(".").append(keyValueQuery.getKey());
+            setQueryParameters(predicateStringBuilder, keyValueQuery, parametersMap);
+            whereClauseList.add(predicateStringBuilder.toString());
           }
         }
-        appendAND = true;
       }
 
       if (this.repoIds != null && !this.repoIds.isEmpty()) {
-        if (appendAND) {
-          whereClause.append(" AND ");
-        }
-        whereClause.append(alias).append(".").append(ModelDBConstants.ID).append(" IN (:repoIds) ");
+        whereClauseList.add(alias + "." + ModelDBConstants.ID + " IN (:repoIds) ");
         parametersMap.put("repoIds", this.repoIds);
-        appendAND = true;
       }
+      StringBuilder whereClause = new StringBuilder();
+      setPredicatesWithQueryOperator(whereClause, "AND", whereClauseList.toArray(new String[0]));
 
       // Order by clause
       StringBuilder orderClause =
@@ -243,7 +223,9 @@ public class FindRepositoriesQuery {
       }
       finalQueryBuilder.append(queryBuilder);
       finalQueryBuilder.append(joinClause);
-      finalQueryBuilder.append(whereClause);
+      if (!whereClause.toString().isEmpty()) {
+        finalQueryBuilder.append(" WHERE ").append(whereClause);
+      }
       finalQueryBuilder.append(orderClause);
 
       // Build count query
@@ -255,12 +237,19 @@ public class FindRepositoriesQuery {
       }
       countQueryBuilder.append(queryBuilder);
       countQueryBuilder.append(joinClause);
-      countQueryBuilder.append(whereClause);
+      if (!whereClause.toString().isEmpty()) {
+        countQueryBuilder.append(" WHERE ").append(whereClause);
+      }
       countQueryBuilder.append(orderClause);
       this.countQueryString = countQueryBuilder.toString();
 
       LOGGER.trace("Creating HQL query");
       return finalQueryBuilder.toString();
+    }
+
+    private void setPredicatesWithQueryOperator(
+        StringBuilder queryStringBuilder, String operatorName, String[] predicateClause) {
+      queryStringBuilder.append(String.join(" " + operatorName + " ", predicateClause));
     }
 
     private void setQueryParameters(
@@ -279,9 +268,7 @@ public class FindRepositoriesQuery {
           LOGGER.debug("Called switch case : string_value");
           if (!value.getStringValue().isEmpty()) {
             LOGGER.debug("Called switch case : string value exist");
-            if (keyValueQuery.getKey().equals(ModelDBConstants.PROJECT_VISIBILITY)
-                || keyValueQuery.getKey().equals(ModelDBConstants.DATASET_VISIBILITY)
-                || keyValueQuery.getKey().equals(ModelDBConstants.DATASET_VERSION_VISIBILITY)) {
+            if (keyValueQuery.getKey().equals(ModelDBConstants.REPOSITORY_VISIBILITY)) {
               setValueWithOperatorInQuery(
                   queryBuilder,
                   operator,

@@ -216,4 +216,5 @@ public interface ModelDBConstants {
   String MASTER_BRANCH = "master";
   String COMMIT = "commit";
   String VERSIONING_LOCATION = "versioning_location";
+  String REPOSITORY_VISIBILITY = "repository_visibility";
 }
