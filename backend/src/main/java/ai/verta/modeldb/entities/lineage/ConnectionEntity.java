@@ -15,11 +15,35 @@ import org.hibernate.Session;
 @Entity
 @Table(name = "lineage_connection")
 public class ConnectionEntity implements Serializable {
-  // used for database read operations, means that we should acquire both input and output
-  public static final int CONNECTION_TYPE_ANY = 0;
+  public enum ConnectionType {
+    CONNECTION_TYPE_ANY(
+        0), // used for database read operations, means that we should acquire both input and output
+    CONNECTION_TYPE_INPUT(1),
+    CONNECTION_TYPE_OUTPUT(2);
 
-  public static final int CONNECTION_TYPE_INPUT = 1;
-  public static final int CONNECTION_TYPE_OUTPUT = 2;
+    private final int value;
+
+    ConnectionType(int value) {
+      this.value = value;
+    }
+
+    static ConnectionType valueOf(int value) {
+      switch (value) {
+        case 0:
+          return CONNECTION_TYPE_ANY;
+        case 1:
+          return CONNECTION_TYPE_INPUT;
+        case 2:
+          return CONNECTION_TYPE_OUTPUT;
+        default:
+          return null;
+      }
+    }
+
+    public int getValue() {
+      return value;
+    }
+  }
 
   public static final int ENTITY_TYPE_EXPERIMENT_RUN = 1;
   public static final int ENTITY_TYPE_VERSIONING_BLOB = 2;
@@ -58,8 +82,8 @@ public class ConnectionEntity implements Serializable {
     return id;
   }
 
-  public Integer getConnectionType() {
-    return connectionType;
+  public ConnectionType getConnectionType() {
+    return ConnectionEntity.ConnectionType.valueOf(connectionType);
   }
 
   public Long getEntityId() {

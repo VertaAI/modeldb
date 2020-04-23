@@ -1,8 +1,8 @@
 package ai.verta.modeldb.lineage;
 
-import static ai.verta.modeldb.entities.lineage.ConnectionEntity.CONNECTION_TYPE_ANY;
-import static ai.verta.modeldb.entities.lineage.ConnectionEntity.CONNECTION_TYPE_INPUT;
-import static ai.verta.modeldb.entities.lineage.ConnectionEntity.CONNECTION_TYPE_OUTPUT;
+import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ConnectionType.CONNECTION_TYPE_ANY;
+import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ConnectionType.CONNECTION_TYPE_INPUT;
+import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ConnectionType.CONNECTION_TYPE_OUTPUT;
 import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ENTITY_TYPE_EXPERIMENT_RUN;
 import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ENTITY_TYPE_VERSIONING_BLOB;
 
@@ -19,6 +19,7 @@ import ai.verta.modeldb.LineageEntryBatchResponseSingle;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
 import ai.verta.modeldb.entities.lineage.ConnectionEntity;
+import ai.verta.modeldb.entities.lineage.ConnectionEntity.ConnectionType;
 import ai.verta.modeldb.entities.lineage.LineageElementEntity;
 import ai.verta.modeldb.entities.lineage.LineageExperimentRunEntity;
 import ai.verta.modeldb.entities.lineage.LineageVersioningBlobEntity;
@@ -149,8 +150,9 @@ public class LineageDAORdbImpl implements LineageDAO {
     return new AbstractMap.SimpleEntry<>(inputInDatabase, outputInDatabase);
   }
 
-  private Map<LineageEntryContainer, ConnectionEntity> getLineageEntryContainerToConnectionEntityMap(
-      Session session, List<ConnectionEntity> result) {
+  private Map<LineageEntryContainer, ConnectionEntity>
+      getLineageEntryContainerToConnectionEntityMap(
+          Session session, List<ConnectionEntity> result) {
     return result.stream()
         .collect(
             Collectors.toMap(
@@ -163,7 +165,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private List<ConnectionEntity> getConnectionEntitiesByIdAndConnectionType(
-      Session session, long id, int connectionType) {
+      Session session, long id, ConnectionType connectionType) {
     CriteriaBuilder builder = session.getCriteriaBuilder();
     CriteriaQuery<ConnectionEntity> criteriaQuery = builder.createQuery(ConnectionEntity.class);
     Root<ConnectionEntity> root = criteriaQuery.from(ConnectionEntity.class);
@@ -171,7 +173,9 @@ public class LineageDAORdbImpl implements LineageDAO {
     final Predicate finalPredicate;
     if (connectionType != CONNECTION_TYPE_ANY) {
       finalPredicate =
-          builder.and(idPredicate, root.get(ConnectionEntity.CONNECTION_TYPE).in(connectionType));
+          builder.and(
+              idPredicate,
+              root.get(ConnectionEntity.CONNECTION_TYPE).in(connectionType.getValue()));
     } else {
       finalPredicate = idPredicate;
     }
@@ -182,7 +186,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private List<ConnectionEntity> getConnectionEntities(
-      Session session, int connectionType, Long entityId, int entityType) {
+      Session session, ConnectionType connectionType, Long entityId, int entityType) {
     CriteriaBuilder builder = session.getCriteriaBuilder();
     CriteriaQuery<ConnectionEntity> criteriaQuery = builder.createQuery(ConnectionEntity.class);
     Root<ConnectionEntity> root = criteriaQuery.from(ConnectionEntity.class);
@@ -193,7 +197,8 @@ public class LineageDAORdbImpl implements LineageDAO {
     if (connectionType != CONNECTION_TYPE_ANY) {
       finalPredicate =
           builder.and(
-              combinedPredicate, root.get(ConnectionEntity.CONNECTION_TYPE).in(connectionType));
+              combinedPredicate,
+              root.get(ConnectionEntity.CONNECTION_TYPE).in(connectionType.getValue()));
     } else {
       finalPredicate = combinedPredicate;
     }
@@ -206,7 +211,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   private Map<Long, List<LineageEntry>> getSideAEntries(
       Session session,
       LineageEntry lineageEntry,
-      int connectionType,
+      ConnectionEntity.ConnectionType connectionType,
       CommitHashToBlobHashFunction commitHashToBlobHashFunction,
       BlobHashToCommitHashFunction blobHashToCommitHashFunction)
       throws ModelDBException {
@@ -295,7 +300,8 @@ public class LineageDAORdbImpl implements LineageDAO {
     return query.uniqueResult();
   }
 
-  private int invert(int connectionType) throws ModelDBException {
+  private ConnectionEntity.ConnectionType invert(ConnectionEntity.ConnectionType connectionType)
+      throws ModelDBException {
     switch (connectionType) {
       case CONNECTION_TYPE_INPUT:
         return CONNECTION_TYPE_OUTPUT;
@@ -495,7 +501,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       Session session,
       LineageEntry lineageEntry,
       Long id,
-      int connectionType,
+      ConnectionType connectionType,
       CommitHashToBlobHashFunction commitHashToBlobHashFunction)
       throws ModelDBException {
     final Long entityId;
@@ -552,7 +558,7 @@ public class LineageDAORdbImpl implements LineageDAO {
         return;
       }
     }
-    session.save(new ConnectionEntity(id, entityId, connectionType, entityType));
+    session.save(new ConnectionEntity(id, entityId, connectionType.getValue(), entityType));
   }
 
   private List<LineageEntryBatchResponseSingle> getOutputsByInput(
@@ -584,7 +590,9 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   /**
-   * A -- what we want to receive (can be input or output). B -- what we already have (input or output).
+   * A -- what we want to receive (can be input or output). B -- what we already have (input or
+   * output).
+   *
    * @param session current session
    * @param sideB information about entries
    * @param connectionTypeSideA connection type of entries which we want to receive
@@ -596,7 +604,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   private List<LineageEntryBatchResponseSingle> getLineageEntryContainerToConnectionEntityMap(
       Session session,
       LineageEntryBatchRequest sideB,
-      int connectionTypeSideA,
+      ConnectionType connectionTypeSideA,
       CommitHashToBlobHashFunction commitHashToBlobHashFunction,
       BlobHashToCommitHashFunction blobHashToCommitHashFunction)
       throws ModelDBException {
@@ -608,7 +616,8 @@ public class LineageDAORdbImpl implements LineageDAO {
         sideAInDatabase =
             Collections.singletonMap(
                 sideB.getId(),
-                getLineageEntryContainerToConnectionEntityMap(session, connectionEntitiesById).keySet().stream()
+                getLineageEntryContainerToConnectionEntityMap(session, connectionEntitiesById)
+                    .keySet().stream()
                     .map(
                         lineageEntryContainer ->
                             lineageEntryContainer.toProto(session, blobHashToCommitHashFunction))
