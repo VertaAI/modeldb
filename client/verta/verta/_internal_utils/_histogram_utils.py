@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+def calculate_binary_histogram(data):
+    raise NotImplementedError
+
+def calculate_discrete_histogram(data):
+    raise NotImplementedError
+
 def calculate_float_histogram(data, num_bins=10):
     """
     Calculates a histogram for continuous `data`.
@@ -36,3 +42,7 @@ def calculate_float_histogram(data, num_bins=10):
         },
         'type': "float",
     }
+
+
+class HistogramError(TypeError):
+    pass

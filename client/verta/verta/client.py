@@ -39,6 +39,7 @@ from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-
 from ._internal_utils import _artifact_utils
 from ._internal_utils import _config_utils
 from ._internal_utils import _git_utils
+from ._internal_utils import _histogram_utils
 from ._internal_utils import _pip_requirements_utils
 from ._internal_utils import _utils
 
@@ -3586,11 +3587,33 @@ class ExperimentRun(_ModelDBEntity):
 
         train_df = train_features.join(train_targets)
 
-        tempf = tempfile.TemporaryFile('w+')
-        train_df.to_csv(tempf, index=False)
-        tempf.seek(0)
+        histograms = {'features': {}}
+        for colname in train_df:
+            col = train_df[colname]
+            histogram = None
 
-        self._log_artifact("train_data", tempf, _CommonService.ArtifactTypeEnum.DATA, 'csv', overwrite=overwrite)
+            try:  # binary
+                pass#histogram = _histogram_utils.calculate_binary_histogram(col)
+            except _histogram_utils.HistogramError:
+                pass
+
+            try:  # discrete/categorical
+                pass#histogram = _histogram_utils.calculate_discrete_histogram(col)
+            except _histogram_utils.HistogramError:
+                pass
+
+            # continuous
+            histogram = _histogram_utils.calculate_float_histogram(col)
+
+            histograms['features'][colname] = histogram
+
+        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+        response = _utils.make_request("PUT", endpoint, self._conn, json=histograms)
+        _utils.raise_for_http_error(response)
 
     def fetch_artifacts(self, keys):
         """
