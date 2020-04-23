@@ -1,18 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import {
-  Route,
-  RouteComponentProps,
-  Switch,
-  withRouter,
-} from 'react-router-dom';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
+import routes, { GetRouteParams } from 'routes';
 import { matchRemoteData } from 'core/shared/utils/redux/communication/remoteData';
 import PageCommunicationError from 'core/shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import Preloader from 'core/shared/view/elements/Preloader/Preloader';
 import AuthorizedLayout from 'pages/authorized/shared/AuthorizedLayout/AuthorizedLayout';
-import routes, { GetRouteParams } from 'routes';
 import {
   loadProject,
   selectLoadingProject,
@@ -20,15 +15,9 @@ import {
 } from 'store/projects';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
+import makeWrapperComponent from 'core/shared/view/elements/makeWrapperComponent';
 
-import ChartsPage from './ChartsPage/ChartsPage';
-import CompareModelsPage from './CompareModelsPage/CompareModelsPage';
-import ExperimentRunsPage from './ExperimentRunsPage/ExperimentRunsPage';
-import ExperimentsPage from './ExperimentsPage/ExperimentsPage';
-import ModelRecordPage from './ModelRecordPage/ModelRecordPage';
-import ProjectSummaryPage from './ProjectSummaryPage/ProjectSummaryPage';
-
-type IUrlProps = GetRouteParams<typeof routes.experimentRuns>;
+type IUrlProps = GetRouteParams<typeof routes.project>;
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
@@ -53,9 +42,11 @@ type RouteProps = RouteComponentProps<IUrlProps>;
 
 type AllProps = RouteProps &
   ReturnType<typeof mapDispatchToProps> &
-  ReturnType<typeof mapStateToProps>;
+  ReturnType<typeof mapStateToProps> & {
+    children: Exclude<React.ReactNode, null | undefined>;
+  };
 
-class ProjectDetailsPage extends React.Component<AllProps> {
+class LoadProject extends React.Component<AllProps> {
   public componentDidMount() {
     this.props.loadProject(this.props.match.params.projectId);
   }
@@ -88,45 +79,18 @@ class ProjectDetailsPage extends React.Component<AllProps> {
           <PageCommunicationError error={error} />
         </AuthorizedLayout>
       ),
-      success: () => (
-        <Switch>
-          <Route
-            exact={true}
-            path={routes.projectSummary.getPath()}
-            component={ProjectSummaryPage}
-          />
-          <Route
-            exact={true}
-            path={routes.charts.getPath()}
-            component={ChartsPage}
-          />
-          <Route
-            exact={true}
-            path={routes.experimentRuns.getPath()}
-            component={ExperimentRunsPage}
-          />
-          <Route
-            exact={true}
-            path={routes.experiments.getPath()}
-            component={ExperimentsPage}
-          />
-          <Route
-            exact={true}
-            path={routes.modelRecord.getPath()}
-            component={ModelRecordPage}
-          />
-          <Route
-            exact={true}
-            path={routes.compareModels.getPath()}
-            component={CompareModelsPage}
-          />
-        </Switch>
-      ),
+      success: () => this.props.children,
     });
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(withRouter(ProjectDetailsPage));
+const ConnectedLoadProject = withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(LoadProject)
+);
+
+export const withLoadProject = makeWrapperComponent(ConnectedLoadProject);
+
+export default ConnectedLoadProject;

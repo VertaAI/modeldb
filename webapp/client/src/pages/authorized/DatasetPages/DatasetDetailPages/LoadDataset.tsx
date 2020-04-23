@@ -21,10 +21,7 @@ import {
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
 
-import CompareDatasetVersionsPage from './CompareDatasetVersionsPage/CompareDatasetVersionsPage';
-import DatasetSummaryPage from './DatasetSummaryPage/DatasetSummaryPage';
-import DatasetVersionPage from './DatasetVersionPage/DatasetVersionPage';
-import DatasetVersionsPage from './DatasetVersionsPage/DatasetVersionsPage';
+import makeWrapperComponent from 'core/shared/view/elements/makeWrapperComponent';
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
@@ -51,9 +48,9 @@ type RouteProps = RouteComponentProps<
 
 type AllProps = RouteProps &
   ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
+  ReturnType<typeof mapDispatchToProps> & { children: React.ReactNode };
 
-class DatasetDetailPages extends React.Component<AllProps> {
+class LoadDataset extends React.Component<AllProps> {
   public componentDidMount() {
     this.props.loadDataset(
       this.props.match.params.datasetId,
@@ -89,35 +86,16 @@ class DatasetDetailPages extends React.Component<AllProps> {
           <PageCommunicationError error={error} />
         </AuthorizedLayout>
       ),
-      success: () => (
-        <Switch>
-          <Route
-            exact={true}
-            path={routes.datasetSummary.getPath()}
-            component={DatasetSummaryPage}
-          />
-          <Route
-            exact={true}
-            path={routes.datasetVersions.getPath()}
-            component={DatasetVersionsPage}
-          />
-          <Route
-            exact={true}
-            path={routes.datasetVersion.getPath()}
-            component={DatasetVersionPage}
-          />
-          <Route
-            exact={true}
-            path={routes.compareDatasetVersions.getPath()}
-            component={CompareDatasetVersionsPage}
-          />
-        </Switch>
-      ),
+      success: () => this.props.children,
     });
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(withRouter(DatasetDetailPages));
+const ConnectedDetailPages = withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(LoadDataset)
+);
+
+export const withLoadDataset = makeWrapperComponent(ConnectedDetailPages);

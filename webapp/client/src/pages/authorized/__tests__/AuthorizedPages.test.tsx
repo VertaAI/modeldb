@@ -1,17 +1,14 @@
 import * as React from 'react';
 
 import { flushAllPromisesFor } from 'core/shared/utils/tests/integrations/flushAllPromisesFor';
-import { IWorkspace, IUserWorkspaces } from 'models/Workspace';
+import { IUserWorkspaces } from 'models/Workspace';
 import routes from 'routes';
 import makeMountComponentWithPredefinedData from 'utils/tests/integrations/makeMountComponentWithPredefinedData';
 import { userWorkspacesWithCurrentUser } from 'utils/tests/mocks/models/workspace';
 
 import { withAct } from 'core/shared/utils/tests/react/helpers';
-import DatasetDetailPages from '../DatasetPages/DatasetDetailPages/DatasetDetailPages';
-import DatasetsPage from '../DatasetPages/DatasetsPage';
 import Pages from '../index';
 import NotFoundPage from '../NotFoundPage/NotFoundPage';
-import ProjectDetailsPage from '../ProjectsPages/ProjectDetailsPages/ProjectDetailsPage';
 import ProjectsPage from '../ProjectsPages/ProjectsPage/ProjectsPage';
 
 const userWorkspaces: IUserWorkspaces = {

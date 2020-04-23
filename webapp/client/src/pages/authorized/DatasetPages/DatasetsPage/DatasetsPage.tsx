@@ -29,8 +29,8 @@ import {
 import { IApplicationState } from 'store/store';
 
 import styles from './DatasetsPage.module.css';
-import DeletingDatasetsManager from './DeletingDatasetsManager/DeletingDatasetsManager';
-import DatasetsPagesLayout from './shared/DatasetsPagesLayout/DatasetsPagesLayout';
+import DeletingDatasetsManager from '../DeletingDatasetsManager/DeletingDatasetsManager';
+import DatasetsPagesLayout from '../shared/DatasetsPagesLayout/DatasetsPagesLayout';
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
