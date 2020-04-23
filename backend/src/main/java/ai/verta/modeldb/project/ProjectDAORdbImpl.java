@@ -33,7 +33,6 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
@@ -1086,39 +1085,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
-        if (predicate.getKey().equals(ModelDBConstants.ID)) {
-          if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE)
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
-          }
-          String projectId = predicate.getValue().getStringValue();
-          if ((accessibleProjectIds.isEmpty() || !accessibleProjectIds.contains(projectId))
-              && roleService.IsImplemented()) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.PERMISSION_DENIED_VALUE)
-                    .setMessage(
-                        "Access is denied. User is unauthorized for given Project entity ID : "
-                            + projectId)
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
-          }
-        }
-
-        if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
-          Status statusMessage =
-              Status.newBuilder()
-                  .setCode(Code.INVALID_ARGUMENT_VALUE)
-                  .setMessage("Workspace name OR type not supported as predicate")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(statusMessage);
-        }
+        RdbmsUtils.validateEntityIdInPredicates(
+            ModelDBConstants.PROJECTS, accessibleProjectIds, predicate, roleService);
       }
 
       String workspaceName = queryParameters.getWorkspaceName();
@@ -1154,28 +1122,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         }
       } else {
         if (projectVisibility.equals(ProjectVisibility.PRIVATE)) {
-          UserInfo userInfo =
-              host != null && host.isUser()
-                  ? (UserInfo) host.getCollaboratorMessage()
-                  : currentLoginUserInfo;
-          if (userInfo != null) {
-            List<KeyValueQuery> workspacePredicates =
-                ModelDBUtils.getKeyValueQueriesByWorkspace(roleService, userInfo, workspaceName);
-            if (workspacePredicates.size() > 0) {
-              Predicate privateWorkspacePredicate =
-                  builder.equal(
-                      projectRoot.get(ModelDBConstants.WORKSPACE),
-                      workspacePredicates.get(0).getValue().getStringValue());
-              Predicate privateWorkspaceTypePredicate =
-                  builder.equal(
-                      projectRoot.get(ModelDBConstants.WORKSPACE_TYPE),
-                      workspacePredicates.get(1).getValue().getNumberValue());
-              Predicate privatePredicate =
-                  builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
-
-              finalPredicatesList.add(privatePredicate);
-            }
-          }
+          RdbmsUtils.getWorkspacePredicates(
+              host,
+              currentLoginUserInfo,
+              builder,
+              projectRoot,
+              finalPredicatesList,
+              workspaceName,
+              roleService);
         }
       }
 
