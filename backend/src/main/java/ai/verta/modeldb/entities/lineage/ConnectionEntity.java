@@ -1,6 +1,5 @@
 package ai.verta.modeldb.entities.lineage;
 
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.lineage.LineageEntryContainer;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
