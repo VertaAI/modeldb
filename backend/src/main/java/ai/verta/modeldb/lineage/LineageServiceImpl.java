@@ -192,10 +192,42 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         versioningBlobElement);
   }
 
+  private static class CommitMap {
+    Map<String, Set<String>> commitMap = new HashMap<>();
+
+    public boolean containsKey(String commitSha) {
+      return commitMap.containsKey(commitSha);
+    }
+
+    public void put(String commitSha, HashSet<String> blobs) {
+      commitMap.put(commitSha, blobs);
+    }
+
+    public Set<String> get(String commitSha) {
+      return commitMap.get(commitSha);
+    }
+  }
+
+  private static class RepositoryContainer {
+    Map.Entry<RepositoryEntity, CommitMap> repository;
+
+    RepositoryContainer(RepositoryEntity repo) {
+      repository = new AbstractMap.SimpleEntry<>(repo, new CommitMap());
+    }
+
+    public CommitMap getValue() {
+      return repository.getValue();
+    }
+
+    public RepositoryEntity getKey() {
+      return repository.getKey();
+    }
+  }
+
   private void checkResourcesExists(Session session, List<LineageEntry> lineageEntries)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     Set<String> experimentRuns = new HashSet<>();
-    Map<Long, Map.Entry<RepositoryEntity, Map<String, Set<String>>>> blobs = new HashMap<>();
+    Map<Long, RepositoryContainer> blobs = new HashMap<>();
     for (LineageEntry lineageEntry : lineageEntries) {
       switch (lineageEntry.getDescriptionCase()) {
         case EXPERIMENT_RUN:
@@ -212,16 +244,15 @@ public class LineageServiceImpl extends LineageServiceImplBase {
           VersioningLineageEntry blob = lineageEntry.getBlob();
           long repositoryId = blob.getRepositoryId();
           RepositoryEntity repo;
-          Map<String, Set<String>> result;
+          CommitMap result;
           if (!blobs.containsKey(repositoryId)) {
             repo =
                 repositoryDAO.getRepositoryById(
                     session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
-            blobs.put(repositoryId, new AbstractMap.SimpleEntry<>(repo, new HashMap<>()));
+            blobs.put(repositoryId, new RepositoryContainer(repo));
             result = blobs.get(repositoryId).getValue();
           } else {
-            Entry<RepositoryEntity, Map<String, Set<String>>> entityMapEntry =
-                blobs.get(repositoryId);
+            RepositoryContainer entityMapEntry = blobs.get(repositoryId);
             repo = entityMapEntry.getKey();
             result = entityMapEntry.getValue();
           }

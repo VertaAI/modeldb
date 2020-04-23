@@ -482,6 +482,7 @@ public class LineageDAORdbImpl implements LineageDAO {
             CONNECTION_TYPE_ANY,
             connectionEntity.getEntityId(),
             connectionEntity.getEntityType());
+    // validate if current entry is used by more than 1 connection, if not, delete it
     if (connectionEntities.size() < 2) {
       switch (connectionEntity.getEntityType()) {
         case ENTITY_TYPE_EXPERIMENT_RUN:
