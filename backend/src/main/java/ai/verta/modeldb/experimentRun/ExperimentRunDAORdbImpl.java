@@ -78,12 +78,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -1229,73 +1223,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       LOGGER.trace("Starting to find experiements");
 
-      CriteriaBuilder builder = session.getCriteriaBuilder();
-      // Using FROM and JOIN
-      CriteriaQuery<ExperimentRunEntity> criteriaQuery =
-          builder.createQuery(ExperimentRunEntity.class);
-      Root<ExperimentRunEntity> experimentRunRoot = criteriaQuery.from(ExperimentRunEntity.class);
-      experimentRunRoot.alias("exp");
-      List<Predicate> finalPredicatesList = new ArrayList<>();
-
-      if (!queryParameters.getProjectId().isEmpty()) {
-        Expression<String> exp = experimentRunRoot.get(ModelDBConstants.PROJECT_ID);
-        Predicate predicate2 = builder.equal(exp, queryParameters.getProjectId());
-        finalPredicatesList.add(predicate2);
-      }
-
-      if (!queryParameters.getExperimentId().isEmpty()) {
-        Expression<String> exp = experimentRunRoot.get(ModelDBConstants.EXPERIMENT_ID);
-        Predicate predicate2 = builder.equal(exp, queryParameters.getExperimentId());
-        finalPredicatesList.add(predicate2);
-      }
-
-      if (!queryParameters.getExperimentRunIdsList().isEmpty()) {
-        Expression<String> exp = experimentRunRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(queryParameters.getExperimentRunIdsList());
-        finalPredicatesList.add(predicate2);
-      }
-
-      LOGGER.trace("Added entity predicates");
-      List<KeyValueQuery> predicates = queryParameters.getPredicatesList();
-      String entityName = "experimentRunEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, experimentRunRoot);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
-      }
-
-      Order orderBy =
-          RdbmsUtils.getOrderBasedOnSortKey(
-              queryParameters.getSortKey(),
-              queryParameters.getAscending(),
-              builder,
-              experimentRunRoot,
-              entityName);
-
-      Predicate[] predicateArr = new Predicate[finalPredicatesList.size()];
-      for (int index = 0; index < finalPredicatesList.size(); index++) {
-        predicateArr[index] = finalPredicatesList.get(index);
-      }
-
-      Predicate predicateWhereCause = builder.and(predicateArr);
-      criteriaQuery.select(experimentRunRoot);
-      criteriaQuery.where(predicateWhereCause);
-      criteriaQuery.orderBy(orderBy);
+      FindEntitiesQuery findEntitiesQuery =
+          new FindEntitiesQuery.FindEntitiesHQLQueryBuilder(
+                  session, null, ExperimentRunEntity.class.getSimpleName())
+              .setProjectIds(Collections.singletonList(queryParameters.getProjectId()))
+              .setExperimentIds(Collections.singletonList(queryParameters.getExperimentId()))
+              .setExperimentRunIds(queryParameters.getExperimentRunIdsList())
+              .setPredicates(queryParameters.getPredicatesList())
+              .setPageLimit(queryParameters.getPageLimit())
+              .setPageNumber(queryParameters.getPageNumber())
+              .setSortKey(Collections.singletonList(queryParameters.getSortKey()))
+              .build();
 
       LOGGER.trace("Creating criteria query");
-      Query query = session.createQuery(criteriaQuery);
+      Query query = findEntitiesQuery.getFindEntitiesHQLQuery();
       LOGGER.debug("Final experimentRuns final query : {}", query.getQueryString());
-      if (queryParameters.getPageNumber() != 0 && queryParameters.getPageLimit() != 0) {
-        // Calculate number of documents to skip
-        int skips = queryParameters.getPageLimit() * (queryParameters.getPageNumber() - 1);
-        query.setFirstResult(skips);
-        query.setMaxResults(queryParameters.getPageLimit());
-      }
-
-      LOGGER.trace("Final query generated");
       List<ExperimentRunEntity> experimentRunEntities = query.list();
       LOGGER.debug("Final experimentRuns list size : {}", experimentRunEntities.size());
+
       List<ExperimentRun> experimentRuns = new ArrayList<>();
       if (!experimentRunEntities.isEmpty()) {
 
@@ -1349,7 +1294,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
-      long totalRecords = RdbmsUtils.count(session, experimentRunRoot, criteriaQuery);
+      long totalRecords = (long) findEntitiesQuery.getFindEntitiesCountHQLQuery().uniqueResult();
       LOGGER.debug("ExperimentRuns Total record count : {}", totalRecords);
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
