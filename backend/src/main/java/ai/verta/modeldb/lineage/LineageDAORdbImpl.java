@@ -100,7 +100,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       if (id == 0) {
         throw new ModelDBException("Id not specified", Code.INVALID_ARGUMENT);
       }
-      List connectionEntitiesById = getConnectionEntitiesById(session, id);
+      List<ConnectionEntity> connectionEntitiesById = getConnectionEntitiesById(session, id);
       Map.Entry<
               Map<LineageEntryContainer, ConnectionEntity>,
               Map<LineageEntryContainer, ConnectionEntity>>
@@ -136,11 +136,10 @@ public class LineageDAORdbImpl implements LineageDAO {
   private Entry<
           Map<LineageEntryContainer, ConnectionEntity>,
           Map<LineageEntryContainer, ConnectionEntity>>
-      getInputOutputs(Session session, List result) {
+      getInputOutputs(Session session, List<ConnectionEntity> result) {
     Map<LineageEntryContainer, ConnectionEntity> inputInDatabase = new HashMap<>();
     Map<LineageEntryContainer, ConnectionEntity> outputInDatabase = new HashMap<>();
-    for (Object entity : result) {
-      ConnectionEntity connectionEntity = (ConnectionEntity) entity;
+    for (ConnectionEntity connectionEntity : result) {
       if (connectionEntity.getConnectionType() == CONNECTION_TYPE_INPUT) {
         inputInDatabase.put(connectionEntity.getLineageElement(session), connectionEntity);
       } else {
@@ -167,12 +166,33 @@ public class LineageDAORdbImpl implements LineageDAO {
     CriteriaQuery<ConnectionEntity> criteriaQuery =
         builder.createQuery(ConnectionEntity.class);
     Root<ConnectionEntity> root = criteriaQuery.from(ConnectionEntity.class);
-    final Predicate idPredicate = root.get("id").in(id);
+    final Predicate idPredicate = root.get(ConnectionEntity.ID).in(id);
     final Predicate finalPredicate;
     if (connectionType != CONNECTION_TYPE_ANY) {
-      finalPredicate = builder.and(idPredicate, root.get("connectionType").in(connectionType));
+      finalPredicate = builder.and(idPredicate, root.get(ConnectionEntity.CONNECTION_TYPE).in(connectionType));
     } else {
       finalPredicate = idPredicate;
+    }
+    criteriaQuery.select(root);
+    criteriaQuery.where(finalPredicate);
+    Query<ConnectionEntity> query = session.createQuery(criteriaQuery);
+    return query.list();
+  }
+
+  private List<ConnectionEntity> getConnectionEntities(
+      Session session, int connectionType, Long entityId, int entityType) {
+    CriteriaBuilder builder = session.getCriteriaBuilder();
+    CriteriaQuery<ConnectionEntity> criteriaQuery =
+        builder.createQuery(ConnectionEntity.class);
+    Root<ConnectionEntity> root = criteriaQuery.from(ConnectionEntity.class);
+    final Predicate entityIdPredicate = root.get(ConnectionEntity.ENTITY_ID).in(entityId);
+    final Predicate entityTypePredicate = root.get(ConnectionEntity.ENTITY_TYPE).in(entityType);
+    final Predicate combinedPredicate = builder.and(entityIdPredicate, entityTypePredicate);
+    final Predicate finalPredicate;
+    if (connectionType != CONNECTION_TYPE_ANY) {
+      finalPredicate = builder.and(combinedPredicate, root.get(ConnectionEntity.CONNECTION_TYPE).in(connectionType));
+    } else {
+      finalPredicate = combinedPredicate;
     }
     criteriaQuery.select(root);
     criteriaQuery.where(finalPredicate);
@@ -224,9 +244,9 @@ public class LineageDAORdbImpl implements LineageDAO {
       default:
         throw new ModelDBException("Unknown entry type");
     }
-    List list = getConnectionEntities(session, invert(connectionType), entityId, entityType);
-    for (Object entity : list) {
-      ConnectionEntity connectionEntity = (ConnectionEntity) entity;
+    List<ConnectionEntity> connectionEntities = getConnectionEntities(session, invert(connectionType), entityId,
+        entityType);
+    for (ConnectionEntity connectionEntity : connectionEntities) {
       List<ConnectionEntity> connectionEntitiesById = getConnectionEntitiesByIdAndConnectionType(
           session, connectionEntity.getId(), connectionType);
       Map<LineageEntryContainer, ConnectionEntity> inputOrOutputInDatabase =
@@ -238,23 +258,6 @@ public class LineageDAORdbImpl implements LineageDAO {
               .collect(Collectors.toList()));
     }
     return result;
-  }
-
-  private List getConnectionEntities(
-      Session session, int connectionType, Long entityId, int entityType) {
-    String queryString;
-    queryString =
-        "from "
-            + ConnectionEntity.class.getSimpleName()
-            + " where entityId = "
-            + entityId
-            + " and entity_type = "
-            + entityType;
-    if (connectionType != CONNECTION_TYPE_ANY) {
-      queryString += " and connectionType = " + connectionType;
-    }
-    Query query = session.createQuery(queryString);
-    return query.list();
   }
 
   private LineageVersioningBlobEntity getLineageVersioningBlobEntity(
@@ -464,12 +467,11 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void deleteConnectionEntity(Session session, ConnectionEntity connectionEntity) {
-    List connectionEntities =
-        getConnectionEntities(
-            session,
-            CONNECTION_TYPE_ANY,
-            connectionEntity.getEntityId(),
-            connectionEntity.getEntityType());
+    List<ConnectionEntity> connectionEntities = getConnectionEntities(
+        session,
+        CONNECTION_TYPE_ANY,
+        connectionEntity.getEntityId(),
+        connectionEntity.getEntityType());
     if (connectionEntities.size() < 2) {
       switch (connectionEntity.getEntityType()) {
         case ENTITY_TYPE_EXPERIMENT_RUN:
@@ -532,17 +534,16 @@ public class LineageDAORdbImpl implements LineageDAO {
         throw new ModelDBException("Unknown lineage type");
     }
 
-    List connectionEntities =
-        getConnectionEntities(session, invert(connectionType), entityId, entityType);
+    List<ConnectionEntity> connectionEntities = getConnectionEntities(session,
+        invert(connectionType), entityId, entityType);
     if (connectionExists) {
       if (connectionType == CONNECTION_TYPE_OUTPUT
-          && !((ConnectionEntity) connectionEntities.get(0)).getId().equals(id)) {
+          && !connectionEntities.get(0).getId().equals(id)) {
         throw new ModelDBException(
             "Specified lineage entry already has an output connection", Code.INVALID_ARGUMENT);
       }
     }
-    for (Object entity : connectionEntities) {
-      ConnectionEntity connectionEntity = (ConnectionEntity) entity;
+    for (ConnectionEntity connectionEntity : connectionEntities) {
       if (connectionEntity.getId().equals(id)) {
         return;
       }

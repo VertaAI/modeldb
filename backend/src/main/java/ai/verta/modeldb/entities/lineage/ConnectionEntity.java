@@ -25,6 +25,11 @@ public class ConnectionEntity implements Serializable {
   public static final int ENTITY_TYPE_EXPERIMENT_RUN = 1;
   public static final int ENTITY_TYPE_VERSIONING_BLOB = 2;
 
+  public static final String ID = "id";
+  public static final String ENTITY_ID = "entityId";
+  public static final String CONNECTION_TYPE = "connectionType";
+  public static final String ENTITY_TYPE = "entityType";
+
   @Id
   @Column(name = "element_id")
   private Long id;
