@@ -154,14 +154,14 @@ public class FindRepositoriesQuery {
                     .append(" ")
                     .append(joinAlias)
                     .append(" ON ");
-                String[] joinCauses = new String[2];
-                joinCauses[0] =
+                String[] joinClauses = new String[2];
+                joinClauses[0] =
                     joinAlias + ".id.entity_hash = " + alias + "." + ModelDBConstants.ID;
-                joinCauses[1] =
+                joinClauses[1] =
                     joinAlias
                         + ".id.entity_type = "
                         + IDTypeEnum.IDType.VERSIONING_REPOSITORY.getNumber();
-                setPredicatesWithQueryOperator(joinClause, "AND", joinCauses);
+                setPredicatesWithQueryOperator(joinClause, "AND", joinClauses);
               }
               index[0]++;
             });
