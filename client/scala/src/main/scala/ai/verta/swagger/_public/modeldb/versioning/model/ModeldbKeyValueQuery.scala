@@ -16,23 +16,23 @@ import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbGitSnapshot (
-  filepaths: Option[List[String]] = None,
-  hash: Option[String] = None,
-  is_dirty: Option[TernaryEnumTernary] = None,
-  repo: Option[String] = None
+case class ModeldbKeyValueQuery (
+  key: Option[String] = None,
+  operator: Option[OperatorEnumOperator] = None,
+  value: Option[GenericObject] = None,
+  value_type: Option[ValueTypeEnumValueType] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbGitSnapshot.toJson(this)
+  def toJson(): JValue = ModeldbKeyValueQuery.toJson(this)
 }
 
-object ModeldbGitSnapshot {
-  def toJson(obj: ModeldbGitSnapshot): JObject = {
+object ModeldbKeyValueQuery {
+  def toJson(obj: ModeldbKeyValueQuery): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.filepaths.map(x => JField("filepaths", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.hash.map(x => JField("hash", JString(x))),
-        obj.is_dirty.map(x => JField("is_dirty", ((x: TernaryEnumTernary) => TernaryEnumTernary.toJson(x))(x))),
-        obj.repo.map(x => JField("repo", JString(x)))
+        obj.key.map(x => JField("key", JString(x))),
+        obj.operator.map(x => JField("operator", ((x: OperatorEnumOperator) => OperatorEnumOperator.toJson(x))(x))),
+        obj.value.map(x => JField("value", ((x: GenericObject) => x.toJson())(x))),
+        obj.value_type.map(x => JField("value_type", ((x: ValueTypeEnumValueType) => ValueTypeEnumValueType.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -40,16 +40,16 @@ object ModeldbGitSnapshot {
     )
   }
 
-  def fromJson(value: JValue): ModeldbGitSnapshot =
+  def fromJson(value: JValue): ModeldbKeyValueQuery =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbGitSnapshot(
+        ModeldbKeyValueQuery(
           // TODO: handle required
-          filepaths = fieldsMap.get("filepaths").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          hash = fieldsMap.get("hash").map(JsonConverter.fromJsonString),
-          is_dirty = fieldsMap.get("is_dirty").map(TernaryEnumTernary.fromJson),
-          repo = fieldsMap.get("repo").map(JsonConverter.fromJsonString)
+          key = fieldsMap.get("key").map(JsonConverter.fromJsonString),
+          operator = fieldsMap.get("operator").map(OperatorEnumOperator.fromJson),
+          value = fieldsMap.get("value").map(GenericObject.fromJson),
+          value_type = fieldsMap.get("value_type").map(ValueTypeEnumValueType.fromJson)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
