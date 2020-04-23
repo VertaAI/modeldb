@@ -2578,6 +2578,82 @@
         ]
       }
     },
+    "/versioning/workspaces/{workspace_name}/findRepositories": {
+      "post": {
+        "operationId": "findRepositories",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningFindRepositoriesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningFindRepositories"
+            }
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
+    "/versioning/workspaces/{workspace_name}/findRepositoriesBlobs": {
+      "post": {
+        "operationId": "findRepositoriesBlobs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/versioningFindRepositoriesBlobsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/versioningFindRepositoriesBlobs"
+            }
+          }
+        ],
+        "tags": [
+          "VersioningService"
+        ]
+      }
+    },
     "/versioning/workspaces/{workspace_name}/repositories": {
       "get": {
         "summary": "CRUD for repositories",
@@ -2648,6 +2724,21 @@
         "CONFLICTED"
       ],
       "default": "UNKNOWN"
+    },
+    "OperatorEnumOperator": {
+      "type": "string",
+      "enum": [
+        "EQ",
+        "NE",
+        "GT",
+        "GTE",
+        "LT",
+        "LTE",
+        "CONTAIN",
+        "NOT_CONTAIN",
+        "IN"
+      ],
+      "default": "EQ"
     },
     "RepositoryVisibilityEnumRepositoryVisibility": {
       "type": "string",
@@ -2878,6 +2969,23 @@
         }
       }
     },
+    "modeldbKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
     "modeldbObservation": {
       "type": "object",
       "properties": {
@@ -3011,6 +3119,17 @@
           "$ref": "#/definitions/versioningBlob"
         }
       }
+    },
+    "versioningBlobType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "DATASET_BLOB",
+        "ENVIRONMENT_BLOB",
+        "CODE_BLOB",
+        "CONFIG_BLOB"
+      ],
+      "default": "UNKNOWN"
     },
     "versioningCodeBlob": {
       "type": "object",
@@ -3334,6 +3453,109 @@
         },
         "C": {
           "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
+        }
+      }
+    },
+    "versioningFindRepositories": {
+      "type": "object",
+      "properties": {
+        "repo_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "workspace_name": {
+          "type": "string"
+        },
+        "predicates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbKeyValueQuery"
+          }
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "For pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "If any of the request parameters are not set then backend will return all the repositories.\nthe query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC"
+    },
+    "versioningFindRepositoriesBlobs": {
+      "type": "object",
+      "properties": {
+        "repo_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "workspace_name": {
+          "type": "string"
+        },
+        "location_prefix": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blob_type": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningBlobType"
+          }
+        },
+        "commits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "For pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "versioningFindRepositoriesBlobsResponse": {
+      "type": "object",
+      "properties": {
+        "blobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningBlobExpanded"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "versioningFindRepositoriesResponse": {
+      "type": "object",
+      "properties": {
+        "repositories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningRepository"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

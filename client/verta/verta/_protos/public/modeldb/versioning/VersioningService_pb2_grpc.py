@@ -139,6 +139,16 @@ class VersioningServiceStub(object):
         request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.DeleteTagRequest.SerializeToString,
         response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.DeleteTagRequest.Response.FromString,
         )
+    self.findRepositories = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/findRepositories',
+        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositories.SerializeToString,
+        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositories.Response.FromString,
+        )
+    self.findRepositoriesBlobs = channel.unary_unary(
+        '/ai.verta.modeldb.versioning.VersioningService/findRepositoriesBlobs',
+        request_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositoriesBlobs.SerializeToString,
+        response_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositoriesBlobs.Response.FromString,
+        )
 
 
 class VersioningServiceServicer(object):
@@ -320,6 +330,20 @@ class VersioningServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def findRepositories(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def findRepositoriesBlobs(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_VersioningServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -447,6 +471,16 @@ def add_VersioningServiceServicer_to_server(servicer, server):
           servicer.DeleteTag,
           request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.DeleteTagRequest.FromString,
           response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.DeleteTagRequest.Response.SerializeToString,
+      ),
+      'findRepositories': grpc.unary_unary_rpc_method_handler(
+          servicer.findRepositories,
+          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositories.FromString,
+          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositories.Response.SerializeToString,
+      ),
+      'findRepositoriesBlobs': grpc.unary_unary_rpc_method_handler(
+          servicer.findRepositoriesBlobs,
+          request_deserializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositoriesBlobs.FromString,
+          response_serializer=protos_dot_public_dot_modeldb_dot_versioning_dot_VersioningService__pb2.FindRepositoriesBlobs.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
