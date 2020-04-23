@@ -1102,10 +1102,17 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
     if (!request.getBlobTypeList().isEmpty()) {
       if (isNeedOperator) {
-        whereClause.append(" AND ");
+        whereClause.append(" AND (");
       }
-      whereClause.append("folderElm.element_type IN (:elementTypes)");
-      parametersMap.put("elementTypes", request.getBlobTypeList());
+      for (int index = 0; index < request.getBlobTypeList().size(); index++){
+        String keyElementType = "elementTypes_" + index;
+        whereClause.append("folderElm.element_type = :").append(keyElementType).append(" ");
+        parametersMap.put(keyElementType, request.getBlobTypeList());
+        if (index < request.getBlobTypeList().size() - 1){
+          whereClause.append(" OR ");
+        }
+      }
+      whereClause.append(") ");
       isNeedOperator = true;
     }
 
