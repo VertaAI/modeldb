@@ -20,8 +20,8 @@ public interface LineageDAO {
    */
   AddLineage.Response addLineage(
       AddLineage addLineage,
-      ExistsCheckConsumer existsCheckConsumer,
-      BlobHashInCommitFunction blobHashInCommitFunction)
+      ResourceExistsCheckConsumer resourceExistsCheckConsumer,
+      CommitHashToBlobHashFunction commitHashToBlobHashFunction)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 
   /**
@@ -32,7 +32,7 @@ public interface LineageDAO {
    * @throws ModelDBException wrong data format
    */
   DeleteLineage.Response deleteLineage(
-      DeleteLineage deleteLineage, BlobHashInCommitFunction blobHashInCommitFunction)
+      DeleteLineage deleteLineage, CommitHashToBlobHashFunction commitHashToBlobHashFunction)
       throws ModelDBException, InvalidProtocolBufferException;
 
   /**
@@ -44,8 +44,8 @@ public interface LineageDAO {
    */
   FindAllInputs.Response findAllInputs(
       FindAllInputs findAllInputs,
-      BlobHashInCommitFunction blobHashInCommitFunction,
-      CommitInBlobHashFunction commitInBlobHashFunction)
+      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
+      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
       throws ModelDBException, InvalidProtocolBufferException;
 
   /**
@@ -57,8 +57,8 @@ public interface LineageDAO {
    */
   FindAllOutputs.Response findAllOutputs(
       FindAllOutputs findAllOutputs,
-      BlobHashInCommitFunction blobHashInCommitFunction,
-      CommitInBlobHashFunction commitInBlobHashFunction)
+      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
+      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
       throws ModelDBException, InvalidProtocolBufferException;
 
   /**
@@ -70,7 +70,7 @@ public interface LineageDAO {
    */
   FindAllInputsOutputs.Response findAllInputsOutputs(
       FindAllInputsOutputs findAllInputsOutputs,
-      BlobHashInCommitFunction blobHashInCommitFunction,
-      CommitInBlobHashFunction commitInBlobHashFunction)
+      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
+      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
       throws ModelDBException, InvalidProtocolBufferException;
 }

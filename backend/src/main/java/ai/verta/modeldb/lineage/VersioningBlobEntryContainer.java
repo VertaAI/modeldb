@@ -12,14 +12,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 
-public class VersioningBlobElement extends LineageElement {
-  private static final Logger LOGGER = LogManager.getLogger(VersioningBlobElement.class);
+public class VersioningBlobEntryContainer extends LineageEntryContainer {
+  private static final Logger LOGGER = LogManager.getLogger(VersioningBlobEntryContainer.class);
 
   private final Long repositoryId;
   private final String blobSha;
   private final String blobType;
 
-  public VersioningBlobElement(Long repositoryId, String blobSha, String blobType) {
+  public VersioningBlobEntryContainer(Long repositoryId, String blobSha, String blobType) {
     this.repositoryId = repositoryId;
     this.blobSha = blobSha;
     this.blobType = blobType;
@@ -33,7 +33,7 @@ public class VersioningBlobElement extends LineageElement {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    VersioningBlobElement that = (VersioningBlobElement) o;
+    VersioningBlobEntryContainer that = (VersioningBlobEntryContainer) o;
     return Objects.equals(blobType, that.blobType)
         && Objects.equals(blobSha, that.blobSha)
         && Objects.equals(repositoryId, that.repositoryId);
@@ -45,10 +45,11 @@ public class VersioningBlobElement extends LineageElement {
   }
 
   @Override
-  public LineageEntry toProto(Session session, CommitInBlobHashFunction commitInBlobHashFunction) {
+  public LineageEntry toProto(
+      Session session, BlobHashToCommitHashFunction blobHashToCommitHashFunction) {
     VersioningLineageEntry result;
     try {
-      result = commitInBlobHashFunction.apply(session, this);
+      result = blobHashToCommitHashFunction.apply(session, this);
     } catch (ModelDBException e) {
       String errorMessage = "Unexpected blob to commit conversion from the database error";
       LOGGER.error(errorMessage);

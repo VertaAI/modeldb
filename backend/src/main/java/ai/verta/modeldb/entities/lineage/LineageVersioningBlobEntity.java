@@ -1,7 +1,7 @@
 package ai.verta.modeldb.entities.lineage;
 
-import ai.verta.modeldb.lineage.LineageElement;
-import ai.verta.modeldb.lineage.VersioningBlobElement;
+import ai.verta.modeldb.lineage.LineageEntryContainer;
+import ai.verta.modeldb.lineage.VersioningBlobEntryContainer;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -39,7 +39,7 @@ public class LineageVersioningBlobEntity {
     return id;
   }
 
-  public LineageElement getElement() {
-    return new VersioningBlobElement(repositoryId, blobSha, blobType);
+  public LineageEntryContainer getEntry() {
+    return new VersioningBlobEntryContainer(repositoryId, blobSha, blobType);
   }
 }

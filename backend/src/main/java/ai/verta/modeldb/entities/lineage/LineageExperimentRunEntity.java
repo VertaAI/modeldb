@@ -1,7 +1,7 @@
 package ai.verta.modeldb.entities.lineage;
 
-import ai.verta.modeldb.lineage.ExperimentRunElement;
-import ai.verta.modeldb.lineage.LineageElement;
+import ai.verta.modeldb.lineage.ExperimentRunEntryContainer;
+import ai.verta.modeldb.lineage.LineageEntryContainer;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,7 +34,7 @@ public class LineageExperimentRunEntity {
     return experimentRunId;
   }
 
-  public LineageElement getElement() {
-    return new ExperimentRunElement(experimentRunId);
+  public LineageEntryContainer getEntry() {
+    return new ExperimentRunEntryContainer(experimentRunId);
   }
 }

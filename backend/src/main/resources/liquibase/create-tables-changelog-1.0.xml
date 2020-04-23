@@ -1241,7 +1241,7 @@
 
     <changeSet author="lezhevg" id="new_lineage_id">
         <createTable tableName="lineage_element">
-            <column name="id" type="int8" autoIncrement="true">
+            <column name="id" type="int8" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>

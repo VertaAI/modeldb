@@ -6,17 +6,19 @@ import ai.verta.modeldb.VersioningLineageEntry;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import org.hibernate.Session;
 
-public abstract class LineageElement {
-  static LineageElement fromProto(
-      Session session, LineageEntry lineageEntry, BlobHashInCommitFunction blobHashInCommitFunction)
+public abstract class LineageEntryContainer {
+  static LineageEntryContainer fromProto(
+      Session session,
+      LineageEntry lineageEntry,
+      CommitHashToBlobHashFunction commitHashToBlobHashFunction)
       throws ModelDBException {
     switch (lineageEntry.getDescriptionCase()) {
       case EXPERIMENT_RUN:
-        return new ExperimentRunElement(lineageEntry.getExperimentRun());
+        return new ExperimentRunEntryContainer(lineageEntry.getExperimentRun());
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
-        InternalFolderElementEntity result = blobHashInCommitFunction.apply(session, blob);
-        return new VersioningBlobElement(
+        InternalFolderElementEntity result = commitHashToBlobHashFunction.apply(session, blob);
+        return new VersioningBlobEntryContainer(
             blob.getRepositoryId(), result.getElement_sha(), result.getElement_type());
       default:
         throw new ModelDBException("Unknown lineage type");
@@ -24,5 +26,5 @@ public abstract class LineageElement {
   }
 
   public abstract LineageEntry toProto(
-      Session session, CommitInBlobHashFunction commitInBlobHashFunction);
+      Session session, BlobHashToCommitHashFunction blobHashToCommitHashFunction);
 }

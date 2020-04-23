@@ -10,7 +10,7 @@ import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.lineage.VersioningBlobElement;
+import ai.verta.modeldb.lineage.VersioningBlobEntryContainer;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
 import ai.verta.modeldb.versioning.GetCommitComponentRequest.Response;
@@ -825,7 +825,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   public VersioningLineageEntry getVersioningEntryByBlob(
       Session session,
       RepositoryFunction repositoryFunction,
-      VersioningBlobElement versioningBlobElement)
+      VersioningBlobEntryContainer versioningBlobElement)
       throws ModelDBException {
     RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
     String blobSha = versioningBlobElement.getBlobSha();

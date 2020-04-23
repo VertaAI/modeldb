@@ -185,7 +185,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   }
 
   private VersioningLineageEntry getCommitFromBlob(
-      Session session, VersioningBlobElement versioningBlobElement) throws ModelDBException {
+      Session session, VersioningBlobEntryContainer versioningBlobElement) throws ModelDBException {
     return blobDAO.getVersioningEntryByBlob(
         session,
         session1 -> getRepositoryById(session, versioningBlobElement.getRepositoryId()),

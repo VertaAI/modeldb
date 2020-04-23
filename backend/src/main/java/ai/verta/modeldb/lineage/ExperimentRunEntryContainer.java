@@ -4,11 +4,11 @@ import ai.verta.modeldb.LineageEntry;
 import java.util.Objects;
 import org.hibernate.Session;
 
-public class ExperimentRunElement extends LineageElement {
+public class ExperimentRunEntryContainer extends LineageEntryContainer {
 
   private final String experimentRunId;
 
-  public ExperimentRunElement(String experimentRunId) {
+  public ExperimentRunEntryContainer(String experimentRunId) {
     this.experimentRunId = experimentRunId;
   }
 
@@ -20,7 +20,7 @@ public class ExperimentRunElement extends LineageElement {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ExperimentRunElement that = (ExperimentRunElement) o;
+    ExperimentRunEntryContainer that = (ExperimentRunEntryContainer) o;
     return Objects.equals(experimentRunId, that.experimentRunId);
   }
 
@@ -30,7 +30,8 @@ public class ExperimentRunElement extends LineageElement {
   }
 
   @Override
-  public LineageEntry toProto(Session session, CommitInBlobHashFunction commitInBlobHashFunction) {
+  public LineageEntry toProto(
+      Session session, BlobHashToCommitHashFunction blobHashToCommitHashFunction) {
     return LineageEntry.newBuilder().setExperimentRun(experimentRunId).build();
   }
 }

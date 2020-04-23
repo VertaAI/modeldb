@@ -1,7 +1,10 @@
 package ai.verta.modeldb.entities.lineage;
 
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.lineage.LineageElement;
+import ai.verta.modeldb.lineage.LineageEntryContainer;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.grpc.protobuf.StatusProto;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.Column;
@@ -13,7 +16,9 @@ import org.hibernate.Session;
 @Entity
 @Table(name = "lineage_connection")
 public class ConnectionEntity implements Serializable {
+  // used for database read operations, means that we should acquire both input and output
   public static final int CONNECTION_TYPE_ANY = 0;
+
   public static final int CONNECTION_TYPE_INPUT = 1;
   public static final int CONNECTION_TYPE_OUTPUT = 2;
 
@@ -61,18 +66,23 @@ public class ConnectionEntity implements Serializable {
     return entityType;
   }
 
-  public LineageElement getLineageElement(Session session) throws ModelDBException {
+  public LineageEntryContainer getLineageElement(Session session) {
     switch (entityType) {
       case ENTITY_TYPE_EXPERIMENT_RUN:
         LineageExperimentRunEntity lineageExperimentRunEntity =
             session.get(LineageExperimentRunEntity.class, entityId);
-        return lineageExperimentRunEntity.getElement();
+        return lineageExperimentRunEntity.getEntry();
       case ENTITY_TYPE_VERSIONING_BLOB:
         LineageVersioningBlobEntity lineageVersioningBlobEntity =
             session.get(LineageVersioningBlobEntity.class, entityId);
-        return lineageVersioningBlobEntity.getElement();
+        return lineageVersioningBlobEntity.getEntry();
       default:
-        throw new ModelDBException("Unknown entity type");
+        Status statusMessage =
+            Status.newBuilder()
+                .setCode(Code.INTERNAL_VALUE)
+                .setMessage("Unknown entity type")
+                .build();
+        throw StatusProto.toStatusRuntimeException(statusMessage);
     }
   }
 
