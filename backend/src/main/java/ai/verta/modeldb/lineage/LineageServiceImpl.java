@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -166,12 +167,14 @@ public class LineageServiceImpl extends LineageServiceImplBase {
 
   private InternalFolderElementEntity getBlobFromCommit(
       Session session, VersioningLineageEntry versioningLineageEntry) throws ModelDBException {
-    Entry<Response, InternalFolderElementEntity> result =
+    Entry<Response, Optional<InternalFolderElementEntity>> result =
         blobDAO.getCommitComponentWithHash(
             session1 -> getRepositoryById(session, versioningLineageEntry.getRepositoryId()),
             versioningLineageEntry.getCommitSha(),
             versioningLineageEntry.getLocationList());
-    return result.getValue();
+    return result
+        .getValue()
+        .orElseThrow(() -> new ModelDBException("Wrong blob specified", Code.INVALID_ARGUMENT));
   }
 
   private RepositoryEntity getRepositoryById(Session session, long repositoryId) {
@@ -268,10 +271,15 @@ public class LineageServiceImpl extends LineageServiceImplBase {
                   Location.newBuilder().addAllLocation(blob.getLocationList()));
           if (!blobResult.contains(stringFromProtoObject)) {
             blobDAO.getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
-            Entry<Response, InternalFolderElementEntity> blobHashInfo =
+            Entry<Response, Optional<InternalFolderElementEntity>> blobHashInfo =
                 blobDAO.getCommitComponentWithHash(
                     session1 -> repo, commitSha, blob.getLocationList());
-            String elementSha = blobHashInfo.getValue().getElement_sha();
+            String elementSha =
+                blobHashInfo
+                    .getValue()
+                    .orElseThrow(
+                        () -> new ModelDBException("Wrong blob specified", Code.INVALID_ARGUMENT))
+                    .getElement_sha();
             if (elementSha == null || elementSha.isEmpty()) {
               throw new ModelDBException("Wrong blob specified", Code.INVALID_ARGUMENT);
             }

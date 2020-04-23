@@ -698,4 +698,85 @@
             <column name="project_id"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="lineage_versioning_blob_index" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="lineage_versioning_blob_index"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="lineage_versioning_blob_index"
+          tableName="lineage_versioning_blob" unique="false">
+            <column name="repository_id" type="int8">
+            </column>
+            <column name="blob_sha" type="varchar(256)">
+            </column>
+            <column name="blob_type" type="varchar(256)">
+            </column>
+        </createIndex>
+    </changeSet>
+    <changeSet id="lineage_experiment_run_index" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="lineage_experiment_run_index"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="lineage_experiment_run_index"
+          tableName="lineage_experiment_run" unique="false">
+            <column name="experiment_run_id" type="varchar(256)"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="lineage_connection_index" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="lineage_connection_index"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="lineage_connection_index"
+          tableName="lineage_connection" unique="false">
+            <column name="element_id" type="int8">
+            </column>
+            <column name="connection_type" type="int4">
+            </column>
+        </createIndex>
+    </changeSet>
+    <changeSet id="lineage_connection_index2" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="lineage_connection_index2"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="lineage_connection_index2"
+          tableName="lineage_connection" unique="false">
+            <column name="entity_id" type="int8">
+            </column>
+            <column name="connection_type" type="int4">
+            </column>
+            <column name="entity_type" type="int4">
+            </column>
+        </createIndex>
+    </changeSet>
+    <changeSet author="lezhevg" id="create-folder_element_index_for_lineage">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="folder_element_index_for_lineage"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="folder_element_index_for_lineage" tableName="folder_element"
+          unique="false">
+            <column name="element_sha" type="varchar(64)" />
+            <column name="element_type" type="varchar(50)"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="lezhevg" id="commit_index_for_lineage">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="commit_index_for_lineage"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="commit_index_for_lineage" tableName="commit"
+          unique="false">
+            <column name="root_sha" type="varchar(64)"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

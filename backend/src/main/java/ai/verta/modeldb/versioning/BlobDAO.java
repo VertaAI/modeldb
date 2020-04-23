@@ -11,6 +11,8 @@ import com.google.protobuf.ProtocolStringList;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import org.hibernate.Session;
 
 public interface BlobDAO {
@@ -26,7 +28,7 @@ public interface BlobDAO {
       RepositoryFunction repositoryFunction, String commitHash, List<String> locationList)
       throws NoSuchAlgorithmException, ModelDBException;
 
-  Map.Entry<Response, InternalFolderElementEntity> getCommitComponentWithHash(
+  Entry<Response, Optional<InternalFolderElementEntity>> getCommitComponentWithHash(
       RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
       throws ModelDBException;
 
