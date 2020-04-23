@@ -26,7 +26,8 @@ public interface BlobDAO {
       Session session, String folderHash, List<String> locationList) throws ModelDBException;
 
   Map<String, Map.Entry<BlobExpanded, String>> getCommitBlobMapWithHash(
-      Session session, String folderHash, List<String> locationList) throws ModelDBException;
+      Session session, String folderHash, List<String> locationList, List<BlobType> blobTypeList)
+      throws ModelDBException;
 
   ComputeRepositoryDiffRequest.Response computeRepositoryDiff(
       RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request) throws ModelDBException;

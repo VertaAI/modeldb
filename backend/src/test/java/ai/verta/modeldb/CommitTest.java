@@ -13,6 +13,7 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
+import ai.verta.modeldb.versioning.BlobType;
 import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.ConfigBlob;
@@ -2072,6 +2073,7 @@ public class CommitTest {
         getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
+    Commit configCommit = commitResponse.getCommit();
 
     FindRepositoriesBlobs findRepositoriesBlobs =
         FindRepositoriesBlobs.newBuilder()
@@ -2092,6 +2094,57 @@ public class CommitTest {
         "blob count not match with expected blob count",
         2,
         listCommitBlobsResponse.getBlobs(0).getBlob().getConfig().getHyperparametersCount());
+
+    Commit commit =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(112)
+            .addParentShas(commitResponse.getCommit().getCommitSha())
+            .build();
+    Location location = Location.newBuilder().addLocation("dataset").addLocation("test").build();
+    createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setCommit(commit)
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(getBlob(Blob.ContentCase.DATASET))
+                    .addAllLocation(location.getLocationList())
+                    .build())
+            .build();
+
+    commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+    findRepositoriesBlobs =
+        FindRepositoriesBlobs.newBuilder()
+            .addCommits(configCommit.getCommitSha())
+            .addBlobType(BlobType.CONFIG_BLOB)
+            .addBlobType(BlobType.DATASET_BLOB)
+            .build();
+
+    listCommitBlobsResponse =
+        versioningServiceBlockingStub.findRepositoriesBlobs(findRepositoriesBlobs);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        1,
+        listCommitBlobsResponse.getBlobsCount());
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        2,
+        listCommitBlobsResponse.getBlobs(0).getBlob().getConfig().getHyperparameterSetCount());
+
+    findRepositoriesBlobs =
+        FindRepositoriesBlobs.newBuilder()
+            .addBlobType(BlobType.CONFIG_BLOB)
+            .addBlobType(BlobType.DATASET_BLOB)
+            .build();
+
+    listCommitBlobsResponse =
+        versioningServiceBlockingStub.findRepositoriesBlobs(findRepositoriesBlobs);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        2,
+        listCommitBlobsResponse.getBlobsCount());
 
     try {
       DeleteCommitRequest deleteCommitRequest =

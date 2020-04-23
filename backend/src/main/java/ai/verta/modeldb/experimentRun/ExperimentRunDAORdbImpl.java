@@ -291,7 +291,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     Map<String, Map.Entry<BlobExpanded, String>> requestedLocationBlobWithHashMap = new HashMap<>();
     if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
-          blobDAO.getCommitBlobMapWithHash(session, commitEntity.getRootSha(), new ArrayList<>());
+          blobDAO.getCommitBlobMapWithHash(
+              session, commitEntity.getRootSha(), new ArrayList<>(), Collections.emptyList());
       for (Map.Entry<String, Location> locationBlobKeyMap :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
         String locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
