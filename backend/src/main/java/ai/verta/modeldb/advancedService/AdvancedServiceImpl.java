@@ -943,14 +943,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
 
-      if (!request.getProjectId().isEmpty()) {
-        // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
-            ModelDBServiceResourceTypes.PROJECT,
-            request.getProjectId(),
-            ModelDBServiceActions.READ);
-      }
-
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       ExperimentPaginationDTO experimentPaginationDTO =
           experimentDAO.findExperiments(projectDAO, userInfo, request);
