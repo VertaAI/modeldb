@@ -21,7 +21,6 @@ import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,22 +77,36 @@ public class FindEntitiesQuery {
       this.entityClassName = entityClassName;
     }
 
+    public FindEntitiesHQLQueryBuilder addProjectId(String projectId) {
+      if (projectId != null && !projectId.isEmpty()) {
+        this.projectIds.add(projectId);
+      }
+      return this;
+    }
+
     public FindEntitiesHQLQueryBuilder setProjectIds(List<String> projectIds) {
-      if (projectIds != null) {
+      if (projectIds != null && !projectIds.isEmpty()) {
         this.projectIds.addAll(projectIds);
       }
       return this;
     }
 
+    public FindEntitiesHQLQueryBuilder addExperimentId(String experimentId) {
+      if (experimentId != null && !experimentId.isEmpty()) {
+        this.experimentIds.add(experimentId);
+      }
+      return this;
+    }
+
     public FindEntitiesHQLQueryBuilder setExperimentIds(List<String> experimentIds) {
-      if (experimentIds != null) {
+      if (experimentIds != null && !experimentIds.isEmpty()) {
         this.experimentIds.addAll(experimentIds);
       }
       return this;
     }
 
     public FindEntitiesHQLQueryBuilder setExperimentRunIds(List<String> experimentRunIds) {
-      if (experimentRunIds != null) {
+      if (experimentRunIds != null && !experimentRunIds.isEmpty()) {
         this.experimentRunIds.addAll(experimentRunIds);
       }
       return this;
@@ -107,8 +120,15 @@ public class FindEntitiesQuery {
     }
 
     public FindEntitiesHQLQueryBuilder setSortKey(List<String> sortKey) {
-      if (sortKey != null) {
+      if (sortKey != null && !sortKey.isEmpty()) {
         this.sortKey.addAll(sortKey);
+      }
+      return this;
+    }
+
+    public FindEntitiesHQLQueryBuilder addSortKey(String sortKey) {
+      if (sortKey != null && !sortKey.isEmpty()) {
+        this.sortKey.add(sortKey);
       }
       return this;
     }
@@ -186,7 +206,7 @@ public class FindEntitiesQuery {
 
     private void joinCauseArtifactEntity(StringBuilder joinClause, String joinAlias) {
       joinClause
-          .append(" INNER JOIN ")
+          .append(" LEFT JOIN ")
           .append(ArtifactEntity.class.getSimpleName())
           .append(" ")
           .append(joinAlias)
@@ -195,7 +215,7 @@ public class FindEntitiesQuery {
 
     private void joinCauseAttributeEntity(StringBuilder joinClause, String joinAlias) {
       joinClause
-          .append(" INNER JOIN ")
+          .append(" LEFT JOIN ")
           .append(AttributeEntity.class.getSimpleName())
           .append(" ")
           .append(joinAlias)
@@ -204,7 +224,7 @@ public class FindEntitiesQuery {
 
     private void joinCauseKeyValueEntity(StringBuilder joinClause, String joinAlias) {
       joinClause
-          .append(" INNER JOIN ")
+          .append(" LEFT JOIN ")
           .append(KeyValueEntity.class.getSimpleName())
           .append(" ")
           .append(joinAlias)
@@ -213,7 +233,7 @@ public class FindEntitiesQuery {
 
     private void joinCauseObservationEntity(StringBuilder joinClause, String joinAlias) {
       joinClause
-          .append(" INNER JOIN ")
+          .append(" LEFT JOIN ")
           .append(ObservationEntity.class.getSimpleName())
           .append(" ")
           .append(joinAlias)
@@ -222,7 +242,7 @@ public class FindEntitiesQuery {
 
     private void joinCauseFeatureEntity(StringBuilder joinClause, String joinAlias) {
       joinClause
-          .append(" INNER JOIN ")
+          .append(" LEFT JOIN ")
           .append(FeatureEntity.class.getSimpleName())
           .append(" ")
           .append(joinAlias)
@@ -231,7 +251,7 @@ public class FindEntitiesQuery {
 
     private void joinCauseTagsEntity(StringBuilder joinClause, String joinAlias) {
       joinClause
-          .append(" INNER JOIN ")
+          .append(" LEFT JOIN ")
           .append(TagsMapping.class.getSimpleName())
           .append(" ")
           .append(joinAlias)
@@ -241,7 +261,7 @@ public class FindEntitiesQuery {
     private void joinCauseVersioningModeldbEntityMappingEntity(
         StringBuilder joinClause, String joinAlias) {
       joinClause
-          .append(" INNER JOIN ")
+          .append(" LEFT JOIN ")
           .append(VersioningModeldbEntityMapping.class.getSimpleName())
           .append(" ")
           .append(joinAlias)

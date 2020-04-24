@@ -1221,18 +1221,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
     LOGGER.trace("trying to open session");
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      LOGGER.trace("Starting to find experiements");
+      LOGGER.trace("Starting to find experimentRuns");
 
       FindEntitiesQuery findEntitiesQuery =
           new FindEntitiesQuery.FindEntitiesHQLQueryBuilder(
                   session, null, ExperimentRunEntity.class.getSimpleName())
-              .setProjectIds(Collections.singletonList(queryParameters.getProjectId()))
-              .setExperimentIds(Collections.singletonList(queryParameters.getExperimentId()))
+              .addProjectId(queryParameters.getProjectId())
+              .addExperimentId(queryParameters.getExperimentId())
               .setExperimentRunIds(queryParameters.getExperimentRunIdsList())
               .setPredicates(queryParameters.getPredicatesList())
               .setPageLimit(queryParameters.getPageLimit())
               .setPageNumber(queryParameters.getPageNumber())
-              .setSortKey(Collections.singletonList(queryParameters.getSortKey()))
+              .addSortKey(queryParameters.getSortKey())
               .build();
 
       LOGGER.trace("Creating criteria query");
