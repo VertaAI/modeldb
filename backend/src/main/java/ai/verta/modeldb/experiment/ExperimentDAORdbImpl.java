@@ -870,12 +870,23 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         List<String> workspaceProjectIDs =
             getDefaultWorkspaceProjectIDs(
                 projectDAO, queryParameters.getWorkspaceName(), currentLoginUserInfo);
+        if (workspaceProjectIDs == null || workspaceProjectIDs.isEmpty()) {
+          LOGGER.warn(
+              "accessible project for the experiments not found for given workspace : {}",
+              queryParameters.getWorkspaceName());
+          ExperimentPaginationDTO experimentPaginationDTO = new ExperimentPaginationDTO();
+          experimentPaginationDTO.setExperiments(Collections.emptyList());
+          experimentPaginationDTO.setTotalRecords(0L);
+          return experimentPaginationDTO;
+        }
         projectIds.addAll(workspaceProjectIDs);
       }
 
-      Expression<String> projectExpression = experimentRoot.get(ModelDBConstants.PROJECT_ID);
-      Predicate projectsPredicate = projectExpression.in(projectIds);
-      finalPredicatesList.add(projectsPredicate);
+      if (!projectIds.isEmpty()) {
+        Expression<String> projectExpression = experimentRoot.get(ModelDBConstants.PROJECT_ID);
+        Predicate projectsPredicate = projectExpression.in(projectIds);
+        finalPredicatesList.add(projectsPredicate);
+      }
 
       if (!accessibleExperimentIds.isEmpty()) {
         Expression<String> exp = experimentRoot.get(ModelDBConstants.ID);
