@@ -22,7 +22,7 @@ case class VersioningFindRepositoriesBlobs (
   location_prefix: Option[List[String]] = None,
   page_limit: Option[BigInt] = None,
   page_number: Option[BigInt] = None,
-  repo_ids: Option[List[]] = None,
+  repo_ids: Option[List[BigInt]] = None,
   workspace_name: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningFindRepositoriesBlobs.toJson(this)
@@ -37,7 +37,7 @@ object VersioningFindRepositoriesBlobs {
         obj.location_prefix.map(x => JField("location_prefix", ((x: List[String]) => JArray(x.map(JString)))(x))),
         obj.page_limit.map(x => JField("page_limit", JInt(x))),
         obj.page_number.map(x => JField("page_number", JInt(x))),
-        obj.repo_ids.map(x => JField("repo_ids", ((x: List[]) => JArray(x.map()))(x))),
+        obj.repo_ids.map(x => JField("repo_ids", ((x: List[BigInt]) => JArray(x.map(JInt)))(x))),
         obj.workspace_name.map(x => JField("workspace_name", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -57,7 +57,7 @@ object VersioningFindRepositoriesBlobs {
           location_prefix = fieldsMap.get("location_prefix").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           page_limit = fieldsMap.get("page_limit").map(JsonConverter.fromJsonInteger),
           page_number = fieldsMap.get("page_number").map(JsonConverter.fromJsonInteger),
-          repo_ids = fieldsMap.get("repo_ids").map((x: JValue) => x match {case JArray(elements) => elements.map(); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          repo_ids = fieldsMap.get("repo_ids").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonInteger); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           workspace_name = fieldsMap.get("workspace_name").map(JsonConverter.fromJsonString)
         )
       }

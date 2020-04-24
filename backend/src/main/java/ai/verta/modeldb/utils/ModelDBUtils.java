@@ -1,5 +1,6 @@
 package ai.verta.modeldb.utils;
 
+import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CollaboratorUserInfo;
@@ -21,7 +22,6 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
-import ai.verta.uac.EntitiesEnum.EntitiesTypes;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;

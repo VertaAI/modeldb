@@ -5,7 +5,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
-import "protos/public/modeldb/versioning/Enums.proto";
+import "modeldb/versioning/Enums.proto";
 
 message DatasetBlob {
     oneof content {

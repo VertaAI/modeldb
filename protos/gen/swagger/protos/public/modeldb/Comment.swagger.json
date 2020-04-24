@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/modeldb/Comment.proto",
+    "title": "modeldb/Comment.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -150,7 +150,8 @@
         "GITHUB",
         "BITBUCKET",
         "GOOGLE",
-        "VERTA"
+        "VERTA",
+        "SAML"
       ],
       "default": "UNKNOWN"
     },

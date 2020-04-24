@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/modeldb/DatasetService.proto",
+    "title": "modeldb/DatasetService.proto",
     "version": "version not set"
   },
   "consumes": [

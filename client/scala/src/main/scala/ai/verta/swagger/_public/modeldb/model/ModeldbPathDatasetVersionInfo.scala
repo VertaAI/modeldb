@@ -6,7 +6,6 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
-import ai.verta.swagger._public.modeldb.model.AuthzActionEnumAuthzServiceActions._
 import ai.verta.swagger._public.modeldb.model.CollaboratorTypeEnumCollaboratorType._
 import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
@@ -15,7 +14,6 @@ import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProv
 import ai.verta.swagger._public.modeldb.model.ModelDBActionEnumModelDBServiceActions._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
-import ai.verta.swagger._public.modeldb.model.RoleActionEnumRoleServiceActions._
 import ai.verta.swagger._public.modeldb.model.ServiceEnumService._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
@@ -29,7 +27,7 @@ case class ModeldbPathDatasetVersionInfo (
   base_path: Option[String] = None,
   dataset_part_infos: Option[List[ModeldbDatasetPartInfo]] = None,
   location_type: Option[PathLocationTypeEnumPathLocationType] = None,
-  size: Option[] = None
+  size: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbPathDatasetVersionInfo.toJson(this)
 }
@@ -41,7 +39,7 @@ object ModeldbPathDatasetVersionInfo {
         obj.base_path.map(x => JField("base_path", JString(x))),
         obj.dataset_part_infos.map(x => JField("dataset_part_infos", ((x: List[ModeldbDatasetPartInfo]) => JArray(x.map(((x: ModeldbDatasetPartInfo) => ModeldbDatasetPartInfo.toJson(x)))))(x))),
         obj.location_type.map(x => JField("location_type", ((x: PathLocationTypeEnumPathLocationType) => PathLocationTypeEnumPathLocationType.toJson(x))(x))),
-        obj.size.map(x => JField("size", (x)))
+        obj.size.map(x => JField("size", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -58,7 +56,7 @@ object ModeldbPathDatasetVersionInfo {
           base_path = fieldsMap.get("base_path").map(JsonConverter.fromJsonString),
           dataset_part_infos = fieldsMap.get("dataset_part_infos").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbDatasetPartInfo.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           location_type = fieldsMap.get("location_type").map(PathLocationTypeEnumPathLocationType.fromJson),
-          size = fieldsMap.get("size").map()
+          size = fieldsMap.get("size").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
