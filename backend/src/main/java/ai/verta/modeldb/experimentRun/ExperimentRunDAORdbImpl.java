@@ -1233,6 +1233,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setPageLimit(queryParameters.getPageLimit())
               .setPageNumber(queryParameters.getPageNumber())
               .addSortKey(queryParameters.getSortKey())
+              .setAscending(queryParameters.getAscending())
               .build();
 
       LOGGER.trace("Creating criteria query");

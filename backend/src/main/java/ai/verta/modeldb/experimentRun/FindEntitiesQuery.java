@@ -67,6 +67,7 @@ public class FindEntitiesQuery {
     private List<String> experimentRunIds = new ArrayList<>();
     private List<KeyValueQuery> predicates = new ArrayList<>();
     private List<String> sortKey = new ArrayList<>();
+    private Boolean ascending = false;
     private Integer pageNumber = 0;
     private Integer pageLimit = 0;
 
@@ -133,6 +134,11 @@ public class FindEntitiesQuery {
       return this;
     }
 
+    public FindEntitiesHQLQueryBuilder setAscending(Boolean ascending) {
+      this.ascending = ascending;
+      return this;
+    }
+
     public FindEntitiesHQLQueryBuilder setPageNumber(Integer pageNumber) {
       this.pageNumber = pageNumber;
       return this;
@@ -185,6 +191,46 @@ public class FindEntitiesQuery {
       return query;
     }
 
+    private String getHQLQueryString() throws InvalidProtocolBufferException {
+      String alias = "root_alias";
+      StringBuilder rootQueryBuilder =
+          new StringBuilder(" FROM ").append(entityClassName).append(" ").append(alias);
+
+      StringBuilder joinClause = getJoinClause(alias);
+      StringBuilder whereClause = getWhereClause(alias);
+      // Order by clause
+      StringBuilder orderClause = getOrderClause(joinClause, alias, ascending);
+
+      StringBuilder finalQueryBuilder = new StringBuilder();
+      if (!joinClause.toString().isEmpty()) {
+        finalQueryBuilder.append("SELECT ").append(alias).append(" ");
+      }
+      finalQueryBuilder.append(rootQueryBuilder);
+      finalQueryBuilder.append(joinClause);
+      if (!whereClause.toString().isEmpty()) {
+        finalQueryBuilder.append(" WHERE ").append(whereClause);
+      }
+      finalQueryBuilder.append(orderClause);
+
+      // Build count query
+      StringBuilder countQueryBuilder = new StringBuilder();
+      if (!joinClause.toString().isEmpty()) {
+        countQueryBuilder.append("SELECT COUNT(").append(alias).append(") ");
+      } else {
+        countQueryBuilder.append("SELECT COUNT(*) ");
+      }
+      countQueryBuilder.append(rootQueryBuilder);
+      countQueryBuilder.append(joinClause);
+      if (!whereClause.toString().isEmpty()) {
+        countQueryBuilder.append(" WHERE ").append(whereClause);
+      }
+      countQueryBuilder.append(orderClause);
+      this.countQueryString = countQueryBuilder.toString();
+
+      LOGGER.trace("Creating HQL query");
+      return finalQueryBuilder.toString();
+    }
+
     private void validatePredicate(KeyValueQuery predicate) {
       String errorMessage = null;
       if (predicate.getKey().isEmpty()) {
@@ -194,78 +240,26 @@ public class FindEntitiesQuery {
         errorMessage = "Operator `IN` supported only with the linked_artifact_id as a key";
       }
 
-      if (errorMessage != null) {
-        Status invalidValueTypeError =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .build();
-        throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+      Value value = predicate.getValue();
+      if (value.getKindCase().equals(Value.KindCase.STRING_VALUE)
+          && value.getStringValue().isEmpty()) {
+        errorMessage = "Predicate does not contain string value in request";
       }
-    }
 
-    private void joinCauseArtifactEntity(StringBuilder joinClause, String joinAlias) {
-      joinClause
-          .append(" LEFT JOIN ")
-          .append(ArtifactEntity.class.getSimpleName())
-          .append(" ")
-          .append(joinAlias)
-          .append(" ");
-    }
+      Status.Builder invalidValueTypeErrorBuilder =
+          Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE);
+      if (!value.getKindCase().equals(Value.KindCase.STRING_VALUE)
+          && !value.getKindCase().equals(Value.KindCase.NUMBER_VALUE)
+          && !value.getKindCase().equals(Value.KindCase.BOOL_VALUE)) {
+        invalidValueTypeErrorBuilder.setCode(Code.UNIMPLEMENTED_VALUE);
+        errorMessage =
+            "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE";
+      }
 
-    private void joinCauseAttributeEntity(StringBuilder joinClause, String joinAlias) {
-      joinClause
-          .append(" LEFT JOIN ")
-          .append(AttributeEntity.class.getSimpleName())
-          .append(" ")
-          .append(joinAlias)
-          .append(" ");
-    }
-
-    private void joinCauseKeyValueEntity(StringBuilder joinClause, String joinAlias) {
-      joinClause
-          .append(" LEFT JOIN ")
-          .append(KeyValueEntity.class.getSimpleName())
-          .append(" ")
-          .append(joinAlias)
-          .append(" ");
-    }
-
-    private void joinCauseObservationEntity(StringBuilder joinClause, String joinAlias) {
-      joinClause
-          .append(" LEFT JOIN ")
-          .append(ObservationEntity.class.getSimpleName())
-          .append(" ")
-          .append(joinAlias)
-          .append(" ");
-    }
-
-    private void joinCauseFeatureEntity(StringBuilder joinClause, String joinAlias) {
-      joinClause
-          .append(" LEFT JOIN ")
-          .append(FeatureEntity.class.getSimpleName())
-          .append(" ")
-          .append(joinAlias)
-          .append(" ");
-    }
-
-    private void joinCauseTagsEntity(StringBuilder joinClause, String joinAlias) {
-      joinClause
-          .append(" LEFT JOIN ")
-          .append(TagsMapping.class.getSimpleName())
-          .append(" ")
-          .append(joinAlias)
-          .append(" ");
-    }
-
-    private void joinCauseVersioningModeldbEntityMappingEntity(
-        StringBuilder joinClause, String joinAlias) {
-      joinClause
-          .append(" LEFT JOIN ")
-          .append(VersioningModeldbEntityMapping.class.getSimpleName())
-          .append(" ")
-          .append(joinAlias)
-          .append(" ");
+      if (errorMessage != null) {
+        invalidValueTypeErrorBuilder.setMessage(errorMessage);
+        throw StatusProto.toStatusRuntimeException(invalidValueTypeErrorBuilder.build());
+      }
     }
 
     private StringBuilder getJoinClause(String rootAlias) {
@@ -278,6 +272,11 @@ public class FindEntitiesQuery {
           String[] names = predicate.getKey().split("\\.");
           String fieldName = names[0];
 
+          // create parent name
+          char[] entityClassNameCharArr = this.entityClassName.toCharArray();
+          entityClassNameCharArr[0] = Character.toLowerCase(entityClassNameCharArr[0]);
+          String parentFieldName = new String(entityClassNameCharArr);
+
           String joinAlias =
               fieldName + "_alias_" + index + "_" + Calendar.getInstance().getTimeInMillis();
           joinAliasMap.put(predicate.getKey() + index, joinAlias);
@@ -286,16 +285,16 @@ public class FindEntitiesQuery {
             case ModelDBConstants.ARTIFACTS:
             case ModelDBConstants.DATASETS:
               LOGGER.debug("switch case : {}", fieldName);
-              joinCauseArtifactEntity(joinClause, joinAlias);
+              joinCauseArtifactEntity(rootAlias, parentFieldName, joinClause, joinAlias);
               break;
             case ModelDBConstants.ATTRIBUTES:
               LOGGER.debug("switch case : {}", fieldName);
-              joinCauseAttributeEntity(joinClause, joinAlias);
+              joinCauseAttributeEntity(rootAlias, parentFieldName, joinClause, joinAlias);
               break;
             case ModelDBConstants.HYPERPARAMETERS:
             case ModelDBConstants.METRICS:
               LOGGER.debug("switch case : {}", fieldName);
-              joinCauseKeyValueEntity(joinClause, joinAlias);
+              joinCauseKeyValueEntity(rootAlias, parentFieldName, joinClause, joinAlias);
               break;
             case ModelDBConstants.OBSERVATIONS:
               LOGGER.debug("switch case : {}", fieldName);
@@ -303,28 +302,29 @@ public class FindEntitiesQuery {
                 switch (names[1]) {
                   case ModelDBConstants.ATTRIBUTES:
                     LOGGER.debug("switch case : {} --> {}", fieldName, names[1]);
-                    joinCauseKeyValueEntity(joinClause, joinAlias);
+                    joinCauseKeyValueEntity(rootAlias, parentFieldName, joinClause, joinAlias);
                     break;
                   case ModelDBConstants.ARTIFACTS:
                     LOGGER.debug("switch case : {} --> {}", fieldName, names[1]);
-                    joinCauseArtifactEntity(joinClause, joinAlias);
+                    joinCauseArtifactEntity(rootAlias, parentFieldName, joinClause, joinAlias);
                     break;
                 }
               } else {
-                joinCauseObservationEntity(joinClause, joinAlias);
+                joinCauseObservationEntity(rootAlias, parentFieldName, joinClause, joinAlias);
               }
               break;
             case ModelDBConstants.FEATURES:
               LOGGER.debug("switch case : {}", fieldName);
-              joinCauseFeatureEntity(joinClause, joinAlias);
+              joinCauseFeatureEntity(rootAlias, parentFieldName, joinClause, joinAlias);
               break;
             case ModelDBConstants.TAGS:
               LOGGER.debug("switch case : {}", fieldName);
-              joinCauseTagsEntity(joinClause, joinAlias);
+              joinCauseTagsEntity(rootAlias, parentFieldName, joinClause, joinAlias);
               break;
             case ModelDBConstants.VERSIONED_INPUTS:
               LOGGER.debug("switch case : {}", fieldName);
-              joinCauseVersioningModeldbEntityMappingEntity(joinClause, joinAlias);
+              joinCauseVersioningModeldbEntityMappingEntity(
+                  rootAlias, parentFieldName, joinClause, joinAlias);
               break;
             default:
               joinAliasMap.put(predicate.getKey() + index, rootAlias);
@@ -334,148 +334,103 @@ public class FindEntitiesQuery {
       return joinClause;
     }
 
-    private String getArtifactEntityWhereClause(
-        String[] names, String joinAlias, KeyValueQuery predicate, String fieldName)
-        throws InvalidProtocolBufferException {
-      String childKey = names[names.length - 1];
-      StringBuilder artifactStringBuilder = new StringBuilder();
-      artifactStringBuilder
+    private void appendParentIdConditionClause(
+        String rootAlias, String parentFieldName, StringBuilder queryBuilder, String joinAlias) {
+      queryBuilder
           .append(joinAlias)
           .append(".")
-          .append(ModelDBConstants.FEILD_TYPE)
+          .append(parentFieldName)
+          .append(".")
+          .append(ModelDBConstants.ID)
           .append(" = ")
-          .append(fieldName);
-      if (childKey.equals(ModelDBConstants.LINKED_ARTIFACT_ID)) {
-        artifactStringBuilder.append(" AND ").append(joinAlias).append(".").append(childKey);
-        setQueryParameters(artifactStringBuilder, predicate, parametersMap, fieldName);
-      } else {
-        artifactStringBuilder
-            .append(" AND ")
-            .append(joinAlias)
-            .append(".")
-            .append(ModelDBConstants.KEY)
-            .append(" = ")
-            .append(childKey);
-        artifactStringBuilder
-            .append(" AND ")
-            .append(joinAlias)
-            .append(".")
-            .append(ModelDBConstants.PATH);
-        setQueryParameters(artifactStringBuilder, predicate, parametersMap, fieldName);
-      }
-      return artifactStringBuilder.toString();
+          .append(rootAlias)
+          .append(".")
+          .append(ModelDBConstants.ID)
+          .append(" ");
     }
 
-    private String getKeyValueEntityWhereClause(
-        String[] names, String joinAlias, KeyValueQuery predicate, String fieldName)
-        throws InvalidProtocolBufferException {
-      String childKey = names[names.length - 1];
-      StringBuilder artifactStringBuilder = new StringBuilder();
-      artifactStringBuilder
+    private void joinCauseArtifactEntity(
+        String rootAlias, String parentFieldName, StringBuilder joinClause, String joinAlias) {
+      joinClause
+          .append(" LEFT JOIN ")
+          .append(ArtifactEntity.class.getSimpleName())
+          .append(" ")
           .append(joinAlias)
-          .append(".")
-          .append(ModelDBConstants.FEILD_TYPE)
-          .append(" = ")
-          .append(fieldName);
-      artifactStringBuilder
-          .append(" AND ")
-          .append(joinAlias)
-          .append(".")
-          .append(ModelDBConstants.KEY)
-          .append(" = ")
-          .append(childKey);
-      artifactStringBuilder
-          .append(" AND ")
-          .append(joinAlias)
-          .append(".")
-          .append(ModelDBConstants.VALUE);
-      setQueryParameters(artifactStringBuilder, predicate, parametersMap, fieldName);
-      return artifactStringBuilder.toString();
+          .append(" ");
+      joinClause.append(" ON ");
+      appendParentIdConditionClause(rootAlias, parentFieldName, joinClause, joinAlias);
     }
 
-    private String defaultKeyValueWhereClause(
-        String key, String joinAlias, KeyValueQuery predicate, String fieldName)
-        throws InvalidProtocolBufferException {
-      StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.append(joinAlias).append(".").append(key);
-      setQueryParameters(stringBuilder, predicate, parametersMap, fieldName);
-      return stringBuilder.toString();
+    private void joinCauseAttributeEntity(
+        String rootAlias, String parentFieldName, StringBuilder joinClause, String joinAlias) {
+      joinClause
+          .append(" LEFT JOIN ")
+          .append(AttributeEntity.class.getSimpleName())
+          .append(" ")
+          .append(joinAlias)
+          .append(" ");
+      joinClause.append(" ON ");
+      appendParentIdConditionClause(rootAlias, parentFieldName, joinClause, joinAlias);
     }
 
-    private StringBuilder getPredicateWhereClause() throws InvalidProtocolBufferException {
-      StringBuilder predicateWhereClause = new StringBuilder();
-      if (this.predicates != null && !this.predicates.isEmpty()) {
-        List<String> whereClauseList = new ArrayList<>();
-        for (int index = 0; index < predicates.size(); index++) {
-          KeyValueQuery predicate = predicates.get(index);
+    private void joinCauseKeyValueEntity(
+        String rootAlias, String parentFieldName, StringBuilder joinClause, String joinAlias) {
+      joinClause
+          .append(" LEFT JOIN ")
+          .append(KeyValueEntity.class.getSimpleName())
+          .append(" ")
+          .append(joinAlias)
+          .append(" ");
+      joinClause.append(" ON ");
+      appendParentIdConditionClause(rootAlias, parentFieldName, joinClause, joinAlias);
+    }
 
-          validatePredicate(predicate);
-          String[] names = predicate.getKey().split("\\.");
-          String fieldName = names[0];
+    private void joinCauseObservationEntity(
+        String rootAlias, String parentFieldName, StringBuilder joinClause, String joinAlias) {
+      joinClause
+          .append(" LEFT JOIN ")
+          .append(ObservationEntity.class.getSimpleName())
+          .append(" ")
+          .append(joinAlias)
+          .append(" ");
+      joinClause.append(" ON ");
+      appendParentIdConditionClause(rootAlias, parentFieldName, joinClause, joinAlias);
+    }
 
-          String joinAlias = joinAliasMap.get(predicate.getKey() + index);
+    private void joinCauseFeatureEntity(
+        String rootAlias, String parentFieldName, StringBuilder joinClause, String joinAlias) {
+      joinClause
+          .append(" LEFT JOIN ")
+          .append(FeatureEntity.class.getSimpleName())
+          .append(" ")
+          .append(joinAlias)
+          .append(" ");
+      joinClause.append(" ON ");
+      appendParentIdConditionClause(rootAlias, parentFieldName, joinClause, joinAlias);
+    }
 
-          switch (fieldName) {
-            case ModelDBConstants.ARTIFACTS:
-            case ModelDBConstants.DATASETS:
-              LOGGER.debug("switch case : {}", fieldName);
-              whereClauseList.add(
-                  getArtifactEntityWhereClause(names, joinAlias, predicate, fieldName));
-              break;
-            case ModelDBConstants.ATTRIBUTES:
-            case ModelDBConstants.HYPERPARAMETERS:
-            case ModelDBConstants.METRICS:
-              LOGGER.debug("switch case : {}", fieldName);
-              whereClauseList.add(
-                  getKeyValueEntityWhereClause(names, joinAlias, predicate, fieldName));
-              break;
-            case ModelDBConstants.OBSERVATIONS:
-              LOGGER.debug("switch case : {}", fieldName);
-              if (names.length > 2) {
-                switch (names[1]) {
-                  case ModelDBConstants.ATTRIBUTES:
-                    LOGGER.debug("switch case : {} --> {}", fieldName, names[1]);
-                    whereClauseList.add(
-                        getKeyValueEntityWhereClause(names, joinAlias, predicate, fieldName));
-                    break;
-                  case ModelDBConstants.ARTIFACTS:
-                    LOGGER.debug("switch case : {} --> {}", fieldName, names[1]);
-                    whereClauseList.add(
-                        getArtifactEntityWhereClause(names, joinAlias, predicate, fieldName));
-                    break;
-                }
-              } else {
-                whereClauseList.add(
-                    defaultKeyValueWhereClause(names[1], joinAlias, predicate, fieldName));
-              }
-              break;
-            case ModelDBConstants.FEATURES:
-              LOGGER.debug("switch case : {}", fieldName);
-              whereClauseList.add(
-                  defaultKeyValueWhereClause(
-                      names[names.length - 1], joinAlias, predicate, fieldName));
-              break;
-            case ModelDBConstants.TAGS:
-              LOGGER.debug("switch case : {}", fieldName);
-              whereClauseList.add(
-                  defaultKeyValueWhereClause(
-                      ModelDBConstants.TAGS, joinAlias, predicate, fieldName));
-              break;
-            case ModelDBConstants.VERSIONED_INPUTS:
-              LOGGER.debug("switch case : {}", fieldName);
-              whereClauseList.add(
-                  defaultKeyValueWhereClause(names[1], joinAlias, predicate, fieldName));
-              break;
-            default:
-              whereClauseList.add(
-                  defaultKeyValueWhereClause(predicate.getKey(), joinAlias, predicate, fieldName));
-              break;
-          }
-        }
-        setPredicatesWithQueryOperator(
-            predicateWhereClause, "AND", whereClauseList.toArray(new String[0]));
-      }
-      return predicateWhereClause;
+    private void joinCauseTagsEntity(
+        String rootAlias, String parentFieldName, StringBuilder joinClause, String joinAlias) {
+      joinClause
+          .append(" LEFT JOIN ")
+          .append(TagsMapping.class.getSimpleName())
+          .append(" ")
+          .append(joinAlias)
+          .append(" ");
+      joinClause.append(" ON ");
+      appendParentIdConditionClause(rootAlias, parentFieldName, joinClause, joinAlias);
+    }
+
+    private void joinCauseVersioningModeldbEntityMappingEntity(
+        String rootAlias, String parentFieldName, StringBuilder joinClause, String joinAlias) {
+      joinClause
+          .append(" LEFT JOIN ")
+          .append(VersioningModeldbEntityMapping.class.getSimpleName())
+          .append(" ")
+          .append(joinAlias)
+          .append(" ");
+      joinClause.append(" ON ");
+      appendParentIdConditionClause(rootAlias, parentFieldName, joinClause, joinAlias);
     }
 
     private StringBuilder getWhereClause(String rootAlias) throws InvalidProtocolBufferException {
@@ -522,50 +477,254 @@ public class FindEntitiesQuery {
       return whereClause;
     }
 
-    private String getHQLQueryString() throws InvalidProtocolBufferException {
-      String alias = "root_alias";
-      StringBuilder rootQueryBuilder =
-          new StringBuilder(" FROM ").append(entityClassName).append(" ").append(alias);
+    private StringBuilder getPredicateWhereClause() throws InvalidProtocolBufferException {
+      StringBuilder predicateWhereClause = new StringBuilder();
+      if (this.predicates != null && !this.predicates.isEmpty()) {
+        List<String> whereClauseList = new ArrayList<>();
+        for (int index = 0; index < predicates.size(); index++) {
+          KeyValueQuery predicate = predicates.get(index);
 
-      StringBuilder joinClause = getJoinClause(alias);
-      StringBuilder whereClause = getWhereClause(alias);
+          validatePredicate(predicate);
+          String[] names = predicate.getKey().split("\\.");
+          String fieldName = names[0];
 
-      // Order by clause
-      StringBuilder orderClause =
-          new StringBuilder(" ORDER BY ")
-              .append(alias)
-              .append(".")
-              .append(ModelDBConstants.DATE_UPDATED)
-              .append(" DESC");
+          String joinAlias = joinAliasMap.get(predicate.getKey() + index);
 
-      StringBuilder finalQueryBuilder = new StringBuilder();
-      if (!joinClause.toString().isEmpty()) {
-        finalQueryBuilder.append("SELECT ").append(alias).append(" ");
+          switch (fieldName) {
+            case ModelDBConstants.ARTIFACTS:
+            case ModelDBConstants.DATASETS:
+              LOGGER.debug("switch case : {}", fieldName);
+              whereClauseList.add(
+                  getArtifactEntityWhereClause(names, joinAlias, predicate, fieldName));
+              break;
+            case ModelDBConstants.ATTRIBUTES:
+            case ModelDBConstants.HYPERPARAMETERS:
+            case ModelDBConstants.METRICS:
+              LOGGER.debug("switch case : {}", fieldName);
+              whereClauseList.add(
+                  getKeyValueEntityWhereClause(names, joinAlias, predicate, fieldName));
+              break;
+            case ModelDBConstants.OBSERVATIONS:
+              LOGGER.debug("switch case : {}", fieldName);
+              if (names.length > 2) {
+                switch (names[1]) {
+                  case ModelDBConstants.ATTRIBUTES:
+                    LOGGER.debug("switch case : {} --> {}", fieldName, names[1]);
+                    whereClauseList.add(
+                        getKeyValueEntityWhereClause(names, joinAlias, predicate, fieldName));
+                    break;
+                  case ModelDBConstants.ARTIFACTS:
+                    LOGGER.debug("switch case : {} --> {}", fieldName, names[1]);
+                    whereClauseList.add(
+                        getArtifactEntityWhereClause(names, joinAlias, predicate, fieldName));
+                    break;
+                }
+              } else {
+                whereClauseList.add(defaultKeyValueWhereClause(names[1], joinAlias, predicate));
+              }
+              break;
+            case ModelDBConstants.FEATURES:
+              LOGGER.debug("switch case : {}", fieldName);
+              whereClauseList.add(
+                  defaultKeyValueWhereClause(names[names.length - 1], joinAlias, predicate));
+              break;
+            case ModelDBConstants.TAGS:
+              LOGGER.debug("switch case : {}", fieldName);
+              whereClauseList.add(
+                  defaultKeyValueWhereClause(ModelDBConstants.TAGS, joinAlias, predicate));
+              break;
+            case ModelDBConstants.VERSIONED_INPUTS:
+              LOGGER.debug("switch case : {}", fieldName);
+              whereClauseList.add(defaultKeyValueWhereClause(names[1], joinAlias, predicate));
+              break;
+            default:
+              whereClauseList.add(
+                  defaultKeyValueWhereClause(predicate.getKey(), joinAlias, predicate));
+              break;
+          }
+        }
+        setPredicatesWithQueryOperator(
+            predicateWhereClause, "AND", whereClauseList.toArray(new String[0]));
       }
-      finalQueryBuilder.append(rootQueryBuilder);
-      finalQueryBuilder.append(joinClause);
-      if (!whereClause.toString().isEmpty()) {
-        finalQueryBuilder.append(" WHERE ").append(whereClause);
-      }
-      finalQueryBuilder.append(orderClause);
+      return predicateWhereClause;
+    }
 
-      // Build count query
-      StringBuilder countQueryBuilder = new StringBuilder();
-      if (!joinClause.toString().isEmpty()) {
-        countQueryBuilder.append("SELECT COUNT(").append(alias).append(") ");
+    private String getArtifactEntityWhereClause(
+        String[] names, String joinAlias, KeyValueQuery predicate, String fieldName)
+        throws InvalidProtocolBufferException {
+      String childKey = names[names.length - 1];
+      StringBuilder artifactStringBuilder = new StringBuilder();
+      artifactStringBuilder
+          .append(joinAlias)
+          .append(".")
+          .append(ModelDBConstants.FEILD_TYPE)
+          .append(" = ")
+          .append(fieldName);
+      if (childKey.equals(ModelDBConstants.LINKED_ARTIFACT_ID)) {
+        artifactStringBuilder.append(" AND ").append(joinAlias).append(".").append(childKey);
+        setQueryParameters(artifactStringBuilder, predicate, parametersMap);
       } else {
-        countQueryBuilder.append("SELECT COUNT(*) ");
+        artifactStringBuilder
+            .append(" AND ")
+            .append(joinAlias)
+            .append(".")
+            .append(ModelDBConstants.KEY);
+        setValueWithOperatorInQuery(
+            artifactStringBuilder, OperatorEnum.Operator.EQ, childKey, parametersMap);
+        artifactStringBuilder
+            .append(" AND ")
+            .append(joinAlias)
+            .append(".")
+            .append(ModelDBConstants.PATH);
+        setQueryParameters(artifactStringBuilder, predicate, parametersMap);
       }
-      countQueryBuilder.append(rootQueryBuilder);
-      countQueryBuilder.append(joinClause);
-      if (!whereClause.toString().isEmpty()) {
-        countQueryBuilder.append(" WHERE ").append(whereClause);
-      }
-      countQueryBuilder.append(orderClause);
-      this.countQueryString = countQueryBuilder.toString();
+      return artifactStringBuilder.toString();
+    }
 
-      LOGGER.trace("Creating HQL query");
-      return finalQueryBuilder.toString();
+    private String getKeyValueEntityWhereClause(
+        String[] names, String joinAlias, KeyValueQuery predicate, String fieldName)
+        throws InvalidProtocolBufferException {
+      String childKey = names[names.length - 1];
+      StringBuilder keyValueStringBuilder = new StringBuilder();
+      keyValueStringBuilder.append(joinAlias).append(".").append(ModelDBConstants.FEILD_TYPE);
+      setValueWithOperatorInQuery(
+          keyValueStringBuilder, OperatorEnum.Operator.EQ, fieldName, parametersMap);
+      keyValueStringBuilder
+          .append(" AND ")
+          .append(joinAlias)
+          .append(".")
+          .append(ModelDBConstants.KEY);
+      setValueWithOperatorInQuery(
+          keyValueStringBuilder, OperatorEnum.Operator.EQ, childKey, parametersMap);
+      keyValueStringBuilder
+          .append(" AND ")
+          .append(joinAlias)
+          .append(".")
+          .append(ModelDBConstants.VALUE)
+          .append(" ");
+      setValueWithOperatorInQuery(
+          keyValueStringBuilder,
+          predicate.getOperator(),
+          ModelDBUtils.getStringFromProtoObject(predicate.getValue()),
+          parametersMap);
+      return keyValueStringBuilder.toString();
+    }
+
+    private String defaultKeyValueWhereClause(String key, String joinAlias, KeyValueQuery predicate)
+        throws InvalidProtocolBufferException {
+      StringBuilder stringBuilder = new StringBuilder();
+      stringBuilder.append(joinAlias).append(".").append(key);
+      setQueryParameters(stringBuilder, predicate, parametersMap);
+      return stringBuilder.toString();
+    }
+
+    private StringBuilder getOrderClause(
+        StringBuilder joinClause, String rootAlias, boolean ascending) {
+      List<String> orderByFields = new ArrayList<>();
+      if (this.sortKey != null && !this.sortKey.isEmpty()) {
+        for (int index = 0; index < this.sortKey.size(); index++) {
+          String sortBy = this.sortKey.get(index);
+          String[] keys = sortBy.split("\\.");
+          String fieldName = keys[0];
+
+          // create parent name
+          char[] entityClassNameCharArr = this.entityClassName.toCharArray();
+          entityClassNameCharArr[0] = Character.toLowerCase(entityClassNameCharArr[0]);
+          String parentFieldName = new String(entityClassNameCharArr);
+
+          String joinAlias =
+              fieldName
+                  + "_orderby_alias_"
+                  + index
+                  + "_"
+                  + Calendar.getInstance().getTimeInMillis();
+          joinAliasMap.put(fieldName + index, joinAlias);
+
+          switch (fieldName) {
+            case ModelDBConstants.ARTIFACTS:
+            case ModelDBConstants.DATASETS:
+              LOGGER.debug("switch case : {}", fieldName);
+              joinCauseArtifactEntity(rootAlias, parentFieldName, joinClause, joinAlias);
+              setOrderByField(joinClause, keys, fieldName, joinAlias);
+              orderByFields.add(joinAlias + "." + ModelDBConstants.PATH);
+              break;
+            case ModelDBConstants.ATTRIBUTES:
+              LOGGER.debug("switch case : {}", fieldName);
+              joinCauseAttributeEntity(rootAlias, parentFieldName, joinClause, joinAlias);
+              setOrderByField(joinClause, keys, fieldName, joinAlias);
+              orderByFields.add(joinAlias + "." + ModelDBConstants.VALUE);
+              break;
+            case ModelDBConstants.HYPERPARAMETERS:
+            case ModelDBConstants.METRICS:
+              LOGGER.debug("switch case : {}", fieldName);
+              joinCauseKeyValueEntity(rootAlias, parentFieldName, joinClause, joinAlias);
+              setOrderByField(joinClause, keys, fieldName, joinAlias);
+              orderByFields.add(joinAlias + "." + ModelDBConstants.VALUE);
+              break;
+            case ModelDBConstants.OBSERVATIONS:
+              LOGGER.debug("switch case : {}", fieldName);
+              if (keys.length > 2) {
+                // If getting third level key like observation.attribute.attr_1 then it is not
+                // supported
+                Status status =
+                    Status.newBuilder()
+                        .setCode(Code.UNIMPLEMENTED_VALUE)
+                        .setMessage("Third level of sorting not supported")
+                        .build();
+                throw StatusProto.toStatusRuntimeException(status);
+              } else {
+                joinCauseObservationEntity(rootAlias, parentFieldName, joinClause, joinAlias);
+                setOrderByField(joinClause, keys, fieldName, joinAlias);
+                orderByFields.add(joinAlias + "." + keys[1]);
+              }
+              break;
+            case ModelDBConstants.FEATURES:
+              LOGGER.debug("switch case : {}", fieldName);
+              joinCauseFeatureEntity(rootAlias, parentFieldName, joinClause, joinAlias);
+              orderByFields.add(joinAlias + "." + ModelDBConstants.NAME);
+              break;
+            case ModelDBConstants.TAGS:
+              LOGGER.debug("switch case : {}", fieldName);
+              joinCauseTagsEntity(rootAlias, parentFieldName, joinClause, joinAlias);
+              orderByFields.add(joinAlias + "." + ModelDBConstants.TAGS);
+              break;
+            case ModelDBConstants.VERSIONED_INPUTS:
+              LOGGER.debug("switch case : {}", fieldName);
+              joinCauseVersioningModeldbEntityMappingEntity(
+                  rootAlias, parentFieldName, joinClause, joinAlias);
+              orderByFields.add(joinAlias + "." + keys[1]);
+              break;
+            default:
+              orderByFields.add(joinAlias + "." + sortBy);
+          }
+        }
+      } else {
+        orderByFields.add(rootAlias + "." + ModelDBConstants.DATE_UPDATED);
+      }
+
+      StringBuilder orderStringBuilder = new StringBuilder(" ORDER BY ");
+      orderStringBuilder.append(
+          String.join(" " + ascending + ",", orderByFields.toArray(new String[0])));
+      orderStringBuilder.append(ascending ? " ASC " : " DESC ");
+      return orderStringBuilder;
+    }
+
+    private void setOrderByField(
+        StringBuilder orderClause, String[] keys, String fieldName, String joinAlias) {
+      String childKey = keys[keys.length - 1];
+
+      StringBuilder orderWhereClauseBuilder = new StringBuilder(" AND ");
+      orderWhereClauseBuilder.append(joinAlias).append(".").append(ModelDBConstants.FEILD_TYPE);
+      setValueWithOperatorInQuery(
+          orderWhereClauseBuilder, OperatorEnum.Operator.EQ, fieldName, parametersMap);
+      orderWhereClauseBuilder
+          .append(" AND ")
+          .append(joinAlias)
+          .append(".")
+          .append(ModelDBConstants.KEY);
+      setValueWithOperatorInQuery(
+          orderWhereClauseBuilder, OperatorEnum.Operator.EQ, childKey, parametersMap);
+      orderClause.append(orderWhereClauseBuilder + " ");
     }
 
     private void setPredicatesWithQueryOperator(
@@ -574,10 +733,7 @@ public class FindEntitiesQuery {
     }
 
     private void setQueryParameters(
-        StringBuilder queryBuilder,
-        KeyValueQuery keyValueQuery,
-        Map<String, Object> parametersMap,
-        String fieldName)
+        StringBuilder queryBuilder, KeyValueQuery keyValueQuery, Map<String, Object> parametersMap)
         throws InvalidProtocolBufferException {
       Value value = keyValueQuery.getValue();
       OperatorEnum.Operator operator = keyValueQuery.getOperator();
@@ -591,43 +747,28 @@ public class FindEntitiesQuery {
           LOGGER.debug("Called switch case : string_value");
           if (!value.getStringValue().isEmpty()) {
             LOGGER.debug("Called switch case : string value exist");
-            if (fieldName.equals(ModelDBConstants.ATTRIBUTES)) {
-              setValueWithOperatorInQuery(
-                  queryBuilder,
-                  operator,
-                  ModelDBUtils.getStringFromProtoObject(value),
-                  parametersMap);
-            } else if (keyValueQuery.getKey().equals(ModelDBConstants.PROJECT_VISIBILITY)
+            if (keyValueQuery.getKey().equals(ModelDBConstants.PROJECT_VISIBILITY)
                 || keyValueQuery.getKey().equals(ModelDBConstants.DATASET_VISIBILITY)
                 || keyValueQuery.getKey().equals(ModelDBConstants.DATASET_VERSION_VISIBILITY)) {
               int visibilityOrdinal = 0;
-              if (keyValueQuery.getKey().equals(ModelDBConstants.PROJECT_VISIBILITY)) {
-                visibilityOrdinal = ProjectVisibility.valueOf(value.getStringValue()).ordinal();
-              } else if (keyValueQuery.getKey().equals(ModelDBConstants.DATASET_VISIBILITY)) {
-                visibilityOrdinal =
-                    DatasetVisibilityEnum.DatasetVisibility.valueOf(value.getStringValue())
-                        .ordinal();
-              } else if (keyValueQuery
-                  .getKey()
-                  .equals(ModelDBConstants.DATASET_VERSION_VISIBILITY)) {
-                visibilityOrdinal =
-                    DatasetVisibilityEnum.DatasetVisibility.valueOf(value.getStringValue())
-                        .ordinal();
+              switch (keyValueQuery.getKey()) {
+                case ModelDBConstants.PROJECT_VISIBILITY:
+                  visibilityOrdinal = ProjectVisibility.valueOf(value.getStringValue()).ordinal();
+                  break;
+                case ModelDBConstants.DATASET_VISIBILITY:
+                case ModelDBConstants.DATASET_VERSION_VISIBILITY:
+                  visibilityOrdinal =
+                      DatasetVisibilityEnum.DatasetVisibility.valueOf(value.getStringValue())
+                          .ordinal();
+                  break;
               }
               setValueWithOperatorInQuery(queryBuilder, operator, visibilityOrdinal, parametersMap);
             } else {
               setValueWithOperatorInQuery(
                   queryBuilder, operator, value.getStringValue(), parametersMap);
             }
-            break;
-          } else {
-            Status invalidValueTypeError =
-                Status.newBuilder()
-                    .setCode(Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage("Predicate does not contain string value in request")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
           }
+          break;
         case BOOL_VALUE:
           LOGGER.debug("Called switch case : bool_value");
           setValueWithOperatorInQuery(
