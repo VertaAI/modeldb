@@ -1,28 +1,29 @@
 package ai.verta.modeldb.lineage;
 
 import ai.verta.modeldb.LineageEntry;
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.Location;
 import ai.verta.modeldb.VersioningLineageEntry;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
 
 public class VersioningBlobEntryContainer extends LineageEntryContainer {
   private static final Logger LOGGER = LogManager.getLogger(VersioningBlobEntryContainer.class);
 
+  private final String location;
+  private final String commitSha;
   private final Long repositoryId;
-  private final String blobSha;
-  private final String blobType;
 
-  public VersioningBlobEntryContainer(Long repositoryId, String blobSha, String blobType) {
+  public VersioningBlobEntryContainer(Long repositoryId, String commitSha, String location) {
     this.repositoryId = repositoryId;
-    this.blobSha = blobSha;
-    this.blobType = blobType;
+    this.commitSha = commitSha;
+    this.location = location;
   }
 
   @Override
@@ -34,24 +35,23 @@ public class VersioningBlobEntryContainer extends LineageEntryContainer {
       return false;
     }
     VersioningBlobEntryContainer that = (VersioningBlobEntryContainer) o;
-    return Objects.equals(blobType, that.blobType)
-        && Objects.equals(blobSha, that.blobSha)
+    return Objects.equals(location, that.location)
+        && Objects.equals(commitSha, that.commitSha)
         && Objects.equals(repositoryId, that.repositoryId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(blobType, blobSha, repositoryId);
+    return Objects.hash(location, commitSha, repositoryId);
   }
 
   @Override
-  public LineageEntry toProto(
-      Session session, BlobHashToCommitHashFunction blobHashToCommitHashFunction) {
-    VersioningLineageEntry result;
+  public LineageEntry toProto() {
+    Location.Builder builder = Location.newBuilder();
     try {
-      result = blobHashToCommitHashFunction.apply(session, this);
-    } catch (ModelDBException e) {
-      String errorMessage = "Unexpected blob to commit conversion from the database error";
+      ModelDBUtils.getProtoObjectFromString(location, builder);
+    } catch (InvalidProtocolBufferException e) {
+      String errorMessage = "Unexpected location convertion from the database error";
       LOGGER.error(errorMessage);
       Status status =
           Status.newBuilder()
@@ -61,18 +61,12 @@ public class VersioningBlobEntryContainer extends LineageEntryContainer {
               .build();
       throw StatusProto.toStatusRuntimeException(status);
     }
-    return LineageEntry.newBuilder().setBlob(result).build();
-  }
-
-  public Long getRepositoryId() {
-    return repositoryId;
-  }
-
-  public String getBlobSha() {
-    return blobSha;
-  }
-
-  public String getBlobType() {
-    return blobType;
+    return LineageEntry.newBuilder()
+        .setBlob(
+            VersioningLineageEntry.newBuilder()
+                .setRepositoryId(repositoryId)
+                .setCommitSha(commitSha)
+                .addAllLocation(builder.getLocationList()))
+        .build();
   }
 }

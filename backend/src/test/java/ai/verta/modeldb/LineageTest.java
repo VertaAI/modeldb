@@ -396,7 +396,8 @@ public class LineageTest {
                     VersioningLineageEntry.newBuilder()
                         .setRepositoryId(repositoryId)
                         .setCommitSha(commit1Sha)
-                        .addLocation("/").addLocation("name"));
+                        .addLocation("/")
+                        .addLocation("name"));
 
         final LineageEntry.Builder inputDataset2 =
             LineageEntry.newBuilder()
@@ -404,7 +405,8 @@ public class LineageTest {
                     VersioningLineageEntry.newBuilder()
                         .setRepositoryId(repositoryId)
                         .setCommitSha(commit2Sha)
-                        .addLocation("/").addLocation("name2"));
+                        .addLocation("/")
+                        .addLocation("name2"));
 
         final LineageEntry.Builder outputDataset =
             LineageEntry.newBuilder()
@@ -412,7 +414,8 @@ public class LineageTest {
                     VersioningLineageEntry.newBuilder()
                         .setRepositoryId(repositoryId)
                         .setCommitSha(commit3Sha)
-                        .addLocation("/").addLocation("name3"));
+                        .addLocation("/")
+                        .addLocation("name3"));
         try {
           check(
               Arrays.asList(inputExp, NOT_EXISTENT_DATASET),

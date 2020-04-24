@@ -709,9 +709,9 @@
           tableName="lineage_versioning_blob" unique="false">
             <column name="repository_id" type="int8">
             </column>
-            <column name="blob_sha" type="varchar(256)">
+            <column name="commit_sha" type="varchar(256)">
             </column>
-            <column name="blob_type" type="varchar(256)">
+            <column name="location" type="varchar(256)">
             </column>
         </createIndex>
     </changeSet>
@@ -754,29 +754,6 @@
             </column>
             <column name="entity_type" type="int4">
             </column>
-        </createIndex>
-    </changeSet>
-    <changeSet author="lezhevg" id="create-folder_element_index_for_lineage">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <indexExists indexName="folder_element_index_for_lineage"/>
-            </not>
-        </preConditions>
-        <createIndex indexName="folder_element_index_for_lineage" tableName="folder_element"
-          unique="false">
-            <column name="element_sha" type="varchar(64)" />
-            <column name="element_type" type="varchar(50)"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="lezhevg" id="commit_index_for_lineage">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <indexExists indexName="commit_index_for_lineage"/>
-            </not>
-        </preConditions>
-        <createIndex indexName="commit_index_for_lineage" tableName="commit"
-          unique="false">
-            <column name="root_sha" type="varchar(64)"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog>

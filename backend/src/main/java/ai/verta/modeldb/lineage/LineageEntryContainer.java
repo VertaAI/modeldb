@@ -1,30 +1,29 @@
 package ai.verta.modeldb.lineage;
 
 import ai.verta.modeldb.LineageEntry;
+import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
-import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
-import org.hibernate.Session;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 public abstract class LineageEntryContainer {
-  static LineageEntryContainer fromProto(
-      Session session,
-      LineageEntry lineageEntry,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction)
-      throws ModelDBException {
+  static LineageEntryContainer fromProto(LineageEntry lineageEntry)
+      throws InvalidProtocolBufferException, ModelDBException {
     switch (lineageEntry.getDescriptionCase()) {
       case EXPERIMENT_RUN:
         return new ExperimentRunEntryContainer(lineageEntry.getExperimentRun());
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
-        InternalFolderElementEntity result = commitHashToBlobHashFunction.apply(session, blob);
         return new VersioningBlobEntryContainer(
-            blob.getRepositoryId(), result.getElement_sha(), result.getElement_type());
+            blob.getRepositoryId(),
+            blob.getCommitSha(),
+            ModelDBUtils.getStringFromProtoObject(
+                Location.newBuilder().addAllLocation(blob.getLocationList())));
       default:
         throw new ModelDBException("Unknown lineage type");
     }
   }
 
-  public abstract LineageEntry toProto(
-      Session session, BlobHashToCommitHashFunction blobHashToCommitHashFunction);
+  public abstract LineageEntry toProto();
 }

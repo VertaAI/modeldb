@@ -1285,10 +1285,10 @@
             <column name="repository_id" type="int8">
                 <constraints nullable="true"/>
             </column>
-            <column name="blob_sha" type="varchar(256)">
+            <column name="commit_sha" type="varchar(256)">
                 <constraints nullable="true"/>
             </column>
-            <column name="blob_type" type="varchar(256)">
+            <column name="location" type="varchar(256)">
                 <constraints nullable="true"/>
             </column>
         </createTable>

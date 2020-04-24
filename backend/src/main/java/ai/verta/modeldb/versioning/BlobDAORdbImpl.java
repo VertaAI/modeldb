@@ -3,14 +3,11 @@ package ai.verta.modeldb.versioning;
 import static java.util.stream.Collectors.toMap;
 
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.VersioningLineageEntry;
-import ai.verta.modeldb.VersioningLineageEntry.Builder;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.lineage.VersioningBlobEntryContainer;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;
 import ai.verta.modeldb.versioning.GetCommitComponentRequest.Response;
@@ -24,7 +21,6 @@ import ai.verta.modeldb.versioning.blob.diff.DiffMerger;
 import ai.verta.modeldb.versioning.blob.diff.TypeChecker;
 import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
 import ai.verta.uac.UserInfo;
-import com.google.common.collect.Lists;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
 import java.security.NoSuchAlgorithmException;
@@ -48,10 +44,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -131,14 +123,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   // TODO : check if there is a way to optimize on the calls to data base.
   // We should fetch data  in a single query.
   @Override
-  public GetCommitComponentRequest.Response getCommitComponent(
-      RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
-      throws ModelDBException {
-    return getCommitComponentWithHash(repositoryFunction, commitHash, locationList).getKey();
-  }
-
-  @Override
-  public Entry<Response, Optional<InternalFolderElementEntity>> getCommitComponentWithHash(
+  public Response getCommitComponent(
       RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -159,10 +144,9 @@ public class BlobDAORdbImpl implements BlobDAO {
         Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
         session.getTransaction().commit();
         if (folder == null) { // root is empty
-          return new AbstractMap.SimpleEntry<>(Response.newBuilder().build(), Optional.empty());
+          return Response.newBuilder().build();
         }
-        return new AbstractMap.SimpleEntry<>(
-            Response.newBuilder().setFolder(folder).build(), Optional.empty());
+        return Response.newBuilder().setFolder(folder).build();
       }
       for (int index = 0; index < locationList.size(); index++) {
         String folderLocation = locationList.get(index);
@@ -189,20 +173,17 @@ public class BlobDAORdbImpl implements BlobDAO {
           if (index == locationList.size() - 1) {
             Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
             session.getTransaction().commit();
-            Response response;
             if (folder == null) { // folder is empty
-              response = Response.newBuilder().build();
+              return Response.newBuilder().build();
             } else {
-              response = Response.newBuilder().setFolder(folder).build();
+              return Response.newBuilder().setFolder(folder).build();
             }
-            return new AbstractMap.SimpleEntry<>(response, Optional.of(elementEntity));
           }
         } else {
           if (index == locationList.size() - 1) {
             Blob blob = getBlob(session, elementEntity);
             session.getTransaction().commit();
-            return new AbstractMap.SimpleEntry<>(
-                Response.newBuilder().setBlob(blob).build(), Optional.of(elementEntity));
+            return Response.newBuilder().setBlob(blob).build();
           } else {
             throw new ModelDBException(
                 "No such folder found : " + locationList.get(index + 1), Status.Code.NOT_FOUND);
@@ -824,101 +805,6 @@ public class BlobDAORdbImpl implements BlobDAO {
           .setCommit(commitEntity.toCommitProto())
           .build();
     }
-  }
-
-  @Override
-  public VersioningLineageEntry getVersioningEntryByBlob(
-      Session session,
-      RepositoryFunction repositoryFunction,
-      VersioningBlobEntryContainer versioningBlobElement)
-      throws ModelDBException {
-    RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
-    String blobSha = versioningBlobElement.getBlobSha();
-    String blobType = versioningBlobElement.getBlobType();
-    List<InternalFolderElementEntity> list =
-        getInternalFolderElementEntity(session, blobSha, blobType);
-    for (InternalFolderElementEntity internalFolderElementEntity : list) {
-      VersioningLineageEntry result =
-          getCommit(
-              session,
-              internalFolderElementEntity,
-              VersioningLineageEntry.newBuilder()
-                  .addLocation(internalFolderElementEntity.getElement_name()),
-              repositoryEntity);
-      if (result != null) {
-        return result;
-      }
-    }
-    throw new ModelDBException("Commit not found", Status.Code.NOT_FOUND);
-  }
-
-  /**
-   * Starts from a specified blob hash and type entry and finds required commit hash + location
-   * @param session current session
-   * @param internalFolderElementEntity blob hash and type information
-   * @param versioningLineageEntry result
-   * @param repositoryEntity repository info
-   * @return resulting versioningLineageEntry
-   */
-  private VersioningLineageEntry getCommit(
-      Session session,
-      InternalFolderElementEntity internalFolderElementEntity,
-      Builder versioningLineageEntry,
-      RepositoryEntity repositoryEntity) {
-    List<InternalFolderElementEntity> list =
-        getInternalFolderElementEntity(session, internalFolderElementEntity.getFolder_hash(), TREE);
-    if (list.size() == 0) {
-      CriteriaBuilder builder = session.getCriteriaBuilder();
-      CriteriaQuery<CommitEntity> criteriaQuery = builder.createQuery(CommitEntity.class);
-      Root<CommitEntity> root = criteriaQuery.from(CommitEntity.class);
-      final Predicate blobShaPredicate =
-          root.get("rootSha").in(internalFolderElementEntity.getFolder_hash());
-      criteriaQuery.select(root);
-      criteriaQuery.where(blobShaPredicate);
-      Query<CommitEntity> query = session.createQuery(criteriaQuery);
-      List<CommitEntity> commits = query.list();
-      for (CommitEntity commit : commits) {
-        if (commit.getRepository().contains(repositoryEntity)) {
-          ProtocolStringList locationList = versioningLineageEntry.getLocationList();
-          List<String> reversedLocation = Lists.reverse(locationList);
-          versioningLineageEntry.clearLocation().addAllLocation(reversedLocation);
-          return versioningLineageEntry
-              .setRepositoryId(repositoryEntity.getId())
-              .setCommitSha(commit.getCommit_hash())
-              .build();
-        } else {
-          return null;
-        }
-      }
-    }
-    for (InternalFolderElementEntity internalFolderElementEntityNew : list) {
-      // add location backwards
-      VersioningLineageEntry result =
-          getCommit(
-              session,
-              internalFolderElementEntityNew,
-              versioningLineageEntry.addLocation(internalFolderElementEntityNew.getElement_name()),
-              repositoryEntity);
-      if (result != null) {
-        return result;
-      }
-    }
-    return null;
-  }
-
-  private List<InternalFolderElementEntity> getInternalFolderElementEntity(
-      Session session, String blobSha, String blobType) {
-    CriteriaBuilder builder = session.getCriteriaBuilder();
-    CriteriaQuery<InternalFolderElementEntity> criteriaQuery =
-        builder.createQuery(InternalFolderElementEntity.class);
-    Root<InternalFolderElementEntity> root = criteriaQuery.from(InternalFolderElementEntity.class);
-    final Predicate blobShaPredicate = root.get("element_sha").in(blobSha);
-    final Predicate blobTypePredicate = root.get("element_type").in(blobType);
-    final Predicate finalPredicate = builder.and(blobShaPredicate, blobTypePredicate);
-    criteriaQuery.select(root);
-    criteriaQuery.where(finalPredicate);
-    Query<InternalFolderElementEntity> query = session.createQuery(criteriaQuery);
-    return query.list();
   }
 
   private List<BlobDiff> getConflictDiff(

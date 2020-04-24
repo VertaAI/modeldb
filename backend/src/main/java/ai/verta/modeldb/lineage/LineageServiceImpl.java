@@ -11,7 +11,6 @@ import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
-import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
@@ -19,7 +18,6 @@ import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.GetCommitComponentRequest.Response;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -31,8 +29,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,8 +71,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        AddLineage.Response response =
-            lineageDAO.addLineage(request, this::checkResourcesExists, this::getBlobFromCommit);
+        AddLineage.Response response = lineageDAO.addLineage(request, this::checkResourcesExists);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -92,8 +87,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        DeleteLineage.Response response =
-            lineageDAO.deleteLineage(request, this::getBlobFromCommit);
+        DeleteLineage.Response response = lineageDAO.deleteLineage(request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -112,8 +106,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllInputs.Response response =
-            lineageDAO.findAllInputs(request, this::getBlobFromCommit, this::getCommitFromBlob);
+        FindAllInputs.Response response = lineageDAO.findAllInputs(request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -132,8 +125,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllOutputs.Response response =
-            lineageDAO.findAllOutputs(request, this::getBlobFromCommit, this::getCommitFromBlob);
+        FindAllOutputs.Response response = lineageDAO.findAllOutputs(request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -153,9 +145,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllInputsOutputs.Response response =
-            lineageDAO.findAllInputsOutputs(
-                request, this::getBlobFromCommit, this::getCommitFromBlob);
+        FindAllInputsOutputs.Response response = lineageDAO.findAllInputsOutputs(request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -163,36 +153,6 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, FindAllInputsOutputs.Response.getDefaultInstance());
     }
-  }
-
-  private InternalFolderElementEntity getBlobFromCommit(
-      Session session, VersioningLineageEntry versioningLineageEntry) throws ModelDBException {
-    Entry<Response, Optional<InternalFolderElementEntity>> result =
-        blobDAO.getCommitComponentWithHash(
-            session1 -> getRepositoryById(session, versioningLineageEntry.getRepositoryId()),
-            versioningLineageEntry.getCommitSha(),
-            versioningLineageEntry.getLocationList());
-    return result
-        .getValue()
-        .orElseThrow(() -> new ModelDBException("Wrong blob specified", Code.INVALID_ARGUMENT));
-  }
-
-  private RepositoryEntity getRepositoryById(Session session, long repositoryId) {
-    try {
-      return repositoryDAO.getRepositoryById(
-          session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
-    } catch (ModelDBException e) {
-      LOGGER.warn("repository not found {}", e.getMessage());
-      return null;
-    }
-  }
-
-  private VersioningLineageEntry getCommitFromBlob(
-      Session session, VersioningBlobEntryContainer versioningBlobElement) throws ModelDBException {
-    return blobDAO.getVersioningEntryByBlob(
-        session,
-        session1 -> getRepositoryById(session, versioningBlobElement.getRepositoryId()),
-        versioningBlobElement);
   }
 
   private static class CommitMap {
@@ -271,18 +231,6 @@ public class LineageServiceImpl extends LineageServiceImplBase {
                   Location.newBuilder().addAllLocation(blob.getLocationList()));
           if (!blobResult.contains(stringFromProtoObject)) {
             blobDAO.getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
-            Entry<Response, Optional<InternalFolderElementEntity>> blobHashInfo =
-                blobDAO.getCommitComponentWithHash(
-                    session1 -> repo, commitSha, blob.getLocationList());
-            String elementSha =
-                blobHashInfo
-                    .getValue()
-                    .orElseThrow(
-                        () -> new ModelDBException("Wrong blob specified", Code.INVALID_ARGUMENT))
-                    .getElement_sha();
-            if (elementSha == null || elementSha.isEmpty()) {
-              throw new ModelDBException("Wrong blob specified", Code.INVALID_ARGUMENT);
-            }
             blobResult.add(stringFromProtoObject);
           }
           break;

@@ -2,7 +2,6 @@ package ai.verta.modeldb.lineage;
 
 import ai.verta.modeldb.LineageEntry;
 import java.util.Objects;
-import org.hibernate.Session;
 
 public class ExperimentRunEntryContainer extends LineageEntryContainer {
 
@@ -30,8 +29,7 @@ public class ExperimentRunEntryContainer extends LineageEntryContainer {
   }
 
   @Override
-  public LineageEntry toProto(
-      Session session, BlobHashToCommitHashFunction blobHashToCommitHashFunction) {
+  public LineageEntry toProto() {
     return LineageEntry.newBuilder().setExperimentRun(experimentRunId).build();
   }
 }

@@ -19,9 +19,7 @@ public interface LineageDAO {
    * @throws ModelDBException wrong data format
    */
   AddLineage.Response addLineage(
-      AddLineage addLineage,
-      ResourceExistsCheckConsumer resourceExistsCheckConsumer,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction)
+      AddLineage addLineage, ResourceExistsCheckConsumer resourceExistsCheckConsumer)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 
   /**
@@ -31,8 +29,7 @@ public interface LineageDAO {
    * @return {@link DeleteLineage.Response} : status
    * @throws ModelDBException wrong data format
    */
-  DeleteLineage.Response deleteLineage(
-      DeleteLineage deleteLineage, CommitHashToBlobHashFunction commitHashToBlobHashFunction)
+  DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage)
       throws ModelDBException, InvalidProtocolBufferException;
 
   /**
@@ -42,10 +39,7 @@ public interface LineageDAO {
    * @return {@link FindAllInputs.Response} : status
    * @throws ModelDBException wrong data format
    */
-  FindAllInputs.Response findAllInputs(
-      FindAllInputs findAllInputs,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
+  FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs)
       throws ModelDBException, InvalidProtocolBufferException;
 
   /**
@@ -55,10 +49,7 @@ public interface LineageDAO {
    * @return {@link FindAllOutputs.Response} : status
    * @throws ModelDBException wrong data format
    */
-  FindAllOutputs.Response findAllOutputs(
-      FindAllOutputs findAllOutputs,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
+  FindAllOutputs.Response findAllOutputs(FindAllOutputs findAllOutputs)
       throws ModelDBException, InvalidProtocolBufferException;
 
   /**
@@ -68,9 +59,6 @@ public interface LineageDAO {
    * @return {@link FindAllInputsOutputs.Response} : status
    * @throws ModelDBException wrong data format
    */
-  FindAllInputsOutputs.Response findAllInputsOutputs(
-      FindAllInputsOutputs findAllInputsOutputs,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
+  FindAllInputsOutputs.Response findAllInputsOutputs(FindAllInputsOutputs findAllInputsOutputs)
       throws ModelDBException, InvalidProtocolBufferException;
 }

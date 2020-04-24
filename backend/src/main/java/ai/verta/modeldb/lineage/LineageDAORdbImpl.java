@@ -5,6 +5,7 @@ import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ConnectionType.
 import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ConnectionType.CONNECTION_TYPE_OUTPUT;
 import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ENTITY_TYPE_EXPERIMENT_RUN;
 import static ai.verta.modeldb.entities.lineage.ConnectionEntity.ENTITY_TYPE_VERSIONING_BLOB;
+import static ai.verta.modeldb.entities.lineage.LineageVersioningBlobEntity.toLocationString;
 
 import ai.verta.modeldb.AddLineage;
 import ai.verta.modeldb.AddLineage.Response;
@@ -23,9 +24,9 @@ import ai.verta.modeldb.entities.lineage.ConnectionEntity.ConnectionType;
 import ai.verta.modeldb.entities.lineage.LineageElementEntity;
 import ai.verta.modeldb.entities.lineage.LineageExperimentRunEntity;
 import ai.verta.modeldb.entities.lineage.LineageVersioningBlobEntity;
-import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
@@ -55,9 +56,7 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public Response addLineage(
-      AddLineage addLineage,
-      ResourceExistsCheckConsumer resourceExistsCheckConsumer,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction)
+      AddLineage addLineage, ResourceExistsCheckConsumer resourceExistsCheckConsumer)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
@@ -80,10 +79,10 @@ public class LineageDAORdbImpl implements LineageDAO {
       lineageEntries.addAll(addLineage.getOutputList());
       resourceExistsCheckConsumer.accept(session, lineageEntries);
       for (LineageEntry input : addLineage.getInputList()) {
-        addLineage(session, input, id, CONNECTION_TYPE_INPUT, commitHashToBlobHashFunction);
+        addLineage(session, input, id, CONNECTION_TYPE_INPUT);
       }
       for (LineageEntry output : addLineage.getOutputList()) {
-        addLineage(session, output, id, CONNECTION_TYPE_OUTPUT, commitHashToBlobHashFunction);
+        addLineage(session, output, id, CONNECTION_TYPE_OUTPUT);
       }
       session.getTransaction().commit();
       return AddLineage.Response.newBuilder().setId(lineageElementEntity.getId()).build();
@@ -91,9 +90,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   @Override
-  public DeleteLineage.Response deleteLineage(
-      DeleteLineage deleteLineage, CommitHashToBlobHashFunction commitHashToBlobHashFunction)
-      throws ModelDBException {
+  public DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage)
+      throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
@@ -109,10 +107,10 @@ public class LineageDAORdbImpl implements LineageDAO {
       Map<LineageEntryContainer, ConnectionEntity> inputInDatabase = inputOutputs.getKey();
       Map<LineageEntryContainer, ConnectionEntity> outputInDatabase = inputOutputs.getValue();
       for (LineageEntry input : deleteLineage.getInputList()) {
-        deleteLineage(session, input, inputInDatabase, commitHashToBlobHashFunction);
+        deleteLineage(session, input, inputInDatabase);
       }
       for (LineageEntry output : deleteLineage.getOutputList()) {
-        deleteLineage(session, output, outputInDatabase, commitHashToBlobHashFunction);
+        deleteLineage(session, output, outputInDatabase);
       }
       /* noDataProvided is a flag that there are no entries provided in the request.
       That means that we should delete all entries with the specified id.
@@ -209,12 +207,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private Map<Long, List<LineageEntry>> getSideAEntries(
-      Session session,
-      LineageEntry lineageEntry,
-      ConnectionEntity.ConnectionType connectionType,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
-      throws ModelDBException {
+      Session session, LineageEntry lineageEntry, ConnectionEntity.ConnectionType connectionType)
+      throws ModelDBException, InvalidProtocolBufferException {
     int entityType;
     Long entityId;
     Map<Long, List<LineageEntry>> result = new HashMap<>();
@@ -230,19 +224,10 @@ public class LineageDAORdbImpl implements LineageDAO {
         break;
       case BLOB:
         LineageVersioningBlobEntity lineageVersioningBlobEntity;
-        try {
-          InternalFolderElementEntity blobHashInCommit =
-              commitHashToBlobHashFunction.apply(session, lineageEntry.getBlob());
-          lineageVersioningBlobEntity =
-              getLineageVersioningBlobEntity(
-                  session,
-                  lineageEntry.getBlob().getRepositoryId(),
-                  blobHashInCommit.getElement_sha(),
-                  blobHashInCommit.getElement_type());
-        } catch (ModelDBException e) {
-          LOGGER.warn("commit not found: {}", e.getMessage());
-          lineageVersioningBlobEntity = null;
-        }
+        VersioningLineageEntry blob = lineageEntry.getBlob();
+        lineageVersioningBlobEntity =
+            getLineageVersioningBlobEntity(
+                session, blob.getRepositoryId(), blob.getCommitSha(), blob.getLocationList());
         if (lineageVersioningBlobEntity == null) {
           return result;
         }
@@ -263,23 +248,24 @@ public class LineageDAORdbImpl implements LineageDAO {
       result.put(
           connectionEntity.getId(),
           inputOrOutputInDatabase.keySet().stream()
-              .map(lineageElement -> lineageElement.toProto(session, blobHashToCommitHashFunction))
+              .map(LineageEntryContainer::toProto)
               .collect(Collectors.toList()));
     }
     return result;
   }
 
   private LineageVersioningBlobEntity getLineageVersioningBlobEntity(
-      Session session, long repositoryId, String blobSha, String blobType) {
+      Session session, long repositoryId, String commitSha, ProtocolStringList location)
+      throws InvalidProtocolBufferException {
     CriteriaBuilder builder = session.getCriteriaBuilder();
     CriteriaQuery<LineageVersioningBlobEntity> criteriaQuery =
         builder.createQuery(LineageVersioningBlobEntity.class);
     Root<LineageVersioningBlobEntity> root = criteriaQuery.from(LineageVersioningBlobEntity.class);
     final Predicate repositoryIdPredicate = root.get("repositoryId").in(repositoryId);
-    final Predicate blobShaPredicate = root.get("blobSha").in(blobSha);
-    final Predicate blobTypePredicate = root.get("blobType").in(blobType);
+    final Predicate commitShaPredicate = root.get("commitSha").in(commitSha);
+    final Predicate locationPredicate = root.get("location").in(toLocationString(location));
     final Predicate finalPredicate =
-        builder.and(repositoryIdPredicate, blobShaPredicate, blobTypePredicate);
+        builder.and(repositoryIdPredicate, commitShaPredicate, locationPredicate);
     criteriaQuery.select(root);
     criteriaQuery.where(finalPredicate);
     Query<LineageVersioningBlobEntity> query = session.createQuery(criteriaQuery);
@@ -379,11 +365,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   @Override
-  public FindAllInputs.Response findAllInputs(
-      FindAllInputs findAllInputs,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
-      throws ModelDBException {
+  public FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs)
+      throws ModelDBException, InvalidProtocolBufferException {
     FindAllInputs.Response.Builder response = FindAllInputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllInputs.getItemsList();
@@ -391,12 +374,7 @@ public class LineageDAORdbImpl implements LineageDAO {
         validate(output);
         response.addInputs(
             LineageEntryBatchResponse.newBuilder()
-                .addAllItems(
-                    getInputsByOutput(
-                        session,
-                        output,
-                        commitHashToBlobHashFunction,
-                        blobHashToCommitHashFunction))
+                .addAllItems(getInputsByOutput(session, output))
                 .build());
       }
     }
@@ -404,11 +382,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   @Override
-  public FindAllOutputs.Response findAllOutputs(
-      FindAllOutputs findAllOutputs,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
-      throws ModelDBException {
+  public FindAllOutputs.Response findAllOutputs(FindAllOutputs findAllOutputs)
+      throws ModelDBException, InvalidProtocolBufferException {
     FindAllOutputs.Response.Builder response = FindAllOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllOutputs.getItemsList();
@@ -416,9 +391,7 @@ public class LineageDAORdbImpl implements LineageDAO {
         validate(input);
         response.addOutputs(
             LineageEntryBatchResponse.newBuilder()
-                .addAllItems(
-                    getOutputsByInput(
-                        session, input, commitHashToBlobHashFunction, blobHashToCommitHashFunction))
+                .addAllItems(getOutputsByInput(session, input))
                 .build());
       }
     }
@@ -427,10 +400,8 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public FindAllInputsOutputs.Response findAllInputsOutputs(
-      FindAllInputsOutputs findAllInputsOutputs,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
-      throws ModelDBException {
+      FindAllInputsOutputs findAllInputsOutputs)
+      throws ModelDBException, InvalidProtocolBufferException {
     FindAllInputsOutputs.Response.Builder response = FindAllInputsOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllInputsOutputs.getItemsList();
@@ -439,21 +410,11 @@ public class LineageDAORdbImpl implements LineageDAO {
         response
             .addInputs(
                 LineageEntryBatchResponse.newBuilder()
-                    .addAllItems(
-                        getInputsByOutput(
-                            session,
-                            inputoutput,
-                            commitHashToBlobHashFunction,
-                            blobHashToCommitHashFunction))
+                    .addAllItems(getInputsByOutput(session, inputoutput))
                     .build())
             .addOutputs(
                 LineageEntryBatchResponse.newBuilder()
-                    .addAllItems(
-                        getOutputsByInput(
-                            session,
-                            inputoutput,
-                            commitHashToBlobHashFunction,
-                            blobHashToCommitHashFunction))
+                    .addAllItems(getOutputsByInput(session, inputoutput))
                     .build());
       }
     }
@@ -463,11 +424,9 @@ public class LineageDAORdbImpl implements LineageDAO {
   private void deleteLineage(
       Session session,
       LineageEntry lineageEntry,
-      Map<LineageEntryContainer, ConnectionEntity> entityIds,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction)
-      throws ModelDBException {
-    LineageEntryContainer key =
-        LineageEntryContainer.fromProto(session, lineageEntry, commitHashToBlobHashFunction);
+      Map<LineageEntryContainer, ConnectionEntity> entityIds)
+      throws ModelDBException, InvalidProtocolBufferException {
+    LineageEntryContainer key = LineageEntryContainer.fromProto(lineageEntry);
     ConnectionEntity connectionEntity = entityIds.get(key);
     if (connectionEntity != null) {
       deleteConnectionEntity(session, connectionEntity);
@@ -499,12 +458,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void addLineage(
-      Session session,
-      LineageEntry lineageEntry,
-      Long id,
-      ConnectionType connectionType,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction)
-      throws ModelDBException {
+      Session session, LineageEntry lineageEntry, Long id, ConnectionType connectionType)
+      throws ModelDBException, InvalidProtocolBufferException {
     final Long entityId;
     final int entityType;
     final boolean connectionExists;
@@ -525,14 +480,13 @@ public class LineageDAORdbImpl implements LineageDAO {
         break;
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
-        InternalFolderElementEntity result = commitHashToBlobHashFunction.apply(session, blob);
         LineageVersioningBlobEntity lineageVersioningBlobEntity =
             getLineageVersioningBlobEntity(
-                session, blob.getRepositoryId(), result.getElement_sha(), result.getElement_type());
+                session, blob.getRepositoryId(), blob.getCommitSha(), blob.getLocationList());
         if (lineageVersioningBlobEntity == null) {
           lineageVersioningBlobEntity =
               new LineageVersioningBlobEntity(
-                  blob.getRepositoryId(), result.getElement_sha(), result.getElement_type());
+                  blob.getRepositoryId(), blob.getCommitSha(), blob.getLocationList());
           session.save(lineageVersioningBlobEntity);
           connectionExists = false;
         } else {
@@ -563,31 +517,15 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private List<LineageEntryBatchResponseSingle> getOutputsByInput(
-      Session session,
-      LineageEntryBatchRequest input,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
-      throws ModelDBException {
-    return getLineageEntryContainerToConnectionEntityMap(
-        session,
-        input,
-        CONNECTION_TYPE_OUTPUT,
-        commitHashToBlobHashFunction,
-        blobHashToCommitHashFunction);
+      Session session, LineageEntryBatchRequest input)
+      throws ModelDBException, InvalidProtocolBufferException {
+    return getLineageEntryContainerToConnectionEntityMap(session, input, CONNECTION_TYPE_OUTPUT);
   }
 
   private List<LineageEntryBatchResponseSingle> getInputsByOutput(
-      Session session,
-      LineageEntryBatchRequest output,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
-      throws ModelDBException {
-    return getLineageEntryContainerToConnectionEntityMap(
-        session,
-        output,
-        CONNECTION_TYPE_INPUT,
-        commitHashToBlobHashFunction,
-        blobHashToCommitHashFunction);
+      Session session, LineageEntryBatchRequest output)
+      throws ModelDBException, InvalidProtocolBufferException {
+    return getLineageEntryContainerToConnectionEntityMap(session, output, CONNECTION_TYPE_INPUT);
   }
 
   /**
@@ -597,18 +535,12 @@ public class LineageDAORdbImpl implements LineageDAO {
    * @param session current session
    * @param sideB information about entries
    * @param connectionTypeSideA connection type of entries which we want to receive
-   * @param commitHashToBlobHashFunction commit hash to blob hash
-   * @param blobHashToCommitHashFunction blob hash to commit hash
    * @return side A information
    * @throws ModelDBException validation errors, internal errors
    */
   private List<LineageEntryBatchResponseSingle> getLineageEntryContainerToConnectionEntityMap(
-      Session session,
-      LineageEntryBatchRequest sideB,
-      ConnectionType connectionTypeSideA,
-      CommitHashToBlobHashFunction commitHashToBlobHashFunction,
-      BlobHashToCommitHashFunction blobHashToCommitHashFunction)
-      throws ModelDBException {
+      Session session, LineageEntryBatchRequest sideB, ConnectionType connectionTypeSideA)
+      throws ModelDBException, InvalidProtocolBufferException {
     Map<Long, List<LineageEntry>> sideAInDatabase;
     switch (sideB.getIdentifierCase()) {
       case ID:
@@ -619,19 +551,11 @@ public class LineageDAORdbImpl implements LineageDAO {
                 sideB.getId(),
                 getLineageEntryContainerToConnectionEntityMap(session, connectionEntitiesById)
                     .keySet().stream()
-                    .map(
-                        lineageEntryContainer ->
-                            lineageEntryContainer.toProto(session, blobHashToCommitHashFunction))
+                    .map(LineageEntryContainer::toProto)
                     .collect(Collectors.toList()));
         break;
       case ENTRY:
-        sideAInDatabase =
-            getSideAEntries(
-                session,
-                sideB.getEntry(),
-                connectionTypeSideA,
-                commitHashToBlobHashFunction,
-                blobHashToCommitHashFunction);
+        sideAInDatabase = getSideAEntries(session, sideB.getEntry(), connectionTypeSideA);
         break;
       default:
         throw new ModelDBException("Unknown id type");
