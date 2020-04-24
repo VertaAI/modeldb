@@ -67,7 +67,6 @@ import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -406,6 +405,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
+              projectDAO,
               ModelDBConstants.PROJECT_ID,
               request.getProjectId(),
               request.getPageNumber(),
@@ -677,35 +677,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      ExperimentRunServiceImpl experimentRunService =
-          new ExperimentRunServiceImpl(
-              authService,
-              roleService,
-              experimentRunDAO,
-              projectDAO,
-              experimentDAO,
-              artifactStoreDAO,
-              datasetVersionDAO);
-      List<String> accessibleExperimentRunIds =
-          experimentRunService.getAccessibleExperimentRunIDs(
-              request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-
-      if (accessibleExperimentRunIds.isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(FindExperimentRuns.getDefaultInstance()));
-      }
-
-      request =
-          request
-              .toBuilder()
-              .clearExperimentRunIds()
-              .addAllExperimentRunIds(accessibleExperimentRunIds)
-              .build();
-
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.sortExperimentRuns(request);
+          experimentRunDAO.sortExperimentRuns(projectDAO, request);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
@@ -735,21 +708,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      if ((request.getProjectId().isEmpty()
-              && request.getExperimentId().isEmpty()
-              && request.getExperimentRunIdsList().isEmpty())
-          || request.getSortKey().isEmpty()) {
-        String errorMessage =
-            "Project ID and Experiment ID and Experiment IDs and Sort key not found in TopExperimentRunsSelector request";
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(TopExperimentRunsSelector.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
 
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
@@ -766,36 +724,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      if (!request.getExperimentRunIdsList().isEmpty()) {
-        ExperimentRunServiceImpl experimentRunService =
-            new ExperimentRunServiceImpl(
-                authService,
-                roleService,
-                experimentRunDAO,
-                projectDAO,
-                experimentDAO,
-                artifactStoreDAO,
-                datasetVersionDAO);
-        List<String> accessibleExperimentRunIds =
-            experimentRunService.getAccessibleExperimentRunIDs(
-                request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-
-        if (accessibleExperimentRunIds.isEmpty()) {
-          ModelDBUtils.logAndThrowError(
-              ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperimentRuns.getDefaultInstance()));
-        }
-
-        request =
-            request
-                .toBuilder()
-                .clearExperimentRunIds()
-                .addAllExperimentRunIds(accessibleExperimentRunIds)
-                .build();
-      }
-
-      List<ExperimentRun> experimentRuns = experimentRunDAO.getTopExperimentRuns(request);
+      List<ExperimentRun> experimentRuns =
+          experimentRunDAO.getTopExperimentRuns(projectDAO, request);
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
       if (!experimentRuns.isEmpty()) {
         hydratedExperimentRuns = getHydratedExperimentRuns(experimentRuns);

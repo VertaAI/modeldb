@@ -69,6 +69,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   ExperimentRunPaginationDTO getExperimentRunsFromEntity(
+      ProjectDAO projectDAO,
       String entityKey,
       String entityValue,
       Integer pageNumber,
@@ -292,6 +293,7 @@ public interface ExperimentRunDAO {
 
   /**
    * Return list of experimentRuns based on FindExperimentRuns queryParameters
+   *
    * @param projectDAO : projectDAO
    * @param currentLoginUserInfo : current login user info
    * @param queryParameters --> query parameters for filtering experimentRuns
@@ -299,7 +301,8 @@ public interface ExperimentRunDAO {
    *     experimentRuns based on filter queryParameters & total_pages count
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRunPaginationDTO findExperimentRuns(ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
+  ExperimentRunPaginationDTO findExperimentRuns(
+      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
       throws InvalidProtocolBufferException;
 
   /**
@@ -310,7 +313,8 @@ public interface ExperimentRunDAO {
    *     experimentRuns based on filter queryParameters & total_pages count
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRunPaginationDTO sortExperimentRuns(SortExperimentRuns queryParameters)
+  ExperimentRunPaginationDTO sortExperimentRuns(
+      ProjectDAO projectDAO, SortExperimentRuns queryParameters)
       throws InvalidProtocolBufferException;
 
   /**
@@ -322,7 +326,8 @@ public interface ExperimentRunDAO {
    *     queryParameters
    * @throws InvalidProtocolBufferException
    */
-  List<ExperimentRun> getTopExperimentRuns(TopExperimentRunsSelector queryParameters)
+  List<ExperimentRun> getTopExperimentRuns(
+      ProjectDAO projectDAO, TopExperimentRunsSelector queryParameters)
       throws InvalidProtocolBufferException;
 
   /**
@@ -483,12 +488,14 @@ public interface ExperimentRunDAO {
       throws InvalidProtocolBufferException;
 
   ListCommitExperimentRunsRequest.Response listCommitExperimentRuns(
+      ProjectDAO projectDAO,
       ListCommitExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException, InvalidProtocolBufferException;
 
   ListBlobExperimentRunsRequest.Response listBlobExperimentRuns(
+      ProjectDAO projectDAO,
       ListBlobExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)

@@ -6,17 +6,14 @@ import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
-import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.CommentEntity;
@@ -49,7 +46,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -187,19 +183,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       }
     }
     return accessibleExperimentIds;
-  }
-
-  public List<String> getDefaultWorkspaceProjectIDs(
-      ProjectDAO projectDAO, String workspaceName, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException {
-    FindProjects findProjects =
-        FindProjects.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
-    ProjectPaginationDTO projectPaginationDTO =
-        projectDAO.findProjects(
-            findProjects, null, currentLoginUserInfo, ProjectVisibility.PRIVATE);
-    return projectPaginationDTO.getProjects().stream()
-        .map(Project::getId)
-        .collect(Collectors.toList());
   }
 
   public ExperimentDAORdbImpl(AuthService authService, RoleService roleService) {
@@ -868,8 +851,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         projectIds.add(queryParameters.getProjectId());
       } else {
         List<String> workspaceProjectIDs =
-            getDefaultWorkspaceProjectIDs(
-                projectDAO, queryParameters.getWorkspaceName(), currentLoginUserInfo);
+            projectDAO.getWorkspaceProjectIDs(
+                queryParameters.getWorkspaceName(), currentLoginUserInfo);
         if (workspaceProjectIDs == null || workspaceProjectIDs.isEmpty()) {
           LOGGER.warn(
               "accessible project for the experiments not found for given workspace : {}",

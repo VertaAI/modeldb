@@ -2426,16 +2426,7 @@ public class FindProjectEntitiesTest {
   public void findExperimentRunsNegativeTest() {
     LOGGER.info("FindExperimentRuns Negative test start................................");
 
-    FindExperimentRuns findExperimentRuns = FindExperimentRuns.newBuilder().build();
-
-    try {
-      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
+    FindExperimentRuns findExperimentRuns;
 
     try {
       findExperimentRuns = FindExperimentRuns.newBuilder().setProjectId("12321").build();
@@ -2564,5 +2555,43 @@ public class FindProjectEntitiesTest {
         response.getTotalRecords());
 
     LOGGER.info("FindExperiments by workspace test stop................................");
+  }
+
+  /** Find experimentRun with value of endTime */
+  @Test
+  public void findExperimentRunsWithoutProjectExperimentTest() {
+    LOGGER.info(
+        "FindExperimentRuns without project & experiment test start................................");
+
+    Value stringValue =
+        Value.newBuilder().setStringValue(String.valueOf(experimentRun22.getEndTime())).build();
+    KeyValueQuery keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("end_time")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.EQ)
+            .build();
+
+    FindExperimentRuns findExperimentRuns =
+        FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
+
+    FindExperimentRuns.Response response =
+        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        1,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun not match with expected experimentRun",
+        experimentRun22.getId(),
+        response.getExperimentRunsList().get(0).getId());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+
+    LOGGER.info(
+        "FindExperimentRuns without project & experiment test stop................................");
   }
 }

@@ -87,10 +87,8 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -264,7 +262,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus = deleteExperimentRuns(Collections.singletonList(request.getId()));
+      boolean deleteStatus =
+          experimentRunDAO.deleteExperimentRuns(Collections.singletonList(request.getId()));
 
       responseObserver.onNext(
           DeleteExperimentRun.Response.newBuilder().setStatus(deleteStatus).build());
@@ -302,6 +301,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
+              projectDAO,
               ModelDBConstants.PROJECT_ID,
               request.getProjectId(),
               request.getPageNumber(),
@@ -358,6 +358,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
+              projectDAO,
               ModelDBConstants.EXPERIMENT_ID,
               request.getExperimentId(),
               request.getPageNumber(),
@@ -406,7 +407,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       FindExperimentRuns findExperimentRuns =
           FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+          experimentRunDAO.findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
       GetExperimentRunById.Response.Builder response = GetExperimentRunById.Response.newBuilder();
@@ -1846,7 +1848,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), request);
+          experimentRunDAO.findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), request);
       responseObserver.onNext(
           FindExperimentRuns.Response.newBuilder()
               .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -1888,7 +1891,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.sortExperimentRuns(request);
+          experimentRunDAO.sortExperimentRuns(projectDAO, request);
       responseObserver.onNext(
           SortExperimentRuns.Response.newBuilder()
               .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -1927,7 +1930,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
       }
 
-      List<ExperimentRun> experimentRuns = experimentRunDAO.getTopExperimentRuns(request);
+      List<ExperimentRun> experimentRuns =
+          experimentRunDAO.getTopExperimentRuns(projectDAO, request);
       responseObserver.onNext(
           TopExperimentRunsSelector.Response.newBuilder()
               .addAllExperimentRuns(experimentRuns)
@@ -2039,6 +2043,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
+              projectDAO,
               ModelDBConstants.PARENT_ID,
               request.getExperimentRunId(),
               request.getPageNumber(),
@@ -2273,7 +2278,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             Any.pack(DeleteExperiments.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus = deleteExperimentRuns(request.getIdsList());
+      boolean deleteStatus = experimentRunDAO.deleteExperimentRuns(request.getIdsList());
       responseObserver.onNext(
           DeleteExperimentRuns.Response.newBuilder().setStatus(deleteStatus).build());
       responseObserver.onCompleted();
@@ -2282,12 +2287,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteExperimentRuns.Response.getDefaultInstance());
     }
-  }
-
-  private boolean deleteExperimentRuns(List<String> experimentIds) {
-
-
-    return experimentRunDAO.deleteExperimentRuns(accessibleExperimentRunIds);
   }
 
   @Override

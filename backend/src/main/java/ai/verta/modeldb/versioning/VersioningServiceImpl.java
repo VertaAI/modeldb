@@ -9,6 +9,7 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceImplBase;
@@ -34,6 +35,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
+  private final ProjectDAO projectDAO;
   private final ExperimentDAO experimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final ModelDBAuthInterceptor modelDBAuthInterceptor;
@@ -46,6 +48,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
+      ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ExperimentRunDAO experimentRunDAO,
       ModelDBAuthInterceptor modelDBAuthInterceptor,
@@ -55,6 +58,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
+    this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
     this.modelDBAuthInterceptor = modelDBAuthInterceptor;
@@ -365,6 +369,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       ListCommitExperimentRunsRequest.Response response =
           experimentRunDAO.listCommitExperimentRuns(
+              projectDAO,
               request,
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
@@ -390,6 +395,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       ListBlobExperimentRunsRequest.Response response =
           experimentRunDAO.listBlobExperimentRuns(
+              projectDAO,
               request,
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
