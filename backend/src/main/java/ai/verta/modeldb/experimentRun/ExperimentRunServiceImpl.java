@@ -406,7 +406,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       FindExperimentRuns findExperimentRuns =
           FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(findExperimentRuns);
+          experimentRunDAO.findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
       GetExperimentRunById.Response.Builder response = GetExperimentRunById.Response.newBuilder();
@@ -1822,83 +1822,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     }
   }
 
-  /**
-   * For getting experimentRuns that user has access to (either as the owner or a collaborator):
-   * <br>
-   *
-   * <ol>
-   *   <li>Iterate through all experimentRuns of the requested experimentRunIds
-   *   <li>Get the project Id they belong to.
-   *   <li>Check if project is accessible or not.
-   * </ol>
-   *
-   * The list of accessible experimentRunIDs is built and returned by this method.
-   *
-   * @param requestedExperimentRunIds : experimentRun Ids
-   * @return List<String> : list of accessible ExperimentRun Id
-   */
-  public List<String> getAccessibleExperimentRunIDs(
-      List<String> requestedExperimentRunIds, ModelDBServiceActions modelDBServiceActions) {
-    List<String> accessibleExperimentRunIds = new ArrayList<>();
-
-    Map<String, String> projectIdExperimentRunIdMap =
-        experimentRunDAO.getProjectIdsFromExperimentRunIds(requestedExperimentRunIds);
-    if (projectIdExperimentRunIdMap.size() == 0) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Access is denied. ExperimentRun not found for given ids : "
-                      + requestedExperimentRunIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-    Set<String> projectIdSet = new HashSet<>(projectIdExperimentRunIdMap.values());
-
-    List<String> allowedProjectIds;
-    // Validate if current user has access to the entity or not
-    if (projectIdSet.size() == 1) {
-      roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.PROJECT,
-          modelDBServiceActions,
-          new ArrayList<>(projectIdSet).get(0));
-      accessibleExperimentRunIds.addAll(requestedExperimentRunIds);
-    } else {
-      allowedProjectIds =
-          roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedProjectIds.retainAll(projectIdSet);
-      for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
-        if (allowedProjectIds.contains(entry.getValue())) {
-          accessibleExperimentRunIds.add(entry.getKey());
-        }
-      }
-    }
-    return accessibleExperimentRunIds;
-  }
-
   @Override
   public void findExperimentRuns(
       FindExperimentRuns request, StreamObserver<FindExperimentRuns.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
-      if (request.getProjectId().isEmpty()
-          && request.getExperimentId().isEmpty()
-          && request.getExperimentRunIdsList().isEmpty()) {
-        String errorMessage =
-            "Project ID and Experiment ID and ExperimentRun Id's not found in FindExperimentRuns request";
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(FindExperimentRuns.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
 
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
@@ -1916,27 +1845,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
       }
 
-      if (!request.getExperimentRunIdsList().isEmpty()) {
-        List<String> accessibleExperimentRunIds =
-            getAccessibleExperimentRunIDs(
-                request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-        if (accessibleExperimentRunIds.isEmpty()) {
-          ModelDBUtils.logAndThrowError(
-              ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperimentRuns.getDefaultInstance()));
-        }
-
-        request =
-            request
-                .toBuilder()
-                .clearExperimentRunIds()
-                .addAllExperimentRunIds(accessibleExperimentRunIds)
-                .build();
-      }
-
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(request);
+          experimentRunDAO.findExperimentRuns(projectDAO, authService.getCurrentLoginUserInfo(), request);
       responseObserver.onNext(
           FindExperimentRuns.Response.newBuilder()
               .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -1977,23 +1887,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      List<String> accessibleExperimentRunIds =
-          getAccessibleExperimentRunIDs(
-              request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-      if (accessibleExperimentRunIds.isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(FindExperimentRuns.getDefaultInstance()));
-      }
-
-      request =
-          request
-              .toBuilder()
-              .clearExperimentRunIds()
-              .addAllExperimentRunIds(accessibleExperimentRunIds)
-              .build();
-
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.sortExperimentRuns(request);
       responseObserver.onNext(
@@ -2017,21 +1910,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      if ((request.getProjectId().isEmpty()
-              && request.getExperimentId().isEmpty()
-              && request.getExperimentRunIdsList().isEmpty())
-          || request.getSortKey().isEmpty()) {
-        String errorMessage =
-            "Project ID and Experiment ID and Experiment IDs and Sort key not found in TopExperimentRunsSelector request";
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(TopExperimentRunsSelector.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
 
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
@@ -2047,25 +1925,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         // Validate if current user has access to the entity or not
         roleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
-      }
-
-      if (!request.getExperimentRunIdsList().isEmpty()) {
-        List<String> accessibleExperimentRunIds =
-            getAccessibleExperimentRunIDs(
-                request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-        if (accessibleExperimentRunIds.isEmpty()) {
-          ModelDBUtils.logAndThrowError(
-              ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperimentRuns.getDefaultInstance()));
-        }
-
-        request =
-            request
-                .toBuilder()
-                .clearExperimentRunIds()
-                .addAllExperimentRunIds(accessibleExperimentRunIds)
-                .build();
       }
 
       List<ExperimentRun> experimentRuns = experimentRunDAO.getTopExperimentRuns(request);
@@ -2426,18 +2285,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   private boolean deleteExperimentRuns(List<String> experimentIds) {
-    List<String> accessibleExperimentRunIds =
-        getAccessibleExperimentRunIDs(experimentIds, ModelDBServiceActions.UPDATE);
-    if (accessibleExperimentRunIds.isEmpty()) {
-      Status statusMessage =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                      + accessibleExperimentRunIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(statusMessage);
-    }
+
 
     return experimentRunDAO.deleteExperimentRuns(accessibleExperimentRunIds);
   }

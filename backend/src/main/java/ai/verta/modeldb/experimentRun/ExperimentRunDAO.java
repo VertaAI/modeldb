@@ -14,6 +14,7 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
 import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
@@ -291,13 +292,14 @@ public interface ExperimentRunDAO {
 
   /**
    * Return list of experimentRuns based on FindExperimentRuns queryParameters
-   *
-   * @param FindExperimentRuns queryParameters --> query parameters for filtering experimentRuns
+   * @param projectDAO : projectDAO
+   * @param currentLoginUserInfo : current login user info
+   * @param queryParameters --> query parameters for filtering experimentRuns
    * @return ExperimentRunPaginationDTO -- experimentRunPaginationDTO contains the list of
    *     experimentRuns based on filter queryParameters & total_pages count
-   * @throws InvalidProtocolBufferException
+   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRunPaginationDTO findExperimentRuns(FindExperimentRuns queryParameters)
+  ExperimentRunPaginationDTO findExperimentRuns(ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
       throws InvalidProtocolBufferException;
 
   /**

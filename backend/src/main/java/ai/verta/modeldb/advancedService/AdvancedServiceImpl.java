@@ -559,10 +559,11 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       FindExperimentRuns findExperimentRuns =
           FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(findExperimentRuns);
+          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
@@ -598,23 +599,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
 
-      if (request.getProjectId().isEmpty()
-          && request.getExperimentId().isEmpty()
-          && request.getExperimentRunIdsList().isEmpty()) {
-        String errorMessage =
-            "Project ID and Experiment ID and ExperimentRun Id's not found in FindExperimentRuns request";
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(FindExperimentRuns.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      LOGGER.trace("parmeters checked, starting findHydratedExperimentRuns");
-
       LOGGER.trace("got current logged in user info");
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
@@ -634,59 +618,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         LOGGER.trace("Validated experiment accessibility");
       }
 
-      ExperimentRunServiceImpl experimentRunService =
-          new ExperimentRunServiceImpl(
-              authService,
-              roleService,
-              experimentRunDAO,
-              projectDAO,
-              experimentDAO,
-              artifactStoreDAO,
-              datasetVersionDAO);
-      if (!request.getExperimentRunIdsList().isEmpty()) {
-        List<String> accessibleExperimentRunIds =
-            experimentRunService.getAccessibleExperimentRunIDs(
-                request.getExperimentRunIdsList(), ModelDBServiceActions.READ);
-        if (accessibleExperimentRunIds.isEmpty()) {
-          ModelDBUtils.logAndThrowError(
-              ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperimentRuns.getDefaultInstance()));
-        }
-        request =
-            request
-                .toBuilder()
-                .clearExperimentRunIds()
-                .addAllExperimentRunIds(accessibleExperimentRunIds)
-                .build();
-      }
-      LOGGER.trace("Updated experiment run ids");
-
-      for (KeyValueQuery predicate : request.getPredicatesList()) {
-        // ID predicates only supported for EQ
-        if (predicate.getKey().equals(ModelDBConstants.ID)) {
-          if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
-            ModelDBUtils.logAndThrowError(
-                ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE,
-                Code.INVALID_ARGUMENT_VALUE,
-                Any.pack(FindExperimentRuns.getDefaultInstance()));
-          }
-
-          List<String> accessibleExperimentRunIds =
-              experimentRunService.getAccessibleExperimentRunIDs(
-                  Collections.singletonList(predicate.getValue().getStringValue()),
-                  ModelDBServiceActions.READ);
-          if (accessibleExperimentRunIds.isEmpty()) {
-            ModelDBUtils.logAndThrowError(
-                ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-                Code.PERMISSION_DENIED_VALUE,
-                Any.pack(FindExperimentRuns.getDefaultInstance()));
-          }
-        }
-      }
-
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(request);
+          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, request);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
