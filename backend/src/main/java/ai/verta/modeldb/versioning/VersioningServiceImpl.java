@@ -642,6 +642,23 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   }
 
   @Override
+  public void findRepositories(
+      FindRepositories request, StreamObserver<FindRepositories.Response> responseObserver) {
+    QPSCountResource.inc();
+    try {
+      try (RequestLatencyResource latencyResource =
+          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+        FindRepositories.Response response = repositoryDAO.findRepositories(request);
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+      }
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, FindRepositories.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
   public void findRepositoriesBlobs(
       FindRepositoriesBlobs request,
       StreamObserver<FindRepositoriesBlobs.Response> responseObserver) {

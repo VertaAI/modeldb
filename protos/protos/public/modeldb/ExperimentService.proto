@@ -194,6 +194,7 @@ message FindExperiments {
     int32 page_limit = 7;
     bool ascending = 9;
     string sort_key = 10;
+    string workspace_name = 11;
 
     message Response {
         repeated Experiment experiments = 1;

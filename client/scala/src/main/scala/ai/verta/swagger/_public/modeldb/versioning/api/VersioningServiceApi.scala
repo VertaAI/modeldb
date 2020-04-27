@@ -668,4 +668,24 @@ class VersioningServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def UpdateRepository2(id_repo_id: , body: VersioningRepository)(implicit ec: ExecutionContext): Try[VersioningSetRepositoryResponse] = Await.result(UpdateRepository2Async(id_repo_id, body), Duration.Inf)
 
+  def findRepositoriesAsync(workspace_name: String, body: VersioningFindRepositories)(implicit ec: ExecutionContext): Future[Try[VersioningFindRepositoriesResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (workspace_name == null) throw new Exception("Missing required parameter \"workspace_name\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningFindRepositories, VersioningFindRepositoriesResponse]("POST", basePath + s"/versioning/workspaces/$workspace_name/findRepositories", __query, body, VersioningFindRepositoriesResponse.fromJson)
+  }
+
+  def findRepositories(workspace_name: String, body: VersioningFindRepositories)(implicit ec: ExecutionContext): Try[VersioningFindRepositoriesResponse] = Await.result(findRepositoriesAsync(workspace_name, body), Duration.Inf)
+
+  def findRepositoriesBlobsAsync(workspace_name: String, body: VersioningFindRepositoriesBlobs)(implicit ec: ExecutionContext): Future[Try[VersioningFindRepositoriesBlobsResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (workspace_name == null) throw new Exception("Missing required parameter \"workspace_name\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[VersioningFindRepositoriesBlobs, VersioningFindRepositoriesBlobsResponse]("POST", basePath + s"/versioning/workspaces/$workspace_name/findRepositoriesBlobs", __query, body, VersioningFindRepositoriesBlobsResponse.fromJson)
+  }
+
+  def findRepositoriesBlobs(workspace_name: String, body: VersioningFindRepositoriesBlobs)(implicit ec: ExecutionContext): Try[VersioningFindRepositoriesBlobsResponse] = Await.result(findRepositoriesBlobsAsync(workspace_name, body), Duration.Inf)
+
 }

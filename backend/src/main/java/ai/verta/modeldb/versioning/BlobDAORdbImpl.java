@@ -1134,19 +1134,19 @@ public class BlobDAORdbImpl implements BlobDAO {
     joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
 
     StringBuilder whereClause = new StringBuilder();
-    boolean isNeedOperator = false;
+    boolean appendAND = false;
     if (!request.getRepoIdsList().isEmpty()) {
       whereClause.append(alias).append(".repository.id IN (:repoIds) ");
       parametersMap.put("repoIds", request.getRepoIdsList());
-      isNeedOperator = true;
+      appendAND = true;
     }
     if (!request.getCommitsList().isEmpty()) {
-      if (isNeedOperator) {
+      if (appendAND) {
         whereClause.append(" AND ");
       }
       whereClause.append(alias).append(".commit_hash IN (:commitHashList)");
       parametersMap.put("commitHashList", request.getCommitsList());
-      isNeedOperator = true;
+      appendAND = true;
     }
 
     // Order by clause

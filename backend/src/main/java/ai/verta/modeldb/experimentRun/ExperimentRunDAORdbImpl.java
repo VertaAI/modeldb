@@ -1448,11 +1448,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             (PathDatasetComponentBlobEntity) objects[4];
 
         CodeVersion.Builder codeVersionBuilder = CodeVersion.newBuilder();
-        if (notebookCodeBlobEntity != null && pathDatasetComponentBlobEntity != null) {
-          convertGitBlobToGitSnapshot(
-              codeVersionBuilder,
-              notebookCodeBlobEntity.getGitCodeBlobEntity().toProto(),
-              pathDatasetComponentBlobEntity.toProto());
+        LOGGER.debug("notebookCodeBlobEntity {}", notebookCodeBlobEntity);
+        LOGGER.debug("pathDatasetComponentBlobEntity {}", pathDatasetComponentBlobEntity);
+        LOGGER.debug("gitBlobEntity {}", gitBlobEntity);
+        if (notebookCodeBlobEntity != null) {
+          if (pathDatasetComponentBlobEntity != null) {
+            convertGitBlobToGitSnapshot(
+                codeVersionBuilder,
+                notebookCodeBlobEntity.getGitCodeBlobEntity().toProto(),
+                pathDatasetComponentBlobEntity.toProto());
+          } else {
+            convertGitBlobToGitSnapshot(
+                codeVersionBuilder, notebookCodeBlobEntity.getGitCodeBlobEntity().toProto(), null);
+          }
         } else if (gitBlobEntity != null) {
           convertGitBlobToGitSnapshot(codeVersionBuilder, gitBlobEntity.toProto(), null);
         }

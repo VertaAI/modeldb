@@ -32,7 +32,7 @@ public class RepositoryEntity {
     this.date_created = new Date().getTime();
     this.date_updated = new Date().getTime();
     if (repositoryVisibility != null) {
-      this.repositoryVisibility = repositoryVisibility.getNumber();
+      this.repository_visibility = repositoryVisibility.getNumber();
     }
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();
@@ -73,7 +73,7 @@ public class RepositoryEntity {
   private String owner;
 
   @Column(name = "repository_visibility")
-  private Integer repositoryVisibility = null;
+  private Integer repository_visibility = null;
 
   public Long getId() {
     return id;
@@ -116,8 +116,8 @@ public class RepositoryEntity {
             .setDateUpdated(this.date_updated)
             .setWorkspaceId(this.workspace_id)
             .setWorkspaceTypeValue(this.workspace_type);
-    if (repositoryVisibility != null) {
-      builder.setRepositoryVisibilityValue(repositoryVisibility);
+    if (repository_visibility != null) {
+      builder.setRepositoryVisibilityValue(repository_visibility);
     }
     if (owner != null) {
       builder.setOwner(owner);
@@ -128,14 +128,14 @@ public class RepositoryEntity {
   public void update(SetRepository request) {
     this.name = request.getRepository().getName();
     this.date_updated = new Date().getTime();
-    this.repositoryVisibility = request.getRepository().getRepositoryVisibilityValue();
+    this.repository_visibility = request.getRepository().getRepositoryVisibilityValue();
   }
 
   public String getOwner() {
     return owner;
   }
 
-  public Integer getRepositoryVisibility() {
-    return repositoryVisibility;
+  public Integer getRepository_visibility() {
+    return repository_visibility;
   }
 }

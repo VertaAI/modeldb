@@ -33,7 +33,8 @@ case class ModeldbFindExperiments (
   page_number: Option[BigInt] = None,
   predicates: Option[List[ModeldbKeyValueQuery]] = None,
   project_id: Option[String] = None,
-  sort_key: Option[String] = None
+  sort_key: Option[String] = None,
+  workspace_name: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbFindExperiments.toJson(this)
 }
@@ -49,7 +50,8 @@ object ModeldbFindExperiments {
         obj.page_number.map(x => JField("page_number", JInt(x))),
         obj.predicates.map(x => JField("predicates", ((x: List[ModeldbKeyValueQuery]) => JArray(x.map(((x: ModeldbKeyValueQuery) => ModeldbKeyValueQuery.toJson(x)))))(x))),
         obj.project_id.map(x => JField("project_id", JString(x))),
-        obj.sort_key.map(x => JField("sort_key", JString(x)))
+        obj.sort_key.map(x => JField("sort_key", JString(x))),
+        obj.workspace_name.map(x => JField("workspace_name", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -70,7 +72,8 @@ object ModeldbFindExperiments {
           page_number = fieldsMap.get("page_number").map(JsonConverter.fromJsonInteger),
           predicates = fieldsMap.get("predicates").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbKeyValueQuery.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           project_id = fieldsMap.get("project_id").map(JsonConverter.fromJsonString),
-          sort_key = fieldsMap.get("sort_key").map(JsonConverter.fromJsonString)
+          sort_key = fieldsMap.get("sort_key").map(JsonConverter.fromJsonString),
+          workspace_name = fieldsMap.get("workspace_name").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
