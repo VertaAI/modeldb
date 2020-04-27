@@ -220,8 +220,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     return findDatasets(findDatasets, userInfo, datasetVisibility);
   }
 
-  private void deleteRoleBindingsOfAccessibleDatasets(List<DatasetEntity> allowedDatasets)
-      throws InvalidProtocolBufferException {
+  private void deleteRoleBindingsOfAccessibleDatasets(
+      List<DatasetEntity> allowedDatasets, List<String> roleBindingNames) {
     UserInfo unsignedUser = authService.getUnsignedUser();
     for (DatasetEntity datasetEntity : allowedDatasets) {
       String datasetId = datasetEntity.getId();
@@ -231,9 +231,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
               datasetId,
               datasetEntity.getOwner(),
               ModelDBServiceResourceTypes.DATASET.name());
-      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-        roleService.deleteRoleBinding(roleBinding.getId());
+      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+        roleBindingNames.add(ownerRoleBindingName);
       }
 
       if (datasetEntity.getDataset_visibility() == DatasetVisibility.PUBLIC.getNumber()) {
@@ -243,31 +242,35 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                 datasetId,
                 authService.getVertaIdFromUserInfo(unsignedUser),
                 ModelDBServiceResourceTypes.DATASET.name());
-        RoleBinding publicReadRoleBinding =
-            roleService.getRoleBindingByName(publicReadRoleBindingName);
-        if (publicReadRoleBinding != null && !publicReadRoleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(publicReadRoleBinding.getId());
+        if (publicReadRoleBindingName != null && !publicReadRoleBindingName.isEmpty()) {
+          roleBindingNames.add(publicReadRoleBindingName);
         }
       }
 
       // Remove all datasetEntity collaborators
-      roleService.removeResourceRoleBindings(
-          datasetId, datasetEntity.getOwner(), ModelDBServiceResourceTypes.DATASET);
+      roleBindingNames.addAll(
+          roleService.getResourceRoleBindings(
+              datasetId, datasetEntity.getOwner(), ModelDBServiceResourceTypes.DATASET));
 
       // Delete workspace based roleBindings
-      deleteWorkspaceRoleBindings(
-          datasetEntity.getWorkspace(),
-          WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
-          datasetEntity.getId(),
-          DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
+      List<String> workspaceRoleBindingNames =
+          getWorkspaceRoleBindings(
+              datasetEntity.getWorkspace(),
+              WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
+              datasetEntity.getId(),
+              DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
+      if (!workspaceRoleBindingNames.isEmpty()) {
+        roleBindingNames.addAll(workspaceRoleBindingNames);
+      }
     }
   }
 
-  private void deleteWorkspaceRoleBindings(
+  private List<String> getWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceType workspaceType,
       String datasetId,
       DatasetVisibility datasetVisibility) {
+    List<String> workspaceRoleBindings = new ArrayList<>();
     if (workspaceId != null && !workspaceId.isEmpty()) {
       switch (workspaceType) {
         case ORGANIZATION:
@@ -278,10 +281,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                     datasetId,
                     new CollaboratorOrg(workspaceId),
                     ModelDBServiceResourceTypes.DATASET.name());
-            RoleBinding orgDatasetReadRoleBinding =
-                roleService.getRoleBindingByName(orgDatasetReadRoleBindingName);
-            if (orgDatasetReadRoleBinding != null && !orgDatasetReadRoleBinding.getId().isEmpty()) {
-              roleService.deleteRoleBinding(orgDatasetReadRoleBinding.getId());
+            if (orgDatasetReadRoleBindingName != null && !orgDatasetReadRoleBindingName.isEmpty()) {
+              workspaceRoleBindings.add(orgDatasetReadRoleBindingName);
             }
           }
           break;
@@ -290,17 +291,24 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           break;
       }
     }
-    roleService.deleteWorkspaceRoleBindings(
-        workspaceId,
-        workspaceType,
-        datasetId,
-        ModelDBConstants.ROLE_DATASET_ADMIN,
-        ModelDBServiceResourceTypes.DATASET,
-        false,
-        GLOBAL_SHARING);
+    List<String> orgWorkspaceRoleBindings =
+        roleService.getWorkspaceRoleBindings(
+            workspaceId,
+            workspaceType,
+            datasetId,
+            ModelDBConstants.ROLE_DATASET_ADMIN,
+            ModelDBServiceResourceTypes.DATASET,
+            datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC),
+            GLOBAL_SHARING);
+
+    if (orgWorkspaceRoleBindings != null && !orgWorkspaceRoleBindings.isEmpty()) {
+      workspaceRoleBindings.addAll(orgWorkspaceRoleBindings);
+    }
+    return workspaceRoleBindings;
   }
 
-  public void deleteDatasetVersionsByDatasetIDs(Session session, List<String> datasetIds) {
+  public void deleteDatasetVersionsByDatasetIDs(
+      Session session, List<String> datasetIds, List<String> roleBindingNames) {
     Transaction transaction = session.beginTransaction();
     Query query = session.createQuery(DATASET_VERSION_BY_DATA_SET_IDS_QUERY);
     query.setParameterList("datasetIds", datasetIds);
@@ -314,9 +322,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
               datasetVersionEntity.getId(),
               datasetVersionEntity.getOwner(),
               ModelDBServiceResourceTypes.DATASET_VERSION.name());
-      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-        roleService.deleteRoleBinding(roleBinding.getId());
+      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+        roleBindingNames.add(ownerRoleBindingName);
       }
     }
     transaction.commit();
@@ -340,9 +347,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throw StatusProto.toStatusRuntimeException(status);
     }
 
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, allowedDatasetIds);
-      deleteDatasetVersionsByDatasetIDs(session, allowedDatasetIds);
+      deleteDatasetVersionsByDatasetIDs(session, allowedDatasetIds, roleBindingNames);
 
       Transaction transaction = session.beginTransaction();
       // Remove dataset collaborator mappings
@@ -350,8 +358,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         session.delete(datasetObj);
       }
       // Remove roleBindings by accessible datasets
-      deleteRoleBindingsOfAccessibleDatasets(datasetEntities);
+      deleteRoleBindingsOfAccessibleDatasets(datasetEntities, roleBindingNames);
       transaction.commit();
+
+      // Remove all role bindings
+      roleService.deleteRoleBindings(roleBindingNames);
+
       LOGGER.debug("Dataset deleted successfully");
       return true;
     }
@@ -951,7 +963,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       DatasetEntity datasetEntity = session.load(DatasetEntity.class, datasetId);
-      deleteWorkspaceRoleBindings(
+      getWorkspaceRoleBindings(
           datasetEntity.getWorkspace(),
           WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
           datasetId,

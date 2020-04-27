@@ -746,22 +746,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               projectId, project.getOwner(), ModelDBServiceResourceTypes.PROJECT));
 
       // Delete workspace based roleBindings
-      try {
-        List<String> workspaceRoleBindingNames =
-            getWorkspaceRoleBindings(
-                project.getWorkspace(),
-                WorkspaceType.forNumber(project.getWorkspace_type()),
-                project.getId(),
-                ProjectVisibility.forNumber(project.getProject_visibility()));
-        roleBindingNames.addAll(workspaceRoleBindingNames);
-      } catch (Exception e) {
-        // FIXME: VR-4018  remove hack
-        // right now the condition indicates that a organization was deleted before deleting the
-        // projects
-        if (!e.getMessage().contains("Details: Doesn't exist")) {
-          throw e;
-        }
-      }
+      List<String> workspaceRoleBindingNames =
+          getWorkspaceRoleBindings(
+              project.getWorkspace(),
+              WorkspaceType.forNumber(project.getWorkspace_type()),
+              project.getId(),
+              ProjectVisibility.forNumber(project.getProject_visibility()));
+      roleBindingNames.addAll(workspaceRoleBindingNames);
     }
   }
 
@@ -776,7 +767,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         projectId,
         ModelDBConstants.ROLE_PROJECT_ADMIN,
         ModelDBServiceResourceTypes.PROJECT,
-        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC));
+        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+        "_GLOBAL_SHARING");
   }
 
   @Override

@@ -24,7 +24,6 @@ import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
@@ -370,6 +369,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     for (RepositoryEntity repositoryEntity : allowedResources) {
       String repositoryId = String.valueOf(repositoryEntity.getId());
       String ownerRoleBindingName =
@@ -378,27 +378,34 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               repositoryId,
               repositoryEntity.getOwner(),
               ModelDBServiceResourceTypes.REPOSITORY.name());
-      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-        roleService.deleteRoleBinding(roleBinding.getId());
+      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+        roleBindingNames.add(ownerRoleBindingName);
       }
 
       // Remove all repositoryEntity collaborators
-      roleService.removeResourceRoleBindings(
-          repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY);
+      roleBindingNames.addAll(
+          roleService.getResourceRoleBindings(
+              repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY));
 
       // Delete workspace based roleBindings
-      roleService.deleteWorkspaceRoleBindings(
-          repositoryEntity.getWorkspace_id(),
-          WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-          String.valueOf(repositoryEntity.getId()),
-          ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-          ModelDBServiceResourceTypes.REPOSITORY,
-          repositoryEntity
-              .getRepository_visibility()
-              .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
-          GLOBAL_SHARING);
+      List<String> repoOrgWorkspaceRoleBindings =
+          roleService.getWorkspaceRoleBindings(
+              repositoryEntity.getWorkspace_id(),
+              WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+              String.valueOf(repositoryEntity.getId()),
+              ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+              ModelDBServiceResourceTypes.REPOSITORY,
+              repositoryEntity
+                  .getRepository_visibility()
+                  .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
+              GLOBAL_SHARING);
+      if (!repoOrgWorkspaceRoleBindings.isEmpty()) {
+        roleBindingNames.addAll(repoOrgWorkspaceRoleBindings);
+      }
     }
+
+    // Remove all role bindings
+    roleService.deleteRoleBindings(roleBindingNames);
   }
 
   @Override

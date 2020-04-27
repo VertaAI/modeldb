@@ -59,7 +59,6 @@ import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -377,6 +376,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public Boolean deleteExperimentRuns(List<String> experimentRunIds) {
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       // Delete the ExperimentRUn comments
@@ -403,9 +403,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 experimentRunEntity.getId(),
                 experimentRunEntity.getOwner(),
                 ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
         }
       }
 
@@ -413,6 +412,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       updateParentEntitiesTimestamp(
           session, projectIds, experimentIds, Calendar.getInstance().getTimeInMillis());
       transaction.commit();
+
+      // Remove all role bindings
+      roleService.deleteRoleBindings(roleBindingNames);
+
       LOGGER.debug("ExperimentRun deleted successfully");
       return true;
     }

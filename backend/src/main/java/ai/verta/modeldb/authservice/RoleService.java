@@ -83,16 +83,6 @@ public interface RoleService {
       CollaboratorBase collaborator,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  String buildAdminRoleBindingName(
-      String resourceId,
-      CollaboratorBase shareWithCollaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  void removeResourceRoleBindings(
-      String resourceId,
-      String resourceOwnerId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
   List<String> getResourceRoleBindings(
       String resourceId,
       String resourceOwnerId,
@@ -145,15 +135,6 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  void deleteWorkspaceRoleBindings(
-      String workspace_id,
-      WorkspaceType forNumber,
-      String valueOf,
-      String roleRepositoryAdmin,
-      ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic,
-      String globalSharing);
-
   void createWorkspaceRoleBinding(
       String workspace_id,
       WorkspaceType forNumber,
@@ -169,5 +150,6 @@ public interface RoleService {
       String resourceId,
       String adminRole,
       ModelDBServiceResourceTypes resourceType,
-      boolean orgScopedPublic);
+      boolean orgScopedPublic,
+      String globalSharing);
 }
