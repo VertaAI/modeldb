@@ -142,7 +142,7 @@ def calculate_discrete_histogram(data):
         )
 
     # heuristic: reject if counts don't seem high enough
-    if value_counts.mean() < 10:
+    if value_counts.mean() < 10:  # `value_counts` instead of `counts` for mean() method
         raise HistogramError(
             "heuristic says that each discrete value should average at least 10 appearances"
         )
