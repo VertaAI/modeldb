@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from ..external import six
+
+
 def calculate_histogram(data):
     try:  # binary
-        pass#return calculate_binary_histogram(data)
+        return calculate_binary_histogram(data)
     except HistogramError:
         pass
 
@@ -13,6 +16,70 @@ def calculate_histogram(data):
 
     # continuous
     return calculate_float_histogram(data)
+
+def calculate_binary_histogram(data):
+    """
+    Parameters
+    ----------
+    data : pandas.Series
+        Binary data to be binned.
+
+    Returns
+    -------
+    histogram : dict
+
+    Raises
+    ------
+    HistogramError
+
+    """
+    values = data.values.tolist()
+
+    zeros = 0
+    ones = 0
+    for value in values:
+        if isinstance(value, bool):
+            if value == False:
+                zeros += 1
+                continue
+            elif value == True:
+                ones += 1
+                continue
+
+        if isinstance(value, six.string_types):
+            # handle bool-like strings
+            if value.lower() == "false":
+                zeros += 1
+                continue
+            elif value.lower() == "true":
+                ones += 1
+                continue
+
+            # handle num-like strings (falls through to numeric case)
+            try:
+                value = float(value)
+            except ValueError:
+                pass
+
+        if isinstance(value, (six.integer_types, float)):
+            if value == 0:
+                zeros += 1
+                continue
+            elif value == 1:
+                ones += 1
+                continue
+
+        # unsupported value
+        raise HistogramError("invalid binanry value {}".format(value))
+
+    return {
+        'histogram': {
+            'binary': {
+                'count': [zeros, ones],
+            },
+        },
+        'type': "binary",
+    }
 
 def calculate_discrete_histogram(data):
     """
