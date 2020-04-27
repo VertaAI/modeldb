@@ -17,9 +17,9 @@ import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger.client.objects._
 
 case class VersioningRepository (
-  date_created: Option[] = None,
-  date_updated: Option[] = None,
-  id: Option[] = None,
+  date_created: Option[BigInt] = None,
+  date_updated: Option[BigInt] = None,
+  id: Option[BigInt] = None,
   name: Option[String] = None,
   owner: Option[String] = None,
   repository_visibility: Option[RepositoryVisibilityEnumRepositoryVisibility] = None,
@@ -33,9 +33,9 @@ object VersioningRepository {
   def toJson(obj: VersioningRepository): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.date_created.map(x => JField("date_created", (x))),
-        obj.date_updated.map(x => JField("date_updated", (x))),
-        obj.id.map(x => JField("id", (x))),
+        obj.date_created.map(x => JField("date_created", JInt(x))),
+        obj.date_updated.map(x => JField("date_updated", JInt(x))),
+        obj.id.map(x => JField("id", JInt(x))),
         obj.name.map(x => JField("name", JString(x))),
         obj.owner.map(x => JField("owner", JString(x))),
         obj.repository_visibility.map(x => JField("repository_visibility", ((x: RepositoryVisibilityEnumRepositoryVisibility) => RepositoryVisibilityEnumRepositoryVisibility.toJson(x))(x))),
@@ -54,9 +54,9 @@ object VersioningRepository {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningRepository(
           // TODO: handle required
-          date_created = fieldsMap.get("date_created").map(),
-          date_updated = fieldsMap.get("date_updated").map(),
-          id = fieldsMap.get("id").map(),
+          date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonInteger),
+          date_updated = fieldsMap.get("date_updated").map(JsonConverter.fromJsonInteger),
+          id = fieldsMap.get("id").map(JsonConverter.fromJsonInteger),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
           owner = fieldsMap.get("owner").map(JsonConverter.fromJsonString),
           repository_visibility = fieldsMap.get("repository_visibility").map(RepositoryVisibilityEnumRepositoryVisibility.fromJson),

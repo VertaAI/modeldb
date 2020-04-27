@@ -5,18 +5,18 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
-import "protos/public/uac/UACService.proto";
-import "protos/public/uac/Organization.proto";
-import "protos/public/uac/Team.proto";
-// import "protos/public/uac/Collaborator.proto";
-import "protos/public/modeldb/Comment.proto";
-import "protos/public/modeldb/ProjectService.proto";
-import "protos/public/modeldb/ExperimentService.proto";
-import "protos/public/modeldb/ExperimentRunService.proto";
-import "protos/public/modeldb/DatasetService.proto";
-import "protos/public/modeldb/DatasetVersionService.proto";
-import "protos/public/uac/RoleService.proto";
-import "protos/public/common/CommonService.proto";
+import "uac/UACService.proto";
+import "uac/Organization.proto";
+import "uac/Team.proto";
+// import "uac/Collaborator.proto";
+import "modeldb/Comment.proto";
+import "modeldb/ProjectService.proto";
+import "modeldb/ExperimentService.proto";
+import "modeldb/ExperimentRunService.proto";
+import "modeldb/DatasetService.proto";
+import "modeldb/DatasetVersionService.proto";
+import "uac/RoleService.proto";
+import "common/CommonService.proto";
 
 /*
 *   Hydrated Entity Data
@@ -42,7 +42,7 @@ message CollaboratorUserInfo {
     }
     common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
     common.TernaryEnum.Ternary can_deploy = 8;
-    uac.EntitiesEnum.EntitiesTypes entity_type = 9;
+    common.EntitiesEnum.EntitiesTypes entity_type = 9;
 }
 
 message HydratedProject {

@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/uac/Authorization.proto",
+    "title": "uac/Authorization.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -301,24 +301,6 @@
     }
   },
   "definitions": {
-    "AuthzActionEnumAuthzServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "IS_ALLOWED",
-        "GET"
-      ],
-      "default": "UNKNOWN"
-    },
-    "AuthzResourceEnumAuthzServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL"
-      ],
-      "default": "UNKNOWN"
-    },
     "ModelDBActionEnumModelDBServiceActions": {
       "type": "string",
       "enum": [
@@ -348,37 +330,11 @@
       ],
       "default": "UNKNOWN"
     },
-    "RoleActionEnumRoleServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "GET_BY_ID",
-        "GET_BY_NAME",
-        "CREATE",
-        "UPDATE",
-        "LIST",
-        "DELETE"
-      ],
-      "default": "UNKNOWN"
-    },
-    "RoleResourceEnumRoleServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "ROLE",
-        "ROLE_BINDING"
-      ],
-      "default": "UNKNOWN"
-    },
     "ServiceEnumService": {
       "type": "string",
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ROLE_SERVICE",
-        "AUTHZ_SERVICE",
         "MODELDB_SERVICE"
       ],
       "default": "UNKNOWN"
@@ -421,12 +377,6 @@
       "properties": {
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
-        },
-        "role_service_action": {
-          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
-        },
-        "authz_service_action": {
-          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
         },
         "modeldb_service_action": {
           "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
@@ -518,14 +468,11 @@
     "uacGetAllowedEntitiesWithActionsResponse": {
       "type": "object",
       "properties": {
-        "entities": {
+        "entitiesWithActions": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/uacEntities"
+            "$ref": "#/definitions/uacGetAllowedEntitiesWithActionsResponse"
           }
-        },
-        "actions": {
-          "$ref": "#/definitions/uacAction"
         }
       }
     },
@@ -675,13 +622,6 @@
     "uacResourceType": {
       "type": "object",
       "properties": {
-        "role_service_resource_type": {
-          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "title": "Separate based on the service itself"
-        },
-        "authz_service_resource_type": {
-          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
-        },
         "modeldb_service_resource_type": {
           "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
         }

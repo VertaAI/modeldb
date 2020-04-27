@@ -6,7 +6,6 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
-import ai.verta.swagger._public.modeldb.model.AuthzActionEnumAuthzServiceActions._
 import ai.verta.swagger._public.modeldb.model.CollaboratorTypeEnumCollaboratorType._
 import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
@@ -15,7 +14,6 @@ import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProv
 import ai.verta.swagger._public.modeldb.model.ModelDBActionEnumModelDBServiceActions._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
-import ai.verta.swagger._public.modeldb.model.RoleActionEnumRoleServiceActions._
 import ai.verta.swagger._public.modeldb.model.ServiceEnumService._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
@@ -38,9 +36,9 @@ case class ModeldbDatasetVersion (
   query_dataset_version_info: Option[ModeldbQueryDatasetVersionInfo] = None,
   raw_dataset_version_info: Option[ModeldbRawDatasetVersionInfo] = None,
   tags: Option[List[String]] = None,
-  time_logged: Option[] = None,
-  time_updated: Option[] = None,
-  version: Option[] = None
+  time_logged: Option[BigInt] = None,
+  time_updated: Option[BigInt] = None,
+  version: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbDatasetVersion.toJson(this)
 }
@@ -61,9 +59,9 @@ object ModeldbDatasetVersion {
         obj.query_dataset_version_info.map(x => JField("query_dataset_version_info", ((x: ModeldbQueryDatasetVersionInfo) => ModeldbQueryDatasetVersionInfo.toJson(x))(x))),
         obj.raw_dataset_version_info.map(x => JField("raw_dataset_version_info", ((x: ModeldbRawDatasetVersionInfo) => ModeldbRawDatasetVersionInfo.toJson(x))(x))),
         obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.time_logged.map(x => JField("time_logged", (x))),
-        obj.time_updated.map(x => JField("time_updated", (x))),
-        obj.version.map(x => JField("version", (x)))
+        obj.time_logged.map(x => JField("time_logged", JInt(x))),
+        obj.time_updated.map(x => JField("time_updated", JInt(x))),
+        obj.version.map(x => JField("version", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -89,9 +87,9 @@ object ModeldbDatasetVersion {
           query_dataset_version_info = fieldsMap.get("query_dataset_version_info").map(ModeldbQueryDatasetVersionInfo.fromJson),
           raw_dataset_version_info = fieldsMap.get("raw_dataset_version_info").map(ModeldbRawDatasetVersionInfo.fromJson),
           tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          time_logged = fieldsMap.get("time_logged").map(),
-          time_updated = fieldsMap.get("time_updated").map(),
-          version = fieldsMap.get("version").map()
+          time_logged = fieldsMap.get("time_logged").map(JsonConverter.fromJsonInteger),
+          time_updated = fieldsMap.get("time_updated").map(JsonConverter.fromJsonInteger),
+          version = fieldsMap.get("version").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

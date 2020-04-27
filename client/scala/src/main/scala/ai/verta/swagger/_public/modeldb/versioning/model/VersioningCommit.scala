@@ -19,7 +19,7 @@ import ai.verta.swagger.client.objects._
 case class VersioningCommit (
   author: Option[String] = None,
   commit_sha: Option[String] = None,
-  date_created: Option[] = None,
+  date_created: Option[BigInt] = None,
   message: Option[String] = None,
   parent_shas: Option[List[String]] = None
 ) extends BaseSwagger {
@@ -32,7 +32,7 @@ object VersioningCommit {
       List[Option[JField]](
         obj.author.map(x => JField("author", JString(x))),
         obj.commit_sha.map(x => JField("commit_sha", JString(x))),
-        obj.date_created.map(x => JField("date_created", (x))),
+        obj.date_created.map(x => JField("date_created", JInt(x))),
         obj.message.map(x => JField("message", JString(x))),
         obj.parent_shas.map(x => JField("parent_shas", ((x: List[String]) => JArray(x.map(JString)))(x)))
       ).flatMap(x => x match {
@@ -50,7 +50,7 @@ object VersioningCommit {
           // TODO: handle required
           author = fieldsMap.get("author").map(JsonConverter.fromJsonString),
           commit_sha = fieldsMap.get("commit_sha").map(JsonConverter.fromJsonString),
-          date_created = fieldsMap.get("date_created").map(),
+          date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonInteger),
           message = fieldsMap.get("message").map(JsonConverter.fromJsonString),
           parent_shas = fieldsMap.get("parent_shas").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )

@@ -4,9 +4,8 @@ package ai.verta.modeldb;
 option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb";
 
 option java_multiple_files = true;
-import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
-import "protos/public/common/CommonService.proto";
+import "common/CommonService.proto";
 
 message ArtifactTypeEnum{
     enum ArtifactType {

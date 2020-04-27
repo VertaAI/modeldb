@@ -33,6 +33,7 @@ message IdServiceProviderEnum {
         BITBUCKET = 2;
         GOOGLE = 3;
         VERTA = 4;
+        SAML = 5;
     }
 }
 

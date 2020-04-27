@@ -15,8 +15,8 @@ import ai.verta.swagger.client.objects._
 case class ModeldbCreateExperiment (
   artifacts: Option[List[ModeldbArtifact]] = None,
   attributes: Option[List[CommonKeyValue]] = None,
-  date_created: Option[] = None,
-  date_updated: Option[] = None,
+  date_created: Option[BigInt] = None,
+  date_updated: Option[BigInt] = None,
   description: Option[String] = None,
   name: Option[String] = None,
   project_id: Option[String] = None,
@@ -31,8 +31,8 @@ object ModeldbCreateExperiment {
       List[Option[JField]](
         obj.artifacts.map(x => JField("artifacts", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x))),
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
-        obj.date_created.map(x => JField("date_created", (x))),
-        obj.date_updated.map(x => JField("date_updated", (x))),
+        obj.date_created.map(x => JField("date_created", JInt(x))),
+        obj.date_updated.map(x => JField("date_updated", JInt(x))),
         obj.description.map(x => JField("description", JString(x))),
         obj.name.map(x => JField("name", JString(x))),
         obj.project_id.map(x => JField("project_id", JString(x))),
@@ -52,8 +52,8 @@ object ModeldbCreateExperiment {
           // TODO: handle required
           artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          date_created = fieldsMap.get("date_created").map(),
-          date_updated = fieldsMap.get("date_updated").map(),
+          date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonInteger),
+          date_updated = fieldsMap.get("date_updated").map(JsonConverter.fromJsonInteger),
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
           project_id = fieldsMap.get("project_id").map(JsonConverter.fromJsonString),
