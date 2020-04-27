@@ -3,6 +3,7 @@ package ai.verta.modeldb.versioning;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.versioning.CreateCommitRequest.Response;
 import java.security.NoSuchAlgorithmException;
 import org.hibernate.Session;
@@ -10,6 +11,14 @@ import org.hibernate.Session;
 public interface CommitDAO {
   Response setCommit(
       String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
+      throws ModelDBException, NoSuchAlgorithmException;
+
+  CommitEntity saveCommitEntity(
+      Session session,
+      Commit commit,
+      String rootSha,
+      String author,
+      RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException;
 
   CommitPaginationDTO fetchCommitEntityList(
