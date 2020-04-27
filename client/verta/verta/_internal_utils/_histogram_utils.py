@@ -4,6 +4,19 @@ from ..external import six
 
 
 def calculate_histogram(data):
+    """
+    Calculates a histogram for `data`.
+
+    Parameters
+    ----------
+    data : pandas.Series
+        Data to be binned.
+
+    Returns
+    -------
+    histogram : dict
+
+    """
     try:  # binary
         return calculate_binary_histogram(data)
     except HistogramError:
@@ -19,6 +32,8 @@ def calculate_histogram(data):
 
 def calculate_binary_histogram(data):
     """
+    Calculates a histogram for binary `data`.
+
     Parameters
     ----------
     data : pandas.Series
@@ -31,6 +46,7 @@ def calculate_binary_histogram(data):
     Raises
     ------
     HistogramError
+        If a binary histogram cannot be calculated from `data`.
 
     """
     values = data.values.tolist()
@@ -70,7 +86,7 @@ def calculate_binary_histogram(data):
                 continue
 
         # unsupported value
-        raise HistogramError("invalid binanry value {}".format(value))
+        raise HistogramError("invalid binary value {}".format(value))
 
     return {
         'histogram': {
@@ -97,6 +113,7 @@ def calculate_discrete_histogram(data):
     Raises
     ------
     HistogramError
+        If a discrete histogram cannot be calculated from `data`.
 
     """
     value_counts = data.value_counts().sort_index()
