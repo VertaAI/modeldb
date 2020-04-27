@@ -3587,7 +3587,7 @@ class ExperimentRun(_ModelDBEntity):
 
         train_df = train_features.join(train_targets)
 
-        histograms = {'features': {}}
+        histograms = {'total_count': len(train_df.index), 'features': {}}
         for colname in train_df:
             histogram = _histogram_utils.calculate_histogram(train_df[colname])
             histograms['features'][colname] = histogram
