@@ -40,6 +40,7 @@ import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -320,9 +321,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
             validateVersioningEntity(session, experimentRun.getVersionedInputs());
-        experimentRunObj.setVersioned_inputs(
-            RdbmsUtils.getVersioningMappingFromVersioningInput(
-                experimentRun.getVersionedInputs(), locationBlobWithHashMap, experimentRunObj));
+        List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = RdbmsUtils.getVersioningMappingFromVersioningInput(
+                experimentRun.getVersionedInputs(), locationBlobWithHashMap, experimentRunObj);
+        experimentRunObj.setVersioned_inputs(versioningModeldbEntityMappings);
       }
       session.saveOrUpdate(experimentRunObj);
 
@@ -1265,8 +1266,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         finalPredicatesList.addAll(queryPredicatesList);
       }
 
-      Order orderBy =
-          RdbmsUtils.getOrderBasedOnSortKey(
+      Order[] orderBy =
+          RdbmsUtils.getOrderArrBasedOnSortKey(
               queryParameters.getSortKey(),
               queryParameters.getAscending(),
               builder,

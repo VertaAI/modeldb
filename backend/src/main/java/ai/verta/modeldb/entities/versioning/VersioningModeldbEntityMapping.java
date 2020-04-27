@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -12,6 +13,8 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -85,6 +88,10 @@ public class VersioningModeldbEntityMapping implements Serializable {
   @Column(name = "blob_hash")
   private String blob_hash;
 
+  @OneToOne(cascade = CascadeType.ALL, targetEntity = ConfigBlobEntity.class)
+  @JoinColumn(name = "config_blob_hash", referencedColumnName = "blob_hash_2")
+  private ConfigBlobEntity configBlobEntity;
+
   public Long getRepository_id() {
     return repository_id;
   }
@@ -101,7 +108,19 @@ public class VersioningModeldbEntityMapping implements Serializable {
     return versioning_location;
   }
 
+  public Integer getVersioning_blob_type() {
+    return versioning_blob_type;
+  }
+
   public String getBlob_hash() {
     return blob_hash;
+  }
+
+  /*public void setConfig_blob_hash(String config_blob_hash) {
+    this.config_blob_hash = config_blob_hash;
+  }*/
+
+  public void setConfigBlobEntity(ConfigBlobEntity configBlobEntity) {
+    this.configBlobEntity = configBlobEntity;
   }
 }
