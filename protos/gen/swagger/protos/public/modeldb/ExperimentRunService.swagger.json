@@ -2298,6 +2298,9 @@
         },
         "sort_key": {
           "type": "string"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       }
     },

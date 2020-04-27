@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
+import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -15,7 +16,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
-import ai.verta.uac.EntitiesEnum.EntitiesTypes;
 import ai.verta.uac.GetCollaborator;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.GetUser;
