@@ -6,7 +6,6 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
-import ai.verta.swagger._public.modeldb.model.AuthzActionEnumAuthzServiceActions._
 import ai.verta.swagger._public.modeldb.model.CollaboratorTypeEnumCollaboratorType._
 import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
@@ -15,7 +14,6 @@ import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProv
 import ai.verta.swagger._public.modeldb.model.ModelDBActionEnumModelDBServiceActions._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
-import ai.verta.swagger._public.modeldb.model.RoleActionEnumRoleServiceActions._
 import ai.verta.swagger._public.modeldb.model.ServiceEnumService._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._

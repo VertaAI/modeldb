@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
-	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 )
 
 var ModelDbInternalFailure = fmt.Errorf("Internal failure in ModelDB; please report")
@@ -21,8 +20,8 @@ var FailedToFetchAuth = fmt.Errorf("Failed to fetch auth information")
 var InvalidTypeFromModeldb = fmt.Errorf("Got invalid type from ModelDB; please report")
 var EmptyReferenceToCommit = fmt.Errorf("Empty referene to commit")
 
-func UnknownCollaboratorType(t uac.EntitiesEnum_EntitiesTypes) error {
-	return fmt.Errorf("Unknown entity type \"%s\"", uac.EntitiesEnum_EntitiesTypes_name[int32(t)])
+func UnknownCollaboratorType(t common.EntitiesEnum_EntitiesTypes) error {
+	return fmt.Errorf("Unknown entity type \"%s\"", common.EntitiesEnum_EntitiesTypes_name[int32(t)])
 }
 
 func UnknownTypeForValue(v common.ValueTypeEnum_ValueType) error {

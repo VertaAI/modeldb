@@ -172,7 +172,7 @@
     <changeSet id="vmem-add-column-config_blob_hash" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
-                <columnExists tableName="versioning_modeldb_entity_mapping" columnName="config_blob_hash"/>
+                <columnExists tableName="versioning_modeldb_entity_mapping" columnName="blob_hash"/>
             </not>
         </preConditions>
         <addColumn tableName="versioning_modeldb_entity_mapping">

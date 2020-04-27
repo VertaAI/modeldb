@@ -6,13 +6,13 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
-import "protos/public/modeldb/CommonService.proto";
-import "protos/public/modeldb/ExperimentRunService.proto";
-import "protos/public/modeldb/versioning/Code.proto";
-import "protos/public/modeldb/versioning/Config.proto";
-import "protos/public/modeldb/versioning/Dataset.proto";
-import "protos/public/modeldb/versioning/Enums.proto";
-import "protos/public/modeldb/versioning/Environment.proto";
+import "modeldb/CommonService.proto";
+import "modeldb/ExperimentRunService.proto";
+import "modeldb/versioning/Code.proto";
+import "modeldb/versioning/Config.proto";
+import "modeldb/versioning/Dataset.proto";
+import "modeldb/versioning/Enums.proto";
+import "modeldb/versioning/Environment.proto";
 
 // Base commit for the versioning system
 // DO NOT USE TO COMPUTE SHA
@@ -103,7 +103,7 @@ message Repository {
 
     string workspace_id = 5;
     WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
-    
+
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
 
     string owner = 10;

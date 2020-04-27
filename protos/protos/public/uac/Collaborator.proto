@@ -6,11 +6,11 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
-import "protos/public/uac/UACService.proto";
-import "protos/public/uac/Organization.proto";
-import "protos/public/uac/Team.proto";
-import "protos/public/uac/RoleService.proto";
-import "protos/public/common/CommonService.proto";
+import "uac/UACService.proto";
+import "uac/Organization.proto";
+import "uac/Team.proto";
+import "uac/RoleService.proto";
+import "common/CommonService.proto";
 
 message AddCollaboratorRequest {
     repeated string entity_ids = 1; // List of project.id, experiment.id etc.
@@ -21,7 +21,7 @@ message AddCollaboratorRequest {
     uint64 date_updated = 6; // CollaboratorType updated on
 
     common.TernaryEnum.Ternary can_deploy = 7;
-    EntitiesEnum.EntitiesTypes authz_entity_type = 8; //user, team, org
+    common.EntitiesEnum.EntitiesTypes authz_entity_type = 8; //user, team, org
 
     message Response {
         repeated Action self_allowed_actions = 5;
@@ -44,7 +44,7 @@ message RemoveCollaborator {
     string entity_id = 1; // project.id, experiment.id etc.
     string share_with = 2; // Collaborator user Id
     uint64 date_deleted = 3;
-    EntitiesEnum.EntitiesTypes authz_entity_type = 4;
+    common.EntitiesEnum.EntitiesTypes authz_entity_type = 4;
 
     message Response {
         bool status = 1;
@@ -58,7 +58,7 @@ message GetCollaboratorResponse {
     ShareViaEnum share_via_type = 3;
     string verta_id = 4; //user_verta_id, team_id, org_id
     common.TernaryEnum.Ternary can_deploy = 5;
-    EntitiesEnum.EntitiesTypes authz_entity_type = 6;
+    common.EntitiesEnum.EntitiesTypes authz_entity_type = 6;
 }
 
 message GetCollaborator {
