@@ -461,6 +461,7 @@ service ProjectService {
     rpc deleteProjectAttributes(DeleteProjectAttributes) returns (DeleteProjectAttributes.Response) {
         option (google.api.http) = {
             delete: "/v1/project/deleteProjectAttributes"
+            body: "*"
         };
     };
 
