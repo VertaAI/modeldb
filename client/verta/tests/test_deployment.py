@@ -15,6 +15,7 @@ import zipfile
 import requests
 
 import verta
+from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
 
 
@@ -617,6 +618,111 @@ class TestLogTrainingData:
         generated_histograms = response.json()
 
         assert generated_histograms == histograms
+
+
+class TestHistogram:
+    @staticmethod
+    def assert_histograms_match_dataframe(histograms, df):
+        """Common assertions for this test suite."""
+        # features match
+        assert set(histograms['features'].keys()) == set(df.columns)
+        # all rows counted
+        assert histograms['total_count'] == len(df.index)
+
+        for feature_name, histogram in histograms['features'].items():
+            series = df[feature_name]
+            histogram_type = histogram['type']
+            histogram_data = histogram['histogram'][histogram_type]
+
+            # all data points counted
+            assert sum(histogram_data['count']) == len(series)
+
+            if histogram_type == "binary":
+                num_false = sum(~series)
+                num_true = sum(series)
+
+                assert histogram_data['count'] == [num_false, num_true]
+            elif histogram_type == "discrete":
+                buckets = histogram_data['bucket_values']
+                counts = histogram_data['count']
+
+                # buckets in ascending order
+                assert buckets == list(sorted(buckets))
+
+                # data within buckets
+                assert all(buckets[0] <= series)
+                assert all(series <= buckets[-1])
+
+                # counts correct
+                for value, count in zip(buckets, counts):
+                    assert sum(series == value) == count
+            elif histogram_type == "float":
+                buckets = histogram_data['bucket_limits']
+                counts = histogram_data['count']
+
+                # buckets in ascending order
+                assert buckets == list(sorted(buckets))
+
+                # data within buckets
+                assert all(buckets[0] <= series)
+                assert all(series <= buckets[-1])
+
+                # counts correct
+                bin_windows = list(zip(buckets[:-1], buckets[1:]))
+                for i, (l, r) in enumerate(bin_windows[:-1]):
+                    assert sum((l <= series) & (series < r)) == counts[i]
+                assert sum(buckets[-2] <= series) == counts[-1]
+
+    def test_binary(self):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+        num_rows = 30
+
+        df = pd.concat(
+            objs=[
+                pd.Series(np.random.random(size=num_rows).round().astype(bool), name="A"),
+                pd.Series(np.random.random(size=num_rows).round().astype(bool), name="B"),
+                pd.Series(np.random.random(size=num_rows).round().astype(bool), name="C"),
+            ],
+            axis='columns',
+        )
+        histograms = _histogram_utils.calculate_histograms(df)
+
+        self.assert_histograms_match_dataframe(histograms, df)
+
+    def test_discrete(self):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+        num_rows = 30
+
+        df = pd.concat(
+            objs=[
+                pd.Series(np.random.randint(0, 12, size=num_rows), name="A"),
+                pd.Series(np.random.randint(-12, -6, size=num_rows), name="B"),
+                pd.Series(np.random.randint(-30, 24, size=num_rows), name="C"),
+            ],
+            axis='columns',
+        )
+        histograms = _histogram_utils.calculate_histograms(df)
+
+        self.assert_histograms_match_dataframe(histograms, df)
+
+    def test_float(self):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+        num_rows = 30
+
+        df = pd.concat(
+            objs=[
+                pd.Series(np.random.normal(loc=9, size=num_rows), name="A"),
+                pd.Series(np.random.normal(scale=12, size=num_rows), name="B"),
+                pd.Series(np.random.normal(loc=-3, scale=6, size=num_rows), name="C"),
+            ],
+            axis='columns',
+        )
+        histograms = _histogram_utils.calculate_histograms(df)
+
+        self.assert_histograms_match_dataframe(histograms, df)
 
 
 @pytest.mark.not_oss
