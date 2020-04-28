@@ -100,7 +100,6 @@ func (r *commitResolver) AsDiff(ctx context.Context, obj *models.Commit) (*schem
 }
 func (r *commitResolver) Runs(ctx context.Context, obj *models.Commit, query *schema.ExperimentRunsQuery) (*schema.ExperimentRuns, error) {
 	pagination := &versioning.Pagination{
-		PageLimit:  10,
 		PageNumber: 1,
 	}
 	if query != nil {
@@ -205,7 +204,6 @@ type commitBlobResolver struct{ *Resolver }
 
 func (r *commitBlobResolver) Runs(ctx context.Context, obj *models.CommitBlob, query *schema.ExperimentRunsQuery) (*schema.ExperimentRuns, error) {
 	pagination := &versioning.Pagination{
-		PageLimit:  10,
 		PageNumber: 1,
 	}
 	if query != nil {

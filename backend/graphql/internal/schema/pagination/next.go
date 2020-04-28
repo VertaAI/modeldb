@@ -16,7 +16,6 @@ type Next struct {
 func NewNext(logger *zap.Logger, next *string, query *schema.PaginationQuery) (*Next, error) {
 	p := &Next{
 		PageNumber: 1,
-		PageLimit:  100,
 	}
 
 	if next != nil && query != nil {
@@ -27,7 +26,7 @@ func NewNext(logger *zap.Logger, next *string, query *schema.PaginationQuery) (*
 			return nil, errors.InvalidNextToken
 		}
 	} else if query != nil {
-		if query.Limit != nil && 0 < *query.Limit && *query.Limit < p.PageLimit {
+		if query.Limit != nil && 0 < *query.Limit {
 			p.PageLimit = *query.Limit
 		}
 		if query.Page != nil {
@@ -52,7 +51,7 @@ func (n *Next) Encode() *string {
 }
 
 func (n *Next) ProcessResponse(totalRecords int64) {
-	if totalRecords <= int64(n.PageNumber*n.PageLimit) {
+	if totalRecords <= int64(n.PageNumber*n.PageLimit) || n.PageLimit == 0 {
 		n.done = true
 	}
 	n.PageNumber++
