@@ -3,7 +3,29 @@
 from ..external import six
 
 
-def calculate_histogram(data):
+def calculate_histograms(df):
+    """
+    Calculates histograms for the columns of `df`.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Data to be binned.
+
+    Returns
+    -------
+    histograms : dict
+
+    """
+    histograms = {'total_count': len(df.index), 'features': {}}
+    for colname in df:
+        histogram = calculate_single_histogram(df[colname])
+        histograms['features'][colname] = histogram
+
+    return histograms
+
+
+def calculate_single_histogram(data):
     """
     Calculates a histogram for `data`.
 
