@@ -619,6 +619,10 @@ class TestHistogram:
                 assert buckets[0] == series.min()
                 assert buckets[-1] == series.max()
 
+                # all buckets have data
+                # NOTE: this might not be behavior that we want in the future
+                assert all(counts)
+
                 # counts correct
                 for value, count in zip(buckets, counts):
                     assert sum(series == value) == count
@@ -635,6 +639,13 @@ class TestHistogram:
                 # appropriate leftmost and rightmost limits
                 assert np.isclose(limits[0], series.min())
                 assert np.isclose(limits[-1], series.max())
+
+                # buckets equal in size
+                bucket_sizes = np.diff(limits)
+                assert np.allclose(bucket_sizes, bucket_sizes[0])
+
+                # correct number of buckets
+                assert len(limits) == 11
 
                 # counts correct
                 bin_windows = list(zip(limits[:-1], limits[1:]))
