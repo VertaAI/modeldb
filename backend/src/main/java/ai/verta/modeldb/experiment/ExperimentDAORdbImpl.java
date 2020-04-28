@@ -849,7 +849,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
         projectIds.add(queryParameters.getProjectId());
-      } else {
+      } else if (queryParameters.getWorkspaceName() != null) {
         List<String> workspaceProjectIDs =
             projectDAO.getWorkspaceProjectIDs(
                 queryParameters.getWorkspaceName(), currentLoginUserInfo);
