@@ -579,46 +579,6 @@ class TestLogTrainingData:
         data_csv = experiment_run.get_artifact("train_data").read()
         assert X_train.join(y_train).to_csv(index=False) == six.ensure_str(data_csv)
 
-    def test_histogram(self, experiment_run):
-        np = pytest.importorskip("numpy")
-        pd = pytest.importorskip("pandas")
-
-        df = pd.concat(
-            objs=[
-                pd.Series([True]*10 + [False]*20, name='binary col'),
-                pd.Series([0]*5 + [1]*10 + [2]*15, name='discrete col'),
-                pd.Series(range(30), name='continuous col'),
-            ],
-            axis='columns',
-        )
-        X = df[['binary col', 'discrete col']]
-        y = df['continuous col']
-
-        histograms = {
-            'features': {
-                'binary col': {'histogram': {'binary': {'count': [20, 10]}}, 'type': 'binary'},
-                'discrete col': {'histogram': {'discrete': {
-                    'bucket_values': [0, 1, 2],
-                    'count': [5, 10, 15]}}, 'type': 'discrete'},
-                'continuous col': {'histogram': {'float': {
-                    'bucket_limits': [0, 2.9, 5.8, 8.7, 11.6, 14.5, 17.4, 20.3, 23.2, 26.099999999999998, 29],
-                    'count': [3, 3, 3, 3, 3, 3, 3, 3, 3, 2]}}, 'type': 'float'},
-            },
-            'total_count': 30,
-        }
-
-        experiment_run.log_training_data(X, y)
-        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
-            experiment_run._conn.scheme,
-            experiment_run._conn.socket,
-            experiment_run.id,
-        )
-        response = _utils.make_request("GET", endpoint, experiment_run._conn)
-        _utils.raise_for_http_error(response)
-        generated_histograms = response.json()
-
-        assert generated_histograms == histograms
-
 
 class TestHistogram:
     @staticmethod
@@ -738,6 +698,55 @@ class TestHistogram:
             in histograms['features'].values()
         )
         self.assert_histograms_match_dataframe(histograms, df)
+
+    def test_integration(self, experiment_run):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+
+        binary_col_name = 'binary col'
+        discrete_col_name = 'discrete col'
+        float_col_name = 'float col'
+        df = pd.concat(
+            objs=[
+                pd.Series([True]*10 + [False]*20, name=binary_col_name),
+                pd.Series([0]*5 + [1]*10 + [2]*15, name=discrete_col_name),
+                pd.Series(range(30), name=float_col_name),
+            ],
+            axis='columns',
+        )
+        histograms = _histogram_utils.calculate_histograms(df)
+
+        experiment_run.log_training_data(df[[binary_col_name, discrete_col_name]], df[float_col_name])
+        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
+            experiment_run._conn.scheme,
+            experiment_run._conn.socket,
+            experiment_run.id,
+        )
+        response = _utils.make_request("GET", endpoint, experiment_run._conn)
+        _utils.raise_for_http_error(response)
+        retrieved_histograms = response.json()
+
+        # features match
+        features = histograms['features']
+        retrieved_features = retrieved_histograms['features']
+        assert set(features.keys()) == set(retrieved_features.keys())
+
+        # binary matches
+        binary_hist = histograms['features'][binary_col_name]['histogram']['binary']
+        retrieved_binary_hist = retrieved_histograms['features'][binary_col_name]['histogram']['binary']
+        assert binary_hist['count'] == retrieved_binary_hist['count']
+
+        # discrete matches
+        discrete_hist = histograms['features'][discrete_col_name]['histogram']['discrete']
+        retrieved_discrete_hist = retrieved_histograms['features'][discrete_col_name]['histogram']['discrete']
+        assert discrete_hist['bucket_values'] == retrieved_discrete_hist['bucket_values']
+        assert discrete_hist['count'] == retrieved_discrete_hist['count']
+
+        # float matches
+        float_hist = histograms['features'][float_col_name]['histogram']['float']
+        retrieved_float_hist = retrieved_histograms['features'][float_col_name]['histogram']['float']
+        assert all(np.isclose(float_hist['bucket_limits'], retrieved_float_hist['bucket_limits']))
+        assert float_hist['count'] == retrieved_float_hist['count']
 
 
 @pytest.mark.not_oss
