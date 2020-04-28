@@ -5,7 +5,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
-import "protos/public/uac/RoleService.proto";
+import "uac/RoleService.proto";
 
 // Answers the question "is any of `entities` allowed to perform any of `actions` on any of `resources`?"
 // This allows sending a single query for a user+his teams and a resource+parents

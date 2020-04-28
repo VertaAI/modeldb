@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/modeldb/DatasetVersionService.proto",
+    "title": "modeldb/DatasetVersionService.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -158,27 +158,12 @@
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "attribute_keys",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "name": "delete_all",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteDatasetVersionAttributes"
+            }
           }
         ],
         "tags": [
@@ -841,6 +826,24 @@
       "properties": {
         "id": {
           "type": "string"
+        }
+      }
+    },
+    "modeldbDeleteDatasetVersionAttributes": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "attribute_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

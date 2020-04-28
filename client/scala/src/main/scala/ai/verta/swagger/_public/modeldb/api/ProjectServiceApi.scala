@@ -73,17 +73,14 @@ class ProjectServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def deleteProject(body: ModeldbDeleteProject)(implicit ec: ExecutionContext): Try[ModeldbDeleteProjectResponse] = Await.result(deleteProjectAsync(body), Duration.Inf)
 
-  def deleteProjectAttributesAsync(id: String, attribute_keys: List[String], delete_all: Boolean)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteProjectAttributesResponse]] = {
+  def deleteProjectAttributesAsync(body: ModeldbDeleteProjectAttributes)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteProjectAttributesResponse]] = {
     val __query = Map[String,String](
-      "id" -> client.toQuery(id),
-      "attribute_keys" -> client.toQuery(attribute_keys),
-      "delete_all" -> client.toQuery(delete_all)
     )
-    val body: String = null
-    return client.request[String, ModeldbDeleteProjectAttributesResponse]("DELETE", basePath + s"/project/deleteProjectAttributes", __query, body, ModeldbDeleteProjectAttributesResponse.fromJson)
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbDeleteProjectAttributes, ModeldbDeleteProjectAttributesResponse]("DELETE", basePath + s"/project/deleteProjectAttributes", __query, body, ModeldbDeleteProjectAttributesResponse.fromJson)
   }
 
-  def deleteProjectAttributes(id: String, attribute_keys: List[String], delete_all: Boolean)(implicit ec: ExecutionContext): Try[ModeldbDeleteProjectAttributesResponse] = Await.result(deleteProjectAttributesAsync(id, attribute_keys, delete_all), Duration.Inf)
+  def deleteProjectAttributes(body: ModeldbDeleteProjectAttributes)(implicit ec: ExecutionContext): Try[ModeldbDeleteProjectAttributesResponse] = Await.result(deleteProjectAttributesAsync(body), Duration.Inf)
 
   def deleteProjectTagAsync(body: ModeldbDeleteProjectTag)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteProjectTagResponse]] = {
     val __query = Map[String,String](

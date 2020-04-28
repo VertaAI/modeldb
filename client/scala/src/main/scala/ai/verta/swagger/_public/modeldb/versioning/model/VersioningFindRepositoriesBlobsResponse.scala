@@ -18,7 +18,7 @@ import ai.verta.swagger.client.objects._
 
 case class VersioningFindRepositoriesBlobsResponse (
   blobs: Option[List[VersioningBlobExpanded]] = None,
-  total_records: Option[] = None
+  total_records: Option[BigInt] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningFindRepositoriesBlobsResponse.toJson(this)
 }
@@ -28,7 +28,7 @@ object VersioningFindRepositoriesBlobsResponse {
     new JObject(
       List[Option[JField]](
         obj.blobs.map(x => JField("blobs", ((x: List[VersioningBlobExpanded]) => JArray(x.map(((x: VersioningBlobExpanded) => VersioningBlobExpanded.toJson(x)))))(x))),
-        obj.total_records.map(x => JField("total_records", (x)))
+        obj.total_records.map(x => JField("total_records", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -43,7 +43,7 @@ object VersioningFindRepositoriesBlobsResponse {
         VersioningFindRepositoriesBlobsResponse(
           // TODO: handle required
           blobs = fieldsMap.get("blobs").map((x: JValue) => x match {case JArray(elements) => elements.map(VersioningBlobExpanded.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          total_records = fieldsMap.get("total_records").map()
+          total_records = fieldsMap.get("total_records").map(JsonConverter.fromJsonInteger)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

@@ -13,6 +13,11 @@ import os
 
 
 def fix_imports(python_output_dir):
+    known_dirs = set()
+    for parent_dir, dirnames, filenames in os.walk(python_output_dir):
+        if parent_dir != python_output_dir:
+            known_dirs.add(parent_dir.replace(python_output_dir+'/', '').replace('/','.'))
+
     for parent_dir, dirnames, filenames in os.walk(python_output_dir):
         filepaths = (
             os.path.join(parent_dir, filename)
@@ -21,12 +26,13 @@ def fix_imports(python_output_dir):
             if filename.endswith('.py')
         )
         for filepath in filter(os.path.isfile, filepaths):
-            depth = os.path.relpath(filepath, python_output_dir).count('/')
+            depth = os.path.relpath(filepath, python_output_dir).count('/')+1
             with open(filepath, 'r+') as f:
                 contents = f.read()
                 f.seek(0)
 
-                contents = contents.replace("from protos.", "from {}".format('.'*depth))
+                for d in known_dirs:
+                    contents = contents.replace("from {0} ".format(d), "from {1}{0} ".format(d, '.'*depth))
 
                 f.write(contents)
                 f.truncate()

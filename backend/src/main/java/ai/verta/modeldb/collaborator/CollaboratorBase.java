@@ -1,9 +1,9 @@
 package ai.verta.modeldb.collaborator;
 
+import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.uac.AddCollaboratorRequest.Response.Builder;
 import ai.verta.uac.Entities;
-import ai.verta.uac.EntitiesEnum.EntitiesTypes;
 import com.google.protobuf.GeneratedMessageV3;
 import java.util.Objects;
 

@@ -56,9 +56,9 @@ func getConvertedCollaborators(r *Resolver, ctx context.Context, id string, gett
 	ret := make([]schema.Collaborator, len(collaborators))
 	for i, c := range collaborators {
 		switch c.GetAuthzEntityType() {
-		case uac.EntitiesEnum_TEAM:
+		case common.EntitiesEnum_TEAM:
 			ret[i] = models.TeamCollaborator{c}
-		case uac.EntitiesEnum_USER:
+		case common.EntitiesEnum_USER:
 			ret[i] = models.UserCollaborator{c}
 		default:
 			err := errors.UnknownCollaboratorType(c.GetAuthzEntityType())
