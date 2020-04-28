@@ -593,7 +593,6 @@ class TestLogTrainingData:
         X = df[['binary col', 'discrete col']]
         y = df['continuous col']
 
-        # TODO: generate a histogram w/ discrete using Historical Data Processor
         histograms = {
             'features': {
                 'binary col': {'histogram': {'binary': {'count': [20, 10]}}, 'type': 'binary'},
