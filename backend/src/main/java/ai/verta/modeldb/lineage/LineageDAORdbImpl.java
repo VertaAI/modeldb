@@ -219,6 +219,18 @@ public class LineageDAORdbImpl implements LineageDAO {
     return query.list();
   }
 
+  /**
+   * Get id -> entries of input or output.
+   * A -- what we want to receive (can be input or output). B -- what we already have (input or
+   * output).
+   *
+   * @param session current session
+   * @param lineageEntry sideB
+   * @param connectionType input or output
+   * @return id -> entries
+   * @throws ModelDBException unexpected error
+   * @throws InvalidProtocolBufferException unexpected error
+   */
   private Map<Long, List<LineageEntry>> getSideAEntries(
       Session session, LineageEntry lineageEntry, ConnectionEntity.ConnectionType connectionType)
       throws ModelDBException, InvalidProtocolBufferException {
@@ -463,25 +475,6 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void deleteConnectionEntity(Session session, ConnectionEntity connectionEntity) {
-    List<ConnectionEntity> connectionEntities =
-        getConnectionEntities(
-            session,
-            CONNECTION_TYPE_ANY,
-            connectionEntity.getEntityId(),
-            connectionEntity.getEntityType());
-    // validate if current entry is used by more than 1 connection, if not, delete it
-    if (connectionEntities.size() < 2) {
-      switch (connectionEntity.getEntityType()) {
-        case ENTITY_TYPE_EXPERIMENT_RUN:
-          session.delete(
-              session.get(LineageExperimentRunEntity.class, connectionEntity.getEntityId()));
-          break;
-        case ENTITY_TYPE_VERSIONING_BLOB:
-          session.delete(
-              session.get(LineageVersioningBlobEntity.class, connectionEntity.getEntityId()));
-          break;
-      }
-    }
     session.delete(connectionEntity);
   }
 
