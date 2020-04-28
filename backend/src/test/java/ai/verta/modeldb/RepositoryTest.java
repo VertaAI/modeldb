@@ -637,15 +637,15 @@ public class RepositoryTest {
             versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
         Assert.assertEquals(
             "Repository count not match with expected repository count",
-            2,
+            3,
             findRepositoriesResponse.getTotalRecords());
         Assert.assertEquals(
             "Repository count not match with expected repository count",
-            2,
+            3,
             findRepositoriesResponse.getRepositoriesCount());
         Assert.assertEquals(
             "Repository name not match with expected repository name",
-            NAME_2,
+            NAME_3,
             findRepositoriesResponse.getRepositories(0).getName());
 
         findRepositoriesRequest =
