@@ -35,6 +35,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -156,7 +157,8 @@ public class LineageTest {
   }
 
   @Test
-  public void createAndDeleteLineageNegativeTest() throws ModelDBException {
+  public void createAndDeleteLineageNegativeTest()
+      throws ModelDBException, NoSuchAlgorithmException {
 
     long repositoryId =
         RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
@@ -310,7 +312,7 @@ public class LineageTest {
   }
 
   @Test
-  public void createAndDeleteLineageTest() throws ModelDBException {
+  public void createAndDeleteLineageTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Create and delete Lineage test start................................");
 
     List<String> experimentIds = new ArrayList<>();
@@ -418,28 +420,31 @@ public class LineageTest {
                         .addLocation("name3"));
         try {
           check(
-              Arrays.asList(inputExp, NOT_EXISTENT_DATASET),
-              Arrays.asList(null, null),
-              Arrays.asList(null, null),
+              Collections.singletonList(inputExp),
+              Collections.singletonList(null),
+              Collections.singletonList(null),
               0L);
 
           AddLineage.Builder addLineage =
               AddLineage.newBuilder()
                   .addInput(inputDataset)
-                  .addInput(inputDataset2)
                   .addOutput(inputOutputExp);
           Response result = lineageServiceStub.addLineage(addLineage.build());
-
           long id = result.getId();
+          addLineage =
+              AddLineage.newBuilder()
+                  .setId(id)
+                  .addInput(inputDataset2);
+          result = lineageServiceStub.addLineage(addLineage.build());
+          assertEquals(id, result.getId());
+
           check(
-              Arrays.asList(
-                  inputOutputExp, inputDataset, inputDataset2, inputExp, NOT_EXISTENT_DATASET),
-              Arrays.asList(Arrays.asList(inputDataset, inputDataset2), null, null, null, null),
+              Arrays.asList(inputOutputExp, inputDataset, inputDataset2, inputExp),
+              Arrays.asList(Arrays.asList(inputDataset, inputDataset2), null, null, null),
               Arrays.asList(
                   null,
                   Collections.singletonList(inputOutputExp),
                   Collections.singletonList(inputOutputExp),
-                  null,
                   null),
               id);
 

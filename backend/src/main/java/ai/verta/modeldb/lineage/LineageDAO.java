@@ -45,7 +45,8 @@ public interface LineageDAO {
    * @throws ModelDBException wrong data format
    */
   FindAllInputs.Response findAllInputs(
-      FindAllInputs findAllInputs, ResourceExistsCheckConsumer resourceExistsCheckConsumer,
+      FindAllInputs findAllInputs,
+      ResourceExistsCheckConsumer resourceExistsCheckConsumer,
       Function3<Session, Response, Response> filter)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 
@@ -58,7 +59,8 @@ public interface LineageDAO {
    * @throws ModelDBException wrong data format
    */
   FindAllOutputs.Response findAllOutputs(
-      FindAllOutputs findAllOutputs, ResourceExistsCheckConsumer resourceExistsCheckConsumer,
+      FindAllOutputs findAllOutputs,
+      ResourceExistsCheckConsumer resourceExistsCheckConsumer,
       Function3<Session, FindAllOutputs.Response, FindAllOutputs.Response> filter)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 

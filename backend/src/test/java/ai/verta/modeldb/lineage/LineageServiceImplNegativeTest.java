@@ -7,8 +7,6 @@ import ai.verta.modeldb.DeleteLineage;
 import ai.verta.modeldb.FindAllInputs;
 import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
-import ai.verta.modeldb.LineageEntry;
-import ai.verta.modeldb.VersioningLineageEntry;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.hamcrest.CoreMatchers;
@@ -47,44 +45,6 @@ public class LineageServiceImplNegativeTest {
     assert description != null;
     Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("input"));
     Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("output"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("not"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("specified"));
-
-    sut.addLineage(
-        AddLineage.newBuilder()
-            .addInput(
-                LineageEntry.newBuilder()
-                    .setBlob(
-                        VersioningLineageEntry.newBuilder()
-                            .setRepositoryId(123)
-                            .setCommitSha("sha")
-                            .addLocation("/"))
-                    .build())
-            .build(),
-        addLineageObserver);
-    statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
-    description = statusRuntimeException.getStatus().getDescription();
-    assert description != null;
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("output"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("not"));
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("specified"));
-
-    sut.addLineage(
-        AddLineage.newBuilder()
-            .addOutput(
-                LineageEntry.newBuilder()
-                    .setBlob(
-                        VersioningLineageEntry.newBuilder()
-                            .setRepositoryId(123)
-                            .setCommitSha("sha")
-                            .addLocation("/"))
-                    .build())
-            .build(),
-        addLineageObserver);
-    statusRuntimeException = (StatusRuntimeException) captorThrow.getValue();
-    description = statusRuntimeException.getStatus().getDescription();
-    assert description != null;
-    Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("input"));
     Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("not"));
     Assert.assertThat(description.toLowerCase(), CoreMatchers.containsString("specified"));
   }

@@ -220,9 +220,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   /**
-   * Get id -> entries of input or output.
-   * A -- what we want to receive (can be input or output). B -- what we already have (input or
-   * output).
+   * Get id -> entries of input or output. A -- what we want to receive (can be input or output). B
+   * -- what we already have (input or output).
    *
    * @param session current session
    * @param lineageEntry sideB
@@ -391,7 +390,8 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public FindAllInputs.Response findAllInputs(
-      FindAllInputs findAllInputs, ResourceExistsCheckConsumer resourceExistsCheckConsumer,
+      FindAllInputs findAllInputs,
+      ResourceExistsCheckConsumer resourceExistsCheckConsumer,
       Function3<Session, FindAllInputs.Response, FindAllInputs.Response> filter)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     FindAllInputs.Response.Builder response = FindAllInputs.Response.newBuilder();
@@ -413,7 +413,8 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public FindAllOutputs.Response findAllOutputs(
-      FindAllOutputs findAllOutputs, ResourceExistsCheckConsumer resourceExistsCheckConsumer,
+      FindAllOutputs findAllOutputs,
+      ResourceExistsCheckConsumer resourceExistsCheckConsumer,
       Function3<Session, FindAllOutputs.Response, FindAllOutputs.Response> filter)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     FindAllOutputs.Response.Builder response = FindAllOutputs.Response.newBuilder();
@@ -492,9 +493,6 @@ public class LineageDAORdbImpl implements LineageDAO {
         if (experimentRun == null) {
           experimentRun = new LineageExperimentRunEntity(lineageEntry.getExperimentRun());
           session.save(experimentRun);
-          connectionExists = false;
-        } else {
-          connectionExists = true;
         }
         entityId = experimentRun.getId();
         entityType = ENTITY_TYPE_EXPERIMENT_RUN;
@@ -509,9 +507,6 @@ public class LineageDAORdbImpl implements LineageDAO {
               new LineageVersioningBlobEntity(
                   blob.getRepositoryId(), blob.getCommitSha(), blob.getLocationList());
           session.save(lineageVersioningBlobEntity);
-          connectionExists = false;
-        } else {
-          connectionExists = true;
         }
         entityId = lineageVersioningBlobEntity.getId();
         entityType = ENTITY_TYPE_VERSIONING_BLOB;
@@ -520,16 +515,15 @@ public class LineageDAORdbImpl implements LineageDAO {
         throw new ModelDBException("Unknown lineage type");
     }
 
-    List<ConnectionEntity> connectionEntities =
-        getConnectionEntities(session, invert(connectionType), entityId, entityType);
-    if (connectionExists) {
-      if (connectionType == CONNECTION_TYPE_OUTPUT
-          && !connectionEntities.get(0).getId().equals(id)) {
-        throw new ModelDBException(
-            "Specified lineage entry already has an output connection", Code.INVALID_ARGUMENT);
-      }
+    List<ConnectionEntity> connectionEntitiesForTheEntityId =
+        getConnectionEntities(session, connectionType, entityId, entityType);
+    if (connectionType == CONNECTION_TYPE_OUTPUT
+        && !connectionEntitiesForTheEntityId.isEmpty()
+        && !connectionEntitiesForTheEntityId.get(0).getId().equals(id)) {
+      throw new ModelDBException(
+          "Specified lineage entry already has an output connection", Code.INVALID_ARGUMENT);
     }
-    for (ConnectionEntity connectionEntity : connectionEntities) {
+    for (ConnectionEntity connectionEntity : connectionEntitiesForTheEntityId) {
       if (connectionEntity.getId().equals(id)) {
         return;
       }
