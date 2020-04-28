@@ -604,7 +604,7 @@ class TestHistogram:
                 num_false = sum(~series)
                 num_true = sum(series)
 
-                assert histogram_data['count'] == [num_false, num_true]
+                assert counts == [num_false, num_true]
             elif histogram_type == "discrete":
                 buckets = histogram_data['bucket_values']
 
