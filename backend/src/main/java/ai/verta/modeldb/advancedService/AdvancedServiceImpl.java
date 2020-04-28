@@ -459,7 +459,10 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     // Fetch the experiment list
     List<String> experimentIds = new ArrayList<>(experimentIdSet);
     LOGGER.trace("experimentIds {}", experimentIds);
-    List<Experiment> experimentList = experimentDAO.getExperimentsByBatchIds(experimentIds);
+    List<Experiment> experimentList = new ArrayList<>();
+    if (!experimentIds.isEmpty()) {
+      experimentList = experimentDAO.getExperimentsByBatchIds(experimentIds);
+    }
     LOGGER.trace("experimentList {}", experimentList);
     // key: experiment.id, value: experiment
     Map<String, Experiment> experimentMap = new HashMap<>();
@@ -567,8 +570,11 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
-      List<HydratedExperimentRun> hydratedExperimentRuns =
-          getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
+
+      List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
+      if (!experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
+        getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
+      }
 
       GetHydratedExperimentRunById.Response.Builder response =
           GetHydratedExperimentRunById.Response.newBuilder();
