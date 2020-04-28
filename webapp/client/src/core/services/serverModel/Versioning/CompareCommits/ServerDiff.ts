@@ -4,9 +4,11 @@ import {
   DiffType,
   IBlobDiff,
   elementDiffMakers,
+  IArrayDiff,
+  makeArrayDiff,
 } from 'core/shared/models/Versioning/Blob/Diff';
 import matchType from 'core/shared/utils/matchType';
-import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
 
 export type IServerBlobDiff<Content> = {
   location: string[];
@@ -53,13 +55,13 @@ export const convertServerBlobDiffToClient = <
     diffType,
     category,
     type,
-    location: location as DataLocation,
+    location: location as CommitComponentLocation,
     data: convertData(serverDiff, { diffType }),
   } as R;
 };
 
 export const convertServerElementDiffToClient = <
-  T extends IServerElementDiff<D>,
+  T extends IServerElementDiff<any>,
   D,
   B
 >(
@@ -72,6 +74,43 @@ export const convertServerElementDiffToClient = <
     MODIFIED: ({ A, B }) =>
       elementDiffMakers.modified(convertData(A), convertData(B)),
   });
+};
+export const convertNullableServerElementDiffToClient = <
+  T extends IServerElementDiff<D>,
+  D,
+  B
+>(
+  convertData: (serverData: D) => B,
+  serverDiff: T | undefined
+): IElementDiff<B> | undefined => {
+  return serverDiff
+    ? convertServerElementDiffToClient(convertData, serverDiff)
+    : undefined;
+};
+
+export const convertServerArrayDiffToClient = <
+  T extends IServerElementDiff<D>,
+  D,
+  B
+>(
+  convertData: (serverData: D) => B,
+  serverDiff: T[]
+): IArrayDiff<B> => {
+  return makeArrayDiff(
+    serverDiff.map(x => convertServerElementDiffToClient(convertData, x))
+  );
+};
+export const convertNullableServerArrayDiffToClient = <
+  T extends IServerElementDiff<D>,
+  D,
+  B
+>(
+  convertData: (serverData: D) => B,
+  serverDiff: T[] | undefined
+): IArrayDiff<B> | undefined => {
+  return serverDiff
+    ? convertServerArrayDiffToClient(convertData, serverDiff)
+    : undefined;
 };
 
 export const serverDiffTypeToClient = (

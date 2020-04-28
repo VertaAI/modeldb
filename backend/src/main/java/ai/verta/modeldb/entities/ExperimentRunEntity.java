@@ -75,12 +75,6 @@ public class ExperimentRunEntity {
           RdbmsUtils.generateCodeVersionEntity(
               ModelDBConstants.CODE_VERSION, experimentRun.getCodeVersionSnapshot()));
     }
-
-    if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
-      VersioningEntry versioningEntry = experimentRun.getVersionedInputs();
-      this.versioned_inputs =
-          RdbmsUtils.getVersioningMappingFromVersioningInput(versioningEntry, this);
-    }
   }
 
   @Id

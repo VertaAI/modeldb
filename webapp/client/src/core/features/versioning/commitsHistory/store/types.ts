@@ -1,5 +1,5 @@
 import { DataWithPagination } from 'core/shared/models/Pagination';
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import {
   IHydratedCommit,
   Branch,
@@ -18,7 +18,7 @@ export interface ICommitsHistoryState {
 export interface ICommitHistorySettings {
   branch: Branch;
   currentPage: number;
-  location: DataLocation.DataLocation;
+  location: CommitComponentLocation.CommitComponentLocation;
 }
 
 export interface IGroupedCommitsByDate {

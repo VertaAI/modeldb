@@ -78,6 +78,11 @@
 
 .actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   margin-top: 10px;
+}
+
+.action_delete {
+  margin-right: auto;
 }

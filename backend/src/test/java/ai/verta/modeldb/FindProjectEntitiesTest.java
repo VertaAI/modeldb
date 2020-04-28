@@ -2531,4 +2531,38 @@ public class FindProjectEntitiesTest {
 
     LOGGER.info("FindExperimentRuns with unwind test stop................................");
   }
+
+  /** Find experiments by workspace */
+  @Test
+  public void findExperimentsByWorkspaceTest() {
+    LOGGER.info("FindExperiments by workspace test start................................");
+
+    FindExperiments findExperiments = FindExperiments.newBuilder().build();
+
+    FindExperiments.Response response = experimentServiceStub.findExperiments(findExperiments);
+    LOGGER.info("FindExperiments Response : " + response.getExperimentsCount());
+    assertEquals(
+        "Experiment count not match with expected experiment count",
+        experimentMap.size(),
+        response.getExperimentsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        experimentMap.size(),
+        response.getTotalRecords());
+
+    findExperiments = FindExperiments.newBuilder().addExperimentIds(experiment1.getId()).build();
+
+    response = experimentServiceStub.findExperiments(findExperiments);
+    LOGGER.info("FindExperiments Response : " + response.getExperimentsCount());
+    assertEquals(
+        "Experiment count not match with expected experiment count",
+        1,
+        response.getExperimentsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+
+    LOGGER.info("FindExperiments by workspace test stop................................");
+  }
 }

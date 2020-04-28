@@ -7,7 +7,8 @@ import styles from './KeyValuePairs.module.css';
 interface ILocalProps {
   data: Array<IKeyValuePair<string>>;
   getStyles?: (
-    pair: IKeyValuePair<string>
+    pair: IKeyValuePair<string>,
+    i: number
   ) =>
     | { rootStyles?: React.CSSProperties; valueStyles?: React.CSSProperties }
     | undefined;
@@ -16,8 +17,8 @@ interface ILocalProps {
 const KeyValuePairs = ({ data, getStyles = () => undefined }: ILocalProps) => {
   return (
     <div className={styles.root}>
-      {data.map(pair => {
-        const pairStyles = getStyles(pair) || {};
+      {data.map((pair, i) => {
+        const pairStyles = getStyles(pair, i) || {};
         return (
           <div
             className={styles.pair}

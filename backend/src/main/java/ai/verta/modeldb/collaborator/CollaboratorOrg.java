@@ -1,10 +1,10 @@
 package ai.verta.modeldb.collaborator;
 
+import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.uac.AddCollaboratorRequest.Response.Builder;
 import ai.verta.uac.Entities;
-import ai.verta.uac.EntitiesEnum.EntitiesTypes;
 import ai.verta.uac.Organization;
 import com.google.protobuf.GeneratedMessageV3;
 import org.apache.logging.log4j.LogManager;

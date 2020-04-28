@@ -46,17 +46,14 @@ class DatasetVersionServiceApi(client: HttpClient, val basePath: String = "/v1")
 
   def deleteDatasetVersion(body: ModeldbDeleteDatasetVersion)(implicit ec: ExecutionContext): Try[ModeldbDeleteDatasetVersionResponse] = Await.result(deleteDatasetVersionAsync(body), Duration.Inf)
 
-  def deleteDatasetVersionAttributesAsync(id: String, attribute_keys: List[String], delete_all: Boolean)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteDatasetVersionAttributesResponse]] = {
+  def deleteDatasetVersionAttributesAsync(body: ModeldbDeleteDatasetVersionAttributes)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteDatasetVersionAttributesResponse]] = {
     val __query = Map[String,String](
-      "id" -> client.toQuery(id),
-      "attribute_keys" -> client.toQuery(attribute_keys),
-      "delete_all" -> client.toQuery(delete_all)
     )
-    val body: String = null
-    return client.request[String, ModeldbDeleteDatasetVersionAttributesResponse]("DELETE", basePath + s"/dataset-version/deleteDatasetVersionAttributes", __query, body, ModeldbDeleteDatasetVersionAttributesResponse.fromJson)
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbDeleteDatasetVersionAttributes, ModeldbDeleteDatasetVersionAttributesResponse]("DELETE", basePath + s"/dataset-version/deleteDatasetVersionAttributes", __query, body, ModeldbDeleteDatasetVersionAttributesResponse.fromJson)
   }
 
-  def deleteDatasetVersionAttributes(id: String, attribute_keys: List[String], delete_all: Boolean)(implicit ec: ExecutionContext): Try[ModeldbDeleteDatasetVersionAttributesResponse] = Await.result(deleteDatasetVersionAttributesAsync(id, attribute_keys, delete_all), Duration.Inf)
+  def deleteDatasetVersionAttributes(body: ModeldbDeleteDatasetVersionAttributes)(implicit ec: ExecutionContext): Try[ModeldbDeleteDatasetVersionAttributesResponse] = Await.result(deleteDatasetVersionAttributesAsync(body), Duration.Inf)
 
   def deleteDatasetVersionTagsAsync(body: ModeldbDeleteDatasetVersionTags)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteDatasetVersionTagsResponse]] = {
     val __query = Map[String,String](

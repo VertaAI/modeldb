@@ -3,40 +3,47 @@ import * as React from 'react';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IHydratedCommit,
-  IFullDataLocationComponents,
-  IRepositoryData,
+  IFullCommitComponentLocationComponents,
+  ICommitComponent,
 } from 'core/shared/models/Versioning/RepositoryData';
 import matchBy from 'core/shared/utils/matchBy';
 
+import BlobDetailsView from './BlobDetailsView/BlobDetailsView';
 import styles from './DataNavigation.module.css';
 import FolderView from './FolderView/FolderView';
-import BlobDetailsView from './BlobDetailsView/BlobDetailsView';
 
 interface ILocalProps {
   repository: IRepository;
-  fullDataLocationComponents: IFullDataLocationComponents;
+  fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
   commit: IHydratedCommit;
-  data: IRepositoryData;
+  component: ICommitComponent;
 }
 
 const DataNavigation = (props: ILocalProps) => {
-  const { repository, commit, fullDataLocationComponents, data } = props;
+  const {
+    repository,
+    commit,
+    fullCommitComponentLocationComponents,
+    component,
+  } = props;
 
   return (
     <div className={styles.root}>
-      {matchBy(data, 'type')({
+      {matchBy(component, 'type')({
         blob: blob => (
           <BlobDetailsView
             repository={repository}
             commit={commit}
-            location={fullDataLocationComponents.location}
+            location={fullCommitComponentLocationComponents.location}
             blobData={blob.data}
           />
         ),
         folder: folder => (
           <FolderView
             data={folder}
-            fullDataLocationComponents={fullDataLocationComponents}
+            fullCommitComponentLocationComponents={
+              fullCommitComponentLocationComponents
+            }
             commit={commit}
             repositoryName={repository.name}
           />

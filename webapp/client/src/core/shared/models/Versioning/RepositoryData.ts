@@ -2,7 +2,7 @@ import User from 'models/User';
 
 import { Brand } from '../../utils/Brand';
 import { IBlob } from './Blob/Blob';
-import { DataLocation } from './DataLocation';
+import { CommitComponentLocation } from './CommitComponentLocation';
 import { IRepository } from './Repository';
 
 export type SHA = string;
@@ -83,7 +83,7 @@ export type IHydratedCommit =
       author: User;
     };
 
-export type IRepositoryData = IFolder | IBlob;
+export type ICommitComponent = IFolder | IBlob;
 
 export interface IFolder {
   type: 'folder';
@@ -113,18 +113,28 @@ export interface ISubFolderElement {
   createdByCommitSha: SHA;
 }
 
-export interface IDataRequest {
+export interface ICommitComponentRequest {
   repositoryId: IRepository['id'];
-  fullDataLocationComponents: IFullDataLocationComponents;
+  fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
 }
 
-export interface IFullDataLocationComponents {
-  type: IRepositoryData['type'];
-  location: DataLocation;
+export interface IFullCommitComponentLocationComponents {
+  type: ICommitComponent['type'];
+  location: CommitComponentLocation;
   commitPointer: CommitPointer;
 }
 
-export interface ICommitWithData {
+export interface ICommitWithComponent {
   commit: IHydratedCommit;
-  data: IRepositoryData;
+  component: ICommitComponent;
 }
+
+export type IMergeCommitsError = {
+  type: 'mergeCommitsError';
+};
+export const isMergeCommitsError = (
+  error: any
+): error is IMergeCommitsError => {
+  const expectedType: IMergeCommitsError['type'] = 'mergeCommitsError';
+  return error && error.type === expectedType;
+};

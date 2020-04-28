@@ -12,8 +12,15 @@ import {
   TableWrapper,
 } from 'core/shared/view/elements/Table/Plugins';
 
-import { IComparedCommitsInfo } from '../../../model';
+import {
+  IComparedCommitsInfo,
+  getCssDiffColorByCommitType,
+} from '../../../model';
 import { getColumnComparedCommitsTitles } from '../comparedCommitsNames';
+
+import styles from './ComparePropertiesTable.module.css';
+import withProps from 'core/shared/utils/react/withProps';
+import { makeGenericCell } from 'core/shared/view/elements/Table/Templates/Cell/Cell';
 
 interface ILocalProps<T> {
   comparedCommitsInfo: IComparedCommitsInfo;
@@ -38,10 +45,14 @@ interface IState {
 export interface IPropDefinition<T> {
   title: string;
   isHidden?: boolean;
+  type: string;
+  getCellStyle?: (
+    settings: IPropDefinitionRenderProps<T>
+  ) => React.CSSProperties | undefined;
   render(settings: IPropDefinitionRenderProps<T>): React.ReactNode;
 }
 export interface IPropDefinitionRenderProps<T> {
-  type: ComparedCommitType;
+  comparedCommitType: ComparedCommitType;
   data?: T;
   anotherData?: T;
 }
@@ -95,6 +106,44 @@ class ComparePropertiesTable<T> extends React.Component<
     >[] = this.getPropDefinitions().filter(
       ({ isHidden = false }) => isHidden !== true
     );
+
+    const DiffCell = withProps(makeGenericCell<IPropDefinition<any>, string>())({
+      getDataType: (_, row) => row.type,
+      getStyle: (column: { name: string }, row: IPropDefinition<any>) => {
+        switch (column.name) {
+          case ColumnNames.properties: {
+            return undefined;
+          }
+          case ColumnNames.A: {
+            const renderProps: IPropDefinitionRenderProps<T> = {
+              comparedCommitType: ColumnNames.A,
+              data: this.props.A ? this.props.A : undefined,
+              anotherData: this.props.B ? this.props.B : undefined,
+            };
+            const target = propDefinitions.find(
+              ({ type }) => type === row.type
+            );
+            return target && row.getCellStyle
+              ? row.getCellStyle(renderProps)
+              : undefined;
+          }
+          case ColumnNames.B: {
+            const renderProps: IPropDefinitionRenderProps<T> = {
+              comparedCommitType: ColumnNames.B,
+              data: this.props.B ? this.props.B : undefined,
+              anotherData: this.props.A ? this.props.A : undefined,
+            };
+            const target = propDefinitions.find(
+              ({ type }) => type === row.type
+            );
+            return target && row.getCellStyle
+              ? row.getCellStyle(renderProps)
+              : undefined;
+          }
+        }
+      },
+    });
+
     return (
       <Paper>
         <TableWrapper isHeightByContent={true}>
@@ -103,7 +152,10 @@ class ComparePropertiesTable<T> extends React.Component<
               formatterComponent={this.ColumnFactory as any}
               for={columns.map(({ name }) => name)}
             />
-            <TablePlugin columnExtensions={tableColumnExtensions} />
+            <TablePlugin
+              columnExtensions={tableColumnExtensions}
+              cellComponent={DiffCell}
+            />
             <TableHeaderRow />
           </Grid>
         </TableWrapper>
@@ -129,11 +181,11 @@ class ComparePropertiesTable<T> extends React.Component<
   }) {
     switch (column.name) {
       case ColumnNames.properties: {
-        return <span>{propDefinition.title}</span>;
+        return <span className={styles.title}>{propDefinition.title}</span>;
       }
       case ColumnNames.A: {
         const renderProps: IPropDefinitionRenderProps<T> = {
-          type: ColumnNames.A,
+          comparedCommitType: ColumnNames.A,
           data: this.props.A ? this.props.A : undefined,
           anotherData: this.props.B ? this.props.B : undefined,
         };
@@ -141,7 +193,7 @@ class ComparePropertiesTable<T> extends React.Component<
       }
       case ColumnNames.B: {
         const renderProps: IPropDefinitionRenderProps<T> = {
-          type: ColumnNames.B,
+          comparedCommitType: ColumnNames.B,
           data: this.props.B ? this.props.B : undefined,
           anotherData: this.props.A ? this.props.A : undefined,
         };
@@ -149,6 +201,19 @@ class ComparePropertiesTable<T> extends React.Component<
       }
     }
   }
+}
+
+export function makeHighlightCellBackground<T>() {
+  function highlightCellBackground(
+    pred: (settings: { data: T; comparedCommitType: ComparedCommitType }) => boolean
+  ) {
+    return (settings: { data?: T; comparedCommitType: ComparedCommitType }) => {
+      return settings.data && pred({ data: settings.data, comparedCommitType: settings.comparedCommitType })
+        ? { backgroundColor: getCssDiffColorByCommitType(settings.comparedCommitType) }
+        : undefined;
+    };
+  }
+  return highlightCellBackground;
 }
 
 export default function makeComparePropertiesTable<T>(): {

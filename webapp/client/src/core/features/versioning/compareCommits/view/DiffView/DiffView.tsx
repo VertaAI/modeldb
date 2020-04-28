@@ -1,9 +1,8 @@
 import React from 'react';
 
 import { Diff } from 'core/shared/models/Versioning/Blob/Diff';
-import * as DataLocationHelpers from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocationHelpers from 'core/shared/models/Versioning/CommitComponentLocation';
 import matchBy from 'core/shared/utils/matchBy';
-import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
 import { IComparedCommitsInfo } from '../model';
 import CodeDiffView from './CodeDiffView/CodeDiffView';
@@ -12,6 +11,7 @@ import DatasetDiffView from './DatasetDiffView/DatasetDiffView';
 import styles from './DiffView.module.css';
 import EnvironmentDiffView from './EnvironmentDiffView/EnvironmentDiffView';
 import UnknownDiffView from './UnknownDiffView/UnknownDiffView';
+import Breadcrumbs from 'core/shared/view/domain/Versioning/Breadcrumbs/Breadcrumbs';
 
 interface ILocalProps {
   diff: Diff;
@@ -20,10 +20,18 @@ interface ILocalProps {
 
 const DiffView: React.FC<ILocalProps> = ({ diff, comparedCommitsInfo }) => {
   return (
-    <DataBox withPadding={true} additionalClassname={styles.root}>
+    <div className={styles.root}>
       <div className={styles.header}>
         <span className={styles.location}>
-          {DataLocationHelpers.toPathname(diff.location)}
+          <Breadcrumbs
+            breadcrumbItems={CommitComponentLocationHelpers.toArray(
+              diff.location
+            ).map(componentName => ({
+              to: '',
+              name: componentName,
+              isDisabled: true,
+            }))}
+          />
         </span>
       </div>
       {matchBy(diff, 'category')({
@@ -42,7 +50,7 @@ const DiffView: React.FC<ILocalProps> = ({ diff, comparedCommitsInfo }) => {
         ),
         unknown: d => <UnknownDiffView diff={d} />,
       })}
-    </DataBox>
+    </div>
   );
 };
 

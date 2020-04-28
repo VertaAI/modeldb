@@ -12,6 +12,7 @@ object IdServiceProviderEnumIdServiceProvider {
   val BITBUCKET: IdServiceProviderEnumIdServiceProvider = "BITBUCKET"
   val GOOGLE: IdServiceProviderEnumIdServiceProvider = "GOOGLE"
   val VERTA: IdServiceProviderEnumIdServiceProvider = "VERTA"
+  val SAML: IdServiceProviderEnumIdServiceProvider = "SAML"
 
   def toJson(obj: IdServiceProviderEnumIdServiceProvider): JString = JString(obj)
 

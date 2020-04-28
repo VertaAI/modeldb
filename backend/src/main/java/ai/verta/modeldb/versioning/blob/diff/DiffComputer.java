@@ -231,14 +231,10 @@ public class DiffComputer {
 
   public static AutogenS3DatasetComponentDiff computeS3DatasetComponentDiff(
       AutogenS3DatasetComponentBlob a, AutogenS3DatasetComponentBlob b) {
+    if (a == null && b == null) return null;
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
     return Utils.removeEmpty(
-        new AutogenS3DatasetComponentDiff()
-            .setPath(
-                computeDiff(
-                    a,
-                    b,
-                    AutogenS3DatasetComponentBlob::getPath,
-                    DiffComputer::computePathDatasetComponentDiff)));
+        new AutogenS3DatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static AutogenEnvironmentDiff computeEnvironmentDiff(

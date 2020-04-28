@@ -35,18 +35,19 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
 };
 
 type WrapperOwnProps = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
+  ReturnType<typeof mapDispatchToProps> & { repository: IRepository };
 
-export default function withLoadingRequiredData<
-  Props extends {
-    repository: IRepository;
-    tags: CommitTag[];
-    branches: Branch[];
-  }
->(
+interface ILoadedData {
+  tags: CommitTag[];
+  branches: Branch[];
+}
+
+export default function withLoadingRequiredData<Props extends ILoadedData>(
   WrappedComponent: React.ComponentType<Props>
-): React.ComponentType<Omit<Props, 'tags' | 'branches'>> {
-  class Wrapper extends React.Component<Props & WrapperOwnProps> {
+): React.ComponentType<Omit<Props, keyof ILoadedData>> {
+  class Wrapper extends React.Component<
+    Omit<Props, keyof ILoadedData> & WrapperOwnProps
+  > {
     public componentDidMount() {
       this.props.loadTags({
         repositoryId: this.props.repository.id,
@@ -64,7 +65,7 @@ export default function withLoadingRequiredData<
         loadingBranches,
         branches,
         loadBranches,
-        ...restProps
+        ...wrappedComponentProps
       } = this.props;
 
       if (
@@ -73,13 +74,15 @@ export default function withLoadingRequiredData<
         loadingTags.isSuccess &&
         tags
       ) {
-        return (
-          <WrappedComponent
-            {...restProps as any}
-            tags={tags}
-            branches={branches}
-          />
-        );
+        const requiredData: ILoadedData = {
+          branches,
+          tags,
+        };
+        const props: Props = {
+          ...(wrappedComponentProps as any),
+          ...requiredData,
+        };
+        return <WrappedComponent {...props} />;
       }
 
       return (
@@ -90,13 +93,15 @@ export default function withLoadingRequiredData<
               data={branches}
             >
               {loadedBranches => {
-                return (
-                  <WrappedComponent
-                    {...restProps as any}
-                    tags={loadedTags}
-                    branches={loadedBranches}
-                  />
-                );
+                const requiredData: ILoadedData = {
+                  branches: loadedBranches,
+                  tags: loadedTags,
+                };
+                const props: Props = {
+                  ...(wrappedComponentProps as any),
+                  ...requiredData,
+                };
+                return <WrappedComponent {...props} />;
               }}
             </DefaultMatchRemoteData>
           )}
@@ -107,5 +112,5 @@ export default function withLoadingRequiredData<
   return connect(
     mapStateToProps,
     mapDispatchToProps
-  )(Wrapper as any) as any;
+  )(Wrapper as any);
 }

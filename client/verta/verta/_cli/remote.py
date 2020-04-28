@@ -2,6 +2,8 @@
 
 import click
 
+from .._internal_utils import _config_utils
+
 
 @click.group()
 def remote():
@@ -12,13 +14,35 @@ def remote():
 @remote.command()
 @click.argument('name')
 @click.argument('url')
-def add(name, url):
+@click.pass_context
+def add(ctx, name, url):
     """Add a remote repository."""
-    click.echo("registered repo {} at url {}".format(name, url))
+    # TODO: validate `url`
+
+    with _config_utils.read_config() as config:
+        remotes = config.get('remotes', {})
+        if name in remotes:
+            raise click.BadParameter("remote '{}' already exists".format(name))
+
+        num_other_remotes = len(remotes)
+
+    with _config_utils.write_config() as config:
+        config.setdefault('remotes', {})[name] = {
+            'url': url,
+            'branch': "master",
+        }
+
+    if num_other_remotes == 0:
+        ctx.invoke(use, name=name)
 
 
 @remote.command()
 @click.argument('name')
 def use(name):
     """Set a remote repository as the active one."""
-    click.echo("now using repo {}".format(name))
+    with _config_utils.read_config() as config:
+        if name not in config.get('remotes', {}):
+            raise click.BadParameter("no such remote: '{}'".format(name))
+
+    with _config_utils.write_config() as config:
+        config['current-remote'] = name

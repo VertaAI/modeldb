@@ -1,9 +1,10 @@
-import { DataLocation } from '../DataLocation';
+import matchBy from 'core/shared/utils/matchBy';
+
+import { CommitComponentLocation } from '../CommitComponentLocation';
 import { ICodeBlobDiff } from './CodeBlob';
 import { IConfigBlobDiff } from './ConfigBlob';
 import { IDatasetBlobDiff } from './DatasetBlob';
 import { IEnvironmentBlobDiff } from './EnvironmentBlob';
-import matchBy from 'core/shared/utils/matchBy';
 
 export type ComparedCommitType = 'A' | 'B';
 export type DiffType = Diff['diffType'];
@@ -25,21 +26,21 @@ export type IBlobDiff<Data, BlobCategory, BlobType = BlobCategory> =
       diffType: 'added';
       type: BlobType;
       category: BlobCategory;
-      location: DataLocation;
+      location: CommitComponentLocation;
       data: Data;
     }
   | {
       diffType: 'deleted';
       category: BlobCategory;
       type: BlobType;
-      location: DataLocation;
+      location: CommitComponentLocation;
       data: Data;
     }
   | {
       diffType: 'modified';
       category: BlobCategory;
       type: BlobType;
-      location: DataLocation;
+      location: CommitComponentLocation;
       data: Data;
     };
 
@@ -58,6 +59,10 @@ export type IElementDiff<Element> =
       B: Element;
     };
 
+export type GetElementData<
+  T extends IElementDiff<any>
+> = T extends IElementDiff<infer D> ? D : never;
+
 export const elementDiffMakers = {
   modified: <Element>(A: Element, B: Element): IElementDiff<Element> => ({
     diffType: 'modified',
@@ -73,6 +78,9 @@ export const elementDiffMakers = {
     A,
   }),
 };
+
+export type IArrayDiff<Element> = Array<IElementDiff<Element>>;
+export const makeArrayDiff = <T>(elems: IArrayDiff<T>): IArrayDiff<T> => elems;
 
 export const getAData = <T extends IElementDiff<any>>(
   newDiff: T

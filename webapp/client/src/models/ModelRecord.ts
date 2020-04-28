@@ -12,7 +12,7 @@ import {
 } from 'core/shared/models/HyperParameters';
 import { IMetric, Metric } from 'core/shared/models/Metrics';
 import { IObservation, Observation } from 'core/shared/models/Observation';
-import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { ICommit } from 'core/shared/models/Versioning/RepositoryData';
 
@@ -65,7 +65,7 @@ export interface IVersionedInputs {
   commitSha: ICommit['sha'];
   keyLocationMap: {
     [K: string]: {
-      location: DataLocation;
+      location: CommitComponentLocation;
     };
   };
 }

@@ -119,6 +119,11 @@ class Client(object):
     def __init__(self, host=None, port=None, email=None, dev_key=None,
                  max_retries=5, ignore_conn_err=False, use_git=True, debug=False, _connect=True):
         self._load_config()
+
+        if host is None and 'VERTA_HOST' in os.environ:
+            host = os.environ['VERTA_HOST']
+            print("set host from environment")
+        host = self._set_from_config_if_none(host, "host")
         if email is None and 'VERTA_EMAIL' in os.environ:
             email = os.environ['VERTA_EMAIL']
             print("set email from environment")
@@ -128,6 +133,8 @@ class Client(object):
             print("set developer key from environment")
         dev_key = self._set_from_config_if_none(dev_key, "dev_key")
 
+        if host is None:
+            raise ValueError("`host` must be provided")
         scheme = auth = None
         if email is None and dev_key is None:
             if debug:
@@ -145,10 +152,6 @@ class Client(object):
             os.environ['VERTA_DEV_KEY'] = dev_key
         else:
             raise ValueError("`email` and `dev_key` must be provided together")
-
-        host = self._set_from_config_if_none(host, "host")
-        if host is None:
-            raise ValueError("`host` must be provided")
 
         back_end_url = urlparse(host)
         socket = back_end_url.netloc + back_end_url.path.rstrip('/')

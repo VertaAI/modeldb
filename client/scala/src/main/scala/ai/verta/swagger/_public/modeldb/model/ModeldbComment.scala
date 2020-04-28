@@ -6,7 +6,6 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
-import ai.verta.swagger._public.modeldb.model.AuthzActionEnumAuthzServiceActions._
 import ai.verta.swagger._public.modeldb.model.CollaboratorTypeEnumCollaboratorType._
 import ai.verta.swagger._public.modeldb.model.DatasetTypeEnumDatasetType._
 import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibility._
@@ -15,7 +14,6 @@ import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProv
 import ai.verta.swagger._public.modeldb.model.ModelDBActionEnumModelDBServiceActions._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
-import ai.verta.swagger._public.modeldb.model.RoleActionEnumRoleServiceActions._
 import ai.verta.swagger._public.modeldb.model.ServiceEnumService._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
@@ -26,7 +24,7 @@ import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbComment (
-  date_time: Option[] = None,
+  date_time: Option[BigInt] = None,
   id: Option[String] = None,
   message: Option[String] = None,
   user_id: Option[String] = None,
@@ -40,7 +38,7 @@ object ModeldbComment {
   def toJson(obj: ModeldbComment): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.date_time.map(x => JField("date_time", (x))),
+        obj.date_time.map(x => JField("date_time", JInt(x))),
         obj.id.map(x => JField("id", JString(x))),
         obj.message.map(x => JField("message", JString(x))),
         obj.user_id.map(x => JField("user_id", JString(x))),
@@ -59,7 +57,7 @@ object ModeldbComment {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbComment(
           // TODO: handle required
-          date_time = fieldsMap.get("date_time").map(),
+          date_time = fieldsMap.get("date_time").map(JsonConverter.fromJsonInteger),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           message = fieldsMap.get("message").map(JsonConverter.fromJsonString),
           user_id = fieldsMap.get("user_id").map(JsonConverter.fromJsonString),

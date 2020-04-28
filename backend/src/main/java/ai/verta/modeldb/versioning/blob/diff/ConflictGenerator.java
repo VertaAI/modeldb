@@ -430,23 +430,23 @@ public class ConflictGenerator {
   }
 
   private static AutogenS3DatasetDiff getS3DatasetConflictBlob(
-      AutogenS3DatasetDiff a, AutogenS3DatasetDiff b, AutogenS3DatasetBlob C) {
+      AutogenS3DatasetDiff a, AutogenS3DatasetDiff b, AutogenS3DatasetBlob c) {
     return Utils.removeEmpty(
         new AutogenS3DatasetDiff()
             .setComponents(
                 getS3DatasetConflictBlob(
                     a == null ? null : a.getComponents(),
                     b == null ? null : b.getComponents(),
-                    C == null ? null : C.getComponents())));
+                    c == null ? null : c.getComponents())));
   }
 
   private static List<AutogenS3DatasetComponentDiff> getS3DatasetConflictBlob(
       List<AutogenS3DatasetComponentDiff> a,
       List<AutogenS3DatasetComponentDiff> b,
       List<AutogenS3DatasetComponentBlob> c) {
-    Map<String, AutogenPathDatasetComponentBlob> mapA = getS3DiffMap(a);
-    Map<String, AutogenPathDatasetComponentBlob> mapB = getS3DiffMap(b);
-    Map<String, AutogenPathDatasetComponentBlob> mapC = getS3Map(c);
+    Map<String, AutogenS3DatasetComponentBlob> mapA = getS3DiffMap(a);
+    Map<String, AutogenS3DatasetComponentBlob> mapB = getS3DiffMap(b);
+    Map<String, AutogenS3DatasetComponentBlob> mapC = getS3Map(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
     keys.addAll(mapB.keySet());
@@ -455,37 +455,38 @@ public class ConflictGenerator {
       retList.add(
           Utils.removeEmpty(
               new AutogenS3DatasetComponentDiff()
-                  .setPath(
-                      new AutogenPathDatasetComponentDiff()
-                          .setStatus(
-                              AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
-                          .setA(mapA.get(key))
-                          .setB(mapB.get(key))
-                          .setC(mapC.get(key)))));
+                  .setA(mapA.get(key))
+                  .setB(mapB.get(key))
+                  .setC(mapC.get(key))
+                  .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))));
     }
     return retList;
   }
 
-  private static Map<String, AutogenPathDatasetComponentBlob> getS3Map(
+  private static Map<String, AutogenS3DatasetComponentBlob> getS3Map(
       List<AutogenS3DatasetComponentBlob> list) {
     if (list == null) return Collections.emptyMap();
-    Map<String, AutogenPathDatasetComponentBlob> retMap =
-        new HashMap<String, AutogenPathDatasetComponentBlob>();
+    Map<String, AutogenS3DatasetComponentBlob> retMap =
+        new HashMap<String, AutogenS3DatasetComponentBlob>();
     for (AutogenS3DatasetComponentBlob s3Blob : list) {
       String path = s3Blob.getPath().getPath();
-      retMap.put(path, s3Blob.getPath());
+      retMap.put(path, s3Blob);
     }
     return retMap;
   }
 
-  private static Map<String, AutogenPathDatasetComponentBlob> getS3DiffMap(
+  private static Map<String, AutogenS3DatasetComponentBlob> getS3DiffMap(
       List<AutogenS3DatasetComponentDiff> list) {
     if (list == null) return Collections.emptyMap();
-    Map<String, AutogenPathDatasetComponentBlob> retMap =
-        new HashMap<String, AutogenPathDatasetComponentBlob>();
+    Map<String, AutogenS3DatasetComponentBlob> retMap =
+        new HashMap<String, AutogenS3DatasetComponentBlob>();
     for (AutogenS3DatasetComponentDiff diff : list) {
-      String path = diff.getPath().getB().getPath();
-      retMap.put(path, diff.getPath().getB());
+      String path = diff.getB().getPath().getPath();
+      retMap.put(
+          path,
+          new AutogenS3DatasetComponentBlob()
+              .setPath(diff.getB().getPath())
+              .setS3VersionId(diff.getB().getS3VersionId()));
     }
     return retMap;
   }

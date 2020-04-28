@@ -1,48 +1,70 @@
 import {
-  DiffType,
-  ComparedCommitType,
-  IElementDiff,
-  elementDiffMakers,
-} from 'core/shared/models/Versioning/Blob/Diff';
-import {
   IEnvironmentBlobDiff,
   IEnvironmentVariablesBlob,
   IVersionEnvironmentBlob,
   IPythonRequirementEnvironment,
   IDockerEnvironmentBlob,
-  IEnvironmentBlobDataDiff,
-  IPythonEnvironmentBlob,
+  IDockerEnvironmentBlobDiff,
+  IPythonEnvironmentBlobDiff,
 } from 'core/shared/models/Versioning/Blob/EnvironmentBlob';
-import { convertServerDockerBlob } from '../RepositoryData/Blob/EnviromentBlob';
 import {
   IServerBlobDiff,
   IServerElementDiff,
   convertServerBlobDiffToClient,
+  convertServerElementDiffToClient,
+  convertNullableServerElementDiffToClient,
+  convertNullableServerArrayDiffToClient,
 } from './ServerDiff';
-import matchType from 'core/shared/utils/matchType';
 
 export const convertServerEnvironmentDiff = (
   serverConfigDiff: IServerEnvironmentDiff
 ): IEnvironmentBlobDiff => {
   return convertServerBlobDiffToClient(
     {
-      convertData: ({ environment }, { diffType }) => {
-        return matchType<DiffType, IElementDiff<IEnvironmentBlobDataDiff>>(
-          {
-            added: () =>
-              elementDiffMakers.added(convertToDiffBlobData('B', environment)),
-            deleted: () =>
-              elementDiffMakers.deleted(
-                convertToDiffBlobData('A', environment)
-              ),
-            modified: () =>
-              elementDiffMakers.modified(
-                convertToDiffBlobData('A', environment),
-                convertToDiffBlobData('B', environment)
-              ),
-          },
-          diffType
-        );
+      convertData: ({ environment }) => {
+        return {
+          commandLine: convertNullableServerElementDiffToClient(
+            (x: string[]) => x,
+            environment.command_line
+          ),
+          variables: convertNullableServerArrayDiffToClient(
+            (x: IEnvironmentVariablesBlob) => x,
+            environment.environment_variables
+          ),
+          data: (() => {
+            if (environment.python) {
+              const res: IPythonEnvironmentBlobDiff = {
+                type: 'python',
+                data: {
+                  constraints: convertNullableServerArrayDiffToClient(
+                    (x: IPythonRequirementEnvironment) => x,
+                    environment.python.constraints
+                  ),
+                  requirements: convertNullableServerArrayDiffToClient(
+                    (x: IPythonRequirementEnvironment) => x,
+                    environment.python.requirements
+                  ),
+                  pythonVersion: convertNullableServerElementDiffToClient(
+                    (x: IVersionEnvironmentBlob) => x,
+                    environment.python.version
+                  ),
+                },
+              };
+              return res;
+            }
+            if (environment.docker) {
+              const res: IDockerEnvironmentBlobDiff = {
+                type: 'docker',
+                data: convertServerElementDiffToClient(
+                  (d: IDockerEnvironmentBlob['data']) => d,
+                  environment.docker
+                ),
+              };
+              return res;
+            }
+            throw new Error('environment data doesn`t exist');
+          })(),
+        };
       },
       category: 'environment',
       type: 'environment',
@@ -51,53 +73,10 @@ export const convertServerEnvironmentDiff = (
   );
 };
 
-const convertToDiffBlobData = (
-  type: ComparedCommitType,
-  environment: IServerEnvironmentDiff['environment']
-): IEnvironmentBlobDataDiff => {
-  return {
-    commandLine:
-      environment.command_line && (environment.command_line as any)[type],
-    variables:
-      environment.environment_variables &&
-      environment.environment_variables
-        .map((v: any) => v[type])
-        .filter(Boolean),
-    data: environment.docker
-      ? convertServerDockerBlob(
-          (environment.docker as any).A || (environment.docker as any).B
-        )
-      : environment.python
-      ? convertServerPythonDiffToBlob(type, environment.python)
-      : undefined,
-  };
-};
-
-const convertServerPythonDiffToBlob = (
-  type: ComparedCommitType,
-  serverPythonDiff: IServerPythonDiff
-): IPythonEnvironmentBlob => {
-  return {
-    type: 'python',
-    data: {
-      pythonVersion:
-        serverPythonDiff.version && (serverPythonDiff.version as any)[type],
-      constraints:
-        serverPythonDiff.constraints &&
-        serverPythonDiff.constraints.map(d => (d as any)[type]).filter(Boolean),
-      requirements:
-        serverPythonDiff.requirements &&
-        serverPythonDiff.requirements
-          .map(d => (d as any)[type])
-          .filter(Boolean),
-    },
-  };
-};
-
 export type IServerEnvironmentDiff = IServerBlobDiff<{
   environment: {
     python?: IServerPythonDiff;
-    docker?: IServerElementDiff<IDockerEnvironmentBlob>;
+    docker?: IServerElementDiff<IDockerEnvironmentBlob['data']>;
 
     environment_variables?: Array<
       IServerElementDiff<IEnvironmentVariablesBlob>
@@ -107,8 +86,8 @@ export type IServerEnvironmentDiff = IServerBlobDiff<{
 }>;
 
 type IServerPythonDiff = {
-  version: IServerElementDiff<IVersionEnvironmentBlob>;
+  version?: IServerElementDiff<IVersionEnvironmentBlob>;
 
-  requirements: Array<IServerElementDiff<IPythonRequirementEnvironment>>;
-  constraints: Array<IServerElementDiff<IPythonRequirementEnvironment>>;
+  requirements?: Array<IServerElementDiff<IPythonRequirementEnvironment>>;
+  constraints?: Array<IServerElementDiff<IPythonRequirementEnvironment>>;
 };

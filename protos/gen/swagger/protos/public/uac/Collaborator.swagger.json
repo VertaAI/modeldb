@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/uac/Collaborator.proto",
+    "title": "uac/Collaborator.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -367,16 +367,6 @@
     }
   },
   "definitions": {
-    "AuthzActionEnumAuthzServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "IS_ALLOWED",
-        "GET"
-      ],
-      "default": "UNKNOWN"
-    },
     "CollaboratorTypeEnumCollaboratorType": {
       "type": "string",
       "enum": [
@@ -402,7 +392,8 @@
         "GITHUB",
         "BITBUCKET",
         "GOOGLE",
-        "VERTA"
+        "VERTA",
+        "SAML"
       ],
       "default": "UNKNOWN"
     },
@@ -420,27 +411,11 @@
       ],
       "default": "UNKNOWN"
     },
-    "RoleActionEnumRoleServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "GET_BY_ID",
-        "GET_BY_NAME",
-        "CREATE",
-        "UPDATE",
-        "LIST",
-        "DELETE"
-      ],
-      "default": "UNKNOWN"
-    },
     "ServiceEnumService": {
       "type": "string",
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ROLE_SERVICE",
-        "AUTHZ_SERVICE",
         "MODELDB_SERVICE"
       ],
       "default": "UNKNOWN"
@@ -492,12 +467,6 @@
       "properties": {
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
-        },
-        "role_service_action": {
-          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
-        },
-        "authz_service_action": {
-          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
         },
         "modeldb_service_action": {
           "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"

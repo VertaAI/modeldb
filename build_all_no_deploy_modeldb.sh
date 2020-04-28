@@ -3,6 +3,7 @@ set -e
 ROOT_DIR=$PWD
 BACKEND_DIR='backend'
 BACKEND_PROXY_DIR='backend/proxy'
+BACKEND_GQL_DIR='backend/graphql'
 WEBAPP_DIR='webapp'
 POSTGRES_DIR='data'
 
@@ -15,6 +16,13 @@ cd ${ROOT_DIR}
 
 echo cd ${BACKEND_PROXY_DIR}
 cd ${BACKEND_PROXY_DIR}
+echo make all
+make all
+echo cd ${ROOT_DIR}
+cd ${ROOT_DIR}
+
+echo cd ${BACKEND_GQL_DIR}
+cd ${BACKEND_GQL_DIR}
 echo make all
 make all
 echo cd ${ROOT_DIR}

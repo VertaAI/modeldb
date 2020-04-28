@@ -1,4 +1,4 @@
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { defaultBranch } from 'core/shared/models/Versioning/RepositoryData';
 import routes from 'routes';
 
@@ -17,8 +17,8 @@ const parseCommitsHistorySettings = (location: {
     currentPage: params && params.page ? Number(params.page) - 1 : 0,
     location:
       match && match.locationPathname
-        ? DataLocation.makeFromPathname(match.locationPathname)
-        : DataLocation.makeRoot(),
+        ? CommitComponentLocation.makeFromPathname(match.locationPathname)
+        : CommitComponentLocation.makeRoot(),
   };
 };
 

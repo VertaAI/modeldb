@@ -3,14 +3,20 @@ import { AppError } from 'core/shared/models/Error';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import * as Actions from 'utils/redux/actions';
 
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import {
   ICommit,
   CommitPointer,
+  isMergeCommitsError,
 } from 'core/shared/models/Versioning/RepositoryData';
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import routes from 'routes';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
-import { ICommitPointersCommits, IComparedCommitPointersInfo } from './types';
-import * as routeHelpers from '../../repositoryData/view/RepositoryData/routeHelpers';
+import {
+  ICommitPointersCommits,
+  IComparedCommitPointersInfo,
+  MergeCommitCommunicationError,
+} from './types';
 
 export const loadCommitPointersCommits = Actions.makeThunkApiRequest(
   '@@compareChanges/LOAD_COMMIT_POINTERS_COMMITS_REQUEST',
@@ -43,10 +49,10 @@ export const loadCommitPointersCommits = Actions.makeThunkApiRequest(
 });
 
 export const mergeCommits = Actions.makeThunkApiRequest(
-  '@@compareChanges/LOAD_MERGE_COMMITS_REQUEST',
-  '@@compareChanges/LOAD_MERGE_COMMITS_SUCCESS',
-  '@@compareChanges/LOAD_MERGE_COMMITS_FAILURE',
-  '@@compareChanges/LOAD_MERGE_COMMITS_RESET'
+  '@@compareChanges/MERGE_COMMITS_REQUEST',
+  '@@compareChanges/MERGE_COMMITS_SUCCESS',
+  '@@compareChanges/MERGE_COMMITS_FAILURE',
+  '@@compareChanges/MERGE_COMMITS_RESET'
 )<
   {
     repositoryId: IRepository['id'];
@@ -56,7 +62,7 @@ export const mergeCommits = Actions.makeThunkApiRequest(
     commitBSha: ICommit['sha'];
   },
   ICommit,
-  AppError<UnavailableEntityApiErrorType>
+  MergeCommitCommunicationError
 >(
   async ({ payload, dependencies: { ServiceFactory } }) => {
     return await ServiceFactory.getCompareCommitsService().mergeCommits(
@@ -64,15 +70,21 @@ export const mergeCommits = Actions.makeThunkApiRequest(
     );
   },
   {
-    onSuccess: async ({ requestPayload, dependencies }) => {
+    onSuccess: async ({ requestPayload, dependencies, getState }) => {
       dependencies.history.push(
-        routeHelpers.getRedirectPath({
+        routes.repositoryDataWithLocation.getRedirectPath({
+          workspaceName: selectCurrentWorkspaceName(getState()),
           commitPointer: requestPayload.base,
-          location: DataLocation.makeRoot(),
+          location: CommitComponentLocation.makeRoot(),
           repositoryName: requestPayload.repositoryName,
           type: 'folder',
         })
       );
     },
+  },
+  ({ error, rawError }) => {
+    return isMergeCommitsError(rawError)
+      ? { type: 'mergeCommitsError' }
+      : { type: 'error', appError: error };
   }
 );

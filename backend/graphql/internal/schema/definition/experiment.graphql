@@ -1,0 +1,24 @@
+type Experiment {
+  id: ID!
+  projectId: String!
+  project: Project!
+  name: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+
+  attributes: [KeyValue!]!
+  tags: [String!]!
+  owner: User!
+
+  runs(next: String, query: ExperimentRunsQuery): ExperimentRuns!
+}
+
+type Experiments {
+  experiments: [Experiment!]!
+  next: String
+}
+
+input ExperimentsQuery {
+  pagination: PaginationQuery
+}

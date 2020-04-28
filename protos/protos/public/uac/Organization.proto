@@ -5,7 +5,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
-import "protos/public/common/CommonService.proto";
+import "common/CommonService.proto";
 
 message Organization {
     string id = 1;

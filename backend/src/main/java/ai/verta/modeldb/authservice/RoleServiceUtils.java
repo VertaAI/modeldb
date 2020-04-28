@@ -1156,8 +1156,9 @@ public class RoleServiceUtils implements RoleService {
           accessibleResourceIds.size());
     }
 
-    if (resourceVisibility.equals(ProjectVisibility.PUBLIC)
-        || resourceVisibility.equals(DatasetVisibility.PUBLIC)) {
+    if (resourceVisibility != null
+        && (resourceVisibility.equals(ProjectVisibility.PUBLIC)
+            || resourceVisibility.equals(DatasetVisibility.PUBLIC))) {
       UserInfo unsignedUserInfo = authService.getUnsignedUser();
       List<String> publicResourceIds =
           getAllowedResources(

@@ -1,30 +1,28 @@
 import { createAction } from 'typesafe-actions';
 
 import { AppError } from 'core/shared/models/Error';
+import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
-  IDataRequest,
-  ICommitWithData,
+  ICommitComponentRequest,
+  ICommitWithComponent,
   ICommit,
-} from 'core/shared/models/Versioning/RepositoryData';
-import {
   CommitTag,
   Branch,
   CommitPointer,
 } from 'core/shared/models/Versioning/RepositoryData';
-import * as Actions from 'utils/redux/actions';
 import { IExperimentRunInfo } from 'models/ModelRecord';
-import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
+import * as Actions from 'utils/redux/actions';
 
-export const loadCommitWithData = Actions.makeThunkApiRequest(
-  '@@repositoryData/LOAD_COMMIT_WITH_DATA_REQUEST',
-  '@@repositoryData/LOAD_COMMIT_WITH_DATA_SUCCESS',
-  '@@repositoryData/LOAD_COMMIT_WITH_DATA_FAILURE',
-  '@@repositoryData/LOAD_COMMIT_WITH_DATA_RESET'
-)<IDataRequest, ICommitWithData, AppError, undefined>(
+export const loadCommitWithComponent = Actions.makeThunkApiRequest(
+  '@@repositoryData/LOAD_COMMIT_WITH_COMPONENT_REQUEST',
+  '@@repositoryData/LOAD_COMMIT_WITH_COMPONENT_SUCCESS',
+  '@@repositoryData/LOAD_COMMIT_WITH_COMPONENT_FAILURE',
+  '@@repositoryData/LOAD_COMMIT_WITH_COMPONENT_RESET'
+)<ICommitComponentRequest, ICommitWithComponent, AppError, undefined>(
   async ({ payload, dependencies: { ServiceFactory } }) => {
-    return await ServiceFactory.getRepositoryDataService().loadCommitWithData(
+    return await ServiceFactory.getRepositoryDataService().loadCommitWithComponent(
       payload
     );
   }
@@ -36,20 +34,22 @@ export const loadCurrentBlobExperimentRuns = Actions.makeThunkApiRequest(
   '@@repositoryData/LOAD_BLOB_EXPERIMENT_RUNS_FAILURE',
   '@@repositoryData/LOAD_BLOB_EXPERIMENT_RUNS_RESET'
 )<
-  { repositoryId: IRepository['id']; commitSha: ICommit['sha']; location: DataLocation },
+  {
+    repositoryId: IRepository['id'];
+    commitSha: ICommit['sha'];
+    location: CommitComponentLocation;
+  },
   IExperimentRunInfo[],
   AppError,
   undefined
->(
-  async ({ payload, dependencies: { ServiceFactory }, getState }) => {
-    return await ServiceFactory.getRepositoryDataService().loadBlobExperimentRuns(
-      {
-        ...payload,
-        workspaceName: selectCurrentWorkspaceName(getState()),
-      }
-    );
-  }
-);
+>(async ({ payload, dependencies: { ServiceFactory }, getState }) => {
+  return await ServiceFactory.getRepositoryDataService().loadBlobExperimentRuns(
+    {
+      ...payload,
+      workspaceName: selectCurrentWorkspaceName(getState()),
+    }
+  );
+});
 
 export const loadTags = Actions.makeThunkApiRequest(
   '@@repositoryData/LOAD_TAGS_REQUEST',

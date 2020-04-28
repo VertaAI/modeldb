@@ -149,18 +149,24 @@ export default class ExperimentRunsDataService extends BaseDataService {
     modelRecord.dateUpdated = dates.dateUpdated;
 
     if (hydrated_experiment_run.experiment_run.versioned_inputs) {
-      const serverVersionedInputs =
-        hydrated_experiment_run.experiment_run.versioned_inputs;
-      const repositoriesService = new RepositoriesDataService();
-      const repository = await repositoriesService.loadRepositoryById(
-        serverVersionedInputs.repository_id
-      );
-      modelRecord.versionedInputs = {
-        commitSha: serverVersionedInputs.commit,
-        repositoryId: repository.id,
-        repositoryName: repository.name,
-        keyLocationMap: serverVersionedInputs.key_location_map,
-      };
+      const versionedInputs = await (async () => {
+        try {
+          const serverVersionedInputs =
+            hydrated_experiment_run.experiment_run.versioned_inputs;
+          const repositoryName = await new RepositoriesDataService().loadRepositoryName(
+            serverVersionedInputs.repository_id
+          );
+          return {
+            commitSha: serverVersionedInputs.commit,
+            repositoryId: serverVersionedInputs.repository_id,
+            repositoryName: repositoryName,
+            keyLocationMap: serverVersionedInputs.key_location_map,
+          };
+        } catch (e) {
+          return undefined;
+        }
+      })();
+      modelRecord.versionedInputs = versionedInputs;
     }
 
     const result: ILoadModelRecordResult = {

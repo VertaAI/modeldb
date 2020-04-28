@@ -3,7 +3,7 @@ import {
   DataWithPagination,
   IPaginationSettings,
 } from 'core/shared/models/Pagination';
-import { DataLocation } from 'core/shared/models/Versioning/DataLocation';
+import { CommitComponentLocation } from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IHydratedCommit,
@@ -21,7 +21,7 @@ export const loadCommits = Actions.makeThunkApiRequest(
     repositoryId: IRepository['id'];
     branch: Branch;
     paginationSettings: IPaginationSettings;
-    location: DataLocation;
+    location: CommitComponentLocation;
   },
   DataWithPagination<IHydratedCommit>,
   AppError,

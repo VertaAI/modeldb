@@ -292,7 +292,8 @@ public class BlobDAORdbImpl implements BlobDAO {
                 Entry::getKey, stringEntryEntry -> stringEntryEntry.getValue().getKey()));
   }
 
-  Map<String, Map.Entry<BlobExpanded, String>> getCommitBlobMapWithHash(
+  @Override
+  public Map<String, Map.Entry<BlobExpanded, String>> getCommitBlobMapWithHash(
       Session session, String folderHash, List<String> locationList) throws ModelDBException {
 
     String parentLocation = locationList.size() == 0 ? null : locationList.get(0);
@@ -639,6 +640,9 @@ public class BlobDAORdbImpl implements BlobDAO {
               conflictLocationMap);
 
       if (conflictLocationMap.isEmpty()) {
+        if (request.getIsDryRun()) {
+          return MergeRepositoryCommitsRequest.Response.getDefaultInstance();
+        }
         String mergeMessage = request.getContent().getMessage();
         List<String> parentSHAs =
             Arrays.asList(internalCommitB.getCommit_hash(), internalCommitA.getCommit_hash());
@@ -688,7 +692,12 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<BlobContainer> blobContainerList,
       String commitMessage)
       throws NoSuchAlgorithmException, ModelDBException {
-    final String rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
+    String rootSha;
+    if (blobContainerList != null && !blobContainerList.isEmpty()) {
+      rootSha = setBlobs(writeSession, blobContainerList, new FileHasher());
+    } else {
+      rootSha = FileHasher.getSha(new String());
+    }
     long timeCreated = new Date().getTime();
 
     UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();

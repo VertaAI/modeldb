@@ -60,7 +60,7 @@
   width: 135px;
   transform: translateX(-50%);
   text-align: center;
-  color: #888888;
+  color: var(--main-text-color3);
   font-style: italic;
   font-size: 13px;
 }
@@ -105,7 +105,7 @@
   width: 135px;
   transform: translateX(-50%);
   text-align: center;
-  color: #888888;
+  color: var(--main-text-color3);
   font-style: italic;
   font-size: 13px;
 }

@@ -1,27 +1,29 @@
 import * as React from 'react';
+import { useSelector } from 'react-redux';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   IFolderElement,
-  IFullDataLocationComponents,
+  IFullCommitComponentLocationComponents,
 } from 'core/shared/models/Versioning/RepositoryData';
 import matchType from 'core/shared/utils/matchType';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
 import * as RouteHeplers from '../../../routeHelpers';
-
 import NavigationItem from '../NavigationItem/NavigationItem';
 
 interface ILocalProps {
   repositoryName: IRepository['name'];
-  fullDataLocationComponents: IFullDataLocationComponents;
+  fullCommitComponentLocationComponents: IFullCommitComponentLocationComponents;
   data: IFolderElement;
 }
 
 const FolderElement = ({
   data,
   repositoryName,
-  fullDataLocationComponents,
+  fullCommitComponentLocationComponents,
 }: ILocalProps) => {
+  const currentWorkspaceName = useSelector(selectCurrentWorkspaceName);
   return (
     <NavigationItem
       name={data.name}
@@ -30,7 +32,8 @@ const FolderElement = ({
         data.type
       )}
       to={RouteHeplers.addName(data.name, data.type, {
-        ...fullDataLocationComponents,
+        ...fullCommitComponentLocationComponents,
+        workspaceName: currentWorkspaceName,
         repositoryName,
       })}
     />

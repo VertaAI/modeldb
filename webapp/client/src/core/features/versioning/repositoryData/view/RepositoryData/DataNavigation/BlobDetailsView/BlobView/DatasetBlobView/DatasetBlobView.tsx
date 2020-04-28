@@ -19,9 +19,9 @@ const DatasetBlobView: React.FC<ILocalProps> = ({ blob }) => {
   const pathDatasetComponents: IPathDatasetComponentBlob[] = (() => {
     switch (blob.type) {
       case 's3':
-        return blob.components.map(({ path }) => path);
+        return blob.data.components.map(({ path }) => path);
       case 'path':
-        return blob.components;
+        return blob.data.components;
       default:
         return exhaustiveCheck(blob, '');
     }

@@ -35,6 +35,7 @@ import styles from './ModelRecord.module.css';
 import { ModelIdMeta, ModelMeta } from './shared/ModelMeta/ModelMeta';
 import Record from './shared/Record/Record';
 import VersionedInputsInfo from './VersionedInputsInfo/VersionedInputsInfo';
+import { unknownUser } from 'models/User';
 
 interface ILocalProps {
   id: string;
@@ -162,6 +163,9 @@ class ModelRecordView extends React.PureComponent<AllProps> {
             </div>
           </div>
           <div className={styles.record_summary_meta}>
+            <ModelIdMeta label="Owner" valueTitle={unknownUser.username}>
+              {unknownUser.username}
+            </ModelIdMeta>
             <ModelIdMeta
               label="Run ID"
               valueTitle={data.id}

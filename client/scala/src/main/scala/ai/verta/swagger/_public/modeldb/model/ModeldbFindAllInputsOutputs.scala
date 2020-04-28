@@ -5,11 +5,10 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.model.LineageEntryEnumLineageEntryType._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbFindAllInputsOutputs (
-  items: Option[List[ModeldbLineageEntry]] = None
+  items: Option[List[ModeldbLineageEntryBatchRequest]] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbFindAllInputsOutputs.toJson(this)
 }
@@ -18,7 +17,7 @@ object ModeldbFindAllInputsOutputs {
   def toJson(obj: ModeldbFindAllInputsOutputs): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.items.map(x => JField("items", ((x: List[ModeldbLineageEntry]) => JArray(x.map(((x: ModeldbLineageEntry) => ModeldbLineageEntry.toJson(x)))))(x)))
+        obj.items.map(x => JField("items", ((x: List[ModeldbLineageEntryBatchRequest]) => JArray(x.map(((x: ModeldbLineageEntryBatchRequest) => ModeldbLineageEntryBatchRequest.toJson(x)))))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -32,7 +31,7 @@ object ModeldbFindAllInputsOutputs {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbFindAllInputsOutputs(
           // TODO: handle required
-          items = fieldsMap.get("items").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbLineageEntry.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
+          items = fieldsMap.get("items").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbLineageEntryBatchRequest.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

@@ -1,0 +1,9 @@
+type Workspace {
+  name: String!
+
+  projects(next: String, query: ProjectsQuery): Projects!
+
+  repositories(next: String, query: RepositoriesQuery): Repositories!
+  repository(name: String!): Repository
+  createRepository(name: String!, visibility: Visibility!): Repository
+}

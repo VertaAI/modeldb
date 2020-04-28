@@ -3,18 +3,17 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
+import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
 import ScrollableContainer from 'core/shared/view/elements/ScrollableContainer/ScrollableContainer';
 import { IVersionedInputs } from 'models/ModelRecord';
 import routes from 'routes';
 import { IApplicationState } from 'store/store';
 import { selectCurrentWorkspaceName } from 'store/workspaces';
-import { getRedirectPathToRepositoryDataPage } from 'core/features/versioning/repositoryData';
 
 import { ModelMeta } from '../shared/ModelMeta/ModelMeta';
 import Record from '../shared/Record/Record';
 import styles from './VersionedInputsInfo.module.css';
-import { CommitPointerHelpers } from 'core/shared/models/Versioning/RepositoryData';
 
 const mapStateToProps = (state: IApplicationState) => ({
   currentWorkspaceName: selectCurrentWorkspaceName(state),
@@ -63,12 +62,13 @@ const VersionedInputsInfo: React.FC<AllProps> = ({
             <ModelMeta
               label={key as string}
               key={key}
-              valueTitle={DataLocation.toPathname(
+              valueTitle={CommitComponentLocation.toPathname(
                 versionedInputs.keyLocationMap[key].location
               )}
             >
               <Link
-                to={getRedirectPathToRepositoryDataPage({
+                to={routes.repositoryDataWithLocation.getRedirectPath({
+                  workspaceName: currentWorkspaceName,
                   commitPointer: CommitPointerHelpers.makeFromCommitSha(
                     versionedInputs.commitSha
                   ),
@@ -77,7 +77,7 @@ const VersionedInputsInfo: React.FC<AllProps> = ({
                   type: 'blob',
                 })}
               >
-                {DataLocation.toPathname(
+                {CommitComponentLocation.toPathname(
                   versionedInputs.keyLocationMap[key].location
                 )}
               </Link>

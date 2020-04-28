@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 
 import { SHA } from '../RepositoryData';
-import { IElementDiff, IBlobDiff } from './Diff';
+import { IElementDiff, IBlobDiff, IArrayDiff } from './Diff';
 
 export interface IEnvironmentBlob {
   category: 'environment';
@@ -13,49 +13,33 @@ export interface IEnvironmentBlob {
 }
 
 export type IEnvironmentBlobDiff = IBlobDiff<
-  IElementDiff<IEnvironmentBlobDataDiff>,
+  IEnvironmentBlobDataDiff,
   'environment',
   'environment'
 >;
 export type IEnvironmentBlobDataDiff = {
-  variables?: IEnvironmentVariablesBlob[];
-  commandLine?: string[];
-  data?: IPythonEnvironmentBlob | IDockerEnvironmentBlob;
+  variables?: Array<IElementDiff<IEnvironmentVariablesBlob>>;
+  commandLine?: IElementDiff<string[]>;
+  data?: IPythonEnvironmentBlobDiff | IDockerEnvironmentBlobDiff;
 };
+export interface IPythonEnvironmentBlobDiff {
+  type: 'python';
 
-export const checkCommonEnvironmentDataIsChanged = (
-  dataDiffA: IEnvironmentBlobDataDiff | undefined,
-  dataDiffB: IEnvironmentBlobDataDiff | undefined
-) => {
-  return (
-    (dataDiffA && (dataDiffA.commandLine || dataDiffA.variables)) ||
-    (dataDiffB && (dataDiffB.commandLine || dataDiffB.variables))
-  );
-};
+  data: {
+    requirements?: IArrayDiff<IPythonRequirementEnvironment>;
+    constraints?: IArrayDiff<IPythonRequirementEnvironment>;
+    pythonVersion?: IElementDiff<IVersionEnvironmentBlob>;
+  };
+}
 
-export const safeMapPythonBlobDataDiff = <
-  K extends keyof IPythonEnvironmentBlob['data'],
-  T
->(
-  blob: IEnvironmentBlobDataDiff | undefined,
-  key: K,
-  f: (d: Required<IPythonEnvironmentBlob['data']>[K]) => T
-): T | null =>
-  blob && blob.data && blob.data.type === 'python' && blob.data.data[key]
-    ? f(blob.data.data[key] as any)
-    : null;
-
-export const safeMapDockerBlobDataDiff = <
-  K extends keyof IDockerEnvironmentBlob['data'],
-  T
->(
-  blob: IEnvironmentBlobDataDiff | undefined,
-  key: K,
-  f: (d: Required<IDockerEnvironmentBlob['data']>[K]) => T
-): T | null =>
-  blob && blob.data && blob.data.type === 'docker' && blob.data.data[key]
-    ? f(blob.data.data[key] as any)
-    : null;
+export interface IDockerEnvironmentBlobDiff {
+  type: 'docker';
+  data: IElementDiff<{
+    repository: string;
+    tag?: string;
+    sha?: SHA;
+  }>;
+}
 
 export interface IEnvironmentVariablesBlob {
   name: string;
