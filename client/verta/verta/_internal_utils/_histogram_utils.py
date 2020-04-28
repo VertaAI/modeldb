@@ -173,15 +173,25 @@ def calculate_float_histogram(data, num_bins=10):
     histogram : dict
 
     """
+    values = data.values.tolist()
+
+    # reject non-numbers
+    try:
+        values = list(map(float, values))
+    except ValueError:
+        raise TypeError(
+            "unable to generate histogram from non-numeric column {}".format(data.name)
+        )
+
     # calculate bin boundaries
-    start, stop = min(data), max(data)
+    start, stop = min(values), max(values)
     space = (stop - start)/num_bins
     bin_boundaries = [start + space*i for i in range(num_bins+1)]
 
     # fit `data` into bins
     reference_counts = []
     for l, r in zip(bin_boundaries[:-1], bin_boundaries[1:]):
-        count = len([datum for datum in data if l <= datum < r])
+        count = len([value for value in values if l <= value < r])
         reference_counts.append(count)
 
     return {
