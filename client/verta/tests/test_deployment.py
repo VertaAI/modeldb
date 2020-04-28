@@ -640,9 +640,9 @@ class TestHistogram:
                 assert np.isclose(limits[0], series.min())
                 assert np.isclose(limits[-1], series.max())
 
-                # buckets equal in size
-                bucket_sizes = np.diff(limits)
-                assert np.allclose(bucket_sizes, bucket_sizes[0])
+                # buckets equal in width
+                bucket_widths = np.diff(limits)
+                assert np.allclose(bucket_widths, bucket_widths[0])
 
                 # correct number of buckets
                 assert len(limits) == 11
