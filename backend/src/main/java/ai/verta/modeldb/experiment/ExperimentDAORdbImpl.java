@@ -876,7 +876,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 errorMessage,
                 Code.PERMISSION_DENIED_VALUE,
                 Any.pack(FindExperiments.getDefaultInstance()));
-      } else {
+      }
+
+      if (!projectIds.isEmpty()){
         Expression<String> projectExpression = experimentRoot.get(ModelDBConstants.PROJECT_ID);
         Predicate projectsPredicate = projectExpression.in(projectIds);
         finalPredicatesList.add(projectsPredicate);

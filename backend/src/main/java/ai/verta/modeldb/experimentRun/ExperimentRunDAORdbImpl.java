@@ -1393,7 +1393,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 errorMessage,
                 Code.PERMISSION_DENIED_VALUE,
                 Any.pack(FindExperimentRuns.getDefaultInstance()));
-      } else {
+      }
+
+      if (!projectIds.isEmpty()){
         Expression<String> projectExpression = experimentRunRoot.get(ModelDBConstants.PROJECT_ID);
         Predicate projectsPredicate = projectExpression.in(projectIds);
         finalPredicatesList.add(projectsPredicate);
