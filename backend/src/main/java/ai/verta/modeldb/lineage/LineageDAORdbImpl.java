@@ -25,6 +25,7 @@ import ai.verta.modeldb.entities.lineage.LineageElementEntity;
 import ai.verta.modeldb.entities.lineage.LineageExperimentRunEntity;
 import ai.verta.modeldb.entities.lineage.LineageVersioningBlobEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.versioning.blob.diff.Function3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status.Code;
@@ -90,8 +91,9 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   @Override
-  public DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage)
-      throws ModelDBException, InvalidProtocolBufferException {
+  public DeleteLineage.Response deleteLineage(
+      DeleteLineage deleteLineage, ResourceExistsCheckConsumer resourceExistsCheckConsumer)
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
@@ -106,19 +108,30 @@ public class LineageDAORdbImpl implements LineageDAO {
           inputOutputs = getInputOutputs(session, connectionEntitiesById);
       Map<LineageEntryContainer, ConnectionEntity> inputInDatabase = inputOutputs.getKey();
       Map<LineageEntryContainer, ConnectionEntity> outputInDatabase = inputOutputs.getValue();
+      /* noDataProvided is a flag that there are no entries provided in the request.
+      That means that we should delete all entries with the specified id.*/
+      boolean noDataProvided =
+          deleteLineage.getInputCount() == 0 && deleteLineage.getOutputCount() == 0;
+      List<LineageEntry> lineageEntries = new LinkedList<>(deleteLineage.getInputList());
+      lineageEntries.addAll(deleteLineage.getOutputList());
+      if (noDataProvided) {
+        lineageEntries.addAll(
+            inputInDatabase.keySet().stream()
+                .map(LineageEntryContainer::toProto)
+                .collect(Collectors.toList()));
+        lineageEntries.addAll(
+            outputInDatabase.keySet().stream()
+                .map(LineageEntryContainer::toProto)
+                .collect(Collectors.toList()));
+      }
+      resourceExistsCheckConsumer.accept(session, lineageEntries);
       for (LineageEntry input : deleteLineage.getInputList()) {
         deleteLineage(session, input, inputInDatabase);
       }
       for (LineageEntry output : deleteLineage.getOutputList()) {
         deleteLineage(session, output, outputInDatabase);
       }
-      /* noDataProvided is a flag that there are no entries provided in the request.
-      That means that we should delete all entries with the specified id.
-      Also when there are no input or output in the database left we should delete
-      the remaining ones because they are not connected with anything. */
-      boolean noDataProvided =
-          deleteLineage.getInputCount() == 0 && deleteLineage.getOutputCount() == 0;
-      if (noDataProvided || inputInDatabase.isEmpty() || outputInDatabase.isEmpty()) {
+      if (noDataProvided) {
         Set<ConnectionEntity> values = new HashSet<>(inputInDatabase.values());
         values.addAll(outputInDatabase.values());
         values.forEach(connectionEntity -> deleteConnectionEntity(session, connectionEntity));
@@ -365,48 +378,62 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   @Override
-  public FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs)
-      throws ModelDBException, InvalidProtocolBufferException {
+  public FindAllInputs.Response findAllInputs(
+      FindAllInputs findAllInputs, ResourceExistsCheckConsumer resourceExistsCheckConsumer,
+      Function3<Session, FindAllInputs.Response, FindAllInputs.Response> filter)
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     FindAllInputs.Response.Builder response = FindAllInputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllInputs.getItemsList();
+      List<LineageEntry> lineageEntries = new LinkedList<>();
       for (LineageEntryBatchRequest output : itemList) {
         validate(output);
+        lineageEntries.add(output.getEntry());
         response.addInputs(
             LineageEntryBatchResponse.newBuilder()
                 .addAllItems(getInputsByOutput(session, output))
                 .build());
       }
+      resourceExistsCheckConsumer.accept(session, lineageEntries);
+      return filter.apply(session, response.build());
     }
-    return response.build();
   }
 
   @Override
-  public FindAllOutputs.Response findAllOutputs(FindAllOutputs findAllOutputs)
-      throws ModelDBException, InvalidProtocolBufferException {
+  public FindAllOutputs.Response findAllOutputs(
+      FindAllOutputs findAllOutputs, ResourceExistsCheckConsumer resourceExistsCheckConsumer,
+      Function3<Session, FindAllOutputs.Response, FindAllOutputs.Response> filter)
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     FindAllOutputs.Response.Builder response = FindAllOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllOutputs.getItemsList();
+      List<LineageEntry> lineageEntries = new LinkedList<>();
       for (LineageEntryBatchRequest input : itemList) {
         validate(input);
+        lineageEntries.add(input.getEntry());
         response.addOutputs(
             LineageEntryBatchResponse.newBuilder()
                 .addAllItems(getOutputsByInput(session, input))
                 .build());
       }
+      resourceExistsCheckConsumer.accept(session, lineageEntries);
+      return filter.apply(session, response.build());
     }
-    return response.build();
   }
 
   @Override
   public FindAllInputsOutputs.Response findAllInputsOutputs(
-      FindAllInputsOutputs findAllInputsOutputs)
-      throws ModelDBException, InvalidProtocolBufferException {
+      FindAllInputsOutputs findAllInputsOutputs,
+      ResourceExistsCheckConsumer resourceExistsCheckConsumer,
+      Function3<Session, FindAllInputsOutputs.Response, FindAllInputsOutputs.Response> filter)
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     FindAllInputsOutputs.Response.Builder response = FindAllInputsOutputs.Response.newBuilder();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<LineageEntryBatchRequest> itemList = findAllInputsOutputs.getItemsList();
+      List<LineageEntry> lineageEntries = new LinkedList<>();
       for (LineageEntryBatchRequest inputoutput : itemList) {
         validate(inputoutput);
+        lineageEntries.add(inputoutput.getEntry());
         response
             .addInputs(
                 LineageEntryBatchResponse.newBuilder()
@@ -417,8 +444,9 @@ public class LineageDAORdbImpl implements LineageDAO {
                     .addAllItems(getOutputsByInput(session, inputoutput))
                     .build());
       }
+      resourceExistsCheckConsumer.accept(session, lineageEntries);
+      return filter.apply(session, response.build());
     }
-    return response.build();
   }
 
   private void deleteLineage(

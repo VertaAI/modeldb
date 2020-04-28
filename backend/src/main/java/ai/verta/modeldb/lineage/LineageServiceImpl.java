@@ -4,13 +4,19 @@ import ai.verta.modeldb.AddLineage;
 import ai.verta.modeldb.DeleteLineage;
 import ai.verta.modeldb.FindAllInputs;
 import ai.verta.modeldb.FindAllInputsOutputs;
+import ai.verta.modeldb.FindAllInputsOutputs.Response;
+import ai.verta.modeldb.FindAllInputsOutputs.Response.Builder;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntry;
+import ai.verta.modeldb.LineageEntryBatchResponse;
+import ai.verta.modeldb.LineageEntryBatchResponseSingle;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
@@ -20,16 +26,25 @@ import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.blob.diff.Function3;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.rpc.Status;
 import io.grpc.Status.Code;
+import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -42,18 +57,21 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   private final CommitDAO commitDAO;
   private final LineageDAO lineageDAO;
   private final BlobDAO blobDAO;
+  private final RoleService roleService;
 
   public LineageServiceImpl(
       LineageDAO lineageDAO,
       ExperimentRunDAO experimentRunDAO,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
-      BlobDAO blobDAO) {
+      BlobDAO blobDAO,
+      RoleService roleService) {
     this.lineageDAO = lineageDAO;
     this.experimentDAO = experimentRunDAO;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
+    this.roleService = roleService;
   }
 
   @Override
@@ -62,16 +80,11 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     try {
       if (request.getInputCount() == 0 && request.getOutputCount() == 0) {
         throw new ModelDBException("Input and output not specified", Code.INVALID_ARGUMENT);
-      } else {
-        if (request.getInputCount() == 0) {
-          throw new ModelDBException("Input not specified", Code.INVALID_ARGUMENT);
-        } else if (request.getOutputCount() == 0) {
-          throw new ModelDBException("Output not specified", Code.INVALID_ARGUMENT);
-        }
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        AddLineage.Response response = lineageDAO.addLineage(request, this::checkResourcesExists);
+        AddLineage.Response response =
+            lineageDAO.addLineage(request, this::checkResourcesExistsAndAccessible);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -87,7 +100,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        DeleteLineage.Response response = lineageDAO.deleteLineage(request);
+        DeleteLineage.Response response =
+            lineageDAO.deleteLineage(request, this::checkResourcesExistsAndAccessible);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -106,7 +120,9 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllInputs.Response response = lineageDAO.findAllInputs(request);
+        FindAllInputs.Response response =
+            lineageDAO.findAllInputs(request, this::checkResourcesExistsAndAccessible,
+                this::filterInput);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -125,7 +141,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllOutputs.Response response = lineageDAO.findAllOutputs(request);
+        FindAllOutputs.Response response =
+            lineageDAO.findAllOutputs(request, this::checkResourcesExistsAndAccessible, this::filterOutput);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -145,7 +162,9 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       }
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllInputsOutputs.Response response = lineageDAO.findAllInputsOutputs(request);
+        FindAllInputsOutputs.Response response =
+            lineageDAO.findAllInputsOutputs(request, this::checkResourcesExistsAndAccessible,
+                this::filterInputOutput);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -187,56 +206,129 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     }
   }
 
-  private void checkResourcesExists(Session session, List<LineageEntry> lineageEntries)
+  private FindAllInputs.Response filterInput(Session session, FindAllInputs.Response response) {
+    FindAllInputs.Response.Builder builder = FindAllInputs.Response.newBuilder();
+    builder.addAllInputs(filter(session, response.getInputsList()));
+    return builder.build();
+  }
+
+  private FindAllOutputs.Response filterOutput(Session session, FindAllOutputs.Response response) {
+    FindAllOutputs.Response.Builder builder = FindAllOutputs.Response.newBuilder();
+    builder.addAllOutputs(filter(session, response.getOutputsList()));
+    return builder.build();
+  }
+
+  private Response filterInputOutput(Session session, Response response) {
+    Builder builder = Response.newBuilder();
+    builder.addAllInputs(filter(session, response.getInputsList()));
+    builder.addAllOutputs(filter(session, response.getOutputsList()));
+    return builder.build();
+  }
+
+  private Iterable<? extends LineageEntryBatchResponse> filter(Session session,
+      List<LineageEntryBatchResponse> lineageEntryBatchResponses) {
+    final Set<String> experimentRuns = new HashSet<>();
+    final Map<Long, RepositoryContainer> blobs = new HashMap<>();
+    return lineageEntryBatchResponses.stream().flatMap(lineageEntryBatchResponse -> {
+      List<LineageEntryBatchResponse> newList = new LinkedList<>();
+      List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseItemsList = lineageEntryBatchResponse
+          .getItemsList();
+      List<LineageEntryBatchResponseSingle> result = lineageEntryBatchResponseItemsList.stream()
+          .flatMap(lineageEntryBatchResponseSingle -> {
+            List<LineageEntryBatchResponseSingle> newLineageEntryBatchResponseSingleList = new LinkedList<>();
+            List<LineageEntry> itemList = lineageEntryBatchResponseSingle.getItemsList();
+            List<LineageEntry> filterResult = itemList.stream().filter(lineageEntry -> {
+              try {
+                validate(session, experimentRuns, blobs, lineageEntry);
+                return true;
+              } catch (StatusRuntimeException | ModelDBException e) {
+                LOGGER.warn("Can't access entity {}", e.getMessage());
+                return false;
+              } catch (NoSuchAlgorithmException | InvalidProtocolBufferException e) {
+                LOGGER.error("Unexpected error {}", e.getMessage());
+                Status status =
+                    Status.newBuilder()
+                        .setCode(com.google.rpc.Code.INTERNAL_VALUE)
+                        .setMessage(e.getMessage())
+                        .addDetails(Any.pack(LineageEntryBatchResponse.getDefaultInstance()))
+                        .build();
+                throw StatusProto.toStatusRuntimeException(status);
+              }
+            }).collect(Collectors.toList());
+            if (filterResult.size() != 0) {
+              newLineageEntryBatchResponseSingleList
+                  .add(LineageEntryBatchResponseSingle.newBuilder()
+                      .setId(lineageEntryBatchResponseSingle.getId()).addAllItems(filterResult)
+                      .build());
+            }
+            return newLineageEntryBatchResponseSingleList.stream();
+          }).collect(Collectors.toList());
+      if (result.size() != 0) {
+        newList.add(LineageEntryBatchResponse.newBuilder().addAllItems(result).build());
+      }
+      return newList.stream();
+    }).collect(Collectors.toList());
+  }
+
+  private void checkResourcesExistsAndAccessible(Session session, List<LineageEntry> lineageEntries)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     Set<String> experimentRuns = new HashSet<>();
     Map<Long, RepositoryContainer> blobs = new HashMap<>();
     for (LineageEntry lineageEntry : lineageEntries) {
-      switch (lineageEntry.getDescriptionCase()) {
-        case EXPERIMENT_RUN:
-          String experimentRun = lineageEntry.getExperimentRun();
-          if (!experimentRuns.contains(experimentRun)) {
-            boolean result = experimentDAO.isExperimentRunExists(session, experimentRun);
-            if (!result) {
-              throw new ModelDBException("Experiment run doesn't exist");
-            }
-            experimentRuns.add(experimentRun);
-          }
-          break;
-        case BLOB:
-          VersioningLineageEntry blob = lineageEntry.getBlob();
-          long repositoryId = blob.getRepositoryId();
-          RepositoryEntity repo;
-          CommitMap result;
-          if (!blobs.containsKey(repositoryId)) {
-            repo =
-                repositoryDAO.getRepositoryById(
-                    session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
-            blobs.put(repositoryId, new RepositoryContainer(repo));
-            result = blobs.get(repositoryId).getValue();
-          } else {
-            RepositoryContainer entityMapEntry = blobs.get(repositoryId);
-            repo = entityMapEntry.getKey();
-            result = entityMapEntry.getValue();
-          }
-          String commitSha = blob.getCommitSha();
-          Set<String> blobResult;
-          if (!result.containsKey(commitSha)) {
-            commitDAO.getCommitEntity(session, commitSha, session1 -> repo);
-            result.put(commitSha, new HashSet<>());
-          }
-          blobResult = result.get(commitSha);
-          String stringFromProtoObject =
-              ModelDBUtils.getStringFromProtoObject(
-                  Location.newBuilder().addAllLocation(blob.getLocationList()));
-          if (!blobResult.contains(stringFromProtoObject)) {
-            blobDAO.getCommitComponent(session1 -> repo, commitSha, blob.getLocationList());
-            blobResult.add(stringFromProtoObject);
-          }
-          break;
-        default:
-          throw new ModelDBException("Unexpected type", Code.INTERNAL);
-      }
+      validate(session, experimentRuns, blobs, lineageEntry);
+    }
+  }
+
+  private void validate(Session session, Set<String> experimentRuns,
+      Map<Long, RepositoryContainer> blobs, LineageEntry lineageEntry)
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
+    switch (lineageEntry.getDescriptionCase()) {
+      case EXPERIMENT_RUN:
+        String experimentRun = lineageEntry.getExperimentRun();
+        if (!experimentRuns.contains(experimentRun)) {
+          ExperimentRunEntity experimentRunEntity =
+              experimentDAO.getExperimentRun(session, experimentRun);
+          experimentRuns.add(experimentRun);
+          // Validate if current user has access to the entity or not
+          roleService.validateEntityUserWithUserInfo(
+              ModelDBServiceResourceTypes.PROJECT,
+              experimentRunEntity.getProject_id(),
+              ModelDBServiceActions.READ);
+        }
+        break;
+      case BLOB:
+        VersioningLineageEntry blob = lineageEntry.getBlob();
+        long repositoryId = blob.getRepositoryId();
+        RepositoryEntity repo;
+        CommitMap result;
+        if (!blobs.containsKey(repositoryId)) {
+          repo =
+              repositoryDAO.getRepositoryById(
+                  session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
+          blobs.put(repositoryId, new RepositoryContainer(repo));
+          result = blobs.get(repositoryId).getValue();
+        } else {
+          RepositoryContainer entityMapEntry = blobs.get(repositoryId);
+          repo = entityMapEntry.getKey();
+          result = entityMapEntry.getValue();
+        }
+        String commitSha = blob.getCommitSha();
+        Set<String> blobResult;
+        if (!result.containsKey(commitSha)) {
+          commitDAO.getCommitEntity(session, commitSha, session2 -> repo);
+          result.put(commitSha, new HashSet<>());
+        }
+        blobResult = result.get(commitSha);
+        String stringFromProtoObject =
+            ModelDBUtils.getStringFromProtoObject(
+                Location.newBuilder().addAllLocation(blob.getLocationList()));
+        if (!blobResult.contains(stringFromProtoObject)) {
+          blobDAO.getCommitComponent(session2 -> repo, commitSha, blob.getLocationList());
+          blobResult.add(stringFromProtoObject);
+        }
+        break;
+      default:
+        throw new ModelDBException("Unexpected type", Code.INTERNAL);
     }
   }
 }

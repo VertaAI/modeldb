@@ -14,6 +14,7 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
+import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.versioning.CommitFunction;
 import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
@@ -106,7 +107,7 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun getExperimentRun(String experimentRunId) throws InvalidProtocolBufferException;
 
-  boolean isExperimentRunExists(Session session, String experimentRunId);
+  ExperimentRunEntity getExperimentRun(Session session, String experimentRunId);
 
   /**
    * @param experimentRunId : experimentRun.id

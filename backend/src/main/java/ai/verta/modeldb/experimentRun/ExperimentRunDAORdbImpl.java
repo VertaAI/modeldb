@@ -493,27 +493,25 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun getExperimentRun(String experimentRunId)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntity =
-          session.get(ExperimentRunEntity.class, experimentRunId);
-      if (experimentRunEntity == null) {
-        LOGGER.warn(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      LOGGER.debug("Got ExperimentRun successfully");
-      return experimentRunEntity.getProtoObject();
+      return getExperimentRun(session, experimentRunId).getProtoObject();
     }
   }
 
   @Override
-  public boolean isExperimentRunExists(Session session, String experimentRunId) {
+  public ExperimentRunEntity getExperimentRun(Session session, String experimentRunId) {
     ExperimentRunEntity experimentRunEntity =
         session.get(ExperimentRunEntity.class, experimentRunId);
-    return experimentRunEntity != null;
+    if (experimentRunEntity == null) {
+      LOGGER.warn(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.NOT_FOUND_VALUE)
+              .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    LOGGER.debug("Got ExperimentRun successfully");
+    return experimentRunEntity;
   }
 
   @Override
