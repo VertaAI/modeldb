@@ -249,7 +249,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           ModelDBConstants.ROLE_PROJECT_ADMIN,
           ModelDBServiceResourceTypes.PROJECT,
           projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
-          null);
+          "_GLOBAL_SHARING");
     }
   }
 
