@@ -494,9 +494,10 @@ public class RepositoryTest {
     long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
     long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
     long repoId3 = createRepository(versioningServiceBlockingStub, NAME_3);
-    Long[] repoIds = new Long[2];
+    Long[] repoIds = new Long[3];
     repoIds[0] = repoId1;
     repoIds[1] = repoId2;
+    repoIds[2] = repoId3;
     List<String> labels = new ArrayList<>();
     labels.add("Backend");
     IdentificationType id1 = createLabels(repoId1, labels);
