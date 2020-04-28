@@ -65,7 +65,10 @@ public class LineageDAORdbImpl implements LineageDAO {
       LineageElementEntity lineageElementEntity;
       if (addLineage.getId() != 0) {
         id = addLineage.getId();
-        lineageElementEntity = session.get(LineageElementEntity.class, addLineage.getId());
+        lineageElementEntity = session.get(LineageElementEntity.class, id);
+        if (lineageElementEntity == null) {
+          throw new ModelDBException("Can't find a lineage with the specified id", Code.NOT_FOUND);
+        }
       } else {
         id = null;
         lineageElementEntity = null;
