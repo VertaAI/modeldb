@@ -27,7 +27,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -569,6 +568,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           Any.pack(DeleteExperiments.getDefaultInstance()));
     }
 
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       // Delete the ExperimentRunEntity object
@@ -586,9 +586,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 experimentRunEntity.getId(),
                 experimentRunEntity.getOwner(),
                 ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
         }
       }
       // Delete the ExperimentRUn comments
@@ -608,15 +607,18 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 experimentObj.getId(),
                 experimentObj.getOwner(),
                 ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
         }
       }
 
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(session, projectIds, Calendar.getInstance().getTimeInMillis());
       transaction.commit();
+
+      // Remove all role bindings
+      roleService.deleteRoleBindings(roleBindingNames);
+
       LOGGER.debug("Experiment deleted successfully");
       return true;
     }

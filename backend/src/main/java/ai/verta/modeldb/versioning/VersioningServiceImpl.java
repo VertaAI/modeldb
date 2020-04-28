@@ -1,7 +1,6 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.ModelDBAuthInterceptor;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -128,25 +127,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
         }
         SetRepository.Response response =
-            repositoryDAO.setRepository(requestBuilder.build(), userInfo, true);
-
-        RepositoryIdentification repositoryId =
-            RepositoryIdentification.newBuilder()
-                .setRepoId(response.getRepository().getId())
-                .build();
-        CreateCommitRequest.Response commitResponse =
-            commitDAO.setCommit(
-                authService.getVertaIdFromUserInfo(userInfo),
-                Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build(),
-                (session) -> FileHasher.getSha(new String()),
-                (session) -> repositoryDAO.getRepositoryById(session, repositoryId));
-
-        repositoryDAO.setBranch(
-            SetBranchRequest.newBuilder()
-                .setCommitSha(commitResponse.getCommit().getCommitSha())
-                .setBranch(ModelDBConstants.MASTER_BRANCH)
-                .setRepositoryId(repositoryId)
-                .build());
+            repositoryDAO.setRepository(commitDAO, requestBuilder.build(), userInfo, true);
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
@@ -167,7 +148,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           throw new ModelDBException("Repository name is empty", Code.INVALID_ARGUMENT);
         }
 
-        SetRepository.Response response = repositoryDAO.setRepository(request, null, false);
+        SetRepository.Response response =
+            repositoryDAO.setRepository(commitDAO, request, null, false);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }

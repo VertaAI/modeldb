@@ -34,49 +34,63 @@ public class CommitDAORdbImpl implements CommitDAO {
   public Response setCommit(
       String author, Commit commit, BlobFunction setBlobs, RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      final String rootSha = setBlobs.apply(session);
+      RepositoryEntity repositoryEntity = getRepository.apply(session);
+
+      CommitEntity commitEntity =
+          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
+      session.getTransaction().commit();
+      return Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
+    }
+  }
+
+  @Override
+  public CommitEntity saveCommitEntity(
+      Session session,
+      Commit commit,
+      String rootSha,
+      String author,
+      RepositoryEntity repositoryEntity)
+      throws ModelDBException, NoSuchAlgorithmException {
     long timeCreated = new Date().getTime();
     if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
     }
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      final String rootSha = setBlobs.apply(session);
-      final String commitSha = generateCommitSHA(rootSha, commit, timeCreated);
-      RepositoryEntity repositoryEntity = getRepository.apply(session);
+    final String commitSha = generateCommitSHA(rootSha, commit, timeCreated);
 
-      Map<String, CommitEntity> parentCommitEntities = new HashMap<>();
-      if (!commit.getParentShasList().isEmpty()) {
-        parentCommitEntities =
-            getCommits(session, repositoryEntity.getId(), commit.getParentShasList());
-        if (parentCommitEntities.size() != commit.getParentShasCount()) {
-          for (String parentSHA : commit.getParentShasList()) {
-            if (!parentCommitEntities.containsKey(parentSHA)) {
-              throw new ModelDBException(
-                  "Parent commit '" + parentSHA + "' not found in DB", Code.INVALID_ARGUMENT);
-            }
+    Map<String, CommitEntity> parentCommitEntities = new HashMap<>();
+    if (!commit.getParentShasList().isEmpty()) {
+      parentCommitEntities =
+          getCommits(session, repositoryEntity.getId(), commit.getParentShasList());
+      if (parentCommitEntities.size() != commit.getParentShasCount()) {
+        for (String parentSHA : commit.getParentShasList()) {
+          if (!parentCommitEntities.containsKey(parentSHA)) {
+            throw new ModelDBException(
+                "Parent commit '" + parentSHA + "' not found in DB", Code.INVALID_ARGUMENT);
           }
         }
       }
-
-      Commit internalCommit =
-          Commit.newBuilder()
-              .setDateCreated(timeCreated)
-              .setAuthor(author)
-              .setMessage(commit.getMessage())
-              .setCommitSha(commitSha)
-              .build();
-      CommitEntity commitEntity =
-          new CommitEntity(
-              repositoryEntity,
-              new ArrayList<>(parentCommitEntities.values()),
-              internalCommit,
-              rootSha);
-      session.saveOrUpdate(commitEntity);
-      repositoryEntity.setDate_updated(commitEntity.getDate_created());
-      session.update(repositoryEntity);
-      session.getTransaction().commit();
-      return Response.newBuilder().setCommit(commitEntity.toCommitProto()).build();
     }
+
+    Commit internalCommit =
+        Commit.newBuilder()
+            .setDateCreated(timeCreated)
+            .setAuthor(author)
+            .setMessage(commit.getMessage())
+            .setCommitSha(commitSha)
+            .build();
+    CommitEntity commitEntity =
+        new CommitEntity(
+            repositoryEntity,
+            new ArrayList<>(parentCommitEntities.values()),
+            internalCommit,
+            rootSha);
+    session.saveOrUpdate(commitEntity);
+    repositoryEntity.setDate_updated(commitEntity.getDate_created());
+    session.update(repositoryEntity);
+    return commitEntity;
   }
 
   @Override

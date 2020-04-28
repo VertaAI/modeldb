@@ -9160,6 +9160,12 @@ public class ExperimentRunTest {
                     .addLocation("dataset")
                     .addLocation("train")
                     .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addLocation("dataset_1")
+                    .addLocation("train")
+                    .build())
             .build();
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
@@ -9180,6 +9186,30 @@ public class ExperimentRunTest {
             .build();
     LogVersionedInput.Response logVersionedInputResponse =
         experimentRunServiceStub.logVersionedInput(logVersionedInput);
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        logVersionedInput.getVersionedInputs(),
+        logVersionedInputResponse.getExperimentRun().getVersionedInputs());
+
+    logVersionedInputResponse = experimentRunServiceStub.logVersionedInput(logVersionedInput);
+    assertEquals(
+        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+        logVersionedInput.getVersionedInputs(),
+        logVersionedInputResponse.getExperimentRun().getVersionedInputs());
+
+    locationMap.put(
+        "location-1", Location.newBuilder().addLocation("dataset_1").addLocation("train").build());
+    logVersionedInput =
+        LogVersionedInput.newBuilder()
+            .setId(experimentRun.getId())
+            .setVersionedInputs(
+                VersioningEntry.newBuilder()
+                    .setRepositoryId(repoId)
+                    .setCommit(commitResponse.getCommit().getCommitSha())
+                    .putAllKeyLocationMap(locationMap)
+                    .build())
+            .build();
+    logVersionedInputResponse = experimentRunServiceStub.logVersionedInput(logVersionedInput);
     assertEquals(
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         logVersionedInput.getVersionedInputs(),
