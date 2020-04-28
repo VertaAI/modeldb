@@ -186,7 +186,8 @@ def calculate_float_histogram(data, num_bins=10):
     # calculate bin boundaries
     start, stop = min(values), max(values)
     space = (stop - start)/num_bins
-    bin_boundaries = [start + space*i for i in range(num_bins+1)]
+    bin_boundaries = [start + space*i for i in range(num_bins)]
+    bin_boundaries.append(stop)  # ensure last bin captures max value
 
     # fit `data` into bins
     reference_counts = []
