@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { IBlob } from 'core/shared/models/Versioning/Blob/Blob';
 import { IHydratedCommit } from 'core/shared/models/Versioning/RepositoryData';
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import { DataBox } from 'core/shared/view/domain/Versioning/Blob/BlobBox/BlobBox';
 
@@ -14,7 +14,7 @@ interface ILocalProps {
   repository: IRepository;
   commit: IHydratedCommit;
   blobData: IBlob['data'];
-  location: DataLocation.DataLocation;
+  location: CommitComponentLocation.CommitComponentLocation;
 }
 
 const BlobDetailsView = (props: ILocalProps) => {

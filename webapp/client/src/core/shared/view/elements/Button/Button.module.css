@@ -51,11 +51,11 @@
 .theme_tertiary {
   border: 1px solid #aaaaaa;
   background-color: #ffffff;
-  color: #777777;
+  color: var(--main-text-color2);
 }
 .theme_tertiary:hover {
   background-color: #dcdce0;
-  color: #777777;
+  color: var(--main-text-color2);
 }
 .theme_tertiary:focus {
   box-shadow: 2px 2px 2px 0 rgba(57, 55, 128, 0.15);

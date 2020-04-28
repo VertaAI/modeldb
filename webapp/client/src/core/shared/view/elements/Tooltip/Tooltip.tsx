@@ -19,7 +19,7 @@ class Tooltip extends React.Component<ILocalProps> {
         overlay={content}
         placement={'top'}
         arrowContent={<div className="rc-tooltip-arrow-inner" />}
-        align={{ offset: [0, -9] }}
+        align={{ offset: [0, -2] }}
         overlayStyle={{ width: this.props.width }}
         mouseEnterDelay={0.1}
         destroyTooltipOnHide={true}

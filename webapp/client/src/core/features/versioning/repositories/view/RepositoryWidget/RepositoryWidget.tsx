@@ -64,9 +64,14 @@ const RepositoryWidget: React.FC<AllProps> = ({ repository }) => {
       </div>
       <div className={styles.actions}>
         {deleteRepositoryButton && (
-          <div className={styles.action} onClick={preventRedirect}>
-            {deleteRepositoryButton}
-          </div>
+          <>
+            <div
+              className={cn(styles.action, { [styles.action_delete]: true })}
+              onClick={preventRedirect}
+            >
+              {deleteRepositoryButton}
+            </div>
+          </>
         )}
       </div>
     </NavLink>

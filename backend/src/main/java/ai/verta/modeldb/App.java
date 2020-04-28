@@ -427,6 +427,7 @@ public class App implements ApplicationContextAware {
             roleService,
             datasetDAO,
             datasetVersionDAO,
+            projectDAO,
             experimentDAO,
             experimentRunDAO));
     LOGGER.trace("Dataset serviceImpl initialized");

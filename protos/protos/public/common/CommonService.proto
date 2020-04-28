@@ -5,7 +5,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/comm
 
 option java_multiple_files = true;
 import "google/protobuf/struct.proto";
-import "google/api/annotations.proto";
 
 /*
  * All proto common entity
@@ -49,3 +48,13 @@ message CollaboratorTypeEnum {
         READ_WRITE = 1;
     }
 }
+
+message EntitiesEnum {
+    enum EntitiesTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ORGANIZATION = 1;
+        TEAM = 2;
+        USER = 3;
+    }
+};
+

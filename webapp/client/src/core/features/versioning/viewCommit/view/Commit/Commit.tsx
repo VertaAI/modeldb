@@ -3,23 +3,26 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
 import { CompareCommits } from 'core/features/versioning/compareCommits';
-import { getRedirectPathToRepositoryDataPage } from 'core/features/versioning/repositoryData';
-import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   ICommit,
   CommitPointerHelpers,
 } from 'core/shared/models/Versioning/RepositoryData';
+import ShortenedSHA from 'core/shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
 import Avatar from 'core/shared/view/elements/Avatar/Avatar';
 import Button from 'core/shared/view/elements/Button/Button';
+import DefaultMatchRemoteData from 'core/shared/view/elements/MatchRemoteDataComponents/DefaultMatchRemoteData';
+import routes from 'routes';
 import { IApplicationState } from 'store/store';
+import { selectCurrentWorkspaceName } from 'store/workspaces';
 
-import ExperimentRuns from './ExperimentRuns/ExperimentRuns';
 import { selectors, actions } from '../../store';
 import styles from './Commit.module.css';
+import ExperimentRuns from './ExperimentRuns/ExperimentRuns';
+import { PageCard, PageHeader } from 'core/shared/view/elements/PageComponents';
+import { RepositoryNavigation } from 'core/features/versioning/repositoryNavigation';
 
 interface ILocalProps {
   repository: IRepository;
@@ -30,6 +33,7 @@ const mapStateToProps = (state: IApplicationState) => {
   return {
     commit: selectors.selectCommit(state),
     loadingCommit: selectors.selectCommunications(state).loadingCommit,
+    currentWorkspaceName: selectCurrentWorkspaceName(state),
   };
 };
 
@@ -52,6 +56,7 @@ const Commit = ({
   loadCommit,
   commit,
   loadingCommit,
+  currentWorkspaceName,
 }: AllProps) => {
   React.useEffect(() => {
     loadCommit({
@@ -61,7 +66,14 @@ const Commit = ({
   }, [repository.id, commitSha]);
 
   return (
-    <div className={styles.root}>
+    <PageCard>
+      <PageHeader
+        title={repository.name}
+        rightContent={
+          <RepositoryNavigation />
+        }
+        withoutSeparator={true}
+      />
       <DefaultMatchRemoteData data={commit} communication={loadingCommit}>
         {loadedCommit => (
           <div className={styles.content}>
@@ -73,12 +85,14 @@ const Commit = ({
                 <div className={styles.commit__browseFiles}>
                   <Button
                     size="small"
-                    to={getRedirectPathToRepositoryDataPage({
+                    theme="secondary"
+                    to={routes.repositoryDataWithLocation.getRedirectPath({
+                      workspaceName: currentWorkspaceName,
                       commitPointer: CommitPointerHelpers.makeFromCommitSha(
                         loadedCommit.sha
                       ),
                       type: 'folder',
-                      location: DataLocation.makeRoot(),
+                      location: CommitComponentLocation.makeRoot(),
                       repositoryName: repository.name,
                     })}
                   >
@@ -129,7 +143,7 @@ const Commit = ({
           </div>
         )}
       </DefaultMatchRemoteData>
-    </div>
+    </PageCard>
   );
 };
 

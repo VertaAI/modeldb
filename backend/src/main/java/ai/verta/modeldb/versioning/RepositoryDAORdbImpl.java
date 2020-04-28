@@ -395,7 +395,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           ModelDBConstants.ROLE_REPOSITORY_ADMIN,
           ModelDBServiceResourceTypes.REPOSITORY,
           repositoryEntity
-              .getRepositoryVisibility()
+              .getRepository_visibility()
               .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
           GLOBAL_SHARING);
     }
@@ -832,6 +832,36 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .addAllCommits(
               commits.stream().map(CommitEntity::toCommitProto).collect(Collectors.toList()))
           .setTotalRecords(commits.size())
+          .build();
+    }
+  }
+
+  @Override
+  public FindRepositories.Response findRepositories(FindRepositories request)
+      throws ModelDBException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      session.beginTransaction();
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      WorkspaceDTO workspaceDTO =
+          roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());
+      FindRepositoriesQuery findRepositoriesQuery =
+          new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(session, workspaceDTO)
+              .setRepoIds(request.getRepoIdsList())
+              .setPredicates(request.getPredicatesList())
+              .setPageLimit(request.getPageLimit())
+              .setPageNumber(request.getPageNumber())
+              .build();
+      List<RepositoryEntity> repositoryEntities =
+          findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
+      Long totalRecords =
+          (Long) findRepositoriesQuery.getFindRepositoriesCountHQLQuery().uniqueResult();
+
+      return FindRepositories.Response.newBuilder()
+          .addAllRepositories(
+              repositoryEntities.stream()
+                  .map(RepositoryEntity::toProto)
+                  .collect(Collectors.toList()))
+          .setTotalRecords(totalRecords)
           .build();
     }
   }

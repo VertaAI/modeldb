@@ -6,7 +6,7 @@ import * as actions from '../actions';
 import { IRepositoryDataState } from '../types';
 
 const initial: IRepositoryDataState['data'] = {
-  commitWithData: null,
+  commitWithComponent: null,
   currentBlobExperimentRuns: null,
 
   tags: null,
@@ -18,17 +18,20 @@ export default createReducer<
   IRepositoryDataState['data'],
   ActionType<typeof actions>
 >(initial)
-  .handleAction(actions.loadCommitWithData.success, (state, action) => ({
+  .handleAction(actions.loadCommitWithComponent.success, (state, action) => ({
     ...state,
-    commitWithData: action.payload,
+    commitWithComponent: action.payload,
   }))
-  .handleAction(actions.loadCurrentBlobExperimentRuns.success, (state, action) => ({
+  .handleAction(
+    actions.loadCurrentBlobExperimentRuns.success,
+    (state, action) => ({
+      ...state,
+      currentBlobExperimentRuns: action.payload,
+    })
+  )
+  .handleAction(actions.loadCommitWithComponent.failure, (state, action) => ({
     ...state,
-    currentBlobExperimentRuns: action.payload,
-  }))
-  .handleAction(actions.loadCommitWithData.failure, (state, action) => ({
-    ...state,
-    commitWithData: null,
+    commitWithComponent: null,
   }))
   .handleAction(actions.loadTags.success, (state, action) => ({
     ...state,

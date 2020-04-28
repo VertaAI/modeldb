@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/client/Config.proto",
+    "title": "client/Config.proto",
     "version": "version not set"
   },
   "consumes": [

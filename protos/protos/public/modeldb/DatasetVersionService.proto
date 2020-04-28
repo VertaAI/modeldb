@@ -5,9 +5,9 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 
 option java_multiple_files = true;
 
-import "protos/public/common/CommonService.proto";
-import "protos/public/modeldb/CommonService.proto";
-import "protos/public/modeldb/DatasetService.proto";
+import "common/CommonService.proto";
+import "modeldb/CommonService.proto";
+import "modeldb/DatasetService.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
@@ -336,6 +336,7 @@ service DatasetVersionService {
     rpc deleteDatasetVersionAttributes(DeleteDatasetVersionAttributes) returns (DeleteDatasetVersionAttributes.Response) {
         option (google.api.http) = {
             delete: "/v1/dataset-version/deleteDatasetVersionAttributes"
+            body: "*"
         };
     };
 
@@ -345,6 +346,4 @@ service DatasetVersionService {
             body: "*"
         };
     };
-//    TODO
-// {get,set,delete} X {description,tags,visibility,attribute} X {dataset, datasetVersion}
 }

@@ -5,9 +5,11 @@
   margin-top: 5px;
 }
 
+.title {
+  padding: 0 10px;
+}
+
 .dataBox {
-  border: 1px solid var(--border-color1);
-  border-radius: 3px;
 }
 .dataBox.withPadding {
   padding: 6px 4px;

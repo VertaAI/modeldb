@@ -3,14 +3,14 @@ import {
   CommitTag,
   Branch,
   CommitPointer,
-  ICommitWithData,
+  ICommitWithComponent,
 } from 'core/shared/models/Versioning/RepositoryData';
 import { ICommunication } from 'core/shared/utils/redux/communication';
 import { IExperimentRunInfo } from 'models/ModelRecord';
 
 export interface IRepositoryDataState {
   data: {
-    commitWithData: ICommitWithData | null;
+    commitWithComponent: ICommitWithComponent | null;
     currentBlobExperimentRuns: IExperimentRunInfo[] | null;
 
     tags: CommitTag[] | null;
@@ -20,7 +20,7 @@ export interface IRepositoryDataState {
     branches: Branch[];
   };
   communications: {
-    loadingCommitWithData: ICommunication;
+    loadingCommitWithComponent: ICommunication;
     loadingCurrentBlobExperimentRuns: ICommunication;
 
     loadingTags: ICommunication;

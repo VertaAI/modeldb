@@ -22,7 +22,7 @@ case class ModeldbCreateDataset (
   description: Option[String] = None,
   name: Option[String] = None,
   tags: Option[List[String]] = None,
-  time_created: Option[] = None,
+  time_created: Option[BigInt] = None,
   workspace_name: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbCreateDataset.toJson(this)
@@ -38,7 +38,7 @@ object ModeldbCreateDataset {
         obj.description.map(x => JField("description", JString(x))),
         obj.name.map(x => JField("name", JString(x))),
         obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x))),
-        obj.time_created.map(x => JField("time_created", (x))),
+        obj.time_created.map(x => JField("time_created", JInt(x))),
         obj.workspace_name.map(x => JField("workspace_name", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -59,7 +59,7 @@ object ModeldbCreateDataset {
           description = fieldsMap.get("description").map(JsonConverter.fromJsonString),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
           tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
-          time_created = fieldsMap.get("time_created").map(),
+          time_created = fieldsMap.get("time_created").map(JsonConverter.fromJsonInteger),
           workspace_name = fieldsMap.get("workspace_name").map(JsonConverter.fromJsonString)
         )
       }

@@ -143,7 +143,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
             key = Some(key),
             value = Some(newValue)
           )),
-          timestamp = Some(ts.atZone(TimeZone.getTimeZone("UTC").toZoneId).toInstant.toEpochMilli.toString)
+          timestamp = Some(ts.atZone(TimeZone.getTimeZone("UTC").toZoneId).toInstant.toEpochMilli)
         ))
       ))
     })

@@ -34,6 +34,7 @@ const makeSimpleApiRequest = <
   }: {
     requestPayload: GetActionCreatorPayload<ResetableAsyncAction['request']>;
     error: GetActionCreatorPayload<ResetableAsyncAction['failure']>['error'];
+    rawError: Error;
   }) => GetActionCreatorPayload<ResetableAsyncAction['failure']>
 ) => {
   return (
@@ -67,6 +68,7 @@ const makeSimpleApiRequest = <
           ? getFailureActionPayload({
               error: normalizeError(e) as any,
               requestPayload,
+              rawError: e,
             })
           : normalizeError(e)
       ) as any);

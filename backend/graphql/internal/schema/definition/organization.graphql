@@ -1,0 +1,11 @@
+type Organization {
+    id: ID!
+    name: String!
+    shortName: String!
+    description: String!
+    owner: User!
+    dateCreated: Date!
+    dateUpdated: Date!
+
+    teams: [Team!]!
+}

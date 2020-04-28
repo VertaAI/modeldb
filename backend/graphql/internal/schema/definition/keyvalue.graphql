@@ -1,0 +1,11 @@
+union KeyValue = StringKeyValue | FloatKeyValue
+
+type StringKeyValue {
+  key: String!
+  value: String!
+}
+
+type FloatKeyValue {
+  key: String!
+  value: Float!
+}

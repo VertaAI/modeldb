@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { IPathDatasetComponentBlob } from 'core/shared/models/Versioning/Blob/DatasetBlob';
-import { formatBytes } from 'core/shared/utils/mapperConverters';
+import PathSize from 'core/shared/view/domain/Versioning/Blob/DatasetBlob/PathSize/PathSize';
 
 import styles from './PathDatasetComponents.module.css';
 import Table from './Table/Table';
@@ -29,9 +29,7 @@ const PathDatasetComponents = (props: ILocalProps) => {
           type="size"
           width={120}
           render={({ size }) => (
-            <span className={styles.elem} title={formatBytes(size)}>
-              {formatBytes(size)}
-            </span>
+            <PathSize className={styles.elem} size={size} />
           )}
         />
         <Table.Column

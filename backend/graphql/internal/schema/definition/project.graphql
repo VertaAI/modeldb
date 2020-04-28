@@ -1,0 +1,33 @@
+enum ProjectVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+type Project {
+  id: ID!
+  name: String!
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  shortName: String!
+  readmeText: String!
+  projectVisibility: ProjectVisibility!
+  access: AccessType!
+
+  attributes: [KeyValue!]!
+  tags: [String!]!
+  owner: User!
+  collaborators: [Collaborator!]!
+
+  experiments(next: String, query: ExperimentsQuery): Experiments!
+  runs(next: String, query: ExperimentRunsQuery): ExperimentRuns!
+}
+
+type Projects {
+  projects: [Project!]!
+  next: String
+}
+
+input ProjectsQuery {
+  pagination: PaginationQuery
+}

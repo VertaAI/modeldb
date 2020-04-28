@@ -1,0 +1,17 @@
+type Mutation {
+  editRunDescription(id: ID!, description: String!): ExperimentRun
+  addRunTag(id: ID!, tag: String!): ExperimentRun
+  delRunTag(id: ID!, tag: String!): ExperimentRun
+
+  setCollaboratorProject(projid: ID!, email: String!, type: AccessType!): Project
+  delCollaboratorProject(projid: ID!, collid: ID!): Project
+
+  editProjectDescription(id: ID!, description: String!): Project
+  editProjectReadme(id: ID!, readme: String!): Project
+  addProjectTag(id: ID!, tag: String!): Project
+  delProjectTag(id: ID!, tag: String!): Project
+  delProject(id: ID!): Boolean!
+
+  repository(id: ID!): Repository
+  workspace(name: String): Workspace
+}

@@ -2,28 +2,28 @@ import { bind } from 'decko';
 import * as R from 'ramda';
 
 import { BaseDataService } from 'core/services/BaseDataService';
+import { convertClientPaginationToNamespacedServerPagination } from 'core/services/serverModel/Pagination/converters';
+import UsersService from 'core/services/users/UsersService';
 import { HttpError } from 'core/shared/models/Error';
 import {
   DataWithPagination,
   IPaginationSettings,
 } from 'core/shared/models/Pagination';
-import * as DataLocation from 'core/shared/models/Versioning/DataLocation';
+import * as CommitComponentLocation from 'core/shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
   ICommit,
   IHydratedCommit,
   CommitTag,
-  IDataRequest,
+  ICommitComponentRequest,
   Branch,
   defaultBranch,
   CommitPointer,
-  IRepositoryData,
+  ICommitComponent,
   emptyFolder,
-  ICommitWithData,
+  ICommitWithComponent,
 } from 'core/shared/models/Versioning/RepositoryData';
 import { exhaustiveCheck } from 'core/shared/utils/exhaustiveCheck';
-import { convertClientPaginationToNamespacedServerPagination } from 'core/services/serverModel/Pagination/converters';
-import UsersService from 'core/services/users/UsersService';
 
 import { convertServerBlobToClient } from '../../serverModel/Versioning/RepositoryData/Blob';
 import {
@@ -44,22 +44,22 @@ export default class RepositoryDataService extends BaseDataService {
   }
 
   @bind
-  public async loadCommitWithData({
+  public async loadCommitWithComponent({
     repositoryId,
-    fullDataLocationComponents: settings,
-  }: IDataRequest): Promise<ICommitWithData> {
+    fullCommitComponentLocationComponents: settings,
+  }: ICommitComponentRequest): Promise<ICommitWithComponent> {
     const commit = await this.loadCommitByPointer(
       repositoryId,
       settings.commitPointer
     );
 
-    const data = await this.loadCommitData({
+    const data = await this.loadCommitComponent({
       repositoryId,
       commitSha: commit.sha,
       location: settings.location,
     });
 
-    return { commit, data };
+    return { commit, component: data };
   }
 
   @bind
@@ -79,17 +79,17 @@ export default class RepositoryDataService extends BaseDataService {
   }
 
   @bind
-  public async loadCommitData({
+  public async loadCommitComponent({
     commitSha,
     repositoryId,
     location,
   }: {
     repositoryId: IRepository['id'];
     commitSha: ICommit['sha'];
-    location: DataLocation.DataLocation;
-  }): Promise<IRepositoryData> {
+    location: CommitComponentLocation.CommitComponentLocation;
+  }): Promise<ICommitComponent> {
     const { data } = await this.get({
-      url: DataLocation.addAsLocationQueryParams(
+      url: CommitComponentLocation.addAsLocationQueryParams(
         location,
         `/v1/modeldb/versioning/repositories/${repositoryId}/commits/${commitSha}/path`
       ),
@@ -146,10 +146,10 @@ export default class RepositoryDataService extends BaseDataService {
     repositoryId: IRepository['id'];
     branch: Branch;
     paginationSettings: IPaginationSettings;
-    location: DataLocation.DataLocation;
+    location: CommitComponentLocation.CommitComponentLocation;
   }): Promise<DataWithPagination<IHydratedCommit>> {
     const response = await this.get({
-      url: DataLocation.addAsLocationPrefixQueryParams(
+      url: CommitComponentLocation.addAsLocationPrefixQueryParams(
         location,
         `/v1/modeldb/versioning/repositories/${repositoryId}/branches/${branch}/log`
       ),
@@ -258,11 +258,11 @@ export default class RepositoryDataService extends BaseDataService {
   }: {
     repositoryId: IRepository['id'];
     commitSha: ICommit['sha'];
-    location: DataLocation.DataLocation;
+    location: CommitComponentLocation.CommitComponentLocation;
     workspaceName: IWorkspace['name'];
   }): Promise<IExperimentRunInfo[]> {
     const response = await this.get({
-      url: DataLocation.addAsLocationQueryParams(
+      url: CommitComponentLocation.addAsLocationQueryParams(
         location,
         `/v1/modeldb/versioning/repositories/${repositoryId}/commits/${commitSha}/path/runs`
       ),

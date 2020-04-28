@@ -699,6 +699,83 @@
         </createIndex>
     </changeSet>
 
+    <changeSet author="anandJ" id="index_vmem_exp_run_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_vmem_exp_run_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_exp_run_id"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="experiment_run_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_repo_id_commit">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_vmem_repo_id_commit"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_repo_id_commit"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="repository_id"/>
+            <column name="commit"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_versioning_location_postgresql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <indexExists indexName="index_vmem_versioning_location"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_versioning_location"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="versioning_location"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_versioning_location_mysql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <indexExists indexName="index_vmem_versioning_location"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX index_vmem_versioning_location ON versioning_modeldb_entity_mapping (versioning_location(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_versioning_blob_type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_vmem_versioning_blob_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_versioning_blob_type"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="versioning_blob_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_table">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_vmem_table"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_table"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="repository_id"/>
+            <column name="commit"/>
+            <column name="experiment_run_id"/>
+            <column name="versioning_blob_type"/>
+        </createIndex>
+    </changeSet>
+
     <changeSet id="lineage_versioning_blob_index" author="lezhevg">
         <preConditions onFail="MARK_RAN">
             <not>

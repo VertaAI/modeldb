@@ -17,6 +17,7 @@ import CommitsHistoryPage from './CommitsHistoryPage/CommitsHistoryPage';
 import CompareChangesPage from './CompareChangesPage/CompareChangesPage';
 import RepositoryPage from './RepositoryPage/RepositoryPage';
 import RepositorySettingsPage from './RepositorySettingsPage/RepositorySettingsPage';
+import NotFoundPage from 'pages/authorized/NotFoundPage/NotFoundPage';
 
 const mapStateToProps = (state: IApplicationState, props: RouteProps) => {
   const repository = selectors.selectRepositoryByName(
@@ -153,17 +154,21 @@ const RepositoryDetailsPages = (props: AllProps) => {
           <Route
             exact={true}
             path={routes.repositorySettings.getPath()}
-            component={(
+            repository={repository}
+            render={(
               props: RouteComponentProps<
                 GetRouteParams<typeof routes.repositorySettings>
               >
-            ) => (
-              <RepositorySettingsPage
-                {...props}
-                repository={loadedRepository}
-              />
-            )}
+            ) => {
+              return (
+                <RepositorySettingsPage
+                  {...props}
+                  repository={loadedRepository}
+                />
+              );
+            }}
           />
+          <Route component={NotFoundPage} />
         </Switch>
       );
     },

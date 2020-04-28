@@ -2,176 +2,187 @@ import { ArgumentTypes } from 'core/shared/utils/types';
 
 import { IRepository } from 'core/shared/models/Versioning/Repository';
 import {
-  IRepositoryData,
-  SHA,
   CommitPointer,
   ICommit,
 } from 'core/shared/models/Versioning/RepositoryData';
-import makeRoute, { IRoute as _IRoute } from 'core/shared/routes/makeRoute';
+import {
+  makeRouteFromPath,
+  IRoute as _IRoute,
+} from 'core/shared/routes/makeRoute';
+import * as P from 'core/shared/routes/pathBuilder';
 
 import {
-  makeRouteWithWorkspace,
   isRouteWithWorkspace,
+  makeRouteWithWorkspace,
 } from './routeWithWorkspace';
+import { makeRepositoryDataWithLocationRoute } from './repositoryDataWithLocation';
 
 export type IRoute<T, B = undefined> = _IRoute<T, B>;
 
-export type RoutesWithWorkspaces = 'projects' | 'datasets';
+export type RoutesWithWorkspaces =
+  | 'projects'
+  | 'datasets'
+  | 'repositories';
 
 const routes = {
-  index: makeRoute({
-    getPath: () => '/',
+  index: makeRouteFromPath({
+    getPath: () => P.makePath()(),
+    allowedUserType: 'any',
   }),
 
   workspace: makeRouteWithWorkspace({
-    getPath: () => '/',
+    getPath: () => P.makePath()(),
   }),
 
   datasets: makeRouteWithWorkspace({
-    getPath: () => '/datasets',
+    getPath: () => P.makePath('datasets')(),
   }),
   datasetCreation: makeRouteWithWorkspace({
-    getPath: () => '/datasets/new',
+    getPath: () => P.makePath('datasets', 'new')(),
   }),
-  datasetSummary: makeRouteWithWorkspace<{
-    datasetId: string;
-  }>({
-    getPath: () => '/datasets/:datasetId/summary',
+  datasetSummary: makeRouteWithWorkspace({
+    getPath: () => P.makePath('datasets', P.param('datasetId')(), 'summary')(),
   }),
-  datasetVersions: makeRouteWithWorkspace<{
-    datasetId: string;
-  }>({
-    getPath: () => '/datasets/:datasetId/versions',
+  datasetVersions: makeRouteWithWorkspace({
+    getPath: () => P.makePath('datasets', P.param('datasetId')(), 'versions')(),
   }),
-  datasetVersion: makeRouteWithWorkspace<{
-    datasetId: string;
-    datasetVersionId: string;
-  }>({
-    getPath: () => '/datasets/:datasetId/versions/:datasetVersionId',
-  }),
-  compareDatasetVersions: makeRouteWithWorkspace<{
-    datasetId: string;
-    datasetVersionId1: string;
-    datasetVersionId2: string;
-  }>({
+  datasetVersion: makeRouteWithWorkspace({
     getPath: () =>
-      '/datasets/:datasetId/versions/compare/:datasetVersionId1/:datasetVersionId2',
+      P.makePath(
+        'datasets',
+        P.param('datasetId')(),
+        'versions',
+        P.param('datasetVersionId')()
+      )(),
+  }),
+  datasetSettings: makeRouteWithWorkspace({
+    getPath: () => P.makePath('datasets', P.param('datasetId')(), 'settings')(),
+  }),
+  compareDatasetVersions: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'datasets',
+        P.param('datasetId')(),
+        'versions',
+        'compare',
+        P.param('datasetVersionId1')(),
+        P.param('datasetVersionId2')()
+      )(),
   }),
 
   projects: makeRouteWithWorkspace({
-    getPath: () => `/projects`,
+    getPath: () => P.makePath('projects')(),
+  }),
+  project: makeRouteWithWorkspace({
+    getPath: () => P.makePath('projects', P.param('projectId')())(),
   }),
   projectCreation: makeRouteWithWorkspace({
-    getPath: () => '/projects/new',
+    getPath: () => P.makePath('projects', 'new')(),
   }),
-  projectSummary: makeRouteWithWorkspace<{
-    projectId: string;
-  }>({
-    getPath: () => `/projects/:projectId/summary`,
+  projectSummary: makeRouteWithWorkspace({
+    getPath: () => P.makePath('projects', P.param('projectId')(), 'summary')(),
   }),
-  experimentRuns: makeRouteWithWorkspace<{
-    projectId: string;
-  }>({
-    getPath: () => '/projects/:projectId/exp-runs',
+  projectSettings: makeRouteWithWorkspace({
+    getPath: () => P.makePath('projects', P.param('projectId')(), 'settings')(),
   }),
-  charts: makeRouteWithWorkspace<{
-    projectId: string;
-  }>({
-    getPath: () => '/projects/:projectId/charts',
+  experimentRuns: makeRouteWithWorkspace({
+    getPath: () => P.makePath('projects', P.param('projectId')(), 'exp-runs')(),
   }),
-  experiments: makeRouteWithWorkspace<{
-    projectId: string;
-  }>({
-    getPath: () => '/projects/:projectId/experiments',
+  charts: makeRouteWithWorkspace({
+    getPath: () => P.makePath('projects', P.param('projectId')(), 'charts')(),
   }),
-  experimentCreation: makeRouteWithWorkspace<{
-    projectId: string;
-  }>({
-    getPath: () => '/projects/:projectId/experiments/new',
-  }),
-  modelRecord: makeRouteWithWorkspace<{
-    projectId: string;
-    modelRecordId: string;
-  }>({
-    getPath: () => '/projects/:projectId/exp-runs/:modelRecordId',
-  }),
-  compareModels: makeRouteWithWorkspace<{
-    projectId: string;
-    modelRecordId1: string;
-    modelRecordId2: string;
-  }>({
+  experiments: makeRouteWithWorkspace({
     getPath: () =>
-      '/projects/:projectId/exp-runs/compare/:modelRecordId1/:modelRecordId2',
+      P.makePath('projects', P.param('projectId')(), 'experiments')(),
+  }),
+  experimentCreation: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath('projects', P.param('projectId')(), 'experiments', 'new')(),
+  }),
+  modelRecord: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'projects',
+        P.param('projectId')(),
+        'exp-runs',
+        P.param('modelRecordId')()
+      )(),
+  }),
+  compareModels: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'projects',
+        P.param('projectId')(),
+        'exp-runs',
+        'compare',
+        P.param('modelRecordId1')(),
+        P.param('modelRecordId2')()
+      )(),
   }),
 
-  repositories: makeRouteWithWorkspace<{}, { page: string }>({
-    getPath: () => '/repositories',
+  repositories: makeRouteWithWorkspace({
+    getPath: () => P.makePath('repositories')<{ page: string }>(),
   }),
   createRepository: makeRouteWithWorkspace({
-    getPath: () => '/repositories/new',
+    getPath: () => P.makePath('repositories', 'new')(),
   }),
-  repositoryData: makeRouteWithWorkspace<{
-    repositoryName: IRepository['name'];
-  }>({
-    getPath: () => `/repositories/:repositoryName/data`,
-  }),
-  repositoryDataWithLocation: (() => {
-    const route = makeRouteWithWorkspace<{
-      repositoryName: IRepository['name'];
-      dataType: IRepositoryData['type'];
-      commitPointerValue: CommitPointer['value'];
-      locationPathname?: string;
-    }>({
-      getPath: () =>
-        `/repositories/:repositoryName/data/:dataType(blob|folder)/:commitPointerValue/:locationPathname*`,
-    });
-
-    return {
-      ...route,
-      getRedirectPath: ({ locationPathname, ...restParams }) => {
-        return `${route.getRedirectPath(restParams)}${
-          locationPathname ? `/${locationPathname}` : ''
-        }`;
-      },
-      getRedirectPathWithCurrentWorkspace: ({
-        locationPathname,
-        ...restParams
-      }) => {
-        return `${route.getRedirectPathWithCurrentWorkspace(restParams)}${
-          locationPathname ? `/${locationPathname}` : ''
-        }`;
-      },
-    } as typeof route;
-  })(),
-  repositoryCommitsHistory: makeRouteWithWorkspace<
-    {
-      repositoryName: IRepository['name'];
-      commitPointerValue: CommitPointer['value'];
-      locationPathname?: string;
-    },
-    { page?: string }
-  >({
+  repository: makeRouteWithWorkspace({
     getPath: () =>
-      `/repositories/:repositoryName/data/commits/:commitPointerValue/:locationPathname*`,
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>()
+      )(),
   }),
-  repositoryCommit: makeRouteWithWorkspace<{
-    commitSha: ICommit['sha'];
-    repositoryName: IRepository['name'];
-  }>({
-    getPath: () => `/repositories/:repositoryName/data/commit/:commitSha`,
-  }),
-  repositorySettings: makeRouteWithWorkspace<{
-    repositoryName: IRepository['name'];
-  }>({
-    getPath: () => `/repositories/:repositoryName/settings`,
-  }),
-  repositoryCompareChanges: makeRouteWithWorkspace<{
-    repositoryName: IRepository['name'];
-    commitPointerAValue: CommitPointer['value'] | string;
-    commitPointerBValue: CommitPointer['value'] | string;
-  }>({
+  repositoryData: makeRouteWithWorkspace({
     getPath: () =>
-      '/repositories/:repositoryName/data/compare/:commitPointerAValue/:commitPointerBValue',
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>(),
+        'data'
+      )(),
+  }),
+  repositoryDataWithLocation: makeRepositoryDataWithLocationRoute(),
+  repositoryCommitsHistory: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>(),
+        'data',
+        'commits',
+        P.param('commitPointerValue')<CommitPointer['value']>(),
+        P.paramWithMod('locationPathname', '*')<{
+          locationPathname?: string;
+        }>()
+      )<{ page?: string }>(),
+  }),
+  repositoryCommit: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>(),
+        'data',
+        'commit',
+        P.param('commitSha')<ICommit['sha']>()
+      )(),
+  }),
+  repositorySettings: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>(),
+        'settings'
+      )(),
+  }),
+  repositoryCompareChanges: makeRouteWithWorkspace({
+    getPath: () =>
+      P.makePath(
+        'repositories',
+        P.param('repositoryName')<IRepository['name']>(),
+        'data',
+        'compare',
+        P.param('commitPointerAValue')<CommitPointer['value']>(),
+        P.param('commitPointerBValue')<CommitPointer['value']>()
+      )(),
   }),
 };
 

@@ -81,7 +81,7 @@ class Sidebar extends React.PureComponent<AllProps, ILocalState> {
         <div className={styles.additionalLinks}>
           <LayoutLink
             isExternal={true}
-            to="https://verta.readme.io/docs"
+            to="https://docs.verta.ai/en/master/"
             iconType="help-outline"
             isCollapsed={isCollapsed}
           >

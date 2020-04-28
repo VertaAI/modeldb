@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "protos/public/modeldb/versioning/Environment.proto",
+    "title": "modeldb/versioning/Environment.proto",
     "version": "version not set"
   },
   "consumes": [

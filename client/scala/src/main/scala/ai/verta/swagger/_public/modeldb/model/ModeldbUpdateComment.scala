@@ -10,7 +10,7 @@ import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbUpdateComment (
-  date_time: Option[] = None,
+  date_time: Option[BigInt] = None,
   entity_id: Option[String] = None,
   id: Option[String] = None,
   message: Option[String] = None
@@ -22,7 +22,7 @@ object ModeldbUpdateComment {
   def toJson(obj: ModeldbUpdateComment): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.date_time.map(x => JField("date_time", (x))),
+        obj.date_time.map(x => JField("date_time", JInt(x))),
         obj.entity_id.map(x => JField("entity_id", JString(x))),
         obj.id.map(x => JField("id", JString(x))),
         obj.message.map(x => JField("message", JString(x)))
@@ -39,7 +39,7 @@ object ModeldbUpdateComment {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbUpdateComment(
           // TODO: handle required
-          date_time = fieldsMap.get("date_time").map(),
+          date_time = fieldsMap.get("date_time").map(JsonConverter.fromJsonInteger),
           entity_id = fieldsMap.get("entity_id").map(JsonConverter.fromJsonString),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           message = fieldsMap.get("message").map(JsonConverter.fromJsonString)

@@ -351,6 +351,7 @@ class Commit(object):
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
+    # TODO: Add ways to retrieve and delete tag
     def tag(self, tag):
         """
         Assigns a tag to this Commit.
@@ -428,8 +429,8 @@ class Commit(object):
         RuntimeError
             If this Commit has not yet been saved.
 
-        Exammples
-        ---------
+        Examples
+        --------
         .. code-block:: python
 
             master = repo.get_commit(branch="master")
