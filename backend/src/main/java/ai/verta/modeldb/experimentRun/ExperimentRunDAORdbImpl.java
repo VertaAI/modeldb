@@ -1385,11 +1385,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         projectIds.addAll(workspaceProjectIDs);
       }
 
-      if (!projectIds.isEmpty()) {
-        Expression<String> projectExpression = experimentRunRoot.get(ModelDBConstants.PROJECT_ID);
-        Predicate projectsPredicate = projectExpression.in(projectIds);
-        finalPredicatesList.add(projectsPredicate);
+      if (projectIds.isEmpty()) {
+        String errorMessage =
+                "Access is denied. Accessible projects not found for given ExperimentRun IDs : "
+                        + accessibleExperimentRunIds;
+        ModelDBUtils.logAndThrowError(
+                errorMessage,
+                Code.PERMISSION_DENIED_VALUE,
+                Any.pack(FindExperimentRuns.getDefaultInstance()));
       }
+      Expression<String> projectExpression = experimentRunRoot.get(ModelDBConstants.PROJECT_ID);
+      Predicate projectsPredicate = projectExpression.in(projectIds);
+      finalPredicatesList.add(projectsPredicate);
 
       if (!queryParameters.getExperimentId().isEmpty()) {
         Expression<String> exp = experimentRunRoot.get(ModelDBConstants.EXPERIMENT_ID);

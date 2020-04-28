@@ -5,6 +5,7 @@ import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
+import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
@@ -867,11 +868,18 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         projectIds.addAll(workspaceProjectIDs);
       }
 
-      if (!projectIds.isEmpty()) {
-        Expression<String> projectExpression = experimentRoot.get(ModelDBConstants.PROJECT_ID);
-        Predicate projectsPredicate = projectExpression.in(projectIds);
-        finalPredicatesList.add(projectsPredicate);
+      if (projectIds.isEmpty()) {
+        String errorMessage =
+                "Access is denied. Accessible projects not found for given Experiment IDs : "
+                        + accessibleExperimentIds;
+        ModelDBUtils.logAndThrowError(
+                errorMessage,
+                Code.PERMISSION_DENIED_VALUE,
+                Any.pack(FindExperiments.getDefaultInstance()));
       }
+      Expression<String> projectExpression = experimentRoot.get(ModelDBConstants.PROJECT_ID);
+      Predicate projectsPredicate = projectExpression.in(projectIds);
+      finalPredicatesList.add(projectsPredicate);
 
       if (!accessibleExperimentIds.isEmpty()) {
         Expression<String> exp = experimentRoot.get(ModelDBConstants.ID);
