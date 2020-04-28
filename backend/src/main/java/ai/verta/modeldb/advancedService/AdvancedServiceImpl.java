@@ -571,7 +571,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
-      if (experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
+      if (!experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
         hydratedExperimentRuns = getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
       }
 
