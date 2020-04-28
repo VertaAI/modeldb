@@ -192,11 +192,13 @@ public class CommitTest {
         .build();
   }
 
-  static Blob getBlob(Blob.ContentCase contentCase) throws ModelDBException, NoSuchAlgorithmException {
+  static Blob getBlob(Blob.ContentCase contentCase)
+      throws ModelDBException, NoSuchAlgorithmException {
     return getBlob(contentCase, "");
   }
 
-  static Blob getBlob(Blob.ContentCase contentCase, String name) throws ModelDBException, NoSuchAlgorithmException {
+  static Blob getBlob(Blob.ContentCase contentCase, String name)
+      throws ModelDBException, NoSuchAlgorithmException {
     switch (contentCase) {
       case DATASET:
         DatasetBlob datasetBlob =

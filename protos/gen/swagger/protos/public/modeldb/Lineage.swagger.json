@@ -173,23 +173,20 @@
     }
   },
   "definitions": {
-    "LineageEntryEnumLineageEntryType": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "EXPERIMENT_RUN",
-        "DATASET_VERSION"
-      ],
-      "default": "UNKNOWN"
-    },
     "modeldbAddLineage": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "If not provided, a new ID will be created"
+        },
         "input": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
-          }
+          },
+          "description": "An output can be associated with at most one lineage entry. That is the same as saying\nsomething can't be created by two separated paths.\nWe also associated all inputs with all outputs. If the user wants more fine-grained control,\nthey can create multiple entries."
         },
         "output": {
           "type": "array",
@@ -203,15 +200,19 @@
     "modeldbAddLineageResponse": {
       "type": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
-          "format": "boolean"
+        "id": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
     "modeldbDeleteLineage": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
         "input": {
           "type": "array",
           "items": {
@@ -242,7 +243,7 @@
         "items": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbLineageEntry"
+            "$ref": "#/definitions/modeldbLineageEntryBatchRequest"
           }
         }
       },
@@ -254,7 +255,7 @@
         "items": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbLineageEntry"
+            "$ref": "#/definitions/modeldbLineageEntryBatchRequest"
           }
         }
       },
@@ -266,13 +267,13 @@
         "inputs": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbLineageEntryBatch"
+            "$ref": "#/definitions/modeldbLineageEntryBatchResponse"
           }
         },
         "outputs": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbLineageEntryBatch"
+            "$ref": "#/definitions/modeldbLineageEntryBatchResponse"
           }
         }
       }
@@ -283,7 +284,7 @@
         "inputs": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbLineageEntryBatch"
+            "$ref": "#/definitions/modeldbLineageEntryBatchResponse"
           }
         }
       }
@@ -294,7 +295,7 @@
         "items": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbLineageEntry"
+            "$ref": "#/definitions/modeldbLineageEntryBatchRequest"
           }
         }
       },
@@ -306,7 +307,7 @@
         "outputs": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbLineageEntryBatch"
+            "$ref": "#/definitions/modeldbLineageEntryBatchResponse"
           }
         }
       }
@@ -314,18 +315,45 @@
     "modeldbLineageEntry": {
       "type": "object",
       "properties": {
-        "type": {
-          "$ref": "#/definitions/LineageEntryEnumLineageEntryType"
+        "experiment_run": {
+          "type": "string"
         },
-        "external_id": {
-          "type": "string",
-          "title": "External ID of the item for the given type, if compatible"
+        "blob": {
+          "$ref": "#/definitions/modeldbVersioningLineageEntry"
         }
       }
     },
-    "modeldbLineageEntryBatch": {
+    "modeldbLineageEntryBatchRequest": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "entry": {
+          "$ref": "#/definitions/modeldbLineageEntry"
+        }
+      },
+      "description": "Represent a set of lineage items, essentially an array so that it can be embedded on other proto messages."
+    },
+    "modeldbLineageEntryBatchResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbLineageEntryBatchResponseSingle"
+          }
+        }
+      }
+    },
+    "modeldbLineageEntryBatchResponseSingle": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
         "items": {
           "type": "array",
           "items": {
@@ -333,7 +361,25 @@
           }
         }
       },
-      "description": "Represent a set of lineage items, essentially an array so that it can be embedded on other proto messages."
+      "title": "Returns the ID of the lineage entry and the set of items corresponding to that entry"
+    },
+    "modeldbVersioningLineageEntry": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "commit_sha": {
+          "type": "string"
+        },
+        "location": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "protobufAny": {
       "type": "object",

@@ -5,19 +5,20 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.model.LineageEntryEnumLineageEntryType._
 import ai.verta.swagger.client.objects._
 
-case class ModeldbLineageEntryBatch (
+case class ModeldbLineageEntryBatchResponseSingle (
+  id: Option[BigInt] = None,
   items: Option[List[ModeldbLineageEntry]] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbLineageEntryBatch.toJson(this)
+  def toJson(): JValue = ModeldbLineageEntryBatchResponseSingle.toJson(this)
 }
 
-object ModeldbLineageEntryBatch {
-  def toJson(obj: ModeldbLineageEntryBatch): JObject = {
+object ModeldbLineageEntryBatchResponseSingle {
+  def toJson(obj: ModeldbLineageEntryBatchResponseSingle): JObject = {
     new JObject(
       List[Option[JField]](
+        obj.id.map(x => JField("id", JInt(x))),
         obj.items.map(x => JField("items", ((x: List[ModeldbLineageEntry]) => JArray(x.map(((x: ModeldbLineageEntry) => ModeldbLineageEntry.toJson(x)))))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -26,12 +27,13 @@ object ModeldbLineageEntryBatch {
     )
   }
 
-  def fromJson(value: JValue): ModeldbLineageEntryBatch =
+  def fromJson(value: JValue): ModeldbLineageEntryBatchResponseSingle =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbLineageEntryBatch(
+        ModeldbLineageEntryBatchResponseSingle(
           // TODO: handle required
+          id = fieldsMap.get("id").map(JsonConverter.fromJsonInteger),
           items = fieldsMap.get("items").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbLineageEntry.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")})
         )
       }

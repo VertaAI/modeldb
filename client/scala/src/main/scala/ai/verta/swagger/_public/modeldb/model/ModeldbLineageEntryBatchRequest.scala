@@ -7,16 +7,18 @@ import net.liftweb.json._
 
 import ai.verta.swagger.client.objects._
 
-case class ModeldbAddLineageResponse (
+case class ModeldbLineageEntryBatchRequest (
+  entry: Option[ModeldbLineageEntry] = None,
   id: Option[BigInt] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = ModeldbAddLineageResponse.toJson(this)
+  def toJson(): JValue = ModeldbLineageEntryBatchRequest.toJson(this)
 }
 
-object ModeldbAddLineageResponse {
-  def toJson(obj: ModeldbAddLineageResponse): JObject = {
+object ModeldbLineageEntryBatchRequest {
+  def toJson(obj: ModeldbLineageEntryBatchRequest): JObject = {
     new JObject(
       List[Option[JField]](
+        obj.entry.map(x => JField("entry", ((x: ModeldbLineageEntry) => ModeldbLineageEntry.toJson(x))(x))),
         obj.id.map(x => JField("id", JInt(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -25,12 +27,13 @@ object ModeldbAddLineageResponse {
     )
   }
 
-  def fromJson(value: JValue): ModeldbAddLineageResponse =
+  def fromJson(value: JValue): ModeldbLineageEntryBatchRequest =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        ModeldbAddLineageResponse(
+        ModeldbLineageEntryBatchRequest(
           // TODO: handle required
+          entry = fieldsMap.get("entry").map(ModeldbLineageEntry.fromJson),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonInteger)
         )
       }

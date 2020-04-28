@@ -19,52 +19,46 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb',
   syntax='proto3',
   serialized_options=b'P\001Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb',
-  serialized_pb=b'\n\x15modeldb/Lineage.proto\x12\x10\x61i.verta.modeldb\x1a\x1cgoogle/api/annotations.proto\"\\\n\x10LineageEntryEnum\"H\n\x10LineageEntryType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x01\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x02\"w\n\x0cLineageEntry\x12\x41\n\x04type\x18\x01 \x01(\x0e\x32\x33.ai.verta.modeldb.LineageEntryEnum.LineageEntryType\x12\x15\n\x0b\x65xternal_id\x18\x02 \x01(\tH\x00\x42\r\n\x0b\x64\x65scription\"B\n\x11LineageEntryBatch\x12-\n\x05items\x18\x01 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\"\x87\x01\n\nAddLineage\x12-\n\x05input\x18\x01 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x12.\n\x06output\x18\x02 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x8a\x01\n\rDeleteLineage\x12-\n\x05input\x18\x01 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x12.\n\x06output\x18\x02 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x7f\n\rFindAllInputs\x12-\n\x05items\x18\x01 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x1a?\n\x08Response\x12\x33\n\x06inputs\x18\x01 \x03(\x0b\x32#.ai.verta.modeldb.LineageEntryBatch\"\x81\x01\n\x0e\x46indAllOutputs\x12-\n\x05items\x18\x01 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x1a@\n\x08Response\x12\x34\n\x07outputs\x18\x01 \x03(\x0b\x32#.ai.verta.modeldb.LineageEntryBatch\"\xbc\x01\n\x14\x46indAllInputsOutputs\x12-\n\x05items\x18\x01 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x1au\n\x08Response\x12\x33\n\x06inputs\x18\x01 \x03(\x0b\x32#.ai.verta.modeldb.LineageEntryBatch\x12\x34\n\x07outputs\x18\x02 \x03(\x0b\x32#.ai.verta.modeldb.LineageEntryBatch2\xb2\x05\n\x0eLineageService\x12t\n\naddLineage\x12\x1c.ai.verta.modeldb.AddLineage\x1a%.ai.verta.modeldb.AddLineage.Response\"!\x82\xd3\xe4\x93\x02\x1b\"\x16/v1/lineage/addLineage:\x01*\x12\x80\x01\n\rdeleteLineage\x12\x1f.ai.verta.modeldb.DeleteLineage\x1a(.ai.verta.modeldb.DeleteLineage.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/lineage/deleteLineage:\x01*\x12\x80\x01\n\rfindAllInputs\x12\x1f.ai.verta.modeldb.FindAllInputs\x1a(.ai.verta.modeldb.FindAllInputs.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/lineage/findAllInputs:\x01*\x12\x84\x01\n\x0e\x66indAllOutputs\x12 .ai.verta.modeldb.FindAllOutputs\x1a).ai.verta.modeldb.FindAllOutputs.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/lineage/findAllOutputs:\x01*\x12\x9c\x01\n\x14\x66indAllInputsOutputs\x12&.ai.verta.modeldb.FindAllInputsOutputs\x1a/.ai.verta.modeldb.FindAllInputsOutputs.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/lineage/findAllInputsOutputs:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
+  serialized_pb=b'\n\x15modeldb/Lineage.proto\x12\x10\x61i.verta.modeldb\x1a\x1cgoogle/api/annotations.proto\"U\n\x16VersioningLineageEntry\x12\x15\n\rrepository_id\x18\x01 \x01(\x04\x12\x12\n\ncommit_sha\x18\x02 \x01(\t\x12\x10\n\x08location\x18\x03 \x03(\t\"q\n\x0cLineageEntry\x12\x18\n\x0e\x65xperiment_run\x18\x01 \x01(\tH\x00\x12\x38\n\x04\x62lob\x18\x02 \x01(\x0b\x32(.ai.verta.modeldb.VersioningLineageEntryH\x00\x42\r\n\x0b\x64\x65scription\"\x8f\x01\n\nAddLineage\x12\n\n\x02id\x18\x01 \x01(\x04\x12-\n\x05input\x18\x02 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x12.\n\x06output\x18\x03 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x1a\x16\n\x08Response\x12\n\n\x02id\x18\x01 \x01(\x04\"\x96\x01\n\rDeleteLineage\x12\n\n\x02id\x18\x01 \x01(\x04\x12-\n\x05input\x18\x02 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x12.\n\x06output\x18\x03 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"g\n\x18LineageEntryBatchRequest\x12\x0c\n\x02id\x18\x01 \x01(\x04H\x00\x12/\n\x05\x65ntry\x18\x02 \x01(\x0b\x32\x1e.ai.verta.modeldb.LineageEntryH\x00\x42\x0c\n\nidentifier\"\\\n\x1fLineageEntryBatchResponseSingle\x12\n\n\x02id\x18\x01 \x01(\x04\x12-\n\x05items\x18\x02 \x03(\x0b\x32\x1e.ai.verta.modeldb.LineageEntry\"]\n\x19LineageEntryBatchResponse\x12@\n\x05items\x18\x01 \x03(\x0b\x32\x31.ai.verta.modeldb.LineageEntryBatchResponseSingle\"\x93\x01\n\rFindAllInputs\x12\x39\n\x05items\x18\x01 \x03(\x0b\x32*.ai.verta.modeldb.LineageEntryBatchRequest\x1aG\n\x08Response\x12;\n\x06inputs\x18\x01 \x03(\x0b\x32+.ai.verta.modeldb.LineageEntryBatchResponse\"\x95\x01\n\x0e\x46indAllOutputs\x12\x39\n\x05items\x18\x01 \x03(\x0b\x32*.ai.verta.modeldb.LineageEntryBatchRequest\x1aH\n\x08Response\x12<\n\x07outputs\x18\x01 \x03(\x0b\x32+.ai.verta.modeldb.LineageEntryBatchResponse\"\xd9\x01\n\x14\x46indAllInputsOutputs\x12\x39\n\x05items\x18\x01 \x03(\x0b\x32*.ai.verta.modeldb.LineageEntryBatchRequest\x1a\x85\x01\n\x08Response\x12;\n\x06inputs\x18\x01 \x03(\x0b\x32+.ai.verta.modeldb.LineageEntryBatchResponse\x12<\n\x07outputs\x18\x02 \x03(\x0b\x32+.ai.verta.modeldb.LineageEntryBatchResponse2\xb2\x05\n\x0eLineageService\x12t\n\naddLineage\x12\x1c.ai.verta.modeldb.AddLineage\x1a%.ai.verta.modeldb.AddLineage.Response\"!\x82\xd3\xe4\x93\x02\x1b\"\x16/v1/lineage/addLineage:\x01*\x12\x80\x01\n\rdeleteLineage\x12\x1f.ai.verta.modeldb.DeleteLineage\x1a(.ai.verta.modeldb.DeleteLineage.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/lineage/deleteLineage:\x01*\x12\x80\x01\n\rfindAllInputs\x12\x1f.ai.verta.modeldb.FindAllInputs\x1a(.ai.verta.modeldb.FindAllInputs.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/lineage/findAllInputs:\x01*\x12\x84\x01\n\x0e\x66indAllOutputs\x12 .ai.verta.modeldb.FindAllOutputs\x1a).ai.verta.modeldb.FindAllOutputs.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/lineage/findAllOutputs:\x01*\x12\x9c\x01\n\x14\x66indAllInputsOutputs\x12&.ai.verta.modeldb.FindAllInputsOutputs\x1a/.ai.verta.modeldb.FindAllInputsOutputs.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/lineage/findAllInputsOutputs:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
 
 
-_LINEAGEENTRYENUM_LINEAGEENTRYTYPE = _descriptor.EnumDescriptor(
-  name='LineageEntryType',
-  full_name='ai.verta.modeldb.LineageEntryEnum.LineageEntryType',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='UNKNOWN', index=0, number=0,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='EXPERIMENT_RUN', index=1, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='DATASET_VERSION', index=2, number=2,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=93,
-  serialized_end=165,
-)
-_sym_db.RegisterEnumDescriptor(_LINEAGEENTRYENUM_LINEAGEENTRYTYPE)
 
-
-_LINEAGEENTRYENUM = _descriptor.Descriptor(
-  name='LineageEntryEnum',
-  full_name='ai.verta.modeldb.LineageEntryEnum',
+_VERSIONINGLINEAGEENTRY = _descriptor.Descriptor(
+  name='VersioningLineageEntry',
+  full_name='ai.verta.modeldb.VersioningLineageEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='repository_id', full_name='ai.verta.modeldb.VersioningLineageEntry.repository_id', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='commit_sha', full_name='ai.verta.modeldb.VersioningLineageEntry.commit_sha', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='location', full_name='ai.verta.modeldb.VersioningLineageEntry.location', index=2,
+      number=3, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
-    _LINEAGEENTRYENUM_LINEAGEENTRYTYPE,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -73,7 +67,7 @@ _LINEAGEENTRYENUM = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=73,
-  serialized_end=165,
+  serialized_end=158,
 )
 
 
@@ -85,16 +79,16 @@ _LINEAGEENTRY = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='type', full_name='ai.verta.modeldb.LineageEntry.type', index=0,
-      number=1, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
+      name='experiment_run', full_name='ai.verta.modeldb.LineageEntry.experiment_run', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='external_id', full_name='ai.verta.modeldb.LineageEntry.external_id', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      name='blob', full_name='ai.verta.modeldb.LineageEntry.blob', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -113,39 +107,8 @@ _LINEAGEENTRY = _descriptor.Descriptor(
       name='description', full_name='ai.verta.modeldb.LineageEntry.description',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=167,
-  serialized_end=286,
-)
-
-
-_LINEAGEENTRYBATCH = _descriptor.Descriptor(
-  name='LineageEntryBatch',
-  full_name='ai.verta.modeldb.LineageEntryBatch',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='items', full_name='ai.verta.modeldb.LineageEntryBatch.items', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=288,
-  serialized_end=354,
+  serialized_start=160,
+  serialized_end=273,
 )
 
 
@@ -157,9 +120,9 @@ _ADDLINEAGE_RESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='status', full_name='ai.verta.modeldb.AddLineage.Response.status', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='id', full_name='ai.verta.modeldb.AddLineage.Response.id', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -175,8 +138,8 @@ _ADDLINEAGE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=466,
-  serialized_end=492,
+  serialized_start=397,
+  serialized_end=419,
 )
 
 _ADDLINEAGE = _descriptor.Descriptor(
@@ -187,15 +150,22 @@ _ADDLINEAGE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='input', full_name='ai.verta.modeldb.AddLineage.input', index=0,
-      number=1, type=11, cpp_type=10, label=3,
+      name='id', full_name='ai.verta.modeldb.AddLineage.id', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='input', full_name='ai.verta.modeldb.AddLineage.input', index=1,
+      number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='output', full_name='ai.verta.modeldb.AddLineage.output', index=1,
-      number=2, type=11, cpp_type=10, label=3,
+      name='output', full_name='ai.verta.modeldb.AddLineage.output', index=2,
+      number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -212,8 +182,8 @@ _ADDLINEAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=357,
-  serialized_end=492,
+  serialized_start=276,
+  serialized_end=419,
 )
 
 
@@ -243,8 +213,8 @@ _DELETELINEAGE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=466,
-  serialized_end=492,
+  serialized_start=546,
+  serialized_end=572,
 )
 
 _DELETELINEAGE = _descriptor.Descriptor(
@@ -255,15 +225,22 @@ _DELETELINEAGE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='input', full_name='ai.verta.modeldb.DeleteLineage.input', index=0,
-      number=1, type=11, cpp_type=10, label=3,
+      name='id', full_name='ai.verta.modeldb.DeleteLineage.id', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='input', full_name='ai.verta.modeldb.DeleteLineage.input', index=1,
+      number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='output', full_name='ai.verta.modeldb.DeleteLineage.output', index=1,
-      number=2, type=11, cpp_type=10, label=3,
+      name='output', full_name='ai.verta.modeldb.DeleteLineage.output', index=2,
+      number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -280,8 +257,118 @@ _DELETELINEAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=495,
-  serialized_end=633,
+  serialized_start=422,
+  serialized_end=572,
+)
+
+
+_LINEAGEENTRYBATCHREQUEST = _descriptor.Descriptor(
+  name='LineageEntryBatchRequest',
+  full_name='ai.verta.modeldb.LineageEntryBatchRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.modeldb.LineageEntryBatchRequest.id', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='entry', full_name='ai.verta.modeldb.LineageEntryBatchRequest.entry', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='identifier', full_name='ai.verta.modeldb.LineageEntryBatchRequest.identifier',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=574,
+  serialized_end=677,
+)
+
+
+_LINEAGEENTRYBATCHRESPONSESINGLE = _descriptor.Descriptor(
+  name='LineageEntryBatchResponseSingle',
+  full_name='ai.verta.modeldb.LineageEntryBatchResponseSingle',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.modeldb.LineageEntryBatchResponseSingle.id', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='items', full_name='ai.verta.modeldb.LineageEntryBatchResponseSingle.items', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=679,
+  serialized_end=771,
+)
+
+
+_LINEAGEENTRYBATCHRESPONSE = _descriptor.Descriptor(
+  name='LineageEntryBatchResponse',
+  full_name='ai.verta.modeldb.LineageEntryBatchResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='items', full_name='ai.verta.modeldb.LineageEntryBatchResponse.items', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=773,
+  serialized_end=866,
 )
 
 
@@ -311,8 +398,8 @@ _FINDALLINPUTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=699,
-  serialized_end=762,
+  serialized_start=945,
+  serialized_end=1016,
 )
 
 _FINDALLINPUTS = _descriptor.Descriptor(
@@ -341,8 +428,8 @@ _FINDALLINPUTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=635,
-  serialized_end=762,
+  serialized_start=869,
+  serialized_end=1016,
 )
 
 
@@ -372,8 +459,8 @@ _FINDALLOUTPUTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=830,
-  serialized_end=894,
+  serialized_start=1096,
+  serialized_end=1168,
 )
 
 _FINDALLOUTPUTS = _descriptor.Descriptor(
@@ -402,8 +489,8 @@ _FINDALLOUTPUTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=765,
-  serialized_end=894,
+  serialized_start=1019,
+  serialized_end=1168,
 )
 
 
@@ -440,8 +527,8 @@ _FINDALLINPUTSOUTPUTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=968,
-  serialized_end=1085,
+  serialized_start=1255,
+  serialized_end=1388,
 )
 
 _FINDALLINPUTSOUTPUTS = _descriptor.Descriptor(
@@ -470,48 +557,60 @@ _FINDALLINPUTSOUTPUTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=897,
-  serialized_end=1085,
+  serialized_start=1171,
+  serialized_end=1388,
 )
 
-_LINEAGEENTRYENUM_LINEAGEENTRYTYPE.containing_type = _LINEAGEENTRYENUM
-_LINEAGEENTRY.fields_by_name['type'].enum_type = _LINEAGEENTRYENUM_LINEAGEENTRYTYPE
+_LINEAGEENTRY.fields_by_name['blob'].message_type = _VERSIONINGLINEAGEENTRY
 _LINEAGEENTRY.oneofs_by_name['description'].fields.append(
-  _LINEAGEENTRY.fields_by_name['external_id'])
-_LINEAGEENTRY.fields_by_name['external_id'].containing_oneof = _LINEAGEENTRY.oneofs_by_name['description']
-_LINEAGEENTRYBATCH.fields_by_name['items'].message_type = _LINEAGEENTRY
+  _LINEAGEENTRY.fields_by_name['experiment_run'])
+_LINEAGEENTRY.fields_by_name['experiment_run'].containing_oneof = _LINEAGEENTRY.oneofs_by_name['description']
+_LINEAGEENTRY.oneofs_by_name['description'].fields.append(
+  _LINEAGEENTRY.fields_by_name['blob'])
+_LINEAGEENTRY.fields_by_name['blob'].containing_oneof = _LINEAGEENTRY.oneofs_by_name['description']
 _ADDLINEAGE_RESPONSE.containing_type = _ADDLINEAGE
 _ADDLINEAGE.fields_by_name['input'].message_type = _LINEAGEENTRY
 _ADDLINEAGE.fields_by_name['output'].message_type = _LINEAGEENTRY
 _DELETELINEAGE_RESPONSE.containing_type = _DELETELINEAGE
 _DELETELINEAGE.fields_by_name['input'].message_type = _LINEAGEENTRY
 _DELETELINEAGE.fields_by_name['output'].message_type = _LINEAGEENTRY
-_FINDALLINPUTS_RESPONSE.fields_by_name['inputs'].message_type = _LINEAGEENTRYBATCH
+_LINEAGEENTRYBATCHREQUEST.fields_by_name['entry'].message_type = _LINEAGEENTRY
+_LINEAGEENTRYBATCHREQUEST.oneofs_by_name['identifier'].fields.append(
+  _LINEAGEENTRYBATCHREQUEST.fields_by_name['id'])
+_LINEAGEENTRYBATCHREQUEST.fields_by_name['id'].containing_oneof = _LINEAGEENTRYBATCHREQUEST.oneofs_by_name['identifier']
+_LINEAGEENTRYBATCHREQUEST.oneofs_by_name['identifier'].fields.append(
+  _LINEAGEENTRYBATCHREQUEST.fields_by_name['entry'])
+_LINEAGEENTRYBATCHREQUEST.fields_by_name['entry'].containing_oneof = _LINEAGEENTRYBATCHREQUEST.oneofs_by_name['identifier']
+_LINEAGEENTRYBATCHRESPONSESINGLE.fields_by_name['items'].message_type = _LINEAGEENTRY
+_LINEAGEENTRYBATCHRESPONSE.fields_by_name['items'].message_type = _LINEAGEENTRYBATCHRESPONSESINGLE
+_FINDALLINPUTS_RESPONSE.fields_by_name['inputs'].message_type = _LINEAGEENTRYBATCHRESPONSE
 _FINDALLINPUTS_RESPONSE.containing_type = _FINDALLINPUTS
-_FINDALLINPUTS.fields_by_name['items'].message_type = _LINEAGEENTRY
-_FINDALLOUTPUTS_RESPONSE.fields_by_name['outputs'].message_type = _LINEAGEENTRYBATCH
+_FINDALLINPUTS.fields_by_name['items'].message_type = _LINEAGEENTRYBATCHREQUEST
+_FINDALLOUTPUTS_RESPONSE.fields_by_name['outputs'].message_type = _LINEAGEENTRYBATCHRESPONSE
 _FINDALLOUTPUTS_RESPONSE.containing_type = _FINDALLOUTPUTS
-_FINDALLOUTPUTS.fields_by_name['items'].message_type = _LINEAGEENTRY
-_FINDALLINPUTSOUTPUTS_RESPONSE.fields_by_name['inputs'].message_type = _LINEAGEENTRYBATCH
-_FINDALLINPUTSOUTPUTS_RESPONSE.fields_by_name['outputs'].message_type = _LINEAGEENTRYBATCH
+_FINDALLOUTPUTS.fields_by_name['items'].message_type = _LINEAGEENTRYBATCHREQUEST
+_FINDALLINPUTSOUTPUTS_RESPONSE.fields_by_name['inputs'].message_type = _LINEAGEENTRYBATCHRESPONSE
+_FINDALLINPUTSOUTPUTS_RESPONSE.fields_by_name['outputs'].message_type = _LINEAGEENTRYBATCHRESPONSE
 _FINDALLINPUTSOUTPUTS_RESPONSE.containing_type = _FINDALLINPUTSOUTPUTS
-_FINDALLINPUTSOUTPUTS.fields_by_name['items'].message_type = _LINEAGEENTRY
-DESCRIPTOR.message_types_by_name['LineageEntryEnum'] = _LINEAGEENTRYENUM
+_FINDALLINPUTSOUTPUTS.fields_by_name['items'].message_type = _LINEAGEENTRYBATCHREQUEST
+DESCRIPTOR.message_types_by_name['VersioningLineageEntry'] = _VERSIONINGLINEAGEENTRY
 DESCRIPTOR.message_types_by_name['LineageEntry'] = _LINEAGEENTRY
-DESCRIPTOR.message_types_by_name['LineageEntryBatch'] = _LINEAGEENTRYBATCH
 DESCRIPTOR.message_types_by_name['AddLineage'] = _ADDLINEAGE
 DESCRIPTOR.message_types_by_name['DeleteLineage'] = _DELETELINEAGE
+DESCRIPTOR.message_types_by_name['LineageEntryBatchRequest'] = _LINEAGEENTRYBATCHREQUEST
+DESCRIPTOR.message_types_by_name['LineageEntryBatchResponseSingle'] = _LINEAGEENTRYBATCHRESPONSESINGLE
+DESCRIPTOR.message_types_by_name['LineageEntryBatchResponse'] = _LINEAGEENTRYBATCHRESPONSE
 DESCRIPTOR.message_types_by_name['FindAllInputs'] = _FINDALLINPUTS
 DESCRIPTOR.message_types_by_name['FindAllOutputs'] = _FINDALLOUTPUTS
 DESCRIPTOR.message_types_by_name['FindAllInputsOutputs'] = _FINDALLINPUTSOUTPUTS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-LineageEntryEnum = _reflection.GeneratedProtocolMessageType('LineageEntryEnum', (_message.Message,), {
-  'DESCRIPTOR' : _LINEAGEENTRYENUM,
+VersioningLineageEntry = _reflection.GeneratedProtocolMessageType('VersioningLineageEntry', (_message.Message,), {
+  'DESCRIPTOR' : _VERSIONINGLINEAGEENTRY,
   '__module__' : 'modeldb.Lineage_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.LineageEntryEnum)
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.VersioningLineageEntry)
   })
-_sym_db.RegisterMessage(LineageEntryEnum)
+_sym_db.RegisterMessage(VersioningLineageEntry)
 
 LineageEntry = _reflection.GeneratedProtocolMessageType('LineageEntry', (_message.Message,), {
   'DESCRIPTOR' : _LINEAGEENTRY,
@@ -519,13 +618,6 @@ LineageEntry = _reflection.GeneratedProtocolMessageType('LineageEntry', (_messag
   # @@protoc_insertion_point(class_scope:ai.verta.modeldb.LineageEntry)
   })
 _sym_db.RegisterMessage(LineageEntry)
-
-LineageEntryBatch = _reflection.GeneratedProtocolMessageType('LineageEntryBatch', (_message.Message,), {
-  'DESCRIPTOR' : _LINEAGEENTRYBATCH,
-  '__module__' : 'modeldb.Lineage_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.LineageEntryBatch)
-  })
-_sym_db.RegisterMessage(LineageEntryBatch)
 
 AddLineage = _reflection.GeneratedProtocolMessageType('AddLineage', (_message.Message,), {
 
@@ -556,6 +648,27 @@ DeleteLineage = _reflection.GeneratedProtocolMessageType('DeleteLineage', (_mess
   })
 _sym_db.RegisterMessage(DeleteLineage)
 _sym_db.RegisterMessage(DeleteLineage.Response)
+
+LineageEntryBatchRequest = _reflection.GeneratedProtocolMessageType('LineageEntryBatchRequest', (_message.Message,), {
+  'DESCRIPTOR' : _LINEAGEENTRYBATCHREQUEST,
+  '__module__' : 'modeldb.Lineage_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.LineageEntryBatchRequest)
+  })
+_sym_db.RegisterMessage(LineageEntryBatchRequest)
+
+LineageEntryBatchResponseSingle = _reflection.GeneratedProtocolMessageType('LineageEntryBatchResponseSingle', (_message.Message,), {
+  'DESCRIPTOR' : _LINEAGEENTRYBATCHRESPONSESINGLE,
+  '__module__' : 'modeldb.Lineage_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.LineageEntryBatchResponseSingle)
+  })
+_sym_db.RegisterMessage(LineageEntryBatchResponseSingle)
+
+LineageEntryBatchResponse = _reflection.GeneratedProtocolMessageType('LineageEntryBatchResponse', (_message.Message,), {
+  'DESCRIPTOR' : _LINEAGEENTRYBATCHRESPONSE,
+  '__module__' : 'modeldb.Lineage_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.LineageEntryBatchResponse)
+  })
+_sym_db.RegisterMessage(LineageEntryBatchResponse)
 
 FindAllInputs = _reflection.GeneratedProtocolMessageType('FindAllInputs', (_message.Message,), {
 
@@ -611,8 +724,8 @@ _LINEAGESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1088,
-  serialized_end=1778,
+  serialized_start=1391,
+  serialized_end=2081,
   methods=[
   _descriptor.MethodDescriptor(
     name='addLineage',

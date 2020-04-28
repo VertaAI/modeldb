@@ -5,7 +5,6 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.model.LineageEntryEnumLineageEntryType._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbDeleteLineageResponse (
