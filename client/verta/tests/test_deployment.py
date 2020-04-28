@@ -595,7 +595,8 @@ class TestHistogram:
             histogram_data = histogram['histogram'][histogram_type]
 
             # all data points counted
-            assert sum(histogram_data['count']) == len(series)
+            counts = histogram_data['count']
+            assert sum(counts) == len(series)
 
             if histogram_type == "binary":
                 num_false = sum(~series)
@@ -604,7 +605,6 @@ class TestHistogram:
                 assert histogram_data['count'] == [num_false, num_true]
             elif histogram_type == "discrete":
                 buckets = histogram_data['bucket_values']
-                counts = histogram_data['count']
 
                 # buckets in ascending order
                 assert buckets == list(sorted(buckets))
@@ -617,21 +617,20 @@ class TestHistogram:
                 for value, count in zip(buckets, counts):
                     assert sum(series == value) == count
             elif histogram_type == "float":
-                buckets = histogram_data['bucket_limits']
-                counts = histogram_data['count']
+                limits = histogram_data['bucket_limits']
 
-                # buckets in ascending order
-                assert buckets == list(sorted(buckets))
+                # limits in ascending order
+                assert limits == list(sorted(limits))
 
-                # data within buckets
-                assert all(buckets[0] <= series)
-                assert all(series <= buckets[-1])
+                # data within limits
+                assert all(limits[0] <= series)
+                assert all(series <= limits[-1])
 
                 # counts correct
-                bin_windows = list(zip(buckets[:-1], buckets[1:]))
+                bin_windows = list(zip(limits[:-1], limits[1:]))
                 for i, (l, r) in enumerate(bin_windows[:-1]):
                     assert sum((l <= series) & (series < r)) == counts[i]
-                assert sum(buckets[-2] <= series) == counts[-1]
+                assert sum(limits[-2] <= series) == counts[-1]
 
     def test_binary(self):
         np = pytest.importorskip("numpy")
