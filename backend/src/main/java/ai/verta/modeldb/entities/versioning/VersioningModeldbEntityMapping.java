@@ -5,6 +5,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -103,5 +104,33 @@ public class VersioningModeldbEntityMapping implements Serializable {
 
   public String getBlob_hash() {
     return blob_hash;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    VersioningModeldbEntityMapping that = (VersioningModeldbEntityMapping) o;
+    return repository_id.equals(that.repository_id)
+        && commit.equals(that.commit)
+        && versioning_key.equals(that.versioning_key)
+        && versioning_location.equals(that.versioning_location)
+        && versioning_blob_type.equals(that.versioning_blob_type)
+        && experimentRunEntity.equals(that.experimentRunEntity)
+        && entity_type.equals(that.entity_type)
+        && blob_hash.equals(that.blob_hash);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        repository_id,
+        commit,
+        versioning_key,
+        versioning_location,
+        versioning_blob_type,
+        experimentRunEntity,
+        entity_type,
+        blob_hash);
   }
 }

@@ -40,6 +40,7 @@ import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -67,6 +68,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -1823,16 +1825,45 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       VersioningEntry versioningEntry = request.getVersionedInputs();
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           validateVersioningEntity(session, versioningEntry);
       ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
-      runEntity.setVersioned_inputs(
+      List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings =
           RdbmsUtils.getVersioningMappingFromVersioningInput(
-              versioningEntry, locationBlobWithHashMap, runEntity));
+              versioningEntry, locationBlobWithHashMap, runEntity);
+
+      List<VersioningModeldbEntityMapping> existingMappings = runEntity.getVersioned_inputs();
+      if (existingMappings.isEmpty()) {
+        existingMappings.addAll(versioningModeldbEntityMappings);
+      } else {
+        List<VersioningModeldbEntityMapping> finalVersionList = new ArrayList<>();
+        for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
+            versioningModeldbEntityMappings) {
+          boolean addNew = true;
+          for (VersioningModeldbEntityMapping existsVerMapping : existingMappings) {
+            if (versioningModeldbEntityMapping.equals(existsVerMapping)) {
+              addNew = false;
+              break;
+            }
+          }
+          if (addNew) {
+            finalVersionList.add(versioningModeldbEntityMapping);
+          }
+        }
+
+        if (finalVersionList.isEmpty()) {
+          return LogVersionedInput.Response.newBuilder()
+              .setExperimentRun(runEntity.getProtoObject())
+              .build();
+        }
+        existingMappings.addAll(finalVersionList);
+      }
+      runEntity.setVersioned_inputs(existingMappings);
+
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       session.saveOrUpdate(runEntity);
