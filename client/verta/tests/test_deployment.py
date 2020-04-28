@@ -676,7 +676,7 @@ class TestHistogram:
     def test_binary(self):
         np = pytest.importorskip("numpy")
         pd = pytest.importorskip("pandas")
-        num_rows = 30
+        num_rows = 90
 
         df = pd.concat(
             objs=[
@@ -688,29 +688,39 @@ class TestHistogram:
         )
         histograms = _histogram_utils.calculate_histograms(df)
 
+        assert all(
+            histogram['type'] == "binary"
+            for histogram
+            in histograms['features'].values()
+        )
         self.assert_histograms_match_dataframe(histograms, df)
 
     def test_discrete(self):
         np = pytest.importorskip("numpy")
         pd = pytest.importorskip("pandas")
-        num_rows = 30
+        num_rows = 90
 
         df = pd.concat(
             objs=[
-                pd.Series(np.random.randint(0, 12, size=num_rows), name="A"),
+                pd.Series(np.random.randint(6, 12, size=num_rows), name="A"),
                 pd.Series(np.random.randint(-12, -6, size=num_rows), name="B"),
-                pd.Series(np.random.randint(-30, 24, size=num_rows), name="C"),
+                pd.Series(np.random.randint(-3, 3, size=num_rows), name="C"),
             ],
             axis='columns',
         )
         histograms = _histogram_utils.calculate_histograms(df)
 
+        assert all(
+            histogram['type'] == "discrete"
+            for histogram
+            in histograms['features'].values()
+        )
         self.assert_histograms_match_dataframe(histograms, df)
 
     def test_float(self):
         np = pytest.importorskip("numpy")
         pd = pytest.importorskip("pandas")
-        num_rows = 30
+        num_rows = 90
 
         df = pd.concat(
             objs=[
@@ -722,6 +732,11 @@ class TestHistogram:
         )
         histograms = _histogram_utils.calculate_histograms(df)
 
+        assert all(
+            histogram['type'] == "float"
+            for histogram
+            in histograms['features'].values()
+        )
         self.assert_histograms_match_dataframe(histograms, df)
 
 
