@@ -584,6 +584,8 @@ class TestHistogram:
     @staticmethod
     def assert_histograms_match_dataframe(histograms, df):
         """Common assertions for this test suite."""
+        np = pytest.importorskip("numpy")
+
         # features match
         assert set(histograms['features'].keys()) == set(df.columns)
         # all rows counted
@@ -613,6 +615,10 @@ class TestHistogram:
                 assert all(buckets[0] <= series)
                 assert all(series <= buckets[-1])
 
+                # appropriate leftmost and rightmost buckets
+                assert buckets[0] == series.min()
+                assert buckets[-1] == series.max()
+
                 # counts correct
                 for value, count in zip(buckets, counts):
                     assert sum(series == value) == count
@@ -625,6 +631,10 @@ class TestHistogram:
                 # data within limits
                 assert all(limits[0] <= series)
                 assert all(series <= limits[-1])
+
+                # appropriate leftmost and rightmost limits
+                assert np.isclose(limits[0], series.min())
+                assert np.isclose(limits[-1], series.max())
 
                 # counts correct
                 bin_windows = list(zip(limits[:-1], limits[1:]))
