@@ -222,7 +222,7 @@ public class CommitTest {
     List<HyperparameterConfigBlob> hyperparameterConfigBlobs = new ArrayList<>();
     hyperparameterConfigBlobs.add(
         HyperparameterConfigBlob.newBuilder()
-            .setName("train-blob")
+            .setName("train")
             .setValue(HyperparameterValuesConfigBlob.newBuilder().setFloatValue(0.14F).build())
             .build());
     hyperparameterConfigBlobs.add(

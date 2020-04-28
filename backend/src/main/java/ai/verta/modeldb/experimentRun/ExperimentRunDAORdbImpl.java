@@ -321,8 +321,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
             validateVersioningEntity(session, experimentRun.getVersionedInputs());
-        List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = RdbmsUtils.getVersioningMappingFromVersioningInput(
-                experimentRun.getVersionedInputs(), locationBlobWithHashMap, experimentRunObj);
+        List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings =
+            RdbmsUtils.getVersioningMappingFromVersioningInput(
+                session,
+                experimentRun.getVersionedInputs(),
+                locationBlobWithHashMap,
+                experimentRunObj);
         experimentRunObj.setVersioned_inputs(versioningModeldbEntityMappings);
       }
       session.saveOrUpdate(experimentRunObj);
@@ -1833,7 +1837,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
       runEntity.setVersioned_inputs(
           RdbmsUtils.getVersioningMappingFromVersioningInput(
-              versioningEntry, locationBlobWithHashMap, runEntity));
+              session, versioningEntry, locationBlobWithHashMap, runEntity));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       session.saveOrUpdate(runEntity);

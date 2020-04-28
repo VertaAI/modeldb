@@ -65,6 +65,7 @@ import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -980,11 +981,11 @@ public class RdbmsUtils {
    * @return {@link Order} : return hibernate order base on the parameters
    */
   public static Order[] getOrderArrBasedOnSortKey(
-          String sortBy,
-          Boolean isAscending,
-          CriteriaBuilder builder,
-          Root<?> root,
-          String parentFieldName) {
+      String sortBy,
+      Boolean isAscending,
+      CriteriaBuilder builder,
+      Root<?> root,
+      String parentFieldName) {
     if (sortBy == null || sortBy.isEmpty()) {
       sortBy = ModelDBConstants.DATE_UPDATED;
     }
@@ -996,129 +997,131 @@ public class RdbmsUtils {
       case ModelDBConstants.ARTIFACTS:
         LOGGER.debug("switch case : Artifacts");
         Join<ExperimentRunEntity, ArtifactEntity> artifactEntityJoin =
-                root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
+            root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         artifactEntityJoin.alias(parentFieldName + "_art");
         artifactEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                artifactEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID)),
-                        builder.equal(
-                                artifactEntityJoin.get(ModelDBConstants.FEILD_TYPE),
-                                ModelDBConstants.ARTIFACTS),
-                        builder.equal(
-                                artifactEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
+            builder.and(
+                builder.equal(
+                    artifactEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                    root.get(ModelDBConstants.ID)),
+                builder.equal(
+                    artifactEntityJoin.get(ModelDBConstants.FEILD_TYPE),
+                    ModelDBConstants.ARTIFACTS),
+                builder.equal(
+                    artifactEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
         orderByExpressionList.add(artifactEntityJoin.get(ModelDBConstants.PATH));
         break;
       case ModelDBConstants.DATASETS:
         LOGGER.debug("switch case : Datasets");
         Join<ExperimentRunEntity, ArtifactEntity> datasetEntityJoin =
-                root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
+            root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         datasetEntityJoin.alias(parentFieldName + "_dts");
         datasetEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                datasetEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID)),
-                        builder.equal(
-                                datasetEntityJoin.get(ModelDBConstants.FEILD_TYPE), ModelDBConstants.DATASETS),
-                        builder.equal(datasetEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
+            builder.and(
+                builder.equal(
+                    datasetEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                    root.get(ModelDBConstants.ID)),
+                builder.equal(
+                    datasetEntityJoin.get(ModelDBConstants.FEILD_TYPE), ModelDBConstants.DATASETS),
+                builder.equal(datasetEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
         orderByExpressionList.add(datasetEntityJoin.get(ModelDBConstants.PATH));
         break;
       case ModelDBConstants.ATTRIBUTES:
         LOGGER.debug("switch case : Attributes");
         Join<ExperimentRunEntity, AttributeEntity> attributeEntityJoin =
-                root.join(ModelDBConstants.ATTRIBUTE_MAPPING, JoinType.LEFT);
+            root.join(ModelDBConstants.ATTRIBUTE_MAPPING, JoinType.LEFT);
         attributeEntityJoin.alias(parentFieldName + "_attr");
         attributeEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                attributeEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID)),
-                        builder.equal(
-                                attributeEntityJoin.get(ModelDBConstants.FEILD_TYPE),
-                                ModelDBConstants.ATTRIBUTES),
-                        builder.equal(
-                                attributeEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
+            builder.and(
+                builder.equal(
+                    attributeEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                    root.get(ModelDBConstants.ID)),
+                builder.equal(
+                    attributeEntityJoin.get(ModelDBConstants.FEILD_TYPE),
+                    ModelDBConstants.ATTRIBUTES),
+                builder.equal(
+                    attributeEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
         orderByExpressionList.add(attributeEntityJoin.get(ModelDBConstants.VALUE));
         break;
       case ModelDBConstants.HYPERPARAMETERS:
         LOGGER.debug("switch case : Hyperparameters");
         Join<ExperimentRunEntity, KeyValueEntity> hyperparameterEntityJoin =
-                root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
+            root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         hyperparameterEntityJoin.alias(parentFieldName + "_hypr");
         hyperparameterEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                hyperparameterEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID)),
-                        builder.equal(
-                                hyperparameterEntityJoin.get(ModelDBConstants.FEILD_TYPE),
-                                ModelDBConstants.HYPERPARAMETERS),
-                        builder.equal(
-                                hyperparameterEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
+            builder.and(
+                builder.equal(
+                    hyperparameterEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                    root.get(ModelDBConstants.ID)),
+                builder.equal(
+                    hyperparameterEntityJoin.get(ModelDBConstants.FEILD_TYPE),
+                    ModelDBConstants.HYPERPARAMETERS),
+                builder.equal(
+                    hyperparameterEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
         orderByExpressionList.add(hyperparameterEntityJoin.get(ModelDBConstants.VALUE));
 
+        if (parentFieldName.equals("experimentRunEntity")) {
+          Join<ExperimentRunEntity, VersioningModeldbEntityMapping> versionedInputEntityJoin =
+              root.join(ModelDBConstants.VERSIONED_INPUTS, JoinType.LEFT);
+          versionedInputEntityJoin.alias(parentFieldName + "_versionedInput");
+          versionedInputEntityJoin.on(
+              builder.equal(
+                  versionedInputEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                  root.get(ModelDBConstants.ID)));
 
+          Join<VersioningModeldbEntityMapping, ConfigBlobEntity> configBlobEntityJoinJoin =
+              versionedInputEntityJoin.join("configBlobEntities", JoinType.INNER);
+          configBlobEntityJoinJoin.alias(parentFieldName + "_versionedInput_config");
 
+          configBlobEntityJoinJoin.on(
+              builder.equal(
+                  configBlobEntityJoinJoin.get("hyperparameter_type"),
+                  ConfigBlobEntity.HYPERPARAMETER));
+          //              builder.and(
+          //                  builder.equal(
+          //                          versionedInputEntityJoin.get("blob_hash"),
+          //                          configBlobEntityJoinJoin.get("blob_hash")),
+          //                  builder.equal(
+          //                      configBlobEntityJoinJoin.get("hyperparameter_type"),
+          //                      ConfigBlobEntity.HYPERPARAMETER)));
+          Join<ConfigBlobEntity, HyperparameterElementConfigBlobEntity> configBlobEntityJoin =
+              configBlobEntityJoinJoin.join(
+                  "hyperparameterElementConfigBlobEntity", JoinType.INNER);
+          configBlobEntityJoin.alias(parentFieldName + "_versionedInput_hyper_config");
+          configBlobEntityJoin.on(
+              builder.equal(
+                  configBlobEntityJoin.get(ModelDBConstants.NAME), keys[keys.length - 1]));
+          //              builder.and(
+          //                  builder.equal(
+          //
+          // configBlobEntityJoinJoin.get("hyperparameterSetConfigBlobEntity").get("blob_hash"),
+          //                          configBlobEntityJoin.get("blob_hash")),
+          //                  builder.equal(
+          //                      configBlobEntityJoin.get(ModelDBConstants.NAME), keys[keys.length
+          // - 1])));
 
-
-        Join<ExperimentRunEntity, VersioningModeldbEntityMapping> versionedInputEntityJoin =
-                root.join(ModelDBConstants.VERSIONED_INPUTS, JoinType.LEFT);
-        versionedInputEntityJoin.alias(parentFieldName + "_versionedInput");
-        versionedInputEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                versionedInputEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID))));
-
-        Join<VersioningModeldbEntityMapping, ConfigBlobEntity> configBlobEntityJoinJoin =
-                versionedInputEntityJoin.join("blob_hash_2", JoinType.LEFT);
-        configBlobEntityJoinJoin.alias(parentFieldName + "_versionedInput_config");
-
-        configBlobEntityJoinJoin.on(
-                builder.and(
-                        builder.equal(
-                                configBlobEntityJoinJoin.get("blob_hash"),
-                                versionedInputEntityJoin.get("blob_hash")),
-                        builder.equal(
-                                configBlobEntityJoinJoin.get("hyperparameter_type"),
-                                ConfigBlobEntity.HYPERPARAMETER)
-                ));
-        Join<ConfigBlobEntity, HyperparameterElementConfigBlobEntity> configBlobEntityJoin =
-                configBlobEntityJoinJoin.join("hyperparameterElementConfigBlobEntity", JoinType.LEFT);
-        configBlobEntityJoin.alias(parentFieldName + "_versionedInput_hyper_config");
-        configBlobEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                configBlobEntityJoin.get("blob_hash"),
-                                configBlobEntityJoinJoin.get("blob_hash")),
-                        builder.equal(
-                                configBlobEntityJoin.get(ModelDBConstants.NAME),
-                                keys[keys.length - 1])
-                ));
-
-        orderByExpressionList.add(configBlobEntityJoin.get("int_value"));
-        orderByExpressionList.add(configBlobEntityJoin.get("float_value"));
-        orderByExpressionList.add(configBlobEntityJoin.get("string_value"));
+          orderByExpressionList.add(configBlobEntityJoin.get("int_value"));
+          orderByExpressionList.add(configBlobEntityJoin.get("float_value"));
+          orderByExpressionList.add(configBlobEntityJoin.get("string_value"));
+        }
         break;
       case ModelDBConstants.METRICS:
         LOGGER.debug("switch case : Metrics");
         Join<ExperimentRunEntity, KeyValueEntity> metricsEntityJoin =
-                root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
+            root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         metricsEntityJoin.alias(parentFieldName + "_mtr");
         metricsEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                metricsEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID)),
-                        builder.equal(
-                                metricsEntityJoin.get(ModelDBConstants.FEILD_TYPE), ModelDBConstants.METRICS),
-                        builder.equal(metricsEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
+            builder.and(
+                builder.equal(
+                    metricsEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                    root.get(ModelDBConstants.ID)),
+                builder.equal(
+                    metricsEntityJoin.get(ModelDBConstants.FEILD_TYPE), ModelDBConstants.METRICS),
+                builder.equal(metricsEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
         orderByExpressionList.add(metricsEntityJoin.get(ModelDBConstants.VALUE));
         break;
@@ -1127,10 +1130,10 @@ public class RdbmsUtils {
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
           Status status =
-                  Status.newBuilder()
-                          .setCode(Code.UNIMPLEMENTED_VALUE)
-                          .setMessage("Third level of sorting not supported")
-                          .build();
+              Status.newBuilder()
+                  .setCode(Code.UNIMPLEMENTED_VALUE)
+                  .setMessage("Third level of sorting not supported")
+                  .build();
           throw StatusProto.toStatusRuntimeException(status);
           /*TODO: Below code for supporting the third level (ex: experimentRun.attributes.att_1) ordering data but right now Mongo doesn't support the third level ordering so commented below code to maintain the functionality.
           switch (keys[1]) {
@@ -1172,18 +1175,18 @@ public class RdbmsUtils {
           }*/
         } else {
           Join<ExperimentRunEntity, ObservationEntity> observationEntityJoin =
-                  root.join(ModelDBConstants.OBSERVATION_MAPPING, JoinType.LEFT);
+              root.join(ModelDBConstants.OBSERVATION_MAPPING, JoinType.LEFT);
           observationEntityJoin.alias(parentFieldName + "_obser");
           observationEntityJoin.on(
-                  builder.and(
-                          builder.equal(
-                                  observationEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                  root.get(ModelDBConstants.ID)),
-                          builder.equal(
-                                  observationEntityJoin.get(ModelDBConstants.FEILD_TYPE),
-                                  ModelDBConstants.OBSERVATIONS),
-                          builder.equal(
-                                  observationEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
+              builder.and(
+                  builder.equal(
+                      observationEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                      root.get(ModelDBConstants.ID)),
+                  builder.equal(
+                      observationEntityJoin.get(ModelDBConstants.FEILD_TYPE),
+                      ModelDBConstants.OBSERVATIONS),
+                  builder.equal(
+                      observationEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
 
           orderByExpressionList.add(observationEntityJoin.get(keys[1]));
         }
@@ -1191,26 +1194,26 @@ public class RdbmsUtils {
       case ModelDBConstants.FEATURES:
         LOGGER.debug("switch case : Feature");
         Join<ExperimentRunEntity, FeatureEntity> featureEntityJoin =
-                root.join(ModelDBConstants.FEATURES, JoinType.LEFT);
+            root.join(ModelDBConstants.FEATURES, JoinType.LEFT);
         featureEntityJoin.alias(parentFieldName + "_feature");
         featureEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                featureEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID))));
+            builder.and(
+                builder.equal(
+                    featureEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                    root.get(ModelDBConstants.ID))));
 
         orderByExpressionList.add(featureEntityJoin.get(ModelDBConstants.NAME));
         break;
       case ModelDBConstants.TAGS:
         LOGGER.debug("switch case : tags");
         Join<ExperimentRunEntity, TagsMapping> tagsEntityJoin =
-                root.join(ModelDBConstants.TAGS, JoinType.LEFT);
+            root.join(ModelDBConstants.TAGS, JoinType.LEFT);
         tagsEntityJoin.alias(parentFieldName + "_tags");
         tagsEntityJoin.on(
-                builder.and(
-                        builder.equal(
-                                tagsEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                                root.get(ModelDBConstants.ID))));
+            builder.and(
+                builder.equal(
+                    tagsEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
+                    root.get(ModelDBConstants.ID))));
 
         orderByExpressionList.add(tagsEntityJoin.get(ModelDBConstants.TAGS));
         break;
@@ -1220,7 +1223,8 @@ public class RdbmsUtils {
     Order[] orderByArr = new Order[orderByExpressionList.size()];
     for (int index = 0; index < orderByExpressionList.size(); index++) {
       Expression<?> orderByExpression = orderByExpressionList.get(index);
-      orderByArr[index] = isAscending ? builder.asc(orderByExpression) : builder.desc(orderByExpression);
+      orderByArr[index] =
+          isAscending ? builder.asc(orderByExpression) : builder.desc(orderByExpression);
     }
 
     return orderByArr;
@@ -1749,6 +1753,7 @@ public class RdbmsUtils {
   }
 
   public static List<VersioningModeldbEntityMapping> getVersioningMappingFromVersioningInput(
+      Session session,
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
       Object entity)
@@ -1773,7 +1778,8 @@ public class RdbmsUtils {
 
         Blob blob = blobExpandedWithHashMap.getKey().getBlob();
 
-        VersioningModeldbEntityMapping vmem = new VersioningModeldbEntityMapping(
+        VersioningModeldbEntityMapping vmem =
+            new VersioningModeldbEntityMapping(
                 versioningEntry.getRepositoryId(),
                 versioningEntry.getCommit(),
                 locationEntry.getKey(),
@@ -1782,7 +1788,14 @@ public class RdbmsUtils {
                 blobExpandedWithHashMap.getValue(),
                 entity);
         if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
-          vmem.setConfigBlobEntity(blobExpandedWithHashMap.getValue());
+          Query query =
+              session.createQuery(
+                  "FROM "
+                      + ConfigBlobEntity.class.getSimpleName()
+                      + " cb WHERE cb.blob_hash = :blobHash");
+          query.setParameter("blobHash", blobExpandedWithHashMap.getValue());
+          List<ConfigBlobEntity> configBlobEntities = query.list();
+          vmem.setConfigBlobEntities(new HashSet<>(configBlobEntities));
         }
         versioningModeldbEntityMappings.add(vmem);
       }

@@ -1,20 +1,16 @@
 package ai.verta.modeldb.entities.config;
 
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.entities.versioning.BranchEntity;
-import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import io.grpc.Status;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -46,13 +42,6 @@ public class ConfigBlobEntity implements Serializable {
   @Id
   @Column(name = "blob_hash", columnDefinition = "varchar", length = 64, nullable = false)
   private String blob_hash;
-
-  @Column(name = "blob_hash_2", columnDefinition = "varchar", length = 64, nullable = false)
-  private String blob_hash_2;
-
-  /*@OneToOne(cascade = CascadeType.ALL, targetEntity = VersioningModeldbEntityMapping.class)
-  @JoinColumn(name = "blob_hash_2", referencedColumnName = "blob_hash")
-  private VersioningModeldbEntityMapping config_blob_hash;*/
 
   @Id
   @Column(name = "config_seq_number")
@@ -124,7 +113,7 @@ public class ConfigBlobEntity implements Serializable {
       if (!(o instanceof ConfigBlobEntity.ConfigBlobId)) return false;
       ConfigBlobEntity.ConfigBlobId that = (ConfigBlobEntity.ConfigBlobId) o;
       return Objects.equals(getBlob_hash(), that.getBlob_hash())
-              && Objects.equals(getConfig_seq_number(), that.getConfig_seq_number());
+          && Objects.equals(getConfig_seq_number(), that.getConfig_seq_number());
     }
 
     @Override

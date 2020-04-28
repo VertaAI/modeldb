@@ -6,15 +6,16 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -88,9 +89,8 @@ public class VersioningModeldbEntityMapping implements Serializable {
   @Column(name = "blob_hash")
   private String blob_hash;
 
-  @OneToOne(cascade = CascadeType.ALL, targetEntity = ConfigBlobEntity.class)
-  @JoinColumn(name = "config_blob_hash", referencedColumnName = "blob_hash_2")
-  private ConfigBlobEntity configBlobEntity;
+  @ManyToMany(targetEntity = ConfigBlobEntity.class, cascade = CascadeType.PERSIST)
+  private Set<ConfigBlobEntity> configBlobEntities = new HashSet<>();
 
   public Long getRepository_id() {
     return repository_id;
@@ -120,7 +120,7 @@ public class VersioningModeldbEntityMapping implements Serializable {
     this.config_blob_hash = config_blob_hash;
   }*/
 
-  public void setConfigBlobEntity(ConfigBlobEntity configBlobEntity) {
-    this.configBlobEntity = configBlobEntity;
+  public void setConfigBlobEntities(Set<ConfigBlobEntity> configBlobEntities) {
+    this.configBlobEntities = configBlobEntities;
   }
 }
