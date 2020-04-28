@@ -868,7 +868,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         projectIds.addAll(workspaceProjectIDs);
       }
 
-      if (projectIds.isEmpty()) {
+      if (accessibleExperimentIds.isEmpty() && projectIds.isEmpty()) {
         String errorMessage =
                 "Access is denied. Accessible projects not found for given Experiment IDs : "
                         + accessibleExperimentIds;
