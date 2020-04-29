@@ -26,8 +26,10 @@ import ai.verta.modeldb.QueryDatasetVersionInfo;
 import ai.verta.modeldb.QueryParameter;
 import ai.verta.modeldb.RawDatasetVersionInfo;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -1093,7 +1095,8 @@ public class RdbmsUtils {
       List<KeyValueQuery> predicates,
       CriteriaBuilder builder,
       CriteriaQuery<?> criteriaQuery,
-      Root<?> entityRootPath)
+      Root<?> entityRootPath,
+      AuthService authService)
       throws InvalidProtocolBufferException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
@@ -1385,16 +1388,58 @@ public class RdbmsUtils {
             break;
           default:
             predicate = predicate.toBuilder().setOperator(operator).build();
-            expression = entityRootPath.get(predicate.getKey());
-            Predicate queryPredicate =
-                RdbmsUtils.getValuePredicate(builder, predicate.getKey(), expression, predicate);
-            keyValuePredicates[index] = queryPredicate;
-            criteriaQuery.multiselect(entityRootPath, expression);
+            if (predicate.getKey().equalsIgnoreCase("owner")
+                && (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
+              Predicate fuzzySearchPredicate =
+                  getFuzzyUsersQueryPredicate(authService, builder, entityRootPath, predicate);
+              if (fuzzySearchPredicate != null) {
+                keyValuePredicates[index] = fuzzySearchPredicate;
+              }
+            } else {
+              expression = entityRootPath.get(predicate.getKey());
+              Predicate queryPredicate =
+                  RdbmsUtils.getValuePredicate(builder, predicate.getKey(), expression, predicate);
+              keyValuePredicates[index] = queryPredicate;
+              criteriaQuery.multiselect(entityRootPath, expression);
+            }
         }
       }
       finalPredicatesList.add(builder.and(keyValuePredicates));
     }
     return finalPredicatesList;
+  }
+
+  private static Predicate getFuzzyUsersQueryPredicate(
+      AuthService authService,
+      CriteriaBuilder builder,
+      Root<?> entityRootPath,
+      KeyValueQuery requestedPredicate) {
+    if (requestedPredicate.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
+      Operator operator = requestedPredicate.getOperator();
+      UserInfoPaginationDTO userInfoPaginationDTO =
+          authService.getFuzzyUserInfoList(requestedPredicate.getValue().getStringValue());
+      List<UserInfo> userInfoList = userInfoPaginationDTO.getUserInfoList();
+      if (userInfoList != null && !userInfoList.isEmpty()) {
+        Expression<String> exp = entityRootPath.get(requestedPredicate.getKey());
+        List<String> vertaIds =
+            userInfoList.stream()
+                .map(authService::getVertaIdFromUserInfo)
+                .collect(Collectors.toList());
+        if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
+          return builder.not(exp.in(vertaIds));
+        } else {
+          return exp.in(vertaIds);
+        }
+      }
+    } else {
+      Status invalidValueTypeError =
+          Status.newBuilder()
+              .setCode(Code.INVALID_ARGUMENT_VALUE)
+              .setMessage("Predicate for the owner search only supporting 'String' value")
+              .build();
+      throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+    }
+    return null;
   }
 
   private static Predicate getVersionedInputHyperparameterPredicate(

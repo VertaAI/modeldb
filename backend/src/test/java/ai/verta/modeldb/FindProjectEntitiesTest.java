@@ -13,9 +13,13 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.GetUser;
+import ai.verta.uac.UACServiceGrpc;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -45,6 +49,7 @@ public class FindProjectEntitiesTest {
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder client1ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
+  private static AuthClientInterceptor authClientInterceptor;
   private static App app;
 
   // Project Entities
@@ -72,6 +77,7 @@ public class FindProjectEntitiesTest {
   private static ProjectServiceBlockingStub projectServiceStub;
   private static ExperimentServiceBlockingStub experimentServiceStub;
   private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
+  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -104,8 +110,17 @@ public class FindProjectEntitiesTest {
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
+      authClientInterceptor = new AuthClientInterceptor(testPropMap);
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
+    }
+
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      ManagedChannel authServiceChannel =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
     }
 
     serverBuilder.build().start();
@@ -2564,5 +2579,61 @@ public class FindProjectEntitiesTest {
         response.getTotalRecords());
 
     LOGGER.info("FindExperiments by workspace test stop................................");
+  }
+
+  @Test
+  public void findProjectsByFuzzyOwnerTest() {
+    LOGGER.info("FindProjects by owner fuzzy search test start................................");
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
+    GetUser getUserRequest =
+        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+    String testUser1UserName = testUser1.getVertaInfo().getUsername();
+
+    // get project with value of attributes.attribute_1 <= 0.6543210
+    Value stringValue =
+        Value.newBuilder().setStringValue(testUser1UserName.substring(0, 2)).build();
+    KeyValueQuery keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("owner")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.CONTAIN)
+            .build();
+
+    FindProjects findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
+
+    FindProjects.Response response = projectServiceStub.findProjects(findProjects);
+    LOGGER.info("FindProjects Response : " + response.getProjectsList());
+    assertEquals(
+        "Project count not match with expected project count",
+        4,
+        response.getProjectsList().size());
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        4,
+        response.getTotalRecords());
+
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("owner")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.NOT_CONTAIN)
+            .build();
+    findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
+
+    response = projectServiceStub.findProjects(findProjects);
+    assertEquals(
+        "Total records count not matched with expected records count",
+        0,
+        response.getTotalRecords());
+    assertEquals(
+        "Project count not match with expected project count", 0, response.getProjectsCount());
+
+    LOGGER.info("FindProjects by owner fuzzy search test stop ................................");
   }
 }

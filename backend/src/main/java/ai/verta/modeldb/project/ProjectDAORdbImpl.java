@@ -1136,7 +1136,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       String entityName = "projectEntity";
       List<Predicate> queryPredicatesList =
           RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, projectRoot);
+              entityName, predicates, builder, criteriaQuery, projectRoot, authService);
       if (!queryPredicatesList.isEmpty()) {
         finalPredicatesList.addAll(queryPredicatesList);
       }
