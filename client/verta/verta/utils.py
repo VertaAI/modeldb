@@ -114,10 +114,11 @@ class ModelAPI(object):
             A model API value node.
 
         """
+        print(data, name)
         if data is None:
             return {'type': "VertaNull",
                     'name': str(name)}
-        elif isinstance(data, bool):  # did you know that `bool` is a subclass of `int`?
+        elif isinstance(data, _utils.BOOL_TYPES):  # did you know that `bool` is a subclass of `int`?
             return {'type': "VertaBool",
                     'name': str(name)}
         elif isinstance(data, numbers.Integral):

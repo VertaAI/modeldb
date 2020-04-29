@@ -55,6 +55,13 @@ else:
         pass
 
 
+try:
+    import numpy as np
+except ImportError:  # NumPy not installed
+    BOOL_TYPES = (bool,)
+else:
+    BOOL_TYPES = (bool, np.bool_)
+
 _GRPC_PREFIX = "Grpc-Metadata-"
 
 _VALID_HTTP_METHODS = {'GET', 'POST', 'PUT', 'DELETE'}
@@ -423,6 +430,10 @@ def to_builtin(obj):
     cls_ = obj.__class__
     obj_class = getattr(cls_, '__name__', None)
     obj_module = getattr(cls_, '__module__', None)
+
+    # booleans
+    if isinstance(obj, BOOL_TYPES):
+        return True if obj else False
 
     # NumPy scalars
     if obj_module == "numpy" and obj_class.startswith(('int', 'uint', 'float', 'str')):
