@@ -1075,20 +1075,13 @@ public class RdbmsUtils {
                   root.get(ModelDBConstants.ID)));
 
           Join<VersioningModeldbEntityMapping, ConfigBlobEntity> configBlobEntityJoinJoin =
-              versionedInputEntityJoin.join("configBlobEntities", JoinType.INNER);
+              versionedInputEntityJoin.join("config_blob_entities", JoinType.INNER);
           configBlobEntityJoinJoin.alias(parentFieldName + "_versionedInput_config");
 
           configBlobEntityJoinJoin.on(
               builder.equal(
                   configBlobEntityJoinJoin.get("hyperparameter_type"),
                   ConfigBlobEntity.HYPERPARAMETER));
-          //              builder.and(
-          //                  builder.equal(
-          //                          versionedInputEntityJoin.get("blob_hash"),
-          //                          configBlobEntityJoinJoin.get("blob_hash")),
-          //                  builder.equal(
-          //                      configBlobEntityJoinJoin.get("hyperparameter_type"),
-          //                      ConfigBlobEntity.HYPERPARAMETER)));
           Join<ConfigBlobEntity, HyperparameterElementConfigBlobEntity> configBlobEntityJoin =
               configBlobEntityJoinJoin.join(
                   "hyperparameterElementConfigBlobEntity", JoinType.INNER);
@@ -1096,14 +1089,6 @@ public class RdbmsUtils {
           configBlobEntityJoin.on(
               builder.equal(
                   configBlobEntityJoin.get(ModelDBConstants.NAME), keys[keys.length - 1]));
-          //              builder.and(
-          //                  builder.equal(
-          //
-          // configBlobEntityJoinJoin.get("hyperparameterSetConfigBlobEntity").get("blob_hash"),
-          //                          configBlobEntityJoin.get("blob_hash")),
-          //                  builder.equal(
-          //                      configBlobEntityJoin.get(ModelDBConstants.NAME), keys[keys.length
-          // - 1])));
 
           orderByExpressionList.add(configBlobEntityJoin.get("int_value"));
           orderByExpressionList.add(configBlobEntityJoin.get("float_value"));
@@ -1798,7 +1783,7 @@ public class RdbmsUtils {
                       + " cb WHERE cb.blob_hash = :blobHash");
           query.setParameter("blobHash", blobExpandedWithHashMap.getValue());
           List<ConfigBlobEntity> configBlobEntities = query.list();
-          vmem.setConfigBlobEntities(new HashSet<>(configBlobEntities));
+          vmem.setConfig_blob_entities(new HashSet<>(configBlobEntities));
         }
         versioningModeldbEntityMappings.add(vmem);
       }

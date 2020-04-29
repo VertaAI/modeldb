@@ -187,13 +187,13 @@
             </not>
         </preConditions>
         <createTable tableName="versioning_modeldb_entity_mapping_config_blob">
-            <column name="VersioningModeldbEntityMapping_repository_id" type="int8"/>
-            <column name="VersioningModeldbEntityMapping_commit" type="varchar(64)"/>
-            <column name="VersioningModeldbEntityMapping_versioning_key" type="varchar(50)"/>
-            <column name="VersioningModeldbEntityMapping_experiment_run_id" type="varchar(255)"/>
-            <column name="VersioningModeldbEntityMapping_entity_type" type="varchar(50)"/>
-            <column name="configBlobEntities_blob_hash" type="varchar(64)"/>
-            <column name="configBlobEntities_config_seq_number" type="integer"/>
+            <column name="versioning_modeldb_entity_mapping_repository_id" type="int8"/>
+            <column name="versioning_modeldb_entity_mapping_commit" type="varchar(64)"/>
+            <column name="versioning_modeldb_entity_mapping_versioning_key" type="varchar(50)"/>
+            <column name="versioning_modeldb_entity_mapping_experiment_run_id" type="varchar(255)"/>
+            <column name="versioning_modeldb_entity_mapping_entity_type" type="varchar(50)"/>
+            <column name="config_blob_entity_blob_hash" type="varchar(64)"/>
+            <column name="config_blob_entity_config_seq_number" type="integer"/>
         </createTable>
     </changeSet>
 
