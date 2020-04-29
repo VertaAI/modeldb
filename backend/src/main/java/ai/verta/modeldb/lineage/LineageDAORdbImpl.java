@@ -487,7 +487,6 @@ public class LineageDAORdbImpl implements LineageDAO {
       throws ModelDBException, InvalidProtocolBufferException {
     final Long entityId;
     final int entityType;
-    final boolean connectionExists;
 
     switch (lineageEntry.getDescriptionCase()) {
       case EXPERIMENT_RUN:

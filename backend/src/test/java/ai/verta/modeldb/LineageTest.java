@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import ai.verta.modeldb.AddLineage.Response;
-import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.LineageEntryBatchResponseSingle.Builder;
@@ -87,11 +86,9 @@ public class LineageTest {
 
   private VersioningServiceBlockingStub versioningServiceBlockingStub;
   private ExperimentRunTest experimentRunTest;
-  private DatasetVersionTest datasetVersionTest;
   private ProjectServiceBlockingStub projectServiceStub;
   private ExperimentServiceBlockingStub experimentServiceStub;
   private ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private DatasetServiceBlockingStub datasetServiceStub;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -148,11 +145,9 @@ public class LineageTest {
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
 
     experimentRunTest = new ExperimentRunTest();
-    datasetVersionTest = new DatasetVersionTest();
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
   }
 
@@ -317,7 +312,6 @@ public class LineageTest {
 
     List<String> experimentIds = new ArrayList<>();
     List<ExperimentRun> experimentRunList = new ArrayList<>();
-    List<DatasetVersion> datasetVersionList = new ArrayList<>();
 
     // Create project
     Project project = getProject(projectServiceStub);
