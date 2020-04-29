@@ -14,6 +14,7 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
 import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
@@ -68,6 +69,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   ExperimentRunPaginationDTO getExperimentRunsFromEntity(
+      ProjectDAO projectDAO,
       String entityKey,
       String entityValue,
       Integer pageNumber,
@@ -292,12 +294,15 @@ public interface ExperimentRunDAO {
   /**
    * Return list of experimentRuns based on FindExperimentRuns queryParameters
    *
-   * @param FindExperimentRuns queryParameters --> query parameters for filtering experimentRuns
+   * @param projectDAO : projectDAO
+   * @param currentLoginUserInfo : current login user info
+   * @param queryParameters --> query parameters for filtering experimentRuns
    * @return ExperimentRunPaginationDTO -- experimentRunPaginationDTO contains the list of
    *     experimentRuns based on filter queryParameters & total_pages count
-   * @throws InvalidProtocolBufferException
+   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRunPaginationDTO findExperimentRuns(FindExperimentRuns queryParameters)
+  ExperimentRunPaginationDTO findExperimentRuns(
+      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
       throws InvalidProtocolBufferException;
 
   /**
@@ -308,7 +313,8 @@ public interface ExperimentRunDAO {
    *     experimentRuns based on filter queryParameters & total_pages count
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRunPaginationDTO sortExperimentRuns(SortExperimentRuns queryParameters)
+  ExperimentRunPaginationDTO sortExperimentRuns(
+      ProjectDAO projectDAO, SortExperimentRuns queryParameters)
       throws InvalidProtocolBufferException;
 
   /**
@@ -320,7 +326,8 @@ public interface ExperimentRunDAO {
    *     queryParameters
    * @throws InvalidProtocolBufferException
    */
-  List<ExperimentRun> getTopExperimentRuns(TopExperimentRunsSelector queryParameters)
+  List<ExperimentRun> getTopExperimentRuns(
+      ProjectDAO projectDAO, TopExperimentRunsSelector queryParameters)
       throws InvalidProtocolBufferException;
 
   /**
@@ -481,12 +488,14 @@ public interface ExperimentRunDAO {
       throws InvalidProtocolBufferException;
 
   ListCommitExperimentRunsRequest.Response listCommitExperimentRuns(
+      ProjectDAO projectDAO,
       ListCommitExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException, InvalidProtocolBufferException;
 
   ListBlobExperimentRunsRequest.Response listBlobExperimentRuns(
+      ProjectDAO projectDAO,
       ListBlobExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)

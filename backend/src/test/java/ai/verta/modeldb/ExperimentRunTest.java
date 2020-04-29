@@ -7381,15 +7381,6 @@ public class ExperimentRunTest {
         TopExperimentRunsSelector.newBuilder().setTopK(4).setAscending(true).build();
 
     try {
-      experimentRunServiceStub.getTopExperimentRuns(topExperimentRunsSelector);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    try {
       topExperimentRunsSelector =
           TopExperimentRunsSelector.newBuilder()
               .setProjectId("12321")
@@ -7399,22 +7390,6 @@ public class ExperimentRunTest {
       fail();
     } catch (StatusRuntimeException ex) {
       checkEqualsAssert(ex);
-    }
-
-    topExperimentRunsSelector =
-        TopExperimentRunsSelector.newBuilder()
-            .setSortKey("endTime")
-            .setTopK(4)
-            .setAscending(true)
-            .build();
-
-    try {
-      experimentRunServiceStub.getTopExperimentRuns(topExperimentRunsSelector);
-      fail();
-    } catch (StatusRuntimeException exc) {
-      Status status = Status.fromThrowable(exc);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     try {
