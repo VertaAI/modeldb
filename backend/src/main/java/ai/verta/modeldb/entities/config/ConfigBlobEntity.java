@@ -82,43 +82,4 @@ public class ConfigBlobEntity implements Serializable {
     }
   }
 
-  // @Embeddable used for creating the composite key in hibernate
-  @Embeddable
-  public static class ConfigBlobId implements Serializable {
-
-    @Column(name = "blob_hash", columnDefinition = "varchar", length = 64, nullable = false)
-    private String blob_hash;
-
-    @Column(name = "config_seq_number")
-    private Integer config_seq_number;
-
-    public ConfigBlobId(String blob_hash, Integer config_seq_number) {
-      this.blob_hash = blob_hash;
-      this.config_seq_number = config_seq_number;
-    }
-
-    private ConfigBlobId() {}
-
-    public String getBlob_hash() {
-      return blob_hash;
-    }
-
-    public Integer getConfig_seq_number() {
-      return config_seq_number;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof ConfigBlobEntity.ConfigBlobId)) return false;
-      ConfigBlobEntity.ConfigBlobId that = (ConfigBlobEntity.ConfigBlobId) o;
-      return Objects.equals(getBlob_hash(), that.getBlob_hash())
-          && Objects.equals(getConfig_seq_number(), that.getConfig_seq_number());
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(getBlob_hash(), getConfig_seq_number());
-    }
-  }
 }
