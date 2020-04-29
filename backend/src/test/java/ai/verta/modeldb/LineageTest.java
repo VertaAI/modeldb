@@ -27,6 +27,7 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -77,14 +78,21 @@ public class LineageTest {
   @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
   private ManagedChannel channel = null;
+  private ManagedChannel client2Channel = null;
+  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
+  private static InProcessChannelBuilder client2ChannelBuilder =
+      InProcessChannelBuilder.forName(serverName).directExecutor();
   private LineageServiceBlockingStub lineageServiceStub;
+  private static App app;
+  private static AuthClientInterceptor authClientInterceptor;
 
   private VersioningServiceBlockingStub versioningServiceBlockingStub;
+  private VersioningServiceBlockingStub versioningServiceBlockingStubClient2;
   private ExperimentRunTest experimentRunTest;
   private ProjectServiceBlockingStub projectServiceStub;
   private ExperimentServiceBlockingStub experimentServiceStub;
@@ -99,7 +107,7 @@ public class LineageTest {
     Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
     Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
-    App app = App.getInstance();
+    app = App.getInstance();
     AuthService authService = new PublicAuthServiceUtils();
     RoleService roleService = new PublicRoleServiceUtils(authService);
 
@@ -121,8 +129,9 @@ public class LineageTest {
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
+      authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
+      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
   }
 
@@ -136,19 +145,37 @@ public class LineageTest {
     if (!channel.isShutdown()) {
       channel.shutdownNow();
     }
+    if (!client2Channel.isShutdown()) {
+      client2Channel.shutdownNow();
+    }
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (!authServiceChannel.isShutdown()) {
+        authServiceChannel.shutdownNow();
+      }
+    }
   }
 
   @Before
   public void initializeChannel() throws IOException {
     grpcCleanup.register(serverBuilder.build().start());
     channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
+    client2Channel =
+        grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
+    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      authServiceChannel =
+          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+              .usePlaintext()
+              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+    }
 
     experimentRunTest = new ExperimentRunTest();
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
     versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
+    versioningServiceBlockingStubClient2 = VersioningServiceGrpc.newBlockingStub(client2Channel);
   }
 
   @Test
@@ -354,6 +381,8 @@ public class LineageTest {
 
     long repositoryId =
         RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repositoryId2 =
+        RepositoryTest.createRepository(versioningServiceBlockingStubClient2, RepositoryTest.NAME + "2");
     try {
       GetBranchRequest getBranchRequest =
           GetBranchRequest.newBuilder()
@@ -363,6 +392,14 @@ public class LineageTest {
               .build();
       GetBranchRequest.Response getBranchResponse =
           versioningServiceBlockingStub.getBranch(getBranchRequest);
+      getBranchRequest =
+          GetBranchRequest.newBuilder()
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repositoryId2).build())
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .build();
+      GetBranchRequest.Response getBranchResponse2 =
+          versioningServiceBlockingStubClient2.getBranch(getBranchRequest);
 
       CreateCommitRequest createCommitRequest =
           getCreateCommitRequest(
@@ -385,6 +422,13 @@ public class LineageTest {
 
       commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
       String commit3Sha = commitResponse.getCommit().getCommitSha();
+
+      createCommitRequest =
+          getCreateCommitRequest(
+              repositoryId2, 111, getBranchResponse2.getCommit(), Blob.ContentCase.DATASET, "name4");
+
+      commitResponse = versioningServiceBlockingStubClient2.createCommit(createCommitRequest);
+      String commit4Sha = commitResponse.getCommit().getCommitSha();
       try {
         final LineageEntry.Builder inputDataset =
             LineageEntry.newBuilder()
@@ -412,6 +456,15 @@ public class LineageTest {
                         .setCommitSha(commit3Sha)
                         .addLocation("/")
                         .addLocation("name3"));
+
+        final LineageEntry.Builder inputDatasetClient2 =
+            LineageEntry.newBuilder()
+                .setBlob(
+                    VersioningLineageEntry.newBuilder()
+                        .setRepositoryId(repositoryId2)
+                        .setCommitSha(commit4Sha)
+                        .addLocation("/")
+                        .addLocation("name4"));
         try {
           check(
               Collections.singletonList(inputExp),
@@ -426,6 +479,13 @@ public class LineageTest {
           addLineage = AddLineage.newBuilder().setId(id).addInput(inputDataset2);
           result = lineageServiceStub.addLineage(addLineage.build());
           assertEquals(id, result.getId());
+          LineageServiceBlockingStub lineageServiceBlockingStubClient2 =
+              LineageServiceGrpc.newBlockingStub(client2Channel);
+          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+            addLineage = AddLineage.newBuilder().setId(id).addInput(inputDatasetClient2);
+            result = lineageServiceBlockingStubClient2.addLineage(addLineage.build());
+            assertEquals(id, result.getId());
+          }
 
           check(
               Arrays.asList(inputOutputExp, inputDataset, inputDataset2, inputExp),
@@ -468,8 +528,12 @@ public class LineageTest {
               Arrays.asList(id, oldId, oldId, id, id, id),
               result.getId());
 
+          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+            DeleteLineage.Builder deleteLineage = DeleteLineage.newBuilder().setId(oldId).addInput(inputDatasetClient2);
+            lineageServiceBlockingStubClient2.deleteLineage(deleteLineage.build());
+          }
           DeleteLineage.Builder deleteLineage = DeleteLineage.newBuilder().setId(oldId);
-          Assert.assertTrue(lineageServiceStub.deleteLineage(deleteLineage.build()).getStatus());
+          lineageServiceStub.deleteLineage(deleteLineage.build());
 
           check(
               Arrays.asList(
@@ -532,14 +596,34 @@ public class LineageTest {
                 .setCommitSha(commit2Sha)
                 .build();
         versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+        deleteCommitRequest =
+            DeleteCommitRequest.newBuilder()
+                .setRepositoryId(
+                    RepositoryIdentification.newBuilder().setRepoId(repositoryId).build())
+                .setCommitSha(commit3Sha)
+                .build();
+        versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+        deleteCommitRequest =
+            DeleteCommitRequest.newBuilder()
+                .setRepositoryId(
+                    RepositoryIdentification.newBuilder().setRepoId(repositoryId2).build())
+                .setCommitSha(commit4Sha)
+                .build();
+        versioningServiceBlockingStubClient2.deleteCommit(deleteCommitRequest);
       }
     } finally {
-      DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId))
+                .build();
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      deleteRepository =
           DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId))
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId2))
               .build();
-      DeleteRepositoryRequest.Response deleteResult =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      deleteResult =
+          versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
     }
 
     LOGGER.info("Create and delete Lineage test stop................................");
