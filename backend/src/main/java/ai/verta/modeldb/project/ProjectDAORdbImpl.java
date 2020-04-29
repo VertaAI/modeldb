@@ -793,9 +793,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       deleteExperimentsWithPagination(session, allowedProjectIds, roleBindingNames);
 
+      LOGGER.debug("num bindings after Experiment {}", roleBindingNames.size());
       // Delete the ExperimentRunEntity object
       deleteExperimentRunsWithPagination(session, allowedProjectIds, roleBindingNames);
-
+      LOGGER.debug("num bindings after Experiment Run {}", roleBindingNames.size());
       Transaction transaction = session.beginTransaction();
       for (String projectId : allowedProjectIds) {
         ProjectEntity projectObj = session.load(ProjectEntity.class, projectId);
@@ -804,6 +805,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       // Get roleBindings by accessible projects
       getRoleBindingsOfAccessibleProjects(projectEntities, roleBindingNames);
+      LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
       transaction.commit();
 
       // Remove all role bindings
