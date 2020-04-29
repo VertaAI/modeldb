@@ -249,7 +249,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           ModelDBConstants.ROLE_PROJECT_ADMIN,
           ModelDBServiceResourceTypes.PROJECT,
           projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
-          null);
+          "_GLOBAL_SHARING");
     }
   }
 
@@ -1343,5 +1343,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       return projectEntity.getProtoObject();
     }
+  }
+
+  @Override
+  public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException {
+    FindProjects findProjects =
+        FindProjects.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
+    ProjectPaginationDTO projectPaginationDTO =
+        findProjects(findProjects, null, currentLoginUserInfo, ProjectVisibility.PRIVATE);
+    return projectPaginationDTO.getProjects().stream()
+        .map(Project::getId)
+        .collect(Collectors.toList());
   }
 }
