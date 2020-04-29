@@ -99,6 +99,9 @@ public interface ExperimentRunDAO {
   List<ExperimentRun> getExperimentRunsByBatchIds(List<String> experimentRunIds)
       throws InvalidProtocolBufferException;
 
+  List<ExperimentRunEntity> getExperimentRunEntitiesBatch(
+      Session session, List<String> experimentRunIds);
+
   /**
    * Get ExperimentRun entity using given experimentRunId from database.
    *

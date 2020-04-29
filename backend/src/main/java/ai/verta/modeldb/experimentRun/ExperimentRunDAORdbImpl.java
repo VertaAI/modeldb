@@ -505,14 +505,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public List<ExperimentRun> getExperimentRunsByBatchIds(List<String> experimentRunIds)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
-      query.setParameterList("ids", experimentRunIds);
-
-      @SuppressWarnings("unchecked")
-      List<ExperimentRunEntity> experimentRunEntities = query.list();
-      LOGGER.debug("Got ExperimentRun by Ids");
+      List<ExperimentRunEntity> experimentRunEntities =
+          getExperimentRunEntitiesBatch(session, experimentRunIds);
       return RdbmsUtils.convertExperimentRunsFromExperimentRunEntityList(experimentRunEntities);
     }
+  }
+
+  @Override
+  public List<ExperimentRunEntity> getExperimentRunEntitiesBatch(
+      Session session, List<String> experimentRunIds) {
+    Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
+    query.setParameterList("ids", experimentRunIds);
+
+    @SuppressWarnings("unchecked")
+    List<ExperimentRunEntity> experimentRunEntities = query.list();
+    LOGGER.debug("Got ExperimentRun by Ids");
+    return experimentRunEntities;
   }
 
   @Override

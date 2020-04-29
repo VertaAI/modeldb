@@ -8,6 +8,7 @@ import ai.verta.modeldb.FindAllInputsOutputs.Response;
 import ai.verta.modeldb.FindAllInputsOutputs.Response.Builder;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntry;
+import ai.verta.modeldb.LineageEntry.DescriptionCase;
 import ai.verta.modeldb.LineageEntryBatchResponse;
 import ai.verta.modeldb.LineageEntryBatchResponseSingle;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
@@ -51,7 +52,8 @@ import org.hibernate.Session;
 public class LineageServiceImpl extends LineageServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageServiceImpl.class);
-  private final ExperimentRunDAO experimentDAO;
+  private static final String EXPERIMENT_RUN_NOT_FOUND = "Experiment run not found";
+  private final ExperimentRunDAO experimentRunDAO;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final LineageDAO lineageDAO;
@@ -66,7 +68,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       BlobDAO blobDAO,
       RoleService roleService) {
     this.lineageDAO = lineageDAO;
-    this.experimentDAO = experimentRunDAO;
+    this.experimentRunDAO = experimentRunDAO;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
@@ -227,91 +229,178 @@ public class LineageServiceImpl extends LineageServiceImplBase {
 
   private Iterable<? extends LineageEntryBatchResponse> filter(
       Session session, List<LineageEntryBatchResponse> lineageEntryBatchResponses) {
-    final Set<String> experimentRuns = new HashSet<>();
+    final Set<String> unfilteredExperimentRunIds = new HashSet<>();
+    for (LineageEntryBatchResponse lineageEntryBatchResponse : lineageEntryBatchResponses) {
+      List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseItemsList =
+          lineageEntryBatchResponse.getItemsList();
+      for (LineageEntryBatchResponseSingle lineageEntryBatchResponseSingle :
+          lineageEntryBatchResponseItemsList) {
+        List<LineageEntry> itemList = lineageEntryBatchResponseSingle.getItemsList();
+        for (LineageEntry lineageEntry : itemList) {
+          if (lineageEntry.getDescriptionCase() == DescriptionCase.EXPERIMENT_RUN) {
+            unfilteredExperimentRunIds.add(lineageEntry.getExperimentRun());
+          }
+        }
+      }
+    }
+    final Set<String> filteredExperimentRunIds;
+    if (unfilteredExperimentRunIds.size() == 0) {
+      filteredExperimentRunIds = unfilteredExperimentRunIds;
+    } else {
+      filteredExperimentRunIds = filter(session, unfilteredExperimentRunIds);
+    }
     final Map<Long, RepositoryContainer> blobs = new HashMap<>();
-    return lineageEntryBatchResponses.stream()
-        .map(
-            lineageEntryBatchResponse -> {
-              List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseItemsList =
-                  lineageEntryBatchResponse.getItemsList();
-              List<LineageEntryBatchResponseSingle> result =
-                  lineageEntryBatchResponseItemsList.stream()
-                      .flatMap(
-                          lineageEntryBatchResponseSingle -> {
-                            List<LineageEntryBatchResponseSingle>
-                                newLineageEntryBatchResponseSingleList = new LinkedList<>();
-                            List<LineageEntry> itemList =
-                                lineageEntryBatchResponseSingle.getItemsList();
-                            List<LineageEntry> filterResult =
-                                itemList.stream()
-                                    .filter(
-                                        lineageEntry -> {
-                                          try {
-                                            validate(session, experimentRuns, blobs, lineageEntry);
-                                            return true;
-                                          } catch (StatusRuntimeException | ModelDBException e) {
-                                            LOGGER.warn("Can't access entity {}", e.getMessage());
-                                            return false;
-                                          } catch (NoSuchAlgorithmException
-                                              | InvalidProtocolBufferException e) {
-                                            LOGGER.error("Unexpected error {}", e.getMessage());
-                                            Status status =
-                                                Status.newBuilder()
-                                                    .setCode(com.google.rpc.Code.INTERNAL_VALUE)
-                                                    .setMessage(e.getMessage())
-                                                    .addDetails(
-                                                        Any.pack(
-                                                            LineageEntryBatchResponse
-                                                                .getDefaultInstance()))
-                                                    .build();
-                                            throw StatusProto.toStatusRuntimeException(status);
-                                          }
-                                        })
-                                    .collect(Collectors.toList());
-                            if (filterResult.size() != 0) {
-                              newLineageEntryBatchResponseSingleList.add(
-                                  LineageEntryBatchResponseSingle.newBuilder()
-                                      .setId(lineageEntryBatchResponseSingle.getId())
-                                      .addAllItems(filterResult)
-                                      .build());
-                            }
-                            return newLineageEntryBatchResponseSingleList.stream();
-                          })
-                      .collect(Collectors.toList());
-              return LineageEntryBatchResponse.newBuilder().addAllItems(result).build();
-            })
-        .collect(Collectors.toList());
+    List<LineageEntryBatchResponse> result =
+        lineageEntryBatchResponses.stream()
+            .map(
+                lineageEntryBatchResponse -> {
+                  List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseItemsList =
+                      lineageEntryBatchResponse.getItemsList();
+                  List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseSingles =
+                      lineageEntryBatchResponseItemsList.stream()
+                          .flatMap(
+                              lineageEntryBatchResponseSingle -> {
+                                List<LineageEntryBatchResponseSingle>
+                                    newLineageEntryBatchResponseSingleList = new LinkedList<>();
+                                List<LineageEntry> itemList =
+                                    lineageEntryBatchResponseSingle.getItemsList();
+                                List<LineageEntry> filterResult =
+                                    itemList.stream()
+                                        .filter(
+                                            lineageEntry -> {
+                                              try {
+                                                return validate(
+                                                    session,
+                                                    unfilteredExperimentRunIds,
+                                                    blobs,
+                                                    lineageEntry,
+                                                    filteredExperimentRunIds);
+                                              } catch (StatusRuntimeException
+                                                  | ModelDBException e) {
+                                                LOGGER.warn(
+                                                    "Can't access entity {}", e.getMessage());
+                                                return false;
+                                              } catch (NoSuchAlgorithmException
+                                                  | InvalidProtocolBufferException e) {
+                                                LOGGER.error("Unexpected error {}", e.getMessage());
+                                                Status status =
+                                                    Status.newBuilder()
+                                                        .setCode(com.google.rpc.Code.INTERNAL_VALUE)
+                                                        .setMessage(e.getMessage())
+                                                        .addDetails(
+                                                            Any.pack(
+                                                                LineageEntryBatchResponse
+                                                                    .getDefaultInstance()))
+                                                        .build();
+                                                throw StatusProto.toStatusRuntimeException(status);
+                                              }
+                                            })
+                                        .collect(Collectors.toList());
+                                if (filterResult.size() != 0) {
+                                  newLineageEntryBatchResponseSingleList.add(
+                                      LineageEntryBatchResponseSingle.newBuilder()
+                                          .setId(lineageEntryBatchResponseSingle.getId())
+                                          .addAllItems(filterResult)
+                                          .build());
+                                }
+                                return newLineageEntryBatchResponseSingleList.stream();
+                              })
+                          .collect(Collectors.toList());
+                  return LineageEntryBatchResponse.newBuilder()
+                      .addAllItems(lineageEntryBatchResponseSingles)
+                      .build();
+                })
+            .collect(Collectors.toList());
+    return result;
   }
 
   private void checkResourcesExistsAndAccessible(Session session, List<LineageEntry> lineageEntries)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
-    Set<String> experimentRuns = new HashSet<>();
+    Set<String> experimentRunIds = new HashSet<>();
     Map<Long, RepositoryContainer> blobs = new HashMap<>();
     for (LineageEntry lineageEntry : lineageEntries) {
-      validate(session, experimentRuns, blobs, lineageEntry);
+      validate(session, experimentRunIds, blobs, lineageEntry);
+    }
+    if (experimentRunIds.size() != 0) {
+      validate(session, experimentRunIds);
+    }
+  }
+
+  private Set<String> filter(Session session, Set<String> experimentRunIds) {
+    Set<String> result = new HashSet<>();
+    LinkedList<String> experimentRunIdsList = new LinkedList<>(experimentRunIds);
+    List<ExperimentRunEntity> experimentRunEntities =
+        experimentRunDAO.getExperimentRunEntitiesBatch(session, experimentRunIdsList);
+    for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+      if (experimentRunEntity == null) {
+        LOGGER.warn(EXPERIMENT_RUN_NOT_FOUND);
+      } else {
+        try {
+          roleService.validateEntityUserWithUserInfo(
+              ModelDBServiceResourceTypes.PROJECT,
+              experimentRunEntity.getProject_id(),
+              ModelDBServiceActions.READ);
+          result.add(experimentRunEntity.getId());
+        } catch (StatusRuntimeException e) {
+          LOGGER.warn("Can't access entity {}", e.getMessage());
+        } catch (InvalidProtocolBufferException e) {
+          LOGGER.error("Unexpected error {}", e.getMessage());
+          Status status =
+              Status.newBuilder()
+                  .setCode(com.google.rpc.Code.INTERNAL_VALUE)
+                  .setMessage(e.getMessage())
+                  .addDetails(Any.pack(LineageEntryBatchResponse.getDefaultInstance()))
+                  .build();
+          throw StatusProto.toStatusRuntimeException(status);
+        }
+      }
+    }
+    return result;
+  }
+
+  private void validate(Session session, Set<String> experimentRunIds)
+      throws ModelDBException, InvalidProtocolBufferException {
+    LinkedList<String> experimentRunIdsList = new LinkedList<>(experimentRunIds);
+    List<ExperimentRunEntity> experimentRunEntities =
+        experimentRunDAO.getExperimentRunEntitiesBatch(session, experimentRunIdsList);
+    if (experimentRunEntities.size() != experimentRunIdsList.size()) {
+      throw new ModelDBException("Can't find all experiment runs");
+    }
+    for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+      if (experimentRunEntity == null) {
+        LOGGER.warn(EXPERIMENT_RUN_NOT_FOUND);
+        throw new ModelDBException(EXPERIMENT_RUN_NOT_FOUND, Code.NOT_FOUND);
+      }
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT,
+          experimentRunEntity.getProject_id(),
+          ModelDBServiceActions.READ);
     }
   }
 
   private void validate(
       Session session,
-      Set<String> experimentRuns,
+      Set<String> experimentRunIds,
       Map<Long, RepositoryContainer> blobs,
       LineageEntry lineageEntry)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
+    validate(session, experimentRunIds, blobs, lineageEntry, null);
+  }
+
+  private boolean validate(
+      Session session,
+      Set<String> experimentRunIds,
+      Map<Long, RepositoryContainer> blobs,
+      LineageEntry lineageEntry,
+      Set<String> filteredExperimentRunIds)
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
     switch (lineageEntry.getDescriptionCase()) {
       case EXPERIMENT_RUN:
-        String experimentRun = lineageEntry.getExperimentRun();
-        if (!experimentRuns.contains(experimentRun)) {
-          ExperimentRunEntity experimentRunEntity =
-              experimentDAO.getExperimentRun(session, experimentRun);
-          experimentRuns.add(experimentRun);
-          // Validate if current user has access to the entity or not
-          roleService.validateEntityUserWithUserInfo(
-              ModelDBServiceResourceTypes.PROJECT,
-              experimentRunEntity.getProject_id(),
-              ModelDBServiceActions.READ);
+        experimentRunIds.add(lineageEntry.getExperimentRun());
+        if (filteredExperimentRunIds == null) {
+          return true;
         }
-        break;
+        return filteredExperimentRunIds.contains(lineageEntry.getExperimentRun());
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
         long repositoryId = blob.getRepositoryId();
@@ -346,5 +435,6 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       default:
         throw new ModelDBException("Unexpected type", Code.INTERNAL);
     }
+    return true;
   }
 }

@@ -426,15 +426,10 @@ public class LineageTest {
               0L);
 
           AddLineage.Builder addLineage =
-              AddLineage.newBuilder()
-                  .addInput(inputDataset)
-                  .addOutput(inputOutputExp);
+              AddLineage.newBuilder().addInput(inputDataset).addOutput(inputOutputExp);
           Response result = lineageServiceStub.addLineage(addLineage.build());
           long id = result.getId();
-          addLineage =
-              AddLineage.newBuilder()
-                  .setId(id)
-                  .addInput(inputDataset2);
+          addLineage = AddLineage.newBuilder().setId(id).addInput(inputDataset2);
           result = lineageServiceStub.addLineage(addLineage.build());
           assertEquals(id, result.getId());
 
