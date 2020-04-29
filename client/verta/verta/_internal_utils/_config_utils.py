@@ -148,7 +148,8 @@ def find_closest_config_file():
         filepaths = CONFIG_FILENAMES.intersection(os.listdir(dirpath))
         if filepaths:
             return os.path.join(dirpath, filepaths.pop())
-    return None
+    else:
+        return None
 
 def find_config_files():
     """
