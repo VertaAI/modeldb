@@ -1,6 +1,5 @@
 package ai.verta.modeldb.versioning;
 
-import static ai.verta.modeldb.versioning.blob.factory.BlobFactory.*;
 import static java.util.stream.Collectors.toMap;
 
 import ai.verta.modeldb.ModelDBConstants;
@@ -260,7 +259,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         if (parentLocation.containsAll(requestedLocation)) {
           ai.verta.modeldb.versioning.Blob blob = getBlob(session, childElementFolder);
           if (blobTypeList != null && !blobTypeList.isEmpty()) {
-            if (blobTypeExistsRequest(blobTypeList, blob.getContentCase())) {
+            if (blobTypeExistsInList(blobTypeList, blob.getContentCase())) {
               setBlobInBlobExpandMap(
                   parentLocation, childBlobExpandedMap, childElementFolder, blob);
             }
@@ -335,7 +334,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (!parentFolderElement.getElement_type().equals(TREE)) {
         ai.verta.modeldb.versioning.Blob blob = getBlob(session, parentFolderElement);
         if (blobTypeList != null && !blobTypeList.isEmpty()) {
-          if (blobTypeExistsRequest(blobTypeList, blob.getContentCase())) {
+          if (blobTypeExistsInList(blobTypeList, blob.getContentCase())) {
             setBlobInBlobExpandMap(
                 Collections.singleton(parentFolderElement.getElement_name()),
                 finalLocationBlobMap,
@@ -1133,21 +1132,17 @@ public class BlobDAORdbImpl implements BlobDAO {
         .append(" ON ");
     joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
 
-    StringBuilder whereClause = new StringBuilder();
-    boolean appendAND = false;
+    List<String> whereClauseList = new ArrayList<>();
     if (!request.getRepoIdsList().isEmpty()) {
-      whereClause.append(alias).append(".repository.id IN (:repoIds) ");
+      whereClauseList.add(alias + ".repository.id IN (:repoIds) ");
       parametersMap.put("repoIds", request.getRepoIdsList());
-      appendAND = true;
     }
     if (!request.getCommitsList().isEmpty()) {
-      if (appendAND) {
-        whereClause.append(" AND ");
-      }
-      whereClause.append(alias).append(".commit_hash IN (:commitHashList)");
+      whereClauseList.add(alias + ".commit_hash IN (:commitHashList)");
       parametersMap.put("commitHashList", request.getCommitsList());
-      appendAND = true;
     }
+    StringBuilder whereClause = new StringBuilder();
+    setPredicatesWithQueryOperator(whereClause, " AND ", whereClauseList.toArray(new String[0]));
 
     // Order by clause
     StringBuilder orderClause =
@@ -1213,7 +1208,12 @@ public class BlobDAORdbImpl implements BlobDAO {
     return responseMap;
   }
 
-  private Boolean blobTypeExistsRequest(List<BlobType> blobTypeList, Blob.ContentCase contentCase)
+  private void setPredicatesWithQueryOperator(
+      StringBuilder queryStringBuilder, String operatorName, String[] predicateClause) {
+    queryStringBuilder.append(String.join(" " + operatorName + " ", predicateClause));
+  }
+
+  private Boolean blobTypeExistsInList(List<BlobType> blobTypeList, Blob.ContentCase contentCase)
       throws ModelDBException {
     switch (contentCase) {
       case DATASET:
