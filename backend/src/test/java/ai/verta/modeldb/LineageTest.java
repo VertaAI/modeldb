@@ -382,7 +382,8 @@ public class LineageTest {
     long repositoryId =
         RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     long repositoryId2 =
-        RepositoryTest.createRepository(versioningServiceBlockingStubClient2, RepositoryTest.NAME + "2");
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStubClient2, RepositoryTest.NAME + "2");
     try {
       GetBranchRequest getBranchRequest =
           GetBranchRequest.newBuilder()
@@ -425,7 +426,11 @@ public class LineageTest {
 
       createCommitRequest =
           getCreateCommitRequest(
-              repositoryId2, 111, getBranchResponse2.getCommit(), Blob.ContentCase.DATASET, "name4");
+              repositoryId2,
+              111,
+              getBranchResponse2.getCommit(),
+              Blob.ContentCase.DATASET,
+              "name4");
 
       commitResponse = versioningServiceBlockingStubClient2.createCommit(createCommitRequest);
       String commit4Sha = commitResponse.getCommit().getCommitSha();
@@ -529,7 +534,8 @@ public class LineageTest {
               result.getId());
 
           if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-            DeleteLineage.Builder deleteLineage = DeleteLineage.newBuilder().setId(oldId).addInput(inputDatasetClient2);
+            DeleteLineage.Builder deleteLineage =
+                DeleteLineage.newBuilder().setId(oldId).addInput(inputDatasetClient2);
             lineageServiceBlockingStubClient2.deleteLineage(deleteLineage.build());
           }
           DeleteLineage.Builder deleteLineage = DeleteLineage.newBuilder().setId(oldId);
@@ -612,18 +618,17 @@ public class LineageTest {
         versioningServiceBlockingStubClient2.deleteCommit(deleteCommitRequest);
       }
     } finally {
-        DeleteRepositoryRequest deleteRepository =
-            DeleteRepositoryRequest.newBuilder()
-                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId))
-                .build();
-        DeleteRepositoryRequest.Response deleteResult =
-            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
       deleteRepository =
           DeleteRepositoryRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repositoryId2))
               .build();
-      deleteResult =
-          versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
+      deleteResult = versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
     }
 
     LOGGER.info("Create and delete Lineage test stop................................");
