@@ -101,7 +101,7 @@ public class ModelDBHibernateUtil {
   private static StandardServiceRegistry registry;
   private static SessionFactory sessionFactory;
   private static String databaseName;
-  private static String rDBDriver;
+  public static String rDBDriver;
   private static String rDBUrl;
   private static String configUsername;
   private static String configPassword;

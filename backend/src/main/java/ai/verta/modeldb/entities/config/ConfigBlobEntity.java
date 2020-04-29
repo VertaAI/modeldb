@@ -3,10 +3,8 @@ package ai.verta.modeldb.entities.config;
 import ai.verta.modeldb.ModelDBException;
 import io.grpc.Status;
 import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -81,5 +79,4 @@ public class ConfigBlobEntity implements Serializable {
       return hyperparameterElementConfigBlobEntity.getBlobHash();
     }
   }
-
 }

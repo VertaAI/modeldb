@@ -218,17 +218,17 @@ public class CommitTest {
     throw new ModelDBException("Invalid blob type found", Status.Code.INVALID_ARGUMENT);
   }
 
-  public static Blob getHyperparameterConfigBlob() {
+  public static Blob getHyperparameterConfigBlob(float value1, float value2) {
     List<HyperparameterConfigBlob> hyperparameterConfigBlobs = new ArrayList<>();
     hyperparameterConfigBlobs.add(
         HyperparameterConfigBlob.newBuilder()
             .setName("train")
-            .setValue(HyperparameterValuesConfigBlob.newBuilder().setFloatValue(0.14F).build())
+            .setValue(HyperparameterValuesConfigBlob.newBuilder().setFloatValue(value1).build())
             .build());
     hyperparameterConfigBlobs.add(
         HyperparameterConfigBlob.newBuilder()
             .setName("tuning-blob")
-            .setValue(HyperparameterValuesConfigBlob.newBuilder().setFloatValue(0.10F).build())
+            .setValue(HyperparameterValuesConfigBlob.newBuilder().setFloatValue(value2).build())
             .build());
 
     ConfigBlob configBlob =
