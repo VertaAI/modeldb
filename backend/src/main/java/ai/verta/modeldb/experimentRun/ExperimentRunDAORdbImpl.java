@@ -40,8 +40,8 @@ import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -1387,15 +1387,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       if (accessibleExperimentRunIds.isEmpty() && projectIds.isEmpty()) {
         String errorMessage =
-                "Access is denied. Accessible projects not found for given ExperimentRun IDs : "
-                        + accessibleExperimentRunIds;
+            "Access is denied. Accessible projects not found for given ExperimentRun IDs : "
+                + accessibleExperimentRunIds;
         ModelDBUtils.logAndThrowError(
-                errorMessage,
-                Code.PERMISSION_DENIED_VALUE,
-                Any.pack(FindExperimentRuns.getDefaultInstance()));
+            errorMessage,
+            Code.PERMISSION_DENIED_VALUE,
+            Any.pack(FindExperimentRuns.getDefaultInstance()));
       }
 
-      if (!projectIds.isEmpty()){
+      if (!projectIds.isEmpty()) {
         Expression<String> projectExpression = experimentRunRoot.get(ModelDBConstants.PROJECT_ID);
         Predicate projectsPredicate = projectExpression.in(projectIds);
         finalPredicatesList.add(projectsPredicate);

@@ -58,6 +58,15 @@ class UACServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def getUsers(body: UacGetUsers)(implicit ec: ExecutionContext): Try[UacGetUsersResponse] = Await.result(getUsersAsync(body), Duration.Inf)
 
+  def getUsersFuzzyAsync(body: UacGetUsersFuzzy)(implicit ec: ExecutionContext): Future[Try[UacGetUsersFuzzyResponse]] = {
+    val __query = Map[String,String](
+    )
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[UacGetUsersFuzzy, UacGetUsersFuzzyResponse]("POST", basePath + s"/uac/getUsersFuzzy", __query, body, UacGetUsersFuzzyResponse.fromJson)
+  }
+
+  def getUsersFuzzy(body: UacGetUsersFuzzy)(implicit ec: ExecutionContext): Try[UacGetUsersFuzzyResponse] = Await.result(getUsersFuzzyAsync(body), Duration.Inf)
+
   def updateUserAsync(body: UacUpdateUser)(implicit ec: ExecutionContext): Future[Try[UacUpdateUserResponse]] = {
     val __query = Map[String,String](
     )
