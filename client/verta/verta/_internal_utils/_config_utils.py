@@ -185,8 +185,8 @@ def merge(accum, other):
     """
     Merges `other` into `accum` in place.
 
-    This function will encounter bugs if values at the same location are of different types, so it
-    should only be called after the configs have been validated against the protobuf spec.
+    A ``dict`` at the same location will be updated. A ``list`` at the same location will be
+    appended to. A scalar at the same location will be overwritten.
 
     Parameters
     ----------
@@ -194,6 +194,11 @@ def merge(accum, other):
         Config (or field, if being called recursively) being accumulated.
     other : dict
         Incoming config (or field, if being called recursively).
+
+    Warnings
+    --------
+    This function will encounter bugs if values at the same location are of different types, so it
+    should only be called after the configs have been validated against the protobuf spec.
 
     Notes
     -----
