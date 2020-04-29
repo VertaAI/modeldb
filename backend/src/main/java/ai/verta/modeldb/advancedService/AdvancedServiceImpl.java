@@ -572,7 +572,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
       if (!experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
-        hydratedExperimentRuns = getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
+        hydratedExperimentRuns =
+            getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
       }
 
       GetHydratedExperimentRunById.Response.Builder response =
