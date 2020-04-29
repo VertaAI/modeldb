@@ -1690,25 +1690,27 @@ public class RdbmsUtils {
         builder.equal(
             hyperparameterConfigBlobRoot.get("value_type"),
             HyperparameterValuesConfigBlob.ValueCase.INT_VALUE.getNumber());
-    Predicate floatValueTypePredicate =
-        builder.equal(
-            hyperparameterConfigBlobRoot.get("value_type"),
-            HyperparameterValuesConfigBlob.ValueCase.FLOAT_VALUE.getNumber());
-    configBlobEntityRootPredicates.add(builder.or(intValueTypePredicate, floatValueTypePredicate));
-
     Predicate intValuePredicate =
         getValuePredicate(
             builder,
             ModelDBConstants.HYPERPARAMETERS,
             hyperparameterConfigBlobRoot.get("int_value"),
             predicate);
+    Predicate intPredicate = builder.and(intValueTypePredicate, intValuePredicate);
+
+    Predicate floatValueTypePredicate =
+        builder.equal(
+            hyperparameterConfigBlobRoot.get("value_type"),
+            HyperparameterValuesConfigBlob.ValueCase.FLOAT_VALUE.getNumber());
     Predicate floatValuePredicate =
         getValuePredicate(
             builder,
             ModelDBConstants.HYPERPARAMETERS,
             hyperparameterConfigBlobRoot.get("float_value"),
             predicate);
-    configBlobEntityRootPredicates.add(builder.or(intValuePredicate, floatValuePredicate));
+    Predicate floatPredicate = builder.and(floatValueTypePredicate, floatValuePredicate);
+
+    configBlobEntityRootPredicates.add(builder.or(intPredicate, floatPredicate));
 
     configSubquery.select(configBlobEntityRoot.get("blob_hash"));
     Predicate[] configBlobEntityRootPredicatesOne =
