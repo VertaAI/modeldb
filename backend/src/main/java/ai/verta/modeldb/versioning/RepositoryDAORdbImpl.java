@@ -24,11 +24,11 @@ import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -289,8 +289,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public SetRepository.Response setRepository(
-      SetRepository request, UserInfo userInfo, boolean create)
-      throws ModelDBException, InvalidProtocolBufferException {
+      CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository;
       session.beginTransaction();
@@ -348,6 +348,19 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                     .getRepositoryVisibility()
                     .equals(RepositoryVisibility.ORG_SCOPED_PUBLIC),
             GLOBAL_SHARING);
+
+        Commit initCommit =
+            Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build();
+        CommitEntity commitEntity =
+            commitDAO.saveCommitEntity(
+                session,
+                initCommit,
+                FileHasher.getSha(new String()),
+                authService.getVertaIdFromUserInfo(userInfo),
+                repository);
+
+        saveBranch(
+            session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repository);
       }
       session.getTransaction().commit();
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
@@ -355,6 +368,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   private void deleteRoleBindingsOfAccessibleResources(List<RepositoryEntity> allowedResources) {
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     for (RepositoryEntity repositoryEntity : allowedResources) {
       String repositoryId = String.valueOf(repositoryEntity.getId());
       String ownerRoleBindingName =
@@ -363,27 +377,34 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               repositoryId,
               repositoryEntity.getOwner(),
               ModelDBServiceResourceTypes.REPOSITORY.name());
-      RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-        roleService.deleteRoleBinding(roleBinding.getId());
+      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+        roleBindingNames.add(ownerRoleBindingName);
       }
 
       // Remove all repositoryEntity collaborators
-      roleService.removeResourceRoleBindings(
-          repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY);
+      roleBindingNames.addAll(
+          roleService.getResourceRoleBindings(
+              repositoryId, repositoryEntity.getOwner(), ModelDBServiceResourceTypes.REPOSITORY));
 
       // Delete workspace based roleBindings
-      roleService.deleteWorkspaceRoleBindings(
-          repositoryEntity.getWorkspace_id(),
-          WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-          String.valueOf(repositoryEntity.getId()),
-          ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-          ModelDBServiceResourceTypes.REPOSITORY,
-          repositoryEntity
-              .getRepository_visibility()
-              .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
-          GLOBAL_SHARING);
+      List<String> repoOrgWorkspaceRoleBindings =
+          roleService.getWorkspaceRoleBindings(
+              repositoryEntity.getWorkspace_id(),
+              WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+              String.valueOf(repositoryEntity.getId()),
+              ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+              ModelDBServiceResourceTypes.REPOSITORY,
+              repositoryEntity
+                  .getRepository_visibility()
+                  .equals(DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
+              GLOBAL_SHARING);
+      if (!repoOrgWorkspaceRoleBindings.isEmpty()) {
+        roleBindingNames.addAll(repoOrgWorkspaceRoleBindings);
+      }
     }
+
+    // Remove all role bindings
+    roleService.deleteRoleBindings(roleBindingNames);
   }
 
   @Override
@@ -642,34 +663,39 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.beginTransaction();
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
 
-      boolean exists =
-          VersioningUtils.commitRepositoryMappingExists(
-              session, request.getCommitSha(), repository.getId());
-      if (!exists) {
-        throw new ModelDBException(
-            "Commit_hash and repository_id mapping not found for repository "
-                + repository.getId()
-                + " and commit "
-                + request.getCommitSha(),
-            Code.NOT_FOUND);
-      }
-
-      Query query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
-      query.setParameter("repositoryId", repository.getId());
-      query.setParameter("branch", request.getBranch());
-      BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
-      if (branchEntity != null) {
-        if (branchEntity.getCommit_hash().equals(request.getCommitSha()))
-          return SetBranchRequest.Response.newBuilder().build();
-        session.delete(branchEntity);
-      }
-
-      branchEntity =
-          new BranchEntity(repository.getId(), request.getCommitSha(), request.getBranch());
-      session.save(branchEntity);
+      if (saveBranch(session, request.getCommitSha(), request.getBranch(), repository))
+        return SetBranchRequest.Response.newBuilder().build();
       session.getTransaction().commit();
       return SetBranchRequest.Response.newBuilder().build();
     }
+  }
+
+  private boolean saveBranch(
+      Session session, String commitSHA, String branch, RepositoryEntity repository)
+      throws ModelDBException {
+    boolean exists =
+        VersioningUtils.commitRepositoryMappingExists(session, commitSHA, repository.getId());
+    if (!exists) {
+      throw new ModelDBException(
+          "Commit_hash and repository_id mapping not found for repository "
+              + repository.getId()
+              + " and commit "
+              + commitSHA,
+          Code.NOT_FOUND);
+    }
+
+    Query query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
+    query.setParameter("repositoryId", repository.getId());
+    query.setParameter("branch", branch);
+    BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
+    if (branchEntity != null) {
+      if (branchEntity.getCommit_hash().equals(commitSHA)) return true;
+      session.delete(branchEntity);
+    }
+
+    branchEntity = new BranchEntity(repository.getId(), commitSHA, branch);
+    session.save(branchEntity);
+    return false;
   }
 
   @Override

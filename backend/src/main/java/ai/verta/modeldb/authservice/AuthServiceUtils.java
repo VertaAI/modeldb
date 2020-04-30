@@ -2,14 +2,17 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.uac.Empty;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.GetUsers;
+import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.UserInfo;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -211,5 +214,43 @@ public class AuthServiceUtils implements AuthService {
   @Override
   public boolean isCurrentUser(String vertaID) {
     return getVertaIdFromUserInfo(getCurrentLoginUserInfo()).equals(vertaID);
+  }
+
+  @Override
+  public UserInfoPaginationDTO getFuzzyUserInfoList(String usernameChar) {
+    if (usernameChar.isEmpty()) {
+      UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+      paginationDTO.setUserInfoList(Collections.emptyList());
+      paginationDTO.setTotalRecords(0L);
+      return paginationDTO;
+    }
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      GetUsersFuzzy.Builder getUserRequestBuilder =
+          GetUsersFuzzy.newBuilder().setUsername(usernameChar);
+
+      LOGGER.trace("usernameChar : {}", usernameChar);
+      // Get the user info from the Context
+      GetUsersFuzzy.Response response =
+          authServiceChannel
+              .getUacServiceBlockingStub()
+              .getUsersFuzzy(getUserRequestBuilder.build());
+      LOGGER.info(ModelDBMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+
+      UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+      paginationDTO.setUserInfoList(response.getUserInfosList());
+      paginationDTO.setTotalRecords(response.getTotalRecords());
+      return paginationDTO;
+    } catch (StatusRuntimeException ex) {
+      LOGGER.warn(ex.getMessage(), ex);
+      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.UNAVAILABLE_VALUE)
+                .setMessage("UAC Service unavailable : " + ex.getMessage())
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+      throw ex;
+    }
   }
 }

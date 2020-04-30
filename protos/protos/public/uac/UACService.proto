@@ -26,6 +26,23 @@ message GetUsers {
     }
 }
 
+// For pagination
+message Pagination {
+    int32 page_number = 2;
+    int32 page_limit = 3;
+}
+
+message GetUsersFuzzy {
+    string email = 2;
+    string username = 3;
+    Pagination pagination = 4;
+
+    message Response {
+        repeated UserInfo user_infos = 1;
+        int64 total_records = 2;
+    }
+}
+
 message IdServiceProviderEnum {
     enum IdServiceProvider {
         UNKNOWN = 0;
@@ -110,6 +127,13 @@ service UACService {
     rpc getUsers (GetUsers) returns (GetUsers.Response) {
         option (google.api.http) = {
             post: "/v1/uac/getUsers"
+            body: "*"
+        };
+    };
+
+    rpc getUsersFuzzy (GetUsersFuzzy) returns (GetUsersFuzzy.Response) {
+        option (google.api.http) = {
+            post: "/v1/uac/getUsersFuzzy"
             body: "*"
         };
     };

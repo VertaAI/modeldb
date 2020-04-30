@@ -175,6 +175,38 @@
         ]
       }
     },
+    "/uac/getUsersFuzzy": {
+      "post": {
+        "operationId": "getUsersFuzzy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetUsersFuzzyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetUsersFuzzy"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
     "/uac/updateUser": {
       "post": {
         "summary": "Only current user can update themselves",
@@ -323,6 +355,35 @@
         }
       }
     },
+    "uacGetUsersFuzzy": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/definitions/uacPagination"
+        }
+      }
+    },
+    "uacGetUsersFuzzyResponse": {
+      "type": "object",
+      "properties": {
+        "user_infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacUserInfo"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "uacGetUsersResponse": {
       "type": "object",
       "properties": {
@@ -333,6 +394,20 @@
           }
         }
       }
+    },
+    "uacPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "uacUpdateUser": {
       "type": "object",
