@@ -309,7 +309,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   private void validate(
       Session session,
       Set<String> experimentRuns,
-      Map<Long, RepositoryContainer> blobs,
+      Map<Long, RepositoryContainer> repositories,
       LineageEntry lineageEntry)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
     switch (lineageEntry.getDescriptionCase()) {
@@ -331,15 +331,15 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         long repositoryId = blob.getRepositoryId();
         RepositoryEntity repo;
         CommitSet result;
-        if (!blobs.containsKey(repositoryId)) {
+        if (!repositories.containsKey(repositoryId)) {
           // checks permissions and gets a repository
           repo =
               repositoryDAO.getRepositoryById(
                   session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
-          blobs.put(repositoryId, new RepositoryContainer(repo));
-          result = blobs.get(repositoryId).getValue();
+          repositories.put(repositoryId, new RepositoryContainer(repo));
+          result = repositories.get(repositoryId).getValue();
         } else {
-          RepositoryContainer entityMapEntry = blobs.get(repositoryId);
+          RepositoryContainer entityMapEntry = repositories.get(repositoryId);
           repo = entityMapEntry.getKey();
           result = entityMapEntry.getValue();
         }
