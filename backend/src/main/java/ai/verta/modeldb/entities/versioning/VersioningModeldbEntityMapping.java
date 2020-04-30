@@ -1,17 +1,22 @@
 package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.apache.logging.log4j.LogManager;
@@ -86,6 +91,34 @@ public class VersioningModeldbEntityMapping implements Serializable {
   @Column(name = "blob_hash")
   private String blob_hash;
 
+  @ManyToMany(targetEntity = ConfigBlobEntity.class, cascade = CascadeType.PERSIST)
+  @JoinTable(
+      name = "versioning_modeldb_entity_mapping_config_blob",
+      joinColumns = {
+        @JoinColumn(
+            name = "versioning_modeldb_entity_mapping_repository_id",
+            referencedColumnName = "repository_id"),
+        @JoinColumn(
+            name = "versioning_modeldb_entity_mapping_commit",
+            referencedColumnName = "commit"),
+        @JoinColumn(
+            name = "versioning_modeldb_entity_mapping_versioning_key",
+            referencedColumnName = "versioning_key"),
+        @JoinColumn(
+            name = "versioning_modeldb_entity_mapping_experiment_run_id",
+            referencedColumnName = "experiment_run_id"),
+        @JoinColumn(
+            name = "versioning_modeldb_entity_mapping_entity_type",
+            referencedColumnName = "entity_type")
+      },
+      inverseJoinColumns = {
+        @JoinColumn(name = "config_blob_entity_blob_hash", referencedColumnName = "blob_hash"),
+        @JoinColumn(
+            name = "config_blob_entity_config_seq_number",
+            referencedColumnName = "config_seq_number")
+      })
+  private Set<ConfigBlobEntity> config_blob_entities = new HashSet<>();
+
   public Long getRepository_id() {
     return repository_id;
   }
@@ -102,8 +135,16 @@ public class VersioningModeldbEntityMapping implements Serializable {
     return versioning_location;
   }
 
+  public Integer getVersioning_blob_type() {
+    return versioning_blob_type;
+  }
+
   public String getBlob_hash() {
     return blob_hash;
+  }
+
+  public void setConfig_blob_entities(Set<ConfigBlobEntity> config_blob_entities) {
+    this.config_blob_entities = config_blob_entities;
   }
 
   @Override

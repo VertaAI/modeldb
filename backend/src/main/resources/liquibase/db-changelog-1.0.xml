@@ -192,6 +192,23 @@
 		</update>
 	</changeSet>
 
+    <changeSet id="vmem-config-blob-mapping-table" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="versioning_modeldb_entity_mapping_config_blob"/>
+            </not>
+        </preConditions>
+        <createTable tableName="versioning_modeldb_entity_mapping_config_blob">
+            <column name="versioning_modeldb_entity_mapping_repository_id" type="int8"/>
+            <column name="versioning_modeldb_entity_mapping_commit" type="varchar(64)"/>
+            <column name="versioning_modeldb_entity_mapping_versioning_key" type="varchar(50)"/>
+            <column name="versioning_modeldb_entity_mapping_experiment_run_id" type="varchar(255)"/>
+            <column name="versioning_modeldb_entity_mapping_entity_type" type="varchar(50)"/>
+            <column name="config_blob_entity_blob_hash" type="varchar(64)"/>
+            <column name="config_blob_entity_config_seq_number" type="integer"/>
+        </createTable>
+    </changeSet>
+
     <!-- take a below line to the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
 </databaseChangeLog>
