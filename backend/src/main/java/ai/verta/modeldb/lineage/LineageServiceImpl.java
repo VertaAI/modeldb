@@ -261,7 +261,8 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     List<LineageEntry> filterResult =
         itemList.stream()
             .filter(
-                lineageEntry -> filterLineageEntry(session, experimentRuns, repositories, lineageEntry))
+                lineageEntry ->
+                    filterLineageEntry(session, experimentRuns, repositories, lineageEntry))
             .collect(Collectors.toList());
     if (filterResult.size() != 0) {
       newLineageEntryBatchResponseSingleList.add(
@@ -331,7 +332,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         RepositoryEntity repo;
         CommitSet result;
         if (!blobs.containsKey(repositoryId)) {
-          //checks permissions and gets a repository
+          // checks permissions and gets a repository
           repo =
               repositoryDAO.getRepositoryById(
                   session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());

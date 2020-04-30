@@ -17,6 +17,7 @@ public interface RepositoryDAO {
 
   /**
    * checks permissions and gets repository
+   *
    * @param session current session
    * @param id repository id
    * @return repository entity
