@@ -151,7 +151,7 @@ public class ConflictGenerator {
     Map<String, AutogenPythonRequirementEnvironmentBlob> mapC = getRequirementMap(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
-    keys.addAll(mapB.keySet());
+    keys.retainAll(mapB.keySet());
     List<AutogenPythonRequirementEnvironmentDiff> retList =
         new LinkedList<AutogenPythonRequirementEnvironmentDiff>();
     for (String key : keys) {
@@ -200,7 +200,7 @@ public class ConflictGenerator {
     Map<String, AutogenEnvironmentVariablesBlob> mapC = getEnvVarMap(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
-    keys.addAll(mapB.keySet());
+    keys.retainAll(mapB.keySet());
     List<AutogenEnvironmentVariablesDiff> retList =
         new LinkedList<AutogenEnvironmentVariablesDiff>();
     for (String key : keys) {
@@ -284,7 +284,7 @@ public class ConflictGenerator {
     Map<String, AutogenHyperparameterSetConfigBlob> mapC = getHyperparameterSetMap(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
-    keys.addAll(mapB.keySet());
+    keys.retainAll(mapB.keySet());
     List<AutogenHyperparameterSetConfigDiff> retList =
         new LinkedList<AutogenHyperparameterSetConfigDiff>();
     for (String key : keys) {
@@ -332,7 +332,7 @@ public class ConflictGenerator {
     Map<String, AutogenHyperparameterConfigBlob> mapC = getHyperparameterMap(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
-    keys.addAll(mapB.keySet());
+    keys.retainAll(mapB.keySet());
     List<AutogenHyperparameterConfigDiff> retList =
         new LinkedList<AutogenHyperparameterConfigDiff>();
     for (String key : keys) {
@@ -449,7 +449,7 @@ public class ConflictGenerator {
     Map<String, AutogenS3DatasetComponentBlob> mapC = getS3Map(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
-    keys.addAll(mapB.keySet());
+    keys.retainAll(mapB.keySet());
     List<AutogenS3DatasetComponentDiff> retList = new LinkedList<AutogenS3DatasetComponentDiff>();
     for (String key : keys) {
       retList.add(
@@ -511,7 +511,7 @@ public class ConflictGenerator {
     Map<String, AutogenPathDatasetComponentBlob> mapC = getPathMap(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
-    keys.addAll(mapB.keySet());
+    keys.retainAll(mapB.keySet());
     List<AutogenPathDatasetComponentDiff> retList =
         new LinkedList<AutogenPathDatasetComponentDiff>();
     for (String key : keys) {
