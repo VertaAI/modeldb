@@ -6,6 +6,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.security.NoSuchAlgorithmException;
 import org.hibernate.Session;
 
 public interface RepositoryDAO {
@@ -25,8 +26,9 @@ public interface RepositoryDAO {
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
       throws ModelDBException;
 
-  SetRepository.Response setRepository(SetRepository request, UserInfo userInfo, boolean create)
-      throws ModelDBException, InvalidProtocolBufferException;
+  SetRepository.Response setRepository(
+      CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
+      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 
   DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request, CommitDAO commitDAO, ExperimentRunDAO experimentRunDAO)

@@ -249,7 +249,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           ModelDBConstants.ROLE_PROJECT_ADMIN,
           ModelDBServiceResourceTypes.PROJECT,
           projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
-          null);
+          "_GLOBAL_SHARING");
     }
   }
 
@@ -746,22 +746,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               projectId, project.getOwner(), ModelDBServiceResourceTypes.PROJECT));
 
       // Delete workspace based roleBindings
-      try {
-        List<String> workspaceRoleBindingNames =
-            getWorkspaceRoleBindings(
-                project.getWorkspace(),
-                WorkspaceType.forNumber(project.getWorkspace_type()),
-                project.getId(),
-                ProjectVisibility.forNumber(project.getProject_visibility()));
-        roleBindingNames.addAll(workspaceRoleBindingNames);
-      } catch (Exception e) {
-        // FIXME: VR-4018  remove hack
-        // right now the condition indicates that a organization was deleted before deleting the
-        // projects
-        if (!e.getMessage().contains("Details: Doesn't exist")) {
-          throw e;
-        }
-      }
+      List<String> workspaceRoleBindingNames =
+          getWorkspaceRoleBindings(
+              project.getWorkspace(),
+              WorkspaceType.forNumber(project.getWorkspace_type()),
+              project.getId(),
+              ProjectVisibility.forNumber(project.getProject_visibility()));
+      roleBindingNames.addAll(workspaceRoleBindingNames);
     }
   }
 
@@ -776,7 +767,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         projectId,
         ModelDBConstants.ROLE_PROJECT_ADMIN,
         ModelDBServiceResourceTypes.PROJECT,
-        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC));
+        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+        "_GLOBAL_SHARING");
   }
 
   @Override
@@ -801,9 +793,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       deleteExperimentsWithPagination(session, allowedProjectIds, roleBindingNames);
 
+      LOGGER.debug("num bindings after Experiment {}", roleBindingNames.size());
       // Delete the ExperimentRunEntity object
       deleteExperimentRunsWithPagination(session, allowedProjectIds, roleBindingNames);
-
+      LOGGER.debug("num bindings after Experiment Run {}", roleBindingNames.size());
       Transaction transaction = session.beginTransaction();
       for (String projectId : allowedProjectIds) {
         ProjectEntity projectObj = session.load(ProjectEntity.class, projectId);
@@ -812,6 +805,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       // Get roleBindings by accessible projects
       getRoleBindingsOfAccessibleProjects(projectEntities, roleBindingNames);
+      LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
       transaction.commit();
 
       // Remove all role bindings
@@ -1142,7 +1136,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       String entityName = "projectEntity";
       List<Predicate> queryPredicatesList =
           RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, projectRoot);
+              entityName, predicates, builder, criteriaQuery, projectRoot, authService);
       if (!queryPredicatesList.isEmpty()) {
         finalPredicatesList.addAll(queryPredicatesList);
       }
@@ -1349,5 +1343,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       return projectEntity.getProtoObject();
     }
+  }
+
+  @Override
+  public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
+      throws InvalidProtocolBufferException {
+    FindProjects findProjects =
+        FindProjects.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
+    ProjectPaginationDTO projectPaginationDTO =
+        findProjects(findProjects, null, currentLoginUserInfo, ProjectVisibility.PRIVATE);
+    return projectPaginationDTO.getProjects().stream()
+        .map(Project::getId)
+        .collect(Collectors.toList());
   }
 }

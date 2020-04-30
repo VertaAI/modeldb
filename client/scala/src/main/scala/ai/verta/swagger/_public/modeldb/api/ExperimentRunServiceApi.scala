@@ -64,17 +64,14 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
 
   def deleteExperimentRun(body: ModeldbDeleteExperimentRun)(implicit ec: ExecutionContext): Try[ModeldbDeleteExperimentRunResponse] = Await.result(deleteExperimentRunAsync(body), Duration.Inf)
 
-  def deleteExperimentRunAttributesAsync(id: String, attribute_keys: List[String], delete_all: Boolean)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteExperimentRunAttributesResponse]] = {
+  def deleteExperimentRunAttributesAsync(body: ModeldbDeleteExperimentRunAttributes)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteExperimentRunAttributesResponse]] = {
     val __query = Map[String,String](
-      "id" -> client.toQuery(id),
-      "attribute_keys" -> client.toQuery(attribute_keys),
-      "delete_all" -> client.toQuery(delete_all)
     )
-    val body: String = null
-    return client.request[String, ModeldbDeleteExperimentRunAttributesResponse]("DELETE", basePath + s"/experiment-run/deleteExperimentRunAttributes", __query, body, ModeldbDeleteExperimentRunAttributesResponse.fromJson)
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbDeleteExperimentRunAttributes, ModeldbDeleteExperimentRunAttributesResponse]("DELETE", basePath + s"/experiment-run/deleteExperimentRunAttributes", __query, body, ModeldbDeleteExperimentRunAttributesResponse.fromJson)
   }
 
-  def deleteExperimentRunAttributes(id: String, attribute_keys: List[String], delete_all: Boolean)(implicit ec: ExecutionContext): Try[ModeldbDeleteExperimentRunAttributesResponse] = Await.result(deleteExperimentRunAttributesAsync(id, attribute_keys, delete_all), Duration.Inf)
+  def deleteExperimentRunAttributes(body: ModeldbDeleteExperimentRunAttributes)(implicit ec: ExecutionContext): Try[ModeldbDeleteExperimentRunAttributesResponse] = Await.result(deleteExperimentRunAttributesAsync(body), Duration.Inf)
 
   def deleteExperimentRunTagAsync(body: ModeldbDeleteExperimentRunTag)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteExperimentRunTagResponse]] = {
     val __query = Map[String,String](

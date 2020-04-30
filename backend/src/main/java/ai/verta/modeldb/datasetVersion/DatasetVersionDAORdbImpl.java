@@ -23,7 +23,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
@@ -197,6 +196,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public Boolean deleteDatasetVersions(List<String> datasetVersionIds, Boolean parentExists) {
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       List<String> datasetIds = new ArrayList<>();
@@ -212,13 +212,16 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                 datasetVersionObj.getId(),
                 datasetVersionObj.getOwner(),
                 ModelDBServiceResourceTypes.DATASET_VERSION.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
         }
       }
       setDatasetUpdateTime(session, datasetIds);
       transaction.commit();
+
+      // Remove all role bindings
+      roleService.deleteRoleBindings(roleBindingNames);
+
       LOGGER.debug("DatasetVersion deleted successfully");
       return true;
     }
@@ -330,7 +333,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String entityName = "datasetVersionEntity";
       List<Predicate> queryPredicatesList =
           RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, datasetVersionRoot);
+              entityName, predicates, builder, criteriaQuery, datasetVersionRoot, authService);
       if (!queryPredicatesList.isEmpty()) {
         finalPredicatesList.addAll(queryPredicatesList);
       }

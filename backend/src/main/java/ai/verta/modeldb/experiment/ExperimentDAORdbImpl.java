@@ -6,17 +6,14 @@ import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
-import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.CommentEntity;
@@ -30,7 +27,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelResourceEnum;
 import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -49,7 +45,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -187,19 +182,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       }
     }
     return accessibleExperimentIds;
-  }
-
-  public List<String> getDefaultWorkspaceProjectIDs(
-      ProjectDAO projectDAO, String workspaceName, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException {
-    FindProjects findProjects =
-        FindProjects.newBuilder().setWorkspaceName(workspaceName).setIdsOnly(true).build();
-    ProjectPaginationDTO projectPaginationDTO =
-        projectDAO.findProjects(
-            findProjects, null, currentLoginUserInfo, ProjectVisibility.PRIVATE);
-    return projectPaginationDTO.getProjects().stream()
-        .map(Project::getId)
-        .collect(Collectors.toList());
   }
 
   public ExperimentDAORdbImpl(AuthService authService, RoleService roleService) {
@@ -586,6 +568,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           Any.pack(DeleteExperiments.getDefaultInstance()));
     }
 
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       // Delete the ExperimentRunEntity object
@@ -603,9 +586,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 experimentRunEntity.getId(),
                 experimentRunEntity.getOwner(),
                 ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
         }
       }
       // Delete the ExperimentRUn comments
@@ -625,15 +607,18 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 experimentObj.getId(),
                 experimentObj.getOwner(),
                 ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT.name());
-        RoleBinding roleBinding = roleService.getRoleBindingByName(ownerRoleBindingName);
-        if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(roleBinding.getId());
+        if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
+          roleBindingNames.add(ownerRoleBindingName);
         }
       }
 
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(session, projectIds, Calendar.getInstance().getTimeInMillis());
       transaction.commit();
+
+      // Remove all role bindings
+      roleService.deleteRoleBindings(roleBindingNames);
+
       LOGGER.debug("Experiment deleted successfully");
       return true;
     }
@@ -866,10 +851,10 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       List<String> projectIds = new ArrayList<>();
       if (!queryParameters.getProjectId().isEmpty()) {
         projectIds.add(queryParameters.getProjectId());
-      } else {
+      } else if (accessibleExperimentIds.isEmpty()) {
         List<String> workspaceProjectIDs =
-            getDefaultWorkspaceProjectIDs(
-                projectDAO, queryParameters.getWorkspaceName(), currentLoginUserInfo);
+            projectDAO.getWorkspaceProjectIDs(
+                queryParameters.getWorkspaceName(), currentLoginUserInfo);
         if (workspaceProjectIDs == null || workspaceProjectIDs.isEmpty()) {
           LOGGER.warn(
               "accessible project for the experiments not found for given workspace : {}",
@@ -880,6 +865,16 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           return experimentPaginationDTO;
         }
         projectIds.addAll(workspaceProjectIDs);
+      }
+
+      if (accessibleExperimentIds.isEmpty() && projectIds.isEmpty()) {
+        String errorMessage =
+            "Access is denied. Accessible projects not found for given Experiment IDs : "
+                + accessibleExperimentIds;
+        ModelDBUtils.logAndThrowError(
+            errorMessage,
+            Code.PERMISSION_DENIED_VALUE,
+            Any.pack(FindExperiments.getDefaultInstance()));
       }
 
       if (!projectIds.isEmpty()) {
@@ -897,7 +892,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       String entityName = "experimentEntity";
       List<Predicate> queryPredicatesList =
           RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, experimentRoot);
+              entityName, predicates, builder, criteriaQuery, experimentRoot, authService);
       if (!queryPredicatesList.isEmpty()) {
         finalPredicatesList.addAll(queryPredicatesList);
       }
