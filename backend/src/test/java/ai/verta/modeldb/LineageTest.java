@@ -526,10 +526,7 @@ public class LineageTest {
                       .addItems(LineageEntryBatchRequest.newBuilder().setId(id))
                       .build());
           checkInputsOutputs(findAllInputsOutputsResult, 2, 2);
-          deleteLineage =
-              DeleteLineage.newBuilder()
-                  .setId(result.getId())
-                  .addOutput(outputExp);
+          deleteLineage = DeleteLineage.newBuilder().setId(result.getId()).addOutput(outputExp);
           lineageServiceStub.deleteLineage(deleteLineage.build());
           findAllInputsOutputsResult =
               lineageServiceStub.findAllInputsOutputs(
@@ -537,10 +534,7 @@ public class LineageTest {
                       .addItems(LineageEntryBatchRequest.newBuilder().setId(id))
                       .build());
           checkInputsOutputs(findAllInputsOutputsResult, 2, 1);
-          deleteLineage =
-              DeleteLineage.newBuilder()
-                  .setId(result.getId())
-                  .addInput(inputExp);
+          deleteLineage = DeleteLineage.newBuilder().setId(result.getId()).addInput(inputExp);
           lineageServiceStub.deleteLineage(deleteLineage.build());
           findAllInputsOutputsResult =
               lineageServiceStub.findAllInputsOutputs(
@@ -553,7 +547,7 @@ public class LineageTest {
               DeleteLineage.newBuilder()
                   .setId(result.getId())
                   .addInput(inputOutputExp)
-              .addOutput(outputDataset);
+                  .addOutput(outputDataset);
           Assert.assertTrue(lineageServiceStub.deleteLineage(deleteLineage.build()).getStatus());
 
           check(
@@ -599,7 +593,8 @@ public class LineageTest {
     LOGGER.info("Create and delete Lineage test stop................................");
   }
 
-  public void checkInputsOutputs(FindAllInputsOutputs.Response findAllInputsOutputsResult, int inputsCount, int outputsCount) {
+  public void checkInputsOutputs(
+      FindAllInputsOutputs.Response findAllInputsOutputsResult, int inputsCount, int outputsCount) {
     Assert.assertEquals(1, findAllInputsOutputsResult.getInputsCount());
     LineageEntryBatchResponse inputs = findAllInputsOutputsResult.getInputs(0);
     Assert.assertEquals(1, inputs.getItemsCount());
