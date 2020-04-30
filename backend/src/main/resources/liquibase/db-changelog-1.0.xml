@@ -179,6 +179,18 @@
             <column name="blob_hash" type="varchar(255)"/>
         </addColumn>
     </changeSet>
+    
+	<changeSet id="SetNullS3VersionEmpty" author="ravi">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="s3_dataset_component_blob" columnName="s3_version_id"/>
+            </not>
+        </preConditions>
+		<update tableName="s3_dataset_component_blob">
+			<column name="s3_version_id" value="" />
+			<where>s3_version_id is null</where>
+		</update>
+	</changeSet>
 
     <!-- take a below line to the end of this file -->
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
