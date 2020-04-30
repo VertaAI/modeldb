@@ -79,12 +79,10 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   @Override
   public List<String> getLabels(IdentificationType id) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(GET_LABELS_HQL);
       query.setParameter("entityHash", getEntityHash(id));
       query.setParameter("entityType", id.getIdTypeValue());
       List<LabelsMappingEntity> labelsMappingEntities = query.list();
-      //transaction.commit();
       return labelsMappingEntities.stream()
           .map(labelsMappingEntity -> labelsMappingEntity.getId().getLabel())
           .collect(Collectors.toList());

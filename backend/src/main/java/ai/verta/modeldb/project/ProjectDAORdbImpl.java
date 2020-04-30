@@ -257,7 +257,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectName(String projectId, String projectName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
 
       Project project =
@@ -272,7 +272,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       session.update(projectEntity);
       LOGGER.debug("Project name updated successfully");
-      //transaction.commit();
+      transaction.commit();
       return projectEntity.getProtoObject();
     }
   }
@@ -281,13 +281,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectDescription(String projectId, String projectDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
       projectEntity.setDescription(projectDescription);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       session.update(projectEntity);
       LOGGER.debug("Project description updated successfully");
-      //transaction.commit();
+      transaction.commit();
       return projectEntity.getProtoObject();
     }
   }
@@ -296,13 +296,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectReadme(String projectId, String projectReadme)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
       projectEntity.setReadme_text(projectReadme);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       session.update(projectEntity);
       LOGGER.debug("Project readme updated successfully");
-      //transaction.commit();
+      transaction.commit();
       return projectEntity.getProtoObject();
     }
   }
@@ -871,7 +871,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project setProjectShortName(String projectId, String projectShortName, UserInfo userInfo)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL);
       query.setParameter("projectShortName", projectShortName);
       query.setParameter("vertaId", authService.getVertaIdFromUserInfo(userInfo));
@@ -891,7 +891,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       projectEntity.setShort_name(projectShortName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       session.update(projectEntity);
-      //transaction.commit();
+      transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
     }
@@ -929,7 +929,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project setProjectVisibility(String projectId, ProjectVisibility projectVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(GET_PROJECT_BY_ID_HQL);
       query.setParameter("id", projectId);
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
@@ -954,7 +954,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             projectEntity.getWorkspace_type(),
             projectEntity.getWorkspace());
       }
-      //transaction.commit();
+      transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
     }
