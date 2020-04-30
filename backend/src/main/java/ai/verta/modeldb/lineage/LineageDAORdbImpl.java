@@ -138,6 +138,8 @@ public class LineageDAORdbImpl implements LineageDAO {
         Set<ConnectionEntity> values = new HashSet<>(inputInDatabase.values());
         values.addAll(outputInDatabase.values());
         values.forEach(connectionEntity -> deleteConnectionEntity(session, connectionEntity));
+      }
+      if (noDataProvided || inputInDatabase.size() == 0 && outputInDatabase.size() == 0) {
         LineageElementEntity lineageElementEntity = session.get(LineageElementEntity.class, id);
         if (lineageElementEntity != null) {
           session.remove(lineageElementEntity);

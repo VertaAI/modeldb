@@ -12,7 +12,6 @@ import ai.verta.modeldb.LineageEntry.DescriptionCase;
 import ai.verta.modeldb.LineageEntryBatchResponse;
 import ai.verta.modeldb.LineageEntryBatchResponseSingle;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
-import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.VersioningLineageEntry;
@@ -45,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -176,30 +176,26 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     }
   }
 
-  private static class CommitMap {
-    Map<String, Set<String>> commitMap = new HashMap<>();
+  private static class CommitSet {
+    Set<String> commits = new HashSet<>();
 
     public boolean containsKey(String commitSha) {
-      return commitMap.containsKey(commitSha);
+      return commits.contains(commitSha);
     }
 
-    public void put(String commitSha, HashSet<String> blobs) {
-      commitMap.put(commitSha, blobs);
-    }
-
-    public Set<String> get(String commitSha) {
-      return commitMap.get(commitSha);
+    public void add(String commitSha) {
+      commits.add(commitSha);
     }
   }
 
   private static class RepositoryContainer {
-    Map.Entry<RepositoryEntity, CommitMap> repository;
+    Map.Entry<RepositoryEntity, CommitSet> repository;
 
     RepositoryContainer(RepositoryEntity repo) {
-      repository = new AbstractMap.SimpleEntry<>(repo, new CommitMap());
+      repository = new AbstractMap.SimpleEntry<>(repo, new CommitSet());
     }
 
-    public CommitMap getValue() {
+    public CommitSet getValue() {
       return repository.getValue();
     }
 
@@ -227,7 +223,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     return builder.build();
   }
 
-  private Iterable<? extends LineageEntryBatchResponse> filter(
+  private Iterable<LineageEntryBatchResponse> filter(
       Session session, List<LineageEntryBatchResponse> lineageEntryBatchResponses) {
     final Set<String> unfilteredExperimentRunIds = new HashSet<>();
     for (LineageEntryBatchResponse lineageEntryBatchResponse : lineageEntryBatchResponses) {
@@ -249,69 +245,82 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     } else {
       filteredExperimentRunIds = filter(session, unfilteredExperimentRunIds);
     }
-    final Map<Long, RepositoryContainer> blobs = new HashMap<>();
-    List<LineageEntryBatchResponse> result =
-        lineageEntryBatchResponses.stream()
-            .map(
-                lineageEntryBatchResponse -> {
-                  List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseItemsList =
-                      lineageEntryBatchResponse.getItemsList();
-                  List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseSingles =
-                      lineageEntryBatchResponseItemsList.stream()
-                          .flatMap(
-                              lineageEntryBatchResponseSingle -> {
-                                List<LineageEntryBatchResponseSingle>
-                                    newLineageEntryBatchResponseSingleList = new LinkedList<>();
-                                List<LineageEntry> itemList =
-                                    lineageEntryBatchResponseSingle.getItemsList();
-                                List<LineageEntry> filterResult =
-                                    itemList.stream()
-                                        .filter(
-                                            lineageEntry -> {
-                                              try {
-                                                return validate(
-                                                    session,
-                                                    unfilteredExperimentRunIds,
-                                                    blobs,
-                                                    lineageEntry,
-                                                    filteredExperimentRunIds);
-                                              } catch (StatusRuntimeException
-                                                  | ModelDBException e) {
-                                                LOGGER.warn(
-                                                    "Can't access entity {}", e.getMessage());
-                                                return false;
-                                              } catch (NoSuchAlgorithmException
-                                                  | InvalidProtocolBufferException e) {
-                                                LOGGER.error("Unexpected error {}", e.getMessage());
-                                                Status status =
-                                                    Status.newBuilder()
-                                                        .setCode(com.google.rpc.Code.INTERNAL_VALUE)
-                                                        .setMessage(e.getMessage())
-                                                        .addDetails(
-                                                            Any.pack(
-                                                                LineageEntryBatchResponse
-                                                                    .getDefaultInstance()))
-                                                        .build();
-                                                throw StatusProto.toStatusRuntimeException(status);
-                                              }
-                                            })
-                                        .collect(Collectors.toList());
-                                if (filterResult.size() != 0) {
-                                  newLineageEntryBatchResponseSingleList.add(
-                                      LineageEntryBatchResponseSingle.newBuilder()
-                                          .setId(lineageEntryBatchResponseSingle.getId())
-                                          .addAllItems(filterResult)
-                                          .build());
-                                }
-                                return newLineageEntryBatchResponseSingleList.stream();
-                              })
-                          .collect(Collectors.toList());
-                  return LineageEntryBatchResponse.newBuilder()
-                      .addAllItems(lineageEntryBatchResponseSingles)
-                      .build();
-                })
+    final Map<Long, RepositoryContainer> repositories = new HashMap<>();
+    return lineageEntryBatchResponses.stream()
+        .map(
+            lineageEntryBatchResponse ->
+                filterLineageEntryBatchResponse(
+                    session, unfilteredExperimentRunIds, repositories, lineageEntryBatchResponse, filteredExperimentRunIds))
+        .collect(Collectors.toList());
+  }
+
+  private LineageEntryBatchResponse filterLineageEntryBatchResponse(
+      Session session,
+      Set<String> unfilteredExperimentRunIds,
+      Map<Long, RepositoryContainer> repositories,
+      LineageEntryBatchResponse lineageEntryBatchResponse,
+    Set<String> filteredExperimentRunIds) {
+      List<LineageEntryBatchResponseSingle> lineageEntryBatchResponseItemsList =
+        lineageEntryBatchResponse.getItemsList();
+    List<LineageEntryBatchResponseSingle> result =
+        lineageEntryBatchResponseItemsList.stream()
+            .flatMap(
+                lineageEntryBatchResponseSingle ->
+                    filterLineageEntryBatchResponseSingle(
+                        session, unfilteredExperimentRunIds, repositories, lineageEntryBatchResponseSingle, filteredExperimentRunIds))
             .collect(Collectors.toList());
-    return result;
+    return LineageEntryBatchResponse.newBuilder().addAllItems(result).build();
+  }
+
+  private Stream<? extends LineageEntryBatchResponseSingle> filterLineageEntryBatchResponseSingle(
+      Session session,
+      Set<String> unfilteredExperimentRunIds,
+      Map<Long, RepositoryContainer> repositories,
+      LineageEntryBatchResponseSingle lineageEntryBatchResponseSingle,
+    Set<String> filteredExperimentRunIds) {
+    List<LineageEntryBatchResponseSingle> newLineageEntryBatchResponseSingleList =
+        new LinkedList<>();
+    List<LineageEntry> itemList = lineageEntryBatchResponseSingle.getItemsList();
+    List<LineageEntry> filterResult =
+        itemList.stream()
+            .filter(
+                lineageEntry -> filterLineageEntry(session, unfilteredExperimentRunIds, repositories, lineageEntry, filteredExperimentRunIds))
+            .collect(Collectors.toList());
+    if (filterResult.size() != 0) {
+      newLineageEntryBatchResponseSingleList.add(
+          LineageEntryBatchResponseSingle.newBuilder()
+              .setId(lineageEntryBatchResponseSingle.getId())
+              .addAllItems(filterResult)
+              .build());
+    }
+    return newLineageEntryBatchResponseSingleList.stream();
+  }
+
+  private boolean filterLineageEntry(
+      Session session,
+      Set<String> unfilteredExperimentRunIds,
+      Map<Long, RepositoryContainer> repositories,
+      LineageEntry lineageEntry,
+      Set<String> filteredExperimentRunIds
+      ) {
+    try {
+      validate(session, unfilteredExperimentRunIds, repositories,
+          lineageEntry,
+          filteredExperimentRunIds);
+      return true;
+    } catch (StatusRuntimeException | ModelDBException e) {
+      LOGGER.warn("Can't access entity {}", e.getMessage());
+      return false;
+    } catch (NoSuchAlgorithmException | InvalidProtocolBufferException e) {
+      LOGGER.error("Unexpected error {}", e.getMessage());
+      Status status =
+          Status.newBuilder()
+              .setCode(com.google.rpc.Code.INTERNAL_VALUE)
+              .setMessage(e.getMessage())
+              .addDetails(Any.pack(LineageEntryBatchResponse.getDefaultInstance()))
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
   }
 
   private void checkResourcesExistsAndAccessible(Session session, List<LineageEntry> lineageEntries)
@@ -381,16 +390,16 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   private void validate(
       Session session,
       Set<String> experimentRunIds,
-      Map<Long, RepositoryContainer> blobs,
+      Map<Long, RepositoryContainer> repositories,
       LineageEntry lineageEntry)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
-    validate(session, experimentRunIds, blobs, lineageEntry, null);
+    validate(session, experimentRunIds, repositories, lineageEntry, null);
   }
 
   private boolean validate(
       Session session,
       Set<String> experimentRunIds,
-      Map<Long, RepositoryContainer> blobs,
+      Map<Long, RepositoryContainer> repositories,
       LineageEntry lineageEntry,
       Set<String> filteredExperimentRunIds)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
@@ -405,35 +414,26 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         VersioningLineageEntry blob = lineageEntry.getBlob();
         long repositoryId = blob.getRepositoryId();
         RepositoryEntity repo;
-        CommitMap result;
-        if (!blobs.containsKey(repositoryId)) {
+        CommitSet result;
+        if (!repositories.containsKey(repositoryId)) {
+          //checks permissions and gets a repository
           repo =
               repositoryDAO.getRepositoryById(
                   session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
-          blobs.put(repositoryId, new RepositoryContainer(repo));
-          result = blobs.get(repositoryId).getValue();
+          repositories.put(repositoryId, new RepositoryContainer(repo));
+          result = repositories.get(repositoryId).getValue();
         } else {
-          RepositoryContainer entityMapEntry = blobs.get(repositoryId);
+          RepositoryContainer entityMapEntry = repositories.get(repositoryId);
           repo = entityMapEntry.getKey();
           result = entityMapEntry.getValue();
         }
         String commitSha = blob.getCommitSha();
-        Set<String> blobResult;
         if (!result.containsKey(commitSha)) {
           commitDAO.getCommitEntity(session, commitSha, session2 -> repo);
-          result.put(commitSha, new HashSet<>());
+          result.add(commitSha);
         }
-        blobResult = result.get(commitSha);
-        String stringFromProtoObject =
-            ModelDBUtils.getStringFromProtoObject(
-                Location.newBuilder().addAllLocation(blob.getLocationList()));
-        if (!blobResult.contains(stringFromProtoObject)) {
-          blobDAO.getCommitComponent(session2 -> repo, commitSha, blob.getLocationList());
-          blobResult.add(stringFromProtoObject);
-        }
+        blobDAO.getCommitComponent(session2 -> repo, commitSha, blob.getLocationList());
         break;
-      default:
-        throw new ModelDBException("Unexpected type", Code.INTERNAL);
     }
     return true;
   }
