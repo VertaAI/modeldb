@@ -1,7 +1,6 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.ModelDBAuthInterceptor;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -9,6 +8,7 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceImplBase;
@@ -34,6 +34,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
+  private final ProjectDAO projectDAO;
   private final ExperimentDAO experimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final ModelDBAuthInterceptor modelDBAuthInterceptor;
@@ -46,6 +47,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
+      ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ExperimentRunDAO experimentRunDAO,
       ModelDBAuthInterceptor modelDBAuthInterceptor,
@@ -55,6 +57,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
+    this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
     this.modelDBAuthInterceptor = modelDBAuthInterceptor;
@@ -124,25 +127,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
         }
         SetRepository.Response response =
-            repositoryDAO.setRepository(requestBuilder.build(), userInfo, true);
-
-        RepositoryIdentification repositoryId =
-            RepositoryIdentification.newBuilder()
-                .setRepoId(response.getRepository().getId())
-                .build();
-        CreateCommitRequest.Response commitResponse =
-            commitDAO.setCommit(
-                authService.getVertaIdFromUserInfo(userInfo),
-                Commit.newBuilder().setMessage(ModelDBConstants.INITIAL_COMMIT_MESSAGE).build(),
-                (session) -> FileHasher.getSha(new String()),
-                (session) -> repositoryDAO.getRepositoryById(session, repositoryId));
-
-        repositoryDAO.setBranch(
-            SetBranchRequest.newBuilder()
-                .setCommitSha(commitResponse.getCommit().getCommitSha())
-                .setBranch(ModelDBConstants.MASTER_BRANCH)
-                .setRepositoryId(repositoryId)
-                .build());
+            repositoryDAO.setRepository(commitDAO, requestBuilder.build(), userInfo, true);
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
@@ -163,7 +148,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           throw new ModelDBException("Repository name is empty", Code.INVALID_ARGUMENT);
         }
 
-        SetRepository.Response response = repositoryDAO.setRepository(request, null, false);
+        SetRepository.Response response =
+            repositoryDAO.setRepository(commitDAO, request, null, false);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -365,6 +351,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       ListCommitExperimentRunsRequest.Response response =
           experimentRunDAO.listCommitExperimentRuns(
+              projectDAO,
               request,
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
@@ -390,6 +377,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       ListBlobExperimentRunsRequest.Response response =
           experimentRunDAO.listBlobExperimentRuns(
+              projectDAO,
               request,
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
@@ -655,6 +643,24 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, FindRepositories.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void findRepositoriesBlobs(
+      FindRepositoriesBlobs request,
+      StreamObserver<FindRepositoriesBlobs.Response> responseObserver) {
+    QPSCountResource.inc();
+    try {
+      try (RequestLatencyResource latencyResource =
+          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(request);
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+      }
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, FindRepositoriesBlobs.Response.getDefaultInstance());
     }
   }
 }

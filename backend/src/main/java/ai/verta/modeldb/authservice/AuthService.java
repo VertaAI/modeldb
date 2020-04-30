@@ -1,6 +1,7 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.uac.UserInfo;
 import java.util.List;
 import java.util.Map;
@@ -27,4 +28,6 @@ public interface AuthService {
    * @return {@link Boolean} : boolean status
    */
   boolean isCurrentUser(String vertaID);
+
+  UserInfoPaginationDTO getFuzzyUserInfoList(String username_char);
 }

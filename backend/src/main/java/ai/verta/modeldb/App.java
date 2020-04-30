@@ -458,6 +458,7 @@ public class App implements ApplicationContextAware {
             repositoryDAO,
             commitDAO,
             blobDAO,
+            projectDAO,
             experimentDAO,
             experimentRunDAO,
             new ModelDBAuthInterceptor(),

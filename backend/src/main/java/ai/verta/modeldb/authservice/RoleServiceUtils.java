@@ -617,28 +617,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public String buildAdminRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_PROJECT_ADMIN,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.PROJECT.name());
-    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_DATASET_ADMIN,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.DATASET.name());
-    } else {
-      return ModelDBConstants.EMPTY_STRING;
-    }
-  }
-
-  @Override
   public String buildProjectDeployRoleBindingName(
       String resourceId,
       CollaboratorBase collaborator,
@@ -651,109 +629,6 @@ public class RoleServiceUtils implements RoleService {
           ModelDBServiceResourceTypes.PROJECT.name());
     } else {
       return ModelDBConstants.EMPTY_STRING;
-    }
-  }
-
-  @Override
-  public void removeResourceRoleBindings(
-      String resourceId,
-      String resourceOwnerId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
-      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.READ,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.UPDATE,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.DEPLOY,
-                      requestHeaders));
-
-      CompletableFuture<Void> collaboratorCombineFuture =
-          CompletableFuture.allOf(
-              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
-
-      // Wait for all task complete
-      collaboratorCombineFuture.get();
-
-      Set<CollaboratorBase> readCollaborators = readOnlyCollaboratorsFuture.get();
-      Set<CollaboratorBase> readWriteCollaborators = readWriteCollaboratorsFuture.get();
-      Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
-
-      Set<CollaboratorBase> finalCollaborators = new HashSet<>();
-      finalCollaborators.addAll(readCollaborators);
-      finalCollaborators.addAll(readWriteCollaborators);
-      if (finalCollaborators.size() > 0) {
-        for (CollaboratorBase collaborator : finalCollaborators) {
-
-          String readOnlyRoleBindingName =
-              buildReadOnlyRoleBindingName(resourceId, collaborator, modelDBServiceResourceTypes);
-          RoleBinding readOnlyRoleBinding = getRoleBindingByName(readOnlyRoleBindingName);
-          if (readOnlyRoleBinding != null && !readOnlyRoleBinding.getId().isEmpty()) {
-            deleteRoleBinding(readOnlyRoleBinding.getId());
-          }
-
-          String readWriteRoleBindingName =
-              buildReadWriteRoleBindingName(resourceId, collaborator, modelDBServiceResourceTypes);
-          RoleBinding readWriteRoleBinding = getRoleBindingByName(readWriteRoleBindingName);
-          if (readWriteRoleBinding != null && !readWriteRoleBinding.getId().isEmpty()) {
-            deleteRoleBinding(readWriteRoleBinding.getId());
-          }
-
-          if (deployCollaborators.contains(collaborator)
-              && modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-            String deployRoleBindingName =
-                buildProjectDeployRoleBindingName(
-                    resourceId, collaborator, modelDBServiceResourceTypes);
-            RoleBinding deployProjectRoleBinding = getRoleBindingByName(deployRoleBindingName);
-            if (deployProjectRoleBinding != null && !deployProjectRoleBinding.getId().isEmpty()) {
-              deleteRoleBinding(deployProjectRoleBinding.getId());
-            }
-          }
-        }
-      }
-    } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
-    } catch (InterruptedException | ExecutionException ex) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
     }
   }
 
@@ -1276,57 +1151,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public void deleteWorkspaceRoleBindings(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String resourceId,
-      String roleName,
-      ModelDBServiceResourceTypes resourceTypes,
-      boolean orgScopedPublic,
-      String globalSharing) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      CollaboratorUser collaboratorUser;
-      switch (workspaceType) {
-        case ORGANIZATION:
-          if (orgScopedPublic) {
-            String globalSharingRoleName =
-                new StringBuilder()
-                    .append("O_")
-                    .append(workspaceId)
-                    .append(globalSharing)
-                    .toString();
-
-            String globalSharingRoleBindingName =
-                buildRoleBindingName(
-                    globalSharingRoleName,
-                    resourceId,
-                    new CollaboratorOrg(workspaceId),
-                    resourceTypes.name());
-            RoleBinding globalSharingRoleBinding =
-                getRoleBindingByName(globalSharingRoleBindingName);
-            if (globalSharingRoleBinding != null && !globalSharingRoleBinding.getId().isEmpty()) {
-              deleteRoleBinding(globalSharingRoleBinding.getId());
-            }
-          }
-          Organization org = (Organization) getOrgById(workspaceId);
-          collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
-          break;
-        case USER:
-          collaboratorUser = new CollaboratorUser(authService, workspaceId);
-          break;
-        default:
-          return;
-      }
-      String roleBindingName =
-          buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
-      RoleBinding roleBinding = getRoleBindingByName(roleBindingName);
-      if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-        deleteRoleBinding(roleBinding.getId());
-      }
-    }
-  }
-
-  @Override
   public void createWorkspaceRoleBinding(
       String workspaceId,
       WorkspaceType workspaceType,
@@ -1373,43 +1197,51 @@ public class RoleServiceUtils implements RoleService {
       String resourceId,
       String roleName,
       ModelDBServiceResourceTypes resourceTypes,
-      boolean orgScopedPublic) {
+      boolean orgScopedPublic,
+      String globalSharing) {
     List<String> workspaceRoleBindingList = new ArrayList<>();
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      CollaboratorUser collaboratorUser;
-      switch (workspaceType) {
-        case ORGANIZATION:
-          if (orgScopedPublic) {
-            String globalSharingRoleName =
-                new StringBuilder()
-                    .append("O_")
-                    .append(workspaceId)
-                    .append("_GLOBAL_SHARING")
-                    .toString();
+      try {
+        CollaboratorUser collaboratorUser;
+        switch (workspaceType) {
+          case ORGANIZATION:
+            if (orgScopedPublic) {
+              String globalSharingRoleName =
+                  new StringBuilder()
+                      .append("O_")
+                      .append(workspaceId)
+                      .append(globalSharing)
+                      .toString();
 
-            String globalSharingRoleBindingName =
-                buildRoleBindingName(
-                    globalSharingRoleName,
-                    resourceId,
-                    new CollaboratorOrg(workspaceId),
-                    resourceTypes.name());
-            if (globalSharingRoleBindingName != null) {
-              workspaceRoleBindingList.add(globalSharingRoleBindingName);
+              String globalSharingRoleBindingName =
+                  buildRoleBindingName(
+                      globalSharingRoleName,
+                      resourceId,
+                      new CollaboratorOrg(workspaceId),
+                      resourceTypes.name());
+              if (globalSharingRoleBindingName != null) {
+                workspaceRoleBindingList.add(globalSharingRoleBindingName);
+              }
             }
-          }
-          Organization org = (Organization) getOrgById(workspaceId);
-          collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
-          break;
-        case USER:
-          collaboratorUser = new CollaboratorUser(authService, workspaceId);
-          break;
-        default:
-          return null;
-      }
-      String roleBindingName =
-          buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
-      if (roleBindingName != null) {
-        workspaceRoleBindingList.add(roleBindingName);
+            Organization org = (Organization) getOrgById(workspaceId);
+            collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
+            break;
+          case USER:
+            collaboratorUser = new CollaboratorUser(authService, workspaceId);
+            break;
+          default:
+            return null;
+        }
+        String roleBindingName =
+            buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
+        if (roleBindingName != null) {
+          workspaceRoleBindingList.add(roleBindingName);
+        }
+      } catch (Exception e) {
+        if (!e.getMessage().contains("Details: Doesn't exist")) {
+          throw e;
+        }
+        LOGGER.warn("Workspace ({}) not found on UAC", workspaceId);
       }
     }
     return workspaceRoleBindingList;

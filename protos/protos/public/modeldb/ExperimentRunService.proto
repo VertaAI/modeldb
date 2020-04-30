@@ -740,6 +740,7 @@ service ExperimentRunService {
         DeleteExperimentRunAttributes.Response) {
         option (google.api.http) = {
             delete: "/v1/experiment-run/deleteExperimentRunAttributes"
+            body: "*"
         };
     };
 

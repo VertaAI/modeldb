@@ -29,6 +29,11 @@ class UACServiceStub(object):
         request_serializer=uac_dot_UACService__pb2.GetUsers.SerializeToString,
         response_deserializer=uac_dot_UACService__pb2.GetUsers.Response.FromString,
         )
+    self.getUsersFuzzy = channel.unary_unary(
+        '/ai.verta.uac.UACService/getUsersFuzzy',
+        request_serializer=uac_dot_UACService__pb2.GetUsersFuzzy.SerializeToString,
+        response_deserializer=uac_dot_UACService__pb2.GetUsersFuzzy.Response.FromString,
+        )
     self.createUser = channel.unary_unary(
         '/ai.verta.uac.UACService/createUser',
         request_serializer=uac_dot_UACService__pb2.CreateUser.SerializeToString,
@@ -65,6 +70,13 @@ class UACServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getUsers(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getUsersFuzzy(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -109,6 +121,11 @@ def add_UACServiceServicer_to_server(servicer, server):
           servicer.getUsers,
           request_deserializer=uac_dot_UACService__pb2.GetUsers.FromString,
           response_serializer=uac_dot_UACService__pb2.GetUsers.Response.SerializeToString,
+      ),
+      'getUsersFuzzy': grpc.unary_unary_rpc_method_handler(
+          servicer.getUsersFuzzy,
+          request_deserializer=uac_dot_UACService__pb2.GetUsersFuzzy.FromString,
+          response_serializer=uac_dot_UACService__pb2.GetUsersFuzzy.Response.SerializeToString,
       ),
       'createUser': grpc.unary_unary_rpc_method_handler(
           servicer.createUser,
