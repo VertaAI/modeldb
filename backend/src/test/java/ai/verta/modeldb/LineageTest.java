@@ -426,15 +426,34 @@ public class LineageTest {
               0L);
 
           AddLineage.Builder addLineage =
-              AddLineage.newBuilder()
-                  .addInput(inputDataset)
-                  .addOutput(inputOutputExp);
+              AddLineage.newBuilder().addInput(inputDataset).addOutput(inputOutputExp);
+
           Response result = lineageServiceStub.addLineage(addLineage.build());
           long id = result.getId();
-          addLineage =
-              AddLineage.newBuilder()
-                  .setId(id)
-                  .addInput(inputDataset2);
+
+          FindAllInputsOutputs.Response findAllInputsOutputsResult =
+              lineageServiceStub.findAllInputsOutputs(
+                  FindAllInputsOutputs.newBuilder()
+                      .addItems(LineageEntryBatchRequest.newBuilder().setId(id))
+                      .build());
+          Assert.assertEquals(
+              FindAllInputsOutputs.Response.newBuilder()
+                  .addInputs(
+                      LineageEntryBatchResponse.newBuilder()
+                          .addItems(
+                              LineageEntryBatchResponseSingle.newBuilder()
+                                  .setId(id)
+                                  .addItems(inputDataset)))
+                  .addOutputs(
+                      LineageEntryBatchResponse.newBuilder()
+                          .addItems(
+                              LineageEntryBatchResponseSingle.newBuilder()
+                                  .setId(id)
+                                  .addItems(inputOutputExp)))
+                  .build(),
+              findAllInputsOutputsResult);
+
+          addLineage = AddLineage.newBuilder().setId(id).addInput(inputDataset2);
           result = lineageServiceStub.addLineage(addLineage.build());
           assertEquals(id, result.getId());
 
@@ -501,16 +520,40 @@ public class LineageTest {
                   null),
               result.getId());
 
+          findAllInputsOutputsResult =
+              lineageServiceStub.findAllInputsOutputs(
+                  FindAllInputsOutputs.newBuilder()
+                      .addItems(LineageEntryBatchRequest.newBuilder().setId(id))
+                      .build());
+          checkInputsOutputs(findAllInputsOutputsResult, 2, 2);
           deleteLineage =
               DeleteLineage.newBuilder()
                   .setId(result.getId())
-                  .addInput(inputExp)
-                  .addInput(inputDataset)
-                  .addInput(inputDataset2)
-                  .addInput(inputOutputExp)
-                  .addOutput(inputOutputExp)
-                  .addOutput(outputDataset)
                   .addOutput(outputExp);
+          lineageServiceStub.deleteLineage(deleteLineage.build());
+          findAllInputsOutputsResult =
+              lineageServiceStub.findAllInputsOutputs(
+                  FindAllInputsOutputs.newBuilder()
+                      .addItems(LineageEntryBatchRequest.newBuilder().setId(id))
+                      .build());
+          checkInputsOutputs(findAllInputsOutputsResult, 2, 1);
+          deleteLineage =
+              DeleteLineage.newBuilder()
+                  .setId(result.getId())
+                  .addInput(inputExp);
+          lineageServiceStub.deleteLineage(deleteLineage.build());
+          findAllInputsOutputsResult =
+              lineageServiceStub.findAllInputsOutputs(
+                  FindAllInputsOutputs.newBuilder()
+                      .addItems(LineageEntryBatchRequest.newBuilder().setId(id))
+                      .build());
+          checkInputsOutputs(findAllInputsOutputsResult, 1, 1);
+
+          deleteLineage =
+              DeleteLineage.newBuilder()
+                  .setId(result.getId())
+                  .addInput(inputOutputExp)
+              .addOutput(outputDataset);
           Assert.assertTrue(lineageServiceStub.deleteLineage(deleteLineage.build()).getStatus());
 
           check(
@@ -554,6 +597,17 @@ public class LineageTest {
     }
 
     LOGGER.info("Create and delete Lineage test stop................................");
+  }
+
+  public void checkInputsOutputs(FindAllInputsOutputs.Response findAllInputsOutputsResult, int inputsCount, int outputsCount) {
+    Assert.assertEquals(1, findAllInputsOutputsResult.getInputsCount());
+    LineageEntryBatchResponse inputs = findAllInputsOutputsResult.getInputs(0);
+    Assert.assertEquals(1, inputs.getItemsCount());
+    Assert.assertEquals(inputsCount, inputs.getItems(0).getItemsCount());
+    Assert.assertEquals(1, findAllInputsOutputsResult.getOutputsCount());
+    LineageEntryBatchResponse outputs = findAllInputsOutputsResult.getOutputs(0);
+    Assert.assertEquals(1, outputs.getItemsCount());
+    Assert.assertEquals(outputsCount, outputs.getItems(0).getItemsCount());
   }
 
   private void deleteAll(Project project) {

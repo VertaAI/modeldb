@@ -343,8 +343,6 @@ public class LineageServiceImpl extends LineageServiceImplBase {
           blobResult.add(stringFromProtoObject);
         }
         break;
-      default:
-        throw new ModelDBException("Unexpected type", Code.INTERNAL);
     }
   }
 }
