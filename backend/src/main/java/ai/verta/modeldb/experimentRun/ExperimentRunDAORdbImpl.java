@@ -1429,7 +1429,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       } catch (StatusRuntimeException ex) {
         if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
-            && ModelDBConstants.USERS_NOT_FOUND_FUZZY_SEARCH.equals(
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
                 ex.getStatus().getDescription())) {
           LOGGER.warn(ex.getMessage());
           ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();

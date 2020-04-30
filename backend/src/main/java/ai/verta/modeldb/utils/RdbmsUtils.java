@@ -1650,7 +1650,7 @@ public class RdbmsUtils {
                 Status invalidValueTypeError =
                     Status.newBuilder()
                         .setCode(Code.FAILED_PRECONDITION_VALUE)
-                        .setMessage(ModelDBConstants.USERS_NOT_FOUND_FUZZY_SEARCH)
+                        .setMessage(ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND)
                         .build();
                 throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
               }
