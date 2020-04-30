@@ -416,7 +416,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         RepositoryEntity repo;
         CommitSet result;
         if (!repositories.containsKey(repositoryId)) {
-          //checks permissions and gets a repository
+          // checks permissions and gets a repository
           repo =
               repositoryDAO.getRepositoryById(
                   session, RepositoryIdentification.newBuilder().setRepoId(repositoryId).build());
