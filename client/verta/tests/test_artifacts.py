@@ -351,25 +351,6 @@ class TestOverwrite:
 
         assert six.ensure_binary('\n'.join(new_requirements)) in experiment_run.get_artifact("requirements.txt").read()
 
-    def test_training_data(self, experiment_run):
-        pd = pytest.importorskip("pandas")
-
-        X = pd.DataFrame([[1, 1, 1],
-                          [1, 1, 1],
-                          [1, 1, 1]],
-                         columns=["1_1", "1_2", "1_3"])
-        y = pd.Series([1, 1, 1], name="1")
-        new_X = pd.DataFrame([[2, 2, 2],
-                              [2, 2, 2],
-                              [2, 2, 2]],
-                             columns=["2_1", "2_2", "2_3"])
-        new_y = pd.Series([2, 2, 2], name="2")
-
-        experiment_run.log_training_data(X, y)
-        experiment_run.log_training_data(new_X, new_y, overwrite=True)
-
-        assert pd.read_csv(experiment_run.get_artifact("train_data")).equals(new_X.join(new_y))
-
     def test_setup_script(self, experiment_run):
         setup_script = "import verta"
         new_setup_script = "import cloudpickle"
