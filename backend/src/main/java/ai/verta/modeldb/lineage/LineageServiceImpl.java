@@ -253,7 +253,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   private Stream<? extends LineageEntryBatchResponseSingle> filterLineageEntryBatchResponseSingle(
       Session session,
       Set<String> experimentRuns,
-      Map<Long, RepositoryContainer> blobs,
+      Map<Long, RepositoryContainer> repositories,
       LineageEntryBatchResponseSingle lineageEntryBatchResponseSingle) {
     List<LineageEntryBatchResponseSingle> newLineageEntryBatchResponseSingleList =
         new LinkedList<>();
@@ -261,7 +261,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     List<LineageEntry> filterResult =
         itemList.stream()
             .filter(
-                lineageEntry -> filterLineageEntry(session, experimentRuns, blobs, lineageEntry))
+                lineageEntry -> filterLineageEntry(session, experimentRuns, repositories, lineageEntry))
             .collect(Collectors.toList());
     if (filterResult.size() != 0) {
       newLineageEntryBatchResponseSingleList.add(
@@ -276,10 +276,10 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   private boolean filterLineageEntry(
       Session session,
       Set<String> experimentRuns,
-      Map<Long, RepositoryContainer> blobs,
+      Map<Long, RepositoryContainer> repositories,
       LineageEntry lineageEntry) {
     try {
-      validate(session, experimentRuns, blobs, lineageEntry);
+      validate(session, experimentRuns, repositories, lineageEntry);
       return true;
     } catch (StatusRuntimeException | ModelDBException e) {
       LOGGER.warn("Can't access entity {}", e.getMessage());
