@@ -890,11 +890,23 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       }
 
       String entityName = "experimentEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, experimentRoot, authService);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, experimentRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (StatusRuntimeException ex) {
+        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
+                ex.getStatus().getDescription())) {
+          LOGGER.warn(ex.getMessage());
+          ExperimentPaginationDTO experimentPaginationDTO = new ExperimentPaginationDTO();
+          experimentPaginationDTO.setExperiments(Collections.emptyList());
+          experimentPaginationDTO.setTotalRecords(0L);
+          return experimentPaginationDTO;
+        }
       }
 
       Order orderBy =
