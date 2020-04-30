@@ -27,6 +27,7 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -331,11 +332,23 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       List<KeyValueQuery> predicates = queryParameters.getPredicatesList();
       String entityName = "datasetVersionEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, datasetVersionRoot, authService);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, datasetVersionRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (StatusRuntimeException ex) {
+        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.USERS_NOT_FOUND_FUZZY_SEARCH.equals(
+                ex.getStatus().getDescription())) {
+          LOGGER.warn(ex.getMessage());
+          DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
+          datasetVersionDTO.setDatasetVersions(Collections.emptyList());
+          datasetVersionDTO.setTotalRecords(0L);
+          return datasetVersionDTO;
+        }
       }
 
       String sortBy = queryParameters.getSortKey();

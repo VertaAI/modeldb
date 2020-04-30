@@ -146,6 +146,7 @@ public interface ModelDBConstants {
   String INTERNAL_ERROR = "Internal server error";
   String NON_EQ_ID_PRED_ERROR_MESSAGE =
       "Only equality predicates supported on ids. Use EQ Operator.";
+  String USERS_NOT_FOUND_FUZZY_SEARCH = "Users not found for the fuzzy search";
 
   // Relational Query alias
   String ARTIFACT_ALIAS = "_art_";

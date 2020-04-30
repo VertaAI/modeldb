@@ -1134,11 +1134,23 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       String entityName = "projectEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, projectRoot, authService);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, projectRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (StatusRuntimeException ex) {
+        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.USERS_NOT_FOUND_FUZZY_SEARCH.equals(
+                ex.getStatus().getDescription())) {
+          LOGGER.warn(ex.getMessage());
+          ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
+          projectPaginationDTO.setProjects(Collections.emptyList());
+          projectPaginationDTO.setTotalRecords(0L);
+          return projectPaginationDTO;
+        }
       }
 
       Order orderBy =
