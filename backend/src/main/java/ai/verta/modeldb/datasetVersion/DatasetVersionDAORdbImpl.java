@@ -290,13 +290,13 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       return new ArrayList<>();
     }
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+      //Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(DATASET_VERSION_BY_IDS_QUERY);
       query.setParameterList("ids", datasetVersionIds);
 
       @SuppressWarnings("unchecked")
       List<DatasetVersionEntity> datasetEntities = query.list();
-      transaction.commit();
+      //transaction.commit();
       LOGGER.debug("DatasetVersion by Ids getting successfully");
       return RdbmsUtils.convertDatasetVersionsFromDatasetVersionEntityList(datasetEntities);
     }
@@ -436,7 +436,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String datasetVersionId, String datasetVersionDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+      //Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setDescription(datasetVersionDescription);
@@ -444,7 +444,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       datasetVersionObj.setTime_updated(currentTimestamp);
       session.update(datasetVersionObj);
       setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
-      transaction.commit();
+      //transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();
     }
@@ -660,7 +660,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       String datasetVersionId, DatasetVisibilityEnum.DatasetVisibility datasetVersionVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+      //Transaction transaction = session.beginTransaction();
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       datasetVersionObj.setDataset_version_visibility(datasetVersionVisibility.ordinal());
@@ -668,7 +668,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       datasetVersionObj.setTime_updated(currentTimestamp);
       session.update(datasetVersionObj);
       setDatasetUpdateTime(session, Collections.singletonList(datasetVersionObj.getDataset_id()));
-      transaction.commit();
+      //transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
       return datasetVersionObj.getProtoObject();
     }

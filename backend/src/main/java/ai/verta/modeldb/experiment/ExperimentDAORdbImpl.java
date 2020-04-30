@@ -272,7 +272,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment updateExperimentName(String experimentId, String experimentName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+      //Transaction transaction = session.beginTransaction();
       ExperimentEntity experimentEntity = session.load(ExperimentEntity.class, experimentId);
       experimentEntity.setName(experimentName);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
@@ -282,7 +282,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
           session, Collections.singletonList(experimentEntity.getProject_id()), currentTimestamp);
-      transaction.commit();
+      //transaction.commit();
       return experimentEntity.getProtoObject();
     }
   }
@@ -291,7 +291,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment updateExperimentDescription(String experimentId, String experimentDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+      //Transaction transaction = session.beginTransaction();
       ExperimentEntity experimentEntity = session.load(ExperimentEntity.class, experimentId);
       experimentEntity.setDescription(experimentDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
@@ -301,7 +301,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
           session, Collections.singletonList(experimentEntity.getProject_id()), currentTimestamp);
-      transaction.commit();
+      //transaction.commit();
       return experimentEntity.getProtoObject();
     }
   }
@@ -530,7 +530,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   @Override
   public Boolean deleteExperiment(String experimentId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+      //Transaction transaction = session.beginTransaction();
       // Delete the ExperimentRunEntity object
       Query experimentRunDeleteQuery = session.createQuery(EXPERIMENT_DELETE_HQL);
       experimentRunDeleteQuery.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
@@ -546,7 +546,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       // Update parent entity timestamp
       updateParentEntitiesTimestamp(
           session, Collections.singletonList(projectId), Calendar.getInstance().getTimeInMillis());
-      transaction.commit();
+      //transaction.commit();
       LOGGER.debug("Experiment deleted successfully");
       return true;
     }
