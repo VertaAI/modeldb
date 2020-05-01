@@ -722,8 +722,7 @@ def blob_msg_to_object(blob_msg):
             raise NotImplementedError("found unexpected {} type {};"
                                       " please notify the Verta development team".format(content_type, content_subtype))
 
-    # obj._msg.CopyFrom(getattr(blob_msg, content_type))
-    obj._msg = getattr(blob_msg, content_type)
+    obj._msg.CopyFrom(getattr(blob_msg, content_type))
     return obj
 
 
