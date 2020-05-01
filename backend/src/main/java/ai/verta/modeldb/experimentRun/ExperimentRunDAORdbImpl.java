@@ -591,7 +591,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun updateExperimentRunName(String experimentRunId, String experimentRunName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId);
       experimentRunEntity.setName(experimentRunName);
@@ -605,7 +605,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           Collections.singletonList(experimentRunEntity.getProject_id()),
           Collections.singletonList(experimentRunEntity.getExperiment_id()),
           currentTimestamp);
-      //transaction.commit();
+      transaction.commit();
       return experimentRunEntity.getProtoObject();
     }
   }
@@ -615,7 +615,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       String experimentRunId, String experimentRunDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId);
       experimentRunEntity.setDescription(experimentRunDescription);
@@ -629,7 +629,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           Collections.singletonList(experimentRunEntity.getProject_id()),
           Collections.singletonList(experimentRunEntity.getExperiment_id()),
           currentTimestamp);
-      //transaction.commit();
+      transaction.commit();
       return experimentRunEntity.getProtoObject();
     }
   }
@@ -674,7 +674,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun setParentExperimentRunId(
       String experimentRunId, String parentExperimentRunId) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId);
       experimentRunEntity.setParent_id(parentExperimentRunId);
@@ -688,7 +688,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           Collections.singletonList(experimentRunEntity.getProject_id()),
           Collections.singletonList(experimentRunEntity.getExperiment_id()),
           currentTimestamp);
-      //transaction.commit();
+      transaction.commit();
       return experimentRunEntity.getProtoObject();
     }
   }

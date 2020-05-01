@@ -187,9 +187,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public List<Dataset> getDatasetByIds(List<String> sharedDatasetIds)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, sharedDatasetIds);
-      //transaction.commit();
       LOGGER.debug("Got Dataset by Ids successfully");
       return RdbmsUtils.convertDatasetsFromDatasetEntityList(datasetEntities);
     }
@@ -310,7 +308,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   public void deleteDatasetVersionsByDatasetIDs(
       Session session, List<String> datasetIds, List<String> roleBindingNames) {
-    Transaction transaction = session.beginTransaction();
     Query query = session.createQuery(DATASET_VERSION_BY_DATA_SET_IDS_QUERY);
     query.setParameterList("datasetIds", datasetIds);
     List<DatasetVersionEntity> datasetVersionEntities = query.list();
@@ -327,7 +324,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         roleBindingNames.add(ownerRoleBindingName);
       }
     }
-    transaction.commit();
     LOGGER.debug("DatasetVersion deleted successfully");
   }
 
@@ -351,9 +347,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, allowedDatasetIds);
+      Transaction transaction = session.beginTransaction();
       deleteDatasetVersionsByDatasetIDs(session, allowedDatasetIds, roleBindingNames);
 
-      Transaction transaction = session.beginTransaction();
       // Remove dataset collaborator mappings
       for (DatasetEntity datasetObj : datasetEntities) {
         session.delete(datasetObj);
@@ -373,12 +369,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public Boolean setUpdateTime(List<String> datasetIds, long timestamp) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       Query query = session.createQuery(UPDATE_TIME_QUERY);
       query.setParameter("timestamp", timestamp);
       query.setParameterList("ids", datasetIds);
       int result = query.executeUpdate();
-      //transaction.commit();
+      transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
       return result > 0;
     }
@@ -633,7 +629,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset updateDatasetName(String datasetId, String datasetName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetObj = session.load(DatasetEntity.class, datasetId);
 
       Dataset dataset =
@@ -648,7 +644,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       datasetObj.setName(datasetName);
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
       session.update(datasetObj);
-      //transaction.commit();
+      transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
       return datasetObj.getProtoObject();
     }
@@ -658,12 +654,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset updateDatasetDescription(String datasetId, String datasetDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetObj = session.load(DatasetEntity.class, datasetId);
       datasetObj.setDescription(datasetDescription);
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
       session.update(datasetObj);
-      //transaction.commit();
+      transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
       return datasetObj.getProtoObject();
     }
@@ -974,7 +970,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throws InvalidProtocolBufferException {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-     // Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       DatasetEntity datasetEntity = session.load(DatasetEntity.class, datasetId);
       getWorkspaceRoleBindings(
           datasetEntity.getWorkspace(),
@@ -991,7 +987,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       datasetEntity.setTime_updated(Calendar.getInstance().getTimeInMillis());
       session.update(datasetEntity);
       LOGGER.debug("Dataset workspace updated successfully");
-      //transaction.commit();
+      transaction.commit();
       return datasetEntity.getProtoObject();
     }
   }

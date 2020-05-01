@@ -126,7 +126,6 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //session.beginTransaction();
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
 
@@ -141,7 +140,6 @@ public class BlobDAORdbImpl implements BlobDAO {
       String folderHash = commit.getRootSha();
       if (locationList.isEmpty()) { // getting root
         Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
-        //session.getTransaction().commit();
         if (folder == null) { // root is empty
           return GetCommitComponentRequest.Response.newBuilder().build();
         }
@@ -171,7 +169,6 @@ public class BlobDAORdbImpl implements BlobDAO {
           folderHash = elementEntity.getElement_sha();
           if (index == locationList.size() - 1) {
             Folder folder = getFolder(session, commit.getCommit_hash(), folderHash);
-            //session.getTransaction().commit();
             if (folder == null) { // folder is empty
               return GetCommitComponentRequest.Response.newBuilder().build();
             }
@@ -180,7 +177,6 @@ public class BlobDAORdbImpl implements BlobDAO {
         } else {
           if (index == locationList.size() - 1) {
             ai.verta.modeldb.versioning.Blob blob = getBlob(session, elementEntity);
-            //session.getTransaction().commit();
             return GetCommitComponentRequest.Response.newBuilder().setBlob(blob).build();
           } else {
             throw new ModelDBException(
@@ -376,7 +372,6 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryFunction repositoryFunction, String commitHash, List<String> locationList)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //session.beginTransaction();
 
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
       if (commit == null) {
@@ -405,7 +400,6 @@ public class BlobDAORdbImpl implements BlobDAO {
   public ComputeRepositoryDiffRequest.Response computeRepositoryDiff(
       RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //session.beginTransaction();
 
       // validating request
       validateDiffMergeRequest(
@@ -480,7 +474,6 @@ public class BlobDAORdbImpl implements BlobDAO {
           getCommitBlobMapWithHash(
               session, internalCommitB.getRootSha(), new ArrayList<>(), Collections.emptyList());
 
-      //session.getTransaction().commit();
       return computeDiffFromCommitMaps(locationBlobsMapCommitA, locationBlobsMapCommitB);
     }
   }
@@ -838,7 +831,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //Transaction transaction = session.beginTransaction();
+      Transaction transaction = session.beginTransaction();
       List<String> parentSHAs = Collections.singletonList(request.getBaseCommitSha());
       List<CommitEntity> parentCommits = Collections.singletonList(baseCommitEntity);
       String revertMessage = request.getContent().getMessage();
@@ -855,7 +848,7 @@ public class BlobDAORdbImpl implements BlobDAO {
               blobContainerList,
               revertMessage);
       session.saveOrUpdate(commitEntity);
-      //transaction.commit();
+      transaction.commit();
       return RevertRepositoryCommitsRequest.Response.newBuilder()
           .setCommit(commitEntity.toCommitProto())
           .build();

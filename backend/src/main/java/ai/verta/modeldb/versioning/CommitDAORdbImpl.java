@@ -195,10 +195,8 @@ public class CommitDAORdbImpl implements CommitDAO {
   public Commit getCommit(String commitHash, RepositoryFunction getRepository)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      //session.beginTransaction();
       CommitEntity commitEntity = getCommitEntity(session, commitHash, getRepository);
 
-      //session.getTransaction().commit();
       return commitEntity.toCommitProto();
     }
   }
