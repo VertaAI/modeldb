@@ -81,16 +81,6 @@ class TestLogModelForDeployment:
         with open(requirements_file, 'r') as f:
             assert set(f.read().split()) <= set(retrieved_requirements.split())
 
-    def test_with_data(self, experiment_run, model_for_deployment):
-        """`train_features` and `train_targets` are joined into a single CSV"""
-        experiment_run.log_model_for_deployment(**model_for_deployment)
-
-        data_csv = experiment_run.get_artifact("train_data").read()
-
-        X_train = model_for_deployment['train_features']
-        y_train = model_for_deployment['train_targets']
-        assert X_train.join(y_train).to_csv(index=False) == six.ensure_str(data_csv)
-
 
 @pytest.mark.not_oss
 class TestLogModel:
@@ -563,10 +553,8 @@ class TestLogTrainingData:
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
 
+        # no errors
         experiment_run.log_training_data(X_train, y_train)
-
-        data_csv = experiment_run.get_artifact("train_data").read()
-        assert X_train.join(y_train).to_csv(index=False) == six.ensure_str(data_csv)
 
     def test_dataframe(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
@@ -574,10 +562,8 @@ class TestLogTrainingData:
 
         y_train = y_train.to_frame()
 
+        # no errors
         experiment_run.log_training_data(X_train, y_train)
-
-        data_csv = experiment_run.get_artifact("train_data").read()
-        assert X_train.join(y_train).to_csv(index=False) == six.ensure_str(data_csv)
 
 
 class TestHistogram:

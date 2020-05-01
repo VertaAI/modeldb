@@ -395,6 +395,28 @@ public class MergeTest {
         .build();
   }
 
+  static Blob getDatasetBlobFromPathMultiple(String path, long size) {
+    return Blob.newBuilder()
+        .setDataset(
+            DatasetBlob.newBuilder()
+                .setPath(
+                    PathDatasetBlob.newBuilder()
+                        .addComponents(
+                            PathDatasetComponentBlob.newBuilder()
+                                .setPath(path)
+                                .setSize(size)
+                                .setLastModifiedAtSource(time)
+                                .build())
+                        .addComponents(
+                            PathDatasetComponentBlob.newBuilder()
+                                .setPath(path + "~")
+                                .setSize(size)
+                                .setLastModifiedAtSource(time)
+                                .build())
+                        .build())
+                .build())
+        .build();
+  }
   /**
    * blob 1 is original blob 2 is completely unrelated blob used for merge to go through blob 3 is
    * meant to modify blob 1 blob 4 is meant to modify blob 1
@@ -420,7 +442,7 @@ public class MergeTest {
 
         blobExpanded3 =
             BlobExpanded.newBuilder()
-                .setBlob(getDatasetBlobFromPath(path1, 3))
+                .setBlob(getDatasetBlobFromPathMultiple(path1, 3))
                 .addAllLocation(LOCATION1)
                 .build();
 

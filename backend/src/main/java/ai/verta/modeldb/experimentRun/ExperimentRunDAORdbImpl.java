@@ -295,7 +295,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     Map<String, Map.Entry<BlobExpanded, String>> requestedLocationBlobWithHashMap = new HashMap<>();
     if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
-          blobDAO.getCommitBlobMapWithHash(session, commitEntity.getRootSha(), new ArrayList<>());
+          blobDAO.getCommitBlobMapWithHash(
+              session, commitEntity.getRootSha(), new ArrayList<>(), Collections.emptyList());
       for (Map.Entry<String, Location> locationBlobKeyMap :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
         String locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
@@ -324,9 +325,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
             validateVersioningEntity(session, experimentRun.getVersionedInputs());
-        experimentRunObj.setVersioned_inputs(
+        List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings =
             RdbmsUtils.getVersioningMappingFromVersioningInput(
-                experimentRun.getVersionedInputs(), locationBlobWithHashMap, experimentRunObj));
+                session,
+                experimentRun.getVersionedInputs(),
+                locationBlobWithHashMap,
+                experimentRunObj);
+        experimentRunObj.setVersioned_inputs(versioningModeldbEntityMappings);
       }
       session.saveOrUpdate(experimentRunObj);
 
@@ -1415,15 +1420,27 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       LOGGER.trace("Added entity predicates");
       String entityName = "experimentRunEntity";
-      List<Predicate> queryPredicatesList =
-          RdbmsUtils.getQueryPredicatesFromPredicateList(
-              entityName, predicates, builder, criteriaQuery, experimentRunRoot);
-      if (!queryPredicatesList.isEmpty()) {
-        finalPredicatesList.addAll(queryPredicatesList);
+      try {
+        List<Predicate> queryPredicatesList =
+            RdbmsUtils.getQueryPredicatesFromPredicateList(
+                entityName, predicates, builder, criteriaQuery, experimentRunRoot, authService);
+        if (!queryPredicatesList.isEmpty()) {
+          finalPredicatesList.addAll(queryPredicatesList);
+        }
+      } catch (StatusRuntimeException ex) {
+        if (ex.getStatus().getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
+            && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(
+                ex.getStatus().getDescription())) {
+          LOGGER.warn(ex.getMessage());
+          ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
+          experimentRunPaginationDTO.setExperimentRuns(Collections.emptyList());
+          experimentRunPaginationDTO.setTotalRecords(0L);
+          return experimentRunPaginationDTO;
+        }
       }
 
-      Order orderBy =
-          RdbmsUtils.getOrderBasedOnSortKey(
+      Order[] orderBy =
+          RdbmsUtils.getOrderArrBasedOnSortKey(
               queryParameters.getSortKey(),
               queryParameters.getAscending(),
               builder,
@@ -1994,7 +2011,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
       List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings =
           RdbmsUtils.getVersioningMappingFromVersioningInput(
-              versioningEntry, locationBlobWithHashMap, runEntity);
+              session, versioningEntry, locationBlobWithHashMap, runEntity);
 
       List<VersioningModeldbEntityMapping> existingMappings = runEntity.getVersioned_inputs();
       if (existingMappings.isEmpty()) {
